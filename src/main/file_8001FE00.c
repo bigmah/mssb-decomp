@@ -313,7 +313,251 @@ void fn_80020624(void) {
 
 // .text:0x800206FC size:0x968
 void fn_800206FC(void) {
-    return;
+    LayoutGroup* group = lbl_803CC1B8;
+    u8 prev = lbl_8037169C.state;
+    u8 req;
+    s32 k;
+    LayoutObj* obj;
+
+    lbl_8037169C._13 = 0;
+    if (prev == 0) {
+        req = lbl_8037169C.request;
+        if (req == 3) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 2;
+            } else {
+                lbl_8037169C.duration = lbl_8037169C.requestDuration;
+                lbl_8037169C.state = 3;
+                group->timer = 0;
+            }
+        } else if (req == 4) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 5;
+            } else {
+                lbl_8037169C.duration = lbl_8037169C.requestDuration;
+                lbl_8037169C.state = 4;
+                group->timer = 0;
+                lbl_80371C30[group->start + 1].obj->_64 = lbl_803CB7C8[rand() % 2];
+                lbl_80371C30[group->start + 1].obj->_5C = 0;
+            }
+        } else if (req == 7) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 8;
+            } else {
+                lbl_8037169C.state = 7;
+                lbl_8037169C.duration = lbl_8037169C.requestDuration;
+                group->timer = 0;
+                fn_800B0A5C_insertQueue(fn_80020624, 2);
+            }
+        } else if (req == 9) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 8;
+            } else {
+                lbl_8037169C.state = 9;
+                fn_800B0A5C_insertQueue(fn_80020624, 2);
+            }
+        } else if (req == 10) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 11;
+            } else {
+                lbl_8037169C.duration = lbl_8037169C.requestDuration;
+                lbl_8037169C.state = 10;
+                group->timer = 0;
+            }
+        } else if (req == 12) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 11;
+            } else {
+                lbl_8037169C.state = 12;
+                lbl_80371C30[group->start + 2].obj->_5C = 0;
+            }
+        } else if (req == 13) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 14;
+            } else {
+                lbl_8037169C.duration = lbl_8037169C.requestDuration;
+                lbl_8037169C.state = 13;
+                group->timer = 0;
+            }
+        } else if (req == 15) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 14;
+            } else {
+                lbl_8037169C.duration = lbl_8037169C.requestDuration;
+                lbl_8037169C.state = 15;
+            }
+            group->textIndex = fn_8000F988(group, 4, 0, 0, 0x92, 0);
+            lbl_80371C30[group->start + 4].obj->flags |= 2;
+            lbl_80371C30[group->start + 4].obj->color &= ~0xFF;
+            lbl_80366B18.entries[group->textIndex].hAlign = 1;
+            lbl_80366B18.entries[group->textIndex].vAlign = 1;
+        }
+    }
+
+    switch (lbl_8037169C.state) {
+    case 3: // fade in
+        group->timer++;
+        if (lbl_8037169C.duration <= group->timer) {
+            lbl_8037169C.state = 2;
+            lbl_8037169C.alpha = 255;
+        } else {
+            lbl_8037169C.alpha = group->timer * 255 / lbl_8037169C.duration;
+        }
+        break;
+    case 2: // fully covered
+        lbl_8037169C.alpha = 255;
+        if (lbl_8037169C.request == 1) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 0;
+            } else {
+                lbl_8037169C.duration = lbl_8037169C.requestDuration;
+                lbl_8037169C.state = 1;
+                group->timer = 0;
+            }
+        }
+        lbl_8037169C._13 = 1;
+        break;
+    case 1: // fade out
+        group->timer++;
+        if (lbl_8037169C.duration <= group->timer) {
+            lbl_8037169C.done = 1;
+            lbl_8037169C.state = 0;
+        } else {
+            lbl_8037169C.alpha = 255 - group->timer * 255 / lbl_8037169C.duration;
+        }
+        break;
+    case 4:
+        group->timer++;
+        if (lbl_8037169C.duration <= group->timer) {
+            lbl_8037169C.state = 5;
+        } else {
+            lbl_8037169C.alpha = group->timer * 255 / lbl_8037169C.duration;
+        }
+        break;
+    case 5:
+        lbl_8037169C.alpha = 255;
+        if (lbl_8037169C.request == 6) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 0;
+            } else {
+                lbl_8037169C.duration = lbl_8037169C.requestDuration;
+                lbl_8037169C.state = 6;
+                group->timer = 0;
+            }
+        }
+        lbl_8037169C._13 = 1;
+        break;
+    case 6:
+        group->timer++;
+        if (lbl_8037169C.duration <= group->timer) {
+            lbl_8037169C.done = 1;
+            lbl_8037169C.state = 0;
+        } else {
+            lbl_8037169C.alpha = 255 - group->timer * 255 / lbl_8037169C.duration;
+        }
+        break;
+    case 12:
+        lbl_80371C30[group->start + 2].obj->_68 = 1;
+        lbl_8037169C.state = 11;
+        break;
+    case 11:
+        lbl_8037169C.alpha = 255;
+        if (lbl_8037169C.request == 10) {
+            lbl_8037169C.state = 10;
+            lbl_8037169C.duration = 6;
+            group->timer = 0;
+        }
+        if ((lbl_80371C30[group->start + 2].obj->_5C >> 16) >= 10) {
+            lbl_8037169C._13 = 1;
+        }
+        break;
+    case 10:
+        group->timer++;
+        if (lbl_8037169C.duration <= group->timer) {
+            lbl_8037169C.done = 1;
+            lbl_8037169C.state = 0;
+        } else {
+            lbl_8037169C.alpha = 255 - group->timer * 255 / lbl_8037169C.duration;
+        }
+        break;
+    case 15:
+        group->timer++;
+        if (lbl_8037169C.duration <= group->timer) {
+            lbl_8037169C.state = 14;
+        } else {
+            lbl_8037169C.alpha = group->timer * 255 / lbl_8037169C.duration;
+        }
+        break;
+    case 14:
+        lbl_8037169C.alpha = 255;
+        if (lbl_8037169C.request == 13) {
+            if (lbl_8037169C.requestDuration == 0) {
+                lbl_8037169C.state = 0;
+            } else {
+                lbl_8037169C.duration = lbl_8037169C.requestDuration;
+                lbl_8037169C.state = 13;
+                group->timer = 0;
+            }
+        }
+        lbl_8037169C._13 = 1;
+        break;
+    case 13:
+        group->timer++;
+        if (lbl_8037169C.duration <= group->timer) {
+            lbl_8037169C.done = 1;
+            lbl_8037169C.state = 0;
+            lbl_8037169C.loadState = 0;
+            fn_8000FEE8(group->textIndex);
+            fn_8000F8F4(group);
+        } else {
+            lbl_8037169C.alpha = 255 - group->timer * 255 / lbl_8037169C.duration;
+        }
+        break;
+    }
+
+    if (lbl_8037169C.state >= 1 && lbl_8037169C.state <= 3) {
+        lbl_8037169C.done = 0;
+        lbl_80371C30[group->start].obj->flags |= 2;
+        lbl_80371C30[group->start].obj->color = (lbl_80371C30[group->start].obj->color & ~0xFF) | lbl_8037169C.alpha;
+    } else {
+        lbl_80371C30[group->start].obj->flags &= ~2;
+    }
+    if (lbl_8037169C.state >= 4 && lbl_8037169C.state <= 6) {
+        lbl_8037169C.done = 0;
+        lbl_80371C30[group->start + 1].obj->flags |= 2;
+        lbl_80371C30[group->start + 1].obj->color = (lbl_80371C30[group->start + 1].obj->color & ~0xFF) | lbl_8037169C.alpha;
+    } else {
+        lbl_80371C30[group->start + 1].obj->flags &= ~2;
+    }
+    if (lbl_8037169C.state >= 10 && lbl_8037169C.state <= 12) {
+        lbl_8037169C.done = 0;
+        lbl_80371C30[group->start + 2].obj->flags |= 2;
+        for (k = 2; k <= 13; k++) {
+            fn_8003649C(group, 2, k, 0x13, lbl_800EF4B0[lbl_8037169C.variant]);
+        }
+    } else {
+        lbl_80371C30[group->start + 2].obj->flags &= ~2;
+    }
+    if (lbl_8037169C.state >= 13 && lbl_8037169C.state <= 15) {
+        lbl_8037169C.done = 0;
+        lbl_80371C30[group->start + 3].obj->flags |= 2;
+        lbl_80371C30[group->start + 3].obj->color = (lbl_80371C30[group->start + 3].obj->color & ~0xFF) | lbl_8037169C.alpha;
+        fn_8001FE00(group);
+    } else {
+        lbl_80371C30[group->start + 3].obj->flags &= ~2;
+        lbl_80371C30[group->start + 4].obj->flags &= ~2;
+    }
+
+    if (lbl_8037169C.request == 1) {
+        if (lbl_8037169C.state == 3 || prev == 3) {
+            return;
+        }
+    } else if (lbl_8037169C.request == 3) {
+        if (lbl_8037169C.state == 1 || prev == 1) {
+            return;
+        }
+    }
+    lbl_8037169C.request = 0;
 }
 
 // .text:0x80021064 size:0x124

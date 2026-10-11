@@ -16,7 +16,7 @@ typedef struct SceneFade {
     /*0x11*/ u8 request;
     /*0x12*/ u8 done;
     /*0x13*/ u8 _13;
-    /*0x14*/ s8 variant;
+    /*0x14*/ u8 variant;
     /*0x15*/ u8 _15;
     /*0x16*/ u8 _16;
     /*0x17*/ u8 _17;
