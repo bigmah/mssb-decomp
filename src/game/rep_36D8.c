@@ -1,5 +1,6 @@
 #include "game/rep_36D8.h"
 #include "header_rep_data.h"
+#include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
 
 #pragma dont_inline on
 
@@ -22,6 +23,28 @@ extern f64 sin(f64);
 extern f64 cos(f64);
 extern void* memcpy(void*, const void*, u32);
 extern f32 RandomF32_Game_Range(f32 a, f32 b);
+extern const f64 lbl_3_rodata_3798; // 3.0
+extern const f64 lbl_3_rodata_37A0; // 0.0
+extern int __float_nan[];
+extern f64 __frsqrte(f64);
+extern s16 fn_3_9FB8C(f32 x, f32 y);
+
+// Inlined single-precision sqrt (MSL sqrtf with the rodata constants of this unit).
+#define REP_SQRTF(x)                                                                    \
+    do {                                                                                \
+        if ((x) > lbl_3_rodata_3734) {                                                  \
+            f64 xd = (f64)(x);                                                          \
+            f64 guess = __frsqrte(xd);                                                  \
+            guess = lbl_3_rodata_3788 * guess * (lbl_3_rodata_3798 - guess * guess * xd); \
+            guess = lbl_3_rodata_3788 * guess * (lbl_3_rodata_3798 - guess * guess * xd); \
+            guess = lbl_3_rodata_3788 * guess * (lbl_3_rodata_3798 - guess * guess * xd); \
+            (x) = (f32)(xd * guess);                                                    \
+        } else if ((x) < lbl_3_rodata_37A0) {                                           \
+            (x) = *(f32*)__float_nan;                                                   \
+        } else if (isnan(x)) {                                                          \
+            (x) = *(f32*)__float_nan;                                                   \
+        }                                                                               \
+    } while (0)
 extern void fn_8004C094(void*);
 extern void fn_3_6C854(int, int);
 extern void fn_3_DE4FC(void);
@@ -68,6 +91,28 @@ extern f64 sin(f64);
 extern f64 cos(f64);
 extern void* memcpy(void*, const void*, u32);
 extern f32 RandomF32_Game_Range(f32 a, f32 b);
+extern const f64 lbl_3_rodata_3798; // 3.0
+extern const f64 lbl_3_rodata_37A0; // 0.0
+extern int __float_nan[];
+extern f64 __frsqrte(f64);
+extern s16 fn_3_9FB8C(f32 x, f32 y);
+
+// Inlined single-precision sqrt (MSL sqrtf with the rodata constants of this unit).
+#define REP_SQRTF(x)                                                                    \
+    do {                                                                                \
+        if ((x) > lbl_3_rodata_3734) {                                                  \
+            f64 xd = (f64)(x);                                                          \
+            f64 guess = __frsqrte(xd);                                                  \
+            guess = lbl_3_rodata_3788 * guess * (lbl_3_rodata_3798 - guess * guess * xd); \
+            guess = lbl_3_rodata_3788 * guess * (lbl_3_rodata_3798 - guess * guess * xd); \
+            guess = lbl_3_rodata_3788 * guess * (lbl_3_rodata_3798 - guess * guess * xd); \
+            (x) = (f32)(xd * guess);                                                    \
+        } else if ((x) < lbl_3_rodata_37A0) {                                           \
+            (x) = *(f32*)__float_nan;                                                   \
+        } else if (isnan(x)) {                                                          \
+            (x) = *(f32*)__float_nan;                                                   \
+        }                                                                               \
+    } while (0)
 extern void fn_3_152AB4(u8 item, u8 runner, u8 type);
 extern u32 fn_3_90220(s32 idx, s32 off);
 extern void fn_3_1608F0(s32 kind, s32 value, s32 extra);
@@ -660,8 +705,45 @@ void fn_3_13F7E4(void) {
     }
 }
 // .text:0x0013F8C4 size:0x360 mapped:0x8077E958
+// Phase 4: the ball rolls back to its start position (lbl_3_data_217F8), bouncing.
 void fn_3_13F8C4(void) {
-    return;
+    f32 dx;
+    f32 dz;
+    f32 dist;
+    f32 s;
+    if (REP_MG->frames <= 1) {
+        dz = lbl_3_data_217F8[2] - REP_MG->ballPos.z;
+        dx = lbl_3_data_217F8[0] - REP_MG->ballPos.x;
+        dist = dx * dx + dz * dz;
+        REP_SQRTF(dist);
+        s = lbl_3_data_218BC[2] / dist;
+        REP_MG->ballVel.x = dx * s;
+        REP_MG->ballVel.z = dz * s;
+        REP_MG->_1AF8 = fn_3_9FB8C(dx, dz);
+    }
+    dz = lbl_3_data_217F8[2] - REP_MG->ballPos.z;
+    dx = lbl_3_data_217F8[0] - REP_MG->ballPos.x;
+    dist = dx * dx + dz * dz;
+    REP_SQRTF(dist);
+    if (dist <= lbl_3_data_218BC[2]) {
+        REP_MG->ballPos.x = lbl_3_data_217F8[0];
+        REP_MG->ballPos.y = lbl_3_data_217F8[1];
+        REP_MG->ballPos.z = lbl_3_data_217F8[2];
+        REP_MG->phase = 0;
+        REP_MG->frames = 0;
+        return;
+    }
+    REP_MG->ballPos.x += REP_MG->ballVel.x;
+    REP_MG->ballPos.y += REP_MG->ballVel.y;
+    REP_MG->ballPos.z += REP_MG->ballVel.z;
+    if (REP_MG->ballPos.y <= 0.0f) {
+        REP_MG->ballPos.y = 0.0f;
+        REP_MG->ballVel.y = lbl_3_data_218BC[5];
+        fn_8004C094(&REP_MG->ballPos);
+        fn_3_90064(0x2DF);
+    } else {
+        REP_MG->ballVel.y -= lbl_3_data_218BC[6];
+    }
 }
 
 // .text:0x0013FC24 size:0x660 mapped:0x8077ECB8
