@@ -3330,3 +3330,648 @@ void fn_2_44504(void) {
     }
 }
 #endif
+
+extern void fn_2_6AF80(s32 index, s8 value);
+extern s32 fn_2_6AFD4(s32 index);
+extern void fn_2_38A40(void);
+extern void fn_2_3BA40(void);
+extern void fn_2_3BD88(void);
+extern void fn_2_3BC24(void);
+extern void fn_2_399C0(void);
+extern void fn_2_37F04(void);
+
+#define SCRIPT_PC (*(u32**)(lbl_2_bss_1A824C[0] + 0x197684))
+#define SCRIPT_S32(off) (*(s32*)(lbl_2_bss_1A824C[0] + (off)))
+#define SCRIPT_S16(off) (*(s16*)(lbl_2_bss_1A824C[0] + (off)))
+
+// fn_2_40CB8, size:0x15B8
+// Menu script interpreter: runs opcodes at SCRIPT_PC until one yields.
+// Returns 1 when the script ends (opcode 2).
+s32 fn_2_40CB8(void) {
+    u8* o = lbl_803CC1B8;
+    u32* pc;
+    u8* t;
+    s32 id;
+    if (SCRIPT_S32(0x19768C) != 0) {
+        SCRIPT_S32(0x19768C)--;
+        return 0;
+    }
+    for (;;) {
+        pc = SCRIPT_PC;
+        switch (*pc) {
+        case 1:
+            SCRIPT_S32(0x197694) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 2:
+            SCRIPT_S32(0x197694) = 1;
+            return 1;
+        case 3:
+            SCRIPT_S32(0x19768C) = pc[1];
+            SCRIPT_PC += 2;
+            break;
+        case 5:
+            fn_2_50CC0((s16)pc[1]);
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC += 2;
+            continue;
+        case 27:
+            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44EF) == 0) {
+                s32 who = lbl_2_bss_1A8248[0][0x441E];
+                if (!(lbl_2_bss_1A8248[0][0x4427] & (1 << who))) {
+                    id = who + lbl_2_bss_1A8248[0][0x441C] * 6 + 0x4B;
+                } else if (!(lbl_2_bss_1A8248[0][0x4426] & (1 << who))) {
+                    id = who + lbl_2_bss_1A8248[0][0x441C] * 6 + 0x93;
+                } else if (*(s8*)(lbl_2_bss_1A8248[0] + who + 0x44FE) == 0) {
+                    id = who + lbl_2_bss_1A8248[0][0x441C] * 6 + 3;
+                } else {
+                    id = who + lbl_2_bss_1A8248[0][0x441C] * 6 + 0x93;
+                }
+            } else if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F0) == 0) {
+                id = 0x22C;
+            } else {
+                id = 0x22D;
+            }
+            fn_2_50CC0((s16)(id));
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 28:
+            if (((s32 (*)(s32))fn_2_45938)(*(s16*)(lbl_2_bss_1A8248[0] + 0x16C2)) == 1) {
+                id = lbl_2_bss_1A8248[0][0x441E] + lbl_2_bss_1A8248[0][0x441C] * 6 + 0x124;
+            } else {
+                id = lbl_2_bss_1A8248[0][0x441E] + lbl_2_bss_1A8248[0][0x441C] * 6 + 0x148;
+            }
+            fn_2_50CC0((s16)(id));
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 72:
+            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44EF) == 0) {
+                id = lbl_2_bss_1A8248[0][0x441E] + lbl_2_bss_1A8248[0][0x441C] * 6 + 0x190;
+            } else {
+                id = 0x232;
+            }
+            fn_2_50CC0((s16)(id));
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 29:
+            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44EF) == 0) {
+                id = lbl_2_bss_1A8248[0][0x441E] + lbl_2_bss_1A8248[0][0x441C] * 6 + 0x16C;
+            } else {
+                id = 0x231;
+            }
+            fn_2_50CC0((s16)(id));
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 30:
+            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x4504) == 0) {
+                id = lbl_2_bss_1A8248[0][0x441C] + lbl_2_bss_1A8248[0][0x442C] * 6 + 0x1B4;
+            } else {
+                id = lbl_2_bss_1A8248[0][0x441C] + lbl_2_bss_1A8248[0][0x442D] * 6 + 0x1CC;
+            }
+            fn_2_50CC0((s16)(id));
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 31:
+            fn_2_50CC0((s16)(lbl_2_bss_1A8248[0][0x441C] + lbl_2_bss_1A8248[0][0x442C] * 6 + 0x1E4));
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 32:
+            fn_2_50CC0((s16)(lbl_2_bss_1A8248[0][0x441C] + lbl_2_bss_1A8248[0][0x442D] * 6 + 0x1FC));
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 73:
+            fn_2_50CC0((s16)(lbl_2_bss_1A8248[0][0x441C] + lbl_2_bss_1A8248[0][0x442E] * 6 + 0x214));
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 6:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 7:
+            lbl_2_bss_1A824C[0][0x19783D] = 1;
+            if (*(s16*)(lbl_2_bss_1A823C[0] + 0x30) == 4) {
+                fn_2_72054(0, 0xC);
+                *(s16*)(lbl_2_bss_1A8248[0] + 0x16C0) = *(s16*)(lbl_2_bss_1A8248[0] + 0x16BE);
+            } else {
+                fn_2_6AF80(0, 1);
+            }
+            SCRIPT_PC++;
+            continue;
+        case 8:
+            if (fn_2_6AFD4(0) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 9:
+            t = fn_800B0A5C_insertQueue(fn_2_405B4, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 10:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 15:
+            t = fn_800B0A5C_insertQueue(fn_2_4041C, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 16:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 11:
+            SCRIPT_PC++;
+            continue;
+        case 12:
+            SCRIPT_PC++;
+            break;
+        case 13:
+            SCRIPT_PC++;
+            continue;
+        case 14:
+            SCRIPT_PC++;
+            break;
+        case 33:
+            if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BE) < 999) {
+                t = fn_800B0A5C_insertQueue(fn_2_3FA14, 2);
+                t[0x28] = 0;
+                *(s16*)(o + 0x10) = 0;
+            } else {
+                SCRIPT_S16(0x197740) = 1;
+                *(s16*)(o + 0x10) = 1;
+            }
+            SCRIPT_PC++;
+            continue;
+        case 34:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 35:
+            if (*(s16*)(lbl_2_bss_1A8248[0] + 0x43BE) > 0) {
+                t = fn_800B0A5C_insertQueue(fn_2_3F66C, 2);
+                t[0x28] = 0;
+                *(s16*)(o + 0x10) = 0;
+            } else {
+                SCRIPT_S16(0x197740) = 1;
+                *(s16*)(o + 0x10) = 1;
+            }
+            SCRIPT_PC++;
+            continue;
+        case 36:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 37:
+            t = fn_800B0A5C_insertQueue(fn_2_3F55C, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 38:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 39:
+            t = fn_800B0A5C_insertQueue(fn_2_3F44C, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 40:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 17:
+            t = fn_800B0A5C_insertQueue(fn_2_3FDE0, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 18:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 19:
+            fn_2_72054(1, 0xE);
+            SCRIPT_PC++;
+            continue;
+        case 20:
+            if (fn_2_6AFD4(1) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 107:
+            if (SCRIPT_S16(0x197740) == 1) {
+                SCRIPT_S16(0x197740) = 0;
+                SCRIPT_PC++;
+            }
+            break;
+        case 21:
+            fn_2_72054(0, 2);
+            SCRIPT_PC++;
+            continue;
+        case 22:
+            if (fn_2_6AFD4(0) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 23:
+            t = fn_800B0A5C_insertQueue(fn_2_38A40, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_S32(0x197688) = *SCRIPT_PC;
+            *SCRIPT_PC = 24;
+            continue;
+        case 24:
+            if (*(s16*)(o + 0x10) == 1) {
+                *pc = SCRIPT_S32(0x197688);
+                SCRIPT_PC++;
+            }
+            break;
+        case 25:
+            lbl_2_bss_1A824C[0][0x197844] = 2;
+            lbl_2_bss_1A8234[0][0x162871] = 1;
+            lbl_2_bss_1A8234[0][0x162872] = 1;
+            t = fn_800B0A5C_insertQueue(fn_2_38538, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_S32(0x197688) = *SCRIPT_PC;
+            *SCRIPT_PC = 26;
+            continue;
+        case 26:
+            if (*(s16*)(o + 0x10) == 1) {
+                *pc = SCRIPT_S32(0x197688);
+                SCRIPT_PC++;
+            }
+            break;
+        case 41:
+            t = fn_800B0A5C_insertQueue(fn_2_3F29C, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_S32(0x197688) = *SCRIPT_PC;
+            SCRIPT_PC++;
+            continue;
+        case 42:
+            if (*(s16*)(o + 0x10) == 1) {
+                *pc = SCRIPT_S32(0x197688);
+                SCRIPT_PC++;
+            }
+            break;
+        case 43:
+            t = fn_800B0A5C_insertQueue(fn_2_3EA44, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 44:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 45:
+            t = fn_800B0A5C_insertQueue(fn_2_3E7EC, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 46:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 47:
+            t = fn_800B0A5C_insertQueue(fn_2_3E918, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 48:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 49:
+            t = fn_800B0A5C_insertQueue(fn_2_3F188, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 50:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 51:
+            t = fn_800B0A5C_insertQueue(fn_2_3F004, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 52:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 53:
+            t = fn_800B0A5C_insertQueue(fn_2_3EEF0, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 54:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 55:
+            t = fn_800B0A5C_insertQueue(fn_2_3EDD8, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 56:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 57:
+            t = fn_800B0A5C_insertQueue(fn_2_3ECC0, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 58:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 59:
+            t = fn_800B0A5C_insertQueue(fn_2_3EBA8, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 60:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 61:
+            t = fn_800B0A5C_insertQueue(fn_2_408BC, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 62:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 63:
+            SCRIPT_S16(0x19774C) = pc[1];
+            lbl_2_bss_1A8234[0][0x16264E] = 1;
+            SCRIPT_PC += 2;
+            continue;
+        case 65:
+            SCRIPT_S16(0x19774C) = pc[1];
+            lbl_2_bss_1A8234[0][0x16264F] = 1;
+            SCRIPT_PC += 2;
+            continue;
+        case 64:
+            lbl_2_bss_1A8234[0][0x162838] = 1;
+            SCRIPT_PC++;
+            continue;
+        case 85:
+            lbl_2_bss_1A8234[0][0x162839] = 1;
+            SCRIPT_PC++;
+            continue;
+        case 66:
+            lbl_2_bss_1A824C[0][0x197859] = 0;
+            lbl_2_bss_1A824C[0][0x197857] = SCRIPT_PC[1];
+            lbl_2_bss_1A8234[0][0x16264B] = 1;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC += 2;
+            continue;
+        case 67:
+            if (lbl_2_bss_1A824C[0][0x197859] == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 68:
+            if (SCRIPT_S16(0x19774E) == (s32)pc[1]) {
+                SCRIPT_PC += 2;
+            }
+            break;
+        case 69:
+            lbl_2_bss_1A8234[0][0x16264D] = 1;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 70:
+            t = fn_800B0A5C_insertQueue(fn_2_3BA40, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 71:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 74:
+            fn_2_72054(0, 3);
+            SCRIPT_PC++;
+            continue;
+        case 75:
+            fn_2_72054(0, 3);
+            SCRIPT_PC++;
+            continue;
+        case 76:
+            fn_2_72054(0, 3);
+            fn_2_72054(lbl_2_bss_1A8248[0][0x441E], 7);
+            SCRIPT_PC++;
+            continue;
+        case 77:
+            fn_2_72054(0, 3);
+            SCRIPT_PC++;
+            continue;
+        case 78:
+            t = fn_800B0A5C_insertQueue(fn_2_3C3EC, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 79:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 80:
+            t = fn_800B0A5C_insertQueue(fn_2_3C168, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 81:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 82:
+            t = fn_800B0A5C_insertQueue(fn_2_3C03C, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 83:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 84:
+            fn_2_50CC0((s16)(lbl_2_bss_1A8248[0][0x441C] + 0x23A));
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 86:
+            t = fn_800B0A5C_insertQueue(fn_2_3E38C, 2);
+            t[0x28] = 0;
+            *(s16*)(t + 0x16) = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 87:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 96:
+            t = fn_800B0A5C_insertQueue(fn_2_3E058, 2);
+            t[0x28] = 0;
+            *(s16*)(t + 0x16) = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 97:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 88:
+            t = fn_800B0A5C_insertQueue(fn_2_3D5C4, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 89:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 90:
+            t = fn_800B0A5C_insertQueue(fn_2_3DF28, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 91:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 94:
+            t = fn_800B0A5C_insertQueue(fn_2_3CD34, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 95:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 98:
+            t = fn_800B0A5C_insertQueue(fn_2_3BD88, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 99:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 100:
+            t = fn_800B0A5C_insertQueue(fn_2_3BD88, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 101:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 102:
+            t = fn_800B0A5C_insertQueue(fn_2_3BC24, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 103:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 104:
+            t = fn_800B0A5C_insertQueue(fn_2_399C0, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 105:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        case 106:
+            ((void (*)(void))fn_2_43404)();
+            ((void (*)(void))fn_2_42708)();
+            ((void (*)(void))fn_2_432EC)();
+            SCRIPT_PC++;
+            continue;
+        case 108:
+            t = fn_800B0A5C_insertQueue(fn_2_37F04, 2);
+            t[0x28] = 0;
+            *(s16*)(o + 0x10) = 0;
+            SCRIPT_PC++;
+            continue;
+        case 109:
+            if (*(s16*)(o + 0x10) == 1) {
+                SCRIPT_PC++;
+            }
+            break;
+        }
+        break;
+    }
+    return 0;
+}
