@@ -6,7 +6,8 @@
 #include "static/Camera.h"
 #include "static/Pad.h"
 #include "main/file_8004B284.h"
-#include "main/file_80011640.h" // CharActor
+struct CharActor;
+struct ActorObject;
 
 // Yes/no confirmation dialog (lbl_803C5F74).
 typedef struct ConfirmDialog {
@@ -96,12 +97,12 @@ typedef struct CharTableEntry {
 // Queue task created by fn_80052634.
 typedef struct MeterTask {
     /*0x00*/ u8 _00[0x14];
-    /*0x14*/ ActorObject* anim;
-    /*0x18*/ CharActor* actor;
+    /*0x14*/ struct ActorObject* anim;
+    /*0x18*/ struct CharActor* actor;
     /*0x1C*/ u8 kind;
 } MeterTask;
 
-void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind);
+void fn_8004C5F8(struct CharActor* actor, s32 unused, u32 kind);
 
 void fn_8004C9FC(void);
 
@@ -143,9 +144,9 @@ void fn_800506E8(s8 owner, s32 entry, s32 set);
 
 s16 fn_80050760(s32 p, s32 unused, s32 pressed, u16 dirs, s32 mode);
 
-void fn_8005240C(CharActor* actor, ActorObject* anim);
+void fn_8005240C(struct CharActor* actor, struct ActorObject* anim);
 
-void fn_80052634(CharActor* actor, ActorObject* anim);
+void fn_80052634(struct CharActor* actor, struct ActorObject* anim);
 
 void fn_80052694(s32 index);
 

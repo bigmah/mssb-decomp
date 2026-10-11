@@ -3,7 +3,8 @@
 
 #include "mssbTypes.h"
 #include "main/file_80063028.h"
-#include "main/file_80011640.h" // CharActor
+struct CharActor;
+struct ActorObject;
 
 
 // Effect spawn parameters (templates in .data, copied and tweaked before use).
@@ -42,11 +43,11 @@ struct DODisplayObj* fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16
 void fn_800B2BE4(GameActor* actor, u16 bone);
 
 // Per-character swing effect callbacks (table lbl_800FBE64) share this signature.
-void fn_8004B284(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
-void fn_8004B6EC(CharActor* model, ActorObject* obj);
-s32 fn_8004B7B4(CharActor* model, ActorObject* obj);
-void fn_8004B7F4(CharActor* model, ActorObject* obj);
-void fn_8004BAEC(CharActor* model, ActorObject* obj);
-s32 fn_8004BD6C(CharActor* model, ActorObject* obj);
+void fn_8004B284(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_8004B6EC(struct CharActor* model, struct ActorObject* obj);
+s32 fn_8004B7B4(struct CharActor* model, struct ActorObject* obj);
+void fn_8004B7F4(struct CharActor* model, struct ActorObject* obj);
+void fn_8004BAEC(struct CharActor* model, struct ActorObject* obj);
+s32 fn_8004BD6C(struct CharActor* model, struct ActorObject* obj);
 
 #endif

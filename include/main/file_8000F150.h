@@ -5,7 +5,10 @@
 #include "Dolphin/mtx.h"
 #include "main/file_80024184.h" // TexImage, TexArchive
 #include "main/file_8000BA3C.h" // QuadVtx
-#include "main/file_80011640.h" // CharMgr, CharActor
+struct CharActor;
+struct ActorObject;
+struct GameActor;
+#include "main/file_800B993C.h" // DOTevHook
 
 // One on-screen text string (0x38 bytes). Text is a u16 stream: values with
 // bit 0x4000 set are control codes (low 14 bits), others are glyphs.
@@ -52,7 +55,10 @@ typedef struct LayoutObj {
     /*0x00*/ void* _00;
     /*0x04*/ u8 _04[0x8];
     /*0x0C*/ Mtx mtx;
-    /*0x3C*/ u8 _3C[0x18];
+    /*0x3C*/ u8 _3C[0xC];
+    /*0x48*/ f32 x;
+    /*0x4C*/ f32 y;
+    /*0x50*/ u8 _50[0x4];
     /*0x54*/ u32 flags;
     /*0x58*/ u32 color;
     /*0x5C*/ u32 _5C;
@@ -141,12 +147,12 @@ void fn_80010FA0(void);
 void fn_80011000(void);
 void fn_80011140(void);
 void fn_800111B4(MsgTable* table);
-GameActor** fn_800111D8(CharActor* actor);
-CharActor* fn_800111FC(CharActor* actor, s32 second);
+struct GameActor** fn_800111D8(struct CharActor* actor);
+struct CharActor* fn_800111FC(struct CharActor* actor, s32 second);
 void fn_80011358(s32 index, s32 kind);
 void fn_80011468(void);
 
-CharActor* fn_80011570(void); // actor being drawn (lbl_803CBC18)
+struct CharActor* fn_80011570(void); // actor being drawn (lbl_803CBC18)
 
 void fn_800115C8(s8 index);
 

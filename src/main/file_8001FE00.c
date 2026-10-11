@@ -1,4 +1,5 @@
 #include "main/file_8001FE00.h"
+#include "main/file_80011640.h"
 #include "main/file_80021308.h"
 #include "main/file_800A6870.h"
 #include "static/GameSettings.h"

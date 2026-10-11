@@ -1,6 +1,7 @@
 #include "game/rep_10E8.h"
 #include "header_rep_data.h"
 #include "static/Pad.h"
+extern PadState lbl_803C77B8[4];
 
 #pragma dont_inline on
 

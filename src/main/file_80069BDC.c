@@ -881,8 +881,8 @@ void fn_8006C088(s32 alt) {
 }
 
 // .text:0x8006C0D0 size:0x30
-void fn_8006C0D0(void) {
-    fn_800B0A5C_insertQueue(fn_8006BE00, lbl_803CC1B8->priority);
+SceneTask* fn_8006C0D0(void) {
+    return fn_800B0A5C_insertQueue(fn_8006BE00, lbl_803CC1B8->priority);
 }
 
 // .text:0x8006C100 size:0x3C
@@ -902,6 +902,7 @@ u8 fn_8006C100(s16 value) {
 
 // .text:0x8006C13C size:0x12C
 // NONMATCHING: fn_8006C2B4 and fn_8006C268 inlined; those don't match yet (rolled loops)
+// nmverify: fn_8006C268 fn_8006C2B4 inlined on one side (calls match once expanded)
 #if NONMATCHING
 s16 fn_8006C13C(StatInput* in) {
     StatOutput out;

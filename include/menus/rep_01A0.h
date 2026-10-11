@@ -3,9 +3,9 @@
 
 #include "mssbTypes.h"
 
-void fn_2_A70(void);
+void fn_2_A70(u16 frames);
 void fn_2_B38(void);
 void fn_2_C18(void);
-void fn_2_C74(void);
+void fn_2_C74(u8 volume);
 
 #endif

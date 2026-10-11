@@ -1,7 +1,9 @@
 #include "main/file_8000F150.h"
+#include "main/file_80011640.h"
 #include "static/GameSettings.h"
 #include "static/Camera.h"
 #include "static/Pad.h"
+extern PadState lbl_803C77B8[4];
 #include "Dolphin/gx.h"
 #include "main/file_800B0724.h"
 #include "main/file_800BDEA0.h"

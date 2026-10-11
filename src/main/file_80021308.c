@@ -296,7 +296,7 @@ void fn_80021AA0(void) {
 }
 
 // fn_80021AC0, size:0x4
-void fn_80021AC0(void) {
+void fn_80021AC0(s32 team, s32 arg1) {
 }
 
 // fn_80021AC4, size:0x4

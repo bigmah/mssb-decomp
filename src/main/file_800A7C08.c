@@ -1,4 +1,6 @@
 #include "main/file_800A7C08.h"
+#include "static/Pad.h"
+extern PadState lbl_803C77B8[4];
 #include "main/file_800A6870.h"
 #include "Dolphin/os.h"
 #include "Dolphin/gx.h"
@@ -1150,6 +1152,7 @@ void fn_800A9864(u8 chan, u8 mode, u64 serial) {
 
 // .text:0x800A98FC size:0x3FC
 // NONMATCHING 89%: switch jump table lives in unsplit .data (reloc names differ); status classification compiled into a different branch layout
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800A98FC(void) {
     CardMountTask* task = (CardMountTask*)lbl_803CC1B8;
@@ -1357,6 +1360,7 @@ void fn_800A9E34(u8 chan, u8 mode, u64 serial) {
 
 // .text:0x800A9ECC size:0x480
 // NONMATCHING 84%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800A9ECC(void) {
     CardMountTask* task = (CardMountTask*)lbl_803CC1B8;
@@ -1485,6 +1489,7 @@ void fn_800AA34C(u8 chan, u8 mode, char* fileName, u64 serial, u8 setSerial) {
 
 // .text:0x800AA44C size:0x4E4
 // NONMATCHING 80%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AA44C(void) {
     CardNameTask* task = (CardNameTask*)lbl_803CC1B8;
@@ -1592,6 +1597,7 @@ void fn_800AA930(CardRequest* req, u64 serial) {
 
 // .text:0x800AAA70 size:0x474
 // NONMATCHING 76%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AAA70(void) {
     CardFileTask* task = (CardFileTask*)lbl_803CC1B8;
@@ -1679,6 +1685,7 @@ void fn_800AAEE4(CardRequest* req, u64 serial) {
 
 // .text:0x800AAFEC size:0x488
 // NONMATCHING 78%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AAFEC(void) {
     CardWriteTask* task = (CardWriteTask*)lbl_803CC1B8;
@@ -1756,6 +1763,7 @@ void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial) {
 
 // .text:0x800AB534 size:0x5E0
 // NONMATCHING 84%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AB534(void) {
     CardNameTask* task = (CardNameTask*)lbl_803CC1B8;
@@ -1975,6 +1983,7 @@ void fn_800ABBD0(void) {
 
 // .text:0x800ABF44 size:0x5C4
 // NONMATCHING 92%: switch jump table lives in unsplit .data (reloc names differ); register allocation differs
+// nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800ABF44(void) {
     CARDStat* stat = &lbl_802EF330;
@@ -2395,20 +2404,11 @@ void fn_800ACD64(s32 result) {
     }
 }
 
-// Simple two-ended arena: blocks are allocated upward from lo or downward from hi.
-typedef struct HeapArena {
-    /*0x0*/ s32 freeSize;
-    /*0x4*/ u8* lo;
-    /*0x8*/ u8* hi;
-} HeapArena;
-
 // Header placed just before every block handed out by the arena.
 typedef struct HeapBlockHeader {
     /*0x0*/ u8* prev; // arena end (lo or hi) before this allocation
     /*0x4*/ s32 size;
 } HeapBlockHeader;
-
-extern HeapArena lbl_803C7898;
 
 // .text:0x800ACF14 size:0x20
 void fn_800ACF14(void* block) {
@@ -2590,6 +2590,7 @@ static inline void ThpResume(ThpPlayer* p, u8 flags) {
 
 // .text:0x800AD070 size:0x420
 // NONMATCHING 81%: register allocation and block layout differ
+// nmverify: fn_800A7D4C inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AD070(void) {
     ThpPlayer* p;

@@ -490,6 +490,7 @@ void fn_1_BA64(void) {
 
 // .text:0x0000B5B8 size:0x4AC
 // NONMATCHING: the original addresses lbl_1_bss_2FD8 / lbl_1_data_FC0 as pools through a base register
+// nmverify: lbl_1_bss_2FE0 lbl_1_bss_2FE1 lbl_1_bss_2FE2 lbl_1_bss_2FE4 lbl_1_bss_2FE6 lbl_1_bss_3044 lbl_1_bss_3048 lbl_1_bss_304C lbl_1_bss_3050 lbl_1_data_188C lbl_1_data_18EC lbl_1_data_1CA2 reached through a pooled base in original
 #if NONMATCHING
 void fn_1_B5B8(void) {
     u16 down = lbl_803C77B8._02;
@@ -591,6 +592,7 @@ extern const f64 lbl_1_rodata_608; // 10.0
 // .text:0x0000A95C size:0xB48
 // 3D sound test: A starts an emitter + listener, Y/X + left/right edits listener/emitter values.
 // NONMATCHING 92%: the original addresses the lbl_1_bss_2FD8 pool through a base register
+// nmverify: lbl_1_bss_2FEA lbl_1_bss_2FEC lbl_1_bss_2FED lbl_1_bss_2FF0 lbl_1_bss_300C reached through a pooled base in original
 #if NONMATCHING
 void fn_1_A95C(void) {
     u16 down = lbl_803C77B8._02;

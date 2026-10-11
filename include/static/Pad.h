@@ -46,6 +46,7 @@ typedef struct PadState {
 #define PAD_SUBSTICK_RIGHT 0x2
 #define PAD_SUBSTICK_LEFT 0x1
 
-extern PadState lbl_803C77B8[4];
+// lbl_803C77B8 is PadState[4]. It is declared where used: UnknownHomes_Static.h still has a
+// one-pad view of it for REL code (TODO type).
 
 #endif // !__STATIC_PAD_H_

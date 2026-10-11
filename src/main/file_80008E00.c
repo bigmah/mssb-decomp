@@ -1,8 +1,10 @@
 #include "main/file_80008E00.h"
+#include "main/file_80011640.h"
 #include "main/file_800A6870.h"
 #include "static/GameSettings.h"
 #include "static/Camera.h"
 #include "static/Pad.h"
+extern PadState lbl_803C77B8[4];
 #include "Dolphin/OS/OSReset.h"
 #include "Dolphin/OS/OSModule.h"
 #include "Dolphin/OS/OSCache.h"
@@ -123,13 +125,6 @@ typedef struct {
 extern FilePath lbl_800E8EE8; // "aaaa.dat"
 extern FilePath lbl_800E8EF8; // "ZZZZ.dat"
 
-// Simple bump allocator (see _OSAllocFromHeap / fn_800AD054).
-typedef struct {
-    /*0x00*/ u32 remaining;
-    /*0x04*/ u8* cur;
-    /*0x08*/ u8* end;
-} Arena;
-extern Arena lbl_803C7898;
 
 
 
@@ -486,7 +481,7 @@ void fn_800097A0(void) {
         if (task->_10 == 0) {
             break;
         }
-        lbl_80366158.arenaStart = lbl_803C7898.cur;
+        lbl_80366158.arenaStart = lbl_803C7898.lo;
         if ((lbl_80366158.resetCode & 1) && (lbl_80366158.resetCode & 0x80000000)) {
             fn_80023CF4((lbl_80366158.resetCode >> 1) & 1);
             progressive = FALSE;
@@ -530,7 +525,7 @@ void fn_800097A0(void) {
             lbl_803C6CF8.entryNum = lbl_803CBBD0;
             OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
             ICInvalidateRange(task->module, task->moduleSize);
-            lbl_80366158.arenaAfterDll = lbl_803C7898.cur;
+            lbl_80366158.arenaAfterDll = lbl_803C7898.lo;
             ((void (*)(void))module->prolog)(); // TODO type: relocated by OSLink
             task->_10 = 0;
             OSReport(lbl_800E65A0);
@@ -569,7 +564,7 @@ void fn_800097A0(void) {
             lbl_803C6CF8.entryNum = lbl_803CBBD0;
             OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
             ICInvalidateRange(task->module, task->moduleSize);
-            lbl_80366158.arenaAfterDll = lbl_803C7898.cur;
+            lbl_80366158.arenaAfterDll = lbl_803C7898.lo;
             ((void (*)(void))module->prolog)();
             task->_10 = 0;
             OSReport(lbl_800E65A0);

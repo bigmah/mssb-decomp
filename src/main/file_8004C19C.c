@@ -1,4 +1,5 @@
 #include "main/file_8004C19C.h"
+#include "main/file_80011640.h"
 #include "static/GameSettings.h"
 #include "static/Camera.h"
 #include "static/Pad.h"

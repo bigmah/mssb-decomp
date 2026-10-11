@@ -1,4 +1,5 @@
 #include "main/file_800639BC.h"
+#include "main/file_80011640.h"
 #include "main/file_800A6870.h"
 #include "static/GameSettings.h"
 #include "game/UnknownHomes_Game.h"
@@ -119,6 +120,7 @@ static s32 chemRank(u8 team, s32 id, s32 rank) {
 // Foot dust: spawns dust effects at a character's feet (0x23: left, 0x1F: right).
 // NONMATCHING 56%: the original has the four fn_80064430 calls inlined (fn_80064430 is
 // defined later in the file); control flow and register use otherwise line up
+// nmverify: fn_80064430 inlined on one side (calls match once expanded)
 #if NONMATCHING
 s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
     CharActor* actor = lbl_8036E548.active[idx];
@@ -451,6 +453,7 @@ static void placeSlotByClass(u8 team, s8* slotPos, s8 c, BOOL checkFree) {
 // Assigns a field position to each of a team's picks (lbl_803C6724.pos): the
 // captain pitches (0), then the captain-type characters and the others in
 // chemistry order take the first free position preferred by their class.
+// nmverify: placeSlotByClass inlined on one side (calls match once expanded)
 void unsure_FillRosterPositions(u8 team) {
     s8 others[9];
     s8 captains[9];
@@ -586,6 +589,7 @@ static void placeByClass(s8* field, s8 c) {
 // captain-type characters and then the others in chemistry order, each at the
 // first free position preferred by its class. Then copies the players' stats
 // into inMemRoster in field-position order.
+// nmverify: fn_80066EAC inlined on one side (calls match once expanded)
 void characterSelectScreen(u8 team) {
     s16 charIds[9];
     s8 field[9];
@@ -1200,6 +1204,7 @@ void fn_8006877C(u8 track) {
 // NONMATCHING 69%: large function written as equivalent C; the original inlines copyCharacterStats,
 // fn_80067B40, fn_80066EAC, fn_80069854, fn_8006496C and fn_800678CC, and addresses
 // lbl_80108EC4/lbl_80108EDC relative to lbl_80108DB8
+// nmverify: fn_80067C48 fn_80069854 inlined on one side (calls match once expanded)
 #if NONMATCHING
 // Challenge mode: sets up both teams' rosters (team 0 from the save, team 1 from
 // preset 11 with random recruited characters).

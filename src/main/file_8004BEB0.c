@@ -1,4 +1,5 @@
 #include "main/file_8004BEB0.h"
+#include "main/file_80011640.h"
 #include "main/file_800263FC.h"
 #include "static/GameSettings.h"
 #include "static/Camera.h"

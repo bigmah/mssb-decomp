@@ -3,12 +3,14 @@
 
 #include "mssbTypes.h"
 
+struct CharActor;
+
 struct SceneTask;
 struct GameActor;
 struct GameBone;
 struct SoundLoadTask;
 #include "game/UnknownHomes_Game.h"
-#include "main/file_8004207C.h"
+#include "main/file_8004B284.h"
 #include "Dolphin/mtx.h"
 
 
@@ -141,12 +143,12 @@ void initializeUnknown(void);
 void fn_80062A74(void);
 void fn_80062BE4(Vec* pos);
 void fn_80062C24(Vec* pos);
-void fn_80062C60(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
-void fn_80062D94(CharActor* model);
-void fn_80062E6C(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
-s32 fn_80062ED4(CharActor* player, struct ActorObject* obj);
+void fn_80062C60(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_80062D94(struct CharActor* model);
+void fn_80062E6C(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
+s32 fn_80062ED4(struct CharActor* player, struct ActorObject* obj);
 s32 fn_80062F38(struct GameBone* bone, struct GameBone* target, Mtx m, f32 t);
-s32 fn_80063010(CharActor* player, struct ActorObject* obj);
+s32 fn_80063010(struct CharActor* player, struct ActorObject* obj);
 
 // Camera setup (fn_800528AC is defined in this unit).
 #include "static/Camera.h"

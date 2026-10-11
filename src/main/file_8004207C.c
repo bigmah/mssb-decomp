@@ -1,7 +1,9 @@
 #include "main/file_8004207C.h"
+#include "main/file_80011640.h"
 #include "static/GameSettings.h"
 #include "static/Camera.h"
 #include "static/Pad.h"
+extern PadState lbl_803C77B8[4];
 #include "game/UnknownHomes_Game.h"
 #include "main/file_800527C4.h"
 #include "Dolphin/GX/GXPerf.h"
@@ -642,6 +644,7 @@ void starMenuCursor(void) {
 // .text:0x80043880 size:0x1418
 // Order-change menu: left (dir 0) / right (dir 1) on the field view.
 // NONMATCHING ~25%: the original inlines fn_80042598 (orderchange.c) at every case
+// nmverify: fn_80042598 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_80043880(u8 dir, u8 team) {
     if (lbl_803297E0.slot[team] == 0) {
@@ -757,6 +760,7 @@ end:
 // Order-change menu: up (dir 0) / down (dir 1). On the field view (_CF52 set) the cursor
 // jumps between fielding positions; fn_80042598 finds the batting slot of a position.
 // NONMATCHING ~25%: the original inlines fn_80042598 (orderchange.c) at every case
+// nmverify: fn_80042598 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_80044C98(u8 dir, u8 team) {
     lbl_803297E0._CF48[team] = lbl_803297E0.slot[team];
@@ -1370,6 +1374,8 @@ u8 fn_800471F4(u8 mode, u8 team) {
 
 // .text:0x80047CE0 size:0x304
 // NONMATCHING ~93%: (_06 == 2) materialised as cntlzw; dead CF52 stores scheduled differently
+// nmverify: fn_800625A4 original has a redundant second fn_800625A4(1, 0x38) site (_06 != 2 / _06 == 2 arms), same behaviour
+// nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_80047CE0(void) {
     s32 i;
@@ -2981,6 +2987,7 @@ void fn_8004AE18(s32 idx) {
 
 // .text:0x8004AFA8 size:0x210
 // NONMATCHING ~45%: the original inlines fn_8004AE18; ours calls it
+// nmverify: fn_8004AE18 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_8004AFA8(s32 idx) {
     CharActor* model = lbl_8036E548.active[idx];

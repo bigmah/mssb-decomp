@@ -1,4 +1,5 @@
 #include "main/file_8004C5F8.h"
+#include "main/file_80011640.h"
 #include "main/file_8000F150.h"
 #include "main/file_8004B284.h"
 #include "main/file_80008E00.h"
