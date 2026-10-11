@@ -719,9 +719,69 @@ void fn_800A94C4(void) {
 }
 
 // .text:0x800A9520 size:0x2B0
+// NONMATCHING 73%: the stick-direction bits are merged with rlwimi instead of the original's rlwinm/or chain, so more saved registers and a larger frame
+#if NONMATCHING
 void fn_800A9520(void) {
-    return;
+    PADStatus status[PAD_MAX_CONTROLLERS];
+    PADStatus* st;
+    PadState* pad;
+    u32 i;
+    PadConfig* cfg;
+    u32 dirs;
+    u16 prev;
+
+    lbl_80110080.readMask = PADRead(status);
+    PADClamp(status);
+    st = status;
+    pad = lbl_803C77B8;
+    cfg = &lbl_80110080;
+    for (i = 0; i < PAD_MAX_CONTROLLERS; i++, st++, pad++) {
+        pad->err = st->err;
+        if (pad->err == PAD_ERR_NO_CONTROLLER) {
+            PADReset(PAD_CHAN0_BIT >> i);
+        }
+        if (pad->rumbleCmd == 1) {
+            pad->rumbleCmd = 0;
+            if (pad->rumbleMode == 0) {
+                PADControlMotor(i, PAD_MOTOR_STOP_HARD);
+            } else {
+                PADControlMotor(i, PAD_MOTOR_RUMBLE);
+                pad->rumbleCmd = 2;
+            }
+        } else if (pad->rumbleCmd == 2) {
+            if (--pad->rumbleTimer == 0) {
+                pad->rumbleCmd = 0;
+                PADControlMotor(i, pad->rumbleMode & ~1);
+            }
+        }
+        pad->analog = *(PadAnalog*)&st->triggerLeft;
+        pad->sticks = *(PadSticks*)&st->stickX;
+        dirs = ((pad->sticks.stickY > cfg->stickPos) << 19) | ((pad->sticks.stickY < cfg->stickNeg) << 18) |
+               ((pad->sticks.stickX < cfg->stickNeg) << 16) | ((pad->sticks.stickX > cfg->stickPos) << 17) |
+               ((pad->sticks.substickY < cfg->stickNeg) << 2) | ((pad->sticks.substickY > cfg->stickPos) << 3) |
+               (pad->sticks.substickX < cfg->stickNeg) | ((pad->sticks.substickX > cfg->stickPos) << 1);
+        pad->stickDirs = dirs;
+        prev = pad->prev;
+        pad->held = st->button | (dirs >> cfg->stickShift);
+        pad->prev = pad->held;
+        pad->down = pad->held & ~prev;
+        pad->repeat = pad->down;
+        if (pad->prev == prev) {
+            if (pad->repeatDelay < 0) {
+                if (--pad->repeatTimer <= 0) {
+                    pad->repeat = pad->prev;
+                    pad->repeatTimer = cfg->repeatRate;
+                }
+            } else if (--pad->repeatDelay < 0) {
+                pad->repeat = pad->prev;
+                pad->repeatTimer = cfg->repeatRate;
+            }
+        } else {
+            pad->repeatDelay = cfg->repeatDelay;
+        }
+    }
 }
+#endif
 
 // fn_800A97EC, size:0x50
 void fn_800A97EC(s32 index, u32 duration, u8 mode) {
