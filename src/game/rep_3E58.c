@@ -80,8 +80,53 @@ void fn_3_16696C(void) {
 }
 
 // .text:0x0016699C size:0x294 mapped:0x807A5A30
+// Spawns a randomly coloured sparkle near the trail point of the current star swing.
 void fn_3_16699C(void) {
-    return;
+    Vec p;
+    Vec base;
+    Mtx inv;
+    ParticleParamsF prm;
+    CharTrail* trail;
+
+    memset(&p, 0, sizeof(Vec));
+    memcpy(&prm, &lbl_3_data_28508, sizeof(ParticleParamsF));
+    prm.tex = lbl_803CBD0C;
+    p.x = 2.0f * (RANDF() - 0.5f);
+    p.y = 0.5f * (2.0f * (RANDF() - 0.5f));
+    PSMTXInverse(fn_80052768_getCamera(0)->view, inv);
+    PSMTXMultVecSR(inv, &p, &p);
+    switch (g_Ball.currentStarSwing) {
+    case 5:
+        trail = &lbl_8036E548.trail[7];
+        break;
+    case 6:
+        trail = &lbl_8036E548.trail[7];
+        break;
+    case 7:
+        trail = &lbl_8036E548.trail[10];
+        break;
+    case 8:
+        trail = &lbl_8036E548.trail[11];
+        break;
+    case 9:
+        trail = &lbl_8036E548.trail[8];
+        break;
+    case 10:
+        trail = &lbl_8036E548.trail[9];
+        break;
+    default:
+        trail = &lbl_8036E548.trail[0];
+        break;
+    }
+    memcpy(&base, &trail->_04[0], sizeof(Vec));
+    p.x += base.x;
+    p.y += base.y;
+    p.z += base.z;
+    memcpy(&prm.pos, &p, sizeof(Vec));
+    prm.r = rand() % 256;
+    prm.g = rand() % 256;
+    prm.b = rand() % 256;
+    fn_80026998(&prm);
 }
 
 // .text:0x00166C30 size:0x110 mapped:0x807A5CC4
