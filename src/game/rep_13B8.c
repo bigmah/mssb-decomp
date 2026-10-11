@@ -4958,6 +4958,8 @@ void fn_3_8A1D8(void) {
 // .text:0x0008A350 size:0x178 mapped:0x806C93E4
 // ~97%: loop 1 regs now match (u32 a/b); loop 2 differs: extra `mr r8,r4` for the runner pointer, table/i regs (r5/r6 vs r6/r4) and lis order.
 // Tried: index-form loop 2 / inlining fn_3_8A4E4 gets regs but folds offsets (no addi r8 between unrolled iterations); ~300 variants.
+// NONMATCHING 93%: extra register copy for the runner pointer in loop 2 (see note above)
+#if NONMATCHING
 void fn_3_8A350(void) {
     int i;
     u8* r;
@@ -4991,6 +4993,7 @@ void fn_3_8A350(void) {
         q[0x133] = 0;
     }
 }
+#endif
 
 // .text:0x0008A4C8 size:0x1C mapped:0x806C955C
 
