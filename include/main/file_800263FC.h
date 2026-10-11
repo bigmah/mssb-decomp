@@ -225,6 +225,21 @@ typedef struct ParticleParams5 {
     /* 0x4C */ s32 unk4C;
 } ParticleParams5;
 
+// Spawn parameters of the beam emitter (type 8): count pairs of particles
+// placed along a direction. Fixed point x100000.
+typedef struct ParticleParams8 {
+    /* 0x00 */ TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 count;
+    /* 0x0C */ s32 taper;     // last steps shrink towards sizeMin
+    /* 0x10 */ s32 sizeMax;
+    /* 0x14 */ s32 sizeMin;
+    /* 0x18 */ s32 length;
+    /* 0x1C */ s32 offset;
+    /* 0x20 */ u32 gray;      // color = gray, gray, gray, 0xFF
+    /* 0x24 */ s32 texIndex2[1]; // count entries
+} ParticleParams8;
+
 // Head of the active emitter list; aliases the prev/next of an Emitter.
 typedef struct EmitterHead {
     /* 0x0 */ struct Emitter* prev;
@@ -256,6 +271,8 @@ void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm);
 s32 fn_8002ECA0(Emitter* e);
 s32 fn_8002F1AC(Vec* pos, s32 id);
 void fn_8002F258(Vec* pos, s32 id, ParticleParams* prm);
+void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm);
+s32 fn_8002F9FC(Emitter* e);
 void fn_8002FDB8(Emitter* e, Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm);
 void fn_80030470(Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm, u8 type);
 void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);

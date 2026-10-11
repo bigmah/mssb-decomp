@@ -249,6 +249,7 @@ static inline void QuadCorners(f32 width, f32 height) {
 s32 fn_8002E3DC(Emitter* e);
 s32 fn_8002E828(Emitter* e);
 s32 fn_8002ECA0(Emitter* e);
+s32 fn_8002F9FC(Emitter* e);
 s32 fn_80031034(Emitter* e);
 void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
 void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm);
@@ -994,9 +995,60 @@ void fn_8002F258(Vec* pos, s32 id, ParticleParams* prm) {
 #endif
 
 // .text:0x8002F5F4 size:0x408
-void fn_8002F5F4(void) {
-    return;
+// NONMATCHING 49%: register allocation and float scheduling
+#if NONMATCHING
+void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm) {
+    Vec v;
+    f32 len = (f32)prm->length / 100000.0f;
+    f32 start = ((f32)-prm->offset * len) / (f32)(prm->count - 1);
+    f32 span = (start + len) - start;
+    f32 size;
+    f32 sizeMin;
+    s32 i;
+    Emitter* e;
+    Particle* p;
+
+    e = NewEmitter(fn_8002F9FC, 0x80, 0, prm->count * 2, 1, 8);
+    if (e == NULL) {
+        return;
+    }
+    e->tex = prm->tex;
+    i = 0;
+    p = e->particles;
+    do {
+        // two particles per step along dir: an additive one and a subtractive one
+        PSVECScale(dir, start + ((f32)i * span) / (f32)(prm->count - 1), &v);
+        PSVECAdd(pos, &v, &v);
+        p->pos.x = v.x;
+        p->pos.y = v.y;
+        p->pos.z = v.z;
+        if (i >= prm->count - prm->taper) {
+            sizeMin = (f32)prm->sizeMin / 100000.0f;
+            size = sizeMin + (((f32)prm->sizeMax / 100000.0f - sizeMin) * (f32)(prm->count - i - 1)) / (f32)prm->taper;
+        } else {
+            size = (f32)prm->sizeMax / 100000.0f;
+        }
+        p->sizeY = size;
+        p->sizeX = size;
+        p->color.rgba = (prm->gray << 24) | (prm->gray << 8) | (prm->gray << 16) | 0xFF;
+        p->texIndex = prm->texIndex;
+        p->uvFrame = 0;
+        p->uvOrder = 1;
+        p = p->next;
+        p->pos.x = v.x;
+        p->pos.y = v.y;
+        p->pos.z = v.z;
+        p->sizeY = size;
+        p->sizeX = size;
+        p->color.rgba = (prm->gray << 24) | (prm->gray << 8) | (prm->gray << 16) | 0xFF;
+        p->texIndex = prm->texIndex2[i];
+        p->uvFrame = 0;
+        p->uvOrder = 0;
+        p = p->next;
+        i++;
+    } while (p != NULL);
 }
+#endif
 
 // .text:0x8002F9FC size:0x3BC
 void fn_8002F9FC(void) {
