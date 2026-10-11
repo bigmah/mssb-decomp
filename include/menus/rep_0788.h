@@ -225,5 +225,6 @@ void fn_2_2FD00(MenuTableContext* menu, MenuItemState* item);
 void fn_2_30D80(MenuTableContext* menu, MenuItemState* item);
 s32 fn_2_20CB0(u32 index);
 s32 fn_2_200E4(void);
+void fn_2_26AF4(MenuTableContext* menu, MenuItemState* item);
 
 #endif
