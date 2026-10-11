@@ -346,9 +346,66 @@ void fn_80054B00(void) {
 }
 
 // .text:0x80055374 size:0x424
-void fn_80055374(void) {
-    return;
+// NONMATCHING 88%: index sums fold differently and registers differ
+#if NONMATCHING
+void fn_80055374(SceneTask* task, s32 port) {
+    u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[8][port + 1]
+    s8 menu;
+    s8 target;
+    s8 a;
+    s32 p;
+
+    if ((*(state += 0x31) == 0) ? TRUE : FALSE) {
+        menu = 0x15;
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            menu = 7;
+        }
+        SetMenu(menu);
+        TASK_OBJ(task, 38)->_68 = 1;
+        TASK_OBJ(task, 41)->_68 = 1;
+        TASK_OBJ(task, 42)->_68 = 1;
+        target = lbl_803C5F04.target[port];
+        lbl_803C5F04.target[port] = 0;
+        TASK_OBJ(task, target + 1)->_5C = 0;
+        TASK_OBJ(task, target + 1)->_68 = 0;
+        a = lbl_803C5F04.tblA[target];
+        switch (target) {
+        case 1:
+            TASK_OBJ(task, a + 0xC)->_64 = 0x107;
+            TASK_OBJ(task, a + 0xC)->_5C = 10 << 16;
+            TASK_OBJ(task, a + 0xC)->_68 = 4;
+            break;
+        case 2:
+            TASK_OBJ(task, (a ^ 1) + 0xE)->_64 = 0x107;
+            TASK_OBJ(task, (a ^ 1) + 0xE)->_5C = 10 << 16;
+            TASK_OBJ(task, (a ^ 1) + 0xE)->_68 = 4;
+            break;
+        case 3:
+            TASK_OBJ(task, a + 0x10)->_64 = 0x109;
+            TASK_OBJ(task, a + 0x10)->_5C = 10 << 16;
+            TASK_OBJ(task, a + 0x10)->_68 = 4;
+            break;
+        case 4:
+            TASK_OBJ(task, (a ^ 1) + 0x15)->_64 = 0x107;
+            TASK_OBJ(task, (a ^ 1) + 0x15)->_5C = 10 << 16;
+            TASK_OBJ(task, (a ^ 1) + 0x15)->_68 = 4;
+            break;
+        }
+        TASK_OBJ(task, 0)->_5C = 10 << 16;
+        TASK_OBJ(task, 0)->_68 = 4;
+        for (p = 0; p < 2; p++) {
+            if (((u8*)&g_d_GameSettings)[0x10] != 0 || p == 0) { // TODO type
+                TASK_OBJ(task, lbl_803C5F04.cur[p] + p * 4 + 0x2B)->_68 = 1;
+                TASK_OBJ(task, lbl_803C5F04.cur[p] * 2 + p + 0x3F)->_68 = 1;
+            }
+        }
+        TASK_OBJ(task, 11)->flags &= ~2;
+        TASK_OBJ(task, 88)->_68 = 1;
+        fn_800626EC(port);
+        *state = 1;
+    }
 }
+#endif
 
 // .text:0x80055798 size:0x254
 void fn_80055798(SceneTask* task, s32 port) {
