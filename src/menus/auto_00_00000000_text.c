@@ -3,6 +3,8 @@
 #include "Dolphin/GX/GXTev.h"
 #include "Dolphin/OS/OSUtil.h"
 #include "musyx/musyx.h"
+#include "main/file_80008E00.h"
+#include "menus/auto_00_00000D08_text.h"
 
 extern void fn_800A7D4C(s32, void*);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
@@ -11,13 +13,10 @@ extern void fn_800B0A14_removeQueue(void);
 extern void fn_8001F228(void);
 extern void fn_80062744(void);
 extern void fn_8001E474(void);
-extern void fn_80036C88(void*, void*);
-extern void fn_800B0D28(void*);
-extern struct {
-    u8 pad[0x28];
-    u16 menu[0x10];
-} lbl_800E8754;
-extern u8 lbl_2_data_0[];
+extern void fn_80036C88(s32*, s32*);
+extern void fn_800B0D28(s32*);
+extern u8 lbl_800E877C[]; // TODO type: backing storage for the SceneFlow at lbl_803CBBCC
+extern s32 lbl_2_data_0[];
 extern u8* lbl_803CC1B8;
 extern u32 lbl_803CB750;
 extern void fn_8004153C(void);
@@ -26,11 +25,8 @@ extern u8 lbl_8034E9A0[];
 extern u8 lbl_803C66B0[];
 extern s32 ARAMTransfer(void*, void*, int, int);
 extern void fn_800216F8(s32, void*);
-extern void fn_2_10FC(void);
 extern u32 lbl_2_bss_B644;
 extern u8 lbl_2_data_C8[];
-extern u8 lbl_803C6CF8[];
-extern void fn_2_794(void);
 extern u8 g_d_GameSettings[];
 extern s32 fn_80022A24(u8, u8);
 extern void fn_800229CC(void);
@@ -60,6 +56,20 @@ void fn_2_3C(void) {
 // _epilog, size:0x20
 void _epilog(void) {
     fn_8001F228();
+}
+
+// _prolog, size:0x88
+void _prolog(void) {
+    s32* layers;
+    lbl_803CBBCC[0] = lbl_800E877C;
+    *(u16*)(lbl_800E877C + 2) = 0; // TODO type: SceneFlow.scene
+    fn_800A7D4C(0, lbl_2_data_C0);
+    fn_800B0A5C_insertQueue(fn_2_708, 0x8000);
+    fn_80062744();
+    fn_8001E474();
+    layers = lbl_2_data_0 + 0x17;
+    fn_80036C88(lbl_2_data_0, layers);
+    fn_800B0D28(layers);
 }
 
 // fn_2_110, size:0x50
@@ -204,7 +214,7 @@ void fn_2_554(void) {
         }
         break;
     case 3:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8._715 == 1) {
             *(void**)o = fn_2_794;
             lbl_2_bss_4 = fn_800B0A5C_insertQueue(fn_2_374, 0x8000);
         }
