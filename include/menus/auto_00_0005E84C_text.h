@@ -60,7 +60,9 @@ typedef struct MenuData {
     /*0x197416*/ u8 _197416;
     /*0x197417*/ u8 _197417;
     /*0x197418*/ u8 _197418;
-    /*0x197419*/ u8 _197419[0x197862 - 0x197419];
+    /*0x197419*/ u8 _197419[0x197430 - 0x197419];
+    /*0x197430*/ s16 stats[8]; // a StatOutput
+    /*0x197440*/ u8 _197440[0x197862 - 0x197440];
     /*0x197862*/ u8 _197862;
 } MenuData;
 
@@ -87,6 +89,13 @@ extern u8 lbl_2_data_20BF0[];
 extern AssetLoadInstructions lbl_2_data_20C00;
 
 extern MenuTask* lbl_803CC1B8;
+
+// StatOutput (main/file_80069BDC.h, which can't be included next to the
+// headers above): s16 vals[6]; s16 _C; s16 _E.
+struct StatOutput;
+u8 fn_8006C100(s16 value);
+s16 fn_8006C268(struct StatOutput* stats);
+
 
 // lbl_2_bss_1A823C points at this; only the fields used here.
 typedef struct MenuFlags {
@@ -137,10 +146,10 @@ void fn_2_60084(MenuTask* task, MenuItem* item);
 void fn_2_6020C(MenuTask* task, MenuItem* item);
 void fn_2_60394(MenuTask* task, MenuItem* item);
 void fn_2_6051C(void);
-void fn_2_607DC(void);
+void fn_2_607DC(MenuTask* task, MenuItem* item);
 void fn_2_60968(MenuTask* task, MenuItem* item);
 void fn_2_60AF0(MenuTask* task, MenuItem* item);
-void fn_2_60C78(void);
+void fn_2_60C78(MenuTask* task, MenuItem* item);
 void fn_2_60DF4(MenuTask* task, MenuItem* item);
 void fn_2_60F7C(MenuTask* task, MenuItem* item);
 void fn_2_61104(void);
