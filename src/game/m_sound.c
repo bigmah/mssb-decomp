@@ -20,9 +20,13 @@ typedef struct SndState34C58 {
     u8 unk29;
     u8 unk2A;
     u8 unk2B; // swing sound pending
-    u8 pad2C[3];
+    u8 unk2C;
+    u8 unk2D;
+    u8 unk2E; // victory jingle playing
     u8 unk2F;
-    u8 pad30[3];
+    u8 unk30;
+    u8 unk31;
+    u8 unk32; // 1: game-start fanfare, 2: inning fanfare
     u8 unk33;
     u8 unk34; // pitch-release sound played
 } SndState34C58;
@@ -78,6 +82,17 @@ extern u8 lbl_800EF808[];
 extern void* lbl_3_bss_1768;
 extern void fn_3_8B094(void);
 #include "musyx/musyx.h"
+extern u16 lbl_3_data_8168[];
+extern u8 lbl_3_data_8530[];
+extern u8 lbl_3_data_8338[];
+extern u32 sndSeqGetValid(u32);
+extern u32 sndSeqPlayEx(u16 sgid, u16 sid, void* arrfile, void* para, u8 studio);
+extern u32* lbl_3_bss_1774;
+extern u8 lbl_3_data_88E0[];
+extern u8 lbl_3_data_830C[];
+extern u8 lbl_3_data_8148[];
+extern u8 lbl_800EF808[];
+extern void sndSeqVolume(u8 volume, u16 time, u32 seqId, u8 mode);
 extern u8 lbl_3_data_8148[];
 
 void fn_3_902FC(void) {
@@ -783,9 +798,547 @@ void fn_3_8D9C0(void) {
 }
 
 // .text:0x0008DA80 size:0x1748 mapped:0x806CCB14
+extern u8 lbl_3_common_bss_34C90[];
+extern u8 lbl_3_common_bss_37400[];
+extern u8 lbl_3_common_bss_32724[];
+extern u8 lbl_3_common_bss_134C4[];
+extern u8* lbl_3_common_bss_DE94;
+extern void sndSeqLoop(u32 seqId, bool on);
+#define GAME_TEAM_FIELDING (*(s32*)(g_GameLogic + 0x8))        // teamFielding
+#define GAME_PITCH_FRAME (*(u16*)(g_GameLogic + 0xFC))          // FrameCountOfCurrentPitch
+#define GAME_SECONDARY_MODE (g_GameLogic[0x121])                // secondaryGameMode
+#define GAME_EXITING_TO_MENU (g_GameLogic[0x122])               // framesOfExitingToMenu
+#define GAME_TRANSITION (g_GameLogic[0x125])                    // _125
+#define GAME_END_OF_GAME (g_GameLogic[0x127])                   // EventTriggers_EndOfGame
+#define GAME_133(team) (g_GameLogic[0x133 + (team)])            // _133[team]
+#define GAME_PLAY_OVER (g_GameLogic[0x139])                     // playOverInd
+#define PRACTICE_TYPE2 (g_Practice[0x193])                      // practiceType_2
+#define PRACTICE_STATE (g_Practice[0x195])                      // practiceState
+#define PRACTICE_TUTORIAL (g_Practice[0x196])                   // tutorialState
+#define PRACTICE_19F (g_Practice[0x19F])
+#define PRACTICE_1C7 (g_Practice[0x1C7])
+#define MINIGAME_1907 (g_Minigame[0x1907])
+#define MINIGAME_1908 (*(s8*)(g_Minigame + 0x1908))
+#define MINIGAME_MULTIPLAYER (g_Minigame[0x1909])               // multiPlayerInd
+#define MINIGAME_CTRL_1C(i) (g_Minigame[0x18E8 + (i)])          // minigameControlStruct[0]._1C[i]
+#define MINIGAME_NOT_WON (g_Minigame[0x19A8])                   // challenge_minigame_haven_tWonYetIndicator
+#define MINIGAME_19CE (g_Minigame[0x19CE])
+#define MINIGAME_DIFFICULTY (g_Minigame[0x1A2B])                // soloMinigameDifficulty
+#define MINIGAME_1A37 (g_Minigame[0x1A37])
+#define MINIGAME_1A3C (g_Minigame[0x1A3C])
+#define MINIGAME_1A43 (g_Minigame[0x1A43])
+#define MINIGAME_1D6D (*(s8*)(g_Minigame + 0x1D6D))
+#define STATS_PLAY_FRAMES (*(s32*)(g_Stats + 0x24))             // playFrameCounter
+#define STATS_28 (*(s16*)(g_Stats + 0x28))
+#define STATS_39 (g_Stats[0x39])                                // 1: replay offered, 2: replay done
+#define PITCHER_WALKED_IN_RUN (g_Pitcher[0x175])                // walkedInRunInd
+#define BSS34C90_1D1 (lbl_3_common_bss_34C90[0x1D1])
+#define BSS34C90_1D2 (lbl_3_common_bss_34C90[0x1D2])
+#define BSS32A94_3E (lbl_3_common_bss_32A94[0x3E])
+#define DE94_92C (*(s32*)(lbl_3_common_bss_DE94 + 0x92C))      // lbl_3_common_bss_DE94._0000->_92C
+extern u16 lbl_3_data_81FC[];
+extern u8 lbl_3_data_84F4[];
+
+// Per-frame music director: picks the BGM sequence for the current game state,
+// cross-fades between tracks and handles crowd/ambience volume ramps.
+// NONMATCHING 84%: register allocation differs and the original reaches the inlined helpers' tables
+// (lbl_3_data_8338/830C/88E0/81FC/84F4/8D70) through the pooled base lbl_3_data_8148
+#if NONMATCHING
 void fn_3_8DA80(void) {
+    s16 bgm = -1;
+    s32 cut = 0;
+    Snd1760* st = (Snd1760*)lbl_3_bss_1760;
+    u8 status;
+
+    switch (g_d_GameSettings.GameModeSelected) {
+    case 2:
+        if (PRACTICE_TUTORIAL == 0 && PRACTICE_STATE == 0) {
+            fn_3_8B318(g_d_GameSettings.StadiumID);
+        }
+        break;
+    default:
+        if (GAME_STATUS == 5 && GAME_PITCH_FRAME == 1) {
+            fn_3_8B318(g_d_GameSettings.StadiumID);
+        }
+        break;
+    }
+
+    if (GAME_EXITING_TO_MENU != 0) {
+        return;
+    }
+    status = GAME_STATUS;
+    if (status == 0x17) {
+        return;
+    }
+    if (status == 0xE && !g_d_GameSettings.minigamesEnabled) {
+        return;
+    }
+    if (S34C58.unk33 != 0 && status == 0) {
+        S34C58.unk33--;
+    }
+    fn_3_8D9C0();
+
+    if (lbl_800EF808[0x398] == 0) {
+        if ((u32)S34C58.unk4 != 0xFFFFFFFF) {
+            if (sndSeqGetValid(S34C58.unk4)) {
+                sndSeqVolume(0, 0, S34C58.unk4, 1);
+            }
+            S34C58.unk4 = -1;
+        }
+        return;
+    }
+
+    S34C58.unk22 = S34C58.unk20;
+
+    if (g_d_GameSettings.GameModeSelected == 2) {
+        u8 sec = GAME_SECONDARY_MODE;
+        if (sec == 0xA || sec == 0x11 || sec == 0x12) {
+            bgm = -1;
+            goto apply;
+        }
+        if (PRACTICE_TUTORIAL == 0) {
+            bgm = -1;
+            goto apply;
+        }
+        if (PRACTICE_19F != 0 && (BSS34C90_1D2 == 6 || BSS34C90_1D2 == 7 || BSS34C90_1D2 == 8 || BSS34C90_1D2 == 9)) {
+            bgm = -1;
+            goto apply;
+        }
+        if (PRACTICE_1C7 != 0 && (BSS34C90_1D2 == 6 || BSS34C90_1D2 == 7)) {
+            bgm = -1;
+            goto apply;
+        }
+        if (PRACTICE_TYPE2 == 4) {
+            if (GAME_STATUS == 5) {
+                return;
+            }
+            goto common;
+        }
+        bgm = 0x15;
+        if (BALL_DEAD_REASON != 1 || sec == 0xB) {
+            goto apply;
+        }
+        bgm = 0;
+        goto common;
+    }
+
+    if (g_d_GameSettings.minigamesEnabled && GAME_STATUS == 0x21) {
+        bgm = -1;
+        goto apply;
+    }
+    status = GAME_STATUS;
+    if ((status == 0x27 || status == 0x24 || status == 0x22) && MINIGAME_1908 >= 0 && MINIGAME_1A3C != 0) {
+        if (status == 0x22) {
+            return;
+        }
+        if (status == 0x24) {
+            if (GAME_PITCH_FRAME == 1) {
+                fn_3_8C104(-1);
+            }
+            return;
+        }
+        if (MINIGAME_CTRL_1C(MINIGAME_1908) == 1 && MINIGAME_NOT_WON == 0) {
+            bgm = 0xC;
+        } else {
+            bgm = 0xD;
+        }
+        goto apply;
+    }
+
+    if (g_d_GameSettings.minigamesEnabled &&
+        (status == 0xE || status == 0x24 || GAME_TRANSITION == 8 || status == 0x22 || status == 0x27 || status == 0x26)) {
+        if (status == 0xE || status == 0x24 || status == 0x22 || status == 0x26 || status == 0x27) {
+            if (status == 0x22) {
+                if (g_d_GameSettings.GameModeSelected == 6) {
+                    if (BSS34C90_1D2 == 10 || BSS34C90_1D2 == 4 || BSS34C90_1D2 == 5) {
+                        goto fade_out_quick;
+                    }
+                } else if (BSS34C90_1D2 == 9 || BSS34C90_1D2 == 6 || BSS34C90_1D2 == 7) {
+                    goto fade_out_quick;
+                }
+            }
+            if (status == 0x26) {
+                return;
+            }
+            if (!g_d_GameSettings.exhibitionMatchInd) {
+                if (MINIGAME_MODE == 1 || MINIGAME_MODE == 3) {
+                    if (MINIGAME_1A37 == 1) {
+                        bgm = 0xC;
+                    } else {
+                        bgm = 0xD;
+                    }
+                } else if (MINIGAME_CTRL_1C(MINIGAME_1908) == 1 && MINIGAME_NOT_WON == 0) {
+                    bgm = 0xC;
+                } else {
+                    bgm = 0xD;
+                }
+                goto apply;
+            }
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                if (MINIGAME_1908 >= 0) {
+                    if (MINIGAME_CTRL_1C(MINIGAME_1908) == 1 && MINIGAME_NOT_WON == 0) {
+                        bgm = 5;
+                    } else {
+                        bgm = 7;
+                    }
+                } else {
+                    bgm = 5;
+                }
+                goto apply;
+            }
+            if (MINIGAME_MULTIPLAYER != 0) {
+                if (MINIGAME_1A3C != 0 && MINIGAME_1907 == 1) {
+                    if (MINIGAME_CTRL_1C(MINIGAME_1908) == 1 && MINIGAME_NOT_WON == 0) {
+                        bgm = 5;
+                    } else {
+                        bgm = 7;
+                    }
+                } else if (MINIGAME_NOT_WON != 0) {
+                    bgm = 7;
+                } else {
+                    bgm = 5;
+                }
+                goto apply;
+            }
+            if (MINIGAME_DIFFICULTY == 3 && MINIGAME_1A3C == 0) {
+                if (GAME_PITCH_FRAME == 0) {
+                    return;
+                }
+                if (MINIGAME_1A43 == 1) {
+                    bgm = 0xE;
+                } else if (MINIGAME_1A43 != 0) {
+                    bgm = 0xF;
+                } else {
+                    bgm = 7;
+                }
+                goto apply;
+            }
+            if (MINIGAME_1A37 == 1) {
+                bgm = 5;
+            } else {
+                bgm = 7;
+            }
+            goto apply;
+        }
+        if (GAME_TRANSITION == 8) {
+            sndSeqLoop(S34C58.unk8, 0);
+        }
+        goto by_status;
+    }
+
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        if (status >= 0x1B) {
+            bgm = -1;
+            goto apply;
+        }
+        if (status == 5) {
+            bgm = 6;
+            goto apply;
+        }
+        // BGM volume table entry -1 (lbl_3_data_830C[-2]), i.e. the last bytes of lbl_3_data_81FC
+        sndSeqVolume(((u8*)lbl_3_data_81FC)[0x10E], 15, S34C58.unk4, 0);
+        if (MINIGAME_MODE == 6) {
+            if (MINIGAME_1D6D >= 0) {
+                cut = 1;
+                if (MINIGAME_PAUSED != 0) {
+                    sndFXKeyOff(S34C58.unk4);
+                } else if (S34C58.unk20 == 0x13 && sndFXCheck(S34C58.unk4) == 0xFFFFFFFF) {
+                    /* fn_3_90064(0x2ED), keeping the voice id */
+                    s32 i;
+                    if (g_d_GameSettings.GameModeSelected != 7) {
+                        OSPanic(lbl_3_rodata_1590, 0x402, lbl_3_rodata_15DC);
+                    }
+                    for (i = 0; i < 0x39; i++) {
+                        if (lbl_3_data_81FC[i] == 0x2ED) {
+                            break;
+                        }
+                    }
+                    if (i == 0x39) {
+                        OSPanic(lbl_3_rodata_1590, 0x40D, lbl_3_rodata_15EC);
+                    }
+                    S34C58.unk4 = sndFXStartEx(0x2ED, lbl_3_data_84F4[i], 0x3F, 0);
+                }
+                bgm = 0x13;
+            } else {
+                if (sndFXCheck(S34C58.unk4) != 0xFFFFFFFF) {
+                    sndFXKeyOff(S34C58.unk4);
+                }
+                bgm = 0x15;
+            }
+        } else {
+            bgm = 0x15;
+        }
+        if (MINIGAME_PAUSED != 0) {
+            if (BSS34C90_1D2 == 7 || BSS34C90_1D2 == 9) {
+                bgm = -1;
+            } else {
+                fn_800A8878(lbl_800E88A4[g_d_GameSettings.StadiumID][1], lbl_800E88A4[g_d_GameSettings.StadiumID][1]);
+            }
+        } else {
+            fn_800A8878(lbl_800E88A4[g_d_GameSettings.StadiumID][0], lbl_800E88A4[g_d_GameSettings.StadiumID][0]);
+        }
+        goto apply;
+    }
+
+    if (g_d_GameSettings.minigamesEnabled) {
+        if (status == 0x22 || status == 0xB || status == 0xD || MINIGAME_19CE != 0) {
+            if (S34C58.unk22 != -1) {
+                fn_800A8878(lbl_800E88A4[9][1], lbl_800E88A4[9][1]);
+            }
+            S34C58.unk20 = -1;
+            return;
+        }
+        fn_800A8878(lbl_800E88A4[9][0], lbl_800E88A4[9][0]);
+        if (GAME_STATUS >= 0x1B) {
+            return;
+        }
+        if (GAME_STATUS == 5) {
+            bgm = 0;
+        } else {
+            bgm = 0x15;
+        }
+        goto apply;
+    }
+
+by_status:
+    status = GAME_STATUS;
+    if (status == 5 && g_d_GameSettings.GameModeSelected != 2) {
+        bgm = 0;
+        goto apply;
+    }
+    if (status == 9) {
+        bgm = 1;
+        goto apply;
+    }
+    if (status == 3) {
+        bgm = 2;
+        goto apply;
+    }
+    if (status == 8) {
+        bgm = -1;
+        cut = 1;
+        if (STRIKES_OUTS != 3 && STATS_39 == 0) {
+            if (PITCHER_WALKED_IN_RUN != 0) {
+                playSoundEffect(0x198);
+            } else if (GAME_END_OF_GAME == 0) {
+                playSoundEffect(0x197);
+            }
+        }
+        goto apply;
+    }
+
+common:
+    if (GAME_STATUS == 0xB) {
+        if (BSS34C90_1D1 == 1) {
+            goto apply;
+        }
+        if (S34C58.unk20 != 0x15) {
+            S34C58.unk20 = 0x15;
+            S34C58.unk22 = 0x15;
+            fn_3_8C104(0);
+        }
+    }
+    if (STATS_REPLAY != 0) {
+        bgm = 0x16;
+        if (STATS_39 == 4) {
+            bgm = -1;
+            cut = 1;
+        }
+        if (STATS_PLAY_FRAMES > STATS_28 - 30) {
+            bgm = -1;
+            cut = 1;
+        }
+        goto apply;
+    }
+    status = GAME_STATUS;
+    if (status == 0x13) {
+        bgm = 0x17;
+        goto apply;
+    }
+    if (status == 7 || status == 0) {
+        return;
+    }
+    if (lbl_8036E548.preload[0].state != 0 || lbl_8036E548.preload[1].state != 0) {
+        return;
+    }
+    if (!g_d_GameSettings.exhibitionMatchInd && lbl_3_common_bss_37400[0x46] != 0) {
+        if (status == 0x16 && GAME_133(GAME_TEAM_FIELDING) == 0) {
+            bgm = 9;
+            S34C58.unk32 = 1;
+            goto apply;
+        }
+        if (S34C58.unk32 == 0) {
+            if (status == 1 && GAME_133(GAME_TEAM_FIELDING) == 0) {
+                S34C58.unk32 = 2;
+                bgm = 0x12;
+                goto apply;
+            }
+        } else if (S34C58.unk32 == 2 && lbl_3_common_bss_32724[0xB3] != 0) {
+            S34C58.unk32 = 2;
+            bgm = 0x12;
+            goto apply;
+        }
+        if ((status == 1 || status == 2) && STATS_REPLAY == 0) {
+            if (lbl_3_common_bss_37400[0x47] == 1) {
+                if (BALL_DEAD_REASON != 1) {
+                    bgm = 0xB;
+                    if (FIELDING_107 != 0) {
+                        S34C58.unk33 = 2;
+                    }
+                    goto apply;
+                }
+            } else if (lbl_3_common_bss_37400[0x47] == 2 && BALL_DEAD_REASON != 1) {
+                bgm = 0xA;
+                if (FIELDING_107 != 0) {
+                    S34C58.unk33 = 2;
+                }
+                goto apply;
+            }
+        }
+    }
+    if (status == 0x16 && GAME_PLAY_OVER != 0) {
+        bgm = 0x10;
+        goto apply;
+    }
+    if (status == 0x15) {
+        bgm = 0x11;
+        goto apply;
+    }
+    if (status == 0x16 && DE94_92C == 0x60 && g_d_GameSettings.GameModeSelected != 5) {
+        DE94_92C = 0;
+        bgm = 8;
+        S34C58.unk2E = 1;
+        goto apply;
+    }
+    if (S34C58.unk2E != 0) {
+        if (S34C58.unk27 == 0) {
+            S34C58.unk2E = 0;
+        }
+        bgm = 8;
+        goto apply;
+    }
+    if (lbl_3_common_bss_134C4[0x25C] != 0 && BALL_DEAD_REASON != 1 && DE94_92C != 0) {
+        bgm = 4;
+        goto apply;
+    }
+    if (status == 0x13) {
+        return;
+    }
+    if (BALL_DEAD_REASON == 1) {
+        if (g_d_GameSettings.GameModeSelected != 2) {
+            bgm = 3;
+            goto apply;
+        }
+        bgm = 0;
+    }
+
+    /* crowd/ambience fade out */
+    if (S34C58.unk2A == 1 && S34C58.unk24 != 0) {
+        s16 n = --S34C58.unk24;
+        if (n == 0) {
+            fn_3_8B258(3, 0, 0);
+        } else {
+            fn_3_8C4F0(n, 0);
+        }
+    }
+    /* crowd/ambience fade in */
+    if (S34C58.unk2A == 2) {
+        if (S34C58.unk33 != 0) {
+            S34C58.unk33 = 0;
+            S34C58.unk20 = 0x15;
+        }
+        if (S34C58.unk24 == 0x78) {
+            fn_3_8C104(0);
+        }
+        if (fn_3_8C2DC(S34C58.unk24, GAME_STATUS == 0xB ? 1 : 0) == 0) {
+            S34C58.unk2A = 0;
+        }
+        S34C58.unk24--;
+    }
+
+    if (BALL_DEAD_REASON == 1 && g_d_GameSettings.GameModeSelected == 2) {
+        goto apply;
+    }
+    status = GAME_STATUS;
+    if (status == 2) {
+        if (S34C58.unk29 != 0) {
+            S34C58.unk29--;
+        }
+        return;
+    }
+    if (S34C58.unk2A != 0 || status == 0xB) {
+        return;
+    }
+    if (S34C58.unk33 != 0) {
+        bgm = 0x15;
+        goto apply;
+    }
+    if (STRIKES_STORED_OUTS == 0) {
+        bgm = 0x15;
+        goto apply;
+    }
+    if (BSS32A94_3E != 0) {
+        bgm = 0x15;
+        goto apply;
+    }
+    fn_3_90328(-1);
+    S34C58.unk20 = -1;
     return;
+
+apply:
+    if (S34C58.unk22 == bgm) {
+        return;
+    }
+    if (S34C58.unk20 == 8 && sndSeqGetValid(S34C58.unk8)) {
+        return;
+    }
+    if (S34C58.unk28 == 0) {
+        S34C58.unk28 = 1;
+        S34C58.unk27 = 20;
+        fn_3_903B8();
+    } else if (S34C58.unk27 != 0) {
+        S34C58.unk27--;
+    }
+    if (S34C58.unk27 != 0 && cut == 0) {
+        return;
+    }
+    if ((u32)S34C58.unk4 != 0xFFFFFFFF) {
+        if (sndSeqGetValid(S34C58.unk4)) {
+            sndSeqVolume(0, 0, S34C58.unk4, 1);
+        }
+        S34C58.unk4 = -1;
+        return;
+    }
+    S34C58.unk28 = 0;
+    S34C58.unk20 = bgm;
+    if (bgm == -1) {
+        if (cut) {
+            fn_3_8B258(3, 0, 0);
+        } else {
+            fn_3_8C07C();
+        }
+    } else if (bgm == 0x15 || bgm == 0x16 || bgm == 0x17) {
+        if ((u16)(bgm - 0x15) <= 1 || bgm == 0x17) {
+            if (bgm != S34C58.unk22) {
+                fn_3_8C104(-1);
+            }
+        } else {
+            fn_3_8C07C();
+            fn_3_90674(S34C58.unk20);
+        }
+    } else {
+        fn_3_9056C(bgm);
+        if (!(bgm == 4 || bgm == 0)) {
+            fn_3_8C07C();
+        }
+    }
+    return;
+
+fade_out_quick:
+    fn_3_90328(12);
+    S34C58.unk20 = -1;
 }
+#endif
 
 // .text:0x0008F1C8 size:0x54 mapped:0x806CE25C
 void fn_3_8F1C8(void) {
@@ -1070,17 +1623,6 @@ u32 fn_3_90150(s32 a, s32 b) {
 #endif
 
 
-extern u16 lbl_3_data_8168[];
-extern u8 lbl_3_data_8530[];
-extern u8 lbl_3_data_8338[];
-extern u32 sndSeqGetValid(u32);
-extern u32 sndSeqPlayEx(u16 sgid, u16 sid, void* arrfile, void* para, u8 studio);
-extern u32* lbl_3_bss_1774;
-extern u8 lbl_3_data_88E0[];
-extern u8 lbl_3_data_830C[];
-extern u8 lbl_3_data_8148[];
-extern u8 lbl_800EF808[];
-extern void sndSeqVolume(u8 volume, u16 time, u32 seqId, u8 mode);
 
 // .text:0x00090220 size:0x74 mapped:0x806CF2B4
 u32 fn_3_90220(s32 idx, s32 off) {
