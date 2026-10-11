@@ -129,8 +129,54 @@ void DOSetWorldMatrix(struct DODisplayObj* dispObj, MtxPtr m) {
 }
 
 // .text:0x800BC860 size:0x258
-void InitDisplayObjWithLayout(void) {
-    return;
+void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* layout) {
+    u16 i;
+
+    if (layout->positionData != NULL) {
+        dispObj->positionData = _OSAllocFromHeap(0x20, sizeof(PositionData));
+        *dispObj->positionData = *layout->positionData;
+    } else {
+        dispObj->positionData = NULL;
+    }
+    if (layout->colorData != NULL) {
+        dispObj->colorData = _OSAllocFromHeap(0x20, sizeof(ColorData));
+        *dispObj->colorData = *layout->colorData;
+    } else {
+        dispObj->colorData = NULL;
+    }
+    if (layout->textureData != NULL && layout->numTextureChannels != 0) {
+        dispObj->textureData = _OSAllocFromHeap(0x20, layout->numTextureChannels * sizeof(TextureData));
+        dispObj->numTextureChannels = layout->numTextureChannels;
+        for (i = 0; i < layout->numTextureChannels; i++) {
+            dispObj->textureData[i] = layout->textureData[i];
+        }
+    } else {
+        dispObj->textureData = NULL;
+        dispObj->numTextureChannels = 0;
+    }
+    if (layout->lightingData != NULL) {
+        dispObj->lightingData = _OSAllocFromHeap(0x20, sizeof(LightingData));
+        *dispObj->lightingData = *layout->lightingData;
+    } else {
+        dispObj->lightingData = NULL;
+    }
+    if (layout->displayData != NULL) {
+        dispObj->displayData = _OSAllocFromHeap(0x20, sizeof(DisplayData));
+        *dispObj->displayData = *layout->displayData;
+    } else {
+        dispObj->displayData = NULL;
+    }
+    dispObj->visibility = 1;
+    PSMTXIdentity(dispObj->worldMatrix);
+    dispObj->shaderFunc = NULL;
+    dispObj->shaderData = NULL;
+    dispObj->unk15 = layout->unk15;
+    memcpy(dispObj->unk54[1], layout->unk1C[1], 4);
+    memcpy(dispObj->unk54[0], layout->unk1C[0], 4);
+    memcpy(dispObj->unk54[3], layout->unk1C[3], 4);
+    memcpy(dispObj->unk54[2], layout->unk1C[2], 4);
+    memcpy(dispObj->unk54[5], layout->unk1C[5], 4);
+    memcpy(dispObj->unk54[4], layout->unk1C[4], 4);
 }
 
 // .text:0x800BCAB8 size:0x8C
