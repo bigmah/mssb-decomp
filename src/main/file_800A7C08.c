@@ -55,8 +55,13 @@ void initRenderMode(void) {
 }
 
 // .text:0x800A84C4 size:0x54
-void fn_800A84C4(void) {
-    return;
+void fn_800A84C4(u32 retraceCount) {
+    if (!lbl_803C7420.drawing) {
+        if (--lbl_803C7420.retraceCounter < 0) {
+            lbl_803C7420.retraceCounter = lbl_803C7420.retraceInterval;
+            OSWakeupThread(&lbl_803C7420.retraceQueue);
+        }
+    }
 }
 
 // .text:0x800A8518 size:0x19C
