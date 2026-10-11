@@ -4,6 +4,7 @@
 #include "static/UnknownHomes_Static.h"
 #include "static/GameSettings.h"
 #include "main/menu_globals.h"
+#include "game/rep_1838.h"
 
 extern HudTask* lbl_803CC1B8;
 extern LayoutSlot lbl_80371C30[];
@@ -17,6 +18,12 @@ extern u16 lbl_3_data_92C8[];
 extern u8 lbl_3_data_92D4[];
 extern u8 lbl_3_data_21268[];
 extern s16 lbl_3_data_217A4[];
+extern s8 lbl_3_data_217BC[]; // [row]: swing timing offset
+extern u8 lbl_3_data_217C4[]; // [ai strength]: CPU may plan ahead
+extern s8 lbl_3_data_217C8[]; // [ai strength]: % chance to plan ahead
+extern s8 lbl_3_data_217CC[]; // [ai strength]: % chance to mistime
+extern s8 lbl_3_data_217D0[]; // [ai strength]: max mistiming in frames
+extern s8 lbl_3_data_217D4[]; // [ai strength]: % chance to forget the stick
 extern void fn_80034E20(void*, void*);
 extern void fn_8004CC2C(void);
 extern void fn_8004D0F0(void);
@@ -499,3 +506,72 @@ void fn_3_12E17C(s8* chain, s16* score, u8 lookahead) {
     } while (i < 15);
 }
 #endif
+
+// fn_3_12DDCC, size:0x2B8
+// Barrel Batter CPU: pick the barrel to aim at and plan the swing.
+void fn_3_12DDCC(void) {
+    BbTarget order[15];
+    s16 score[15];
+    s8 chain[15];
+    MiniGameStruct* mg = &g_Minigame;
+    u8 strength = mg->minigameControlStruct[0].aIStrength[mg->rosterID];
+    s8 row;
+    s8 col;
+    s8 k;
+    u32 lookahead;
+    s16 bomb;
+
+    bomb = mg->bB_bombBarrelID;
+    if (bomb >= 0) {
+        row = bomb / 3;
+        col = bomb % 3;
+    } else {
+        if (mg->bB_pitchesRemainingInTurn > 2 && lbl_3_data_217C4[strength] != 0) {
+            lookahead = RandomInt_Game(100) < lbl_3_data_217C8[strength];
+        } else {
+            lookahead = 0;
+        }
+        if (lookahead != 0) {
+            fn_3_12E17C(chain, score, 1);
+        } else {
+            fn_3_12E17C(chain, score, 0);
+        }
+        k = 0;
+        do {
+            order[k].barrel = k;
+            order[k].chain = chain[k];
+            order[k].score = score[k];
+            k++;
+        } while (k < 15);
+        if (lookahead != 0) {
+            mg->bB_cpuPreferLow = 1;
+        } else {
+            mg->bB_cpuPreferLow = 0;
+        }
+        fn_800246D4(fn_3_12E084, (u8*)order, (u8*)order, 4, 15);
+        row = order[0].barrel / 3;
+        col = order[0].barrel % 3;
+    }
+    if (g_Batter.batterHand != 0) {
+        row = 4 - row;
+    }
+    mg->bB_cpuSwingFrame = swingSoundFrame[0][1] + lbl_3_data_217BC[row];
+    switch (col) {
+    case 0:
+        mg->bB_cpuStickInput = 8;
+        break;
+    default:
+    case 1:
+        mg->bB_cpuStickInput = 0;
+        break;
+    case 2:
+        mg->bB_cpuStickInput = 4;
+        break;
+    }
+    if (RandomInt_Game(100) < lbl_3_data_217CC[strength]) {
+        mg->bB_cpuSwingFrame += (RandomInt_Game(2) != 0 ? 1 : -1) * (RandomInt_Game(lbl_3_data_217D0[strength]) + 1);
+    }
+    if (RandomInt_Game(100) < lbl_3_data_217D4[strength]) {
+        mg->bB_cpuStickInput = 0;
+    }
+}
