@@ -347,8 +347,9 @@ void fn_800B2BE4(GameActor* actor, u16 bone) {
 }
 
 // .text:0x800B2BFC size:0xC
-void fn_800B2BFC(void) {
-    return;
+void fn_800B2BFC(GameActor* actor, s16 a, s16 b) {
+    actor->unk80 = a;
+    actor->unk82 = b;
 }
 
 // .text:0x800B2C08 size:0x8
