@@ -1,6 +1,7 @@
 #include "menus/auto_00_0001B1BC_text.h"
 #include "menus/auto_00_0004B1AC_text.h"
 #include "static/UnknownHomes_Static.h"
+#include "Dolphin/GX.h"
 
 extern u8* lbl_2_bss_1A8234[];
 extern u8* lbl_2_bss_1A824C[];
@@ -25,6 +26,37 @@ extern void fn_80068720(s32);
 extern void fn_8001F228(void);
 extern void fn_80021410(void);
 extern void fn_2_54474(void);
+extern u8* lbl_2_bss_1A8230[];
+extern u8* lbl_2_bss_1A8238;
+extern u8* lbl_2_bss_1A8244;
+extern u8* lbl_2_bss_340140;
+extern u8 starMissionCompletionTracker[];
+extern u8 lbl_800E877C[];
+extern u8 lbl_80361B20[];
+extern u8 lbl_8036E548[];
+extern u8 lbl_803CB8F0[];
+extern GXColor lbl_2_data_4BA8;
+extern void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d);
+extern void fn_8006C488(void);
+extern void fn_8006877C(u8 track);
+extern void fn_800216F8(u8 group, s32 (*callback)(u8* state));
+extern s32 fn_800627F8(u8* state);
+extern s32 fn_2_20CB0(u32 index);
+extern void fn_2_207FC(void);
+extern void fn_2_20328(void);
+extern void fn_2_20D08(void);
+extern void fn_2_2460C(void);
+extern void fn_2_37460(void);
+extern void fn_2_379D0(void);
+extern void fn_2_37D98(void);
+extern void fn_2_40A9C(void);
+extern void fn_2_454E8(void);
+extern void fn_2_46418(void);
+extern void fn_2_466AC(void);
+extern void fn_2_467FC(void);
+extern void fn_2_468DC(void);
+extern void fn_2_4AB1C(void);
+extern s32 fn_2_46D00(void);
 extern void fn_2_46D94(s16* a, s16* b, s16 count, s32 c, s32 d);
 extern s32 fn_8006CDC0(s32 team);
 extern s32 fn_2_44E2C(s32 ch);
@@ -129,6 +161,194 @@ void fn_2_1B1BC(void) {
         o[0x28] = 0;
         break;
     }
+}
+#endif
+
+// NONMATCHING 94%: register allocation and stack frame size (0x30 vs 0x40) differ; the scene-18
+// sub-switch compare tree lacks one bge
+#if NONMATCHING
+// Same as fn_2_1A420 (auto_00_000194BC_text), inlined here.
+static inline s32 starMissionBonusActive(void) {
+    s32 result = 0;
+    if (*(s16*)(lbl_2_bss_1A823C[0] + 0x30) == 3) {
+        fn_2_4AB1C();
+        if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 0) {
+            if (lbl_2_bss_1A8248[0x441C] == 5) {
+                if (fn_2_46D00() != 0) {
+                    result = 1;
+                }
+            } else if (lbl_2_bss_1A8248[0x4426] & 0x20) {
+                result = 1;
+            }
+        }
+    }
+    return !!result;
+}
+
+// Start a child task and wait for it (o->_10 set to 1 when it finishes).
+#define START_CHILD(func, next)                          \
+    do {                                                 \
+        u8* child = fn_800B0A5C_insertQueue(func, 2);    \
+        child[0x28] = 0;                                 \
+        *(s16*)(o + 0x10) = 0;                           \
+        *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = (next);    \
+    } while (0)
+
+#define WAIT_CHILD(next)                                 \
+    if (*(s16*)(o + 0x10) == 1) {                        \
+        *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = (next);    \
+    }
+
+// fn_2_1B7B4, size:0x79C
+// Star challenge menu scene: sets up the work-area pointers and runs the scene state machine.
+void fn_2_1B7B4(void) {
+    u8* o;
+    GXColor clear;
+
+    lbl_2_bss_1A8248 = starMissionCompletionTracker;
+    o = lbl_803CC1B8;
+    lbl_2_bss_1A824C[0] = lbl_2_bss_1A8250;
+    lbl_2_bss_1A8238 = starMissionCompletionTracker + 0x1610;
+    lbl_2_bss_1A8244 = lbl_80361B20;
+    lbl_2_bss_1A823C[0] = lbl_800E877C;
+    lbl_2_bss_1A8234[0] = lbl_2_bss_1A8250;
+    lbl_2_bss_1A8230[0] = lbl_2_bss_1A8250 + 0x162998;
+    lbl_2_bss_340140 = lbl_8036E548;
+
+    switch (*(s16*)(lbl_2_bss_1A823C[0] + 0x32)) {
+    case 0:
+        fn_8006C488();
+        fn_8001F228();
+        fn_2_1C0D4();
+        fn_8000F4B8(0, -1, -1, -1);
+        *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 2;
+        break;
+    case 1:
+        WAIT_CHILD(2);
+        break;
+    case 2:
+        *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 3;
+        break;
+    case 3:
+        *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 4;
+        break;
+    case 4:
+        lbl_2_bss_1A8248[0x44F4] = starMissionBonusActive();
+        if ((s8)lbl_2_bss_1A8248[0x44F4] == 0) {
+            *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 0xC;
+        } else {
+            clear = lbl_2_data_4BA8;
+            GXSetCopyClear(clear, 0xFFFFFF);
+            changeScene(1, 6);
+            if (lbl_2_bss_1A8248[0x4415] >= 3) {
+                if (fn_2_4E970() == 1) {
+                    *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 5;
+                }
+            } else {
+                *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 0xC;
+            }
+        }
+        break;
+    case 5:
+        START_CHILD(fn_2_37460, 6);
+        break;
+    case 6:
+        WAIT_CHILD(7);
+        break;
+    case 7:
+        lbl_2_bss_1A8234[0][0x162992] = 0;
+        lbl_2_bss_1A8230[0][0x32A86] = 0;
+        fn_2_54474();
+        fn_2_2460C();
+        *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 8;
+        break;
+    case 8:
+        fn_8006877C(0xD);
+        START_CHILD(fn_2_37D98, 9);
+        break;
+    case 9:
+        WAIT_CHILD(0xA);
+        break;
+    case 10:
+        START_CHILD(fn_2_40A9C, 0xB);
+        break;
+    case 11:
+        WAIT_CHILD(0xC);
+        break;
+    case 12:
+        if ((s8)lbl_2_bss_1A8248[0x44F4] == 0) {
+            START_CHILD(fn_2_1B6CC, 0xD);
+        } else {
+            START_CHILD(fn_2_1B5C0, 0xD);
+        }
+        break;
+    case 13:
+        WAIT_CHILD(0xE);
+        break;
+    case 14:
+        fn_800216F8(0x26, fn_800627F8);
+        *(s16*)(o + 0x10) = 0;
+        *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 0xF;
+        break;
+    case 15:
+        WAIT_CHILD(0x12);
+        break;
+    case 18:
+        switch (*(s16*)(lbl_2_bss_1A823C[0] + 0x30)) {
+        case 0:
+            lbl_2_bss_1A8248[0x441C] = fn_2_20CB0(*(u32*)(lbl_8034E9A0 + 0x46E0));
+            lbl_2_bss_1A8248[0x441D] = lbl_803CB8F0[lbl_2_bss_1A8248[0x441C]];
+            if ((s8)lbl_2_bss_1A8248[0x1606] == 0) {
+                lbl_2_bss_1A8248[0x1605] = 0;
+                fn_2_207FC();
+                fn_2_466AC();
+            } else {
+                fn_2_20328();
+                fn_2_46418();
+                fn_2_468DC();
+                fn_2_466AC();
+                fn_2_467FC();
+                fn_2_454E8();
+            }
+            START_CHILD(fn_2_379D0, 0x13);
+            break;
+        case 1:
+            fn_2_468DC();
+            *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 0x17;
+            break;
+        case 8:
+            lbl_2_bss_1A8248[0x44F2] = 0;
+            *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 0x17;
+            break;
+        default:
+            lbl_2_bss_1A8248[0x44F2] = 0;
+            *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 0x17;
+            break;
+        }
+        break;
+    case 19:
+        WAIT_CHILD(0x17);
+        break;
+    case 20:
+        *(s16*)(lbl_2_bss_1A824C[0] + 0x197746) = 7;
+        START_CHILD(fn_2_1B314, 0x15);
+        break;
+    case 21:
+        WAIT_CHILD(0x16);
+        break;
+    case 22:
+        START_CHILD(fn_2_1B1BC, 0x17);
+        break;
+    case 23:
+        if (*(s16*)(o + 0x10) == 1) {
+            *(s16*)(o + 0x10) = 0;
+            *(void (**)(void))lbl_803CC1B8 = fn_2_20D08;
+            *(s16*)(lbl_2_bss_1A823C[0] + 0x32) = 0;
+        }
+        break;
+    }
+    g_d_GameSettings.FrameCountWhileNotAtMainMenu++;
+    (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976C0))++;
 }
 #endif
 
