@@ -320,10 +320,41 @@ ActorModel** fn_800111D8(ActorMgrActor* actor) {
     return &lbl_8036E548.models[actor->modelIndex].model;
 }
 
+// NONMATCHING 99%: original keeps &actors[i] (addi 0xc04) in r5 and copies it to r31; ours folds the offset
 // .text:0x800111FC size:0x15C
+#if NONMATCHING
 ActorMgrActor* fn_800111FC(ActorMgrActor* actor, s32 second) {
-    return 0;
+    s32 slot;
+    ActorMgrActor* next;
+    if (g_d_GameSettings.GameModeSelected != 6) {
+        return actor;
+    }
+    slot = actor->modelIndex % 4;
+    lbl_8036E548.actors[slot + 4]._25D = 0;
+    lbl_8036E548.actors[slot]._25D = 0;
+    next = &lbl_8036E548.actors[slot + ((second != 0) << 2)];
+    lbl_8036E548.active[slot] = next;
+    if (next->modelIndex != actor->modelIndex) {
+        fn_8001BA44(slot, actor->_062, actor->_25F, actor->_262, 0, actor->_265, actor->_269);
+        next->_064 = actor->_064;
+        next->_06C = actor->_06C;
+        next->_25E = actor->_25E;
+        next->_260 = actor->_260;
+        next->_263 = actor->_263;
+        next->_266 = actor->_266;
+        next->_26A = actor->_26A;
+        next->_26D = actor->_26D;
+        next->_066 = actor->_066;
+        next->_06E = actor->_06E;
+        next->_261 = actor->_261;
+        next->_264 = actor->_264;
+        next->_267 = actor->_267;
+        next->_26B = actor->_26B;
+        next->_26E = actor->_26E;
+    }
+    return next;
 }
+#endif
 
 // .text:0x80011358 size:0x110
 void fn_80011358(s32 index, s32 kind) {
