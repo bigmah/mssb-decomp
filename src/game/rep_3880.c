@@ -1952,6 +1952,7 @@ void fn_3_14F5A4(u8* o, s8 a) {
 #endif
 #pragma dont_inline on
 
+#pragma dont_inline off
 // .text:0x0014F8D0 size:0x60 mapped:0x8078E964
 void fn_3_14F8D0(u8* a) {
     u8* p;
@@ -1968,10 +1969,23 @@ void fn_3_14F8D0(u8* a) {
     } while (p != NULL);
 }
 
+// NONMATCHING 99% (with 14F5A4 unwrapped): 14F8D0/14F5A4 inlined; only the inherited 14F5A4 differences (Vec stack slots, int->float order)
 // .text:0x0014F930 size:0x6E0 mapped:0x8078E9C4
+#if NONMATCHING
 void fn_3_14F930(s8 a) {
-    return;
+    u8* e = fn_800339F0(NULL, 0x1E);
+    if (e != NULL) {
+        fn_3_14F5A4(e, a);
+    } else {
+        e = fn_80033A24(fn_3_14ED24, 0x80, 0, *(s32*)(lbl_3_data_26C94 + 4), 1, 0x1E);
+        if (e != NULL) {
+            fn_3_14F8D0(e);
+            fn_3_14F5A4(e, a);
+        }
+    }
 }
+#endif
+#pragma dont_inline on
 
 // .text:0x00150010 size:0x60 mapped:0x8078F0A4
 void fn_3_150010(s8 a) {
