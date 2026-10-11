@@ -265,8 +265,11 @@ void fn_8006862C(void) {
 }
 
 // .text:0x80068720 size:0x5C
-void fn_80068720(void) {
-    return;
+void fn_80068720(u8 track) {
+    if (lbl_800EF808.unk398 != 0) {
+        fn_800A86B4(3);
+        fn_800A8B78(&lbl_802E4CE8[track]);
+    }
 }
 
 // .text:0x8006877C size:0xBC
