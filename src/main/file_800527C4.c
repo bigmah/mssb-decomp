@@ -1088,9 +1088,72 @@ void fn_8005AF68(SceneTask* task) {
 #endif
 
 // .text:0x8005B298 size:0x4C8
-void fn_8005B298(void) {
-    return;
+// NONMATCHING 92%: loop registers differ
+#if NONMATCHING
+void fn_8005B298(SceneTask* task) {
+    s32 i;
+    s32 j;
+    s8 team = lbl_803297E0.team;
+    CharacterStats* player = inMemRoster[team];
+    u8 flag;
+
+    for (i = 0; i < 9; i++, player++) {
+        TASK_OBJ(task, i + 0x5A)->_5C = i << 16;
+        TASK_OBJ(task, i + 0x6C)->flags &= ~2;
+        if (lbl_803297E0.teamKind[team] == 0) {
+            fn_800363D8(task, i + 0x63, 1, 0x83, player->stats.CharID);
+            TASK_OBJ(task, i + 0xAB)->_5C = player->stats.CharacterClass << 16;
+            TASK_OBJ(task, i + 0x99)->_5C = (player->stats.BattingStance + player->stats.FieldingArm * 2) << 16;
+            TASK_OBJ(task, i + 0x134)->flags &= ~2;
+        } else {
+            ChallengeTrackingStruct* tracker;
+            s8 total;
+            s32 left;
+
+            fn_800363D8(task, i + 0x63, 1, 0x83, inMemRoster[1][i].stats.CharID);
+            tracker = &gChallengeState.trackers[inMemRoster[1][i].stats.CharID];
+            total = ((ScoutFlagTable*)tracker->scoutFlagPointer)->flags[gChallengeState._4415][gChallengeState._441C];
+            left = total - (s8)tracker->scoutFlagsAchieved;
+            for (j = 0; j < 5; j++) {
+                if (j < total && left > j) {
+                    TASK_OBJ(task, j + i * 5 + 0x13D)->_5C = 0;
+                } else if (j < total) {
+                    TASK_OBJ(task, j + i * 5 + 0x13D)->_68 = 1;
+                    if (g_d_GameSettings._06 == 2) {
+                        sndFXStartEx(0x1B1, 0x7F, 0x3F, 0);
+                    } else {
+                        sndFXStartEx(0x1E6, 0x7F, 0x3F, 0);
+                    }
+                } else {
+                    TASK_OBJ(task, j + i * 5 + 0x13D)->flags &= ~2;
+                }
+            }
+            TASK_OBJ(task, i + 0xAB)->flags &= ~2;
+            TASK_OBJ(task, i + 0x99)->flags &= ~2;
+        }
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+        } else {
+            flag = lbl_8034E9A0._489B[team][i];
+        }
+        if (flag != 0 && (team != 1 || g_d_GameSettings.GameModeSelected != 5)) {
+            TASK_OBJ(task, i + 0x7E)->_68 = 1;
+            TASK_OBJ(task, i + 0x87)->flags |= 2;
+            TASK_OBJ(task, i + 0x87)->_5C = 0;
+            TASK_OBJ(task, i + 0x87)->_68 = 1;
+        } else if (lbl_80361B20[player->stats.CharID] != 0 && g_d_GameSettings.GameModeSelected != 5) {
+            TASK_OBJ(task, i + 0x7E)->_68 = 1;
+            TASK_OBJ(task, i + 0x87)->flags |= 2;
+            TASK_OBJ(task, i + 0x87)->_5C = 0;
+            TASK_OBJ(task, i + 0x87)->_68 = 0;
+        } else {
+            TASK_OBJ(task, i + 0x7E)->flags &= ~2;
+            TASK_OBJ(task, i + 0x87)->flags &= ~2;
+        }
+        TASK_OBJ(task, i + 0x75)->flags &= ~2;
+    }
 }
+#endif
 
 // .text:0x8005B760 size:0x3FC
 // NONMATCHING 93%: state test shape and register numbering differ
