@@ -274,8 +274,15 @@ void convertGeometryAndSknHeader(DODisplayDataPtr pal, void* sknHeader) {
 }
 
 // .text:0x800BCDBC size:0x7C
-void fn_800BCDBC(void) {
-    return;
+void fn_800BCDBC(DODisplayDataPtr pal) {
+    s32 i;
+
+    for (i = pal->numDescriptors - 1; i >= 0; i--) {
+        if (pal->descriptorArray[i].dispObj->textureData != NULL) {
+            fn_800ACFB0(pal->descriptorArray[i].dispObj->textureData);
+        }
+    }
+    fn_800ACFB0(pal->descriptorArray[0].dispObj);
 }
 
 // .text:0x800BCE38 size:0xC0
