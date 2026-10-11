@@ -2426,7 +2426,7 @@ void fn_8002F258(Vec* pos, s32 id, ParticleParams* prm) {
 #endif
 
 // .text:0x8002F5F4 size:0x408
-// NONMATCHING 49%: register allocation and float scheduling
+// NONMATCHING 86%: register allocation (prm/i, the inlined allocation) and a 0x10 smaller stack frame
 #if NONMATCHING
 void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm) {
     Vec v;
@@ -2461,7 +2461,7 @@ void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm) {
         }
         p->sizeY = size;
         p->sizeX = size;
-        p->color.rgba = (prm->gray << 24) | (prm->gray << 8) | (prm->gray << 16) | 0xFF;
+        p->color.rgba = (prm->gray << 24) | ((prm->gray << 8) | (prm->gray << 16)) | 0xFF;
         p->texIndex = prm->texIndex;
         p->uvFrame = 0;
         p->uvOrder = 1;
@@ -2471,7 +2471,7 @@ void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm) {
         p->pos.z = v.z;
         p->sizeY = size;
         p->sizeX = size;
-        p->color.rgba = (prm->gray << 24) | (prm->gray << 8) | (prm->gray << 16) | 0xFF;
+        p->color.rgba = (prm->gray << 24) | ((prm->gray << 8) | (prm->gray << 16)) | 0xFF;
         p->texIndex = prm->texIndex2[i];
         p->uvFrame = 0;
         p->uvOrder = 0;
