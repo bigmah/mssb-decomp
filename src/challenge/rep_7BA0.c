@@ -24,7 +24,19 @@ void fn_1_282F4(void) {
 
 // .text:0x000284A8 size:0x84
 void fn_1_284A8(void) {
-    return;
+    ChMovieTask* task = lbl_803CC1B8;
+    u16 repeated = lbl_803C77B8[0].repeat;
+
+    if (repeated & 3) {
+        task->movieIdx ^= 1;
+    } else if (repeated & 0x100) {
+        task->state = 0;
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_282F4;
+    } else if (repeated & 0x200) {
+        ChTaskHeader* parent = task->h.parent;
+        parent->result = 1;
+        fn_800B0A14_removeQueue(parent);
+    }
 }
 
 // .text:0x0002852C size:0x60
