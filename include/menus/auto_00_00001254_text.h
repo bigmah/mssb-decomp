@@ -290,4 +290,6 @@ void fn_2_B920(void);
 
 void fn_2_11698(void);
 
+void fn_2_4970(u8 team, s32 empty);
+
 #endif

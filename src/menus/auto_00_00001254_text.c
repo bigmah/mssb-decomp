@@ -12,6 +12,7 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern s16 fn_80067AC8(s16 id, s8 col);
 extern u8 lbl_800EF808[];
 extern void fn_80021AC8(void);
 extern void fn_2_74D8C(void);
@@ -105,7 +106,7 @@ extern u8 lbl_803CB8D0[];
 extern u8 lbl_800E8754[];
 extern s16 randRange_FUN_80042bf0(s32, s32);
 extern u8 lbl_80109038[];
-extern void fn_80067B40(s32, u8, s32);
+extern s32 fn_80067B40(s32, u8, s32);
 extern u8 lbl_80108EDC[];
 extern u8 inMemRoster[];
 extern u8 lbl_800EFBA4[];
@@ -3397,5 +3398,88 @@ void fn_2_1F30(void) {
         lbl_2_bss_20[0] = 0;
         break;
     }
+}
+#endif
+
+// NONMATCHING 70%: the release sequence is duplicated in the original (once per branch) and
+// fn_2_C698 is inlined into each copy.
+#if NONMATCHING
+static void fn_2_4970_release(u8 team, s32 slot) {
+    u8* row = lbl_803C6724 + team * 9;
+    s32 g = 0;
+    s32 i;
+    s32 k;
+    s32 dup = 0;
+    fn_2_C698(slot, team);
+    if (g_d_GameSettings.GameModeSelected != 5) {
+        fn_800506E8(team, (s8)row[slot + 2], 0);
+        fn_80067B40(team, row[slot + 2], 0);
+        lbl_8034E9A0[(s8)row[slot + 2] + 0x4757] = 0;
+    } else if (fn_80067B40(team, row[slot + 2], 2) != 0) {
+        for (i = 0; i < 9; i++) {
+            for (k = 0; k < 5; k++) {
+                if ((s8)row[slot + 2] == *(s16*)(lbl_80108EDC + i * 10 + k * 2)) {
+                    g = i;
+                    goto found;
+                }
+            }
+        }
+    found:
+        for (i = 0; i < 9; i++) {
+            for (k = 0; k < 5; k++) {
+                s16 m = *(s16*)(lbl_80108EDC + g * 10 + k * 2);
+                if ((s8)row[i + 2] == m && m != -1 && (s8)row[i + 2] != (s8)row[slot + 2]) {
+                    dup = 1;
+                }
+            }
+        }
+        if (dup == 0) {
+            fn_800506E8(team, (s8)fn_80067AC8((s8)row[slot + 2], 0), 0);
+            lbl_8034E9A0[fn_80067AC8((s8)row[slot + 2], 0) + 0x4757] = 0;
+        }
+    } else {
+        fn_800506E8(team, (s8)row[slot + 2], 0);
+        lbl_8034E9A0[(s8)row[slot + 2] + 0x4757] = 0;
+    }
+    row[slot + 0x26] = 0;
+    row[slot + 2] = -1;
+}
+
+// fn_2_4970, size:0x814
+void fn_2_4970(u8 team, s32 empty) {
+    s32* state = (s32*)lbl_2_bss_F468;
+    s32 cur = state[team];
+    u8* row = lbl_803C6724 + team * 9;
+    s32 slot = 0; // uninitialized in the original if no position matches
+    s32 j;
+    s8 v;
+    for (j = 0; j < 9; j++) {
+        if ((s8)row[j + 0x14] == cur) {
+            slot = j;
+        }
+    }
+    v = row[slot + 2];
+    if (v == empty) {
+        if (--state[team] < 0) {
+            state[team] = 8;
+        }
+    } else {
+        if (lbl_2_bss_F468[team + 0x37] == 0 && lbl_2_bss_F468[team + 0x3D] == 0) {
+            state[team + 2] = cur;
+            if (--state[team] < 0) {
+                state[team] = 8;
+            }
+            if (v != -1 && v != 0x36) {
+                fn_2_4970_release(team, slot);
+                row[slot + 0x4A] = 0;
+            }
+        } else {
+            fn_2_4970_release(team, slot);
+            lbl_2_bss_F468[team + 0x3D] = 0;
+            row[slot + 0x4A] = 0;
+        }
+        lbl_2_bss_F468[team + 0x37] = 0;
+    }
+    fn_800625A4(team, 0x10);
 }
 #endif
