@@ -44,7 +44,15 @@ void SetFog(void) {
 
 // .text:0x800B9A30 size:0x6C
 void SetFogNoneAgain(void) {
-    return;
+    lbl_80111700.color.b = 0;
+    lbl_80111700.color.g = 0;
+    lbl_80111700.color.r = 0;
+    lbl_80111700.type = GX_FOG_NONE;
+    lbl_80111700.startz = 0.0f;
+    lbl_80111700.endz = 0.0f;
+    lbl_80111700.nearz = 0.0f;
+    lbl_80111700.farz = 0.0f;
+    GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, lbl_80111700.color);
 }
 
 extern f32 lbl_803CC218;
