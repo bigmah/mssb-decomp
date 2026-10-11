@@ -137,3 +137,7 @@ void fn_1_1948(void) {
     }
 }
 
+// .text:0x0000196C size:0x40
+void fn_1_196C(void) {
+    fn_800A7D4C(0, &lbl_1_data_298[lbl_803CBBC0]);
+}
