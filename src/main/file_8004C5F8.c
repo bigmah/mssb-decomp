@@ -17,7 +17,9 @@ extern s32 lbl_803CB880;
 void fn_800521B0(void);
 extern f32 fn_800B4C40(s32 id);
 extern s16 lbl_800FEB08[5][4];
-extern DialogLayout lbl_800FEAAC[];
+extern DialogTables lbl_800FEAAC;
+extern u8 lbl_800FE93C[];
+extern void fn_80034E20(void* group, void* desc);
 
 // .text:0x8004C5F8 size:0x404
 void fn_8004C5F8(void) {
@@ -148,7 +150,7 @@ void fn_8004CCC0(void) {
     if (lbl_803C5F74.state == 0) {
         lbl_803C5F74.state = 1;
         if (lbl_803C5F74.table >= 0) {
-            idx = fn_8000F988(task, 8, lbl_800FEAAC[lbl_803C5F74.kind].msgId, lbl_803C5F74.table, lbl_803C5F74.msg, 0);
+            idx = fn_8000F988(task, 8, lbl_800FEAAC.layouts[lbl_803C5F74.kind].msgId, lbl_803C5F74.table, lbl_803C5F74.msg, 0);
             lbl_80366B18.entries[idx].hAlign = 1;
             lbl_803C5F74.textIdx = idx;
             lbl_80366B18.entries[idx].vAlign = 1;
@@ -249,9 +251,59 @@ close:
 #endif
 
 // .text:0x8004D0F0 size:0x370
+// NONMATCHING: the original addresses lbl_800FE93C/lbl_800FEAAC through one
+// lbl_800FCA60 base (same-TU data; the .data split ends too early)
+#if NONMATCHING
 void fn_8004D0F0(void) {
-    return;
+    LayoutGroup* task = lbl_803CC1B8;
+    if (lbl_803C5F74.active != 0) {
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        return;
+    }
+    lbl_803C5F74.active = 1;
+    fn_80034E20(task, &lbl_800FE93C[0x30]);
+    if (lbl_803C5F74._04 == 0) {
+        lbl_80371C30[task->start].obj->flags &= ~2;
+    }
+    lbl_80371C30[task->start + 1].obj->_64 = lbl_800FEAAC.layouts[lbl_803C5F74.kind].anim0;
+    lbl_80371C30[task->start + 2].obj->_64 = lbl_800FEAAC.layouts[lbl_803C5F74.kind].anim1;
+    lbl_80371C30[task->start + 8].obj->_5C = lbl_800FEAAC.layouts[lbl_803C5F74.kind].msgId << 16;
+    lbl_80371C30[task->start + 2].obj->_72 = lbl_800FEAAC.colors[lbl_803C5F74.kind][0];
+    lbl_80371C30[task->start + 3].obj->_72 = lbl_800FEAAC.colors[lbl_803C5F74.kind][1];
+    lbl_80371C30[task->start + 8].obj->_72 = lbl_800FEAAC.colors[lbl_803C5F74.kind][0];
+    if (lbl_803C5F74._1E == 1) {
+        lbl_80371C30[task->start + 3].obj->_64 = 0xE3;
+    }
+    if (lbl_803C5F74.cursor == 1) {
+        lbl_80371C30[task->start + 3].obj->_5C = 15 << 16;
+        lbl_80371C30[task->start + 3].obj->_68 = 4;
+    }
+    if (lbl_803C5F74.kind == 7 || lbl_803C5F74.kind == 10) {
+        lbl_80371C30[task->start + 3].obj->flags &= ~2;
+    }
+    if (lbl_803C5F74.kind != 9) {
+        lbl_80371C30[task->start + 4].obj->flags &= ~2;
+        lbl_80371C30[task->start + 5].obj->flags &= ~2;
+    } else {
+        fn_800363D8(task, 4, 1, 0xCD, lbl_803C5F74.cursor);
+        lbl_80371C30[task->start + 3].obj->flags &= ~2;
+    }
+    if (lbl_803C5F74.kind != 10) {
+        lbl_80371C30[task->start + 6].obj->flags &= ~2;
+        lbl_803C5F74._1D = 0;
+    } else {
+        lbl_803C5F74._1D = 1;
+    }
+    if (lbl_803C5F74._1D != 0) {
+        sndFXStartEx(0x1C2, lbl_800EFBA4[11], 0x3F, 0);
+    } else if (lbl_803C5F74.kind == 0 || (u8)(lbl_803C5F74.kind - 1) <= 4 || lbl_803C5F74.kind == 6) {
+        sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
+    }
+    task->timer = 0;
+    task->_1A = 0;
+    lbl_803CC1B8->callback = fn_8004CCC0;
 }
+#endif
 
 // .text:0x8004D460 size:0x90
 void fn_8004D460(s32 byId, s32 entry0) {

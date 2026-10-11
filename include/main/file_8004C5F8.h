@@ -33,6 +33,12 @@ typedef struct DialogLayout {
     /*0x4*/ u16 msgId;
 } DialogLayout; // size: 0x6
 
+typedef struct DialogTables {
+    /*0x00*/ DialogLayout layouts[11];
+    /*0x42*/ u8 _42[2];
+    /*0x44*/ u8 colors[12][2];
+} DialogTables; // size: 0x5C
+
 // Character select state for up to 4 cursors (lbl_803C6028).
 typedef struct RosterSelect {
     /*0x00*/ u8 _00[0x18];
@@ -114,6 +120,8 @@ void fn_8004CA48(s16 a, s16 b, s16 c, s16 d);
 s32 fn_8004CA6C(u16 buttons);
 
 void fn_8004CCC0(void);
+
+void fn_8004D0F0(void);
 
 void fn_8004CC18(void);
 
