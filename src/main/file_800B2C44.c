@@ -65,9 +65,96 @@ void fn_800B313C(void) {
 }
 
 // .text:0x800B34B4 size:0x2F0
-void fn_800B34B4(void) {
-    return;
+// Builds the forward matrix of one bone after (recursively) building its parents.
+// NONMATCHING 97%: blend switch is missing a dead `b` after case 0; prologue arg moves scheduled differently
+#if NONMATCHING
+void fn_800B34B4(GameActor* actor, GameBone* bone, Mtx world) {
+    Mtx m;
+    Mtx ctrlMtx;
+    Mtx rot;
+    f32 blend;
+    GameBone* parent;
+    GameBone* target;
+    u16 i;
+
+    blend = actor->blend;
+    switch (bone->flags & 3) {
+    case 0:
+        blend = 1.0f;
+        break;
+    case 1:
+        break;
+    case 2:
+        blend = blend * blend;
+        break;
+    default:
+        blend = 1.0f;
+        break;
+    }
+
+    for (i = 0; i < actor->totalBones && bone->boneID != actor->boneArray[i]->boneID; i++) {
+    }
+
+    parent = (GameBone*)bone->branch.Parent;
+    if (parent != NULL) {
+        fn_800B34B4(actor, parent, world);
+    }
+
+    if (bone->flags & 0x20) {
+        if (bone->flags & 4) {
+            bone->blendCtrl.controlParams.srt.t.x = bone->animCtrl.controlParams.srt.t.x;
+        }
+        if (bone->flags & 8) {
+            bone->blendCtrl.controlParams.srt.t.y = bone->animCtrl.controlParams.srt.t.y;
+        }
+        if (bone->flags & 0x10) {
+            bone->blendCtrl.controlParams.srt.t.z = bone->animCtrl.controlParams.srt.t.z;
+        }
+    }
+
+    if (bone->animCtrl.type != 0) {
+        if (actor->boneRemap == NULL) {
+            fn_800B84AC(&bone->animCtrl, &bone->blendCtrl, &bone->animCtrl, blend);
+            CTRLBuildMatrix(&bone->animCtrl, m);
+        } else if (actor->boneCallback == NULL ||
+                   actor->boneCallback(bone, actor->boneArray[actor->boneRemap[i]], m, blend) == 0) {
+            target = actor->boneArray[actor->boneRemap[i]];
+            fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, blend);
+            if (bone->branch.Parent != NULL) {
+                CTRLBuildMatrix_FlipY(&target->animCtrl, m);
+            } else {
+                CTRLBuildMatrix_FlipX(&target->animCtrl, m);
+            }
+            switch (bone->rotAxis) {
+            case 1:
+                PSMTXRotRad(rot, 'X', 3.1415927f);
+                PSMTXConcat(m, rot, m);
+                break;
+            case 2:
+                PSMTXRotRad(rot, 'Y', 3.1415927f);
+                PSMTXConcat(m, rot, m);
+                break;
+            case 3:
+                PSMTXRotRad(rot, 'Z', 3.1415927f);
+                PSMTXConcat(m, rot, m);
+                break;
+            }
+        }
+        if (bone->animPipe->replaceHierarchyCtrl == 0) {
+            CTRLBuildMatrix(&bone->orientationCtrl.base, ctrlMtx);
+            PSMTXConcat(ctrlMtx, m, m);
+        }
+    } else {
+        CTRLBuildMatrix(&bone->orientationCtrl.base, m);
+    }
+
+    if (bone->inheritanceFlag == 1 && parent != NULL) {
+        PSMTXConcat(parent->forwardMtx, m, bone->forwardMtx);
+    } else {
+        PSMTXConcat(world, m, bone->forwardMtx);
+    }
 }
+#endif
 
 // .text:0x800B37A4 size:0x2D4
 void f_BuildBoneSkinOrientationMatrix(GameBone* bone, Mtx parent) {
