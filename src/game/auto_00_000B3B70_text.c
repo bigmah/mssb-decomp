@@ -42,6 +42,39 @@ extern void fn_3_B3C78(u8 state);
 void fn_3_B7184(void);
 void fn_3_B7620(void);
 
+// Per-player character select state in g_Minigame, 9 bytes per player from 0x19E8.
+typedef struct MgCharSel {
+    s8 charId;  // 0x0 (0x19E8)
+    u8 chosen;  // 0x1
+    s8 _2;
+    u8 _3;
+    s8 _4;
+    s8 _5;
+    s8 random;  // 0x6: charId picked by fn_8004FD64
+    s8 _7;
+    s8 _8;
+} MgCharSel;
+// View of g_Minigame's character-select block (MiniGameStruct only has scalar fields here).
+typedef struct MgSelView {
+    u8 pad0[0x19D2];
+    u16 selTimer[4];      // 0x19D2
+    u8 pad19DA[0x19E8 - 0x19DA];
+    MgCharSel sel[4];     // 0x19E8
+} MgSelView;
+#define MG_CHARSEL (((MgSelView*)&g_Minigame)->sel)
+#define MG_SEL_TIMER (((MgSelView*)&g_Minigame)->selTimer)
+
+// Character select cursors (lbl_803C6028, RosterSelect in main/file_8004C5F8.h).
+typedef struct PracticeRosterSelect {
+    u8 _00[0x7F];
+    s8 _7F[4];
+} PracticeRosterSelect;
+extern PracticeRosterSelect lbl_803C6028;
+extern void fn_800506E8(s32 owner, s32 entry, s32 set);
+extern s32 fn_80050760(s32 p, s32 unused, s32 pressed, u16 dirs, s32 mode);
+extern s32 fn_8004FD64(s32 player);
+extern u32 fn_800628D4(s32 kind);
+
 #define SAVE_LEVEL_CLEARED(type) (lbl_80354768 + 0xCF4E + (type) * 4)
 
 extern u8 lbl_3_common_bss_34C90[];
@@ -654,7 +687,7 @@ void fn_3_B5090(void) {
         sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
         return;
     }
-    d = *(u16*)&c->_08;
+    d = c->_08;
     if (d & 8) {
         if (g_Practice.subMenuCursor != 0) {
             g_Practice.subMenuCursor -= 1;
@@ -690,7 +723,7 @@ void fn_3_B5694(void) {
             fn_3_B3C94(7);
             sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
         } else {
-            d = *(u16*)&c->_08;
+            d = c->_08;
             if (d & 1) {
                 if (g_Practice.practiceType != 0) {
                     g_Practice.practiceType -= 1;
@@ -980,5 +1013,63 @@ void fn_3_B77DC(void) {
     case 3:
         fn_3_B7184();
         break;
+    }
+}
+
+// .text:0x000B49D4 size:0x26C
+void fn_3_B49D4(void) {
+    s32 i;
+    s32 prev;
+    s32 r;
+    u16 pressed;
+
+    for (i = 0; i < 4; i++) {
+        if (i != g_Practice.homeAway) {
+            continue;
+        }
+        if (MG_SEL_TIMER[i] < 0xFFFE) {
+            MG_SEL_TIMER[i]++;
+        } else {
+            MG_SEL_TIMER[i] = 0xFFFF;
+        }
+        pressed = g_Controls[i].newButtonInput;
+        if ((pressed & 0x100) && MG_CHARSEL[i].charId >= 0 && MG_CHARSEL[i].random == 0) {
+            if (lbl_803C6028._7F[i] < 0 && MG_CHARSEL[i].charId == MG_CHARSEL[i]._2 && MG_CHARSEL[i]._4 == MG_CHARSEL[i]._5 &&
+                MG_CHARSEL[i]._7 != 0 && MG_CHARSEL[i]._8 != 0) {
+                MG_CHARSEL[i].chosen = 1;
+                fn_800506E8(i, MG_CHARSEL[i].charId, 1);
+                fn_800628D4(MG_CHARSEL[i].charId);
+                g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+                g_Practice.practiceState = 3;
+            }
+        } else if (pressed & 0x200) {
+            g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+            g_Practice.practiceState = 5;
+            sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            return;
+        } else {
+            prev = MG_CHARSEL[i].charId;
+            r = fn_80050760(i, g_Controls[i].buttonInput, pressed, g_Controls[i]._08, 0);
+            if (r >= 0) {
+                MG_CHARSEL[i].charId = r;
+                if (prev != MG_CHARSEL[i].charId) {
+                    MG_SEL_TIMER[i] = 0;
+                    g_Minigame.battingHandedness[i] = lbl_8034E9A0[MG_CHARSEL[i].charId].stats.FieldingArm * 2 +
+                                                      lbl_8034E9A0[MG_CHARSEL[i].charId].stats.BattingStance;
+                }
+                MG_CHARSEL[i].random = 0;
+            } else {
+                MG_CHARSEL[i].charId = fn_8004FD64(i);
+                MG_CHARSEL[i].random = 1;
+                MG_CHARSEL[i]._7 = 0;
+            }
+        }
+        if (g_Controls[i].newButtonInput & 0x400) {
+            g_Minigame.battingHandedness[i]++;
+            if (g_Minigame.battingHandedness[i] > 3) {
+                g_Minigame.battingHandedness[i] = 0;
+            }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        }
     }
 }
