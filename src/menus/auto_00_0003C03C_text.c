@@ -2832,10 +2832,8 @@ void fn_2_3C7DC(void) {
     fn_8006C6C4();
     for (i = 0; i < 20; i++) {
         if (lbl_2_data_373C[i] == 1) {
-            if (i == 5) {
-                if (lbl_2_bss_1A8248[0][0x442C] == 0) {
-                    lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
-                }
+            if (i == 5 && lbl_2_bss_1A8248[0][0x442C] == 0) {
+                lbl_2_bss_1A824C[0][i + 0x19789F] = 2;
             } else if (i == 19) {
                 if (*(s8*)(lbl_2_bss_1A8248[0] + 0x43C2) == 0 ||
                     *(s8*)(lbl_2_bss_1A8248[0] + 0x43C3) == 0 ||
