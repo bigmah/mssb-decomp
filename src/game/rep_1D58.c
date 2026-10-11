@@ -730,9 +730,86 @@ s32 fn_3_B9BB4(u32 type) {
     return 0;
 }
 
+extern void convertTextureHeader(void* textures);
+extern void LoadActorLayout(void* layout);
+extern void convertGeometryAndSknHeader(void* geometry, void* sknHeader);
+extern void haveActLayoutPointToGeoHeader(void* actor, void* geometry);
+extern void fn_800BD190(void* geometry, void* textures);
+extern void ANIMGet(void* animBank);
+
+// Relocates a packed archive in place. `kinds` gives the content type of each
+// file group; `table` starts with a list of u32 offsets (relative to `table`)
+// that are turned into pointers. `outIdx` (optional) receives the first table
+// slot of each group.
 // .text:0x000B9D68 size:0x250 mapped:0x806F8DFC
-void fn_3_B9D68(void) {
-    return;
+void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx) {
+    s32* out = outIdx;
+    void* tex = NULL;
+    void* skn = NULL;
+    s32 idx = 0;
+    s32 i = 0;
+    void* layout;
+    void* geo;
+
+    do {
+        if (outIdx != NULL) {
+            *out = idx;
+        }
+        switch (kinds[i]) {
+        case 1:
+            tex = table + ((u32*)table)[idx++];
+            convertTextureHeader(tex);
+            break;
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            layout = table + ((u32*)table)[idx++];
+            geo = table + ((u32*)table)[idx++];
+            if ((u8)(kinds[i] - 2) > 1) {
+                void* anim = table + ((u32*)table)[idx++];
+                ANIMGet(anim);
+            }
+            if (kinds[i] == 3 || kinds[i] == 5) {
+                skn = table + ((u32*)table)[idx++];
+            }
+            LoadActorLayout(layout);
+            convertGeometryAndSknHeader(geo, skn);
+            skn = NULL;
+            fn_800BD190(geo, tex);
+            haveActLayoutPointToGeoHeader(layout, geo);
+            break;
+        case 6: {
+            u8* sub = table + ((u32*)table)[idx++];
+            s32 n;
+            s32 i;
+            u32* q;
+            n = *(u16*)sub;
+            q = (u32*)(sub + 4);
+            for (i = n; i >= 0; i--) {
+                *q += (u32)sub; // TODO type: offsets become pointers in place
+                q++;
+            }
+            break;
+        }
+        case 7: {
+            void* anim = table + ((u32*)table)[idx++];
+            ANIMGet(anim);
+            break;
+        }
+        case 0:
+        case 8:
+        case 9:
+        default:
+            idx++;
+            break;
+        }
+        out++;
+        i++;
+    } while (--count != 0);
+    while (idx-- != 0) {
+        ((u32*)table)[idx] += (u32)table; // TODO type: offsets become pointers in place
+    }
 }
 
 // .text:0x000B9FB8 size:0x198 mapped:0x806F904C

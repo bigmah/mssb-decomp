@@ -37,7 +37,7 @@ void fn_3_B97DC(u8* p, u32 f);
 void fn_3_B98E8(void* p);
 void fn_3_B99E4(void);
 s32 fn_3_B9BB4(u32 type);
-void fn_3_B9D68(void);
+void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx);
 void fn_3_B9FB8(u32 type, void* p);
 
 #endif // !__GAME_rep_1D58_H_

@@ -999,7 +999,7 @@ void fn_3_BF238(void) {
 }
 
 // .text:0x000BF6C0 size:0x1B8 mapped:0x806FE754
-extern void fn_3_B9D68(void*, int, void*, void*);
+extern void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx);
 extern void fn_8004B1B8(s32, void*);
 extern void fn_80035750(s32, s32, int);
 extern void* ActorObjectInitTable(int);
