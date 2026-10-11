@@ -141,5 +141,30 @@ s32 fn_2_513E8(u16* str, u16 font);
 
 s32 fn_2_51470(s32 index, u16 font);
 
-#endif
+void fn_2_4D378(void);
 
+void fn_2_4D67C(void);
+
+void fn_2_4D960(void);
+
+void fn_2_4DC24(void);
+
+void fn_2_4DEE8(void);
+
+void fn_2_4E1C0(void);
+
+void fn_2_535B0(void);
+
+void fn_2_54474(void);
+
+void fn_2_52260(void);
+
+void fn_2_51C58(void);
+
+void fn_2_52690(void);
+
+void fn_2_4B2D0(void);
+
+s16 fn_2_4EB9C(void);
+
+#endif
