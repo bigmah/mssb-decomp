@@ -55,6 +55,7 @@ extern f32 lbl_3_data_5CDC[];
 extern f32 lbl_3_data_5D08[];
 extern s16 lbl_3_data_79B4[];
 u8 fn_3_107D70(s8 i);
+extern f32 lbl_3_rodata_BBC;
 extern u8 g_Batter[];
 BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
 extern u8 lbl_3_common_bss_34C90[];
@@ -2525,9 +2526,107 @@ void fn_3_30A58(void) {
 }
 
 // .text:0x00030D74 size:0x63C mapped:0x8066FE08
+// NONMATCHING 88%: register allocation (loop pointers/counters, the x/z out-params' stack slots); first loop is fn_3_30A58's body inlined
+#if NONMATCHING
 void fn_3_30D74(void) {
-    return;
+    int i;
+    u8* f;
+    f32 x;
+    f32 z;
+    f32 dz;
+    f32 dx;
+    f32 d;
+    int moving;
+    if (lbl_3_common_bss_34C90[0x1D5] != 0) {
+        return;
+    }
+    for (i = 2; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        fn_3_58F58(i, &x, &z);
+        d = (*(f32*)f - x) * (*(f32*)f - x) + (*(f32*)(f + 8) - z) * (*(f32*)(f + 8) - z);
+        SQRT_L(d);
+        if (d < 0.1f) {
+            x = *(f32*)f;
+            z = *(f32*)(f + 8);
+        }
+        *(f32*)(f + 0x14) = x;
+        *(f32*)(f + 0x1C) = z;
+        dx = x - *(f32*)f;
+        dz = z - *(f32*)(f + 8);
+        if (0.0f == dx && 0.0f == dz) {
+            *(f32*)(f + 0x50) = 0.0f;
+            *(f32*)(f + 0x68) = 0.0f;
+        } else {
+            *(f32*)(f + 0x64) = atan2(dz, dx);
+            d = dx * dx + dz * dz;
+            SQRT_L(d);
+            *(f32*)(f + 0x68) = d;
+            f[0x1D9] = 1;
+        }
+    }
+    for (i = 2; i < 9; i++) {
+        f = g_Fielders + i * 0x268;
+        moving = 0;
+        if (*(f32*)(f + 0x68) > lbl_3_rodata_BBC) {
+            moving = 1;
+        } else if (*(f32*)(f + 0x50) >= lbl_3_rodata_B24 && *(f32*)(f + 0x68) > lbl_3_rodata_B7C) {
+            moving = 1;
+        }
+        if (moving != 0) {
+            if (*(s16*)(g_Pitcher + 0x11E) <= 0) {
+                *(f32*)(f + 0x50) = lbl_3_rodata_B24;
+            } else if (g_Batter[0x8F] >= 1 && g_Batter[0x8F] <= 3 && (i == 2 || i == 4)) {
+                *(f32*)(f + 0x50) = *(f32*)(f + 0x50) + *(f32*)(f + 0x5C);
+                if (*(f32*)(f + 0x50) > *(f32*)(f + 0x58)) {
+                    *(f32*)(f + 0x50) = *(f32*)(f + 0x58);
+                }
+            } else if (((i == 3 && g_Batter[0x7B] == 0) || (i == 5 && g_Batter[0x7B] != 0)) && g_Runners[0x277] != 0 &&
+                       g_Runners[0x2A1] != 0) {
+                *(f32*)(f + 0x50) = *(f32*)(f + 0x50) + *(f32*)(f + 0x5C);
+                if (*(f32*)(f + 0x50) > *(f32*)(f + 0x58)) {
+                    *(f32*)(f + 0x50) = *(f32*)(f + 0x58);
+                }
+            } else if (*(s16*)(g_Pitcher + 0x11E) < 60) {
+                *(s16*)(f + 0x17E) = 60 - *(s16*)(g_Pitcher + 0x11E);
+                *(f32*)(f + 0x50) = *(f32*)(f + 0x68) / *(s16*)(f + 0x17E);
+            } else {
+                *(s16*)(f + 0x17E) = 0;
+                *(f32*)(f + 0x50) = 0.0f;
+            }
+            *(f32*)(f + 0x68) = *(f32*)(f + 0x68) - *(f32*)(f + 0x50);
+            if (*(f32*)(f + 0x50) <= 0.0f) {
+                *(f32*)(f + 0x50) = 0.0f;
+                *(s16*)(f + 0x17E) = -1;
+            } else if (*(f32*)(f + 0x68) < 0.0f) {
+                *(f32*)(f + 0x30) = *(f32*)(f + 0x14) - *(f32*)f;
+                *(f32*)(f + 0x34) = *(f32*)(f + 0x1C) - *(f32*)(f + 8);
+                *(f32*)f = *(f32*)(f + 0x14);
+                *(f32*)(f + 8) = *(f32*)(f + 0x1C);
+                *(f32*)(f + 0x68) = 0.0f;
+                *(s16*)(f + 0x17E) = 0;
+            } else {
+                *(f32*)(f + 0x30) = *(f32*)(f + 0x50) * (f32)cos(*(f32*)(f + 0x64));
+                *(f32*)(f + 0x34) = *(f32*)(f + 0x50) * (f32)sin(*(f32*)(f + 0x64));
+                *(f32*)f = *(f32*)f + *(f32*)(f + 0x30);
+                *(f32*)(f + 8) = *(f32*)(f + 8) + *(f32*)(f + 0x34);
+                *(s16*)(f + 0x17E) = *(f32*)(f + 0x68) / *(f32*)(f + 0x50);
+            }
+            f[0x1E3] = 0;
+        } else {
+            *(f32*)(f + 0x30) = *(f32*)(f + 0x14) - *(f32*)f;
+            *(f32*)(f + 0x34) = *(f32*)(f + 0x1C) - *(f32*)(f + 8);
+            *(f32*)f = *(f32*)(f + 0x14);
+            *(f32*)(f + 8) = *(f32*)(f + 0x1C);
+            *(f32*)(f + 0x68) = 0.0f;
+            *(f32*)(f + 0x50) = 0.0f;
+            f[0x1E3] = 1;
+            *(s16*)(f + 0x17E) = -1;
+        }
+    }
+    *(f32*)g_Fielders = *(f32*)(g_Pitcher + 0x8C);
+    *(f32*)(g_Fielders + 8) = *(f32*)(g_Pitcher + 0x90);
 }
+#endif
 
 // .text:0x000313B0 size:0x1E4 mapped:0x80670444
 extern u8 lbl_3_common_bss_34C90[];
