@@ -329,7 +329,19 @@ void main(void) {
 
 // .text:0x800096DC size:0xC4
 void PrepFilesToBeLoaded(void) {
-    return;
+    MainTask* task;
+
+    lbl_80366158.arenaStart = lbl_803C7420.arenaStart;
+    task = lbl_803CC1B8;
+    lbl_80366158.arenaEnd = lbl_803C7420.arenaEnd;
+    lbl_803CBBD4 = ConvertPathToEntryNum(&lbl_800E8EE8);
+    lbl_803CBBD0 = ConvertPathToEntryNum(&lbl_800E8EF8);
+    task->state = 0;
+    lbl_803CC1B8->func = fn_800097A0;
+    OSReport(lbl_800E6568, lbl_803CBBD4);
+    OSReport(lbl_800E6578, lbl_803CBBD0);
+    lbl_80110080._05 = 4;
+    lbl_80366158._1D = 1;
 }
 
 // .text:0x800097A0 size:0x6F4
