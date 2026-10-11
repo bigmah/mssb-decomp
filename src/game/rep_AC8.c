@@ -5719,9 +5719,61 @@ void fn_3_57A14(void) {
 }
 
 // .text:0x00057BB4 size:0x804 mapped:0x80696C48
+// NONMATCHING 99%: registers only; the sqrt temps inside the inlined SetTargetAC8 use f2/f3/f4 rotated
+#if NONMATCHING
+// steer the active fielder toward the ball / its catch point and record the input angle history
 void fn_3_57BB4(void) {
-    return;
+    int k = *(s16*)(g_FieldingLogic + 0xB0);
+    u8* f;
+    f32 x;
+    f32 z;
+    f32 d;
+    f32 t;
+    if (g_d_GameSettings[0x11] != 0) {
+        k = g_Minigame[0x1923];
+    }
+    if (k < 0) {
+        return;
+    }
+    f = g_Fielders + k * 0x268;
+    if (*(s16*)(g_Ball + 0x1B66) < f[0x1D2]) {
+        return;
+    }
+    fn_3_57488();
+    if (g_Ball[0x1BF3] != 0) {
+        x = *(f32*)g_Ball - *(f32*)f;
+        z = *(f32*)(g_Ball + 8) - *(f32*)(f + 8);
+        d = x * x + z * z;
+        SQRT_L(d);
+        if (d < *(f32*)(lbl_3_data_4930 + 0x94)) {
+            SetTargetAC8(k, *(f32*)f, *(f32*)(f + 8));
+        } else {
+            t = *(f32*)(lbl_3_data_4930 + 0x90) - lbl_3_rodata_B60;
+            x = t * (x / d) + *(f32*)f;
+            z = t * (z / d) + *(f32*)(f + 8);
+            SetTargetAC8(k, x, z);
+        }
+        *(f32*)(f + 0x20) = *(f32*)(f + 0x14);
+        *(f32*)(f + 0x24) = *(f32*)(f + 0x1C);
+    } else if (*(s16*)(f + 0x18A) != 0) {
+        fn_3_50DD8(k, &x, &z, 1);
+        SetTargetAC8(k, x, z);
+        *(f32*)(f + 0x20) = *(f32*)(f + 0x14);
+        *(f32*)(f + 0x24) = *(f32*)(f + 0x1C);
+    }
+    x = *(f32*)(f + 0x20) - *(f32*)f;
+    z = *(f32*)(f + 0x24) - *(f32*)(f + 8);
+    d = x * x + z * z;
+    SQRT_L(d);
+    if (!(d < lbl_3_rodata_B80)) {
+        if (*(s16*)(f + 0x1B6) == 0 && (f32)lbl_3_data_49DC[0x19] * *(f32*)(f + 0x58) < d) {
+            *(u16*)(g_FieldingLogic + 0x148) |= 0x200;
+        }
+        lbl_3_bss_170 = fn_3_9FB8C(x, z);
+    }
+    lbl_3_bss_16C = lbl_3_bss_170;
 }
+#endif
 
 // .text:0x000583B8 size:0x2D0 mapped:0x8069744C
 // NONMATCHING 99%: r28/r29 (fielder ptr / index) swapped in the fielder loop; the loop is fn_3_55370's body, duplicated
