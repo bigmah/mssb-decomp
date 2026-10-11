@@ -33,7 +33,9 @@ typedef struct StarChanceOdds {
     /*0x4*/ s8 retryChance[4];
     /*0x8*/ s8 _8;
     /*0x9*/ s8 bonus;
-    /*0xA*/ u8 _A[5];
+    /*0xA*/ u8 _A[3];
+    /*0xD*/ s8 _D; // nonzero: a star-chance cutscene exists (fn_3_21F14)
+    /*0xE*/ u8 _E;
 } StarChanceOdds; // size: 0xF
 
 void fn_3_1658F0(void);
