@@ -3612,9 +3612,55 @@ void fn_3_3B9E4(void) {
 #endif
 
 // .text:0x0003BE50 size:0x358 mapped:0x8067AEE4
-void fn_3_3BE50(void) {
-    return;
+// NONMATCHING 96%: f-reg numbering / 0.0 constant reuse; the second distance sum is unfused in the original; calls fn_3_526DC through a cast until its prototype gains the index arg
+#if NONMATCHING
+void fn_3_3BE50(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 t;
+    f32 px;
+    f32 pz;
+    f32 dx;
+    f32 dz;
+    f32 d;
+    if (f[0x1EC] != 0) {
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B6C) == 5 && *(f32*)(g_Ball + 0x1A14) != lbl_3_rodata_B20) {
+        t = *(f32*)(f + 0x74) / *(f32*)(g_Ball + 0x1A14);
+        px = *(f32*)(g_Ball + 0x318) * t + *(f32*)g_Ball;
+        pz = *(f32*)(g_Ball + 0x320) * t + *(f32*)(g_Ball + 8);
+        dx = *(f32*)f - px;
+        dz = *(f32*)(f + 8) - pz;
+        d = dx * dx + dz * dz;
+        SQRT_L(d);
+        if (d > *(f32*)(f + 0xE8)) {
+            f[0x1E9] = 1;
+            *(f32*)(f + 0x14) = px;
+            *(f32*)(f + 0x1C) = pz;
+            dx = px - *(f32*)f;
+            dz = pz - *(f32*)(f + 8);
+            if (dx == lbl_3_rodata_B20 && dz == lbl_3_rodata_B20) {
+                *(f32*)(f + 0x50) = lbl_3_rodata_B20;
+                *(f32*)(f + 0x68) = lbl_3_rodata_B20;
+            } else {
+                *(f32*)(f + 0x64) = atan2(dz, dx);
+                d = dx * dx + dz * dz;
+                SQRT_L(d);
+                *(f32*)(f + 0x68) = d;
+            }
+            f[0x1D9] = 1;
+        }
+    }
+    /* TODO: fn_3_526DC takes the fielder index; its prototype (other range) is still (void) */
+    ((void (*)(int))fn_3_526DC)(i);
+    if (f[0x1E9] != 0 && *(f32*)(f + 0x50) == lbl_3_rodata_B20) {
+        f[0x1E9] = 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B8A) == i) {
+        fn_3_4E638();
+    }
 }
+#endif
 
 // .text:0x0003C1A8 size:0x78 mapped:0x8067B23C
 void fn_3_3C1A8(int i) {
