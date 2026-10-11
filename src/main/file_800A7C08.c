@@ -2527,7 +2527,7 @@ u32 fn_800AD6BC(ThpPlayer* p) {
 
 // .text:0x800AD780 size:0xB0
 BOOL fn_800AD780(ThpPlayer* p) {
-    return 0;
+    return ThpIsIdle(p);
 }
 
 // .text:0x800AD830 size:0xE4
