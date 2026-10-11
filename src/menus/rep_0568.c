@@ -72,6 +72,9 @@ extern void fn_800BDA24(CharSlot* slot);
 extern void fn_800B2B54(CharModel* model, u16 joint, s32 arg);
 extern CharSlot* fn_800111D8(CharActor* actor);
 extern u8 lbl_2_data_2794[];
+extern void fn_80014204(s32 count);
+extern CharSlotList* fn_80023AA4(void);
+extern void fn_80023B04(s32 count);
 
 
 // fn_2_190B8, size:0x24
@@ -409,6 +412,15 @@ done:
     for (n = 0; n < lbl_2_bss_100B8[0x2D]; n++) {
         lbl_8036E548.actors[n].files = (void**)(lbl_8036E548.fileBuf + bufSize * (u32)n);
     }
+}
+
+// fn_2_17ED8, size:0x270
+// fn_2_17C88 (inlined) plus the part slots of the menu actors.
+void fn_2_17ED8(void) {
+    fn_2_17C88();
+    fn_80014204(lbl_2_bss_100B8[0x2D]);
+    lbl_8036E548.partSlots = fn_80023AA4();
+    fn_80023B04(4);
 }
 
 // fn_2_16A98, size:0x248
