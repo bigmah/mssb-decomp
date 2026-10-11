@@ -40,7 +40,7 @@ void fn_3_15F998(void) {
 
 // .text:0x0015F9AC size:0x14 mapped:0x8079EA40
 void fn_3_15F9AC(void) {
-    return;
+    lbl_3_common_bss_35154.done = 1;
 }
 
 // .text:0x0015F9C0 size:0x98 mapped:0x8079EA54
