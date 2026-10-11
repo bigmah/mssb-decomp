@@ -2010,3 +2010,174 @@ void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f3
         }
     }
 }
+
+extern const f32 lbl_1_rodata_786C;
+extern const f64 lbl_1_rodata_7870;
+
+#define CHALLENGE_PAD_STICK_Y (((u8*)&lbl_803C77B8)[0x15]) // TODO type: lbl_803C77B8_s lacks the 0x15 field
+
+// NONMATCHING 99.8%: only the prologue's address temps get different GPRs (r5/r7/r9 vs r11/r5/r7)
+// .text:0x22874 size:0x580
+#if NONMATCHING
+s32 fn_1_22874(void) {
+    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
+    s32 speed;
+    f32 fine;
+    f32 step;
+    f32 tiny;
+    s32 i;
+    u8 prevCount;
+
+    if (lbl_803C77B8._00 & 0x20) {
+        speed = 100;
+    } else if (CHALLENGE_PAD_STICK_Y >= 0x50) {
+        speed = 1;
+    } else {
+        speed = 10;
+    }
+    fine = lbl_1_rodata_786C * speed;
+    step = lbl_1_rodata_77F8 * speed;
+    tiny = lbl_1_rodata_77FC * speed;
+    for (i = 0; i < 14; i++) {
+        switch (i) {
+        case 0:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->steps--;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->steps++;
+                }
+                if (q->steps == 0) {
+                    q->steps++;
+                }
+            }
+            break;
+        case 1:
+            prevCount = q->pointCount;
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->pointCount = prevCount - 1;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->pointCount = prevCount + 1;
+                }
+                if (q->pointCount < 2) {
+                    q->pointCount++;
+                }
+            }
+            break;
+        case 2:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    lbl_1_bss_6FB8.params[0] -= fine;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    lbl_1_bss_6FB8.params[0] += fine;
+                }
+            }
+            break;
+        case 3:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->scale -= step;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->scale += step;
+                }
+            }
+            break;
+        case 4:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    lbl_1_bss_6FB8.params[2] -= step;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    lbl_1_bss_6FB8.params[2] += step;
+                }
+            }
+            break;
+        case 5:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    lbl_1_bss_6FB8.params[3] -= step;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    lbl_1_bss_6FB8.params[3] += step;
+                }
+            }
+            break;
+        case 6:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    lbl_1_bss_6FB8.params[4] -= step;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    lbl_1_bss_6FB8.params[4] += step;
+                }
+            }
+            break;
+        case 7:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    lbl_1_bss_6FB8.params[5] -= tiny;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    lbl_1_bss_6FB8.params[5] += tiny;
+                }
+            }
+            break;
+        case 8:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->unk1C -= speed;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->unk1C += speed;
+                }
+            }
+            break;
+        case 9:
+            if (i == q->unk25 && (CHALLENGE_PAD_TRIGGER & 3)) {
+                q->drawFlat = !q->drawFlat;
+            }
+            break;
+        case 10:
+            if (i == q->unk25 && (CHALLENGE_PAD_TRIGGER & 3)) {
+                q->colorMode = !q->colorMode;
+            }
+            break;
+        case 11:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    lbl_1_data_104D0.x -= lbl_1_rodata_7870;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    lbl_1_data_104D0.x += lbl_1_rodata_7870;
+                }
+            }
+            break;
+        case 12:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    lbl_1_data_104D0.y -= lbl_1_rodata_7870;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    lbl_1_data_104D0.y += lbl_1_rodata_7870;
+                }
+            }
+            break;
+        case 13:
+            if (i == q->unk25) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    lbl_1_data_104D0.z -= lbl_1_rodata_7870;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    lbl_1_data_104D0.z += lbl_1_rodata_7870;
+                }
+            }
+            break;
+        }
+    }
+    if (CHALLENGE_PAD_TRIGGER & 8) {
+        if (q->unk25 == 0) {
+            q->unk25 = 14;
+        }
+        q->unk25--;
+    } else if (CHALLENGE_PAD_TRIGGER & 4) {
+        q->unk25++;
+        if (q->unk25 == 14) {
+            q->unk25 = 0;
+        }
+    }
+    return prevCount != q->pointCount;
+}
+#endif

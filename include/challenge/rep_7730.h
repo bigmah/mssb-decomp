@@ -234,5 +234,6 @@ s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat);
 s16 fn_1_1DE60(s16 sel, u16 held, u16 pressed, u16 repeat);
 void fn_1_1F900(ChallengeTextureStages* stages);
 void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f32 damping, f32 restLen, f32 dtScale);
+s32 fn_1_22874(void);
 
 #endif
