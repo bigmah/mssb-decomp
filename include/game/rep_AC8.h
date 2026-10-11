@@ -155,7 +155,7 @@ void fn_3_45E98(void);
 int fn_3_46688(f32*, f32*);
 int fn_3_468DC(f32*, f32*);
 void fn_3_46ABC(int);
-void fn_3_46E08(void);
+int fn_3_46E08(int, f32*, f32*);
 int fn_3_47628(void);
 void fn_3_47778(void);
 void fn_3_480B8(int);
