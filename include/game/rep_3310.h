@@ -2,6 +2,40 @@
 #define __GAME_rep_3310_H_
 
 #include "mssbTypes.h"
+#include "main/file_800BD8C4.h" // ActorObjectTable
+
+// One minigame sprite/model slot in lbl_8036E548.sprites (CharTrail in main/file_80011640.h).
+typedef struct Rep3310Sprite {
+    /*0x00*/ void (*draw)(s32 index);
+    /*0x04*/ f32 pos[3];
+    /*0x10*/ f32 rot[3];
+    /*0x1C*/ u8 _1C[0x26 - 0x1C];
+    /*0x26*/ u8 visible;
+    /*0x27*/ u8 _27;
+} Rep3310Sprite; // size: 0x28
+
+// Relocated model data for one object kind (lbl_8036E548 + 0x2DA0).
+typedef struct Rep3310ObjData {
+    /*0x0*/ struct ActorLayout* layout;
+    /*0x4*/ void* geometry;
+    /*0x8*/ void* textures;
+} Rep3310ObjData; // size: 0xC
+
+// View of lbl_8036E548 (CharMgr in main/file_80011640.h), only the fields used here.
+typedef struct Rep3310CharMgr {
+    /*0x0000*/ u8 _0000[0x68];
+    /*0x0068*/ ActorObjectTable* objs;
+    /*0x006C*/ u8 _006C[0xAC - 0x6C];
+    /*0x00AC*/ void* lights[4];
+    /*0x00BC*/ u8 _00BC[0x2D94 - 0xBC];
+    /*0x2D94*/ Rep3310Sprite* sprites;
+    /*0x2D98*/ u8 _2D98[0x2DA0 - 0x2D98];
+    /*0x2DA0*/ Rep3310ObjData data[27];
+    /*0x2EE4*/ u8 _2EE4[0x3078 - 0x2EE4];
+    /*0x3078*/ u16 count; // sprites / objs entries
+    /*0x307A*/ u8 _307A[0x307E - 0x307A];
+    /*0x307E*/ u8 _307E;
+} Rep3310CharMgr;
 
 void fn_3_116840(void);
 void fn_3_1169D0(void);
@@ -57,6 +91,6 @@ void fn_3_11CD00(void);
 void fn_3_11CF04(void);
 void fn_3_11CF84(void);
 void fn_3_11D1B0(void);
-void fn_3_11D2C8(s32 idx, s32 start, s32 count, s32 a, s32 b);
+void fn_3_11D2C8(s32 idx, s32 start, s32 count, void* animBank, struct sHdr* skHeader);
 
 #endif // !__GAME_rep_3310_H_
