@@ -5,6 +5,8 @@
 
 extern ScoresView g_Scores;
 extern PitcherGameStat lbl_3_common_bss_32A38[2][9];
+extern Bss8034E9A0View lbl_8034E9A0;
+extern Lbl80354720Entry lbl_80354720[2][9];
 
 extern u8 lbl_803535C8[];
 extern u8 lbl_803537E4[];
@@ -187,6 +189,48 @@ void fn_3_7AFE4(void) {
     for (i = 0; i < 7; i++) {
         lbl_3_common_bss_32A94.pitchCountLog[i] = 0;
     }
+}
+#endif
+
+// fn_3_7B130, size:0x1D8
+// Start of a half-inning.
+// NONMATCHING 98%: original addresses lbl_8034E9A0+0x48C0 as its own symbol; cmpwi vs cmplwi on the _3 byte
+#if NONMATCHING
+void fn_3_7B130(void) {
+    s32 t;
+    s32 i;
+
+    for (t = 0; t < 2; t++) {
+        for (i = 0; i < 9; i++) {
+            if (lbl_80354720[t][i]._3 == 1) {
+                lbl_8034E9A0.rosterLog[t][i].inning = g_Scores.inning;
+            }
+        }
+    }
+    lbl_3_common_bss_32A94._36[0] = 0;
+    lbl_3_common_bss_32A94._36[1] = 0;
+    lbl_3_common_bss_32A94._36[2] = 0;
+    lbl_3_common_bss_32A94._36[3] = 0;
+    lbl_3_common_bss_32A94._36[4] = 0;
+    lbl_3_common_bss_32A94._32 = -1;
+    lbl_3_common_bss_32A94._34 = 0;
+    lbl_3_common_bss_32A94._3C = 0;
+    lbl_3_common_bss_32A94._60 = 1;
+    lbl_3_common_bss_32A94._62 = lbl_3_common_bss_32A94._61;
+    lbl_3_common_bss_32A94._61 = 0;
+    lbl_3_common_bss_32A94._3E[0] = 0;
+    lbl_3_common_bss_32A94._3E[1] = 0;
+    lbl_3_common_bss_32A94._3E[2] = 0;
+    lbl_3_common_bss_32A94._3E[3] = 0;
+    lbl_3_common_bss_32A94._3E[4] = 0;
+    for (i = 0; i < 9; i++) {
+        lbl_3_common_bss_32A38[g_GameLogic.teamFielding][i]._2 = -1;
+        lbl_3_common_bss_32A38[g_GameLogic.teamFielding][i]._3 = -1;
+        lbl_3_common_bss_32A38[g_GameLogic.teamFielding][i]._4 = -1;
+    }
+    lbl_3_common_bss_32A38[g_GameLogic.teamFielding]
+                          [g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][0][0]]
+                              ._2 = 0;
 }
 #endif
 

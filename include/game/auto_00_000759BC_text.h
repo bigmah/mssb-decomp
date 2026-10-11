@@ -128,9 +128,26 @@ typedef struct PlayLogEntry {
     /*0x3*/ s8 result;
 } PlayLogEntry; // size: 0x4
 
+// lbl_8034E9A0 + 0x48C0: per-player game log, [2 teams][9].
+typedef struct RosterLogEntry {
+    /*0x0*/ u8 _0;
+    /*0x1*/ u8 _1;
+    /*0x2*/ u8 _2 : 4;
+    /*0x2*/ u8 inning : 4; // inning the player entered
+    /*0x3*/ u8 position : 4; // 0xA: none yet
+    /*0x3*/ u8 _3 : 4;
+} RosterLogEntry; // size: 0x4
+
+// lbl_80354720: [2 teams][9], only the fields used here.
+typedef struct Lbl80354720Entry {
+    /*0x0*/ u8 _0[3];
+    /*0x3*/ u8 _3; // 1: entered this half-inning
+} Lbl80354720Entry; // size: 0x4
+
 // lbl_8034E9A0 (size 0x4C28), only the fields used here.
 typedef struct Bss8034E9A0View {
-    /*0x0000*/ u8 _0000[0x4908];
+    /*0x0000*/ u8 _0000[0x48C0];
+    /*0x48C0*/ RosterLogEntry rosterLog[2][9];
     /*0x4908*/ PlayLogEntry playLog[2][100];
 } Bss8034E9A0View; // size: 0x4C28
 
