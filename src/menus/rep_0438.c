@@ -1,6 +1,7 @@
 #include "menus/rep_0438.h"
 #include "game/UnknownHomes_Game.h"
-#include "static/UnknownHomes_Static.h"
+#include "main/file_800639BC.h"
+#include "main/file_800A7C08.h"
 
 // .text:0x00012238 size:0x194
 void fn_2_12238(void) {
@@ -14,12 +15,14 @@ void fn_2_123CC(void) {
 
 // .text:0x00012988 size:0x24
 void fn_2_12988(void) {
-    return;
+    lbl_8034E9A0.heapMarkB[0] = lbl_803C7898.lo;
+    lbl_8034E9A0.heapMarkB[1] = lbl_803C7898.hi;
 }
 
 // .text:0x000129AC size:0x24
 void fn_2_129AC(void) {
-    return;
+    lbl_8034E9A0.heapMarkA[0] = lbl_803C7898.lo;
+    lbl_8034E9A0.heapMarkA[1] = lbl_803C7898.hi;
 }
 
 // .text:0x000129D0 size:0xA0

@@ -13,7 +13,8 @@ typedef struct CharSelectState {
     /*0x21C0*/ u8 _21C0[0x4380 - 0x21C0];
     /*0x4380*/ u8 presets[12][0x48]; // [n][0..8]: roster indices of a preset team
     /*0x46E0*/ s32 captain[2]; // captain character id per team
-    /*0x46E8*/ u8 _46E8[0x46F8 - 0x46E8];
+    /*0x46E8*/ u8* heapMarkA[2]; // saved lbl_803C7898 lo/hi (fn_2_129AC)
+    /*0x46F0*/ u8* heapMarkB[2]; // saved lbl_803C7898 lo/hi (fn_2_12988)
     /*0x46F8*/ u8 ports[2];
     /*0x46FA*/ u8 _46FA[0x4709 - 0x46FA];
     /*0x4709*/ s8 captainSlot[2]; // roster slot of the captain per team
