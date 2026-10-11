@@ -2875,7 +2875,12 @@ typedef struct {
     /* 0x02 */ s16 _2;
     /* 0x04 */ s16 _4;
     /* 0x06 */ s16 _6[5]; // history of _0 (fn_3_9DB5C)
-    /* 0x10 */ s8 _10[0x10];
+    /* 0x10 */ struct {
+        s8 fielder; // fielder holding the ball (-1: none)
+        s8 outs;    // outs recorded on the play so far
+        s8 base;    // base the fielder was covering
+    } plays[5];
+    /* 0x1F */ s8 lastFielder;
     /* 0x20 */ u8 _20[2];
     /* 0x22 */ s8 _22;
     /* 0x23 */ u8 _23;
@@ -2902,8 +2907,7 @@ extern lbl_3_common_bss_32A94_s lbl_3_common_bss_32A94;
 
 // g_Scores layout (0xC8 bytes); declare `extern GameScores g_Scores;` in the unit header.
 typedef struct GameScoresTeam {
-    /* 0x00 */ s16 runs;
-    /* 0x02 */ u8 _02[0x26 - 0x2];
+    /* 0x00 */ s16 runs[19]; // [0] total, [1..] per inning
 } GameScoresTeam; // size: 0x26
 
 typedef struct GameScores {
