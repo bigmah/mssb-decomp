@@ -810,8 +810,9 @@ extern void fn_800B2C08(void*, s32);
 extern void fn_800BD548(ActorObject*, s32, ...);
 
 extern const f32 lbl_1_rodata_77E4_s;
-// 99.8%: LITInitPos: orig `lis r3,7840; lis r4,6FA4; addi r3,r4` (float const lis first), ours swaps r3/r4
+// NONMATCHING 99.8%: LITInitPos: orig `lis r3,7840; lis r4,6FA4; addi r3,r4` (float const lis first), ours swaps r3/r4
 // .text:0x20E00 size:0x18C
+#if NONMATCHING
 void fn_1_20E00(u8* obj) {
     ChallengeLightColor color = lbl_1_rodata_77B0;
     u8* data;
@@ -837,6 +838,7 @@ void fn_1_20E00(u8* obj) {
         fn_800BD548(&lbl_1_bss_6BE0[0]->objects[i], 1, lbl_1_bss_6FA4[0]);
     }
 }
+#endif
 
 // 99.8%: same LITInitPos r3/r4 swap as fn_1_20E00 (inlined here)
 // .text:0x20BD8 size:0x1F0
