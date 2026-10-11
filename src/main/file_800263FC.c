@@ -447,8 +447,8 @@ void fn_8003403C(void) {
 }
 
 // .text:0x800340F4 size:0x2C
-void fn_800340F4(void) {
-    return;
+void fn_800340F4(Mtx m) {
+    PSMTXCopy(lbl_8017FF78, m);
 }
 
 // .text:0x80034120 size:0x2C
