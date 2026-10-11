@@ -201,8 +201,19 @@ void fn_800362F0(SpaniOwner* owner, s32 idx) {
 }
 
 // .text:0x800363D8 size:0xC4
-void fn_800363D8(void) {
-    return;
+void fn_800363D8(SpaniOwner* owner, s32 idx, u32 slot, u16 animId, u32 frame) {
+    SpaniKey key;
+    u16 texIdx;
+
+    if (slot < SPANI_TEX_OVERRIDE_COUNT) {
+        SpaniObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+        if (fn_8000CEF0(lbl_803C4BE0[obj->texSlot].anim, animId, 0, frame, &key)) {
+            texIdx = key.texIdx;
+        } else {
+            texIdx = 0;
+        }
+        lbl_80371C30[owner->baseIdx + idx].obj->texOverride[slot] = texIdx;
+    }
 }
 
 // .text:0x8003649C size:0xD0
