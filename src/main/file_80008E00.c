@@ -338,8 +338,27 @@ void fn_800097A0(void) {
 }
 
 // .text:0x80009E94 size:0x178
-void interpolatePointsUnknown(void) {
-    return;
+void interpolatePointsUnknown(s32 i, BezierPoint* pts, u32 first, u32 last) {
+    BezierPoint* p0 = &pts[i - 3];
+    BezierPoint* p1 = &pts[i];
+    BezierPoint* p2 = &pts[i + 3];
+    BezierPoint* a0 = &pts[i - 2];
+    BezierPoint* a1 = &pts[i - 1];
+    BezierPoint* b0 = &pts[i + 1];
+    BezierPoint* b1 = &pts[i + 2];
+
+    if (first) {
+        a0->x = (lbl_803CC400 * p0->x + lbl_803CC404 * p1->x - p2->x) / lbl_803CC408;
+        a0->y = (lbl_803CC400 * p0->y + lbl_803CC404 * p1->y - p2->y) / lbl_803CC408;
+    }
+    a1->x = (lbl_803CC404 * p1->x + p0->x - p2->x) / lbl_803CC404;
+    a1->y = (lbl_803CC404 * p1->y + p0->y - p2->y) / lbl_803CC404;
+    b0->x = (p2->x + (lbl_803CC40C * p0->x + lbl_803CC404 * p1->x)) / lbl_803CC404;
+    b0->y = (p2->y + (lbl_803CC40C * p0->y + lbl_803CC404 * p1->y)) / lbl_803CC404;
+    if (last) {
+        b1->x = (lbl_803CC40C * p0->x + lbl_803CC404 * p1->x + lbl_803CC400 * p2->x) / lbl_803CC408;
+        b1->y = (lbl_803CC40C * p0->y + lbl_803CC404 * p1->y + lbl_803CC400 * p2->y) / lbl_803CC408;
+    }
 }
 
 // .text:0x8000A00C size:0x88
