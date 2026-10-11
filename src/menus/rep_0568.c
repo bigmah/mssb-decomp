@@ -10,8 +10,14 @@ extern MenuCharLoadTask* lbl_803CC1B8;
 extern u8 lbl_800FE930[];
 extern u8 lbl_800FE5D4[];
 extern u8 lbl_80361B20[];
-extern u8 lbl_2_bss_F410[];
-extern u8* lbl_2_bss_1224;
+// Menu selection state (lbl_2_bss_F410), only the fields used here.
+typedef struct MenuSelect0568 {
+    /*0x00*/ u8 _00[0x10];
+    /*0x10*/ s32 charSel[8];  // per player: selected character
+    /*0x30*/ s32 rosterSel[2]; // per team: selected roster entry
+} MenuSelect0568;
+extern MenuSelect0568 lbl_2_bss_F410;
+extern MenuCharLoadTask* lbl_2_bss_1224;
 extern u8* lbl_2_bss_122C;
 extern u8* lbl_2_data_2780[];
 extern void* _OSAllocFromHeap(s32, s32);
@@ -23,7 +29,6 @@ typedef struct {
     u8 pad2[2];
 } Ent64;
 extern Ent64 lbl_2_bss_101AC[];
-extern void fn_2_18398(void);
 extern void fn_2_188EC(void);
 extern const f32 lbl_2_rodata_5BC;
 extern const f32 lbl_2_rodata_5D4;
@@ -43,8 +48,11 @@ typedef struct MenuCharSelect {
     /*0x0000*/ MenuRosterChar roster[6][9];
     /*0x21C0*/ u8 _21C0[0x4701 - 0x21C0];
     /*0x4701*/ u8 _4701;
+    /*0x4702*/ u8 _4702[0x4755 - 0x4702];
+    /*0x4755*/ u8 _4755;
 } MenuCharSelect;
 extern MenuCharSelect lbl_8034E9A0;
+extern MenuRosterChar inMemRoster[2][9];
 extern u8* lbl_803CBBCC[];
 extern u8 lbl_803C6CF8[];
 extern u8 lbl_803C66B0[];
@@ -111,8 +119,8 @@ s32 fn_2_18650(s32 a) {
         if (lbl_2_bss_1224 == NULL) {
             lbl_2_bss_1224 = fn_800B0A5C_insertQueue(fn_2_18398, 0xFFFF);
             if (lbl_2_bss_1224 != NULL) {
-                lbl_2_bss_1224[0x1C] = 0;
-                lbl_2_bss_1224[0x1D] = 0;
+                lbl_2_bss_1224->_1C = 0;
+                lbl_2_bss_1224->state = 0;
             } else {
                 return 0;
             }
@@ -238,9 +246,9 @@ void fn_2_18748(void) {
     case 0:
         for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
             if (g_d_GameSettings.GameModeSelected == 5) {
-                task->charId[i] = (lbl_800FE930 + lbl_80361B20[0xF4] * 6)[*(s32*)(lbl_2_bss_F410 + task->index * 4 + 0x10)];
+                task->charId[i] = (lbl_800FE930 + lbl_80361B20[0xF4] * 6)[lbl_2_bss_F410.charSel[task->index]];
             } else {
-                task->charId[i] = lbl_800FE5D4[*(s32*)(lbl_2_bss_F410 + task->index * 4 + 0x10)];
+                task->charId[i] = lbl_800FE5D4[lbl_2_bss_F410.charSel[task->index]];
             }
             if (task->index == 2) {
                 task->index = 0;
@@ -534,5 +542,83 @@ void fn_2_16A98(s32 index, s32 anim, u8 loop, u8 b, s16 frame, u8 d, u8 blend) {
     slot->_5C = frame * actor->_04C;
     slot->_59 = 1;
     actor->_268 = b;
+}
+#endif
+
+// fn_2_18398, size:0x2B8
+// Scene task: takes the next actor index off the load queue (fn_2_18650) and
+// streams that character in (fn_2_18148).
+// NONMATCHING 95%: register numbering/scheduling of the ring-buffer pop (magic-divide temps)
+#if NONMATCHING
+void fn_2_18398(void) {
+    s32 index;
+    MenuCharLoadTask* task;
+    u8 mode;
+    u8 next;
+    u8 sel;
+
+    switch ((task = lbl_803CC1B8)->state) {
+    case 0:
+        next = (lbl_2_bss_100B8 + 2)[*(s8*)&lbl_2_bss_100B8[1]];
+        if ((s8)next == -1) {
+            lbl_2_bss_100B8[0x18] = 0;
+            lbl_2_bss_100B8[0x1B] = 1;
+            lbl_2_bss_100B8[0x1A] = 0;
+            lbl_2_bss_100B8[0x32] = 0;
+            lbl_2_bss_1224 = NULL;
+            ((void (*)(void))fn_800B0A14_removeQueue)(); // arg unused
+            return;
+        }
+        task->index = next;
+        ((s8*)(lbl_2_bss_100B8 + 2))[*(s8*)&lbl_2_bss_100B8[1]] = -1;
+        lbl_2_bss_100B8[0x1A] = 1;
+        lbl_2_bss_100B8[0x1B] = 0;
+        lbl_2_bss_100B8[1] = (*(s8*)&lbl_2_bss_100B8[1] + 1) % 10;
+        lbl_2_bss_100B8[task->index + 0x27] = task->index;
+        task->state = 1;
+        task->timer = 0;
+        mode = g_d_GameSettings.GameModeSelected;
+        sel = lbl_8034E9A0._4755;
+        if (sel == 0) {
+            if (mode == 5) {
+                task->charId[task->index] = (lbl_800FE930 + lbl_80361B20[0xF4] * 6)[*(s32*)((u8*)lbl_2_bss_F410.charSel + task->index * 4)];
+            } else {
+                task->charId[task->index] = lbl_800FE5D4[*(s32*)((u8*)lbl_2_bss_F410.charSel + task->index * 4)];
+            }
+            if (task->index == 2) {
+                task->index = 0;
+            }
+        } else if (sel == 1) {
+            index = task->index;
+            switch (index) {
+            case 0:
+            case 1:
+                task->charId[index] = inMemRoster[index][lbl_2_bss_F410.rosterSel[index] - (index * 11 + 2)].charId;
+                break;
+            case 2:
+            case 3:
+                task->charId[index] = lbl_2_bss_F410.charSel[index + 2];
+                break;
+            }
+        }
+    case 1:
+        fn_2_18148(task);
+        if (lbl_2_bss_100B4[0] != 0 && lbl_2_bss_100B4[1] == 0) {
+            lbl_2_bss_1224 = NULL;
+            lbl_2_bss_100B8[0x18] = 0;
+            lbl_2_bss_100B8[0x1B] = 1;
+            lbl_2_bss_100B8[0x1A] = 0;
+            lbl_2_bss_100B8[0x32] = 0;
+            task->state = 0;
+            ((void (*)(void))fn_800B0A14_removeQueue)(); // arg unused
+            return;
+        }
+        if (lbl_2_bss_100B8[0x18] != 0) {
+            lbl_2_bss_100B8[0x18] = 0;
+            lbl_2_bss_100B8[0x1A] = 0;
+            task->state = 0;
+        }
+        break;
+    }
 }
 #endif

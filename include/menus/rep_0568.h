@@ -49,5 +49,6 @@ void fn_2_16A98(s32 index, s32 anim, u8 loop, u8 b, s16 frame, u8 d, u8 blend);
 void fn_2_17C88(void);
 void fn_2_17ED8(void);
 void fn_2_17648(void);
+void fn_2_18398(void);
 
 #endif
