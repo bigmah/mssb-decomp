@@ -3483,3 +3483,102 @@ void fn_2_4970(u8 team, s32 empty) {
     fn_800625A4(team, 0x10);
 }
 #endif
+
+// NONMATCHING 70%: plain loops; the original unrolls the unique-position check and the
+// 54-entry star-rating table.
+#if NONMATCHING
+// fn_2_7504, size:0x840
+void fn_2_7504(void) {
+    s32 free = 0;
+    u8 unique = 0;
+    u8 u;
+    s32 t;
+    s32 i;
+    u32 cap;
+    lbl_803CBD24[2] = 0;
+    lbl_803CBD24[3] = 0xFF;
+    lbl_2_bss_F468[0x62] = -1;
+    lbl_2_bss_F468[0x61] = -1;
+    lbl_2_bss_F468[0x66] = 0;
+    lbl_2_bss_F468[0x65] = 0;
+    if (*(u16*)(lbl_803CBBCC[0] + 6) != 9) {
+        if (g_d_GameSettings._10 == 0 && g_d_GameSettings.GameModeSelected != 5) {
+            lbl_2_bss_100B8[0x2E] = 1;
+            lbl_2_bss_100B8[0x2F] = 1;
+        } else {
+            lbl_2_bss_100B8[0x2F] = 0;
+            lbl_2_bss_100B8[0x2E] = 0;
+        }
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            for (t = 0; t < 2; t++) {
+                u8* row = lbl_803C6724 + t * 9;
+                if (t == 0) {
+                    cap = starMissionCompletionTracker[0x441D];
+                    u = 1;
+                    for (i = 1; i < 9; i++) {
+                        if ((s8)starMissionCompletionTracker[0x40BB] == (s8)starMissionCompletionTracker[0x40BB + i * 6]) {
+                            u = 0;
+                        }
+                    }
+                    unique = u;
+                } else {
+                    cap = (u8)(s8)starMissionCompletionTracker[0x441F];
+                }
+                for (i = 0; i < 9; i++) {
+                    s8 id = row[i + 2];
+                    if (t == 0 && lbl_803297E0[0xCFA1] == 0) {
+                        row[i + 0x14] = starMissionCompletionTracker[0x40BB + i * 6];
+                    } else if (t == 0 && unique != 0) {
+                        row[i + 0x14] = starMissionCompletionTracker[0x40BB + i * 6];
+                    } else {
+                        row[i + 0x14] = i;
+                    }
+                    row[i + 0x26] = (lbl_8034E9A0 + cap)[(id / 9) * 0x5A0 + (id % 9) * 0xA0 + 0x3B];
+                }
+            }
+            for (i = 0; i < 0x36; i++) {
+                MenuCharStats* c = (MenuCharStats*)(lbl_8034E9A0 + (i / 9) * 0x5A0 + (i % 9) * 0xA0);
+                lbl_2_bss_3A8[i] = c->b27 + c->b26 * 2;
+            }
+            if (*(u16*)(lbl_803CBBCC[0] + 6) != 0xB && lbl_803297E0[0xCFA1] == 0) {
+                for (i = 0; i < 9; i++) {
+                    lbl_2_bss_3A8[*(s16*)(starMissionCompletionTracker + 0x40B8 + i * 6)] =
+                        starMissionCompletionTracker[0x40BC + i * 6];
+                }
+            }
+        }
+    } else {
+        for (t = 0; t < 2; t++) {
+            u8* row = lbl_803C6724 + t * 9;
+            for (i = 0; i < 9; i++) {
+                row[i + 0x14] = i;
+                row[i + 0x4A] = 0;
+                row[i + 0x26] = 0;
+                if (i != 0) {
+                    row[i + 2] = -1;
+                }
+            }
+        }
+    }
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        for (t = 0; t < 2; t++) {
+            fn_800678CC(t);
+        }
+    }
+    lbl_8034E9A0[0x4702] = 1;
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        for (i = 0; i < 0x36; i++) {
+            if (lbl_8034E9A0[i + 0x4757] == 0) {
+                free++;
+            }
+        }
+        if (free == 0) {
+            lbl_2_bss_F468[0x3F] = 1;
+            lbl_2_bss_F468[0x37] = 1;
+            ((s32*)lbl_2_bss_F468)[0] = 9;
+            return;
+        }
+        lbl_2_bss_F468[0x3F] = 0;
+    }
+}
+#endif
