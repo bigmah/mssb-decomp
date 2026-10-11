@@ -114,7 +114,7 @@ extern MenuRecords* lbl_2_bss_1A8240;
 
 // lbl_2_bss_1A8244 points at this; only the fields used here.
 typedef struct MenuProgress {
-    /*0x00*/ u8 _00[0xC6];
+    /*0x00*/ u8 _00[0xC6]; // indexed by lbl_800E869C[character]
     /*0xC6*/ u8 _C6[5][4];
 } MenuProgress;
 
@@ -126,6 +126,8 @@ typedef struct MenuFlags4 {
 
 extern MenuFlags4 lbl_2_bss_33FBF0;
 extern u8 lbl_2_bss_33FBF5;
+
+extern u8 lbl_800E869C[];
 
 void fn_800ACFB0(void* block);
 
@@ -152,7 +154,7 @@ void fn_2_60AF0(MenuTask* task, MenuItem* item);
 void fn_2_60C78(MenuTask* task, MenuItem* item);
 void fn_2_60DF4(MenuTask* task, MenuItem* item);
 void fn_2_60F7C(MenuTask* task, MenuItem* item);
-void fn_2_61104(void);
+void fn_2_61104(MenuTask* task, MenuItem* item);
 void fn_2_612A8(void);
 void fn_2_61468(void);
 void fn_2_61644(MenuTask* task, MenuItem* item);
