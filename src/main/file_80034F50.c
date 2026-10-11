@@ -510,9 +510,28 @@ void fn_800363D8(SpaniOwner* owner, s32 idx, u32 slot, u16 animId, u32 frame) {
 }
 
 // .text:0x8003649C size:0xD0
-void fn_8003649C(void) {
-    return;
+// NONMATCHING 77%: original uses lwzu for &slot->anim and lwzx word-array indexing
+#if NONMATCHING
+void fn_8003649C(SpaniOwner* owner, s32 idx, s32 track, u16 animId, u32 frame) {
+    u16 texIdx;
+    SpaniKey key;
+    SpaniObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+    u16 curAnim = obj->animId;
+    SpaniTexSlot* s = &lbl_803C4BE0[obj->texSlot];
+    SpaniTrack* tr;
+    SpaniKey* keys;
+
+    if (fn_8000CEF0(s->anim, animId, 0, frame, &key)) {
+        texIdx = key.texIdx;
+    } else {
+        texIdx = 0;
+    }
+    tr = s->anim->seqList->seqs[curAnim]->tracks[track];
+    keys = tr->keys;
+    fn_8000CC4C(s->anim, tr, &texIdx, (u8*)&keys->texIdx - (u8*)keys, sizeof(u16));
 }
+#endif
+
 
 // .text:0x8003656C size:0xE0
 void fn_8003656C(void) {
