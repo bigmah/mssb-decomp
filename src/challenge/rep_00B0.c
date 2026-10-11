@@ -134,6 +134,69 @@ void fn_1_4290(Vec* line) {
 
 // .text:0x00004728 size:0x2FC
 u32 fn_1_4728(Vec* ray, Vec* out) {
+    Vec d[4];
+    Mtx inv;
+    ChalRayCast cast;
+    u8 skip[256];
+    ChalColBlock** blocks;
+    s32 i;
+    u32 allSkipped;
+    ChalColBox* box;
+    u8* flag;
+    f32 len;
+
+    box = lbl_1_common_bss_472B4.colModel->boxes;
+    memset(skip, 1, lbl_1_common_bss_472B4.numBlocks);
+    flag = skip;
+    i = lbl_1_common_bss_472B4.numBlocks;
+    allSkipped = 1;
+    do {
+        PSVECSubtract(&ray[0], &box->min, &d[0]);
+        PSVECSubtract(&box->max, &ray[0], &d[1]);
+        PSVECSubtract(&ray[1], &box->min, &d[2]);
+        PSVECSubtract(&box->max, &ray[1], &d[3]);
+        if (!(((SIGN_BITS(d[0].x) & SIGN_BITS(d[2].x)) | (SIGN_BITS(d[1].x) & SIGN_BITS(d[3].x))) & 0x80000000) &&
+            !(((SIGN_BITS(d[0].y) & SIGN_BITS(d[2].y)) | (SIGN_BITS(d[1].y) & SIGN_BITS(d[3].y))) & 0x80000000) &&
+            !(((SIGN_BITS(d[0].z) & SIGN_BITS(d[2].z)) | (SIGN_BITS(d[1].z) & SIGN_BITS(d[3].z))) & 0x80000000))
+        {
+            allSkipped = 0;
+            *flag = 0;
+        }
+        i--;
+        flag++;
+        box++;
+    } while (i != 0);
+
+    if (allSkipped) {
+        return 0;
+    }
+
+    makeLookAtMatrix(cast.mtx, &ray[0], &lbl_1_data_218, &ray[1]);
+    len = dolsqrtf2(PSVECSquareDistance(&ray[1], &ray[0]));
+    cast.length = len;
+    cast.dist = len;
+    cast.hitId = 0;
+
+    flag = skip;
+    i = lbl_1_common_bss_472B4.numBlocks;
+    blocks = lbl_1_common_bss_472B4.colModel->blocks;
+    do {
+        if (*flag++ == 0) {
+            fn_1_4A24(&cast, *blocks);
+        }
+        i--;
+        blocks++;
+    } while (i != 0);
+
+    if (cast.hitId != 0) {
+        PSMTXInverse(cast.mtx, inv);
+        lbl_1_data_224.z = -cast.dist;
+        PSMTXMultVec(inv, &lbl_1_data_224, &out[0]);
+        PSMTXTranspose(cast.mtx, inv);
+        PSMTXMultVec(inv, &cast.normal, &out[1]);
+        PSVECNormalize(&out[1], &out[1]);
+        return cast.hitId;
+    }
     return 0;
 }
 
