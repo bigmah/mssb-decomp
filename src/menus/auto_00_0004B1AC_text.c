@@ -1569,3 +1569,42 @@ s32 fn_2_51470(s32 index, u16 font) {
     return fn_2_513E8(fn_2_5156C(index, font), font);
 }
 #endif
+
+extern u8 lbl_803CB8F0[];
+
+// One roster slot in the menu work buffer lbl_2_bss_1A8248[0] (0x36 of them).
+typedef struct MenuRosterSlot {
+    /*0x00*/ u8 _00[5];
+    /*0x05*/ s8 _05;
+    /*0x06*/ u8 _06;
+    /*0x07*/ u8 _07; // saved copy of _06
+    /*0x08*/ u8 _08;
+    /*0x09*/ u8 _09[20];
+    /*0x1D*/ u8 _1D[20]; // saved copy of _09
+    /*0x31*/ s8 _31;
+    /*0x32*/ u8 _32[2];
+} MenuRosterSlot; // size: 0x34
+
+// fn_2_4D378, size:0x304
+// NONMATCHING 95%: first copy loop (unrolled x8) starts its offset with `li` instead of `mr r6,r4`, shifting registers (see docs/patterns/inlining.md agent-r1 notes)
+#if NONMATCHING
+void fn_2_4D378(void) {
+    s32 i;
+    s32 j;
+    *(s8*)(lbl_2_bss_1A824C[0] + 0x197843) = -1;
+    lbl_2_bss_1A8248[0][0x441E] = lbl_2_bss_1A8248[0][*(s16*)(lbl_2_bss_1A8248[0] + 0x16C2) * 10 + 0x40F3]; // TODO type
+    lbl_2_bss_1A8248[0][0x441F] = lbl_803CB8F0[lbl_2_bss_1A8248[0][0x441E]];
+    fn_2_4C3EC();
+    for (i = 0; i < 0x36; i++) {
+        MenuRosterSlot* e = &((MenuRosterSlot*)lbl_2_bss_1A8248[0])[i];
+        e->_07 = e->_06;
+    }
+    for (i = 0; i < 0x36; i++) {
+        MenuRosterSlot* slot = &((MenuRosterSlot*)lbl_2_bss_1A8248[0])[i];
+        for (j = 0; j < 10; j++) {
+            slot->_1D[j * 2] = slot->_09[j * 2];
+            slot->_1D[j * 2 + 1] = slot->_09[j * 2 + 1];
+        }
+    }
+}
+#endif
