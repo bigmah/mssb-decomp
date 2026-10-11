@@ -125,7 +125,7 @@ void fn_800BC824(struct DODisplayObj* dispObj, void* shaderData) {
 
 // .text:0x800BC834 size:0x2C
 void DOSetWorldMatrix(struct DODisplayObj* dispObj, MtxPtr m) {
-    return;
+    PSMTXCopy(m, dispObj->worldMatrix);
 }
 
 // .text:0x800BC860 size:0x258
