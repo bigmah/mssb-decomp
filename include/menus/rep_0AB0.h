@@ -97,6 +97,18 @@ typedef struct MenuWorkBuf {
     /*0x197864*/ u8 _197864[0x1978FC - 0x197864];
 } MenuWorkBuf; // size: 0x1978FC
 
+// Debug-tunable value per model (0xBC-byte records inside the challenge save block).
+typedef struct MenuModelParam {
+    /*0x00*/ f32 value;
+    /*0x04*/ u8 _04[0xBC - 0x4];
+} MenuModelParam; // size: 0xBC
+
+// View of the challenge save block (starMissionCompletionTracker; lbl_2_bss_1A8248 points at it).
+typedef struct MenuSaveView {
+    /*0x0000*/ u8 _0000[0x2208];
+    /*0x2208*/ MenuModelParam modelParams[29];
+} MenuSaveView;
+
 void fn_2_5979C(void);
 void fn_2_59CF8(void);
 void fn_2_5A224(void);

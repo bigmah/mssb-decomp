@@ -8,12 +8,20 @@
 #include "menus/auto_00_0004B1AC_text.h"
 #include "menus/rep_0788.h"
 #include "menus/auto_00_0005597C_text.h"
+#include "menus/auto_00_0005E84C_text.h"
+#include "menus/auto_00_00013BA4_text.h"
+#include "menus/rep_08E8.h"
 
 extern u32 sndFXStartEx(u16 fid, u8 vol, u8 pan, u8 studio);
 
 extern MenuWorkBuf* lbl_2_bss_1A8234;
 extern MenuSceneState* lbl_2_bss_1A823C;
 extern MenuWorkBuf* lbl_2_bss_1A824C;
+extern UnlockFlags* lbl_2_bss_1A8244;
+extern MenuSaveView* lbl_2_bss_1A8248;
+extern s8 lbl_2_bss_A168;
+extern s8 lbl_2_bss_A169;
+extern void fn_2_93C64(void);
 // lbl_803CC1B8 (SceneTask*, main/file_80069BDC.h) is the running menu task.
 #define CUR_TASK ((MenuTask*)lbl_803CC1B8)
 extern InitEntry lbl_2_data_20C68[];
@@ -29,7 +37,121 @@ extern PadState lbl_803C77B8[4];
 
 // .text:0x0005979C size:0x55C
 void fn_2_5979C(void) {
-    return;
+    MenuTask* task = CUR_TASK;
+    s32 i;
+    switch (task->step) {
+    case 0:
+        lbl_2_bss_1A824C->subSelection = 0;
+        lbl_2_bss_1A824C->selection = 0;
+        task->step = 1;
+        break;
+    case 1:
+        fn_2_1FFC4(4);
+        for (i = 0; i < 4; i++) {
+            fn_2_1FF10(i);
+            switch (i) {
+            case 0:
+                if (lbl_2_bss_1A824C->selection == i &&
+                    ((MENU_PAD.down & 0x100) || MENU_PADS[0].sticks.substickY > 0x32)) {
+                    task->step = 4;
+                }
+                break;
+            case 1:
+                if (lbl_2_bss_1A824C->selection == i && (MENU_PAD.down & 0x102)) {
+                    lbl_2_bss_1A824C->_19784A = 1;
+                    lbl_2_bss_1A824C->_197846 = 0;
+                    lbl_2_bss_1A824C->_197845 = 1;
+                    lbl_2_bss_A169 = 1;
+                    task->step = 2;
+                }
+                break;
+            case 2:
+                if (lbl_2_bss_1A824C->selection == i && (MENU_PAD.down & 0x102)) {
+                    lbl_2_bss_1A824C->_19784A = 1;
+                    lbl_2_bss_1A824C->_197846 = 2;
+                    task->step = 3;
+                }
+                break;
+            case 3:
+                if (lbl_2_bss_1A824C->selection == i && (MENU_PAD.down & 0x102)) {
+                    lbl_2_bss_1A8244->_F4 ^= 1;
+                    fn_2_5EB78();
+                }
+                break;
+            case 4:
+                break;
+            }
+        }
+        if ((MENU_PAD.down & 0x200) || MENU_PADS[0].sticks.substickY > 0x32) {
+            task->step = 4;
+        }
+        break;
+    case 2:
+        fn_2_1FF14(1);
+        for (i = 0; i < 1; i++) {
+            fn_2_1FF0C(i);
+            switch (i) {
+            case 0:
+                if (lbl_2_bss_1A824C->subSelection == i) {
+                    u16 down = MENU_PAD.down;
+                    if (down & 0x200) {
+                        lbl_2_bss_1A824C->_19784A = 0;
+                        lbl_2_bss_1A824C->_197846 = 0;
+                        lbl_2_bss_1A824C->subSelection = 0;
+                        lbl_2_bss_1A824C->_197845 = 0;
+                        task->step = 1;
+                    } else if (down & 0x100) {
+                        lbl_2_bss_A169 ^= 1;
+                    } else if (down & 0x1000) {
+                        fn_2_93C64();
+                    }
+                    if (lbl_2_bss_A169 != 0) {
+                        fn_2_489DC();
+                    }
+                }
+                break;
+            }
+        }
+        break;
+    case 3:
+        fn_2_1FF14(1);
+        for (i = 0; i < 1; i++) {
+            fn_2_1FF0C(i);
+            switch (i) {
+            case 0:
+                if (lbl_2_bss_1A824C->subSelection == i) {
+                    PadState* pad = &MENU_PAD;
+                    u16 down = pad->down;
+                    if (down & 0x200) {
+                        lbl_2_bss_1A824C->_19784A = 0;
+                        lbl_2_bss_1A824C->_197846 = 0;
+                        lbl_2_bss_1A824C->subSelection = 0;
+                        task->step = 1;
+                    } else if ((down & 0x40) && (pad->held & 0x100)) {
+                        lbl_2_bss_1A824C->modelIndex = (lbl_2_bss_1A824C->modelIndex + 28) % 29;
+                    } else if ((down & 0x20) && (pad->held & 0x100)) {
+                        lbl_2_bss_1A824C->modelIndex = (lbl_2_bss_1A824C->modelIndex + 1) % 29;
+                    } else {
+                        u16 repeat = pad->repeat;
+                        if (repeat & 0x800) {
+                            lbl_2_bss_1A8248->modelParams[lbl_2_bss_1A824C->modelIndex].value -= 0.1f;
+                        } else if (repeat & 0x400) {
+                            lbl_2_bss_1A8248->modelParams[lbl_2_bss_1A824C->modelIndex].value += 0.1f;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        break;
+    case 4: {
+        MenuTask* parent = task->parent;
+        parent->signal = 1;
+        fn_800B0A14_removeQueue(parent);
+        task->step = 0;
+        break;
+    }
+    }
 }
 
 // .text:0x00059CF8 size:0x52C
