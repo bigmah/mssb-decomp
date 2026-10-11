@@ -1069,7 +1069,6 @@ typedef struct ChallengeAramLoader {
     u8 transferDone;
 } ChallengeAramLoader;
 extern ChallengeAramLoader lbl_803C6CF8;
-void fn_1_1C8C0(u8* object);
 
 // fn_1_1CBE4, size:0x504
 // Debug viewer loader: set up camera/lights, then load the 24 actor models one by one.
@@ -1132,7 +1131,7 @@ void fn_1_1CBE4(u8* object) {
         }
         // TODO type: ARAMTransfer returns the loaded data (void*), UnknownHomes_Static.h says s32
         ((ChallengeActorMgr*)lbl_8036E548)->actors[task->actorIndex].model =
-            (void*)ARAMTransfer(&lbl_1_data_F968[task->actorIndex], 0, 0, 0);
+            (ChallengeFileRef*)ARAMTransfer(&lbl_1_data_F968[task->actorIndex], 0, 0, 0);
         lbl_803CC1B8->state++;
         break;
     case 3:
@@ -1146,5 +1145,96 @@ void fn_1_1CBE4(u8* object) {
         lbl_803CC1B8->update = fn_1_1C8C0;
         break;
     }
+}
+#endif
+
+ChallengeDrawCollection* ActorObjectInitTable(u16 count);
+void LoadActorLayout(void* layout);
+void convertGeometryAndSknHeader(void* geometry, void* sknHeader);
+void ANIMGet(void* animBank);
+void fn_800BDC88(ChallengeDrawCollection* table, u16 index, u16 id, void* layout, void* animBank, void* sknHeader);
+void fn_800BD548(ChallengeDrawNode* entry, u8 numArgs, ...);
+void fn_800B2C08(ChallengeDrawActor* actor, u16 bone);
+void fn_1_1C3CC(u8* object);
+
+// fn_1_1C8C0, size:0x324
+// Debug viewer: relocate the 24 loaded model files and create their actors.
+// NONMATCHING 81%: same calls and stores; register allocation and node/actor address forms (stfsx vs add+stfs) differ
+#if NONMATCHING
+void fn_1_1C8C0(u8* object) {
+    ChallengeActorMgr* mgr;
+    ChallengeFileRef* file;
+    u8* isTest;
+    ChallengeTexBank** banks;
+    void* textures;
+    void* geometry;
+    void* layout;
+    void* skin;
+    u32 i;
+    u32 j;
+
+    ((ChallengeActorMgr*)lbl_8036E548)->collection = ActorObjectInitTable(24);
+    mgr = (ChallengeActorMgr*)lbl_8036E548;
+    isTest = lbl_1_bss_6A94;
+    banks = lbl_1_bss_6AAC;
+    for (i = 0; i < 24; i++) {
+        if (i < 24) {
+            file = mgr->actors[i].model;
+            if (*isTest != 0) {
+                for (j = 0; j < 5; j++) {
+                    if (j == 4) {
+                        mgr->actors[i].anim = (u8*)file + file[j].offset;
+                        ANIMGet(mgr->actors[i].anim);
+                    } else {
+                        mgr->actors[i].model[j].ptr = (u8*)file + file[j].offset;
+                    }
+                }
+            } else {
+                file[0].ptr = (u8*)file + file[0].offset;
+                mgr->actors[i].model[1].ptr = (u8*)file + file[1].offset;
+                mgr->actors[i].model[2].ptr = (u8*)file + file[2].offset;
+            }
+            textures = mgr->actors[i].model[0].ptr;
+            geometry = mgr->actors[i].model[1].ptr;
+            layout = mgr->actors[i].model[2].ptr;
+            if (*isTest != 0) {
+                skin = mgr->actors[i].model[3].ptr;
+            } else {
+                skin = NULL;
+            }
+            convertTextureHeader(textures);
+            LoadActorLayout(layout);
+            if (*isTest != 0) {
+                convertGeometryAndSknHeader(geometry, skin);
+            } else {
+                fn_800BCE38(geometry);
+            }
+            *banks = textures;
+            haveActLayoutPointToGeoHeader(layout, geometry);
+            fn_800BD190(geometry, (s32)textures); // TODO type: UnknownHomes_Static.h takes s32
+        }
+        fn_800BDC88(mgr->collection, i, i, layout, *isTest != 0 ? mgr->actors[i].anim : NULL, skin);
+        fn_800BD548(&mgr->collection->nodes[i], 3, mgr->lights[0], mgr->lights[1], mgr->lights[2], mgr->lights[3]);
+        CTRLSetTranslation(&mgr->collection->nodes[i].worldControl, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
+        CTRLSetRotation(&mgr->collection->nodes[i].worldControl, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
+        mgr->collection->nodes[i].scale = lbl_1_rodata_751C;
+        mgr->collection->nodes[i].setSpeed = 1;
+        mgr->collection->nodes[i].drawing.actor->flags98 |= 4;
+        if (i == 1) {
+            fn_800B2C08(mgr->collection->nodes[i].drawing.actor, 0);
+        } else {
+            fn_800B2C08(mgr->collection->nodes[i].drawing.actor, 1);
+        }
+        mgr->actors[i].drawActor = mgr->collection->nodes[i].drawing.actor;
+        mgr->actors[i].pos.x = lbl_1_rodata_7520;
+        mgr->actors[i].pos.y = lbl_1_rodata_7520;
+        mgr->actors[i].pos.z = lbl_1_rodata_75F4;
+        mgr->actors[i].scale = lbl_1_rodata_751C;
+        mgr->actors[i]._25D = (i == 0);
+        mgr->collection->nodes[i].drawing.prepare = (void (*)(ChallengeActorDrawing*))fn_1_1D0E8;
+        isTest++;
+        banks++;
+    }
+    lbl_803CC1B8->update = fn_1_1C3CC;
 }
 #endif

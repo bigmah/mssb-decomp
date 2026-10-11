@@ -12,7 +12,9 @@ typedef struct ChallengeDrawActor {
     struct DODisplayObj* display;
     u8 padding18[0x5C];
     struct ChallengeDrawActor* children;
-    u8 padding78[0x74];
+    u8 padding78[0x20];
+    u8 flags98;
+    u8 padding99[0x53];
     MtxPtr worldMatrix;
     u8 paddingF0[0x10];
     struct ChallengeDrawActor* next;
@@ -147,14 +149,26 @@ typedef struct ChallengePad {
 } ChallengePad;
 
 // View of an actor entry in lbl_8036E548 (+0xC04, stride 0x27C).
+// A loaded model file: a table of file offsets that fn_1_1C8C0 relocates in place
+// (0 textures, 1 geometry, 2 actor layout, 3 skin header, 4 animation bank).
+typedef union ChallengeFileRef {
+    u32 offset;
+    void* ptr;
+} ChallengeFileRef;
+
 typedef struct ChallengeViewerActor {
-    u8 pad00[8];
-    void* model; // loaded by fn_1_1CBE4
-    u8 pad0C[0x34 - 0xC];
-    Vec pos;
-    Vec rot;
-    f32 scale;
-    u8 pad50[0x27C - 0x50];
+    /*0x000*/ u8 pad00[4];
+    /*0x004*/ ChallengeDrawActor* drawActor;
+    /*0x008*/ ChallengeFileRef* model; // loaded by fn_1_1CBE4
+    /*0x00C*/ u8 pad0C[4];
+    /*0x010*/ void* anim;
+    /*0x014*/ u8 pad14[0x34 - 0x14];
+    /*0x034*/ Vec pos;
+    /*0x040*/ Vec rot;
+    /*0x04C*/ f32 scale;
+    /*0x050*/ u8 pad50[0x25D - 0x50];
+    /*0x25D*/ u8 _25D;
+    /*0x25E*/ u8 pad25E[0x27C - 0x25E];
 } ChallengeViewerActor;
 
 // View of lbl_8036E548 (global actor manager, cf. ActorManager in main/file_80026134.h).
@@ -162,8 +176,8 @@ typedef struct ChallengeActorMgr {
     /*0x000*/ u8 pad000[0x60];
     /*0x060*/ ChallengeDrawCollection* collection;
     /*0x064*/ u8 pad064[0xAC - 0x64];
-    /*0x0AC*/ struct Light* lights[3];
-    /*0x0B8*/ u8 pad0B8[0xC04 - 0xB8];
+    /*0x0AC*/ struct Light* lights[4];
+    /*0x0BC*/ u8 pad0BC[0xC04 - 0xBC];
     /*0xC04*/ ChallengeViewerActor actors[24];
 } ChallengeActorMgr;
 
@@ -186,6 +200,8 @@ void fn_1_1A850(MtxPtr bone, MtxPtr camera, u8 r, u8 g, u8 b, u8 a);
 void fn_1_1D110(void);
 
 void fn_1_1CBE4(u8* object);
+
+void fn_1_1C8C0(u8* object);
 
 void fn_1_18E04(struct ChallengeConfetti* piece, f32 degrees);
 
