@@ -1198,9 +1198,132 @@ void fn_8006877C(u8 track) {
 }
 
 // .text:0x80068838 size:0xF78
+
+// NONMATCHING 69%: large function written as equivalent C; the original inlines copyCharacterStats,
+// fn_80067B40, fn_80066EAC, fn_80069854, fn_8006496C and fn_800678CC, and addresses
+// lbl_80108EC4/lbl_80108EDC relative to lbl_80108DB8
+#if NONMATCHING
+// Challenge mode: sets up both teams' rosters (team 0 from the save, team 1 from
+// preset 11 with random recruited characters).
 void fn_80068838(void) {
-    return;
+    s8 avail[0x36];
+    u8 count = 0;
+    s32 i;
+    s32 team;
+    s32 row;
+    s32 a;
+    s32 b;
+    u8 n;
+    u8 r;
+    u8 preset;
+    s16 id;
+    s8 t;
+    s32 hand;
+    CharacterStats* src;
+
+    memset(avail, -1, sizeof(avail));
+    // Collect the recruited characters (one per model group).
+    for (i = 0; i < 0x36; i++) {
+        if (gChallengeState.trackers[i]._31 == 2) {
+            if (fn_80067B40(0, i, 1)) {
+                for (row = 0; row < 9; row++) {
+                    if (i == lbl_80108EDC.groups[row][0]) {
+                        break;
+                    }
+                }
+                if (row == 9) {
+                    continue;
+                }
+            }
+            avail[count] = i;
+            count++;
+        }
+    }
+    lbl_8034E9A0.captain[1] = 0x13;
+    if (gChallengeState._4445 != 0) {
+        for (i = 0; i < 12; i++) {
+            if (gChallengeState._441D == lbl_80108EC4[i]) {
+                preset = i;
+                break;
+            }
+        }
+        for (team = 0; team < 2; team++) {
+            for (i = 0; i < 9; i++) {
+                if (team == 0) {
+                    id = lbl_8034E9A0.presets[preset][i];
+                } else {
+                    id = lbl_8034E9A0.presets[11][i];
+                }
+                src = &lbl_8034E9A0.roster[(u8)(id / 9)][(u8)(id % 9)];
+                copyCharacterStats(&inMemRoster[team][i], src);
+                lbl_803C6724.picks[team][i] = id;
+            }
+        }
+        fn_80067C48(0);
+        fn_80067C48(1);
+        unsure_FillRosterPositions(1);
+        characterSelectScreen(1);
+        for (i = 0; i < 9; i++) {
+            gChallengeState.team[i].charId = inMemRoster[0][i].stats.CharID;
+            gChallengeState.team[i].pos[0] = lbl_80354720[0][i][1];
+            gChallengeState.team[i].pos[1] = lbl_80354720[0][i][2];
+            gChallengeState.team[i].hand = inMemRoster[0][i].stats.BattingStance + inMemRoster[0][i].stats.FieldingArm * 2;
+        }
+    } else {
+        for (team = 0; team < 2; team++) {
+            for (i = 0; i < 9; i++) {
+                if (team == 0) {
+                    id = gChallengeState.team[i].charId;
+                } else {
+                    id = lbl_8034E9A0.presets[11][i];
+                    if (id != 0x13 && (n = count) != 0) {
+                        // Replace the preset member by a random recruited character.
+                        do {
+                            r = randRange_FUN_80042bf0(0, n - 1);
+                            id = avail[r];
+                        } while (id == -1);
+                        avail[r] = -1;
+                        lbl_8034E9A0.charFlag[id] = 1;
+                        for (a = 0; a < n - 1; a++) {
+                            for (b = a + 1; b < n; b++) {
+                                if (avail[a] == -1) {
+                                    t = avail[a];
+                                    avail[a] = avail[b];
+                                    avail[b] = t;
+                                }
+                            }
+                        }
+                        count--;
+                    }
+                }
+                src = &lbl_8034E9A0.roster[(u8)(id / 9)][(u8)(id % 9)];
+                copyCharacterStats(&inMemRoster[team][i], src);
+                if (team == 0) {
+                    hand = (u8)gChallengeState.team[i].hand;
+                    lbl_80354720[0][i][0] = i;
+                    lbl_80354720[0][i][1] = gChallengeState.team[i].pos[0];
+                    inMemRoster[0][i].stats.FieldingArm = hand >> 1;
+                    lbl_80354720[0][i][2] = gChallengeState.team[i].pos[1];
+                    inMemRoster[0][i].stats.BattingStance = hand % 2;
+                }
+                lbl_803C6724.picks[team][i] = id;
+            }
+            if (team != 0) {
+                unsure_FillRosterPositions(1);
+                characterSelectScreen(1);
+            }
+        }
+        fn_80067C48(0);
+        fn_80067C48(1);
+    }
+    fn_80066EAC(0);
+    fn_80069854();
+    fn_8006496C();
+    fn_80069854();
+    fn_800678CC(0);
+    fn_800678CC(1);
 }
+#endif
 
 // .text:0x800697B0 size:0xA4
 BOOL fn_800697B0(void) {
