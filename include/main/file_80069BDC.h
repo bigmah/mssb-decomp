@@ -95,7 +95,9 @@ typedef struct ChallengeState {
     /*0x0000*/ ChallengeTrackingStruct trackers[54];
     /*0x0AF8*/ u8 _AF8[0x1606 - 0xAF8];
     /*0x1606*/ s8 _1606;
-    /*0x1607*/ u8 _1607[0x40B8 - 0x1607];
+    /*0x1607*/ u8 _1607[0x16C2 - 0x1607];
+    /*0x16C2*/ s16 _16C2;
+    /*0x16C4*/ u8 _16C4[0x40B8 - 0x16C4];
     /*0x40B8*/ ChallengeTeamEntry teams[9]; // ids must be unique
     /*0x40EE*/ u8 _40EE[0x43BC - 0x40EE];
     /*0x43BC*/ s16 _43BC; // 0..1000

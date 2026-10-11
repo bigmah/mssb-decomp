@@ -58,6 +58,17 @@ extern s32 fn_8001C588(s32 id);
 extern s32 fn_3_750DC(void);
 extern void fn_3_1CCC8(void);
 extern void fn_3_1658F0(void);
+extern int rand(void);
+extern s16 lbl_3_data_6074[4]; // AI difficulty per challenge difficulty
+// Bowser Jr. match starting situations: [home/away][difficulty][2]
+typedef struct {
+    /*0x0*/ s16 runs; // negative: the other team leads
+    /*0x2*/ s16 outs;
+    /*0x4*/ s16 bases; // 0x1: first, 0x10: second, 0x100: third
+    /*0x6*/ s16 batter;
+} BJStartSituation; // size: 0x8
+extern BJStartSituation lbl_3_data_5FF4[2][4][2];
+extern u8 lbl_8010B600[5][3]; // per challenge difficulty: innings, alt innings, mercy margin
 extern u8* lbl_3_common_bss_1323C;
 extern u8 lbl_3_common_bss_134C4[];
 extern u8 lbl_3_data_60F0; // star chance percentage
@@ -2296,5 +2307,88 @@ void fn_3_5A87C(void) {
     }
     fn_3_1658F0();
     fn_3_5FF10();
+}
+#endif
+
+// fn_3_5B5A0, size:0x48C
+// NONMATCHING 95%: regalloc/scheduling in the Bowser Jr. runner setup (original rematerializes g_Runners per branch)
+#if NONMATCHING
+void fn_3_5B5A0(void) {
+    s32 i;
+    s32 j;
+    g_d_GameSettings.challengeMinigame_baseCoinsEarned = 0;
+    g_d_GameSettings.bJMatchRelated = 0;
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        if (g_GameLogic._13E[g_GameLogic._000] != 0) {
+            g_GameLogic.AIDifficulty0Special3Weak[0] = lbl_3_data_6074[g_d_GameSettings.challengeDifficulty];
+        } else {
+            g_GameLogic.AIDifficulty0Special3Weak[1] = lbl_3_data_6074[g_d_GameSettings.challengeDifficulty];
+        }
+        if (g_d_GameSettings.bJMatchInd == 1) {
+            s32 pick;
+            s32 slot;
+            s32 bases;
+            g_Scores.inning = 9;
+            g_Scores.finalInning = 9;
+            g_Scores._AB = 9;
+            g_Scores.bottomHalf = 1;
+            g_GameLogic.homeTeamBattingInd_fieldingTeam ^= 1;
+            g_GameLogic.awayTeamBattingInd_battingTeam ^= 1;
+            g_GameLogic.teamBatting ^= 1;
+            g_GameLogic.teamFielding ^= 1;
+            pick = rand() % 2;
+            g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam] = lbl_3_data_5FF4[g_d_GameSettings.home_AwaySetting][g_d_GameSettings.challengeDifficulty][pick].batter;
+            g_Strikes.storedOuts = lbl_3_data_5FF4[g_d_GameSettings.home_AwaySetting][g_d_GameSettings.challengeDifficulty][pick].outs;
+            g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0] = lbl_3_data_5FF4[g_d_GameSettings.home_AwaySetting][g_d_GameSettings.challengeDifficulty][pick].runs;
+            g_Strikes.outs = lbl_3_data_5FF4[g_d_GameSettings.home_AwaySetting][g_d_GameSettings.challengeDifficulty][pick].outs;
+            if (g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0] < 0) {
+                g_Scores.runs[g_GameLogic.awayTeamBattingInd_battingTeam][0] =
+                    -g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0];
+                g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0] = 0;
+            }
+            g_Runners[1].rosterID = -1;
+            bases = lbl_3_data_5FF4[g_d_GameSettings.home_AwaySetting][g_d_GameSettings.challengeDifficulty][pick].bases;
+            slot = g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam];
+            g_Runners[2].rosterID = -1;
+            g_Runners[3].rosterID = -1;
+            if (bases & 0x1) {
+                if (--slot < 1) {
+                    slot = 9;
+                }
+                g_Runners[1].rosterID = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.homeTeamBattingInd_fieldingTeam][slot][0];
+            }
+            if (bases & 0x10) {
+                if (--slot < 1) {
+                    slot = 9;
+                }
+                g_Runners[2].rosterID = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.homeTeamBattingInd_fieldingTeam][slot][0];
+            }
+            if (bases & 0x100) {
+                if (--slot < 1) {
+                    slot = 9;
+                }
+                g_Runners[3].rosterID = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.homeTeamBattingInd_fieldingTeam][slot][0];
+            }
+            setBatterContactConstants();
+            ((void (*)(void))fn_3_8A1D8)(); // called without its argument in the original
+            g_d_GameSettings.home_AwaySetting ^= 1;
+        } else {
+            // TODO type: CharSelWork has s8 _46E0[2][4] here, read as an s32
+            if (*(s32*)lbl_8034E9A0._46E0[1] == 9 || gChallengeState._16C2 == 0x2A) {
+                g_Scores.finalInning = lbl_8010B600[g_d_GameSettings.challengeDifficulty][1];
+            } else {
+                g_Scores.finalInning = lbl_8010B600[g_d_GameSettings.challengeDifficulty][0];
+            }
+            g_Scores._AB = g_Scores.finalInning + 3;
+        }
+        g_Scores._C7 = lbl_8010B600[g_d_GameSettings.challengeDifficulty][2];
+    }
+    for (i = 0; i < 54; i++) {
+        for (j = 0; j < 10; j++) {
+            if ((s8)starMissionCompletionTracker[i].inGameMissionTracker[j].starMissionStatus != -2) {
+                starMissionCompletionTracker[i].inGameMissionTracker[j].starMissionStatus = 0;
+            }
+        }
+    }
 }
 #endif
