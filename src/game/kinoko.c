@@ -1,6 +1,7 @@
 #include "game/kinoko.h"
 #include "header_rep_data.h"
 #include "Dolphin/GX/GXFifo.h"
+#include "static/GameSettings.h"
 #pragma dont_inline on
 
 typedef struct {
@@ -499,9 +500,81 @@ void fn_3_169E70(u8* base) {
 }
 
 // .text:0x0016A07C size:0x140C mapped:0x807A9110
+extern u8 lbl_803CBBC0; // index of the display list buffer in use
+extern void fn_800A7D4C(s32 list, void* node);
+extern void fn_800B0A14_removeQueue(void*);
+extern u8 g_Minigame[];
+#define KINOKO_RIBBON(r) (lbl_3_data_28928 + (r) * 0x44C)   // 6 ribbons of 25 segments (0x2C each)
+#define KINOKO_TICK (*(s32*)(lbl_3_data_28928 + 0x19D4))
+
+// Per-frame task of the mushroom ribbon effect: trails the ribbon segments,
+// cycles their colours, rebuilds the quad list and queues the draw.
+// NONMATCHING 16%: the original inlines fn_3_16B5B4 and fn_3_169D00 for each ribbon and unrolls the
+// per-ribbon loops (this file is built with dont_inline; with inlining enabled this C scores 59%)
+#if NONMATCHING
 void fn_3_16A07C(void) {
-    return;
+    u8* dst;
+    u8* src;
+    u32 i;
+    u32 count;
+    u8 alpha;
+    s32 r;
+    u8 v;
+
+    if (g_d_GameSettings._55 != 0 || g_Minigame[0x1A40] != 0) { // TODO type: g_Minigame._1A40
+        ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the running task
+        memset(lbl_3_data_28928, 0, 0x19E0);
+        return;
+    }
+    if (*(s8*)(g_Minigame + 0x1D74) == -1 || lbl_3_data_28928[0x19DD] == 0) { // TODO type: g_Minigame.playerIDWithPowerup[0]
+        ((void (*)(void))fn_800B0A14_removeQueue)();
+        memset(lbl_3_data_28928, 0, 0x19E0);
+        return;
+    }
+
+    if (lbl_80366158[0x28] == 0) {
+        KINOKO_TICK++;
+        dst = lbl_3_data_28928 + 24 * 0x2C;
+        for (i = 24; i != 0; i--) {
+            alpha = (24 - i) * 8;
+            src = lbl_3_data_28928 + (i - 1) * 0x2C;
+            for (r = 0; r < 6; r++) {
+                memcpy(dst + r * 0x44C, src + r * 0x44C, 0x2C);
+                dst[r * 0x44C + 0x27] = alpha;
+            }
+            dst -= 0x2C;
+        }
+        if (KINOKO_TICK % 5 == 0) {
+            for (r = 0; r < 6; r++) {
+                v = ++KINOKO_RIBBON(r)[0x28];
+                if (v >= 6) {
+                    KINOKO_RIBBON(r)[0x28] = v - 6;
+                }
+                v = ++KINOKO_RIBBON(r)[0x29];
+                if (v >= 6) {
+                    KINOKO_RIBBON(r)[0x29] = v - 6;
+                }
+            }
+        }
+        fn_3_16B5B4(KINOKO_RIBBON(0), 0x1C, KINOKO_TICK % 5);
+        fn_3_16B5B4(KINOKO_RIBBON(1), 0x20, KINOKO_TICK % 5);
+        fn_3_16B5B4(KINOKO_RIBBON(2), 4, KINOKO_TICK % 5);
+        fn_3_16B5B4(KINOKO_RIBBON(3), 7, KINOKO_TICK % 5);
+        fn_3_16B5B4(KINOKO_RIBBON(4), 0x12, KINOKO_TICK % 5);
+        fn_3_16B5B4(KINOKO_RIBBON(5), 0x18, KINOKO_TICK % 5);
+    }
+
+    for (r = 0; r < 6; r++) {
+        fn_3_169E70(KINOKO_RIBBON(r));
+    }
+    count = 0;
+    memset(lbl_3_bss_BAE0, 0, 0x1BF0);
+    for (r = 0; r < 6; r++) {
+        fn_3_169D00(KINOKO_RIBBON(r), &count);
+    }
+    fn_800A7D4C(1, lbl_3_data_28928 + 0x19F8 + lbl_803CBBC0 * 8);
 }
+#endif
 
 extern const f32 lbl_3_rodata_4040;
 extern const f64 lbl_3_rodata_4048;
