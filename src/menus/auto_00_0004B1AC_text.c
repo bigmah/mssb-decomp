@@ -2563,3 +2563,522 @@ void fn_2_4B2D0(void) {
     }
 }
 #endif
+
+#include "menus/auto_00_00033E70_text.h"
+
+extern s16 lbl_2_data_38CC[];
+extern void fn_2_39408(void);
+extern void* fn_2_4917C(void* buffer, s32 number, s32 flags, s32 digits, s32 style);
+
+// Menu script interpreter state in lbl_2_bss_1A824C[0]. TODO type
+#define MS_S32(off) (*(s32*)(lbl_2_bss_1A824C[0] + (off)))
+#define MS_S16(off) (*(s16*)(lbl_2_bss_1A824C[0] + (off)))
+#define MS_U8(off) (lbl_2_bss_1A824C[0][(off)])
+#define MS_SCRIPT (*(s32**)(lbl_2_bss_1A824C[0] + 0x196F1C))
+#define MS_SAVED_OP MS_S32(0x196F20)
+#define MS_PAD_PORT (*(s8*)(lbl_2_bss_1A824C[0] + 0x197863))
+
+// Loads script lbl_2_data_1E99C[id] into lbl_2_bss_5600 and restarts there.
+#define MS_LOAD_SCRIPT(id)                                                        \
+    do {                                                                          \
+        MS_S16(0x196FD6) = (id);                                                  \
+        memcpy(lbl_2_bss_5600, lbl_2_data_1E99C[MS_S16(0x196FD6)], 0x4000);       \
+        MS_SCRIPT = (s32*)lbl_2_bss_5600;                                         \
+    } while (0)
+
+// Skips to the script given by 0x1977A0 when Start is pressed and skipping is on.
+#define MS_CHECK_SKIP()                                                           \
+    if ((MENU_PADS[MS_PAD_PORT].down & 0x1000) && MS_U8(0x197842) == 1) {         \
+        MS_U8(0x197840) = 1;                                                      \
+        MS_LOAD_SCRIPT(MS_S16(0x1977A0));                                         \
+    }
+
+// fn_2_4EB9C, size:0x1CFC
+// NONMATCHING 86%: same case layout and calls; the original addresses the text buffers (lbl_2_bss_5600/9600/9604/9608/9A08) through one lbl_2_bss_55E8 base register and keeps lbl_2_bss_1A824C's address live in r29, ours reloads with lis/addi
+#if NONMATCHING
+s16 fn_2_4EB9C(void) {
+    u8* queue = lbl_803CC1B8[0];
+    s32 textIds[2];
+    s32* script;
+    if (MS_S32(0x196F24) != 0) {
+        MS_S32(0x196F24)--;
+        return 0;
+    }
+    textIds[0] = MS_S16(0x1972A0);
+    textIds[1] = MS_S16(0x1972A2);
+    while (1) {
+        script = MS_SCRIPT;
+        switch ((u32)script[0]) {
+        case 0x0:
+            MS_S16(0x1972B0) = 0;
+            MS_S16(0x19729A) = 0;
+            MS_S16(0x197298) = 0;
+            MS_S16(0x1977A0) = 0;
+            MS_U8(0x197840) = 0;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x1:
+            MS_U8(0x197840) = 0;
+            return 1;
+        case 0xB: {
+            s32 ch = script[1];
+            ((s32*)(lbl_2_bss_1A824C[0] + 0x196FB8))[ch] = script[2];
+            if (ch == 0) {
+                lbl_2_bss_1A8234[0][0x162687] = 1;
+            } else {
+                lbl_2_bss_1A8234[0][0x162688] = 1;
+            }
+            ((s16*)(lbl_2_bss_1A824C[0] + 0x197298))[ch] = 0;
+            MS_S16(0x196FC0) = ch;
+            MS_SAVED_OP = *MS_SCRIPT;
+            *MS_SCRIPT = 0xD;
+            return 0;
+        }
+        default:
+            return 0;
+        case 0x25: {
+            s32 ch = script[1];
+            ((s32*)(lbl_2_bss_1A824C[0] + 0x196FB8))[ch] = script[2];
+            if (ch == 0) {
+                lbl_2_bss_1A8234[0][0x162687] = 1;
+            } else {
+                lbl_2_bss_1A8234[0][0x162688] = 1;
+            }
+            ((s16*)(lbl_2_bss_1A824C[0] + 0x197298))[ch] = 0;
+            MS_S16(0x196FC0) = ch;
+            MS_SAVED_OP = *MS_SCRIPT;
+            *MS_SCRIPT = 0x26;
+            return 0;
+        }
+        case 0x8:
+            MS_S32(0x196FB8) = script[1];
+            lbl_2_bss_1A8234[0][0x162687] = 1;
+            MS_S16(0x197298) = 0;
+            MS_SCRIPT += 2;
+            continue;
+        case 0x1C:
+            MS_S32(0x196FB8) = script[1];
+            lbl_2_bss_1A8234[0][0x162687] = 1;
+            MS_S16(0x197298) = 0;
+            MS_S16(0x196FC0) = 0;
+            MS_SAVED_OP = *MS_SCRIPT;
+            *MS_SCRIPT = 0x1D;
+            return 0;
+        case 0xD:
+            if (lbl_80366B18.entries[textIds[MS_S16(0x196FC0)]].finished == 1) {
+                script[0] = 0xC;
+            } else MS_CHECK_SKIP()
+            return 0;
+        case 0x26:
+            if (lbl_80366B18.entries[textIds[MS_S16(0x196FC0)]].finished == 1) {
+                script[0] = MS_SAVED_OP;
+                MS_SCRIPT += 3;
+            } else MS_CHECK_SKIP()
+            return 0;
+        case 0x1D:
+            if (lbl_80366B18.entries[textIds[MS_S16(0x196FC0)]].finished == 1) {
+                script[0] = MS_SAVED_OP;
+                MS_SCRIPT += 2;
+            } else MS_CHECK_SKIP()
+            return 0;
+        case 0xC: {
+            s32 ch = MS_S16(0x196FC0);
+            u16 down;
+            ((s16*)(lbl_2_bss_1A824C[0] + 0x197298))[ch] = 1;
+            down = MENU_PADS[MS_PAD_PORT].down;
+            if (down & 0x100) {
+                MS_S16(0x196FCC) = 0;
+                MS_S16(0x196FCA) = 0;
+                ((s16*)(lbl_2_bss_1A824C[0] + 0x197298))[ch] = 0;
+                *MS_SCRIPT = MS_SAVED_OP;
+                MS_SCRIPT += 3;
+            } else if ((down & 0x1000) && MS_U8(0x197842) == 1) {
+                MS_U8(0x197840) = 1;
+                MS_LOAD_SCRIPT(MS_S16(0x1977A0));
+            }
+            return 0;
+        }
+        case 0x14: {
+            s32 done = 0;
+            u16 buttons;
+            MS_S16(0x1972B2) = 1;
+            buttons = MENU_PADS[MS_PAD_PORT].repeat;
+            if (buttons & 8) {
+                MS_S16(0x1972B0) = (MS_S16(0x1972B0) + 1) % 2;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            } else if (buttons & 4) {
+                MS_S16(0x1972B0) = (MS_S16(0x1972B0) + 1) % 2;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+            buttons = MENU_PADS[MS_PAD_PORT].down;
+            if (buttons & 0x100) {
+                sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+                done = 1;
+            } else if (buttons & 0x200) {
+                if (MS_S16(0x1972B0) == 0) {
+                    MS_S16(0x1972B0) = 1;
+                } else {
+                    done = 1;
+                }
+                sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            }
+            if (done) {
+                MS_S16(0x196FCC) = 0;
+                MS_S16(0x196FCA) = 0;
+                MS_S16(0x1972B2) = 0;
+                MS_SCRIPT += 1;
+            }
+            return 0;
+        }
+        case 0x19: {
+            s32 done = 0;
+            u16 buttons;
+            MS_S16(0x1972B2) = 1;
+            buttons = MENU_PADS[MS_PAD_PORT].repeat;
+            if (buttons & 8) {
+                MS_S16(0x1972B0) = (MS_S16(0x1972B0) + 2) % 3;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            } else if (buttons & 4) {
+                MS_S16(0x1972B0) = (MS_S16(0x1972B0) + 1) % 3;
+                sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+            }
+            buttons = MENU_PADS[MS_PAD_PORT].down;
+            if (buttons & 0x100) {
+                sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
+                done = 1;
+            } else if (buttons & 0x200) {
+                if (MS_S16(0x1972B0) == 0 || MS_S16(0x1972B0) == 1) {
+                    MS_S16(0x1972B0) = 2;
+                } else {
+                    done = 1;
+                }
+                sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
+            }
+            if (done) {
+                MS_S16(0x196FCC) = 0;
+                MS_S16(0x196FCA) = 0;
+                MS_S16(0x1972B2) = 0;
+                MS_SCRIPT += 1;
+            }
+            return 0;
+        }
+        case 0x2:
+            MS_S32(0x196F24) = script[1];
+            MS_SCRIPT += 2;
+            return 0;
+        case 0x15:
+            if (MS_S32(0x196F28)-- == 0) {
+                *MS_SCRIPT = MS_SAVED_OP;
+            }
+            return 0;
+        case 0x16:
+            if (*(s16*)(queue + 0x10) == 1) {
+                script[0] = MS_SAVED_OP;
+            }
+            return 0;
+        case 0x20: {
+            s32 i;
+            lbl_2_bss_9604[1] = 0;
+            lbl_2_bss_9604[0] = 0;
+            MS_S16(0x196FCC) = 1;
+            MS_S16(0x196FCA) = 1;
+            for (i = 0; i < 0x100; i++) {
+                lbl_2_bss_9A08[0][i] = 0;
+                lbl_2_bss_9A08[1][i] = 0;
+            }
+            MS_SCRIPT += 1;
+            continue;
+        }
+        case 0x3:
+            fn_2_50FC8(script[1]);
+            MS_SCRIPT += 2;
+            continue;
+        case 0x4:
+            fn_2_50F20(script[1], script[2], NULL);
+            MS_SCRIPT += 3;
+            continue;
+        case 0x5:
+            MS_S32(0x196F30) = 1;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x6:
+            fn_2_50F20(script[1], script[2] + ((s32*)(lbl_2_bss_1A824C[0] + 0x196F38))[script[3]], NULL);
+            MS_SCRIPT += 4;
+            continue;
+        case 0x7:
+            fn_2_50F20(script[1], script[2] + script[3], NULL);
+            MS_SCRIPT += 4;
+            continue;
+        case 0x9:
+            MS_SCRIPT = script + 4;
+            continue;
+        case 0xE:
+            ((u8*)fn_800B0A5C_insertQueue((void*)fn_2_38A40, 2))[0x28] = 0;
+            MS_S16(0x19729C) = MS_SCRIPT[1];
+            MS_S16(0x19729E) = MS_SCRIPT[2];
+            MS_S16(0x1972AA) = MS_SCRIPT[3];
+            *(s16*)(queue + 0x10) = 0;
+            MS_SAVED_OP = *MS_SCRIPT;
+            *MS_SCRIPT = 0xF;
+            continue;
+        case 0xF:
+            if (*(s16*)(queue + 0x10) == 1) {
+                if (MS_S16(0x19729C) == 1) {
+                    MS_U8(0x1972B9) = 1;
+                }
+                if (MS_S16(0x19729E) == 1) {
+                    MS_U8(0x1972BA) = 1;
+                }
+                *MS_SCRIPT = MS_SAVED_OP;
+                MS_SCRIPT += 4;
+            }
+            return 0;
+        case 0x1A: {
+            u8* task = fn_800B0A5C_insertQueue((void*)fn_2_38824, 2);
+            s32 side;
+            task[0x28] = 0;
+            *(s16*)(task + 0x1A) = 0;
+            *(s16*)(task + 0x18) = 0;
+            side = MS_SCRIPT[1];
+            if (side == 0) {
+                MS_S16(0x1972A4) = 1;
+                MS_S16(0x1972AC) = MS_SCRIPT[2];
+                *(s16*)(task + 0x18) = 1;
+            } else if (side == 1) {
+                MS_S16(0x1972A6) = 1;
+                MS_S16(0x1972AE) = MS_SCRIPT[2];
+                *(s16*)(task + 0x1A) = 1;
+            }
+            *(s16*)(queue + 0x10) = 0;
+            MS_SAVED_OP = *MS_SCRIPT;
+            *MS_SCRIPT = 0x1B;
+            continue;
+        }
+        case 0x1B:
+            if (*(s16*)(queue + 0x10) == 1) {
+                script[0] = MS_SAVED_OP;
+                MS_SCRIPT += 3;
+            }
+            return 0;
+        case 0x10:
+            if (MS_S16(0x19729C) == 1) {
+                MS_U8(0x1972B9) = 0;
+            }
+            if (MS_S16(0x19729E) == 1) {
+                MS_U8(0x1972BA) = 0;
+            }
+            lbl_2_bss_1A8234[0][0x162842] = 1;
+            lbl_2_bss_1A8234[0][0x162871] = 1;
+            lbl_2_bss_1A8234[0][0x162872] = 1;
+            ((u8*)fn_800B0A5C_insertQueue((void*)fn_2_38538, 2))[0x28] = 0;
+            *(s16*)(queue + 0x10) = 0;
+            MS_SAVED_OP = *MS_SCRIPT;
+            *MS_SCRIPT = 0x11;
+            continue;
+        case 0x11:
+            if (*(s16*)(queue + 0x10) == 1) {
+                script[0] = MS_SAVED_OP;
+                MS_SCRIPT += 1;
+            }
+            return 0;
+        case 0x12:
+            lbl_2_bss_1A8234[0][0x162658] = 1;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x13:
+            lbl_2_bss_1A8234[0][0x162842] = 1;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x2F:
+            lbl_2_bss_1A8234[0][0x162689] = 1;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x30:
+            lbl_2_bss_1A8234[0][0x162873] = 1;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x17:
+            MS_LOAD_SCRIPT(MS_S16(0x196FD6));
+            return 0;
+        case 0x18:
+            MS_LOAD_SCRIPT(script[1]);
+            return 0;
+        case 0x1E:
+            if (MS_S16(0x1972B0) == 0) {
+                MS_LOAD_SCRIPT(script[1]);
+            } else {
+                MS_SCRIPT = script + 2;
+            }
+            return 0;
+        case 0x21: {
+            s32 ch = script[1];
+            s32 digits = script[3];
+            u16* number;
+            fn_2_50E5C(ch);
+            {
+                s32 value = ((s32*)(lbl_2_bss_1A824C[0] + 0x196F38))[script[2]];
+                number = _OSAllocFromHeap(0x10, 0xC);
+                fn_2_4917C(number, value, digits, 4, 1);
+            }
+            fn_2_50DB4(ch, -1, number);
+            fn_2_50D40(ch);
+            if (number != NULL) {
+                fn_800ACFB0(number);
+            }
+            MS_SCRIPT += 4;
+            continue;
+        }
+        case 0x22:
+            MS_S16(0x1972B4) = script[1];
+            MS_U8(0x1972B6) = lbl_2_data_38CC[MS_S16(0x1972B4)];
+            MS_U8(0x1972B7) = 0;
+            ((u8*)fn_800B0A5C_insertQueue((void*)fn_2_39408, 2))[0x28] = 0;
+            *(s16*)(queue + 0x10) = 0;
+            MS_SCRIPT += 2;
+            continue;
+        case 0x23:
+            if (*(s16*)(queue + 0x10) != 0) {
+                MS_SCRIPT = script + 1;
+            }
+            return 0;
+        case 0x24:
+            switch (*(s16*)(queue + 0x10)) {
+            case 1:
+                MS_LOAD_SCRIPT(script[1]);
+                break;
+            case 2:
+            case 3:
+                MS_LOAD_SCRIPT(script[2]);
+                break;
+            }
+            return 0;
+        case 0x27:
+            if (MS_S16(0x1972B0) == 0) {
+                MS_LOAD_SCRIPT(script[1]);
+            } else {
+                MS_LOAD_SCRIPT(script[2]);
+            }
+            return 0;
+        case 0x1F:
+            if (MS_S16(0x1972B0) == 0) {
+                MS_LOAD_SCRIPT(script[1]);
+            } else if (MS_S16(0x1972B0) == 1) {
+                MS_LOAD_SCRIPT(script[2]);
+            } else {
+                MS_LOAD_SCRIPT(script[3]);
+            }
+            return 0;
+        case 0x28: {
+            u8* task;
+            s32 arg = script[1];
+            task = fn_800B0A5C_insertQueue((void*)fn_2_382A0, 2);
+            task[0x28] = 0;
+            *(s16*)(task + 0x16) = arg;
+            *(s16*)(queue + 0x10) = 0;
+            lbl_2_bss_1A8234[0][0x162842] = 1;
+            lbl_2_bss_1A8234[0][0x162871] = 1;
+            lbl_2_bss_1A8234[0][0x162872] = 1;
+            MS_SAVED_OP = *MS_SCRIPT;
+            *MS_SCRIPT = 0x29;
+            continue;
+        }
+        case 0x29:
+            if (*(s16*)(queue + 0x10) == 1) {
+                script[0] = MS_SAVED_OP;
+                MS_SCRIPT += 2;
+            }
+            return 0;
+        case 0x32: {
+            u8* task;
+            task = fn_800B0A5C_insertQueue((void*)fn_2_382A0, 2);
+            task[0x28] = 0;
+            *(s16*)(task + 0x16) = 2;
+            *(s16*)(queue + 0x10) = 0;
+            lbl_2_bss_1A8234[0][0x162842] = 1;
+            lbl_2_bss_1A8234[0][0x162871] = 1;
+            lbl_2_bss_1A8234[0][0x162872] = 1;
+            MS_SAVED_OP = *MS_SCRIPT;
+            *MS_SCRIPT = 0x33;
+            continue;
+        }
+        case 0x33:
+            if (*(s16*)(queue + 0x10) == 1) {
+                script[0] = MS_SAVED_OP;
+                MS_SCRIPT += 1;
+            }
+            return 0;
+        case 0x2A: {
+            u8* task;
+            task = fn_800B0A5C_insertQueue((void*)fn_2_381A8, 2);
+            task[0x28] = 0;
+            *(s16*)(task + 0x16) = 0;
+            *(s16*)(queue + 0x10) = 0;
+            lbl_2_bss_1A8234[0][0x162842] = 1;
+            lbl_2_bss_1A8234[0][0x162871] = 1;
+            lbl_2_bss_1A8234[0][0x162872] = 1;
+            MS_SAVED_OP = *MS_SCRIPT;
+            *MS_SCRIPT = 0x2B;
+            continue;
+        }
+        case 0x2B:
+            if (*(s16*)(queue + 0x10) == 1) {
+                script[0] = MS_SAVED_OP;
+                MS_SCRIPT += 1;
+            }
+            return 0;
+        case 0x2C: {
+            u8* task;
+            MS_S16(0x1972AA) = script[1];
+            task = fn_800B0A5C_insertQueue((void*)fn_2_380B0, 2);
+            task[0x28] = 0;
+            *(s16*)(task + 0x16) = 0;
+            *(s16*)(queue + 0x10) = 0;
+            lbl_2_bss_1A8234[0][0x162842] = 1;
+            lbl_2_bss_1A8234[0][0x162871] = 1;
+            lbl_2_bss_1A8234[0][0x162872] = 1;
+            MS_SAVED_OP = *MS_SCRIPT;
+            *MS_SCRIPT = 0x2D;
+            continue;
+        }
+        case 0x2D:
+            if (*(s16*)(queue + 0x10) == 1) {
+                script[0] = MS_SAVED_OP;
+                MS_SCRIPT += 2;
+            }
+            return 0;
+        case 0x2E:
+            MS_S16(0x1976DE) = 1;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x34:
+            MS_U8(0x197842) = script[1];
+            if (MS_U8(0x197842) == 1) {
+                MS_S16(0x1977A0) = MS_SCRIPT[2];
+            }
+            MS_SCRIPT += 3;
+            continue;
+        case 0x35:
+            MS_S16(0x197298) = 1;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x36:
+            MS_S16(0x197298) = 0;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x37:
+            MS_S16(0x19729A) = 1;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x38:
+            MS_S16(0x19729A) = 1;
+            MS_SCRIPT += 1;
+            continue;
+        case 0x39:
+            MS_S16(0x197298) = 0;
+            MS_S16(0x19729A) = 0;
+            MS_SCRIPT += 1;
+            continue;
+        }
+    }
+}
+#endif
