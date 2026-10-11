@@ -1129,6 +1129,44 @@ void fn_80034CEC(SpaniGroup* g) {
 }
 
 // .text:0x80034E20 size:0x130
-void fn_80034E20(void) {
-    return;
+void fn_80034E20(SpaniGroup* g, SpaniDesc* descs) {
+    SpaniDesc* d;
+    SpaniSlot* base;
+    s32 n = 0;
+    s32 i;
+    s32 k;
+    SpaniObj* obj;
+    s32 idx;
+
+    for (i = 0; i < 0x360; i++) {
+        if (lbl_80371C30[i].obj == NULL) {
+            g->baseIdx = i;
+            base = &lbl_80371C30[i];
+            base->owner = g;
+            break;
+        }
+    }
+    d = descs;
+    for (;;) {
+        idx = n + i;
+        if (d->type == 3) {
+            break;
+        }
+        lbl_80371C30[idx].obj = fn_80034F50(d);
+        obj = lbl_80371C30[idx].obj;
+        // TODO type: SpaniDesc.unk12 is the parent's index within the group (0xFF: none)
+        if (*(s16*)d->unk12 == 0xFF || n == 0) {
+            obj->parent = NULL;
+        } else {
+            obj->parent = base[*(s16*)d->unk12].obj;
+            obj->unk4 = ((SpaniObj*)obj->parent)->unk8;
+            ((SpaniObj*)obj->parent)->unk8 = obj;
+        }
+        for (k = 0; k < SPANI_TEX_OVERRIDE_COUNT; k++) {
+            obj->texOverride[k] = 0xFFFF;
+        }
+        d++;
+        n++;
+    }
+    g->count = n;
 }
