@@ -467,8 +467,9 @@ void fn_3_EE67C(u8* a, f32 (*m)[4]) {
     }
 }
 
-// 90%: mtx stores: orig does first via base+0x23c and the second via a separate pointer reg (r3+0x10); const load order/addi forms differ
 // .text:0x000EE96C size:0x228 mapped:0x8072DA00
+// NONMATCHING 96%: the original stores the ind-tex matrix through base+0x23c and a separate pointer reg (separate static in the pooled .bss); const load order differs
+#if NONMATCHING
 void fn_3_EE96C(u8* pos) {
     Mtx m;
     Vec t;
@@ -522,6 +523,7 @@ void fn_3_EE96C(u8* pos) {
     GXSetIndTexCoordScale(GX_IND_TEX_STAGE_0, s0, s1);
     GXSetTevIndWarp(GX_TEVSTAGE0, GX_IND_TEX_STAGE_0, 1, 0, GX_ITM_0);
 }
+#endif
 
 // .text:0x000EEB94 size:0x160 mapped:0x8072DC28
 void fn_3_EEB94(void) {
