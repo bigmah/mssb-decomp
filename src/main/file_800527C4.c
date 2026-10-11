@@ -1222,9 +1222,99 @@ void fn_80058B20(SceneTask* task, u8 port) {
 #endif
 
 // .text:0x80058E0C size:0x64C
-void fn_80058E0C(void) {
-    return;
+// NONMATCHING 88%: the port+K object indices are not folded in the original (addi per access)
+#if NONMATCHING
+void fn_80058E0C(SceneTask* task, u8 port) {
+    CharacterStats* player;
+    s16 charID;
+    u32 fielding;
+    u8 pushPull;
+    u8 highLow;
+    u8 stance;
+
+    if (lbl_803297E0.starShown[port] == 0) {
+        player = &inMemRoster[port][lbl_803297E0.selected[port] - 1];
+        charID = player->stats.CharID;
+        fielding = player->stats.FieldingStats;
+        pushPull = player->stats.HitTrajectoryPushPull;
+        highLow = player->stats.HitTrajectoryHighLow;
+        stance = player->stats.BattingStance;
+        TASK_OBJ(task, port + 0x19A)->_68 = 1;
+        TASK_OBJ(task, port + 0x1B0)->_5C = charID << 16;
+        TASK_OBJ(task, port + 0x1B2)->_5C = fn_80064918(charID) << 16;
+        TASK_OBJ(task, port + 0x1AC)->_5C = 0;
+        TASK_OBJ(task, port + 0x1C4)->_5C = charID << 16;
+        fn_80059458(task, port, fielding);
+        TASK_OBJ(task, port + 0x1B8)->_5C = 0;
+        TASK_OBJ(task, port + 0x1BA)->_5C = 1 << 16;
+        TASK_OBJ(task, port + 0x1BC)->_5C = 2 << 16;
+        TASK_OBJ(task, port + 0x1BE)->_5C = 3 << 16;
+        TASK_OBJ(task, port + 0x1C0)->_5C = 4 << 16;
+        TASK_OBJ(task, port + 0x1C2)->_5C = 5 << 16;
+        TASK_OBJ(task, port + 0x1A0)->_5C = 0;
+        TASK_OBJ(task, port + 0x1A2)->_5C = 0;
+        TASK_OBJ(task, port + 0x1A4)->_5C = 0;
+        TASK_OBJ(task, port + 0x1A6)->_5C = 0;
+        TASK_OBJ(task, port + 0x1A8)->_5C = 0;
+        TASK_OBJ(task, port + 0x1AA)->_5C = 0;
+        switch (pushPull) {
+        case 0:
+            TASK_OBJ(task, port + 0x1A0)->_68 = 1;
+            TASK_OBJ(task, port + 0x1A2)->_68 = 0;
+            TASK_OBJ(task, port + 0x1A4)->_68 = 0;
+            break;
+        case 1:
+            if (stance == 0) {
+                TASK_OBJ(task, port + 0x1A0)->_68 = 0;
+                TASK_OBJ(task, port + 0x1A2)->_68 = 1;
+                TASK_OBJ(task, port + 0x1A4)->_68 = 0;
+            } else {
+                TASK_OBJ(task, port + 0x1A0)->_68 = 0;
+                TASK_OBJ(task, port + 0x1A2)->_68 = 0;
+                TASK_OBJ(task, port + 0x1A4)->_68 = 1;
+            }
+            break;
+        case 2:
+            if (stance == 0) {
+                TASK_OBJ(task, port + 0x1A0)->_68 = 0;
+                TASK_OBJ(task, port + 0x1A2)->_68 = 0;
+                TASK_OBJ(task, port + 0x1A4)->_68 = 1;
+            } else {
+                TASK_OBJ(task, port + 0x1A0)->_68 = 0;
+                TASK_OBJ(task, port + 0x1A2)->_68 = 1;
+                TASK_OBJ(task, port + 0x1A4)->_68 = 0;
+            }
+            break;
+        }
+        switch (highLow) {
+        case 0:
+            TASK_OBJ(task, port + 0x1A6)->_68 = 1;
+            TASK_OBJ(task, port + 0x1A8)->_68 = 0;
+            TASK_OBJ(task, port + 0x1AA)->_68 = 0;
+            break;
+        case 1:
+            TASK_OBJ(task, port + 0x1A6)->_68 = 0;
+            TASK_OBJ(task, port + 0x1A8)->_68 = 1;
+            TASK_OBJ(task, port + 0x1AA)->_68 = 0;
+            break;
+        case 2:
+            TASK_OBJ(task, port + 0x1A6)->_68 = 0;
+            TASK_OBJ(task, port + 0x1A8)->_68 = 0;
+            TASK_OBJ(task, port + 0x1AA)->_68 = 1;
+            break;
+        }
+        TASK_OBJ(task, port + 0x1C6)->flags |= 2;
+        TASK_OBJ(task, port + 0x1C6)->_68 = 1;
+        TASK_OBJ(task, port + 0x19C)->_68 = 1;
+        TASK_OBJ(task, port + 0x1AC)->_5C = 0;
+        TASK_OBJ(task, port + 0x1AC)->_68 = 1;
+        TASK_OBJ(task, port + 0x1D0)->flags &= ~2;
+        TASK_OBJ(task, port + 0x1D0)->_68 = 0;
+        TASK_OBJ(task, port + 0x1C8)->_68 = 4;
+        lbl_803297E0.starShown[port] = 1;
+    }
 }
+#endif
 
 // .text:0x80059458 size:0x27C
 // Shows the two set bits of mask (bit 0 also skips bit 1) as frames on two objects.
