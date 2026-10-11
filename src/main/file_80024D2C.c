@@ -229,9 +229,33 @@ void fn_80025DDC(u8* h) {
 }
 
 // .text:0x80025EEC size:0x110
-void fn_80025EEC(void) {
-    return;
+// Starts the sequence selected by tables[table][entry] (negative: none).
+// NONMATCHING 93%: original tests `active` from the merged byte instead of reloading it; default seq loads both words before storing
+#if NONMATCHING
+void fn_80025EEC(ShapeAnimPlayer* p, s32 table, s32 entry) {
+    ShapeAnimState* st = &p->state;
+    s8 idx = p->tables[table][entry];
+
+    if (p->curIdx != -128 && idx == p->curIdx) {
+        return;
+    }
+    st->active = (idx > -1);
+    if (st->active) {
+        ShapeSeqData* d = p->seqs[idx];
+        st->seqIdx = 0;
+        st->seqs[0].hdr.length = d->hdr.length;
+        st->seqs[0].hdr.keyCount = d->hdr.keyCount;
+        st->seqs[0].keys = d->keys;
+    } else {
+        st->seqs[0].hdr = lbl_803CB7F0;
+        st->seqs[0].keys = lbl_803CB7F4;
+    }
+    shapeStateReset(st);
+    shapeSetDirtyA(st);
+    shapeSetDirtyB(st);
+    p->curIdx = idx;
 }
+#endif
 
 // .text:0x80025FFC size:0x134
 void fn_80025FFC(void) {
