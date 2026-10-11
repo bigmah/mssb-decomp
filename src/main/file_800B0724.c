@@ -885,9 +885,74 @@ void fn_800B27DC(Mtx44 m, s32 type) {
 #endif
 
 // .text:0x800B2854 size:0x274
-void fn_800B2854(void) {
-    return;
+// NONMATCHING 40%: the original recomputes bufSize/2 after the memcpy and keeps the projection column
+// computation inside the loop; ours CSEs/hoists both, which shifts every register
+#if NONMATCHING
+// Initialises the sprite system: numLayers layers drawing into buf, split into two
+// display-list buffers of bufSize/2 (one is filled while the other is drawn). Each layer
+// gets layerSizes[i] bytes (or an equal share) and the projection proj.
+void fn_800B2854(u8* buf, s32 bufSize, Mtx44 proj, s32 projType, s32 numLayers, s32* layerIds, s32* layerSizes) {
+    u8* buf0;
+    u8* buf1;
+    s32 size;
+    s32 i;
+    s32* sizes;
+    GDCurrentDL* dl;
+    s32 defaultSize;
+    SpriteState* state;
+    GDCurrentDL* dls;
+    SpriteWork* work = &lbl_802FE8B8;
+
+    lbl_803CBB30 = numLayers;
+    lbl_803CC1E0 = bufSize / 2;
+    memcpy(work->layerIds, layerIds, numLayers * sizeof(s32));
+    bufSize /= 2;
+    buf0 = buf;
+    buf1 = buf + bufSize;
+    dl = work->dl[0];
+    sizes = layerSizes;
+    defaultSize = bufSize / numLayers;
+    for (i = 0; i < numLayers; i++) {
+        if (layerSizes != NULL) {
+            size = *sizes;
+        } else {
+            size = defaultSize;
+        }
+        fn_800A1A70(&dl[0], buf0, size);
+        fn_800A1A70(&dl[SPRITE_MAX_LAYERS], buf1, size);
+        SpriteProjFromMtx(&lbl_803CBB40[i], proj, projType);
+        buf0 += size;
+        buf1 += size;
+        sizes++;
+        dl++;
+    }
+
+    lbl_803CC1D4 = lbl_803CBB30;
+    state = &work->wanted[lbl_803CBB30];
+    lbl_803CBB34 = state;
+    lbl_803CBB38 = state + SPRITE_MAX_LAYERS;
+    dls = work->dl[lbl_803CC1C4];
+    lbl_803CC1E4 = dls;
+    lbl_803CC1C0 = &dls[lbl_803CBB30];
+    lbl_803CBB40 = &work->proj[lbl_803CBB30];
+    lbl_803CC1C0->end = dls[0].begin + lbl_803CC1E0;
+    while (lbl_803CC1D4 != 0) {
+        lbl_803CC1D4--;
+        lbl_803CC1C0--;
+        lbl_803CBB34--;
+        lbl_803CBB38--;
+        lbl_803CBB40--;
+        memset(lbl_803CBB34, 0, sizeof(SpriteState));
+        PSMTXIdentity(lbl_803CBB34->mtx);
+        memcpy(&lbl_803CBB34->proj, lbl_803CBB40, sizeof(SpriteProj));
+        lbl_803CBB34->blendMode = 1;
+        lbl_803CBB34->primOffset = -1;
+        memcpy(lbl_803CBB38, lbl_803CBB34, sizeof(SpriteState));
+    }
+    lbl_803CC1D8[1] = NULL;
+    lbl_803CC1D8[0] = NULL;
 }
+#endif
 
 // .text:0x800B2AC8 size:0x84
 void fn_800B2AC8(void) {
