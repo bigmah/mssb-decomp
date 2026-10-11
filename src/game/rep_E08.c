@@ -42,6 +42,10 @@ extern u8 lbl_3_data_7F0C;
 extern s32 g_Strikes[];
 extern u8 lbl_80353A90[];
 extern u8 g_Batter[];
+extern u8 g_Stats[];
+extern void** fn_800111D8(void* actor);
+extern f32 fn_800B4A44(void* actor, u16 boneIndex);
+extern s32 fn_8001B35C(s32 index, s32 kind);
 extern u8 lbl_803CBC3C[];
 extern u8* lbl_3_common_bss_1323C;
 extern void fn_3_22C10(void);
@@ -2301,9 +2305,213 @@ void fn_3_664FC(void) {
 #endif
 
 // .text:0x000668BC size:0x874 mapped:0x806A5950
+// NONMATCHING 89%: register allocation and loop addressing differ
+#if NONMATCHING
 void fn_3_668BC(void) {
-    return;
+    s32 i;
+    s32 j;
+    s32 k;
+    u8** actors = (u8**)(lbl_8036E548 + 0x2C50);
+    u8* o;
+    u8* e;
+    u8* f;
+    s16 anim;
+    if (g_GameLogic[0x11E] == 3 || g_GameLogic[0x11E] == 5) {
+        return;
+    }
+    for (i = 0; i < 13; i++) {
+        // TODO type: the actors themselves live at lbl_8036E548 + 0xC04, 0x27C bytes each
+        lbl_8036E548[0xC04 + i * 0x27C + 0x274] = 0;
+    }
+    if (g_d_GameSettings[0x11] != 0 &&
+        ((g_GameLogic[0x11E] >= 0x1B && g_GameLogic[0x11E] <= 0x21) || g_GameLogic[0x11E] == 5)) {
+        return;
+    }
+
+    // remaining frames of each actor's current animation
+    for (i = 0; i < 13; i++) {
+        o = actors[i];
+        if (o != NULL && o[0x25D] != 0) {
+            f32 len = lbl_3_rodata_E9C;
+            u16 bone;
+            if (o != NULL) {
+                bone = *(u16*)(o + 0x16A);
+            } else {
+                bone = 0xFFFF;
+            }
+            if (bone != 0xFFFF) {
+                len = fn_800B4A44(*fn_800111D8(o), bone);
+            }
+            *(s16*)(o + 0x68) = len / *(f32*)(o + 0x4C);
+        }
+    }
+    if (g_Stats[0x36] != 0 && *(s32*)(g_Stats + 0x24) == 1 && actors[9] != NULL && *(s16*)(g_Stats + 0x34) != 0) {
+        *(s16*)(actors[9] + 0x68) = *(s16*)(g_Stats + 0x34) - 1;
+        *(s16*)(actors[9] + 0x70) = *(s16*)(g_Stats + 0x34) - 1;
+    }
+
+    // fielders
+    f = g_Fielders;
+    e = g_UnkAnimation_31EAC;
+    for (i = 0; i < 9; i++, e += 0x54, f += 0x268) {
+        j = 0;
+        k = i;
+        *(f32*)(e + 0x1C) = *(f32*)(e + 0x10);
+        o = actors[i];
+        f[0x20A] = 0;
+        *(f32*)(e + 0x20) = *(f32*)(e + 0x14);
+        *(f32*)(e + 0x24) = *(f32*)(e + 0x18);
+        if (g_d_GameSettings[0x11] != 0) {
+            for (j = 0; j < 4; j++) {
+                if (*(s8*)(g_Minigame + 0x18F8 + j) == i) {
+                    break;
+                }
+            }
+            if (j >= 4) {
+                continue;
+            }
+            k = *(s8*)(g_Minigame + 0x18CC + j);
+            o = actors[j];
+        }
+        if (e[0x50] != 0) {
+            f[0x1EC] = 1;
+        } else {
+            f[0x1EC] = 0;
+        }
+        if (e[0x4F] != 0 && *(s16*)(f + 0x24C) <= 1) {
+            f[0x1ED] = 1;
+        } else {
+            f[0x1ED] = 0;
+        }
+        if (o != NULL) {
+            if (e[0x42] != 0) {
+                getAnimRelatedCoordinates(k, 4, (f32*)(e + 0x2C));
+                *(f32*)(f + 0x30) = *(f32*)(e + 0x2C) - *(f32*)(f + 0);
+                *(f32*)(f + 0x34) = *(f32*)(e + 0x34) - *(f32*)(f + 8);
+                *(f32*)(f + 0x50) = sqrt_E08(*(f32*)(f + 0x30) * *(f32*)(f + 0x30) + *(f32*)(f + 0x34) * *(f32*)(f + 0x34));
+                *(f32*)(f + 0) = *(f32*)(e + 0x2C);
+                *(f32*)(f + 8) = *(f32*)(e + 0x34);
+                f[0x1FB] = 1;
+                fn_3_60A98(i, o);
+            } else {
+                f[0x1FB] = 0;
+                if (*(f32*)(f + 0x50) > *(f32*)(f + 0x58)) {
+                    *(f32*)(f + 0x50) = *(f32*)(f + 0x58);
+                }
+            }
+        }
+        f[0x1F9] = e[0x43];
+        f[0x25A] = 0;
+        if (e[0x4F] != 0 && e[0x4D] != 0) {
+            if (e[0x4D] == 3) {
+                f[0x25A] = 2;
+            } else if (e[0x4D] < 3 && e[0x4D] >= 1) {
+                f[0x25A] = 1;
+            }
+        }
+        if (e[0x44] != 0) {
+            f[0x1FD] = 1;
+            if (*(s16*)(f + 0x1AA) < 0x7FFE) {
+                *(s16*)(f + 0x1AA) = *(s16*)(f + 0x1AA) + 1;
+            } else {
+                *(s16*)(f + 0x1AA) = 0x7FFF;
+            }
+        } else {
+            f[0x1FD] = 0;
+            *(s16*)(f + 0x1AA) = 0;
+        }
+        if (o != NULL && *(s16*)(o + 0x62) == 0xF) {
+            f[0x1FE] = 1;
+        } else {
+            f[0x1FE] = 0;
+        }
+        *(s16*)(e + 0x3C) = fn_8001B35C(k, 1);
+        *(s16*)(e + 0x3E) = fn_8001B35C(k, 0);
+    }
+
+    // pitcher
+    if (g_FieldingLogic[0x117] != 0) {
+        k = 0;
+        o = actors[0];
+        if (g_d_GameSettings[0x11] != 0) {
+            k = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+            o = actors[k];
+        }
+        getAnimRelatedCoordinates(k, 4, (f32*)(g_UnkAnimation_31EAC + 0x2C));
+        *(f32*)(g_Pitcher + 0x6C) = *(f32*)(g_UnkAnimation_31EAC + 0x2C);
+        *(f32*)(g_Pitcher + 0x70) = *(f32*)(g_UnkAnimation_31EAC + 0x34);
+        if (o != NULL) {
+            anim = *(s16*)(o + 0x62);
+            if (anim == 0x40 || anim == 0x42 || (anim == 0x41 && *(s16*)(o + 0x68) < 0x1E) ||
+                (anim == 0x43 && *(s16*)(o + 0x68) < 0x1E)) {
+                g_Pitcher[0x15E] = 1;
+            } else {
+                g_Pitcher[0x15E] = 0;
+            }
+        } else {
+            g_Pitcher[0x15E] = 0;
+        }
+    }
+
+    // batter
+    if (lbl_8036E548[0x307D] != 0) {
+        return;
+    }
+    o = actors[9];
+    if (g_d_GameSettings[0x11] != 0) {
+        o = lbl_8036E548 + 0xC04 + *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1905) + 0x18CC) * 0x27C; // TODO type
+    }
+    if (lbl_3_common_bss_32220[8] == 0) {
+        if (o != NULL && (*(s16*)(o + 0x62) == 0x4B || *(s16*)(o + 0x62) == 0x66)) {
+            g_Batter[0x9A] = 1;
+        } else {
+            g_Batter[0x9A] = 0;
+        }
+    }
+    if (o == NULL) {
+        return;
+    }
+    if (*(s16*)(o + 0x62) == 0x67) {
+        g_Batter[0xA6] = 1;
+    } else {
+        g_Batter[0xA6] = 0;
+    }
+    if (g_GameLogic[0x11E] == 1 || g_GameLogic[0x11E] == 2) {
+        switch (*(s16*)(o + 0x62)) {
+        case 0x4D:
+            lbl_3_common_bss_32220[0xA] = 1;
+            (*(s16*)(lbl_3_common_bss_32220 + 2))++;
+            break;
+        case 0x53:
+            lbl_3_common_bss_32220[0xA] = 2;
+            (*(s16*)(lbl_3_common_bss_32220 + 2))++;
+            break;
+        case 0x50:
+            lbl_3_common_bss_32220[0xA] = 3;
+            (*(s16*)(lbl_3_common_bss_32220 + 2))++;
+            break;
+        case 0x54:
+            lbl_3_common_bss_32220[0xA] = 4;
+            (*(s16*)(lbl_3_common_bss_32220 + 2))++;
+            break;
+        default:
+            if (lbl_3_common_bss_32220[0xA] != 0) {
+                if (lbl_3_common_bss_32220[0xA] == 9) {
+                    lbl_3_common_bss_32220[0xA] = 0;
+                } else {
+                    lbl_3_common_bss_32220[0xA] = 9;
+                    *(s16*)(lbl_3_common_bss_32220 + 2) = 0;
+                }
+            }
+            break;
+        }
+    }
+    anim = *(s16*)(o + 0x62);
+    if (anim == 0x5E || anim == 0x5F || anim == 0x60 || anim == 0x61 || anim == 0x62) {
+        *(s16*)(lbl_3_common_bss_32220 + 6) = *(s16*)(o + 0x68);
+    }
 }
+#endif
 
 // .text:0x00067130 size:0x1C mapped:0x806A61C4
 
