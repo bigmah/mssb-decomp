@@ -200,50 +200,18 @@ void capApplicationFunction(void) {
 #endif
 
 // .text:0x80042598 size:0x144
-// NONMATCHING ~90%: the original advances the entry pointer (addi 4) between compares
-#if NONMATCHING
+// Batting-order slot (1-9) of the player at fielding position `slot`.
 s32 fn_80042598(u8 team, s32 slot) {
     OrderEntry* e = lbl_80354720[team];
-
-    if (slot == e->slot) {
-        return 1;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 2;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 3;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 4;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 5;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 6;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 7;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 8;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 9;
+    s32 i;
+    for (i = 0; i < 9; i++, e++) {
+        if (slot == e->slot) {
+            return i + 1;
+        }
     }
     OSPanic(lbl_800E6920, 0xD69, lbl_800E6930);
     return 0;
 }
-#endif
 
 // .text:0x800426DC size:0x514
 // NONMATCHING ~80%: source stats indexed as [id/9][id%9] with u8 casts in the original; field copies use lhz/lha differently
