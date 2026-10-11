@@ -126,4 +126,6 @@ void fn_1_12820(void* table, void* matrix);
 
 void fn_1_D13C(void);
 
+void fn_1_D300(u8* row);
+
 #endif

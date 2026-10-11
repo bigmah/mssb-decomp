@@ -7,7 +7,8 @@ static u8 ch_68FC[0x30];
 static u8 ch_fill68F8[0x4];
 static u8 ch_67E0[0x118];
 static s32 ch_67B8[0xA];
-static u8 ch_fill60EC[0x6CC];
+static u8 ch_fill62B8[0x500];
+static u8 ch_60EC[0x5C * 5];
 static u8* ch_60E8;
 static u8 ch_fill60E4[0x4];
 static u8* ch_60E0;
@@ -2143,5 +2144,45 @@ void fn_1_D13C(void) {
         fn_800B2B74(*(struct GameActor**)(*(u8**)(lbl_8036E548 + 0x60) + ch_5F73 * 0x90 + 0x34), *bone);
         bone++;
     }
+}
+#endif
+
+// .text:0xD300 size:0x1BC
+// NONMATCHING ~96%: switch tree lacks one dead branch; r6/r7 swap
+#if NONMATCHING
+void fn_1_D300(u8* row) {
+    u32 idx;
+    s32 first;
+    u8** actors;
+    s32 second;
+
+    idx = ch_5F73;
+    switch ((ch_6940 + idx * 0x48)[0x44]) {
+    case 0:
+    case 1:
+        first = 1;
+        second = 2;
+        break;
+    default:
+        if (ch_5F69 != 0) {
+            first = 1;
+            second = 4;
+        } else {
+            first = 3;
+            second = 2;
+        }
+        break;
+    }
+    actors = (u8**)(lbl_8036E548 + 0x2C50);
+    *(u8**)(actors[idx] + 0x30) = lbl_8036E548 + idx * 0xD4 + 0x140;
+    memcpy(*(u8**)(actors[ch_5F73] + 0x30) + 0x4, ch_60EC + first * 0x5C, 0x5C);
+    memcpy(*(u8**)(actors[ch_5F73] + 0x30) + 0x68, ch_60EC + second * 0x5C, 0x5C);
+    (*(u8**)(actors[ch_5F73] + 0x30))[0x60] = ch_5F73;
+    (*(u8**)(actors[ch_5F73] + 0x30))[0xC4] = ch_5F73;
+    (*(u8**)(actors[ch_5F73] + 0x30))[0xCD] = row[0x25A];
+    (*(u8**)(actors[ch_5F73] + 0x30))[0xCE] = row[0x25B];
+    (*(u8**)(actors[ch_5F73] + 0x30))[0xCF] = ch_5F73;
+    (*(u8**)(actors[ch_5F73] + 0x30))[0xD0] = ch_5F73;
+    *(void**)actors[ch_5F73] = (*(ChallengeModelEntry**)(lbl_8036E548 + 0x60))[ch_5F73].actor;
 }
 #endif
