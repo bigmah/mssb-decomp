@@ -1731,9 +1731,71 @@ void fn_8005F9D0(SceneTask* task, s32 port) {
 #endif
 
 // .text:0x8005FCA0 size:0x4E4
-void fn_8005FCA0(void) {
-    return;
+// NONMATCHING 97%: r4/r7 swapped (objIdx+port operand order), as in fn_8005F734
+#if NONMATCHING
+void fn_8005FCA0(SceneTask* task, s32 port) {
+    u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
+
+    if ((*(state += 0x37) == 0) ? TRUE : FALSE) {
+        TASK_OBJ(task, port + 4)->_5C = 0;
+        TASK_OBJ(task, port + 4)->_68 = 1;
+        TASK_OBJ(task, port + 6)->_5C = 14 << 16;
+        TASK_OBJ(task, port + 6)->_68 = 1;
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            if (((u8*)&g_d_GameSettings)[0x10] == 0 && port != 0) { // TODO type
+                TASK_OBJ(task, port)->_5C = 0;
+                TASK_OBJ(task, port)->_68 = 1;
+                TASK_OBJ(task, port + 2)->_5C = 0;
+                TASK_OBJ(task, port + 2)->_68 = 1;
+                TASK_OBJ(task, port + 18)->_5C = 30 << 16;
+                TASK_OBJ(task, port + 18)->_68 = 4;
+                TASK_OBJ(task, port + 20)->_5C = 0;
+                TASK_OBJ(task, port + 20)->_68 = 1;
+                TASK_OBJ(task, port + 24)->_5C = 0;
+                TASK_OBJ(task, port + 24)->_68 = 0;
+                TASK_OBJ(task, port + 10)->flags |= 2;
+                TASK_OBJ(task, port + 10)->_5C = 0;
+                TASK_OBJ(task, port + 10)->_68 = 1;
+            } else {
+                TASK_OBJ(task, port)->_5C = 0;
+                TASK_OBJ(task, port)->_68 = 1;
+                TASK_OBJ(task, port + 2)->_5C = 0;
+                TASK_OBJ(task, port + 2)->_68 = 1;
+                TASK_OBJ(task, port + 10)->flags |= 2;
+                TASK_OBJ(task, port + 10)->_5C = 0;
+                TASK_OBJ(task, port + 10)->_68 = 1;
+                TASK_OBJ(task, port + 2)->_5C = 0;
+                TASK_OBJ(task, port + 2)->_68 = 1;
+                TASK_OBJ(task, port + 18)->_5C = 0;
+                TASK_OBJ(task, port + 18)->_68 = 1;
+                TASK_OBJ(task, port + 20)->_5C = 0;
+                TASK_OBJ(task, port + 20)->_68 = 1;
+            }
+        } else {
+            TASK_OBJ(task, port)->_5C = 0;
+            TASK_OBJ(task, port)->_68 = 1;
+            TASK_OBJ(task, port + 10)->flags |= 2;
+            TASK_OBJ(task, port + 10)->_5C = 0;
+            TASK_OBJ(task, port + 10)->_68 = 1;
+            TASK_OBJ(task, 18)->_5C = 0;
+            TASK_OBJ(task, 18)->_68 = 1;
+            TASK_OBJ(task, 20)->_5C = 0;
+            TASK_OBJ(task, 20)->_68 = 1;
+            TASK_OBJ(task, 2)->_5C = 0;
+            TASK_OBJ(task, 2)->_68 = 1;
+            TASK_OBJ(task, 3)->_5C = 0;
+            TASK_OBJ(task, 3)->_68 = 1;
+            if (lbl_803297E0._CF70 == 0) {
+                TASK_OBJ(task, 466)->flags |= 2;
+                TASK_OBJ(task, 466)->_5C = 10 << 16;
+                TASK_OBJ(task, 466)->_68 = 1;
+            }
+        }
+        fn_800626EC(port);
+        *state = 1;
+    }
 }
+#endif
 
 // .text:0x80060184 size:0x1A18
 void fn_80060184(void) {
