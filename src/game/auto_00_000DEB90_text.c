@@ -153,7 +153,70 @@ void fn_3_DEB90(void) {
 
 // .text:0x000DF00C size:0x250 mapped:0x8071E0A0
 void fn_3_DF00C(void) {
-    return;
+    switch (g_GameLogic._125) {
+    case 0:
+        if (g_Minigame._19A6 == 1) {
+            // sta_c6.h declares it s32, but the original only tests the low byte
+            if ((u8)fn_3_E8AC8() == 0) {
+                break;
+            }
+            g_Minigame._19A6 = 0;
+        }
+        if (g_Minigame._19A2 != 0) {
+            g_Minigame._19A2--;
+        }
+        g_Minigame.minigameFielderIndex[0] = -1;
+        g_Minigame.minigameFielderIndex[1] = -1;
+        g_Minigame.minigameFielderIndex[2] = -1;
+        g_Minigame.minigameFielderIndex[3] = -1;
+        fn_3_DEB90();
+        fn_3_F578();
+        fn_3_753E8(0);
+        setBatterContactConstants();
+        fn_3_58E50();
+        fn_3_2E87C();
+        fn_3_1E154();
+        fn_3_E1370(0);
+        lbl_3_common_bss_32234._01 = 1;
+        g_GameLogic.pre_PostMiniGameInd = 1;
+        g_GameLogic.minigameLastTurnSuccessInd = 1;
+        g_Strikes.strikes = 0;
+        g_Strikes.balls = 0;
+        lbl_803CBC3C._02 = 0;
+        g_GameLogic._125++;
+        break;
+    case 1:
+        if (g_Minigame._19C7 != 0) {
+            if (someAnimationIndFunction() != 0) {
+                lbl_3_common_bss_32234._01 = 1;
+                g_GameLogic._125++;
+            }
+        } else {
+            g_GameLogic._125++;
+        }
+        break;
+    default:
+        fn_3_DE744();
+        if (++g_Minigame._190F == 1) {
+            g_Minigame._1911 = 1;
+        }
+        if (g_Minigame.toyField_turnNumber < 0x7FFE) {
+            g_Minigame.toyField_turnNumber++;
+        } else {
+            g_Minigame.toyField_turnNumber = 0x7FFF;
+        }
+        // Pick the next "coins x2" turn at the start of every 10 turns.
+        if (g_Minigame.toyField_turnNumber < g_Minigame.toyField_selectedTurns &&
+            g_Minigame.toyField_turnNumber % 10 == 1) {
+            g_Minigame.toyField_next_CoinsX2_TurnNumber = random_fn_3_9EE24(6) + 4 + g_Minigame.toyField_turnNumber;
+        }
+        if (g_Minigame.toyField_next_CoinsX2_TurnNumber == g_Minigame.toyField_turnNumber) {
+            g_Minigame.toyField_pointMultiplier = 2;
+        } else {
+            g_Minigame.toyField_pointMultiplier = 1;
+        }
+        break;
+    }
 }
 
 // .text:0x000DF25C size:0x17C mapped:0x8071E2F0
