@@ -701,6 +701,8 @@ remove:
 
 // fn_3_129FF8, size:0x2C0
 // Minigame level icons (4 levels): highlight the level reached.
+// NONMATCHING 99.7%: add operand order (base, i) in the sprite index sums (same as fn_3_129C88)
+#if NONMATCHING
 void fn_3_129FF8(void) {
     HudTask* task = lbl_803CC1B8;
     s32 i;
@@ -764,3 +766,4 @@ remove:
     fn_800B0A14_removeQueue(fn_80034CEC(task));
     lbl_3_common_bss_32724[0xBE] = 0;
 }
+#endif
