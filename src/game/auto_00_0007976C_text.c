@@ -53,6 +53,22 @@ void fn_3_7AEE8(void) {
     return;
 }
 
+// fn_3_7AEEC, size:0x7C
+// Snapshot of which bases are occupied at the start of an at-bat.
+void fn_3_7AEEC(void) {
+    s32 i;
+
+    lbl_3_common_bss_32A94._22 = -1;
+    lbl_3_common_bss_32A94.baseOccupied[0] = 0;
+    for (i = 1; i < 4; i++) {
+        if (g_Runners[i].runnerOnFieldOrOutOrScored != 0) {
+            lbl_3_common_bss_32A94.baseOccupied[i] = 1;
+        } else {
+            lbl_3_common_bss_32A94.baseOccupied[i] = 0;
+        }
+    }
+}
+
 // fn_3_7BB74, size:0x4C
 u8* fn_3_7BB74(void) {
     return lbl_803537E4 + *(s32*)((u8*)&g_GameLogic + 4) * 0x156 + ((s32*)((u8*)&g_GameLogic + *(s32*)((u8*)&g_GameLogic + 0xC) * 0x50 + ((s32*)((u8*)&g_GameLogic + *(s32*)((u8*)&g_GameLogic + 0xC) * 4))[0xDC/4] * 8))[0xF] * 0x26;

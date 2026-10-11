@@ -2935,14 +2935,37 @@ typedef struct {
     /* 0x00 */ s16 _0;
     /* 0x02 */ s16 _2;
     /* 0x04 */ s16 _4;
-    /* 0x06 */ u8 _06[0x44 - 0x6];
+    /* 0x06 */ u8 _06[0x20 - 0x6];
+    /* 0x20 */ s16 _20;
+    /* 0x22 */ s8 _22; // -1: undecided (fn_3_7976C)
+    /* 0x23 */ u8 _23;
+    /* 0x24 */ u8 _24;
+    /* 0x25 */ s8 _25; // double-play tracking (fn_3_79A00)
+    /* 0x26 */ u8 _26;
+    /* 0x27 */ u8 baseOccupied[4]; // [0] batter, [1..3] runner on that base
+    /* 0x2B */ u8 pitchCountLog[7]; // balls + strikes * 16 per pitch of the at-bat
+    /* 0x32 */ s16 _32;
+    /* 0x34 */ s16 _34; // pitches by the current pitcher
+    /* 0x36 */ u8 _36[5];
+    /* 0x3B */ u8 _3B;
+    /* 0x3C */ u8 _3C;
+    /* 0x3D */ u8 _3D;
+    /* 0x3E */ u8 _3E[5];
+    /* 0x43 */ u8 _43;
     /* 0x44 */ s16 _44[2]; // per team: times through the batting order
     /* 0x48 */ u8 _48[4];
     /* 0x4C */ s16 _4C[2]; // per team
-    /* 0x50 */ u8 _50[8];
+    /* 0x50 */ struct {
+        s16 pitcher;
+        s16 _2;
+    } _50[2]; // per team
     /* 0x58 */ MvpCandidate mvp[2]; // per team (fn_3_759BC)
-    /* 0x60 */ u8 _60[3];
+    /* 0x60 */ u8 _60;
+    /* 0x61 */ u8 _61;
+    /* 0x62 */ u8 _62;
     /* 0x63 */ u8 _63[2]; // per team
+    /* 0x65 */ u8 _65[0x8A - 0x65];
+    /* 0x8A */ u8 _8A;
 } lbl_3_common_bss_32A94_s;
 
 extern lbl_3_common_bss_32A94_s lbl_3_common_bss_32A94;
