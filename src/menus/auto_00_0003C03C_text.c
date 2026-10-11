@@ -1372,7 +1372,8 @@ void fn_2_3F29C(void) {
 }
 
 // fn_2_4041C, size:0x198
-// ~97%: only scheduling of the three lis DATA@ha in case 0 differs
+// NONMATCHING 95%: only scheduling of the three lis DATA@ha in case 0 differs
+#if NONMATCHING
 void fn_2_4041C(void) {
     u8* o = lbl_803CC1B8;
     u8* q;
@@ -1409,6 +1410,7 @@ void fn_2_4041C(void) {
         o[0x28] = 0;
     }
 }
+#endif
 
 // fn_2_405B4, size:0x1D8
 void fn_2_405B4(void) {
@@ -1680,7 +1682,8 @@ void fn_2_45810(void) {
 }
 
 // fn_2_45204, size:0x150
-// ~99%: extra mr r30,r0 for the strength-reduced table pointer
+// NONMATCHING 96%: extra mr r30,r0 for the strength-reduced table pointer (see docs/patterns/unsolved.md)
+#if NONMATCHING
 void fn_2_45204(void) {
     s32 i;
     s32 n;
@@ -1712,6 +1715,7 @@ void fn_2_45204(void) {
         }
     }
 }
+#endif
 
 // fn_2_466AC, size:0x150
 void fn_2_466AC(void) {
