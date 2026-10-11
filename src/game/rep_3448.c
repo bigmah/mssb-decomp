@@ -649,7 +649,8 @@ void fn_3_122D24(void) {
 }
 
 // .text:0x001231D4 size:0x3E4 mapped:0x80762268
-// near-match: only reg allocation (orig keeps *(q+0xC) in r3 and prelude base in r4; ours swaps them)
+// NONMATCHING 98%: reg alloc only (orig keeps *(q+0xC) in r3 and prelude base in r4; ours swaps them)
+#if NONMATCHING
 void fn_3_1231D4(void) {
     u8* q = lbl_803CC1B8;
     u8* r = *(u8**)(q + 0xC);
@@ -715,6 +716,7 @@ void fn_3_1231D4(void) {
         break;
     }
 }
+#endif
 
 // .text:0x001235B8 size:0x3D8 mapped:0x8076264C
 void fn_3_1235B8(void) {
