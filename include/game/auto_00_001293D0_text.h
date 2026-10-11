@@ -62,5 +62,6 @@ void fn_3_12955C(void);
 void fn_3_129A18(void);
 void fn_3_12A910(void);
 void fn_3_12B7A0(void);
+void fn_3_12CA90(void);
 
 #endif

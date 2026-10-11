@@ -6,6 +6,7 @@
 #include "main/menu_globals.h"
 #include "game/rep_1838.h"
 #include "main/file_800527C4.h" // MenuDef
+#include "main/file_8004C5F8.h"
 
 extern HudTask* lbl_803CC1B8;
 extern LayoutSlot lbl_80371C30[];
@@ -52,6 +53,13 @@ extern s32 fn_3_9E834(void); // game/auto_00_0009CD90_text.h (clashes with game/
 extern void* memset(void*, s32, u32);
 extern int __abs(int);
 extern void* memcpy(void*, const void*, unsigned long);
+
+// Switch the pause-menu description to menu (lbl_800FEF70 entry).
+static inline void setMenu(u8 menu) {
+    lbl_8034E978.menu = menu;
+    lbl_8034E978.prevTrack = lbl_8034E978.track;
+    lbl_8034E978.track = lbl_800FEF70[menu].track;
+}
 
 // fn_3_12DB54, size:0x2C
 void fn_3_12DB54(void) {
@@ -895,9 +903,7 @@ void fn_3_129A18(void) {
     }
     lbl_3_common_bss_32724[0xDA] = 0;
     lbl_3_common_bss_32724[0xBB] = 0;
-    lbl_8034E978.menu = 0x33;
-    lbl_8034E978.prevTrack = lbl_8034E978.track;
-    lbl_8034E978.track = lbl_800FEF70[0x33].track;
+    setMenu(0x33);
     lbl_3_common_bss_32724[0xBA] = lbl_3_common_bss_32724[0xB9];
     lbl_3_common_bss_32724[0xBD] = 0;
     task->timer = 1;
@@ -1023,30 +1029,18 @@ void fn_3_12B7A0(void) {
     }
     if (g_d_GameSettings.GameModeSelected == 6) {
         if (g_Minigame._190A != 0) {
-            lbl_8034E978.menu = 0x20;
-            lbl_8034E978.prevTrack = lbl_8034E978.track;
-            lbl_8034E978.track = lbl_800FEF70[0x20].track;
+            setMenu(0x20);
         } else if (fn_3_9E834() != 0) {
-            lbl_8034E978.menu = 0x2F;
-            lbl_8034E978.prevTrack = lbl_8034E978.track;
-            lbl_8034E978.track = lbl_800FEF70[0x2F].track;
+            setMenu(0x2F);
         } else {
-            lbl_8034E978.menu = 0x2E;
-            lbl_8034E978.prevTrack = lbl_8034E978.track;
-            lbl_8034E978.track = lbl_800FEF70[0x2E].track;
+            setMenu(0x2E);
         }
     } else if (g_Minigame._190A != 0) {
-        lbl_8034E978.menu = 0x23;
-        lbl_8034E978.prevTrack = lbl_8034E978.track;
-        lbl_8034E978.track = lbl_800FEF70[0x23].track;
+        setMenu(0x23);
     } else if (fn_3_9E834() != 0) {
-        lbl_8034E978.menu = 0x35;
-        lbl_8034E978.prevTrack = lbl_8034E978.track;
-        lbl_8034E978.track = lbl_800FEF70[0x35].track;
+        setMenu(0x35);
     } else {
-        lbl_8034E978.menu = 0x34;
-        lbl_8034E978.prevTrack = lbl_8034E978.track;
-        lbl_8034E978.track = lbl_800FEF70[0x34].track;
+        setMenu(0x34);
     }
     if (g_Minigame._190A != 0) {
         slots = lbl_80371C30 + 72;
@@ -1141,4 +1135,121 @@ remove:
     fn_8000F8F4((LayoutGroup*)task);
     fn_800B0A14_removeQueue(fn_80034CEC(task));
     lbl_3_common_bss_32724[0xBC] = 0;
+}
+
+// fn_3_12CA90, size:0x764
+// Minigame HUD/menu dispatcher: start the HUD tasks and pick the pause-menu
+// description for the current minigame state.
+void fn_3_12CA90(void) {
+    if (g_GameLogic.gameStatus >= 0x1C && g_GameLogic.gameStatus <= 0x20 && lbl_3_common_bss_32724[0xD9] == 0 &&
+        g_GameLogic.framesOfExitingToMenu == 0) {
+        fn_800B0A5C_insertQueue(fn_3_12C3F0, 2);
+        fn_800B0A5C_insertQueue(fn_80053FE8, 2);
+        if (g_Minigame._190A != 0) {
+            setMenu(0x23);
+        } else {
+            setMenu(0x33);
+        }
+    }
+    if (g_GameLogic.gameStatus == 0x1C) {
+        if (g_GameLogic._125 == 1 && g_GameLogic.FrameCountOfCurrentAtBat_Copy == 0) {
+            fn_800B0A5C_insertQueue(fn_3_129A18, 2);
+            if (lbl_3_common_bss_32724[0xBC] == 0) {
+                fn_800B0A5C_insertQueue(fn_3_12BFE8, 2);
+            }
+        }
+        if (g_GameLogic._125 == 5 && g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
+            fn_8004CC4C(0, 1, 1, 0, 0x89);
+            fn_800B0A5C_insertQueue(fn_8004D0F0, 2);
+        }
+    } else if (g_GameLogic.gameStatus == 0x1E) {
+        if (g_GameLogic._125 == 1 && g_GameLogic.FrameCountOfCurrentAtBat_Copy == 0) {
+            if (lbl_3_common_bss_32724[0xDC] == 0 && g_Minigame._19E0 == 0) {
+                fn_800B0A5C_insertQueue(fn_80051D00, 2);
+                lbl_3_common_bss_32724[0xDC] = 1;
+            }
+            if (lbl_3_common_bss_32724[0xDA] != 1) {
+                fn_800B0A5C_insertQueue(fn_3_12B7A0, 2);
+            }
+        }
+        if (g_GameLogic._125 == 2) {
+            if (lbl_3_common_bss_32724[0xDC] == 0 && g_Minigame._19DE != 5 && g_Minigame._19DE != 8 && g_Minigame._19DE != 6) {
+                fn_800B0A5C_insertQueue(fn_80051D00, 2);
+                lbl_3_common_bss_32724[0xDC] = 1;
+            }
+            if (g_Minigame._19DE == 1 && g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
+                fn_800B0A5C_insertQueue(fn_3_12A6C4, 2);
+            }
+            if (g_Minigame._19DE == 5 || g_Minigame._19DE == 8) {
+                if (g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1 && g_Minigame._19DE == 5) {
+                    fn_80050F78(0);
+                    lbl_3_common_bss_32724[0xDC] = 0;
+                    if (g_Minigame._190A != 0) {
+                        fn_800B0A5C_insertQueue(fn_3_129F48, 2);
+                    } else {
+                        fn_800B0A5C_insertQueue(fn_3_12A2B8, 2);
+                    }
+                }
+                if (g_Minigame._1A3C == 0) {
+                    if (g_Minigame._190A != 0) {
+                        setMenu(0x24);
+                    } else {
+                        setMenu(0x36);
+                    }
+                }
+            } else if (g_Minigame._19DE < 4) {
+                if (g_d_GameSettings.GameModeSelected == 6) {
+                    if (g_Minigame._190A != 0) {
+                        setMenu(0x20);
+                    } else if (fn_3_9E834() != 0) {
+                        setMenu(0x2F);
+                    } else {
+                        setMenu(0x2E);
+                    }
+                } else if (g_Minigame._190A != 0) {
+                    setMenu(0x23);
+                } else if (fn_3_9E834() != 0) {
+                    setMenu(0x35);
+                } else {
+                    setMenu(0x34);
+                }
+            }
+        }
+        if (g_GameLogic._125 == 7) {
+            fn_80050F78(1);
+            lbl_3_common_bss_32724[0xDC] = 0;
+        }
+        if (g_GameLogic._125 == 3) {
+            fn_80050F78(0);
+            lbl_3_common_bss_32724[0xDC] = 0;
+        }
+    } else if (g_GameLogic.gameStatus == 0x21) {
+        if (g_GameLogic._125 == 2 && g_GameLogic.FrameCountOfCurrentAtBat_Copy == 0) {
+            fn_800B0A5C_insertQueue(fn_3_126604, 2);
+            if (g_Minigame._1A38 != 0 || g_Minigame._1A3C != 0) {
+                fn_800B0A5C_insertQueue(fn_80053FE8, 2);
+            }
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                if (g_Minigame._190A != 0) {
+                    setMenu(0x22);
+                } else {
+                    setMenu(0x32);
+                }
+            } else if (g_Minigame._190A != 0) {
+                setMenu(0x26);
+            } else if (g_Minigame._1A3C != 0) {
+                setMenu(0x3B);
+            } else {
+                setMenu(0x38);
+            }
+            if (lbl_3_common_bss_32724[0xD9] == 0) {
+                fn_800B0A5C_insertQueue(fn_3_12C3F0, 2);
+            }
+        }
+    } else if (g_GameLogic.gameStatus == 0x28) {
+        if (g_GameLogic._125 == 1) {
+            fn_800B0A5C_insertQueue(fn_3_126604, 2);
+            setMenu(0x39);
+        }
+    }
 }
