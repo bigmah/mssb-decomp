@@ -1,8 +1,12 @@
 #include "main/file_800263FC.h"
+#include "main/file_80008E00.h"
+#include "stl/math.h"
+#include "stl/mem.h"
 
 // Particle / emitter system.
 
 int __abs(int);
+int rand(void);
 void fn_800118AC(Mtx in, Mtx out); // TODO: belongs in file_80011640.h
 
 extern f32 lbl_8017ED68[]; // cosine table, 0x800 steps per turn
@@ -10,12 +14,24 @@ extern Mtx lbl_8017FF78[2]; // [0]: billboard rotation (inverse view, no transla
 extern Mtx lbl_8017FFE0;
 extern Vec lbl_80180010[4];     // billboard quad corners
 extern UVCoord lbl_800F7860[];
+extern TexCoordF lbl_800F78C0[4]; // quad corner texcoords
+extern const Vec lbl_800E6778;    // (1, 0, 0)
 extern Particle* lbl_803CBC74; // free particle list
 extern u8 lbl_803CBC78;        // nonzero: clear all emitters on next draw
 extern s32 lbl_803CBC7C;
 extern Emitter* lbl_803CBC80;  // free emitter list (linked through next)
 extern EmitterHead lbl_803CBC84; // active list head
 #define EMITTER_HEAD ((Emitter*)&lbl_803CBC84)
+
+static inline f32 CosIdx(s32 angle) {
+    s32 i = __abs(angle) & 0x7FF;
+    if (i >= 0x401) {
+        i = 0x800 - i;
+    }
+    return lbl_8017ED68[i];
+}
+
+#define SinIdx(angle) CosIdx((angle) + 0x600)
 
 static inline Emitter* FindEmitter(Emitter* e, u8 type) {
     if (e == NULL) {
@@ -112,6 +128,28 @@ static inline Emitter* NewEmitter(EmitterUpdateFn update, u8 priority, s32 unk14
     e->prev = at;
     at->next = e;
     return e;
+}
+
+static inline void LoadParticleTex(TexArchive* arc, s32 idx, GXTexWrapMode wrapS, GXTexWrapMode wrapT) {
+    GXTexObj texObj;
+    GXTlutObj tlutObj;
+    TexImage* img;
+
+    if (arc == NULL) {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+        return;
+    }
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
+    img = &arc->entries[arc->entries[idx].index].img;
+    if (img->tlut != NULL) {
+        GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, wrapS, wrapT, GX_FALSE, 0);
+        GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
+        GXLoadTlut(&tlutObj, GX_TLUT0);
+    } else {
+        GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, wrapS, wrapT, GX_FALSE);
+    }
+    GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXLoadTexObj(&texObj, GX_TEXMAP1);
 }
 
 // .text:0x800263FC size:0x59C
@@ -247,8 +285,12 @@ void fn_8002D82C(void) {
 }
 
 // .text:0x8002DC68 size:0x7C
-void fn_8002DC68(void) {
-    return;
+void fn_8002DC68(Vec* pos) {
+    Emitter* e = FindEmitter(NULL, 9);
+    if (e != NULL) {
+        memcpy(&e->u.t9.prevPos, &e->u.t9.pos, sizeof(Vec));
+        memcpy(&e->u.t9.pos, pos, sizeof(Vec));
+    }
 }
 
 // .text:0x8002DCE4 size:0x6F8
