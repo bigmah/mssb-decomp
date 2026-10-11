@@ -1266,3 +1266,20 @@ void fn_2_C484(s32 owner, s16 id) {
         }
     }
 }
+
+#define g_Roster ((MenuCharStats*)inMemRoster)
+
+// fn_2_11EA8, size:0x228
+void fn_2_11EA8(void) {
+    MenuCharStats* src;
+    s32 i;
+    s8 sel;
+    for (i = 0; i < 9; i++) {
+        sel = *(s8*)(lbl_803C6724 + i + 2);
+        src = (MenuCharStats*)(lbl_8034E9A0 + sel / 9 * 0x5A0 + sel % 9 * 0xA0);
+        MENU_COPY_CHAR_STATS(&g_Roster[i], src);
+        lbl_80354720[i * 4 + 2] = i;
+        lbl_80354720[i * 4 + 1] = i;
+        lbl_80354720[i * 4 + 0] = i;
+    }
+}
