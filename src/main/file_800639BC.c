@@ -30,7 +30,21 @@ extern u8 lbl_800E87B4[15][16];   // TODO type: stream file descriptors
 extern u8 lbl_800E88A4[16][2];    // stream volumes
 extern s16 lbl_80108EDC[9][5];
 
+extern u8 lbl_803CBD18; // fade-out: step computed
+extern u8 lbl_803CBD19; // fade-out: frame counter
+extern s16 lbl_803CBD1A;
+extern u8 lbl_803CBD1C; // fade-in: step computed
+extern u8 lbl_803CBD1D; // fade-in: frame counter
+extern u8 lbl_803CBD1E; // fade-in: volume steps per second
+extern u8 lbl_803CBD1F; // fade-in: current volume
+extern u8 lbl_803CBD20; // fade-out: volume steps per second
+extern u8 lbl_80108DB8[0x24]; // character ids in roster order
+extern u8 lbl_80108DDC[0x18]; // extra character ids (variants)
+extern EffectDesc lbl_80108D48;
+extern s32 lbl_803CBD0C;
+
 extern s32 randRange_FUN_80042bf0(s32 lo, s32 hi);
+extern void fn_8002B7F8(void* obj, EffectDesc* desc, s32 count);
 extern void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAddr);
 extern void fn_80034E20(void* task, void* desc);
 extern void* fn_80034CEC(void* task);
@@ -41,8 +55,23 @@ void fn_800639BC(void) {
 }
 
 // .text:0x80064344 size:0xEC
-void fn_80064344(void) {
-    return;
+void fn_80064344(void* obj, Vec* v) {
+    EffectDesc desc;
+    f32 scale = 3.0f * PSVECMag(v);
+
+    memcpy(&desc, &lbl_80108D48, sizeof(EffectDesc));
+    desc.id = lbl_803CBD0C;
+    desc.size[0] *= scale;
+    desc.size[1] *= scale;
+    desc.size[2] *= scale;
+    desc.size[3] *= scale;
+    desc.size[4] *= scale;
+    desc.size[5] *= scale;
+    desc._38 *= scale;
+    desc._54[0] *= scale;
+    desc._54[1] *= scale;
+    desc._54[2] *= scale;
+    fn_8002B7F8(obj, &desc, 1);
 }
 
 // .text:0x80064430 size:0x104

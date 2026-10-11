@@ -2,6 +2,7 @@
 #define __MAIN_FILE_800639BC_H__
 
 #include "mssbTypes.h"
+#include "Dolphin/mtx.h"
 
 // Character-select / team-setup state at 0x8034E9A0 (size 0x4C28).
 // Only the fields used so far are named.
@@ -19,6 +20,20 @@ typedef struct CharSelectState {
 
 extern CharSelectState lbl_8034E9A0;
 
+// Particle/effect emitter description passed to fn_8002B7F8 (template at lbl_80108D48).
+typedef struct EffectDesc {
+    /*0x00*/ s32 id;
+    /*0x04*/ s32 _04[4];
+    /*0x14*/ f32 size[6];
+    /*0x2C*/ s32 _2C[3];
+    /*0x38*/ f32 _38;
+    /*0x3C*/ s32 _3C;
+    /*0x40*/ f32 _40;
+    /*0x44*/ s32 _44[4];
+    /*0x54*/ f32 _54[3];
+    /*0x60*/ s32 _60[4];
+} EffectDesc; // size: 0x70
+
 void fn_80069A68(void);
 void fn_80069A98(void);
 void fn_80069AD4(void);
@@ -35,5 +50,6 @@ s16 fn_80067AC8(s16 id, s8 col);
 void fn_800684A4(void);
 void fn_80068720(u8 track);
 void fn_8006877C(u8 track);
+void fn_80064344(void* obj, Vec* v);
 
 #endif
