@@ -227,7 +227,9 @@ typedef struct CharMgr {
     /*0x3082*/ u8 _3082;
     /*0x3083*/ u8 _3083[0x2];
     /*0x3085*/ u8 _3085;
-    /*0x3086*/ u8 _3086[0x308C - 0x3086];
+    /*0x3086*/ u8 _3086;
+    /*0x3087*/ u8 _3087;
+    /*0x3088*/ u8 _3088[0x308C - 0x3088];
     /*0x308C*/ void (*callback)(void);
     /*0x3090*/ u8 _3090[0x3154 - 0x3090];
 } CharMgr; // size: 0x3154
@@ -335,6 +337,9 @@ s32 fn_80017340(s32 actorIdx);
 void fn_80018024(void);
 
 void fn_80018B74(void);
+
+void fn_8001AF98(void);
+void fn_8001AB10(CharSlot* slot, s32 a, s32 b);
 
 void fn_8001B200(void);
 

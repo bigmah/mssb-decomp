@@ -2,6 +2,7 @@
 #include "Dolphin/mtx.h"
 #include "Dolphin/stl.h"
 #include "Dolphin/GX/GXTypes.h"
+#include "Dolphin/gx.h"
 
 // Globals owned by other units (only the fields used here).
 typedef struct GameSettingsView {
@@ -24,6 +25,25 @@ typedef struct Unk803716B8 {
     /*0x000*/ u8 _000[0x1E8];
     /*0x1E8*/ u8 _1E8;
 } Unk803716B8;
+
+// Camera returned by fn_80052734.
+typedef struct CameraView {
+    /*0x00*/ Mtx44 proj;
+    /*0x40*/ Mtx view;
+    /*0x70*/ Vec eye;
+    /*0x7C*/ Vec target;
+    /*0x88*/ Vec up;
+} CameraView;
+
+// Camera description handed to the shadow renderer.
+typedef struct ShadowView {
+    /*0x00*/ Vec eye;
+    /*0x0C*/ Vec up;
+    /*0x18*/ Vec target;
+    /*0x24*/ u8 _24[0x1C];
+    /*0x40*/ Mtx view;
+    /*0x70*/ u8 _70[0xE4 - 0x70];
+} ShadowView; // size: 0xE4
 
 // ARAM file table entry.
 typedef struct AramFile {
@@ -88,7 +108,6 @@ extern CharPart* lbl_803CBC10;
 extern u8 lbl_803CBC14;
 extern u8 lbl_803CBC15;
 extern void* _OSAllocFromHeap(s32 heap, u32 size);
-extern void GXInvalidateVtxCache(void);
 extern void DOVARender(void* display, s32 a, s32 b, va_list args);
 extern void DOVARenderSkin(void* display, s32 a, void* p, void* q, s32 b);
 extern void DOSetWorldMatrix(void* display, MtxPtr mtx);
@@ -105,8 +124,20 @@ extern void fn_800B4AFC(CharModel* model, s32 v);
 extern void Set_FUN_800b2b6c(CharModel* model, void* p);
 extern void fn_800BDA24(CharSlot* slot);
 extern s32 fn_800527BC(void);
-extern void* fn_80052734(u16 index);
+extern CameraView* fn_80052734(u16 index);
 extern u8 fn_800B3C04(u16 index, CharModel* model, Mtx m);
+extern s32 fn_8003A538(void);
+extern void fn_8003A4C8(void);
+extern u16 fn_8005268C(void);
+extern void fn_800BD1E8(u32 value);
+extern u8 GetDrawShadows(void);
+extern void DrawShadows(u8 enable);
+extern void fn_800BEC00(s32 reverse);
+extern void fn_800BF058(void (*draw)(CharSlot*, s32, s32));
+extern void fn_800BE09C(CharSlotList* list, ShadowView* view);
+extern void fn_800BDFE0(CharSlotList* list);
+extern void fn_800BDEA0(void);
+extern void (*lbl_803CBBF4)(void);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -1485,13 +1516,71 @@ void fn_8001AAF0(void) {
 }
 
 // .text:0x8001AB10 size:0x488
-void fn_8001AB10(void) {
+void fn_8001AB10(CharSlot* slot, s32 a, s32 b) {
     return;
 }
 
 // .text:0x8001AF98 size:0x268
 void fn_8001AF98(void) {
-    return;
+    BOOL homeRun = g_d_GameSettings.GameModeSelected == 6;
+    u32 sx;
+    u32 sy;
+    u32 sw;
+    u32 sh;
+    Vec dir;
+    Vec dir2;
+    f32 proj[7];
+    f32 viewport[6];
+    ShadowView view;
+    CameraView* cam;
+
+    if (lbl_8036E548._3087 != 0 && fn_8003A538() == 0) {
+        DrawShadows(lbl_8036E548._3086);
+    } else {
+        DrawShadows(0);
+        return;
+    }
+    GXGetProjectionv(proj);
+    GXGetViewportv(viewport);
+    GXGetScissor(&sx, &sy, &sw, &sh);
+    fn_800BEC00(homeRun);
+    if (homeRun) {
+        cam = fn_80052734(fn_8005268C());
+        PSVECSubtract(&cam->eye, &cam->target, &dir);
+        dir.y = 2.0f * -dir.y;
+        if (PSVECMag(&dir)) {
+            PSVECNormalize(&dir, &dir);
+            dir2 = dir;
+            fn_800BEBCC(0, &dir2);
+        }
+    } else {
+        fn_800BD1E8(0);
+    }
+    if (GetDrawShadows()) {
+        view.eye = fn_80052734(0)->eye;
+        view.target = fn_80052734(0)->target;
+        view.up = fn_80052734(0)->up;
+        PSMTXCopy(fn_80052734(0)->view, view.view);
+        fn_800BE09C(lbl_8036E548.slots, &view);
+        fn_800BF058(fn_8001AB10);
+        fn_800BDFE0(lbl_8036E548.slots);
+        if (lbl_8036E548.callback != NULL) {
+            lbl_8036E548.callback();
+        }
+        if (homeRun) {
+            fn_8003A4C8();
+        } else {
+            fn_800BDEA0();
+        }
+    }
+    if (lbl_803CBBF4 != NULL) {
+        lbl_803CBBF4();
+        lbl_803CBBF4 = NULL;
+    }
+    GXSetScissor(sx, sy, sw, sh);
+    GXSetViewport(viewport[0], viewport[1], viewport[2], viewport[3], viewport[4], viewport[5]);
+    GXSetProjectionv(proj);
+    GXInvalidateTexAll();
 }
 
 // fn_8001B200, size:0x14
@@ -2099,7 +2188,7 @@ void fn_8001DB74(CharSlotList* list) {
             fn_800BDA24(slot);
         }
         for (k = 0; k < fn_800527BC(); k++) {
-            view = (MtxPtr)((u8*)fn_80052734(k) + 0x40); // TODO type: camera view matrix
+            view = fn_80052734(k)->view;
             shift = k * 3;
             mask = ~(3 << shift);
             if (lbl_8036E548._307A == 5) {
