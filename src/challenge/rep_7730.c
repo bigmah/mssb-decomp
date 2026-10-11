@@ -24,7 +24,7 @@ static GXTexObj lbl_1_bss_6EA4[8];
 static GXTlutObj lbl_1_bss_6E44[8];
 static u32 lbl_1_bss_6E24[8];
 static u8 lbl_1_bss_6D48[0xDC];
-static f32 lbl_1_bss_6BF4[0x154 / 4];
+static ChallengeProjectionState lbl_1_bss_6BF4;
 static f32 lbl_1_bss_6BE4[4];
 static ActorObjectTable* lbl_1_bss_6BE0[1];
 static s32 lbl_1_bss_6BDC;
@@ -47,7 +47,7 @@ extern void fn_1_1DA54(void);
 extern const f32 lbl_1_rodata_77E4;
 extern void fn_1_272DC(void*, s32);
 extern void fn_1_AF4(s32, s32, f32);
-extern void fn_1_1E5D0(void*);
+
 
 extern void fn_1_21408(void);
 extern u8 lbl_803C6CF8[];
@@ -289,11 +289,11 @@ void fn_1_207D4(void) {
 
 // fn_1_1F23C, size:0x9C
 void fn_1_1F23C(ChallengeProjectionState* state) {
-    fn_800385F0(lbl_1_bss_6BF4,
+    fn_800385F0(&lbl_1_bss_6BF4,
         *(f32*)(lbl_803CC1B8[0] + 0x14), *(f32*)(lbl_803CC1B8[0] + 0x18),
         *(f32*)(lbl_803CC1B8[0] + 0x1C), *(f32*)(lbl_803CC1B8[0] + 0x20));
     state->depth = -*(f32*)(lbl_803CC1B8[0] + 0x24);
-    state->distance += lbl_1_rodata_780C;
+    state->pos.y += lbl_1_rodata_780C;
     *(u32*)(lbl_803CC1B8[0] + 0x2C) &= ~2U;
     *(u32*)(lbl_803CC1B8[0] + 0x2C) |= 2;
 }
@@ -350,7 +350,7 @@ void fn_1_1EFF4(void) {
     fn_1_272DC(lbl_1_bss_6D48, 0);
     fn_1_AF4(20, 20, (&lbl_1_rodata_77E4)[0]);
     if (*(u32*)(lbl_803CC1B8[0] + 0x2C) & 2) {
-        fn_1_1E5D0(lbl_1_bss_6BF4);
+        fn_1_1E5D0(&lbl_1_bss_6BF4);
     }
 }
 
@@ -367,7 +367,7 @@ void fn_1_1DD94(void) {
     axis.x = lbl_1_bss_6BE4[1];
     axis.y = lbl_1_bss_6BE4[2];
     axis.z = lbl_1_bss_6BE4[3];
-    fn_80037B18(lbl_1_bss_6BF4, &axis, lbl_1_bss_6BE4[0]);
+    fn_80037B18(&lbl_1_bss_6BF4, &axis, lbl_1_bss_6BE4[0]);
 }
 
 // .text:0x1E8C0 size:0x4C
@@ -616,7 +616,7 @@ void fn_1_1F2D8(void) {
     *(f32*)(lbl_803CC1B8[0] + 0x1C) = (&lbl_1_rodata_7810)[0];
     *(f32*)(lbl_803CC1B8[0] + 0x20) = (&lbl_1_rodata_77E4)[0];
     *(f32*)(lbl_803CC1B8[0] + 0x24) = (&lbl_1_rodata_77E4)[0];
-    fn_1_1F23C((ChallengeProjectionState*)lbl_1_bss_6BF4);
+    fn_1_1F23C(&lbl_1_bss_6BF4);
     *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
     lbl_1_bss_6BE4[0] = 0.0f;
     lbl_1_bss_6BE4[1] = 0.0f;
@@ -781,7 +781,7 @@ void fn_1_1F05C(void) {
             *(u32*)(q + 0x2C) ^= 4;
             fn_1_1DD94();
         }
-        fn_80037BAC(lbl_1_bss_6BF4);
+        fn_80037BAC(&lbl_1_bss_6BF4);
         break;
     }
     q = lbl_803CC1B8[0];
@@ -1497,3 +1497,90 @@ void fn_1_1F618(ChallengeTextureStages* stages) {
     }
 }
 #endif
+
+extern void fn_1_F2C(s32, s32, s32);
+
+// .text:0x1E5D0 size:0x2F0
+void fn_1_1E5D0(ChallengeProjectionState* body) {
+    Vec b;
+    Vec a;
+    Vec* pb;
+
+    fn_1_F2C(4, 0, 0);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_COPY);
+    PSMTXMultVec(body->world, &body->p1, &a);
+    PSMTXMultVec(body->world, &body->p0, pb = &b);
+    GXBegin(GX_LINES, GX_VTXFMT0, 2);
+    GXWGFifo.f32 = a.x;
+    GXWGFifo.f32 = a.y;
+    GXWGFifo.f32 = a.z;
+    GXWGFifo.u8 = 0xFF;
+    GXWGFifo.u8 = 0x40;
+    GXWGFifo.u8 = 0x40;
+    GXWGFifo.u8 = 0xFF;
+    GXWGFifo.f32 = b.x;
+    GXWGFifo.f32 = b.y;
+    GXWGFifo.f32 = b.z;
+    GXWGFifo.u8 = 0x40;
+    GXWGFifo.u8 = 0xFF;
+    GXWGFifo.u8 = 0x40;
+    GXWGFifo.u8 = 0xFF;
+    GXBegin(GX_LINES, GX_VTXFMT0, 4);
+    PSVECScale(&body->pos, lbl_1_rodata_77E4, &a);
+    PSVECAdd(&a, (Vec*)&body->quat, pb); // TODO type: reads quat.xyz as a vector
+    GXWGFifo.f32 = a.x;
+    GXWGFifo.f32 = a.y;
+    GXWGFifo.f32 = a.z;
+    GXWGFifo.u8 = 0xFF;
+    GXWGFifo.u8 = 0;
+    GXWGFifo.u8 = 0;
+    GXWGFifo.u8 = 0xFF;
+    GXWGFifo.f32 = b.x;
+    GXWGFifo.f32 = b.y;
+    GXWGFifo.f32 = b.z;
+    GXWGFifo.u8 = 0xFF;
+    GXWGFifo.u8 = 0;
+    GXWGFifo.u8 = 0;
+    GXWGFifo.u8 = 0xFF;
+    PSVECScale(&body->angVel, lbl_1_rodata_77E4, pb);
+    PSVECAdd(&a, pb, pb);
+    GXWGFifo.f32 = a.x;
+    GXWGFifo.f32 = a.y;
+    GXWGFifo.f32 = a.z;
+    GXWGFifo.u8 = 0;
+    GXWGFifo.u8 = 0;
+    GXWGFifo.u8 = 0xFF;
+    GXWGFifo.u8 = 0xFF;
+    GXWGFifo.f32 = b.x;
+    GXWGFifo.f32 = b.y;
+    GXWGFifo.f32 = b.z;
+    GXWGFifo.u8 = 0;
+    GXWGFifo.u8 = 0;
+    GXWGFifo.u8 = 0xFF;
+    GXWGFifo.u8 = 0xFF;
+    if (*(s32*)(lbl_803CC1B8[0] + 0x28) == 0) {
+        PSVECSubtract(&body->p0, &body->p1, &a);
+        PSVECScale(&a, lbl_1_bss_6BE4[0], &a);
+        PSVECAdd(&body->p1, &a, &a);
+        PSMTXMultVec(body->world, &a, &a);
+        b.x = lbl_1_bss_6BE4[1];
+        b.y = lbl_1_bss_6BE4[2];
+        b.z = lbl_1_bss_6BE4[3];
+        PSVECAdd(&a, pb, pb);
+        GXBegin(GX_LINES, GX_VTXFMT0, 2);
+        GXWGFifo.f32 = a.x;
+        GXWGFifo.f32 = a.y;
+        GXWGFifo.f32 = a.z;
+        GXWGFifo.u8 = 0xFF;
+        GXWGFifo.u8 = 0;
+        GXWGFifo.u8 = 0xFF;
+        GXWGFifo.u8 = 0xFF;
+        GXWGFifo.f32 = b.x;
+        GXWGFifo.f32 = b.y;
+        GXWGFifo.f32 = b.z;
+        GXWGFifo.u8 = 0xFF;
+        GXWGFifo.u8 = 0;
+        GXWGFifo.u8 = 0xFF;
+        GXWGFifo.u8 = 0xFF;
+    }
+}

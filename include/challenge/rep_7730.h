@@ -31,12 +31,23 @@ typedef struct {
     void* data;
 } ChallengeTransfer;
 
+// Same layout as RigidBody (main/file_80037054.h); simulated by fn_800385F0/fn_80037BAC.
 typedef struct {
-    u8 padding[0x50];
-    f32 depth;
-    u8 padding54[0x98];
-    f32 distance;
-} ChallengeProjectionState;
+    /* 0x000 */ Vec p0;
+    /* 0x00C */ Vec p1;
+    /* 0x018 */ Vec d;
+    /* 0x024 */ u8 pad24[0x50 - 0x24];
+    /* 0x050 */ f32 depth;
+    /* 0x054 */ f32 unk54;
+    /* 0x058 */ Mtx world;
+    /* 0x088 */ Mtx rot;
+    /* 0x0B8 */ Mtx invRot;
+    /* 0x0E8 */ Vec pos;
+    /* 0x0F4 */ Quaternion quat;
+    /* 0x104 */ u8 pad104[0x140 - 0x104];
+    /* 0x140 */ Vec angVel;
+    /* 0x14C */ u8 pad14C[0x154 - 0x14C];
+} ChallengeProjectionState; // size 0x154
 
 typedef struct {
     u8 padding[0x18];
@@ -205,5 +216,6 @@ void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera);
 void fn_1_23804(s32 arg0, s32 arg1, s32 rows, s32 cols, f32 arg4, f32 arg5);
 void fn_1_1FD78(ChallengeTextureStages* menu);
 void fn_1_1F618(ChallengeTextureStages* stages);
+void fn_1_1E5D0(ChallengeProjectionState* body);
 
 #endif
