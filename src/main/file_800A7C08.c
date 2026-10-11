@@ -2701,7 +2701,31 @@ u8 fn_800ADAFC(void) {
 #pragma push
 #pragma dont_inline on // the heap functions live in another file in the original
 BOOL fn_800ADB04(ThpMovie* movie, ThpPlayer* p, u8 format, u8 freeBuffer) {
-    return 0;
+    if ((s32)lbl_803CC17D != 0) {
+        return FALSE;
+    }
+    lbl_803CC181 = freeBuffer;
+    lbl_803CC170 = p;
+    p->movie = movie;
+    lbl_803CC1A4 = movie->_0C;
+    if (lbl_803CC181) {
+        lbl_803CC1AC = lbl_803CC1A4;
+        if (lbl_803C7A00.buffer != NULL) {
+            fn_800ACFB0(lbl_803C7A00.buffer);
+        }
+    }
+    lbl_803CC170->framePtrs[0] = &lbl_803CC170->frames[0];
+    lbl_803CC170->framePtrs[1] = &lbl_803CC170->frames[1];
+    lbl_803CC170->framePtrs[2] = &lbl_803CC170->frames[2];
+    lbl_803CC170->framePtrs[3] = &lbl_803CC170->frames[3];
+    lbl_803CC170->framePtrs[4] = &lbl_803CC170->frames[4];
+    lbl_803CC170->framePtrs[5] = &lbl_803CC170->frames[5];
+    lbl_803CC170->format = format;
+    if (!lbl_803CC17E) {
+        OSResumeThread(&lbl_802FB220);
+    }
+    OSSendMessage(&lbl_802FB870, (OSMessage)0, OS_MESSAGE_NOBLOCK);
+    return TRUE;
 }
 #pragma pop
 
