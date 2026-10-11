@@ -27,6 +27,9 @@ extern Emitter lbl_801F8040[0x10];    // emitter pool
 extern UVCoord lbl_800F7860[];
 extern TexCoordF lbl_800F78C0[4]; // quad corner texcoords
 extern const Vec lbl_800E6778;    // (1, 0, 0)
+extern const Vec lbl_800E6784;    // (0, -1, 0)
+extern s32 lbl_803CB7F8;          // respawn delay mask
+extern f32 lbl_803CB7FC;          // respawn angle spread (0..1)
 extern SpaniSlot lbl_80371C30[0x360];
 extern SpaniObj* lbl_803CBC9C;
 extern Particle* lbl_803CBC74; // free particle list
@@ -163,6 +166,38 @@ static inline void LoadParticleTex(TexArchive* arc, s32 idx, GXTexWrapMode wrapS
     }
     GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
     GXLoadTexObj(&texObj, GX_TEXMAP1);
+}
+
+static inline void DrawParticleQuad(Particle* p, TexArchive* arc) {
+    GXTexObj texObj;
+    GXTlutObj tlutObj;
+    TexImage* img;
+    s32 tex = p->texIndex;
+    Vec* corner;
+    s32 i;
+
+    if (arc == NULL) {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    } else {
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
+        img = &arc->entries[arc->entries[tex].index].img;
+        if (img->tlut != NULL) {
+            GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
+            GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
+            GXLoadTlut(&tlutObj, GX_TLUT0);
+        } else {
+            GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+        }
+        GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
+        GXLoadTexObj(&texObj, GX_TEXMAP1);
+    }
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    corner = lbl_80180010;
+    for (i = 0; i < 4; i++) {
+        GXPosition3f32(p->pos.x + corner[i].x, p->pos.y + corner[i].y, p->pos.z + corner[i].z);
+        GXColor1u32(p->color.rgba);
+        GXTexCoord2f32(lbl_800F7860[p->uvFrame + i].u, lbl_800F7860[p->uvFrame + i].v);
+    }
 }
 
 // .text:0x800263FC size:0x59C
@@ -616,8 +651,19 @@ void fn_800328E0(void) {
 }
 
 // .text:0x800330CC size:0x1EC
-void fn_800330CC(void) {
-    return;
+void fn_800330CC(s32 n, u32 color, Vec* pos, Vec* dir, s32 spawnFrames, TexArchive* tex, f32 speed, f32 size) {
+    Emitter* e = NewEmitter(fn_800328E0, 0x80, 0, n, 1, 1);
+    if (e != NULL) {
+        e->tex = tex;
+        memcpy(&e->u.t1.pos, pos, sizeof(Vec));
+        memcpy(&e->u.t1.dir, dir, sizeof(Vec));
+        e->u.t1.speed = speed;
+        e->u.t1.spawnLeft = spawnFrames;
+        e->u.t1.bounce = -0.4f;
+        e->u.t1.floorY = -0.0001f;
+        e->u.t1.color = color;
+        e->u.t1.size = size;
+    }
 }
 
 // .text:0x800332B8 size:0x304

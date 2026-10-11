@@ -80,14 +80,14 @@ typedef struct Emitter {
     /* 0x17 */ u8 type : 7;
     /* 0x18 */ union {
         struct {
-            /* 0x18 */ Vec unk18;
-            /* 0x24 */ Vec unk24;
-            /* 0x30 */ f32 unk30;
-            /* 0x34 */ s32 unk34;
-            /* 0x38 */ f32 unk38;
-            /* 0x3C */ f32 unk3C;
-            /* 0x40 */ s32 unk40;
-            /* 0x44 */ f32 unk44;
+            /* 0x18 */ Vec pos;       // spawn position
+            /* 0x24 */ Vec dir;       // spray direction
+            /* 0x30 */ f32 speed;
+            /* 0x34 */ s32 spawnLeft; // frames left in which dead particles respawn
+            /* 0x38 */ f32 bounce;    // vel.y multiplier at the floor
+            /* 0x3C */ f32 floorY;
+            /* 0x40 */ u32 color;
+            /* 0x44 */ f32 size;
         } t1;
         struct {
             /* 0x18 */ Vec pos;
@@ -171,6 +171,8 @@ Particle* fn_80031F34(Particle* list, s32 n);
 s32 fn_80032038(const void* a, const void* b);
 f32 fn_800335BC(s32 angle);
 f32 fn_800335EC(s32 angle);
+s32 fn_800328E0(Emitter* e);
+void fn_800330CC(s32 n, u32 color, Vec* pos, Vec* dir, s32 spawnFrames, TexArchive* tex, f32 speed, f32 size);
 void fn_80033620(Emitter* e);
 void fn_80033794(Particle* list);
 Emitter* fn_800337CC(Emitter* e, s32 n, s32 strict);
