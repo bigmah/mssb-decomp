@@ -133,6 +133,27 @@ typedef struct {
     /* 0x0C */ u8 padC[0x34];
 } ChallengeSpriteDesc;
 
+// Queue object of the path (spline) test mode (fn_1_25C68 / fn_1_25064 / fn_1_24A8C).
+typedef struct {
+    /* 0x00 */ void (*func)(void);
+    /* 0x04 */ u8 pad4[0x8];
+    /* 0x0C */ ChallengeTransfer* transfer;
+    /* 0x10 */ u8 pad10[4];
+    /* 0x14 */ f32 param1;
+    /* 0x18 */ u16 param2;
+    /* 0x1A */ u16 param0;
+    /* 0x1C */ u16 param3;
+    /* 0x1E */ u16 param4;
+    /* 0x20 */ u16 param5;
+    /* 0x22 */ u16 force;
+    /* 0x24 */ u16 mass;
+    /* 0x26 */ u16 unk26;
+    /* 0x28 */ u16 unk28;
+    /* 0x2A */ u8 steps;
+    /* 0x2B */ u8 count;
+    /* 0x2C */ u8 cursor;
+} ChallengePathTest;
+
 // Rope mass point used by fn_1_24C4C (0x3C bytes, cf. RopeNode in main/file_80037054.h).
 typedef struct {
     /* 0x00 */ f32 mass;
@@ -305,5 +326,6 @@ void fn_1_23B54(void);
 void fn_1_21CE8(void);
 void fn_1_21408(void);
 void fn_1_25F98(void);
+void fn_1_25064(void);
 
 #endif

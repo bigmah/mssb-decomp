@@ -1588,7 +1588,6 @@ extern const f32 lbl_1_rodata_78D4;
 extern const f32 lbl_1_rodata_78D8;
 extern const f32 lbl_1_rodata_78DC;
 extern const f32 lbl_1_rodata_78E0;
-extern void fn_1_25064(void);
 
 // NONMATCHING 89%: orig hoists the lbl_1_data_FB98 pool base into r30 before C_MTXFrustum; the inlined fn_1_24A8C has its own f-reg swap
 // .text:0x25C68 size:0x330
@@ -2829,5 +2828,171 @@ void fn_1_25F98(void) {
         GXWGFifo.u16 = 1;
         GXWGFifo.u16 = 0;
     }
+}
+#endif
+
+// NONMATCHING 86%: the original inlines fn_1_248BC (and fn_1_24A8C/fn_1_247A0) here; ours calls fn_1_248BC
+// .text:0x25064 size:0xC04
+#if NONMATCHING
+void fn_1_25064(void) {
+    ChallengePathTest* q = (ChallengePathTest*)lbl_803CC1B8[0];
+    s32 big;
+    s32 small;
+    s32 i;
+
+    if (lbl_803C77B8._00 & 0x20) {
+        big = 4;
+        small = 1;
+    } else {
+        big = 64;
+        small = 10;
+    }
+    for (i = 0; i < 11; i++) {
+        switch (i) {
+        case 0:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->count--;
+                    fn_1_24A8C();
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->count++;
+                    fn_1_24A8C();
+                }
+            }
+            break;
+        case 1:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->steps--;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->steps++;
+                }
+                if (q->steps == 0) {
+                    q->steps = 1;
+                }
+            }
+            break;
+        case 2:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->param2 -= big;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->param2 += big;
+                }
+            }
+            break;
+        case 3:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->param3 -= big;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->param3 += big;
+                }
+            }
+            break;
+        case 4:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->param0 -= small;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->param0 += small;
+                }
+            }
+            break;
+        case 5:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->mass -= big;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->mass += big;
+                }
+            }
+            break;
+        case 6:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->force--;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->force++;
+                }
+            }
+            break;
+        case 7:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->param5 -= small;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->param5 += small;
+                }
+            }
+            break;
+        case 8:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->unk26 -= small;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->unk26 += small;
+                }
+            }
+            break;
+        case 9:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->param4 -= big;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->param4 += big;
+                }
+            }
+            break;
+        case 10:
+            if (i == q->cursor) {
+                if (CHALLENGE_PAD_TRIGGER & 1) {
+                    q->unk28 -= small;
+                } else if (CHALLENGE_PAD_TRIGGER & 2) {
+                    q->unk28 += small;
+                }
+            }
+            break;
+        }
+    }
+    if (CHALLENGE_PAD_TRIGGER & 8) {
+        if (q->cursor == 0) {
+            q->cursor = 11;
+        }
+        q->cursor--;
+    } else if (CHALLENGE_PAD_TRIGGER & 4) {
+        q->cursor++;
+        if (q->cursor == 11) {
+            q->cursor = 0;
+        }
+    } else if (lbl_803C77B8._02 & 0x100) {
+        fn_1_24A8C();
+    } else if (lbl_803C77B8._02 & 0x200) {
+        GXColor clearColor;
+        ChallengeTransfer* transfer;
+
+        *(u32*)&clearColor = 0x11775500;
+        GXSetCopyClear(clearColor, 0xFFFFFF);
+        transfer = ((ChallengePathTest*)lbl_803CC1B8[0])->transfer;
+        transfer->complete = 1;
+        fn_800B0A14_removeQueue(transfer);
+    }
+    fn_1_247A0();
+    GXSetProjection(lbl_1_bss_47010, GX_PERSPECTIVE);
+    GXClearVtxDesc();
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXLoadPosMtxImm(lbl_1_bss_43F38, 0);
+    GXSetCurrentMtx(0);
+    fn_1_AF4(11, 11, lbl_1_rodata_7848);
+    fn_1_248BC(q->count);
 }
 #endif
