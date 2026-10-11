@@ -31,14 +31,25 @@ struct MenuEntry {
     u8 _54[0x18];
     f32 storedX;
     f32 storedZ;
-    u8 _74[0x0C];
+    Vec target;
     s32 objectId;
     u8 _84[0x0C];
     f32 bouncePhase;
     s16 state;
-    u8 _96[0x1C];
+    s16 _96;
+    s16 _98;
+    s16 _9A;
+    s16 _9C;
+    s16 _9E;
+    s16 _A0;
+    s16 timer;
+    u8 _A4[8];
+    s16 _AC;
+    s16 _AE;
+    s16 targetLocation;
     s16 locationIndex;
-    u8 _B4[7];
+    u8 _B4[6];
+    u8 mode;
     u8 flagBB;
     u8 _BC[4];
     s8 flagC0;
@@ -1617,10 +1628,10 @@ void fn_2_6CDD4(MenuEntry* owner) {
 
     id = owner->objectId;
     ((u8*)lbl_2_bss_1A8248[0])[owner->objectId * 0xD8 + 0x16D0] = 1;
-    memcpy(owner->_74, &lbl_2_data_2EA4[*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0)], sizeof(Vec));
+    memcpy(&owner->target, &lbl_2_data_2EA4[*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0)], sizeof(Vec));
     entry = &lbl_2_bss_1A8248[0]->entries[id];
-    pz = *(f32*)&owner->_74[8];
-    px = *(f32*)&owner->_74[0];
+    pz = owner->target.z;
+    px = owner->target.x;
     entry->previousPosition.x = px;
     entry->previousPosition.z = pz;
     dx = px - entry->position.x;
@@ -1742,10 +1753,10 @@ void fn_2_71C6C(MenuEntry* owner) {
 
     id = owner->objectId;
     ((u8*)lbl_2_bss_1A8248[0])[owner->objectId * 0xD8 + 0x16D0] = 1;
-    memcpy(owner->_74, &lbl_2_data_2EA4[*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0)], sizeof(Vec));
+    memcpy(&owner->target, &lbl_2_data_2EA4[*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x16C0)], sizeof(Vec));
     entry = &lbl_2_bss_1A8248[0]->entries[id];
-    pz = *(f32*)&owner->_74[8];
-    px = *(f32*)&owner->_74[0];
+    pz = owner->target.z;
+    px = owner->target.x;
     entry->previousPosition.x = px;
     entry->previousPosition.z = pz;
     dx = px - entry->position.x;
@@ -1783,9 +1794,9 @@ void fn_2_6C348(MenuEntry* owner) {
             owner->state = 3;
             return;
         }
-        memcpy(owner->_74, &lbl_2_data_2EA4[42], sizeof(Vec));
-        pz = lbl_2_rodata_B68[0] + *(f32*)&owner->_74[8];
-        px = lbl_2_rodata_C44[0] + *(f32*)&owner->_74[0];
+        memcpy(&owner->target, &lbl_2_data_2EA4[42], sizeof(Vec));
+        pz = lbl_2_rodata_B68[0] + owner->target.z;
+        px = lbl_2_rodata_C44[0] + owner->target.x;
         entry = &lbl_2_bss_1A8248[0]->entries[id];
         entry->previousPosition.x = px;
         entry->previousPosition.z = pz;
@@ -2107,17 +2118,17 @@ void fn_2_6C5E0(MenuEntry* owner) {
     ((u8*)lbl_2_bss_1A8248[0])[owner->objectId * 0xD8 + 0x16D0] = 1;
     *(u8*)((u8*)owner + 0xBA) = 11;
     if (*(u8*)((u8*)lbl_2_bss_1A8248[0] + 0x4439) == 1) {
-        memcpy(owner->_74, &lbl_2_data_2EA4[40], sizeof(Vec));
+        memcpy(&owner->target, &lbl_2_data_2EA4[40], sizeof(Vec));
         flag = 1;
     } else if (owner->position.x > lbl_2_data_2EA4[40].x && owner->position.z > lbl_2_data_2EA4[40].z) {
-        memcpy(owner->_74, &lbl_2_data_2EA4[42], sizeof(Vec));
+        memcpy(&owner->target, &lbl_2_data_2EA4[42], sizeof(Vec));
         flag = 0;
     } else {
-        memcpy(owner->_74, &lbl_2_data_2EA4[40], sizeof(Vec));
+        memcpy(&owner->target, &lbl_2_data_2EA4[40], sizeof(Vec));
         flag = 1;
     }
-    pz = *(f32*)&owner->_74[8];
-    px = *(f32*)&owner->_74[0];
+    pz = owner->target.z;
+    px = owner->target.x;
     entry = &lbl_2_bss_1A8248[0]->entries[id];
     entry->previousPosition.x = px;
     entry->previousPosition.z = pz;
@@ -2234,4 +2245,43 @@ f32 fn_2_69070(s32 index, f32 x, f32 z) {
         return 0.0f;
     }
     return menuSqrtfR(distance);
+}
+
+// .text:0x6B238 size:0x28C
+void fn_2_6B238(MenuEntry* owner) {
+    s32 id;
+    MenuEntry* entry;
+    f32 dx;
+    f32 dz;
+    f32 px;
+    f32 pz;
+
+    id = owner->objectId;
+    fn_2_68F08(id, 1);
+    owner->mode = 14;
+    owner->flagD0 = 1;
+    owner->bouncePhase = 0.0f;
+    owner->position.y = 0.0f;
+    if (lbl_2_bss_1A8248[0]->entries[id].targetLocation == 48) {
+        memcpy(&owner->target, &lbl_2_data_2EA4[50], sizeof(Vec));
+    } else {
+        memcpy(&owner->target, &lbl_2_data_2EA4[18], sizeof(Vec));
+    }
+    pz = owner->target.z;
+    px = owner->target.x;
+    entry = &lbl_2_bss_1A8248[0]->entries[id];
+    entry->previousPosition.x = px;
+    entry->previousPosition.z = pz;
+    dx = px - entry->position.x;
+    dz = pz - entry->position.z;
+    if (0.0f == dx && 0.0f == dz) {
+        entry->_38 = 0.0f;
+        entry->_50 = 0.0f;
+    } else {
+        dx = dx * dx + dz * dz;
+        entry->_50 = menuSqrtf(dx);
+    }
+    entry->flagBB = 1;
+    fn_2_68FBC(id, 8);
+    owner->state = 1;
 }
