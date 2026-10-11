@@ -91,9 +91,70 @@ void fn_3_E1964(void) {
 #endif
 
 // .text:0x000E19E8 size:0x278 mapped:0x80720A7C
+// NONMATCHING 99%: coin loop induction registers r25-r29 assigned in a different order
+#if NONMATCHING
 void fn_3_E19E8(void) {
-    return;
+    GameCharTrail* trail;
+    s32 i;
+
+    lbl_8036E548._3087 = 1;
+    if (g_GameLogic.gameStatus == 5 && g_GameLogic._125 == 5) {
+        fn_3_11D1B0();
+    }
+    if (g_GameLogic.gameStatus == 0x1B) {
+        return;
+    }
+    if (lbl_8036E548._307A == 0) {
+        for (i = 0; i < 4; i++) {
+            if (lbl_8036E548.active[i] != NULL) {
+                lbl_8036E548.active[i]->mode[0] = 0;
+            }
+        }
+        fn_3_6A25C();
+        fn_3_6A250();
+    } else if ((u8)(g_GameLogic.gameStatus - 0x1C) <= 2 || g_GameLogic.gameStatus == 0x1F) {
+        if (g_GameLogic.gameStatus == 0x1E) {
+            fn_3_E11E0();
+        }
+    } else if (g_GameLogic.gameStatus == 0xE || g_GameLogic.gameStatus == 0x22 || g_GameLogic.gameStatus == 0x24 ||
+               g_GameLogic.gameStatus == 0x26 || g_GameLogic.gameStatus == 0x27) {
+        lbl_8036E548._3087 = g_d_GameSettings.GameModeSelected != 6;
+        fn_3_E07DC();
+        fn_3_116B74();
+    } else if (g_GameLogic.gameStatus != 4 && g_GameLogic.gameStatus != 5) {
+        fn_3_697CC();
+        fn_3_685F0();
+        fn_3_E1478();
+        fn_3_6B674();
+        if (g_d_GameSettings.GameModeSelected == 6) {
+            // TODO type: wallBall_coinCoordinates/coinsVisibleInd are really [30] arrays
+            for (i = 0; i < 30; i++) {
+                trail = &lbl_8036E548.trail2[i];
+                if ((&g_Minigame.wallBall_coinsVisibleInd)[i] == 0) {
+                    trail->visible = 0;
+                } else if (g_Minigame.wallBall_coinsVisibleFrameCounter > lbl_3_data_18BB0[g_Minigame._199E][1] &&
+                           (g_Minigame.wallBall_coinsVisibleFrameCounter & 1)) {
+                    trail->visible = 0;
+                } else {
+                    trail->visible = 1;
+                    trail->pos.x = (&g_Minigame.wallBall_coinCoordinates)[i].x;
+                    trail->pos.y = -(&g_Minigame.wallBall_coinCoordinates)[i].y;
+                    trail->pos.z = (&g_Minigame.wallBall_coinCoordinates)[i].z;
+                    trail->angle = fn_3_9FEA8(trail->angle + lbl_3_data_18DD0);
+                }
+            }
+        } else {
+            fn_3_11AC6C();
+        }
+        fn_3_6AB58();
+    }
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        fn_3_EDD10();
+    } else {
+        fn_3_12D1F4();
+    }
 }
+#endif
 
 // .text:0x000E1C60 size:0xA0 mapped:0x80720CF4
 void fn_3_E1C60(void) {
