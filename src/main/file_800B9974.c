@@ -1,4 +1,5 @@
 #include "main/file_800B9974.h"
+#include "C3/geoPalette.h"
 
 // .text:0x800B9974 size:0x50
 void SetFogNone(void) {
@@ -63,24 +64,24 @@ void GetColorFromQuant(void) {
 }
 
 // .text:0x800BC0C4 size:0x724
-void DOVARender(void) {
+void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_list* list) {
     return;
 }
 
 // .text:0x800BC7E8 size:0x3C
-void DOVARenderSkin(void) {
+void DOVARenderSkin(struct DODisplayObj* dispObj, MtxPtr camera, MtxPtr mtxArray, MtxPtr invTransposeMtxArray, u8 numLights, va_list* list) {
     return;
 }
 
 // fn_800BC824, size:0x10
-void fn_800BC824(u8* object, void* value) {
-    if (object != 0) {
-        *(void**)(object + 0x50) = value;
+void fn_800BC824(struct DODisplayObj* dispObj, void* shaderData) {
+    if (dispObj != NULL) {
+        dispObj->shaderData = shaderData;
     }
 }
 
 // .text:0x800BC834 size:0x2C
-void DOSetWorldMatrix(void) {
+void DOSetWorldMatrix(struct DODisplayObj* dispObj, MtxPtr m) {
     return;
 }
 
@@ -90,7 +91,7 @@ void InitDisplayObjWithLayout(void) {
 }
 
 // .text:0x800BCAB8 size:0x8C
-void DOGet(void) {
+void DOGet(struct DODisplayObj** dispObj, DODisplayDataPtr pal, u16 id, char* name) {
     return;
 }
 

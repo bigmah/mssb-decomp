@@ -9,7 +9,9 @@ void fn_800B9AA8(u32 value);
 
 void fn_800B9A9C(u32 flag, f32 value);
 
-void fn_800BC824(u8* object, void* value);
+struct DODisplayObj;
+
+void fn_800BC824(struct DODisplayObj* dispObj, void* shaderData);
 
 typedef struct GQRValueEntry {
     u8 pad[0xC];
