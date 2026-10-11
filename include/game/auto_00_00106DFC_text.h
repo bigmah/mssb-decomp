@@ -53,5 +53,6 @@ void fn_3_108230(void);
 void fn_3_109254(void);
 void fn_3_10AEF0(void);
 void fn_3_107E80(void);
+void fn_3_1104D4(void);
 
 #endif

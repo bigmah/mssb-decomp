@@ -1251,3 +1251,60 @@ void fn_3_107E80(void) {
         break;
     }
 }
+
+extern u8 g_Pitcher[];
+extern u8 g_Ball[];
+extern void fn_3_110634(void);
+
+#pragma dont_inline off
+
+// NONMATCHING 90%: inlined fn_3_1104A8 loop picks i/ptr regs swapped, port re-extsb missing
+#if NONMATCHING
+static inline void clearPadActiveInline(void) {
+    s8 i = 0;
+    do {
+        i++;
+        g_Minigame[0x1DBC + i - 1] = 0;
+    } while (i < 4);
+}
+
+// fn_3_1104D4, size:0x160
+void fn_3_1104D4(void) {
+    s8 i;
+    s8 port;
+    u8* pad;
+    u8* p;
+    u8* mg = g_Minigame;
+
+    clearPadActiveInline();
+
+    p = mg;
+    i = 0;
+    do {
+        port = p[0x18CC];
+        if (port >= 0 && port < 4 && i == (s8)g_Minigame[0x1905] && p[0x18D8] != 0) {
+            pad = g_Minigame + port * 0x10;
+            g_Minigame[0x1DBC + port] = 1;
+            memset(pad + 0x1D7C, 0, 0x10);
+            switch (g_Pitcher[0x13E]) {
+            case 2:
+                if (mg[0x1DD0] == 0) {
+                    fn_3_110634();
+                    mg[0x1DD0] = 1;
+                }
+                if (*(s16*)(g_Pitcher + 0x126) <= *(s16*)(mg + 0x1DCC)) {
+                    *(u16*)(pad + 0x1D80) |= 0x100;
+                }
+                break;
+            case 3:
+                if (*(s16*)(g_Ball + 0x1B68) < *(s16*)(g_Pitcher + 0x122) - *(s16*)(mg + 0x1DCE)) {
+                    *(u16*)(pad + 0x1D80) |= 0x100;
+                }
+                break;
+            }
+        }
+        i++;
+        p++;
+    } while (i < 4);
+}
+#endif
