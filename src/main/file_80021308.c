@@ -139,8 +139,22 @@ void* fn_800213F8(u32 size) {
 }
 
 // .text:0x80021410 size:0x8C
-void fn_80021410(void) {
-    return;
+s32 fn_80021410(void) {
+    s8 i;
+
+    for (i = (s8)lbl_800EF808.groupStackCount - 1; i > 0; i--) {
+        s32 ok;
+        if (sndPopGroup() == 0) {
+            ok = 0;
+        } else {
+            lbl_800EF808.groupStackCount--;
+            ok = 1;
+        }
+        if (!ok) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 // .text:0x8002149C size:0x34

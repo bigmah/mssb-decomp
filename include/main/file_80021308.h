@@ -109,6 +109,7 @@ typedef struct SoundGroupRequest {
 void fn_80021308(void);
 void fn_800213F4(void* p);
 void* fn_800213F8(u32 size);
+s32 fn_80021410(void);
 void fn_80021AC0(void);
 void fn_80021AC4(void);
 void fn_80021AC8(void);
