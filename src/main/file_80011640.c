@@ -606,9 +606,17 @@ s32 fn_8001758C(u8* state, s32 actorIdx, u8 kind, u8 team, u8 roster, s8 arg5, u
 #endif
 
 // .text:0x800177B4 size:0x60
+// NONMATCHING 96%: argument load order (0x1A loaded first in original)
+#if NONMATCHING
 void fn_800177B4(void) {
-    return;
+    CharLoadTask* task = lbl_803CC1B8;
+
+    if (fn_8001758C(&task->state, task->actor, task->kind, task->team, task->roster, task->_1B, task->index, task->_1D) != 0) {
+        lbl_8036E548.state = 2;
+        fn_800B0A14_removeQueue(&lbl_8036E548);
+    }
 }
+#endif
 
 // .text:0x80017814 size:0x514
 void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(CharLoadObj*)) {
