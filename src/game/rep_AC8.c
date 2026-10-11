@@ -3338,8 +3338,47 @@ f32 fn_3_52084(int i, f32 x, f32 z) {
 }
 
 // .text:0x000522E0 size:0x280 mapped:0x80691374
-void fn_3_522E0(void) {
-    return;
+void fn_3_522E0(int i, f32 dx, f32 dz, int frames, f32* outX, f32* outZ, f32* outDist) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 dist = 0.0f;
+    f32 spd = *(f32*)(f + 0x50);
+    f32 d;
+    f32 nx;
+    f32 nz;
+    s16 ang;
+    int n;
+    int k;
+    if (dist == dx && dist == dz) {
+        *outX = *(f32*)f;
+        *outZ = *(f32*)(f + 8);
+        *outDist = dist;
+        return;
+    }
+    d = dx * dx + dz * dz;
+    SQRT_L(d);
+    nx = dx / d;
+    nz = dz / d;
+    // TODO type: fn_3_9FB8C really returns s16; this file declares it int
+    ang = ((s16 (*)(f32, f32))fn_3_9FB8C)(nx, nz);
+    if (!(*(f32*)(f + 0x50) < 0.0f) && *(s16*)(f + 0x19A) >= 0) {
+        if (fn_3_9FCF8(ang, *(s16*)(f + 0x19A)) > 0x2A8) {
+            spd = lbl_3_rodata_B7C;
+        }
+    }
+    n = f[0x1D1];
+    for (k = 0; k <= n; k++) {
+        spd += *(f32*)(f + 0x5C);
+        if (spd > *(f32*)(f + 0x58)) {
+            dist += *(f32*)(f + 0x58);
+            break;
+        }
+        dist += spd;
+    }
+    frames -= k + 1;
+    dist += *(f32*)(f + 0x58) * (f32)frames;
+    *outDist = dist;
+    *outX = nx * dist + *(f32*)f;
+    *outZ = nz * dist + *(f32*)(f + 8);
 }
 
 // .text:0x00052560 size:0x17C mapped:0x806915F4
