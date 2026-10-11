@@ -2,7 +2,6 @@
 #define __MAIN_FILE_8003A688_H__
 
 #include "mssbTypes.h"
-#include "Dolphin/OS/OSUtil.h"
 #include "main/file_80069BDC.h"
 #include "main/file_8000F150.h"
 #include "main/file_80024184.h"
@@ -54,22 +53,41 @@ typedef struct SaveTask {
     /*0x10*/ s16 result; // set by child tasks
     /*0x12*/ u16 priority;
     /*0x14*/ u8 state;
-    /*0x15*/ u8 _15;
+    /*0x15*/ u8 port; // controller that owns the dialog
     /*0x16*/ u8 _16;
-    /*0x17*/ u8 slot;
-    /*0x18*/ u8 _18;
+    /*0x17*/ u8 slot; // memory card channel
+    /*0x18*/ u8 mode;
     /*0x19*/ u8 _19;
     /*0x1A*/ u8 _1A;
     /*0x1B*/ u8 _1B;
-    /*0x1C*/ u8 _1C;
-    /*0x1D*/ u8 _1D;
-    /*0x1E*/ u8 _1E;
+    /*0x1C*/ u8 outcome; // result handed to the parent task
+    /*0x1D*/ u8 noCard;
+    /*0x1E*/ u8 cardReady;
     /*0x1F*/ u8 _1F;
     /*0x20*/ u8 _20;
     /*0x21*/ u8 _21;
 } SaveTask;
 
-extern OSTime lbl_802D4AE0[4];
+// Serial number of the memory card each save slot was last read from / written to.
+extern u64 lbl_802D4AE0[4];
+
+// TODO merge: same layout as CardSlot/CardSystem in main/file_800A7C08.h (main branch);
+// switch to that header once it is merged here.
+typedef struct SaveCardSlot {
+    /*0x00*/ u64 serial;
+    /*0x08*/ s32 probeResult;
+    /*0x0C*/ u8 _0C[0x28 - 0x0C];
+} SaveCardSlot;
+
+typedef struct SaveCardSystem {
+    /*0x00*/ SaveCardSlot slots[2];
+    /*0x50*/ s32 lastResult;
+    /*0x54*/ u8 status; // CARD_STATUS_* or an error code
+    /*0x55*/ u8 op;
+    /*0x56*/ u8 _56[0x60 - 0x56];
+} SaveCardSystem;
+
+extern SaveCardSystem lbl_803C7838;
 
 // One challenge-mode save in the card image.
 typedef struct SaveChallengeBlock {
@@ -155,6 +173,7 @@ void fn_8003AC90(void);
 void fn_8003AD84(TexArchive* arc);
 void fn_8003F23C(void);
 void fn_8003F2B8(void);
+void fn_8003BB90(void);
 void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h);
 void fn_8003C00C(void);
 s32 fn_80040FE0(SaveImage* img);
@@ -173,7 +192,7 @@ void fn_8003AE64(void);
 
 u8 fn_8003AE70(s32 selector);
 
-s32 fn_8004157C(void);
+u16 fn_8004157C(void);
 
 void fn_800415A0(u16 value);
 

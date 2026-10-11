@@ -18,7 +18,12 @@ extern u8 lbl_80361B20[0xF8];
 extern u8 lbl_803616CC[0x454];
 extern void (*lbl_803CBCA8)(void); // model callback (set by fn_8003A540)
 
+// main/file_8000F150
+void fn_8000FE54(void);
+// main/file_8004207C
+s32 fn_8004A34C(SaveDialog* dialog, u8 port, u8 msg, u8 mode, u8 arg4);
 // main/file_800A7C08 (memory card / CRC)
+void fn_800A9E34(u8 chan, u8 mode, u64 serial);
 s32 fn_800ACC6C(s32 mode, s32 a, s32 b);
 u16 fn_800ABB14(u8* data, s32 len);
 
@@ -180,6 +185,44 @@ void fn_8003A8A0(Model* model, Mtx viewMtx, s32 unused) {
 
 extern u32 lbl_803CBCB8;
 
+// Maps the slot's CARDProbeEx result to a card status and records it in the task.
+static inline void SaveTask_CheckCard(SaveTask* task) {
+    s32 status;
+    switch (lbl_803C7838.slots[task->slot].probeResult) {
+    case 0: // CARD_RESULT_READY
+        status = 0x11;
+        break;
+    case -1: // CARD_RESULT_BUSY
+        status = 0xF;
+        break;
+    case -3: // CARD_RESULT_NOCARD
+        status = 0;
+        break;
+    case -2: // CARD_RESULT_WRONGDEVICE
+        status = 4;
+        break;
+    default:
+        status = -1;
+        break;
+    }
+    switch (status) {
+    case 4:
+    case 0x11:
+        task->cardReady = 1;
+        break;
+    case 0:
+        task->noCard = 1;
+        break;
+    }
+}
+
+// Finishes the task: hands the outcome to the parent and removes it from the queue.
+static inline void SaveTask_Finish(s16 outcome) {
+    lbl_803CC1B8->parent->_10 = outcome;
+    fn_8000FE54();
+    ((void (*)(void))fn_800B0A14_removeQueue)(); // removes the running task
+}
+
 extern u8 lbl_803CBCB4;
 
 // .text:0x8003AC90 size:0xF4
@@ -259,22 +302,129 @@ void fn_8003B5B0(void) {
 }
 
 // .text:0x8003BB90 size:0x3C4
+// Memory card check task (queued with fn_8003BF54-style fields).
 void fn_8003BB90(void) {
-    return;
+    SaveTask* task = (SaveTask*)lbl_803CC1B8;
+
+    SaveTask_CheckCard(task);
+    switch (task->state) {
+    case 0:
+        fn_8004A34C(&lbl_803C50E8, task->port, 8, 0, 0);
+        task->noCard = 0;
+        fn_800415A0(50);
+        task->state++;
+        break;
+    case 1:
+        if (fn_8004157C() == 0) {
+            if (task->noCard) {
+                task->cardReady = 0;
+                task->outcome = 9;
+                task->state = 3;
+            } else {
+                fn_800A9E34(task->slot, task->mode, lbl_802D4AE0[task->slot]);
+                task->state = 2;
+            }
+        }
+        break;
+    case 2:
+        if (lbl_803CC1B8->_10 != 0) {
+            if (lbl_803C7838.status == 0x11) {
+                SaveTask_Finish(1);
+            } else {
+                task->state = 3;
+                if (task->noCard) {
+                    task->outcome = 9;
+                } else {
+                    switch (lbl_803C7838.status) {
+                    case 13:
+                        task->outcome = 5;
+                        task->state = 4;
+                        break;
+                    case 16:
+                        task->outcome = 8;
+                        break;
+                    case 0:
+                        task->outcome = 9;
+                        break;
+                    default:
+                        task->outcome = 2;
+                        break;
+                    }
+                }
+                task->cardReady = 0;
+            }
+        }
+        break;
+    case 3:
+        fn_8004A34C(&lbl_803C50E8, task->port, 0xA, 0, 0);
+        task->state = 5;
+        break;
+    case 4:
+        fn_8004A34C(&lbl_803C50E8, task->port, 9, 0, 0);
+        task->state = 5;
+        break;
+    case 5:
+        if (task->noCard) {
+            if (task->cardReady) {
+                switch (lbl_803C50E8.choice) {
+                case 1:
+                case 2:
+                    task->outcome = 7;
+                    task->state = 6;
+                    break;
+                case 3:
+                case 4:
+                    task->outcome = 2;
+                    task->state = 6;
+                    break;
+                }
+            } else {
+                switch (lbl_803C50E8.choice) {
+                case 1:
+                case 2:
+                    task->outcome = 7;
+                    task->state = 6;
+                    break;
+                case 3:
+                case 4:
+                    task->outcome = 2;
+                    task->state = 6;
+                    break;
+                }
+            }
+        } else {
+            switch (lbl_803C50E8.choice) {
+            case 1:
+            case 2:
+                task->outcome = 7;
+                task->state = 6;
+                break;
+            case 3:
+            case 4:
+                task->outcome = 2;
+                task->state = 6;
+                break;
+            }
+        }
+        break;
+    case 6:
+        SaveTask_Finish(task->outcome);
+        break;
+    }
 }
 
 // .text:0x8003BF54 size:0xB8
 void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h) {
     SaveTask* task = fn_800B0A5C_insertQueue(fn_8003C00C, 0x8000);
     task->state = 0;
-    task->_15 = a;
+    task->port = a;
     task->_16 = b;
     task->slot = slot;
-    task->_18 = c;
+    task->mode = c;
     task->_19 = d;
     task->_1A = e;
     task->_1B = f;
-    task->_1D = 0;
+    task->noCard = 0;
     task->_20 = g;
     task->_21 = h;
     lbl_802D4AE0[slot] = 0;
@@ -296,13 +446,13 @@ void fn_8003E8D8(void) {
 void fn_8003F23C(void) {
     SaveTask* task = fn_800B0A5C_insertQueue(fn_8003F2B8, 0x8000);
     task->state = 0;
-    task->_15 = 0;
+    task->port = 0;
     task->_16 = 0;
     task->slot = 0;
-    task->_18 = 0;
+    task->mode = 0;
     task->_1A = 0;
     task->_1B = 7;
-    task->_1D = 0;
+    task->noCard = 0;
     task->_21 = 0;
     lbl_803CC1B8->_10 = 0;
     lbl_802D4AE0[1] = 0;
@@ -468,7 +618,7 @@ void fn_8004153C(void) {
 extern u16 lbl_803CBCC0;
 
 // fn_8004157C, size:0x24
-s32 fn_8004157C(void) {
+u16 fn_8004157C(void) {
     if (lbl_803CBCC0 != 0) {
         lbl_803CBCC0--;
         return 1;
