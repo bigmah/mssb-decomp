@@ -20,7 +20,9 @@ typedef struct CharModel {
     /*0x06*/ u16 jointCount;
     /*0x08*/ u8 _08[0x10];
     /*0x18*/ CharJoint** joints;
-    /*0x1C*/ u8 _1C[0x98 - 0x1C];
+    /*0x1C*/ u8 _1C[0x80 - 0x1C];
+    /*0x80*/ u16 _80;
+    /*0x82*/ u8 _82[0x98 - 0x82];
     /*0x98*/ u8 flags;
 } CharModel;
 
@@ -29,7 +31,9 @@ typedef struct CharSlot {
     /*0x00*/ CharModel* model;
     /*0x04*/ u8 _04[0xC];
     /*0x10*/ Control ctrl;
-    /*0x4C*/ u8 _4C[0x68 - 0x10 - sizeof(Control)];
+    /*0x4C*/ u8 _4C[0x64 - 0x10 - sizeof(Control)];
+    /*0x64*/ u16 _64;
+    /*0x66*/ u16 _66;
     /*0x68*/ void* _68;
     /*0x6C*/ u8 _6C;
     /*0x6D*/ u8 _6D[0x90 - 0x6D];
@@ -58,22 +62,39 @@ typedef struct CharParts {
     /*0xD2*/ u8 _D2[0x2];
 } CharParts; // size: 0xD4
 
+// Animation banks of an actor (streamed from ARAM, then ANIMGet).
+typedef struct CharAnimBanks {
+    /*0x00*/ void* b[7];
+} CharAnimBanks;
+
+typedef struct CharTrail {
+    /*0x00*/ u8 _00[0x4];
+    /*0x04*/ f32 _04[6];
+    /*0x1C*/ u8 _1C[0xA];
+    /*0x26*/ u8 _26;
+    /*0x27*/ u8 _27;
+} CharTrail; // size: 0x28
+
 typedef struct CharActor {
     /*0x000*/ CharModel* model;
     /*0x004*/ u8 _004[0x4];
     /*0x008*/ void** files; // file offsets, relocated in place
     /*0x00C*/ void** _0C;
-    /*0x010*/ u8 _010[0x1C];
+    /*0x010*/ CharAnimBanks banks;
     /*0x02C*/ CharPart* part;
     /*0x030*/ CharParts* parts;
-    /*0x034*/ u8 _034[0x60 - 0x34];
+    /*0x034*/ Vec pos;
+    /*0x040*/ Vec _040;
+    /*0x04C*/ f32 _04C;
+    /*0x050*/ u8 _050[0xC];
+    /*0x05C*/ s32 _05C;
     // Animation requests: [0] current, [1] next (AnimateCharacter),
     // [2] queued (QueueCharacterAnimation).
     /*0x060*/ s16 _060;
     /*0x062*/ s16 anim[3];
     /*0x068*/ s16 _068;
     /*0x06A*/ s16 _06A[3];
-    /*0x070*/ u8 _070[0x2];
+    /*0x070*/ s16 _070;
     /*0x072*/ u8 _072[0x162 - 0x72];
     /*0x162*/ u16 jointIdx[0x78];
     /*0x252*/ s8 kind;
@@ -95,7 +116,10 @@ typedef struct CharActor {
     /*0x269*/ u8 _269[3];
     /*0x26C*/ u8 _26C[3];
     /*0x26F*/ u8 _26F;
-    /*0x270*/ u8 _270[0x278 - 0x270];
+    /*0x270*/ u8 _270[0x3];
+    /*0x273*/ u8 _273;
+    /*0x274*/ u8 _274;
+    /*0x275*/ u8 _275[0x3];
     /*0x278*/ u8 _278;
     /*0x279*/ u8 _279[0x3];
 } CharActor; // size: 0x27C
@@ -108,6 +132,23 @@ typedef struct CharPreload {
     /*0xA*/ u8 state;
 } CharPreload; // size: 0xC
 
+// Stadium light: packed source data and the expanded position/colour.
+typedef struct LightSrc {
+    /*0x0*/ u8 _0[0xA];
+} LightSrc;
+
+typedef struct StadiumLights {
+    /*0x00*/ LightSrc light[4];
+    /*0x28*/ u8 _28[0x4];
+} StadiumLights; // size: 0x2C
+
+typedef struct LightPos {
+    /*0x0*/ f32 x;
+    /*0x4*/ f32 y;
+    /*0x8*/ f32 z;
+    /*0xC*/ u32 color;
+} LightPos;
+
 // lbl_8036E548
 typedef struct CharMgr {
     /*0x0000*/ u8 _0000[0x60];
@@ -119,17 +160,29 @@ typedef struct CharMgr {
     /*0x0140*/ CharParts partsPool[13];
     /*0x0C04*/ CharActor actors[13];
     /*0x2C50*/ CharActor* active[13];
-    /*0x2C84*/ u8 _2C84[0x4];
+    /*0x2C84*/ void* _2C84;
     /*0x2C88*/ void* _2C88;
-    /*0x2C8C*/ u8 _2C8C[0x2D3C - 0x2C8C];
+    /*0x2C8C*/ u8 _2C8C[0x2CE4 - 0x2C8C];
+    /*0x2CE4*/ void* _2CE4;
+    /*0x2CE8*/ void* _2CE8;
+    /*0x2CEC*/ void* bankSets[4][5];
     /*0x2D3C*/ CharPreload preload[3];
     /*0x2D60*/ u8 _2D60[0x2D68 - 0x2D60];
     /*0x2D68*/ s16 _2D68;
     /*0x2D6A*/ s8 _2D6A[13];
     /*0x2D77*/ u8 state;
-    /*0x2D78*/ u8 _2D78[0x307A - 0x2D78];
+    /*0x2D78*/ u8 _2D78[0x2D88 - 0x2D78];
+    /*0x2D88*/ s8 loadActor;
+    /*0x2D89*/ u8 _2D89[0x4];
+    /*0x2D8D*/ u8 loadStep;
+    /*0x2D8E*/ u8 _2D8E;
+    /*0x2D8F*/ u8 _2D8F;
+    /*0x2D90*/ CharTrail* trail; // [25]
+    /*0x2D94*/ u8 _2D94[0x3078 - 0x2D94];
+    /*0x3078*/ s16 _3078;
     /*0x307A*/ u8 _307A;
-    /*0x307B*/ u8 _307B[0x3082 - 0x307B];
+    /*0x307B*/ u8 _307B;
+    /*0x307C*/ u8 _307C[0x3082 - 0x307C];
     /*0x3082*/ u8 _3082;
     /*0x3083*/ u8 _3083[0x308C - 0x3083];
     /*0x308C*/ void (*callback)(void);
@@ -204,6 +257,19 @@ s32 fn_80014E50(s32 id);
 s32 fn_80014D4C(s32 id);
 void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(CharLoadObj*));
 void fn_8001BE50(s32 index, s16 anim, u8 a, u8 b, s16 c, u8 d, u8 e);
+
+void fn_8001CA40(u8 stadium);
+void fn_8001CB10(LightSrc* src, s32 count);
+void fn_8001CBD4(void);
+s32 fn_8001C588(s32 id);
+s32 fn_8001C920(s32 id);
+s32 fn_8001B728(s32 index, s32 joint, Vec* out);
+void fn_800188C0(void);
+BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out);
+void fn_8001B4D8(s32 index, s32 enable);
+s32 fn_80016F7C(void);
+s32 fn_80016B60(CharActor* actor);
+void challengeMapMaybe(void);
 
 void fn_8001B200(void);
 

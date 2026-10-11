@@ -37,6 +37,16 @@ extern s32 lbl_803CBBF0;
 extern CharLoadTask* lbl_803CC1B8;
 extern CharPart lbl_80118220[13];
 
+extern LightPos lbl_80367318[4];
+extern StadiumLights lbl_800F7478[];
+extern u8 lbl_803CBC3C[4];
+extern AramFile lbl_800EE910[2];
+
+extern void fn_80023B90(LightSrc* src, LightPos* dst);
+extern void fn_800BEBCC(s32 index, Vec* dir);
+extern void ANIMGet(void* bank);
+extern void fn_800B2C10(CharModel* model, u16 joint, Vec* out);
+extern void fn_800B2C44(CharModel* model, u16 joint, Vec* out);
 extern void* ARAMTransfer(AramFile* file, void* dst, s32 a, s32 b);
 extern u32 fn_8002204C(s32 id, void* buffer);
 extern void fn_8003AC90(void);
@@ -45,6 +55,10 @@ extern void fn_800B9AA8(void* object);
 extern void fn_800B2D5C(CharModel* model);
 extern void fn_800B0A14_removeQueue(void* unused);
 extern void* fn_800B0A5C_insertQueue(void* draw, s32 priority);
+
+static inline s32 getJoint(CharActor* actor, s32 k) {
+    return actor != NULL ? actor->jointIdx[k] : 0xFFFF;
+}
 
 // .text:0x80011640 size:0x9C
 void fn_80011640(Mtx a, Mtx out) {
@@ -408,8 +422,8 @@ void fn_80016710(void) {
 }
 
 // .text:0x80016B60 size:0x41C
-void fn_80016B60(void) {
-    return;
+s32 fn_80016B60(CharActor* actor) {
+    return 0;
 }
 
 // .text:0x80016F7C size:0x11C
@@ -720,8 +734,25 @@ void fn_8001C920(void) {
 }
 
 // .text:0x8001CA40 size:0xD0
-void fn_8001CA40(void) {
-    return;
+static inline void loadLights(LightSrc* src, s32 count) {
+    s32 i;
+    Vec dir;
+    Vec dir2;
+
+    for (i = 0; i < count; i++) {
+        fn_80023B90(&src[i], &lbl_80367318[i]);
+    }
+    dir.x = lbl_80367318[0].x;
+    dir.y = lbl_80367318[0].y;
+    dir.z = lbl_80367318[0].z;
+    PSVECNormalize(&dir, &dir);
+    dir2 = dir;
+    fn_800BEBCC(0, &dir2);
+}
+
+void fn_8001CA40(u8 stadium) {
+    g_d_GameSettings._54 = stadium;
+    loadLights(lbl_800F7478[stadium].light, 4);
 }
 
 // .text:0x8001CB10 size:0xC4
