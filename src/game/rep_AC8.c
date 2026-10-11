@@ -3059,9 +3059,81 @@ void fn_3_4BA0C(void) {
 }
 
 // .text:0x0004C9C8 size:0x5E8 mapped:0x8068BA5C
+// NONMATCHING 98.8%: registers only; the state-table value and state constant swap r0/r3 in each inlined SetFielderAct
+#if NONMATCHING
 void fn_3_4C9C8(void) {
-    return;
+    int i;
+    s16 b;
+    if (g_FieldingLogic[0xF9] == 0) {
+        *(s16*)(g_Fielders + 1 * 0x268 + 0x18C) = 0;
+        SetFielderAct(1, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD0) = 1;
+    } else if (g_Ball[0x1BC4] == 7) {
+        *(s16*)(g_Fielders + 0 * 0x268 + 0x18C) = 0;
+        SetFielderAct(0, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD0) = 0;
+    }
+    if (g_FieldingLogic[0xFA] == 0) {
+        *(s16*)(g_Fielders + 2 * 0x268 + 0x18C) = 1;
+        SetFielderAct(2, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD2) = 2;
+    } else if (*(f32*)(g_Ball + *(s16*)(g_Fielders + 2 * 0x268 + 0x186) * 16 + 0x35C) < *(f32*)(lbl_3_data_4444 + 0xC)) {
+        *(s16*)(g_Fielders + 3 * 0x268 + 0x18C) = 1;
+        SetFielderAct(3, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD2) = 3;
+    } else {
+        *(s16*)(g_Fielders + 0 * 0x268 + 0x18C) = 1;
+        SetFielderAct(0, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD2) = 0;
+        g_Fielders[0x1D8] = 1;
+    }
+    if (g_FieldingLogic[0xFC] == 0) {
+        *(s16*)(g_Fielders + 4 * 0x268 + 0x18C) = 3;
+        SetFielderAct(4, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD6) = 4;
+    } else if (*(f32*)(g_Ball + *(s16*)(g_Fielders + 4 * 0x268 + 0x186) * 16 + 0x35C) < *(f32*)(lbl_3_data_4444 + 0x1C)) {
+        *(s16*)(g_Fielders + 5 * 0x268 + 0x18C) = 3;
+        SetFielderAct(5, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD6) = 5;
+    } else {
+        *(s16*)(g_Fielders + 0 * 0x268 + 0x18C) = 3;
+        SetFielderAct(0, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD6) = 0;
+        g_Fielders[0x1D8] = 1;
+    }
+    if (*(s16*)(g_Ball + 0x1B9C) < 0x400 || g_Ball[0x1BC5] == 7) {
+        if (g_FieldingLogic[0xFD] == 0) {
+            *(s16*)(g_Fielders + 5 * 0x268 + 0x18C) = 2;
+        SetFielderAct(5, 1, 8);
+            *(s16*)(g_FieldingLogic + 0xD4) = 5;
+        } else if (g_FieldingLogic[0xFB] == 0) {
+            *(s16*)(g_Fielders + 3 * 0x268 + 0x18C) = 2;
+        SetFielderAct(3, 1, 8);
+            *(s16*)(g_FieldingLogic + 0xD4) = 3;
+        } else {
+            *(s16*)(g_Fielders + 3 * 0x268 + 0x18C) = 2;
+            *(s16*)(g_Fielders + 5 * 0x268 + 0x18C) = 2;
+        }
+    } else if (g_FieldingLogic[0xFB] == 0) {
+        *(s16*)(g_Fielders + 3 * 0x268 + 0x18C) = 2;
+        SetFielderAct(3, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD4) = 3;
+    } else if (g_FieldingLogic[0xFD] == 0) {
+        *(s16*)(g_Fielders + 5 * 0x268 + 0x18C) = 2;
+        SetFielderAct(5, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD4) = 5;
+    } else {
+        *(s16*)(g_Fielders + 3 * 0x268 + 0x18C) = 2;
+        *(s16*)(g_Fielders + 5 * 0x268 + 0x18C) = 2;
+    }
+    for (i = 0; i < 9; i++) {
+        b = *(s16*)(g_Fielders + i * 0x268 + 0x18C);
+        if (b >= 0 && b <= 3) {
+            g_Fielders[i * 0x268 + 0x1D7] = 1;
+        }
+    }
 }
+#endif
 
 // .text:0x0004CFB0 size:0x25C mapped:0x8068C044
 #pragma dont_inline off
