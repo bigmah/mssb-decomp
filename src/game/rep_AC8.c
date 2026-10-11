@@ -3359,9 +3359,145 @@ void fn_3_45B88(int i) {
 }
 
 // .text:0x00045E98 size:0x7F0 mapped:0x80684F2C
+// NONMATCHING 86.7%: orig unrolls the 9-fielder relay-reset loop 3x (ours stays rolled) and keeps the candidate array in a pointer; logic follows the asm
+#if NONMATCHING
+// Pick a relay (cutoff) fielder between the ball chaser and the infield.
 void fn_3_45E98(void) {
-    return;
+    int j;
+    int k;
+    int n;
+    int ok = 0;
+    int best;
+    u8 st;
+    u8* g;
+    int cand[3];
+    f32 bx, bz, d, bestD, px, pz;
+    if (*(s16*)(g_FieldingLogic + 0xC0) != 0) {
+        *(s16*)(g_FieldingLogic + 0xC0) -= 1;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xC4) == 6) {
+        return;
+    }
+    if (*(s16*)(g_Ball + 0x1B78) == *(s16*)(g_FieldingLogic + 0xBE)) {
+        *(s16*)(g_FieldingLogic + 0xBE) = -1;
+    }
+    if (*(s16*)(g_FieldingLogic + 0xBE) == -1) {
+        if (*(s16*)(g_FieldingLogic + 0xC4) >= 0) {
+            return;
+        }
+        for (j = 0; j < 9; j++) {
+            if (*(s16*)(g_Fielders + j * 0x268 + 0x18C) == 6) {
+                st = g_Fielders[j * 0x268 + 0x1D3];
+                if (st == 2 || (u8)(st - 15) <= 1 || (u8)(st - 21) <= 2 || st == 12 || st == 0) {
+                    *(s16*)(g_Fielders + j * 0x268 + 0x18C) = -1;
+                } else {
+                    return;
+                }
+            }
+        }
+        if (g_Ball[0x1BBE] >= 3) {
+            ok = 1;
+        } else {
+            if (g_Ball[0x1BBE] <= 1) {
+                return;
+            }
+            if (*(s16*)(g_Ball + 0x1B78) >= 0) {
+                return;
+            }
+            if (g_Ball[0x1BC9] == 0 && g_Ball[0x1BBE] >= 2) {
+                ok = 1;
+            }
+            for (j = 0; j < 6; j++) {
+                if (g_FieldingLogic[j + 0xF8] == 1 || g_FieldingLogic[j + 0xF8] == 10) {
+                    break;
+                }
+            }
+            if (j == 6) {
+                for (j = 6; j < 9; j++) {
+                    if (g_FieldingLogic[j + 0xF8] == 1 || g_FieldingLogic[j + 0xF8] == 10) {
+                        break;
+                    }
+                }
+                if (j <= 8) {
+                    ok = 1;
+                }
+            }
+        }
+        if (ok == 0 || *(s16*)(g_FieldingLogic + 0xC0) != 0) {
+            return;
+        }
+        cand[0] = cand[1] = cand[2] = -1;
+        n = 0;
+        for (j = 2; j < 6; j++) {
+            st = g_FieldingLogic[j + 0xF8];
+            if ((st == 0 || st == 8 || st == 9) && (g_Fielders + j * 0x268)[0x1ED] == 0) {
+                cand[n++] = j;
+            }
+            if (n == 3) {
+                break;
+            }
+        }
+        if (n <= 0) {
+            return;
+        }
+        bx = lbl_3_rodata_BD0 * *(f32*)g_Ball / *(f32*)(g_Ball + 0x1A00);
+        bz = lbl_3_rodata_BD0 * *(f32*)(g_Ball + 8) / *(f32*)(g_Ball + 0x1A00);
+        bestD = 0.0f;
+        best = cand[0];
+        for (k = 0; k < 3; k++) {
+            if (cand[k] < 0) {
+                continue;
+            }
+            g = g_Fielders + cand[k] * 0x268;
+            {
+                f32 dx = *(f32*)g - bx;
+                f32 dz = *(f32*)(g + 8) - bz;
+                dx = dx * dx;
+                dz = dz * dz;
+                d = dx + dz;
+                SQRT_L(d);
+            }
+            if (k == 0) {
+                bestD = d;
+            } else if (d < bestD) {
+                bestD = d;
+                best = cand[k];
+            }
+        }
+        SetFielderAct(best, 0xB, 0x58);
+        g_FieldingLogic[0x146] = lbl_3_data_49DC[0x2B];
+        return;
+    }
+    if (g_FieldingLogic[0x146] != 0) {
+        return;
+    }
+    k = *(s16*)(g_FieldingLogic + 0xBE);
+    px = *(f32*)(g_Fielders + k * 0x268 + 0x14);
+    pz = *(f32*)(g_Fielders + k * 0x268 + 0x1C);
+    for (j = 2; j < 6; j++) {
+        if (k == j) {
+            continue;
+        }
+        st = g_FieldingLogic[j + 0xF8];
+        g = g_Fielders + j * 0x268;
+        if ((st == 0 || st == 8 || st == 9) && g[0x1ED] == 0) {
+            {
+                f32 dx = px - *(f32*)g;
+                f32 dz = pz - *(f32*)(g + 8);
+                dx = dx * dx;
+                dz = dz * dz;
+                d = dx + dz;
+                SQRT_L(d);
+            }
+            if (d < *(f32*)(g_Fielders + *(s16*)(g_FieldingLogic + 0xBE) * 0x268 + 0x68)) {
+                SetFielderAct(j, 0xB, 0x58);
+                g_FieldingLogic[0x146] = lbl_3_data_49DC[0x2B];
+                return;
+            }
+        }
+    }
 }
+#endif
 
 // .text:0x00046688 size:0x254 mapped:0x8068571C
 int fn_3_46688(f32* x, f32* z) {
