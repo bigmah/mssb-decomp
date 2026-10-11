@@ -1811,9 +1811,64 @@ void fn_8001D2D4(void) {
 }
 
 // .text:0x8001DB74 size:0x1E4
-void fn_8001DB74(void) {
-    return;
+// NONMATCHING 95%: register allocation of the slot/camera loops
+#if NONMATCHING
+void fn_8001DB74(CharSlotList* list) {
+    u16 i;
+    u16 k;
+    CharActor* actor;
+    CharSlot* slot;
+    CharModel* model;
+    MtxPtr view;
+    u8 mask;
+    s32 shift;
+    Mtx m;
+
+    for (i = 0; i < list->count; i++) {
+        actor = lbl_8036E548.active[i];
+        if (actor == NULL || actor->mode[0] == 0) {
+            continue;
+        }
+        slot = &lbl_8036E548.slots->slots[actor->modelIndex];
+        if (slot->model == NULL) {
+            continue;
+        }
+        if (slot->_58 != 0) {
+            ACTSetAnimation(slot->act, 0, slot->animId, 0.0f, slot->_60);
+        }
+        if (slot->_59 != 0) {
+            fn_800B4CA0(slot->model, slot->_5C);
+        }
+        if (slot->_5A != 0) {
+            fn_800B4C04(slot->model, slot->_54);
+        }
+        if (slot->_5B & 2) {
+            fn_800B4AFC(slot->model, slot->_5B & 1);
+        }
+        Set_FUN_800b2b6c(slot->model, slot->_68);
+        if (slot->_6C != 0) {
+            fn_800BDA24(slot);
+        }
+        for (k = 0; k < fn_800527BC(); k++) {
+            view = (MtxPtr)((u8*)fn_80052734(k) + 0x40); // TODO type: camera view matrix
+            shift = k * 3;
+            mask = ~(3 << shift);
+            if (lbl_8036E548._307A == 5) {
+                slot->model->flags = 1;
+            } else {
+                PSMTXTrans(m, actor->pos.x, actor->pos.y, actor->pos.z);
+                PSMTXConcat(view, m, m);
+                model = slot->model;
+                model->flags = (model->flags & mask) | (fn_800B3C04(k, model, m) << shift);
+            }
+        }
+        slot->_58 = 0;
+        slot->_59 = 0;
+        slot->_5A = 0;
+        slot->_5B &= 1;
+    }
 }
+#endif
 
 // .text:0x8001DD58 size:0x14C
 // NONMATCHING 98%: register allocation only
