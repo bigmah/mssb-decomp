@@ -152,7 +152,6 @@ void fn_3_24EA0(void) {
 
 // .text:0x00024F20 size:0x4 mapped:0x80663FB4
 void fn_3_24F20(void) {
-    return;
 }
 
 // .text:0x00024F24 size:0x1D8 mapped:0x80663FB8
