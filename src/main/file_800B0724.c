@@ -358,6 +358,7 @@ void fn_800B2C08(GameActor* actor, s16 value) {
 }
 
 // .text:0x800B2C10 size:0x34
-void fn_800B2C10(void) {
-    return;
+// Transforms v in place by the actor's matrix at index.
+void fn_800B2C10(GameActor* actor, u16 index, Vec* v) {
+    PSMTXMultVec(actor->mtxArray[index], v, v);
 }

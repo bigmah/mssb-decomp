@@ -42,4 +42,5 @@ struct DODisplayObj* fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16
 
 void fn_800B2BFC(GameActor* actor, s16 a, s16 b);void fn_800B2C08(GameActor* actor, s16 value);
 
+void fn_800B2C10(GameActor* actor, u16 index, Vec* v);
 #endif
