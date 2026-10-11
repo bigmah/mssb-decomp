@@ -357,6 +357,7 @@ static inline u32 Expand4444(u16 c) {
 
 // .text:0x800263FC size:0x59C
 // NONMATCHING 43%: the original inlines the z-sort (fn_80031F34) and the corner setup with the file-static bss base
+// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
 #if NONMATCHING
 s32 fn_800263FC(Emitter* e) {
     s32 alive = 0;
@@ -1453,6 +1454,7 @@ u8 fn_8002AC68(Emitter* e, Particle* p) {
 
 // .text:0x8002B014 size:0x3EC
 // NONMATCHING 36%: the original inlines the z-sort (fn_80031F34) twice
+// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
 #if NONMATCHING
 s32 fn_8002B014(Emitter* e) {
     s32 alive = 0;
@@ -2657,6 +2659,7 @@ void fn_80030D88(Vec* pos, Vec* dir, ParticleParams5* prm, u8 type) {
 
 // .text:0x80031034 size:0x790
 // NONMATCHING 43%: the original inlines fn_80031F34 and the corner/draw helpers with the file-static bss base
+// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
 #if NONMATCHING
 s32 fn_80031034(Emitter* e) {
     Vec a;
@@ -3036,6 +3039,7 @@ void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
 
 // .text:0x800328E0 size:0x7EC
 // NONMATCHING 59%: the original inlines fn_8003403C with the file-static bss base (lbl_8017EC00 + offset); calls fn_8003403C here
+// nmverify: fn_8003403C inlined on one side (calls match once expanded)
 #if NONMATCHING
 s32 fn_800328E0(Emitter* e) {
     Mtx rotM;

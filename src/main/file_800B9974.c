@@ -402,6 +402,8 @@ void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, MtxPtr camera, u8* numT
 #pragma dont_inline on
 
 // NONMATCHING 98%: stack layout of the stage/coord/map locals and saved-register assignment differ
+// nmverify: GXSetTexCoordGen2 original has the bump coord call in both arms of an if with identical arms
+// nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
 // .text:0x800BA848 size:0x12E4
 void Custom_SetState(struct DODisplayObj* dispObj, DisplayStateList* state, MtxPtr camera) {

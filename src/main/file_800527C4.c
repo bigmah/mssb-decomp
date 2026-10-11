@@ -1,5 +1,6 @@
 #include "main/file_80069BDC.h"
 #include "main/file_800527C4.h"
+#include "main/file_8004207C.h"
 // UnknownHomes_Static.h declares fn_80021518 with placeholder argument types;
 // use the real prototype from file_80021308.h instead.
 #define fn_80021518 fn_80021518_placeholder
@@ -314,6 +315,8 @@ void fn_800531D0(SceneTask* task) {
 // .text:0x80053810 size:0x7D8
 // The original inlines fn_80042D68/fn_80042DA8 (frame checks) here.
 // NONMATCHING 85%: the original inlines the fn_80042D68/fn_80042DA8 frame checks; ours calls them
+// nmverify: fn_80042D68 fn_80042DA8 inlined in original (header-style inlines from file_8004207C)
+// nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_80053810(void) {
     SceneTask* task = lbl_803CC1B8;
@@ -1281,6 +1284,8 @@ void someChallengeStarFunction2(SceneTask* task) {
 
 // .text:0x800576F0 size:0x518
 // NONMATCHING 97%: register swaps; text release written as three calls (original is a 3-iteration loop)
+// nmverify: fn_8000FEE8 called from a 3-iteration loop in original, three calls here
+// nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
 void challengeCheckStarsMenuLoading(void) {
     SceneTask* task = lbl_803CC1B8;
@@ -2055,6 +2060,8 @@ void starMissionRelated1(SceneTask* task) {
 
 // .text:0x8005A350 size:0xC18
 // NONMATCHING 88%: index sums fold differently; registers differ
+// nmverify: fn_8000FEE8 called from a 3-iteration loop in original, three calls here
+// nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_8005A350(SceneTask* task, s32 pad) {
     s32 team = pad;
@@ -3300,6 +3307,8 @@ void fn_8005FCA0(SceneTask* task, s32 port) {
 
 // .text:0x80060184 size:0x1A18
 // NONMATCHING 80%: tutorial step dispatcher; state tests, index sums and registers differ
+// nmverify: fn_80042DA8 fn_80062674 call sites duplicated into both branches in original (tail duplication)
+// nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_80060184(void) {
     SceneTask* task = lbl_803CC1B8;

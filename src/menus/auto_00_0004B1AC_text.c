@@ -1,4 +1,5 @@
 #include "menus/auto_00_0004B1AC_text.h"
+#include "main/file_800A7C08.h"
 
 #include <string.h>
 #include "Dolphin/GX.h"
@@ -12,7 +13,6 @@ extern u8 lbl_8034E9A0[];
 #include "static/UnknownHomes_Static.h"
 #include "main/file_8000F150.h"
 
-extern u32 lbl_803C7898[];
 extern void fn_80034E20(void* object, void* data);
 
 extern u8* lbl_2_bss_1A824C[];
@@ -232,8 +232,8 @@ void fn_2_4E7EC(void) {
 
 // fn_2_4E824, size:0x34
 void fn_2_4E824(void) {
-    *(u32*)(lbl_2_bss_1A824C[0] + 0x195424) = lbl_803C7898[1];
-    *(u32*)(lbl_2_bss_1A824C[0] + 0x195428) = lbl_803C7898[2];
+    *(u8**)(lbl_2_bss_1A824C[0] + 0x195424) = lbl_803C7898.lo;
+    *(u8**)(lbl_2_bss_1A824C[0] + 0x195428) = lbl_803C7898.hi;
 }
 
 // fn_2_54BAC, size:0x4
@@ -1761,7 +1761,6 @@ void fn_2_4E1C0(void) {
 }
 #endif
 
-#include "main/file_800A7C08.h"
 #include "menus/rep_0788.h"
 #include "menus/rep_08E8.h"
 
@@ -2568,7 +2567,7 @@ void fn_2_4B2D0(void) {
 
 extern s16 lbl_2_data_38CC[];
 extern void fn_2_39408(void);
-extern void* fn_2_4917C(void* buffer, s32 number, s32 flags, s32 digits, s32 style);
+extern u16* fn_2_4917C(u16* buffer, s32 number, s32 flags, s32 digits, s32 style);
 
 // Menu script interpreter state in lbl_2_bss_1A824C[0]. TODO type
 #define MS_S32(off) (*(s32*)(lbl_2_bss_1A824C[0] + (off)))
@@ -2595,6 +2594,7 @@ extern void* fn_2_4917C(void* buffer, s32 number, s32 flags, s32 digits, s32 sty
 
 // fn_2_4EB9C, size:0x1CFC
 // NONMATCHING 86%: same case layout and calls; the original addresses the text buffers (lbl_2_bss_5600/9600/9604/9608/9A08) through one lbl_2_bss_55E8 base register and keeps lbl_2_bss_1A824C's address live in r29, ours reloads with lis/addi
+// nmverify: lbl_2_bss_5600 lbl_2_bss_9600 lbl_2_bss_9604 lbl_2_bss_9608 lbl_2_bss_9A08 reached through a pooled base in original
 #if NONMATCHING
 s16 fn_2_4EB9C(void) {
     u8* queue = lbl_803CC1B8[0];

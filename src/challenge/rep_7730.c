@@ -2615,6 +2615,7 @@ static inline void fn_1_21CE8_setupDraw(void) {
 
 // NONMATCHING 63% (98% when fn_1_20950 is force-inlined, which then drops fn_1_20950's own copy): the original inlines fn_1_20950 here; ours calls it
 // .text:0x21CE8 size:0x8D0
+// nmverify: fn_1_20950 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_21CE8(void) {
     ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
@@ -2634,6 +2635,7 @@ void fn_1_21CE8(void) {
 
 // NONMATCHING 63%: same shape as fn_1_21CE8 (the original inlines fn_1_20950 here; ours calls it)
 // .text:0x21408 size:0x8E0
+// nmverify: fn_1_20950 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_21408(void) {
     ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
@@ -2844,6 +2846,7 @@ void fn_1_25F98(void) {
 
 // NONMATCHING 86%: the original inlines fn_1_248BC (and fn_1_24A8C/fn_1_247A0) here; ours calls fn_1_248BC
 // .text:0x25064 size:0xC04
+// nmverify: fn_1_248BC inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_25064(void) {
     ChallengePathTest* q = (ChallengePathTest*)lbl_803CC1B8[0];

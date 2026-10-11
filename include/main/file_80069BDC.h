@@ -47,6 +47,7 @@ typedef struct SceneTask {
     /*0x14*/ union {
         ResHandle* res;
         u16 objIdx;  // index into lbl_80371C30 (child tasks)
+        f32 rate;    // per-frame step (menus fn_2_A70 volume fade)
     } u14;
     /*0x18*/ DrawNode* nodes;
     /*0x1C*/ void* player;
@@ -150,7 +151,7 @@ void fn_8006B78C(void);
 void fn_8006BB60(void);
 void fn_8006BE00(void);
 void fn_8006C088(s32 alt);
-void fn_8006C0D0(void);
+SceneTask* fn_8006C0D0(void);
 u8 fn_8006C100(s16 value);
 s16 fn_8006C13C(StatInput* in);
 void fn_8006C2B4(StatOutput* out, StatInput* in);

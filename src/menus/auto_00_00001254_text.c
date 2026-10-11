@@ -1175,6 +1175,7 @@ void fn_2_CCE0(u8 team) {
 #endif
 
 // NONMATCHING 98%: case 4 store scheduling (lbl_2_bss_3A0 address via addi in the original)
+// nmverify: fn_2_2FC0 fn_2_8940 inlined on one side (calls match once expanded)
 #if NONMATCHING
 // fn_2_323C, size:0x180
 void fn_2_323C(void) {
@@ -1348,6 +1349,7 @@ void fn_2_11EA8(void) {
 }
 
 // NONMATCHING 88%: original keeps raw + two clrlwi copies of team (r27/r29/r30); we keep one
+// nmverify: fn_2_ABC0 inlined on one side (calls match once expanded)
 #if NONMATCHING
 // fn_2_102C8, size:0x234
 void fn_2_102C8(u8 team) {
@@ -1402,6 +1404,7 @@ void fn_2_102C8(u8 team) {
 #endif
 
 // NONMATCHING 99%: case 3 reloads the s8 timer before the decrement in the original
+// nmverify: fn_2_323C fn_2_8940 inlined on one side (calls match once expanded)
 #if NONMATCHING
 // fn_2_110B0, size:0x244
 void fn_2_110B0(void) {
@@ -1582,6 +1585,7 @@ void fn_2_6884(void) {
 #endif
 
 // NONMATCHING 70%: retry loop shape (slot==0 test inside the loop in the original) and store addressing differ; inlines fn_2_C698
+// nmverify: fn_2_14F8 inlined on one side (calls match once expanded)
 #if NONMATCHING
 // fn_2_C7DC, size:0x284
 void fn_2_C7DC(u8 slot, s32 team) {
@@ -1769,6 +1773,7 @@ void fn_2_2D1C(void) {
 #endif
 
 // NONMATCHING 85%: the original inlines fn_2_CA60 (NONMATCHING) into the slot loop; fn_2_14F8 must stay a call
+// nmverify: fn_2_14F8 fn_2_ABC0 inlined on one side (calls match once expanded)
 #if NONMATCHING
 // fn_2_B66C, size:0x2B4
 void fn_2_B66C(void) {
@@ -1920,6 +1925,7 @@ void fn_2_ABC0(u8 team) {
 #endif
 
 // NONMATCHING 80%: stadium-selection pointer kept in a register differently; branch layout of the button chain
+// nmverify: fn_2_14F8 fn_2_1C34 inlined on one side (calls match once expanded)
 #if NONMATCHING
 // fn_2_11340, size:0x358
 void fn_2_11340(u8 team) {
@@ -2549,6 +2555,7 @@ void fn_2_95D8(void) {
 #endif
 
 // NONMATCHING 80%: chemOrder entry reloads/addressing and loop registers differ
+// nmverify: fn_2_14F8 inlined on one side (calls match once expanded)
 #if NONMATCHING
 // fn_2_FCB4, size:0x614
 void fn_2_FCB4(u8 team) {
@@ -2658,6 +2665,7 @@ void fn_2_FCB4(u8 team) {
 #endif
 
 // NONMATCHING 70%: the original inlines fn_2_CA60 (NONMATCHING) and fully unrolls the team-1 reset loop
+// nmverify: fn_2_14F8 fn_2_ABC0 inlined on one side (calls match once expanded)
 #if NONMATCHING
 // fn_2_B920, size:0x670
 void fn_2_B920(void) {
@@ -2731,6 +2739,8 @@ void fn_2_B920(void) {
 #endif
 
 // NONMATCHING 75%: the original repeats the sound call per branch and indexes state via stwx; same transitions
+// nmverify: sndFXStartEx repeated per branch in original (tail duplication)
+// nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
 // fn_2_57F0, size:0x790
 void fn_2_57F0(u8 team, u16 held, u16 pressed, u16 repeat) {
@@ -3183,7 +3193,9 @@ static s32 fn_2_F200_collect(s8* cand, u8 cls) {
     return last;
 }
 
+// nmverify: randRange_FUN_80042bf0 original has one pick per unrolled class copy (4) plus the fallback
 // fn_2_F200, size:0x8A0
+// nmverify:  inlined on one side (calls match once expanded)
 void fn_2_F200(u8 team) {
     u8 count[4];
     u8 full[4];
@@ -3450,6 +3462,7 @@ static void fn_2_4970_release(u8 team, s32 slot) {
 }
 
 // fn_2_4970, size:0x814
+// nmverify: fn_2_4970_release inlined on one side (calls match once expanded)
 void fn_2_4970(u8 team, s32 empty) {
     s32* state = (s32*)lbl_2_bss_F468;
     s32 cur = state[team];
@@ -4383,7 +4396,9 @@ end:
         }                                                 \
     } while (0)
 
+// nmverify: sndFXStartEx cursor-sound tail repeated per branch in original
 // fn_2_3624, size:0x134C
+// nmverify:  inlined on one side (calls match once expanded)
 void fn_2_3624(u8 port) {
     u8 team = lbl_803C66B0[0x59 + port];
     s32* state = (s32*)lbl_2_bss_F468;
