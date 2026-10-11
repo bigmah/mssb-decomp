@@ -1,5 +1,6 @@
 #include "game/sta_c5.h"
 #include "game/rep_2998.h"
+#include "game/rep_D0.h"
 #include "header_rep_data.h"
 #include "Dolphin/os.h"
 extern u8 lbl_3_common_bss_350E4[];
@@ -120,7 +121,8 @@ struct StadCtlA {
     u8 idx;
     u8 pad9D[3];
     f32 xa0, ya4, za8, xac, zb0, rb4;
-    u8 padB8[0xC0 - 0xB8];
+    u8 padB8[4];
+    f32* yawSrc; /* 0xBC */
     u8 fc0;
     s8 fc1;
     u8 padC2[2];
@@ -997,6 +999,7 @@ void fn_3_F1674(void) {
     g_FieldingLogic[0x13B] = 1;
 }
 
+#pragma dont_inline off
 // .text:0x000F1750 size:0x154 mapped:0x807307E4
 extern f32 fn_800B4A94(void*);
 extern const f32 lbl_3_rodata_2E30;
@@ -1040,16 +1043,78 @@ void fn_3_F18A4(u8* p) {
     AnimateActorBones(*(void**)o);
 }
 
+#pragma dont_inline on
 // .text:0x000F193C size:0x4F0 mapped:0x807309D0
-void fn_3_F193C(void) {
-    return;
+// NONMATCHING 88%: inlines fn_3_F1750, fn_3_F18A4, fn_3_F3A04, fn_3_F22FC; original reaches lbl_3_bss_B218..B21C through the lbl_3_bss_AEE0 pooled base (nmverify flag expected); saved-reg allocation differs
+#if NONMATCHING
+void fn_3_F193C(StadCtlA* p) {
+    VecSrcDst seg;
+    CollisionStruct col;
+    u8** o = p->obj;
+    f32 yaw;
+    s8 id;
+    u32 r;
+    switch ((u8)p->fc1) {
+    case 0:
+        yaw = *p->yawSrc;
+        p->rb4 = yaw;
+        p->c.type = 0;
+        CTRLSetTranslation(&p->c, p->xa0, -p->ya4, p->za8);
+        CTRLSetRotation(&p->c, 0.0f, yaw, 0.0f);
+        break;
+    case 1:
+        if (!p->fl90_hi) {
+            p->fl90_hi = 1;
+        }
+        memcpy(&seg.src, &p->xa0, 0xC);
+        seg.src.y *= lbl_3_rodata_2D70;
+        fn_3_F2938(p);
+        memcpy(&seg.dst, &p->xa0, 0xC);
+        seg.dst.y *= lbl_3_rodata_2D70;
+        AnimateActorBones(*o);
+        r = checkCollision(&seg, &col, 0, 0) & 0xF;
+        if (r == 2 || r == 5) {
+            u32 stad;
+            u8 v;
+            u32 h;
+            p->fc1 = 2;
+            fn_3_8B890(*(s32*)lbl_3_data_1B820);
+            *(s32*)lbl_3_data_1B820 = -1;
+            stad = g_d_GameSettings[9];
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[6];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 6];
+            }
+            h = sndFXStartEx((u16)(((u16*)lbl_3_data_81DC)[stad] + 3), v, 0x3F, 0);
+            if (g_d_GameSettings[7] == 6) {
+                v = lbl_3_data_84B8[7];
+            } else {
+                v = lbl_3_data_8404[stad * 0x1E + 7];
+            }
+            sndFXCtrl(h, 0x5B, v);
+            fn_3_F3A04((u8*)p);
+            fn_3_F18A4((u8*)p);
+        } else if (g_GameLogic[0x11E] == 2) {
+            id = fn_3_F2448((u8*)p);
+            if (id > -1) {
+                fn_3_F22FC((u8*)p, id);
+            }
+        }
+        break;
+    case 2:
+        fn_3_F1750(p);
+        break;
+    }
 }
+#endif
 
 // .text:0x000F1E2C size:0x4D0 mapped:0x80730EC0
 void fn_3_F1E2C(void) {
     return;
 }
 
+#pragma dont_inline off
 // .text:0x000F22FC size:0x14C mapped:0x80731390
 extern void fn_3_253A4(s8, s16);
 extern s16 fn_3_9FB8C(f32, f32);
@@ -1095,6 +1160,7 @@ void fn_3_F22FC(u8* p, s32 idx) {
 }
 
 
+#pragma dont_inline on
 // .text:0x000F2448 size:0x2DC mapped:0x807314DC
 extern char lbl_3_rodata_2CEC[];
 extern f64 __fabs(f64);
@@ -1221,7 +1287,7 @@ void fn_3_F2724(u8* p, u8* q) {
 
 
 // .text:0x000F2938 size:0x6C4 mapped:0x807319CC
-void fn_3_F2938(void) {
+void fn_3_F2938(StadCtlA* p) {
     return;
 }
 
@@ -1294,6 +1360,7 @@ void fn_3_F38D4(void) {
     }
 }
 
+#pragma dont_inline off
 // .text:0x000F3A04 size:0x58 mapped:0x80732A98
 void fn_3_F3A04(u8* p) {
     u32 i;
@@ -1302,6 +1369,7 @@ void fn_3_F3A04(u8* p) {
     }
 }
 
+#pragma dont_inline on
 // .text:0x000F3A5C size:0x84 mapped:0x80732AF0
 void fn_3_F3A5C(u8* p, f32 x, f32 y, f32 z, f32 r) {
     *(f32*)(p + 0xA0) = x;
