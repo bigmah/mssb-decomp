@@ -23,7 +23,19 @@ void somethingSetTexturePointer(void) {
 
 // .text:0x8000F4B8 size:0x7C
 void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d) {
-    return;
+    lbl_80366B18.padMask = 0;
+    if (a >= 0) {
+        lbl_80366B18.padMask = 1 << a;
+    }
+    if (b >= 0) {
+        lbl_80366B18.padMask |= 1 << b;
+    }
+    if (c >= 0) {
+        lbl_80366B18.padMask |= 1 << c;
+    }
+    if (d >= 0) {
+        lbl_80366B18.padMask |= 1 << d;
+    }
 }
 
 // .text:0x8000F534 size:0x3C0
