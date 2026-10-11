@@ -1,5 +1,35 @@
+#include "main/file_80069BDC.h"
 #include "main/file_800527C4.h"
+// UnknownHomes_Static.h declares fn_80021518 with placeholder argument types;
+// use the real prototype from file_80021308.h instead.
+#define fn_80021518 fn_80021518_placeholder
 #include "static/UnknownHomes_Static.h"
+#undef fn_80021518
+#include "main/file_80021308.h"
+#include "main/file_80008E00.h"
+#include "C3/control.h"
+#include "musyx/musyx.h"
+
+extern SoundManager lbl_800EF808;
+extern SoundGroupRequest lbl_80108B84;
+extern u8 lbl_80108B18[0x24];
+extern u8 lbl_80108B3C[0x48];
+extern s32 lbl_80108B90[0x14];
+extern u16 lbl_80108BE0[8];
+extern s8 lbl_80108BF0[][0x36];
+extern u16 lbl_80108DF4[0x22];
+extern u16 lbl_80108E38[0x46];
+extern u32 lbl_803C663C[4];
+extern u8 lbl_803C66B0[0x64];
+extern s32 lbl_803CBD0C;
+extern u8 lbl_8034E9A0[];
+extern CharModelTable lbl_8036E548;
+
+extern s32 fn_800698F8(s32 kind);
+extern void fn_80032064(Vec* pos, s32* params);
+extern void fn_80032284(Vec* pos);
+extern void fn_800324EC(u16 id, s32 charIndex, s32 c, s32* params);
+extern void fn_8004B1C0(s32 sound, CharSoundObj* obj, s32 kind, s32 c);
 
 // .text:0x800527C4 size:0xE8
 void fn_800527C4(void) {
@@ -264,8 +294,12 @@ void SetMenuNumber(void) {
 }
 
 // .text:0x80062578 size:0x2C
-void fn_80062578(void) {
-    return;
+BOOL fn_80062578(void) {
+    BOOL ret = FALSE;
+    if (lbl_803C66B0[0x5D] == 0 && lbl_803C66B0[0x5E] == 0) {
+        ret = TRUE;
+    }
+    return ret;
 }
 
 // .text:0x800625A4 size:0xD0
@@ -273,9 +307,6 @@ void fn_800625A4(void) {
     return;
 }
 
-extern u32 lbl_803C663C[4];
-
-extern u8 lbl_803C66B0[];
 
 // fn_800626EC, size:0x58
 void fn_800626EC(s32 index) {
@@ -314,42 +345,56 @@ void fn_80062744(void) {
 }
 
 // .text:0x80062764 size:0x30
-void fn_80062764(void) {
-    return;
+void fn_80062764(SoundLoadTask* task) {
+    lbl_80108B84.task = task;
+    fn_800215F8(&lbl_80108B84);
 }
 
 // .text:0x80062794 size:0x30
-void fn_80062794(void) {
-    return;
+BOOL fn_80062794(s32 voice) {
+    return sndFXCheck(voice) != SND_ID_ERROR;
 }
 
 // .text:0x800627C4 size:0x34
-void fn_800627C4(void) {
-    return;
+s32 fn_800627C4(void) {
+    fn_80021518(0, lbl_800EF808.groups[4]);
+    return 0;
 }
 
 // .text:0x800627F8 size:0x34
-void fn_800627F8(void) {
-    return;
+s32 fn_800627F8(void) {
+    fn_80021518(0x31, lbl_800EF808.groups[38]);
+    return 0;
 }
 
 // .text:0x8006282C size:0x30
 void fn_8006282C(void) {
-    return;
+    fn_80021518(0x20, lbl_800EF808.groups[37]);
 }
 
 // .text:0x8006285C size:0x34
-void fn_8006285C(void) {
-    return;
+s32 fn_8006285C(void) {
+    fn_80021518(0x20, lbl_800EF808.groups[37]);
+    return 0;
 }
 
 // .text:0x80062890 size:0x44
-// u32 fn_80062890(s32 index): prototype is in a shared header; not decompiled yet
+u32 fn_80062890(s32 index) {
+    return sndFXStartEx(lbl_80108E38[index], lbl_80108B3C[index], 0x3F, 0);
+}
 
 // .text:0x800628D4 size:0x74
-void fn_800628D4(void) {
-    return;
+// NONMATCHING 90%: lis/addi of lbl_80108B18 and lbl_80108DF4 scheduled in a different order
+#if NONMATCHING
+u32 fn_800628D4(s32 kind) {
+    u32 voice;
+
+    lbl_8034E9A0[0x48AE] = 1;
+    voice = sndFXStartEx(lbl_80108DF4[fn_800698F8(kind)], lbl_80108B18[0], 0x3F, 0);
+    sndFXCtrl(voice, 0x5B, 0);
+    return voice;
 }
+#endif
 
 extern u8 lbl_803C6714[];
 
@@ -363,9 +408,6 @@ void fn_8006295C(void) {
     return;
 }
 
-extern u8 lbl_8034E9A0[];
-
-extern u8 lbl_803C6714[];
 
 // initializeUnknown, size:0x24
 void initializeUnknown(void) {
@@ -387,41 +429,116 @@ void fn_80062A94(void) {
 }
 
 // .text:0x80062BE4 size:0x40
-void fn_80062BE4(void) {
-    return;
+void fn_80062BE4(Vec* pos) {
+    if (lbl_80366158._28 != 1) {
+        lbl_80108B90[0] = lbl_803CBD0C;
+        fn_80032064(pos, lbl_80108B90);
+    }
 }
 
 // .text:0x80062C24 size:0x3C
-void fn_80062C24(void) {
-    return;
+void fn_80062C24(Vec* pos) {
+    if (lbl_80366158._28 != 1 && pos != NULL) {
+        fn_80032284(pos);
+    }
+}
+
+static inline s32 CharJointSound(CharSoundObj* obj, u16 joint) {
+    CharJointMapObj* model = lbl_8036E548.chars[obj->charIndex];
+    if (model != NULL) {
+        return model->jointMap[joint];
+    }
+    return 0xFFFF;
+}
+
+static inline void PlayCharJointSound(CharSoundObj* obj) {
+    s32 i;
+
+    if (lbl_80366158._28 != 1) {
+        for (i = 0; lbl_80108BE0[i] != 0xFFFF && CharJointSound(obj, lbl_80108BE0[i]) == 0xFFFF; i++) {
+        }
+        if (lbl_80108BE0[i] != 0xFFFF) {
+            lbl_80108B90[0] = lbl_803CBD0C;
+            fn_800324EC(lbl_80108BE0[i], obj->charIndex, -1, lbl_80108B90);
+        }
+    }
 }
 
 // .text:0x80062C60 size:0x134
-void fn_80062C60(void) {
-    return;
+// NONMATCHING 95%: r7/r8 swapped in the inlined joint loop (see docs/patterns/regalloc.md)
+#if NONMATCHING
+void fn_80062C60(CharSoundObj* obj, s32 a, s32 b, f32 frame) {
+    if (lbl_80366158._28 != 1) {
+        if (frame == 0.5f) {
+            PlayCharJointSound(obj);
+        }
+        fn_8006C3F8(obj, frame, a, b);
+    }
 }
+#endif
 
 // .text:0x80062D94 size:0xD8
-void fn_80062D94(void) {
-    return;
+// NONMATCHING 95%: r7/r9/r10 rotated in the joint loop (see docs/patterns/regalloc.md)
+#if NONMATCHING
+void fn_80062D94(CharSoundObj* obj) {
+    PlayCharJointSound(obj);
 }
+#endif
 
 // .text:0x80062E6C size:0x68
-void fn_80062E6C(void) {
-    return;
+void fn_80062E6C(CharSoundObj* obj, s32 kind, s32 c) {
+    s32 index = kind - 0x28;
+    if (lbl_80366158._28 != 1) {
+        fn_8004B1C0(lbl_80108BF0[index][obj->_252], obj, kind, c);
+    }
 }
 
 // .text:0x80062ED4 size:0x64
-void fn_80062ED4(void) {
-    return;
+// NONMATCHING 90%: r8/r9 swapped; jump table is in another unit's .data
+#if NONMATCHING
+s32 fn_80062ED4(void* player, GameActor** actorp) {
+    GameBone* bone;
+    s32 i;
+    GameActor* actor = *actorp;
+
+    for (i = 0; i < actor->totalBones; i++) {
+        bone = actor->boneArray[i];
+        switch (bone->boneID) {
+        case 0x41:
+        case 0x43:
+        case 0x45:
+        case 0x47:
+        case 0x49:
+        case 0x4B:
+            bone->rotAxis = 2;
+            break;
+        }
+    }
+    return 0;
 }
+#endif
 
 // .text:0x80062F38 size:0xD8
-void fn_80062F38(void) {
-    return;
+s32 fn_80062F38(GameBone* bone, GameBone* target, Mtx m, f32 t) {
+    switch (bone->boneID) {
+    case 0x46:
+        fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, t);
+        CTRLBuildMatrix_Flip(&target->animCtrl, m, 0);
+        return 1;
+    case 0x4A:
+        fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, t);
+        CTRLBuildMatrix_Flip(&target->animCtrl, m, 0);
+        return 1;
+    case 0x4C:
+        fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, t);
+        CTRLBuildMatrix_Flip(&target->animCtrl, m, 0);
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x80063010 size:0x18
-void fn_80063010(void) {
-    return;
+s32 fn_80063010(void* player, GameActor** actor) {
+    (*actor)->boneCallback = fn_80062F38;
+    return 0;
 }
