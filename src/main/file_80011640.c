@@ -61,7 +61,8 @@ extern CharLoadTask* lbl_803CC1B8;
 extern CharPart lbl_80118220[13];
 
 typedef struct RosterEntry {
-    /*0x00*/ u8 _00[0x26];
+    /*0x00*/ u8 _00[0x24];
+    /*0x24*/ s16 charId;
     /*0x26*/ u8 _26;
     /*0x27*/ u8 _27;
     /*0x28*/ u8 _28[0xA0 - 0x28];
@@ -856,9 +857,85 @@ fail:
 }
 
 // .text:0x80017098 size:0x2A8
-void fn_80017098(void) {
-    return;
+// NONMATCHING 87%: roster-entry field addresses are hoisted differently
+#if NONMATCHING
+s32 fn_80017098(s32 team, s32 roster, s32 arg2, s32 index, s32 arg4, s32 kind) {
+    CharLoadTask* task;
+    RosterEntry* entry;
+    CharActor* actor;
+    s32 same;
+    s32 slot;
+    s32 i;
+    s32 j;
+
+    if (kind >= 0) {
+        task = fn_800B0A5C_insertQueue(fn_800177B4, 0);
+        slot = index;
+        goto setup;
+    }
+    entry = &inMemRoster[team][roster];
+    for (i = 0; i < 13; i++) {
+        actor = &lbl_8036E548.actors[i];
+        same = 0;
+        if (actor->kind == entry->charId && actor->_25A == entry->_26 && actor->_25B == entry->_27 && actor->roster == (s8)roster) {
+            same = 1;
+        }
+        if (actor->team == team && same && actor->_258 == arg2 && actor->_259 == arg4) {
+            lbl_8036E548.state = 0;
+            lbl_8036E548._2D6A[i] = index;
+            lbl_8036E548._2D79 = i;
+            actor->index = index;
+            for (j = 0; j < 13; j++) {
+                if (lbl_8036E548.active[j] == actor) {
+                    lbl_8036E548.active[j] = NULL;
+                    break;
+                }
+            }
+            lbl_8036E548.active[index] = actor;
+            return 1;
+        }
+    }
+    task = fn_800B0A5C_insertQueue(fn_800177B4, 0);
+    if (index >= 9) {
+        slot = 9;
+        if (lbl_8036E548._2D6A[9] >= 0) {
+            slot = 10;
+            if (lbl_8036E548._2D6A[10] >= 0) {
+                slot = 11;
+                if (lbl_8036E548._2D6A[11] >= 0) {
+                    slot = 12;
+                    if (lbl_8036E548._2D6A[12] >= 0) {
+                        slot = 13;
+                    }
+                }
+            }
+        }
+    } else {
+        for (slot = 0; slot < 13; slot++) {
+            if (lbl_8036E548._2D6A[slot] < 0) {
+                break;
+            }
+        }
+    }
+setup:
+    task->state = 0;
+    task->actor = slot;
+    task->team = team;
+    task->roster = roster;
+    task->_1B = arg2;
+    task->index = index;
+    task->_1D = arg4;
+    if (kind < 0) {
+        task->kind = inMemRoster[team][roster].charId;
+    } else {
+        task->kind = kind;
+    }
+    lbl_8036E548._2D6A[slot] = index;
+    lbl_8036E548.state = 1;
+    lbl_8036E548._2D79 = slot;
+    return 0;
 }
+#endif
 
 // .text:0x80017340 size:0x24C
 // NONMATCHING 78%: loop induction variables (original indexes active[i + 9] per pass)

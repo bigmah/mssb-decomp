@@ -220,7 +220,9 @@ typedef struct CharMgr {
     /*0x2D68*/ s16 _2D68;
     /*0x2D6A*/ s8 _2D6A[13];
     /*0x2D77*/ u8 state;
-    /*0x2D78*/ u8 _2D78[0x2D88 - 0x2D78];
+    /*0x2D78*/ u8 _2D78;
+    /*0x2D79*/ u8 _2D79;
+    /*0x2D7A*/ u8 _2D7A[0x2D88 - 0x2D7A];
     /*0x2D88*/ s8 loadActor;
     /*0x2D89*/ s8 bankOwner[4];
     /*0x2D8D*/ u8 loadStep;
@@ -356,6 +358,8 @@ void fn_80017DBC(CharActor* actor, s32 modelIndex);
 void fn_8001F228(void);
 
 int fn_8001C67C_animation(int id, int index);
+
+s32 fn_80017098(s32 team, s32 roster, s32 arg2, s32 index, s32 arg4, s32 kind);
 
 void fn_8001B200(void);
 
