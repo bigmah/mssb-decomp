@@ -85,7 +85,37 @@ void fn_800BD548(DOListEntry* entry, u8 numArgs, ...) {
     va_end(list);
 }
 
+// NONMATCHING 98%: loop counter i and entry pointer swap r30/r31
+#if NONMATCHING
 // .text:0x800BD670 size:0x254
-void fn_800BD670(void) {
-    return;
+void fn_800BD670(DOList* list, MtxPtr camera) {
+    u16 i;
+    DOListEntry* entry;
+    struct DODisplayObj* obj;
+
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    GXSetCullMode(GX_CULL_BACK);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    for (i = 0; i < list->count; i++) {
+        obj = list->entries[i].dispObj;
+        if (obj == NULL || list->entries[i].visible == 0) {
+            continue;
+        }
+        entry = &list->entries[i];
+        if (entry->callback != NULL) {
+            entry->callback(entry);
+        }
+        switch (entry->numArgs) {
+        case 0: fn_800B3A78(obj, camera, 0); break;
+        case 1: fn_800B3A78(obj, camera, 1, entry->args[0]); break;
+        case 2: fn_800B3A78(obj, camera, 2, entry->args[0], entry->args[1]); break;
+        case 3: fn_800B3A78(obj, camera, 3, entry->args[0], entry->args[1], entry->args[2]); break;
+        case 4: fn_800B3A78(obj, camera, 4, entry->args[0], entry->args[1], entry->args[2], entry->args[3]); break;
+        case 5: fn_800B3A78(obj, camera, 5, entry->args[0], entry->args[1], entry->args[2], entry->args[3], entry->args[4]); break;
+        case 6: fn_800B3A78(obj, camera, 6, entry->args[0], entry->args[1], entry->args[2], entry->args[3], entry->args[4], entry->args[5]); break;
+        case 7: fn_800B3A78(obj, camera, 7, entry->args[0], entry->args[1], entry->args[2], entry->args[3], entry->args[4], entry->args[5], entry->args[6]); break;
+        case 8: fn_800B3A78(obj, camera, 8, entry->args[0], entry->args[1], entry->args[2], entry->args[3], entry->args[4], entry->args[5], entry->args[6], entry->args[7]); break;
+        }
+    }
 }
+#endif
