@@ -128,4 +128,8 @@ void fn_2_1A88(void);
 
 void fn_2_348C(void);
 
+void fn_2_102C8(u8 team);
+
+void fn_2_5184(u8 team);
+
 #endif

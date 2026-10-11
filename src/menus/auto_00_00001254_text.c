@@ -1011,3 +1011,36 @@ void fn_2_348C(void) {
         lbl_803CB748[i] = lbl_803CB748[i];
     }
 }
+
+// NONMATCHING 85%: team kept in two regs (raw + clrlwi) differently; loop counter/pointer regs swapped
+#if NONMATCHING
+// fn_2_5184, size:0x148
+void fn_2_5184(u8 team) {
+    s32 i;
+    s8* row;
+    lbl_2_bss_F468[team + 0x3D] = 0;
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        return;
+    }
+    if (lbl_2_bss_F468[team + 0x37] == 0) {
+        fn_2_102C8(team);
+        ((u32*)lbl_2_bss_F468)[team] = 9;
+        return;
+    }
+    row = (s8*)(lbl_803C6724 + team * 9);
+    for (i = 0; i < 9; i++) {
+        if (*(s32*)(lbl_8034E9A0 + team * 4 + 0x46E0) != row[2]) {
+            lbl_8034E9A0[row[2] + 0x4757] = 0;
+            fn_800506E8(*(s8*)(lbl_8034E9A0 + team + 0x46F8), row[2], 0);
+            fn_80067B40(team, row[2], 0);
+            row[2] = -1;
+            row[0x4A] = 0;
+            row[0x26] = 0;
+        }
+        row++;
+    }
+    lbl_2_bss_F468[team + 0x37] = 0;
+    lbl_2_bss_F468[team + 0x43] = 1;
+    fn_800625A4(team, 0x19);
+}
+#endif
