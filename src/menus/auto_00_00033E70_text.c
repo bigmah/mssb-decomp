@@ -1525,7 +1525,8 @@ void fn_2_36750(u8* a, u8* b) {
 }
 
 typedef struct Fn37460Data {
-    u8 pad0[4];
+    u8 skipped;
+    u8 pad1[3];
     s32 size;
     void* alt;
     void* buf;
@@ -1534,6 +1535,7 @@ typedef struct Fn37460Data {
 
 extern Fn37460Data lbl_2_bss_15A0;
 extern u8 lbl_2_data_12180[];
+extern u8 lbl_2_data_12170[];
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memset(void*, int, u32);
 extern void fn_80009018(void*);
@@ -2178,5 +2180,112 @@ void fn_2_397AC(void) {
         }
         break;
     }
+    }
+}
+
+// Subtitle cue: shown from frame `start` until frame `end`.
+typedef struct MovieCue {
+    s32 start;
+    s32 end;
+    s32 text;
+} MovieCue;
+
+extern MovieCue lbl_2_data_34E0[2][8];
+extern void fn_800AD830(void*);
+extern s32 fn_800AED24(void);
+
+#define MOVIE_FRAME (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976B0))
+#define MOVIE_TICK (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976B4))
+#define MOVIE_CUE (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976B8))
+#define MOVIE_CUE_ON (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976BC))
+
+// fn_2_37630, size:0x3A0
+void fn_2_37630(void) {
+    Fn37460Data* d = &lbl_2_bss_15A0;
+    u8* o = lbl_803CC1B8;
+    void* p;
+    s32 sz;
+    switch ((s8)o[0x28]) {
+    case 0:
+        MOVIE_FRAME = 0;
+        MOVIE_TICK = 0;
+        MOVIE_CUE = 0;
+        MOVIE_CUE_ON = 0;
+        fn_2_4E824();
+        p = _OSAllocFromHeap(0x20, 0x1C0);
+        d->heap = p;
+        memset(p, 0, 0x1C0);
+        d->size = 0x400000;
+        p = _OSAllocFromHeap(0x20, 0x400000);
+        d->alt = p;
+        fn_800ADC40(p, d->size);
+        o[0x28]++;
+        return;
+    case 1:
+        if (fn_800ADB04(lbl_2_data_12170, d->heap, 1, 0) != 0) {
+            fn_80009018(d->heap);
+            o[0x28]++;
+        }
+        break;
+    case 2:
+        if (fn_800ADAFC() != 0) {
+            sz = fn_800AD6BC(d->heap);
+            p = _OSAllocFromHeap(0x20, sz);
+            d->buf = p;
+            fn_800AD500(d->heap, p);
+            fn_800AD95C(d->heap, 1);
+            o[0x28]++;
+            return;
+        }
+        break;
+    case 3: {
+        u8* e = (u8*)&lbl_803C77B8;
+        e += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+        if (*(u16*)(e + 2) & 0x1000) {
+            d->skipped = 1;
+            fn_800AD830(d->heap);
+            o[0x28]++;
+            return;
+        }
+        MOVIE_TICK++;
+        fn_800AD070();
+        if (fn_800AED24() == 1) {
+            s32 sel;
+            MOVIE_FRAME++;
+            sel = lbl_2_bss_1A8248[0][0x441C] == 5;
+            if (MOVIE_FRAME == lbl_2_data_34E0[sel][MOVIE_CUE].start && MOVIE_CUE_ON == 0 &&
+                lbl_2_data_34E0[sel][MOVIE_CUE].start != -1) {
+                *(s16*)(lbl_2_bss_1A824C[0] + 0x19774C) = lbl_2_data_34E0[sel][MOVIE_CUE].text;
+                MOVIE_CUE_ON = 1;
+                lbl_2_bss_1A8234[0][0x160000 + 0x264E] = 1;
+            } else if (MOVIE_FRAME == lbl_2_data_34E0[sel][MOVIE_CUE].end && MOVIE_CUE_ON == 1 &&
+                       lbl_2_data_34E0[sel][MOVIE_CUE].start != -1) {
+                lbl_2_bss_1A8234[0][0x160000 + 0x2838] = 1;
+                MOVIE_CUE++;
+                MOVIE_CUE_ON = 0;
+            }
+        }
+        if (fn_800AD780(d->heap) != 0) {
+            o[0x28]++;
+            return;
+        }
+        break;
+    }
+    case 4:
+        if (fn_800AD780(d->heap) != 0) {
+            fn_80009018(0);
+            fn_800AD9F4(d->heap);
+            fn_800ADBFC();
+            o[0x28]++;
+            return;
+        }
+        break;
+    case 5:
+        fn_2_4E7EC();
+        p = *(u8**)(lbl_803CC1B8 + 0xC);
+        *(s16*)((u8*)p + 0x10) = 1;
+        fn_800B0A14_removeQueue(p);
+        o[0x28] = 0;
+        return;
     }
 }
