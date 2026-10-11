@@ -135,7 +135,7 @@ BOOL fn_800AF9B4(void* dst, u32 len);
 void fn_800AFBF0(void);
 void fn_800AFC10(void);
 BOOL fn_800AFD4C(void);
-u8 fn_800AFFB0(void);
+BOOL fn_800AFFB0(void);
 void fn_800AFFC0(u32 count);
 BOOL fn_800B0008(u32 len);
 BOOL fn_800B0134(u32 len);

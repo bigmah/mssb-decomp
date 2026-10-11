@@ -874,12 +874,12 @@ s32 fn_800AF5FC(MovPlayer* mov, s32 format, u32 frame) {
 // .text:0x800AF9B4 size:0x23C
 // Reads len bytes from the movie stream (DVD ring or ARAM-backed MRAM ring).
 BOOL fn_800AF9B4(void* dst, u32 len) {
+    u32 count; // bytes before the wrap, then whole 32-byte blocks consumed
     u8* src;
     u8* wrap;
     u8* read;
     u8* write;
-    u32 first;
-    u32 blocks;
+    u32 off;
     s32 room;
     s32 left;
     BOOL intr;
@@ -901,30 +901,31 @@ BOOL fn_800AF9B4(void* dst, u32 len) {
         }
     }
     intr = OSDisableInterrupts();
+    off = lbl_803CC1A0 & 0x1F;
     read = *lbl_803CBAE8[lbl_803CC181];
     write = *lbl_803CBAF0[lbl_803CC181];
     if (read < write) {
-        src = read + (lbl_803CC1A0 & 0x1F);
+        src = read + off;
         wrap = NULL;
-        first = write - src;
+        count = write - src;
     } else {
-        src = read + (lbl_803CC1A0 & 0x1F);
+        src = read + off;
         wrap = lbl_803CC174;
-        first = lbl_803CC174 + lbl_803CC178 - src;
+        count = lbl_803CC174 + lbl_803CC178 - src;
     }
     OSRestoreInterrupts(intr);
-    if (len < first) {
+    if (len < count) {
         memcpy(dst, src, len);
     } else {
-        memcpy(dst, src, first);
-        memcpy((u8*)dst + first, wrap, len - first);
+        memcpy(dst, src, count);
+        memcpy((u8*)dst + count, wrap, len - count);
     }
-    blocks = ((lbl_803CC1A0 + len) & ~0x1F) - (lbl_803CC1A0 & ~0x1F);
-    if (blocks != 0) {
+    count = ((lbl_803CC1A0 + len) & ~0x1F) - (lbl_803CC1A0 & ~0x1F);
+    if (count != 0) {
         if (lbl_803CC181) {
-            fn_800AFFC0(blocks);
+            fn_800AFFC0(count);
         } else {
-            fn_800A6D10(blocks);
+            fn_800A6D10(count);
         }
         if (lbl_803CC181) {
             room = lbl_803C7A00.size - lbl_803C7A00.filled;
@@ -937,7 +938,7 @@ BOOL fn_800AF9B4(void* dst, u32 len) {
                 }
             }
             if (lbl_803C79D4.totalIn < lbl_803CC1AC) {
-                fn_800B0134(blocks);
+                fn_800B0134(count);
             }
         }
     }
@@ -1064,7 +1065,7 @@ BOOL fn_800AFD4C(void) {
 }
 
 // fn_800AFFB0, size:0x10
-u8 fn_800AFFB0(void) {
+BOOL fn_800AFFB0(void) {
     return lbl_803C79D4.full;
 }
 
