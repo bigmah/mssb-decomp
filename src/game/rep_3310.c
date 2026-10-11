@@ -727,9 +727,17 @@ void fn_3_119E30(s32 i) {
 #endif
 
 // .text:0x00119EE0 size:0x8C mapped:0x80758F74
-void fn_3_119EE0(void) {
-    return;
+// NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
+#if NONMATCHING
+extern u8 lbl_3_data_22638[];
+void fn_3_119EE0(s32 i) {
+    u8* g = g_Minigame + i * 0x34;
+    TextureData* td = lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData;
+    td->texturePalette->tex[0].texIndex = lbl_3_data_22638[g[0x891]] * 3;
+    td->texturePalette->tex[1].texIndex = lbl_3_data_22638[g[0x891]] * 3 + 1;
+    td->texturePalette->tex[2].texIndex = lbl_3_data_22638[g[0x891]] * 3 + 2;
 }
+#endif
 
 // .text:0x00119F6C size:0x2A0 mapped:0x80759000
 // 95%: saved-reg assignment off (lbl_8036E548/g_Minigame bases come out r30/r29 instead of r29/r30), original copies k=off and g=gm with mr, loop increment order differs
