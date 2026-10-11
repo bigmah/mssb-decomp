@@ -41,8 +41,28 @@ void fn_3_11D3AC(void) {
 }
 
 // .text:0x0011D6A0 size:0xE0 mapped:0x8075C734
-void fn_3_11D6A0(void) {
-    return;
+// Loads the result-screen assets; returns 1 once done.
+s32 fn_3_11D6A0(void) {
+    switch (lbl_3_common_bss_32724.loadState) {
+    case 0:
+        lbl_8036E548.file = (u32*)ARAMTransfer(lbl_3_data_225F0 + 0x10, 0, 0, 0); // TODO type
+        lbl_3_common_bss_32724.loadState++;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            lbl_3_common_bss_32724.loadState++;
+        }
+        break;
+    case 2:
+        if (g_d_GameSettings.GameModeSelected != 6) {
+            fn_3_11D3AC();
+        }
+        lbl_3_common_bss_32724.loadState++;
+        break;
+    default:
+        return 1;
+    }
+    return 0;
 }
 
 // .text:0x0011D780 size:0x34C mapped:0x8075C814
