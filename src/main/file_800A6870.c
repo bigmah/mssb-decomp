@@ -415,9 +415,26 @@ void fn_800A7670(s32 result, DVDCommandBlock* block) {
 }
 
 // .text:0x800A76BC size:0xE4
+// NONMATCHING 85%: original keeps &lbl_802EAF80 in r31 across DVDInit; we rematerialize it (same calls/stores)
+#if NONMATCHING
 void fn_800A76BC(void) {
-    return;
+    DvdSysWork* work = &lbl_802EAF80;
+
+    DVDInit();
+    SET_STATE_IDLE(DVDSYS_STATE_NONE, 1);
+    gDataDecompressorValues._35C = NULL;
+    lbl_803C6CF8.tempBuf = NULL;
+    lbl_803C6CF8.fileInfo = &work->fileInfo;
+    lbl_803C6CF8.driveStatusCallbacks = lbl_8010F420;
+    OSCreateThread(&lbl_803C6CF8.monitorThread, fn_800A6900, NULL, work->stacks[1] + sizeof(work->stacks[1]),
+                   sizeof(work->stacks[1]), 14, 1);
+    OSResumeThread(&lbl_803C6CF8.monitorThread);
+    OSCreateThread(&lbl_803C6CF8.readThread, fn_800A77A0, NULL, work->stacks[0] + sizeof(work->stacks[0]),
+                   sizeof(work->stacks[0]), 8, 1);
+    OSResumeThread(&lbl_803C6CF8.readThread);
+    lbl_803C6CF8.retryEnabled = FALSE;
 }
+#endif
 
 // .text:0x800A77A0 size:0x2E0
 void* fn_800A77A0(void* arg) {
