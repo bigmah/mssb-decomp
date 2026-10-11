@@ -6,6 +6,11 @@ extern void fn_800625A4(u8, s32);
 
 extern u8 lbl_803297E0[];
 extern u8 lbl_803CB748[];
+extern u8 lbl_2_bss_3A0[];
+extern u8 lbl_803CBD24[];
+extern void fn_8004D0F0(void);
+extern s32 fn_8004CA6C(u16 buttons);
+extern void fn_8004CC2C(void);
 extern MenuCharEntry lbl_800E8558[54];
 extern void fn_2_2FC0(u8, s32, s32);
 
@@ -1102,6 +1107,48 @@ void fn_2_CCE0(u8 team) {
         ((s32*)lbl_2_bss_F468)[team + 2] = ((s32*)lbl_2_bss_F468)[team];
         ((s32*)lbl_2_bss_F468)[team] = (s8)(lbl_803C6724 + team * 9)[i + 0x14];
         fn_800625A4(team, 0xE);
+    }
+}
+#endif
+
+// NONMATCHING 98%: case 4 store scheduling (lbl_2_bss_3A0 address via addi in the original)
+#if NONMATCHING
+// fn_2_323C, size:0x180
+void fn_2_323C(void) {
+    switch (lbl_2_bss_3A0[0]) {
+    case 0:
+        fn_800B0A5C_insertQueue(fn_8004D0F0, 0x3000);
+        lbl_2_bss_3A0[0]++;
+        break;
+    case 1:
+        switch (fn_8004CA6C(*(u16*)(lbl_8034E9A0 + lbl_803CBD24[4] * 6 + 0x472E))) {
+        case 0:
+            break;
+        case 1:
+            fn_8004CC2C();
+            break;
+        case 3:
+            fn_2_2FC0(0xA, 1, 1);
+            lbl_803CBD24[4] = 0;
+            fn_800625A4(0, 0x13);
+            fn_800625A4(1, 0x13);
+            changeScene(0xF, 6);
+            lbl_2_bss_3A0[0] = 0;
+            lbl_2_bss_F468[0x2E] = 0;
+            lbl_2_bss_100B4 = 1;
+            *(s16*)(lbl_803CBBCC[0] + 4) = 8;
+            break;
+        case 2:
+            fn_8004CC2C();
+            break;
+        case 4:
+            lbl_2_bss_3A0[0] = 0;
+            lbl_803CBD24[4] = 0;
+            lbl_803297E0[0xCF5F] = 0;
+            *(s16*)(lbl_803CBBCC[0] + 4) = 2;
+            break;
+        }
+        break;
     }
 }
 #endif
