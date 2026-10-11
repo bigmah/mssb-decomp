@@ -154,7 +154,7 @@ extern Vec lbl_3_bss_A820[];
 extern u8 g_FieldingLogic[];
 extern u8 g_GameLogic[];
 extern u8 g_d_GameSettings[];
-extern void fn_80025EEC(s32, s32, s32);
+extern void fn_80025EEC(void* player, s32 a, s32 anim);
 extern void fn_3_65A8(void);
 extern void fn_3_27648(void);
 extern s32 fn_3_8BBC4(s32, f32*, f32*, s32);
@@ -198,7 +198,7 @@ extern const f64 lbl_3_rodata_2738;
 extern const f64 lbl_3_rodata_2740;
 extern const f64 lbl_3_rodata_2748;
 extern void fn_800B4CA0(void*, f32);
-extern void fn_80025EEC(s32, s32, s32);
+extern void fn_80025EEC(void* player, s32 a, s32 anim);
 
 static inline void CC1D4_inl(void) {
     Mtx m;
@@ -239,18 +239,18 @@ static inline void CC1D4_inl(void) {
 void fn_3_CB8A8(u8* p) {
     switch (p[0xCA]) {
     case 0:
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 2);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 2);
         CC1D4_inl();
         break;
     case 3:
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 4);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 4);
         break;
     case 1:
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 3);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 3);
         break;
     case 2:
     default:
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 1);
         break;
     }
 }
@@ -296,18 +296,18 @@ void fn_3_CBAFC(u8* p) {
 static inline void CB8A8_inl(u8* p) {
     switch (p[0xCA]) {
     case 0:
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 2);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 2);
         CC1D4_inl();
         break;
     case 3:
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 4);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 4);
         break;
     case 1:
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 3);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 3);
         break;
     case 2:
     default:
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 1);
         break;
     }
 }
@@ -521,7 +521,7 @@ static inline void CC438_inl(void) {
 // .text:0x000CC5C4 size:0x258 mapped:0x8070B658
 void fn_3_CC5C4(u8* p) {
     p[0xCA] = g_Minigame[0x1B19];
-    fn_80025EEC(*(s32*)(p + 0x8C), 0, 2);
+    fn_80025EEC(*(void**)(p + 0x8C), 0, 2);
     p[0xCB] = p[0xCA];
     ((BF90_c2*)p)->f = 1;
     p[0] = 0;
@@ -542,7 +542,7 @@ void fn_3_CC5C4(u8* p) {
 #pragma dont_inline off
 static inline void CC5C4_inl(u8* p) {
     p[0xCA] = g_Minigame[0x1B19];
-    fn_80025EEC(*(s32*)(p + 0x8C), 0, 2);
+    fn_80025EEC(*(void**)(p + 0x8C), 0, 2);
     p[0xCB] = p[0xCA];
     ((BF90_c2*)p)->f = 1;
     p[0] = 0;
@@ -1133,7 +1133,7 @@ void fn_3_CF72C(s32 idx) {
             fn_3_CF278(p, &b);
         }
         *(u8**)(p + 0x8C) = lbl_3_bss_A034 + p[0x9C] * 0x5C;
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 0);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 0);
         (*(S5C**)(p + 0x8C))->a = 1;
         (*(S5C**)(p + 0x8C))->b = -1;
         stad = g_d_GameSettings[9];
@@ -1887,7 +1887,7 @@ void fn_3_D1848(u8* arg) {
 }
 
 // .text:0x000D196C size:0x158 mapped:0x80710A00
-typedef struct { u8 pad0[0x8C]; s32 f8C; u8 pad1[0x99-0x90]; u8 f99; u8 pad2[0xB0-0x9A]; f32 fB0; u8 pad3[0xCA-0xB4]; u8 fCA, fCB, fCC; } E_D196C;
+typedef struct { u8 pad0[0x8C]; void* f8C; u8 pad1[0x99-0x90]; u8 f99; u8 pad2[0xB0-0x9A]; f32 fB0; u8 pad3[0xCA-0xB4]; u8 fCA, fCB, fCC; } E_D196C;
 void fn_3_D196C(s32 idx) {
     E_D196C* e = (E_D196C*)(*(u8**)lbl_3_common_bss_350E4 + idx * 0xE8);
     Vec v;
@@ -2396,7 +2396,7 @@ void fn_3_D2A0C(u8* p) {
             ang *= lbl_3_rodata_2678;
         }
         *(f32*)(p + 0xC0) = ang;
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 1);
     }
 }
 #endif
@@ -2476,7 +2476,7 @@ void fn_3_D30D0(u8* p) {
         } else if (PSVECMag(&d) > lbl_3_rodata_2840) {
             p[0xCA] = 1;
             *(f32*)(p + 0xB0) = lbl_3_rodata_2664;
-            fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+            fn_80025EEC(*(void**)(p + 0x8C), 0, 1);
         }
         memcpy(&w, p + 0xA0, sizeof(Vec));
         w.y = w.y * lbl_3_rodata_2678;
@@ -2542,7 +2542,7 @@ void fn_3_D36B0(u8* p) {
         if (!(p[0x99] & 4)) {
             p[0xCB] = p[0xCA];
             p[0xCA] = 1;
-            fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+            fn_80025EEC(*(void**)(p + 0x8C), 0, 1);
         }
         p[0x99] = p[0x99] & 0xFB;
         fn_8004C094(p + 0xA0);
@@ -2624,7 +2624,7 @@ void fn_3_D3880(u8* p) {
                     p[0xCA] = 3;
                     *(f32*)(p + 0xB0) = lbl_3_rodata_2828;
                 }
-                fn_80025EEC(*(s32*)(p + 0x8C), 0, 4);
+                fn_80025EEC(*(void**)(p + 0x8C), 0, 4);
                 // s1/s2 are passed uninitialised, as in the original.
                 fn_3_8BBC4(((u16*)lbl_3_data_81DC)[g_d_GameSettings[9]] + 4, (f32*)&s1, (f32*)&s2, 0xC);
             }
@@ -2682,7 +2682,7 @@ void fn_3_D3CDC(u8* p) {
                         p[0xCB] = p[0xCA];
                         p[0xCA] = 2;
                         *(f32*)(p + 0xB0) = lbl_3_rodata_26A0;
-                        fn_80025EEC(*(s32*)(p + 0x8C), 0, 3);
+                        fn_80025EEC(*(void**)(p + 0x8C), 0, 3);
                     }
                     break;
                 }
@@ -2722,7 +2722,7 @@ void fn_3_D3F54(u8* p) {
     if (g_GameLogic[0x11E] == 0) {
         if (p[0xCA] != 0) {
             p[0xCA] = 1;
-            fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+            fn_80025EEC(*(void**)(p + 0x8C), 0, 1);
         }
         fn_3_D4CA4(p);
         *(s16*)(p + 0xC8) = 1;
@@ -2849,10 +2849,10 @@ void fn_3_D4E00(u8* p) {
     p[0xCA] = rand() % 10;
     if (p[0xCA] < 3) {
         p[0xCA] = 0;
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 2);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 2);
     } else {
         p[0xCA] = 1;
-        fn_80025EEC(*(s32*)(p + 0x8C), 0, 1);
+        fn_80025EEC(*(void**)(p + 0x8C), 0, 1);
     }
     p[0xCB] = p[0xCA];
     ((BF90_c2*)p)->f = 1;
