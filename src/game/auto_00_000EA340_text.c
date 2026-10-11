@@ -110,6 +110,7 @@ typedef struct EaTask {
     /*0x1E*/ u16 _1E;
     /*0x20*/ u16 _20;
     /*0x22*/ u16 _22;
+    /*0x24*/ u8 pending[4];
 } EaTask;
 
 // g_Minigame (MiniGameStruct in game/UnknownHomes_Game.h), only the fields used here.
@@ -118,7 +119,7 @@ typedef struct EaMinigame {
     /*0x1890*/ s16 points[4]; // miniGameCurrentPoints
     /*0x1898*/ u8 _1898[0x18BC - 0x1898];
     /*0x18BC*/ struct {
-        s16 _0;
+        s16 shown; // displayed score, counts towards points[]
         s16 delta;
     } _18BC[4];
     /*0x18CC*/ s8 characterIndex[4]; // minigameControlStruct[0]
@@ -135,15 +136,21 @@ typedef struct EaMinigame {
     /*0x190C*/ u8 turn;
     /*0x190D*/ u8 _190D[0x1921 - 0x190D];
     /*0x1921*/ u8 _1921;
-    /*0x1922*/ u8 _1922[0x19A0 - 0x1922];
-    /*0x19A0*/ u8 _19A0;
-    /*0x19A1*/ u8 _19A1[0x19CD - 0x19A1];
+    /*0x1922*/ u8 _1922[0x1939 - 0x1922];
+    /*0x1939*/ u8 _1939;
+    /*0x193A*/ u8 _193A[0x19A0 - 0x193A];
+    /*0x19A0*/ u8 _19A0; // a score is still counting
+    /*0x19A1*/ u8 _19A1[0x19C6 - 0x19A1];
+    /*0x19C6*/ s8 _19C6;
+    /*0x19C7*/ u8 _19C7[0x19CD - 0x19C7];
     /*0x19CD*/ u8 _19CD;
     /*0x19CE*/ u8 _19CE[0x1A2A - 0x19CE];
     /*0x1A2A*/ u8 game;  // indexes the per-game tables
     /*0x1A2B*/ u8 _1A2B;
     /*0x1A2C*/ u8 _1A2C[0x1A3C - 0x1A2C];
     /*0x1A3C*/ u8 _1A3C;
+    /*0x1A3D*/ u8 _1A3D[0x1DF4 - 0x1A3D];
+    /*0x1DF4*/ u8 marks[4];
 } EaMinigame;
 
 #define EA_MG (*(EaMinigame*)g_Minigame)
@@ -501,6 +508,176 @@ void fn_3_EA8FC(void) {
             }
         }
         break;
+    }
+}
+#endif
+
+extern u8 lbl_3_data_1A168[];
+extern u8 lbl_800EFBA4[];
+extern u16 lbl_3_data_1A728[];
+extern u8 fn_3_107CD0(void);
+extern s32 fn_3_107C88(void);
+
+// .text:0x000EAEF4 size:0x790 mapped:0x80729F88
+// NONMATCHING 90%: loop induction/register allocation; leader index kept as a byte offset in the original
+#if NONMATCHING
+void fn_3_EAEF4(void) {
+    EaTask* task = EA_TASK;
+    u32 sound = 0;
+    u32 i;
+    s32 d;
+    s32 step;
+    u32 v;
+    u8 leader;
+    s32 tied;
+    s8 chara;
+
+    if (fn_3_EB684()) {
+        lbl_3_common_bss_32724[0xD6] = 0;
+        fn_800B0A14_removeQueue(fn_80034CEC(task));
+        return;
+    }
+    switch (task->state) {
+    case 0:
+        i = 0;
+        do {
+            EA_MG.marks[i] = 0;
+            i++;
+        } while (i < 4);
+        lbl_3_common_bss_32724[0xD6] = 1;
+        lbl_3_common_bss_32724[0xB7] = 0;
+        fn_80034E20(task, lbl_3_data_1A168);
+        i = 0;
+        do {
+            chara = EA_MG.characterIndex[i];
+            fn_800363D8(task, i + 9, 1, 0x65, chara);
+            EA_SPRITE(task, i + 0x11)->frame = EA_CHAR_ID(chara) << 16;
+            i++;
+        } while (i < EA_MG.numPlayers);
+        i = 0;
+        do {
+            EA_SPRITE(task, i + 0x29)->flags &= ~2;
+            i++;
+        } while (i < 4);
+        task->state = 1;
+        break;
+    case 1:
+        EA_MG._19A0 = 0;
+        i = 0;
+        do {
+            d = EA_MG.points[i] - EA_MG._18BC[i].shown;
+            if (d < 0) {
+                EA_MG._19A0 = 1;
+                if ((EA_SPRITE(task, 0)->frame >> 16) >= 10) {
+                    step = d / 8;
+                    if (step != 0) {
+                        EA_MG._18BC[i].shown += step;
+                    } else {
+                        EA_MG._18BC[i].shown += d / (d < 0 ? -d : d);
+                    }
+                }
+                sound = 1;
+            }
+            i++;
+        } while (i < EA_MG.numPlayers);
+        if (EA_MG._19A0 == 0) {
+            i = 0;
+            do {
+                if (EA_MG.points[i] != EA_MG._18BC[i].shown) {
+                    EA_MG._19A0 = 1;
+                    task->state = 2;
+                }
+                i++;
+            } while (i < EA_MG.numPlayers);
+        }
+        break;
+    case 2:
+        EA_MG._19A0 = 0;
+        i = 0;
+        do {
+            d = EA_MG.points[i] - EA_MG._18BC[i].shown;
+            if (d > 0) {
+                EA_MG._19A0 = 1;
+                EA_TASK->pending[i] = 1;
+                if ((EA_SPRITE(task, 0)->frame >> 16) >= 10) {
+                    step = d / 8;
+                    if (step != 0) {
+                        EA_MG._18BC[i].shown += step;
+                    } else {
+                        EA_MG._18BC[i].shown += d / (d < 0 ? -d : d);
+                    }
+                }
+                sound = 1;
+            } else if (d == 0) {
+                if (EA_TASK->pending[i] != 0) {
+                    EA_TASK->pending[i] = 0;
+                    EA_SPRITE(task, i + 0x19)->frame = 0;
+                    EA_SPRITE(task, i + 0x19)->visible = 1;
+                    EA_SPRITE(task, i * 3 + 0x1D)->frame = 0;
+                    EA_SPRITE(task, i * 3 + 0x1E)->frame = 0;
+                    EA_SPRITE(task, i * 3 + 0x1F)->frame = 0;
+                }
+            }
+            i++;
+        } while (i < EA_MG.numPlayers);
+        if (EA_MG._19A0 == 0) {
+            i = 0;
+            do {
+                if (EA_MG.points[i] != EA_MG._18BC[i].shown) {
+                    EA_MG._19A0 = 1;
+                }
+                i++;
+            } while (i < EA_MG.numPlayers);
+            task->state = 1;
+        }
+        break;
+    }
+    if (g_UnkSound_32718[7] == 5) {
+        task->_22 = 1;
+    }
+    EA_SPRITE(task, 0)->anim = lbl_3_data_1A728[EA_MG._19C6];
+    if (task->_22 != 0) {
+        EA_SPRITE(task, 0)->visible = 1;
+    } else {
+        fn_3_125424(task, 0, 10);
+    }
+    leader = fn_3_107CD0();
+    tied = fn_3_107C88();
+    i = 0;
+    do {
+        v = EA_MG._18BC[i].shown;
+        if (v > 999) {
+            v = 999;
+        }
+        fn_800363D8(task, i * 3 + 0x1D, 1, 0x66, (v % 1000) / 100);
+        fn_800363D8(task, i * 3 + 0x1E, 1, 0x66, (v % 100) / 10);
+        fn_800363D8(task, i * 3 + 0x1F, 1, 0x66, v % 10);
+        if (tied == 0 && EA_MG._18BC[i].shown == EA_MG._18BC[leader].shown) {
+            EA_SPRITE(task, i + 0x29)->flags |= 2;
+        } else {
+            EA_SPRITE(task, i + 0x29)->flags &= ~2;
+        }
+        i++;
+    } while (i < EA_MG.numPlayers);
+    i = 0;
+    do {
+        if (EA_MG.marks[i] != 0) {
+            switch (EA_MG.marks[i]) {
+            case 1:
+                EA_SPRITE(task, i + 0xD)->anim = 0x60;
+                break;
+            case 2:
+                EA_SPRITE(task, i + 0xD)->anim = 0x61;
+                break;
+            }
+            EA_SPRITE(task, i + 0xD)->frame = 0;
+            EA_SPRITE(task, i + 0xD)->visible = 1;
+            EA_MG.marks[i] = 0;
+        }
+        i++;
+    } while (i < EA_MG.numPlayers);
+    if (sound != 0 && EA_MG._1939 == 0) {
+        sndFXStartEx(0x1C0, lbl_800EFBA4[9], 0x3F, 0);
     }
 }
 #endif
