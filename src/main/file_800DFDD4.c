@@ -1074,9 +1074,26 @@ void fn_800E2C18(u8* dst, s32 dstStride, u8* src, s32 srcStride, s32 halfX, s32 
 #endif
 
 // .text:0x800E32E8 size:0xC4
+// NONMATCHING 91%: register allocation
+#if NONMATCHING
 void fn_800E32E8(HVQState* state, HVQMCPlane* mc, s32 mvX, s32 mvY) {
-    return;
+    HVQPlaneDesc* plane = state->planes;
+    s32 i;
+
+    for (i = 0; i < 3; i++, plane++, mc++) {
+        s32* pixelOffs = plane->pixelOffs;
+        s32 k;
+        u8 blocksPerMB = plane->blocksPerMB;
+        u8* ref = mc->ref + (mvX >> (plane->widthShift + 1)) + (mvY >> (plane->heightShift + 1)) * plane->widthInSamples;
+
+        for (k = 0; k < blocksPerMB; k++) {
+            s32 off = *pixelOffs++;
+
+            fn_800E2C18(mc->dst + off, plane->widthInSamples, ref + off, plane->widthInSamples, mvX & 1, mvY & 1);
+        }
+    }
 }
+#endif
 
 // .text:0x800E33AC size:0x4B4
 void fn_800E33AC(HVQState* state, HVQMCPlane* mc, s32 flag, s32 proc) {
