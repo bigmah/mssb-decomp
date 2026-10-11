@@ -12,7 +12,59 @@ static inline void updateView(ChallengeDebugCamera* camera) {
 
 // .text:0x00026D28 size:0x5B4
 void fn_1_26D28(ChallengeDebugCamera* camera, u16 held, u16 pressed, u16 repeated, ChallengeDebugPad* pad) {
-    return;
+    Mtx rot;
+    Quaternion q;
+    Vec v;
+
+    if (camera->update == NULL || camera->update == fn_1_26D28) {
+        if (pressed & 0x10) {
+            fn_1_273D8(camera);
+            return;
+        }
+
+        camera->yaw = camera->yaw - (((3.1415927f * camera->turnSpeed) / 180.0f) * (f32)pad->substickX /
+                                     128.0f) / 60.0f;
+        camera->pitch = camera->pitch - (((3.1415927f * camera->turnSpeed) / 180.0f) *
+                                         (f32)pad->substickY / 128.0f) / 60.0f;
+        while (camera->yaw < -3.1415927f) {
+            camera->yaw += 6.2831855f;
+        }
+        while (camera->yaw >= 3.1415927f) {
+            camera->yaw -= 6.2831855f;
+        }
+        if (camera->pitch < -3.1385248f) {
+            camera->pitch = -3.1385248f;
+        } else if (camera->pitch > 3.1385248f) {
+            camera->pitch = 3.1385248f;
+        }
+
+        v.x = 0.0f;
+        v.y = 0.0f;
+        v.z = 1.0f;
+        PSVECCrossProduct(&v, &camera->up, &camera->direction);
+        PSVECNormalize(&camera->direction, &camera->direction);
+        C_QUATRotAxisRad(&q, &camera->direction, camera->pitch);
+        PSMTXQuat(rot, &q);
+        PSMTXMultVec(rot, &v, &camera->direction);
+        C_QUATRotAxisRad(&q, &camera->up, camera->yaw);
+        PSMTXQuat(rot, &q);
+        PSMTXMultVec(rot, &camera->direction, &camera->direction);
+
+        v.x = (-camera->moveSpeed * (f32)pad->stickX / 128.0f) / 60.0f;
+        v.z = (camera->moveSpeed * (f32)pad->stickY / 128.0f) / 60.0f;
+        v.y = ((camera->moveSpeed * (f32)pad->triggerL) / 150.0f) / 60.0f;
+        v.y = v.y - ((camera->moveSpeed * (f32)pad->triggerR) / 150.0f) / 60.0f;
+        PSMTXMultVec(rot, &v, &v);
+        PSVECAdd(&camera->position, &v, &camera->position);
+
+        camera->zoom = camera->zoom + (camera->zoomSpeed * (f32)(s32)((held >> 10) & 1)) / 60.0f;
+        camera->zoom = camera->zoom - (camera->zoomSpeed * (f32)(s32)((held >> 11) & 1)) / 60.0f;
+        camera->zoom = 0.1f * (f32)(0.0f == camera->zoom) +
+                       camera->zoom * (f32)(0.0f != camera->zoom);
+        camera->invZoom = 1.0f / camera->zoom;
+    } else {
+        camera->update(camera, held, pressed, repeated, pad);
+    }
 }
 
 // .text:0x000272DC size:0x54
