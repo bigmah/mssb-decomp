@@ -494,8 +494,8 @@ void fn_800B1188(void) {
 }
 
 // .text:0x800B12A4 size:0x38
-void DrawNullSprite(void) {
-    return;
+void DrawNullSprite(QuadVtx* verts, s32 count) {
+    DrawSprite(GX_TRIANGLESTRIP, verts, count, NULL, 0, 0);
 }
 
 // .text:0x800B12DC size:0x38
