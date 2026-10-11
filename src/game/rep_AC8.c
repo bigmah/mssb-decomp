@@ -2080,9 +2080,50 @@ void fn_3_31A3C(void) {
 }
 
 // .text:0x00031C50 size:0x440 mapped:0x80670CE4
+// NONMATCHING 90%: registers only; the known SetFielderAct table-value/state r0 swap (see docs/patterns/unsolved.md)
+#if NONMATCHING
 void fn_3_31C50(void) {
-    return;
+    int i;
+    if (*(s16*)(g_Pitcher + 0x12E) == 5) {
+        *(s16*)(g_Fielders + 0x18C) = 5;
+        *(s16*)(g_FieldingLogic + 0xD8) = 0;
+        SetFielderAct(0, 0xE, 0x70);
+        *(s16*)(g_Fielders + 1 * 0x268 + 0x18C) = 0;
+        SetFielderAct(1, 0xA, 0x50);
+        *(s16*)(g_FieldingLogic + 0xD0) = 1;
+    } else {
+        SetFielderAct(0, 0xA, 0x50);
+        *(s16*)(g_Fielders + 1 * 0x268 + 0x18C) = 0;
+        SetFielderAct(1, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD0) = 1;
+    }
+    *(s16*)(g_Fielders + 2 * 0x268 + 0x18C) = 1;
+    SetFielderAct(2, 1, 8);
+    *(s16*)(g_FieldingLogic + 0xD2) = 2;
+    *(s16*)(g_Fielders + 4 * 0x268 + 0x18C) = 3;
+    SetFielderAct(4, 1, 8);
+    *(s16*)(g_FieldingLogic + 0xD6) = 4;
+    if ((f32)__abs(*(s16*)(g_Fielders + 3 * 0x268 + 0x182) - 0x400) < (f32)__abs(*(s16*)(g_Fielders + 5 * 0x268 + 0x182) - 0x400)) {
+        *(s16*)(g_Fielders + 3 * 0x268 + 0x18C) = 2;
+        SetFielderAct(3, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD4) = 3;
+        SetFielderAct(5, 0, 0);
+    } else {
+        *(s16*)(g_Fielders + 5 * 0x268 + 0x18C) = 2;
+        SetFielderAct(5, 1, 8);
+        *(s16*)(g_FieldingLogic + 0xD4) = 5;
+        SetFielderAct(3, 0, 0);
+    }
+    for (i = 0; i < 9; i++) {
+        if (*(s16*)(g_Fielders + i * 0x268 + 0x18C) >= 0 && *(s16*)(g_Fielders + i * 0x268 + 0x18C) <= 3) {
+            g_Fielders[i * 0x268 + 0x1D7] = 1;
+        }
+    }
+    fn_3_49F40(6, 5);
+    fn_3_49F40(7, 1);
+    fn_3_49F40(8, 4);
 }
+#endif
 
 // .text:0x00032090 size:0x314 mapped:0x80671124
 void fn_3_32090(void) {
