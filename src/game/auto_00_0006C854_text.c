@@ -33,6 +33,38 @@ void fn_3_6C938(void) {
 }
 
 // .text:0x0006CC30 size:0x158 mapped:0x806ABCC4
-void fn_3_6CC30(void) {
-    return;
+s32 fn_3_6CC30(s32 port, s32 kind, s32 mask) {
+    s32 i;
+
+    if (g_d_GameSettings.minigamesEnabled) {
+        for (i = 0; i < 4; i++) {
+            if (g_Minigame.minigameControlStruct[0].battingHandedness[i] == 0 &&
+                g_Minigame.minigameControlStruct[0].characterIndex[i] == port) {
+                goto check;
+            }
+        }
+        return 0;
+    } else {
+        if (g_d_GameSettings._10 == 0 && port == 1) {
+            return 0;
+        }
+        if (g_d_GameSettings._10 == 3 && port == 0) {
+            return 0;
+        }
+    }
+check:
+    if (kind == 0) {
+        if (mask & g_Controls[port].buttonInput) {
+            return 1;
+        }
+    } else if (kind == 1) {
+        if (mask & g_Controls[port].newButtonInput) {
+            return 1;
+        }
+    } else {
+        if (mask & g_Controls[port]._08) {
+            return 1;
+        }
+    }
+    return 0;
 }
