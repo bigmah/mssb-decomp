@@ -3111,3 +3111,125 @@ void fn_1_1125C(u8* object) {
     GXTexCoord2u16(ch_5F60, 0);
 }
 #endif
+
+// Effect parameters edited by fn_1_FB98 (lbl_1_data_D838 + 0x184C = 0xF084).
+typedef struct {
+    /* 0x00 */ s32 count;
+    /* 0x04 */ s32 alpha;
+    /* 0x08 */ f32 values[4];
+    /* 0x18 */ u8 pad18[4];
+    /* 0x1C */ f32 scale;
+} ChallengeFxParams;
+
+extern u8 lbl_1_data_D838[];
+
+// .text:0xFB98 size:0x4AC
+// NONMATCHING ~90%: the original reaches the parameters through the pooled .data base
+#if NONMATCHING
+void fn_1_FB98(void) {
+    ChallengeFxParams* params = (ChallengeFxParams*)(lbl_1_data_D838 + 0x184C);
+    u8* state = lbl_1_bss_3070;
+    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    s32 step;
+
+    if (buttons & 8) {
+        if (*(s32*)(state + 0xC) != 0) {
+            *(s32*)(state + 0xC) -= 1;
+        } else {
+            *(s32*)(state + 0xC) = 7;
+        }
+    } else if (buttons & 4) {
+        if (++*(s32*)(state + 0xC) == 8) {
+            *(s32*)(state + 0xC) = 0;
+        }
+    } else if (buttons & 1) {
+        if (lbl_803C77B8._00 & 0x400) {
+            step = 10;
+        } else if (lbl_803C77B8._00 & 0x800) {
+            step = 100;
+        } else {
+            step = 1;
+        }
+        switch (*(u32*)(state + 0xC)) {
+        case 0:
+            if (--*(s32*)(state + 0x2C) < 0) {
+                *(s32*)(state + 0x2C) = 13;
+            }
+            break;
+        case 1:
+            params->scale -= 0.1 * step;
+            break;
+        case 2:
+            params->values[0] -= 0.0001 * step;
+            break;
+        case 3:
+            params->values[1] -= 0.0001 * step;
+            break;
+        case 4:
+            params->values[2] -= 0.0001 * step;
+            break;
+        case 5:
+            params->values[3] -= 0.0001 * step;
+            break;
+        case 6:
+            params->count -= step;
+            if (params->count < 1) {
+                params->count = 1;
+            }
+            break;
+        case 7:
+            params->alpha -= step;
+            if (params->alpha < 0) {
+                params->alpha = 0;
+            }
+            break;
+        }
+    } else if (buttons & 2) {
+        if (lbl_803C77B8._00 & 0x400) {
+            step = 10;
+        } else if (lbl_803C77B8._00 & 0x800) {
+            step = 100;
+        } else {
+            step = 1;
+        }
+        switch (*(u32*)(state + 0xC)) {
+        case 0:
+            if (++*(s32*)(state + 0x2C) >= 14) {
+                *(s32*)(state + 0x2C) = 0;
+            }
+            break;
+        case 1:
+            params->scale += 0.1 * step;
+            break;
+        case 2:
+            params->values[0] += 0.0001 * step;
+            break;
+        case 3:
+            params->values[1] += 0.0001 * step;
+            break;
+        case 4:
+            params->values[2] += 0.0001 * step;
+            break;
+        case 5:
+            params->values[3] += 0.0001 * step;
+            break;
+        case 6:
+            params->count += step;
+            break;
+        case 7:
+            params->alpha += step;
+            if (params->alpha > 255) {
+                params->alpha = 255;
+            }
+            break;
+        }
+    } else if (lbl_803C77B8._00 & 0x100) {
+        if (lbl_803C77B8._02 & 0x100) {
+            *(s32*)(state + 0x30) = (*(s32*)(state + 0x30) + 1) % 16;
+        }
+    } else if (buttons & 0x200) {
+        *(s32*)(state + 0xC) = 0;
+        state[0x2F01] = 10;
+    }
+}
+#endif
