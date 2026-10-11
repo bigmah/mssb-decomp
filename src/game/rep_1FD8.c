@@ -128,7 +128,18 @@ extern u8 lbl_3_bss_9E48[];
 extern u8* lbl_3_bss_9E50[];
 extern u8 lbl_80371C30[];
 extern void fn_800528C0(f32, f32, f32, s16*, s16*);
-extern u32 lbl_3_bss_9D90;
+// fn_3_C2244's task (queue node; data starts at 0x14)
+typedef struct C2244Task {
+    /*0x00*/ u8 hdr[0x14];
+    /*0x14*/ f32 pos[3];
+    /*0x20*/ u16 f20[2];
+    /*0x24*/ u8 f24;
+    /*0x25*/ u8 f25[2];
+    /*0x27*/ u8 f27[2];
+    /*0x29*/ u8 f29;
+    /*0x2A*/ u8 f2A;
+} C2244Task;
+extern C2244Task* lbl_3_bss_9D90;
 extern void fn_800A7D4C(int, Rep1FD8Ent*);
 extern u8 lbl_800E8754[];
 extern Vec lbl_80367318;
@@ -156,42 +167,43 @@ void fn_3_C1974(u8* a) {
 }
 
 // .text:0x000C19C8 size:0x250 mapped:0x80700A5C
-// ~19 diff lines: orig keeps (shifted + 0x1FFF) in r27 before the 2nd rand(), and indexes the u16 store as sthx (r29+0x20, not folded into the induction var)
 extern void fn_3_B7FC8(s32, s32);
 extern s16 lbl_3_data_17880[];
+// NONMATCHING 99%: mullw operands swapped (rand() * a; both operand orders give r27,r3)
+#if NONMATCHING
 void fn_3_C19C8(void) {
     s32 i;
     s32 a;
     s32 r;
     s32 t;
-    u8* o;
-    if (lbl_3_bss_9D90 == 0) {
-        lbl_3_bss_9D90 = (u32)fn_800B0A5C_insertQueue(fn_3_C2244, 5);
+    C2244Task* o;
+    if (lbl_3_bss_9D90 == NULL) {
+        lbl_3_bss_9D90 = fn_800B0A5C_insertQueue(fn_3_C2244, 5);
     }
     if (*(s16*)(lbl_803CC1B8 + 0x10) != 0x136) {
         fn_3_B7FC8(lbl_3_data_81DC[g_d_GameSettings.StadiumID] + 6, 8);
     }
-    *(u8*)(lbl_3_bss_9D90 + 0x2A) = 0xFF;
-    *(u8*)(lbl_3_bss_9D90 + 0x29) = 2;
+    lbl_3_bss_9D90->f2A = 0xFF;
+    lbl_3_bss_9D90->f29 = 2;
     r = rand() % 3;
-    *(f32*)(lbl_3_bss_9D90 + 0x14) = lbl_3_data_17880[r * 3];
-    *(f32*)(lbl_3_bss_9D90 + 0x18) = lbl_3_data_17880[r * 3 + 1];
-    *(f32*)(lbl_3_bss_9D90 + 0x1C) = lbl_3_data_17880[r * 3 + 2];
-    *(u8*)(lbl_3_bss_9D90 + 0x24) = 10 - rand() % 20;
+    lbl_3_bss_9D90->pos[0] = lbl_3_data_17880[r * 3];
+    lbl_3_bss_9D90->pos[1] = lbl_3_data_17880[r * 3 + 1];
+    lbl_3_bss_9D90->pos[2] = lbl_3_data_17880[r * 3 + 2];
+    lbl_3_bss_9D90->f24 = 10 - rand() % 20;
     i = 2;
     while (i-- != 0) {
-        a = (0x1FFF - rand() * 0x3FFF / 0x7FFF) >> (1 - i);
-        a += 0x1FFF;
+        a = ((0x1FFF - rand() * 0x3FFF / 0x7FFF) >> (1 - i)) + 0x1FFF;
         t = rand() * a / 0x7FFF;
-        o = (u8*)lbl_3_bss_9D90;
-        *(u16*)&o[i * 2 + 0x20] = t;
-        o = (u8*)lbl_3_bss_9D90;
-        o[0x25 + i] = o[0x24] + 2 - rand() % 2;
+        o = lbl_3_bss_9D90;
+        o->f20[i] = t;
+        o = lbl_3_bss_9D90;
+        o->f25[i] = o->f24 + 2 - rand() % 2;
         t = rand() % 2 + 1;
-        o = (u8*)lbl_3_bss_9D90;
-        o[0x27 + i] = t;
+        o = lbl_3_bss_9D90;
+        o->f27[i] = t;
     }
 }
+#endif
 
 // .text:0x000C1C18 size:0x62C mapped:0x80700CAC
 void fn_3_C1C18(void) {
@@ -202,7 +214,7 @@ void fn_3_C1C18(void) {
 void fn_3_C2244(void) {
     u8* p = lbl_803CC1B8;
     if (*(s32*)&lbl_3_bss_9D9C != 0) {
-        lbl_3_bss_9D90 = 0;
+        lbl_3_bss_9D90 = NULL;
         ((void (*)(void))fn_800B0A14_removeQueue)();
         return;
     }
