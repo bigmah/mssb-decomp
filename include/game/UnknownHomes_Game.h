@@ -2020,15 +2020,10 @@ typedef struct _MiniGameStruct {
     /*0x1924*/ u8 runnerNum;
     /*0x1925*/ u8 _1925;
     /*0x1926*/ u8 toyFieldStateInd_collisionRelated;
-    /*0x1927*/ u8 _1927;
-    /*0x1928*/ s16 _1928;
-    /*0x192A*/ u8 _192A;
-    /*0x192B*/ u8 _192B;
-    /*0x192C*/ u8 _192C;
-    /*0x192D*/ u8 _192D;
-    /*0x192E*/ u8 _192E;
-    /*0x192F*/ u8 _192F;
-    /*0x1930*/ u8 _1930;
+    /*0x1927*/ u8 reelStop[3];
+    /*0x192A*/ u8 reelStart[3];
+    /*0x192D*/ u8 _192D; // slot result
+    /*0x192E*/ u8 reelSymbol[3];
     /*0x1931*/ u8 _1931;
     /*0x1932*/ s16 _1932;
     /*0x1934*/ u8 _1934;

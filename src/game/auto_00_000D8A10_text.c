@@ -3,6 +3,7 @@
 #include "static/UnknownHomes_Static.h"
 #include "game/rep_1838.h"
 #include "musyx/musyx.h"
+#include <stdlib.h>
 #include "game/auto_00_000DEB90_text.h"
 
 extern u8 lbl_800EF808[];          // TODO type: options block (0x398: sound/rumble setting)
@@ -11,6 +12,8 @@ extern MinigameStadiumSound lbl_3_data_8404[]; // per stadium; accessed one row 
 extern MinigameStadiumSound lbl_3_data_84B8[]; // GameModeSelected 6
 extern MinigamePointsAward lbl_3_data_18BB8[];
 extern s16 lbl_3_data_18C48[];
+extern s16 lbl_3_data_189AC[];             // [10] near-miss chance, [11] jackpot chance (percent)
+extern MinigameSlotData lbl_3_data_189C4;
 
 // .text:0x000D8A10 size:0x2C0 mapped:0x80717AA4
 void fn_3_D8A10(void) {
@@ -128,7 +131,107 @@ void fn_3_D9868(void) {
 }
 #endif
 
+// NONMATCHING 92%: the original reaches lbl_3_data_189AC/189C4 through one pooled base (lbl_3_data_188E8), which
+// shifts register allocation
 // .text:0x000D9A30 size:0x470 mapped:0x80718AC4
+#if NONMATCHING
 void fn_3_D9A30(void) {
-    return;
+    s32 progress;
+    s32 standing;
+    s32 nearMiss;
+    s32 third;
+    s32 flags;
+    s32 i;
+    s32 r;
+    s32 k;
+    s16 myPoints;
+
+    progress = 0;
+    standing = 1;
+    nearMiss = 0;
+    third = g_Minigame.toyField_selectedTurns / 3;
+    if (third * 2 > g_Minigame.toyField_turnNumber) {
+        progress = 2;
+    } else if (third > g_Minigame.toyField_turnNumber) {
+        progress = 1;
+    }
+
+    // Is the batter behind (bit 0) and/or ahead of (bit 4) anyone?
+    flags = 0;
+    myPoints = g_Minigame.miniGameCurrentPoints[g_Minigame.rosterID];
+    for (i = 0; i < g_Minigame.miniGameNumberOfParticipants; i++) {
+        if (i != g_Minigame.rosterID) {
+            if (myPoints < g_Minigame.miniGameCurrentPoints[i]) {
+                flags |= 1;
+            }
+            if (myPoints > g_Minigame.miniGameCurrentPoints[i]) {
+                flags |= 0x10;
+            }
+        }
+    }
+    if (!(flags & 1)) {
+        standing = 0;
+    } else if (!(flags & 0x10)) {
+        standing = 2;
+    }
+
+    g_Minigame._192D = RandomIndexFromWeights(
+        lbl_3_data_189C4.weights[g_Minigame.miniGameNumberOfParticipants - 2][progress][standing], 8);
+    if (g_d_GameSettings.exhibitionMatchInd == FALSE && g_Minigame.rosterID == lbl_3_common_bss_37400.humanPlayer) {
+        fn_3_1608F0(7, 0);
+    }
+    if (g_Minigame._192D == 7) {
+        if (g_Minigame._1915 == 0 && g_Minigame._1916 == 0 && g_Minigame._1917 == 0) {
+            g_Minigame._192D = 8;
+        } else if (rand() % 100 < lbl_3_data_189AC[11]) {
+            g_Minigame._192D = 8;
+        }
+        if (g_Minigame._192D == 8 && rand() % 99 < lbl_3_data_189AC[10]) {
+            nearMiss = 1;
+        }
+    }
+
+    for (r = 0; r < 3; r++) {
+        g_Minigame.reelStart[r] = random_fn_3_9EE24(7);
+        g_Minigame.reelStop[r] = 0;
+        if (g_Minigame._192D == 8) {
+            if (nearMiss != 0) {
+                // Two matching symbols, the third one off by one.
+                if (r == 0) {
+                    g_Minigame.reelSymbol[0] = lbl_3_data_189C4.reels[r][random_fn_3_9EE24(7)];
+                } else if (r == 1) {
+                    g_Minigame.reelSymbol[1] = g_Minigame.reelSymbol[0];
+                } else {
+                    for (k = 0; k < 7; k++) {
+                        if (g_Minigame.reelSymbol[0] == lbl_3_data_189C4.reels[2][k]) {
+                            break;
+                        }
+                    }
+                    if (++k >= 7) {
+                        k = 0;
+                    }
+                    g_Minigame.reelSymbol[2] = lbl_3_data_189C4.reels[2][k];
+                }
+            } else {
+                g_Minigame.reelSymbol[r] = lbl_3_data_189C4.reels[r][random_fn_3_9EE24(7)];
+                if (r == 2 && g_Minigame.reelSymbol[0] == g_Minigame.reelSymbol[1] &&
+                    g_Minigame.reelSymbol[0] == g_Minigame.reelSymbol[2]) {
+                    // Avoid an accidental jackpot.
+                    for (k = 0; k < 7; k++) {
+                        if (g_Minigame.reelSymbol[2] == lbl_3_data_189C4.reels[2][k]) {
+                            break;
+                        }
+                    }
+                    if (++k >= 7) {
+                        k = 0;
+                    }
+                    g_Minigame.reelSymbol[2] = lbl_3_data_189C4.reels[2][k];
+                }
+            }
+        } else {
+            g_Minigame.reelSymbol[r] = g_Minigame._192D;
+        }
+    }
+    g_Minigame._18B8 = 0;
 }
+#endif
