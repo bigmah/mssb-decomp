@@ -50,8 +50,20 @@ s32 fn_3_6B4C8(void) {
 }
 
 // .text:0x0006B5D8 size:0x9C mapped:0x806AA66C
-void fn_3_6B5D8(void) {
-    return;
+s32 fn_3_6B5D8(void) {
+    switch (lbl_3_common_bss_32724._9A) {
+    case 0:
+        lbl_8036E548._2D77 = 0;
+        lbl_3_common_bss_34C58._2C = 0;
+        lbl_3_common_bss_32724._9A++;
+        break;
+    case 1:
+        if (fn_80016344(lbl_80353A90._103, 9, 0, 0)) {
+            return 1;
+        }
+        break;
+    }
+    return 0;
 }
 
 // .text:0x0006B674 size:0x1FC mapped:0x806AA708
