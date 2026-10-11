@@ -258,6 +258,20 @@ s32 fn_800637D4(void) {
 
 // .text:0x800637DC size:0xD8
 s32 fn_800637DC(GameBone* bone, GameBone* target, Mtx m, f32 t) {
+    switch (bone->boneID) {
+    case 0x47:
+        fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, t);
+        CTRLBuildMatrix_Flip(&target->animCtrl, m, 0);
+        return 1;
+    case 0x40:
+        fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, t);
+        fn_80063028(&target->animCtrl, m, 4);
+        return 1;
+    case 0x41:
+        fn_800B84AC(&target->animCtrl, &target->blendCtrl, &target->animCtrl, t);
+        CTRLBuildMatrix_Flip(&target->animCtrl, m, 1);
+        return 1;
+    }
     return 0;
 }
 
