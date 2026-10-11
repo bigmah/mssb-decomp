@@ -109,7 +109,7 @@ void fn_3_A3B30(void);
 void fn_3_A3C00(void);
 void fn_3_A3CC0(void);
 void fn_3_A4158(int);
-void fn_3_A41E8(void);
+void fn_3_A41E8(s32 base);
 int fn_3_A46A0(s32 i);
 void fn_3_A4A10(void);
 void fn_3_A4F50(s32 i);

@@ -259,33 +259,33 @@ int fn_3_A2048(void) {
     ball = g_Ball.ballAngleFromHome;
     if (ball > 0x500) {
         if (m & 0x1000) {
-            ((void (*)(int))fn_3_A41E8)(3);
+            fn_3_A41E8(3);
             return 1;
         } else if (m & 0x100) {
-            ((void (*)(int))fn_3_A41E8)(3);
+            fn_3_A41E8(3);
             return 1;
         } else if (m & 0x10) {
-            ((void (*)(int))fn_3_A41E8)(2);
+            fn_3_A41E8(2);
             return 1;
         }
         return 0;
     } else if (ball > 0x400) {
         if (m & 0x1000) {
-            ((void (*)(int))fn_3_A41E8)(3);
+            fn_3_A41E8(3);
             return 1;
         } else if ((m & 0x100) && !(m & 0x1000)) {
-            ((void (*)(int))fn_3_A41E8)(2);
+            fn_3_A41E8(2);
             return 1;
         }
         return 0;
     } else {
         if (m & 0x1000) {
             if (!(m & 0x10) || (m & 0x100)) {
-                ((void (*)(int))fn_3_A41E8)(0);
+                fn_3_A41E8(0);
                 return 1;
             }
         } else if (m & 0x100) {
-            ((void (*)(int))fn_3_A41E8)(3);
+            fn_3_A41E8(3);
             return 1;
         }
         return 0;
@@ -994,9 +994,100 @@ void fn_3_A4158(int i) {
 }
 
 // .text:0x000A41E8 size:0x4B8 mapped:0x806E327C
-void fn_3_A41E8(void) {
-    return;
+// NONMATCHING 97%: base-coordinate loads and float temps scheduled differently; fn_3_A6ABC and fn_3_AABF8 are inlined
+#if NONMATCHING
+void fn_3_A41E8(s32 base) {
+    s16 cover;
+    RepFielder* f;
+    s32 cut;
+    f32 dz;
+    s32 throwFrames;
+    f32 d;
+    f32 step;
+    f32 a;
+    f32 b;
+    s32 n;
+    f32 ballDist;
+    s32 frames;
+    f32 dx;
+    s16 coverFrames;
+
+    f = &g_Fielders[g_Ball.fielderWBallIndex];
+    cover = g_FieldingLogic._0D0[base];
+    if (base == 5) {
+        // inlined fn_3_AABF8
+        if (g_FieldingLogic._0D8 == -1) {
+            cut = 0;
+        } else if (g_FieldingLogic.playerAtMoundCutoffLocation != 1) {
+            cut = 0;
+        } else if (g_Fielders[g_FieldingLogic._0D8].coveringBase != 5) {
+            cut = 0;
+        } else if (f->_0B8 < lbl_3_rodata_19F0) {
+            cut = 0;
+        } else {
+            cut = 1;
+        }
+        if (cut) {
+            g_FieldingLogic._0CC = -1;
+            g_FieldingLogic._0C4 = 5;
+            return;
+        }
+        if (g_Ball.ballZoneAwayFromHome >= 3 && g_FieldingLogic._0BE >= 0 &&
+            g_FieldingLogic._0BE != g_Ball.fielderWBallIndex) {
+            g_FieldingLogic._0CC = -1;
+            g_FieldingLogic._0C4 = 6;
+            return;
+        }
+        g_FieldingLogic._0CC = -1;
+        g_FieldingLogic._0C4 = -1;
+        return;
+    }
+    // inlined fn_3_A6ABC(base x, z)
+    dx = lbl_3_data_4444[base * 2] - f->pos.x;
+    step = (f32)f->_1CD / lbl_3_rodata_1938;
+    dz = lbl_3_data_4444[base * 2 + 1] - f->pos.z;
+    a = dx * dx;
+    b = dz * dz;
+    d = a + b;
+    SQRT_L(d);
+    if (lbl_3_rodata_193C == step) {
+        step = lbl_3_rodata_1958;
+    }
+    if (d > lbl_3_rodata_195C) {
+        n = (s32)(lbl_3_rodata_1960 * d / step);
+    } else if (d > lbl_3_rodata_1964) {
+        n = (s32)(d / step);
+    } else {
+        n = (s32)(lbl_3_rodata_1968 * d / step);
+    }
+    if (d > lbl_3_rodata_196C) {
+        n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+    } else if (d > lbl_3_rodata_1974) {
+        n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+    }
+    ballDist = g_Ball.ballDistanceFromBase[base];
+    frames = f->_192 + n;
+    throwFrames = fn_3_52560(g_Ball.fielderWBallIndex, lbl_3_data_4444[base * 2], lbl_3_data_4444[base * 2 + 1]);
+    if (cover == g_Ball.fielderWBallIndex || cover == -1 || ballDist < lbl_3_rodata_199C) {
+        g_FieldingLogic._0CC = base;
+        g_FieldingLogic._0C4 = -1;
+        return;
+    }
+    coverFrames = g_Fielders[cover].framesToDest;
+    if (throwFrames < coverFrames + 5) {
+        g_FieldingLogic._0CC = base;
+        g_FieldingLogic._0C4 = -1;
+        return;
+    }
+    if (frames < coverFrames) {
+        g_FieldingLogic._0CC = base;
+        g_FieldingLogic._0C4 = -1;
+        return;
+    }
+    g_FieldingLogic._0CC = -1;
+    g_FieldingLogic._0C4 = base;
 }
+#endif
 
 // .text:0x000A46A0 size:0x370 mapped:0x806E3734
 // NONMATCHING 99.3%: r27/r28 swapped (runner pointer vs i*4), fn_3_A36BC and fn_3_A4158 are inlined
