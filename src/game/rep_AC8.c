@@ -3191,8 +3191,44 @@ void fn_3_50898(void) {
 }
 
 // .text:0x00050C20 size:0x1B8 mapped:0x8068FCB4
-void fn_3_50C20(void) {
-    return;
+extern u8 lbl_3_data_48F8[];
+void fn_3_50C20(int i, f32* outX, f32* outZ) {
+    u8* f = g_Fielders + i * 0x268;
+    s16 ang = fn_3_9FB8C(*(f32*)(f + 0x28) - *(f32*)f, *(f32*)(f + 0x2C) - *(f32*)(f + 8));
+    f32 nx;
+    f32 nz;
+    if (i == 7) {
+        if (ang > 0x200 && ang < 0x600) {
+            *outX = *(f32*)f;
+            *outZ = *(f32*)(f + 0x2C);
+        } else {
+            *outX = *(f32*)(f + 0x28);
+            *outZ = *(f32*)(f + 8);
+        }
+        *(s16*)(f + 0x18A) = lbl_3_data_48F8[f[0x1C4]];
+    } else if (i == 8) {
+        if (ang > 0x100 && ang < 0x600) {
+            nx = *(f32*)f / *(f32*)(f + 0x70);
+            nz = *(f32*)(f + 8) / *(f32*)(f + 0x70);
+            *outX = nx * (10.0f + *(f32*)(f + 0x70));
+            *outZ = nz * (10.0f + *(f32*)(f + 0x70));
+        } else {
+            *outX = *(f32*)(f + 0x28);
+            *outZ = *(f32*)(f + 8);
+        }
+        *(s16*)(f + 0x18A) = lbl_3_data_48F8[f[0x1C4]];
+    } else {
+        if (ang > 0x200 && ang < 0x700) {
+            nx = *(f32*)f / *(f32*)(f + 0x70);
+            nz = *(f32*)(f + 8) / *(f32*)(f + 0x70);
+            *outX = nx * (10.0f + *(f32*)(f + 0x70));
+            *outZ = nz * (10.0f + *(f32*)(f + 0x70));
+        } else {
+            *outX = *(f32*)(f + 0x28);
+            *outZ = *(f32*)(f + 8);
+        }
+        *(s16*)(f + 0x18A) = lbl_3_data_48F8[f[0x1C4]];
+    }
 }
 
 // .text:0x00050DD8 size:0x448 mapped:0x8068FE6C
