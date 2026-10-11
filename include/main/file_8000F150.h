@@ -112,6 +112,76 @@ typedef struct TextSystem {
 
 extern TextSystem lbl_80366B18;
 
+// lbl_8036E548: character actors and their models (owned by other units;
+// only the fields used here).
+typedef struct ActorModelAnim {
+    /*0x00*/ u8 _00[0x14];
+    /*0x14*/ void* _14;
+} ActorModelAnim;
+
+typedef struct ActorModel {
+    /*0x00*/ u8 _00[0x6];
+    /*0x06*/ u16 animCount;
+    /*0x08*/ u8 _08[0x10];
+    /*0x18*/ ActorModelAnim** anims;
+    /*0x1C*/ u8 _1C[0x7D];
+    /*0x99*/ u8 _99;
+} ActorModel;
+
+typedef struct ActorModelSlot {
+    /*0x00*/ u8 _00[0x34];
+    /*0x34*/ ActorModel* model;
+    /*0x38*/ u8 _38[0x58];
+} ActorModelSlot; // size: 0x90
+
+typedef struct ActorMgrActor {
+    /*0x000*/ u8 _000[0x5C];
+    /*0x05C*/ u32 _05C;
+    /*0x060*/ u8 _060[0x2];
+    /*0x062*/ s16 _062;
+    /*0x064*/ s16 _064;
+    /*0x066*/ s16 _066;
+    /*0x068*/ u8 _068[0x4];
+    /*0x06C*/ s16 _06C;
+    /*0x06E*/ s16 _06E;
+    /*0x070*/ u8 _070[0x13A];
+    /*0x1AA*/ u16 anim;
+    /*0x1AC*/ u8 _1AC[0xA6];
+    /*0x252*/ s8 kind;
+    /*0x253*/ u8 _253[0x2];
+    /*0x255*/ s8 modelIndex;
+    /*0x256*/ u8 _256[0x7];
+    /*0x25D*/ u8 _25D;
+    /*0x25E*/ u8 _25E;
+    /*0x25F*/ u8 _25F;
+    /*0x260*/ u8 _260;
+    /*0x261*/ u8 _261;
+    /*0x262*/ u8 _262;
+    /*0x263*/ u8 _263;
+    /*0x264*/ u8 _264;
+    /*0x265*/ u8 _265;
+    /*0x266*/ u8 _266;
+    /*0x267*/ u8 _267;
+    /*0x268*/ u8 _268;
+    /*0x269*/ u8 _269;
+    /*0x26A*/ u8 _26A;
+    /*0x26B*/ u8 _26B;
+    /*0x26C*/ u8 _26C;
+    /*0x26D*/ u8 _26D;
+    /*0x26E*/ u8 _26E;
+    /*0x26F*/ u8 _26F[0xD];
+} ActorMgrActor; // size: 0x27C
+
+typedef struct ActorMgr {
+    /*0x0000*/ u8 _0000[0x60];
+    /*0x0060*/ ActorModelSlot* models;
+    /*0x0064*/ ActorModelSlot* models2;
+    /*0x0068*/ u8 _0068[0xB9C];
+    /*0x0C04*/ ActorMgrActor actors[13];
+    /*0x2C50*/ ActorMgrActor* active[13];
+    /*0x2C84*/ u8 _2C84[0x4D0];
+} ActorMgr; // size: 0x3154
+
 void fn_8000F150(void* arg);
 void fn_8000F3E8(s32 arg);
 void somethingSetTexturePointer(void);
@@ -134,9 +204,9 @@ void fn_80010FA0(void);
 void fn_80011000(void);
 void fn_80011140(void);
 void fn_800111B4(MsgTable* table);
-void** fn_800111D8(void* actor);
-void* fn_800111FC(void* actor, s32 second);
-void fn_80011358(s8 index, s32 kind);
+ActorModel** fn_800111D8(ActorMgrActor* actor);
+ActorMgrActor* fn_800111FC(ActorMgrActor* actor, s32 second);
+void fn_80011358(s32 index, s32 kind);
 void fn_80011468(void);
 
 u32 fn_80011570(void);

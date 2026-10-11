@@ -4,6 +4,14 @@
 extern u16 lbl_80366218[];
 extern void* lbl_803CBBE8;
 extern u8 lbl_800E9920[];
+extern u32 lbl_803CBC18;
+extern ActorMgr lbl_8036E548;
+extern void fn_8001BA44(s32 slot, s16 charId, u8 a, u8 b, s32 c, u8 d, u8 e);
+extern void fn_800B2BA8(ActorModel* model, u16 anim, ActorModel* source, u16 sourceAnim);
+extern void fn_8004B6EC(ActorMgrActor* actor, ActorModel** model);
+extern void fn_8004B7F4(ActorMgrActor* actor, ActorModel** model);
+extern void fn_8004BAEC(ActorMgrActor* actor, ActorModel** model);
+extern void fn_8005240C(ActorMgrActor* actor, ActorModel** model);
 
 typedef struct FogSetting {
     /*0x0*/ u8 _00[0x8];
@@ -308,17 +316,17 @@ void fn_800111B4(MsgTable* table) {
 }
 
 // .text:0x800111D8 size:0x24
-void** fn_800111D8(void* actor) {
-    return 0;
+ActorModel** fn_800111D8(ActorMgrActor* actor) {
+    return &lbl_8036E548.models[actor->modelIndex].model;
 }
 
 // .text:0x800111FC size:0x15C
-void* fn_800111FC(void* actor, s32 second) {
+ActorMgrActor* fn_800111FC(ActorMgrActor* actor, s32 second) {
     return 0;
 }
 
 // .text:0x80011358 size:0x110
-void fn_80011358(s8 index, s32 kind) {
+void fn_80011358(s32 index, s32 kind) {
     return;
 }
 
@@ -327,19 +335,15 @@ void fn_80011468(void) {
     return;
 }
 
-extern u32 lbl_803CBC18;
-
-extern u8 lbl_8036E548[];
-
 // fn_80011578, size:0x50
 void fn_80011578(void) {
     s8 i = 0;
     s32 n;
     for (n = 13; n != 0; n--) {
         if (i >= 0 && i < 13) {
-            u8* object = *(u8**)(lbl_8036E548 + ((s8)i << 2) + 0x2C50);
-            if (object != NULL) {
-                *(u32*)(object + 0x5C) = 0;
+            ActorMgrActor* actor = lbl_8036E548.active[(u32)i];
+            if (actor != NULL) {
+                actor->_05C = 0;
             }
         }
         i++;
@@ -349,12 +353,9 @@ void fn_80011578(void) {
 // fn_800115C8, size:0x3C
 void fn_800115C8(s8 index) {
     if (index >= 0 && index < 13) {
-        u8* base = lbl_8036E548;
-        u8* object;
-        base += index * 4;
-        object = *(u8**)(base + 0x2C50);
-        if (object != NULL) {
-            *(u32*)(object + 0x5C) = 0;
+        ActorMgrActor* actor = lbl_8036E548.active[index];
+        if (actor != NULL) {
+            actor->_05C = 0;
         }
     }
 }
@@ -366,15 +367,12 @@ u32 fn_80011570(void) {
 
 // fn_80011604, size:0x3C
 void fn_80011604(s8 index, u32 value) {
-    u8* base;
-    u8* object;
+    ActorMgrActor* actor;
     if (index < 0 || index >= 13) {
         return;
     }
-    base = lbl_8036E548;
-    base += index * 4;
-    object = *(u8**)(base + 0x2C50);
-    if (object != NULL) {
-        *(u32*)(object + 0x5C) = value;
+    actor = lbl_8036E548.active[index];
+    if (actor != NULL) {
+        actor->_05C = value;
     }
 }
