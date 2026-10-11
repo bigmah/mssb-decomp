@@ -99,7 +99,138 @@ void fn_3_15FB84(s32 count, ...) {
 
 #endif
 
+// NONMATCHING 93%: float constant pooling (docs/patterns/floats.md) and the original keeps the
+// lbl_3_data_27EC0 pool base in r30 for the first depth-clear block too
 // .text:0x0015FF28 size:0x650 mapped:0x8079EFBC
+#if NONMATCHING
 void fn_3_15FF28(PlayerMarkerNode* node) {
-    return;
+    Mtx identity;
+    Vec v;
+    Vec dir;
+    camera_803c639c_s* cam;
+    s32 camIdx;
+    s32 i;
+    Mtx clearMtx1;
+    Mtx clearMtx2;
+    PlayerMarkerData* d = &lbl_3_data_27EC0;
+
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    PSMTXIdentity(identity);
+    GXSetZCompLoc(GX_FALSE);
+    // Fill the depth buffer with the far plane (full-screen quad, colour/alpha writes off).
+    GXSetProjection(d->layout.orthoProj, GX_ORTHOGRAPHIC);
+    PSMTXIdentity(clearMtx1);
+    GXLoadPosMtxImm(clearMtx1, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetColorUpdate(GX_FALSE);
+    GXSetAlphaUpdate(GX_FALSE);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+    gOz_GXSetTexture(4, 0, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_INDEX8);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA4, 0);
+    GXSetArray(GX_VA_POS, d->layout.clearVerts, 0xC);
+    GXCallDisplayList(d->layout.clearDL, 0x20);
+    GXSetColorUpdate(GX_TRUE);
+    GXSetAlphaUpdate(GX_TRUE);
+    camIdx = fn_8005268C();
+    cam = fn_80052734(camIdx);
+    fn_80052694(camIdx);
+    gOz_GXSetTexture(0, 0, 0);
+
+    if (lbl_3_common_bss_35154._472 != 0 && lbl_3_common_bss_35154._471 != 0) {
+        GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+        GXLoadPosMtxImm(identity, GX_PNMTX0);
+        SetDisplayStateTexture(NULL, 0, 0);
+        for (i = 0; i < node->count; i++) {
+            if (node->markers[i].active != 0) {
+                PSMTXMultVec(cam->view, &node->markers[i].top, &v);
+                GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+                GXPosition3f32(v.x - node->markers[i].width, v.y, v.z);
+                GXColor1u32(node->markers[i].topColor);
+                GXTexCoord2u16(0, 0);
+                GXPosition3f32(v.x + node->markers[i].width, v.y, v.z);
+                GXColor1u32(node->markers[i].topColor);
+                GXTexCoord2u16(1, 0);
+                PSMTXMultVec(cam->view, &node->markers[i].base, &v);
+                dir.x = v.x;
+                dir.y = 0.0f;
+                dir.z = v.z;
+                if (PSVECMag(&dir)) {
+                    PSVECNormalize(&dir, &dir);
+                    PSVECScale(&dir, node->markers[i].radius, &dir);
+                } else {
+                    dir.x = node->markers[i].radius;
+                    dir.z = 0.0f;
+                }
+                GXPosition3f32(v.x - dir.z, v.y, v.z + dir.x);
+                GXColor1u32(node->markers[i].baseColor);
+                GXTexCoord2u16(1, 1);
+                GXPosition3f32(v.x + dir.z, v.y, v.z - dir.x);
+                GXColor1u32(node->markers[i].baseColor);
+                GXTexCoord2u16(0, 1);
+            }
+        }
+
+        GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+        GXLoadPosMtxImm(cam->view, GX_PNMTX0);
+        SetDisplayStateTexture(node->tex, 0, 0);
+        for (i = 0; i < node->count; i++) {
+            if (node->markers[i].active != 0) {
+                GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+                GXPosition3f32(node->markers[i].base.x - node->markers[i].radius, node->markers[i].base.y, node->markers[i].base.z - node->markers[i].radius);
+                GXColor1u32(node->markers[i].baseColor);
+                GXTexCoord2u16(0, 0);
+                GXPosition3f32(node->markers[i].base.x + node->markers[i].radius, node->markers[i].base.y, node->markers[i].base.z - node->markers[i].radius);
+                GXColor1u32(node->markers[i].baseColor);
+                GXTexCoord2u16(1, 0);
+                GXPosition3f32(node->markers[i].base.x + node->markers[i].radius, node->markers[i].base.y, node->markers[i].base.z + node->markers[i].radius);
+                GXColor1u32(node->markers[i].baseColor);
+                GXTexCoord2u16(1, 1);
+                GXPosition3f32(node->markers[i].base.x - node->markers[i].radius, node->markers[i].base.y, node->markers[i].base.z + node->markers[i].radius);
+                GXColor1u32(node->markers[i].baseColor);
+                GXTexCoord2u16(0, 1);
+            }
+        }
+    }
+
+    // Full-screen fade quad at the far plane.
+    GXSetProjection(d->layout.orthoProj, GX_ORTHOGRAPHIC);
+    GXLoadPosMtxImm(identity, GX_PNMTX0);
+    SetDisplayStateTexture(NULL, 0, 0);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(0.0f, 0.0f, -16777215.0f);
+    GXColor1u32(node->fadeColor);
+    GXTexCoord2u16(0, 0);
+    GXPosition3f32(640.0f, 0.0f, -16777215.0f);
+    GXColor1u32(node->fadeColor);
+    GXTexCoord2u16(1, 0);
+    GXPosition3f32(640.0f, 448.0f, -16777215.0f);
+    GXColor1u32(node->fadeColor);
+    GXTexCoord2u16(1, 1);
+    GXPosition3f32(0.0f, 448.0f, -16777215.0f);
+    GXColor1u32(node->fadeColor);
+    GXTexCoord2u16(0, 1);
+    // Fill the depth buffer again.
+    GXSetProjection(d->layout.orthoProj, GX_ORTHOGRAPHIC);
+    PSMTXIdentity(clearMtx2);
+    GXLoadPosMtxImm(clearMtx2, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXSetColorUpdate(GX_FALSE);
+    GXSetAlphaUpdate(GX_FALSE);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+    gOz_GXSetTexture(4, 0, 0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_INDEX8);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA4, 0);
+    GXSetArray(GX_VA_POS, d->layout.clearVerts, 0xC);
+    GXCallDisplayList(d->layout.clearDL, 0x20);
+    GXSetColorUpdate(GX_TRUE);
+    GXSetAlphaUpdate(GX_TRUE);
 }
+#endif
