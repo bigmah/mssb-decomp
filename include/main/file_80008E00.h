@@ -53,6 +53,7 @@ void PostRetraceCallback(u32 retraceCount);
 void fn_8000900C(void);
 void* fn_80009018(void* value);
 u8 fn_80009028(void);
+void fn_80009094(void);
 void fn_800097A0(void);
 
 #endif

@@ -286,7 +286,7 @@ u8 fn_80009028(void) {
 
 // .text:0x80009094 size:0x20
 void fn_80009094(void) {
-    return;
+    fn_80035168();
 }
 
 // .text:0x800090B4 size:0x90
