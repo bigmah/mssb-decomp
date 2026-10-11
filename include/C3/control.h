@@ -46,5 +46,7 @@ void CTRLGetQuat(Control *control, f32 *x, f32 *y, f32 *z, f32 *w);
 void CTRLGetTranslation(Control *control, f32 *x, f32 *y, f32 *z);
 void CTRLBuildMatrix(Control *control, Mtx m);
 void CTRLBuildInverseMatrix(Control *control, Mtx m);
+void CTRLBuildMatrix_Flip(Control *control, Mtx m, u32 r5);
+void fn_800B84AC(Control *control, Control *r3, Control *r4, float f1);
 
 #endif // _DOLPHIN_CP_CONTROL_H_
