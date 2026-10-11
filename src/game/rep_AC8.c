@@ -3290,8 +3290,68 @@ void fn_3_50C20(int i, f32* outX, f32* outZ) {
 }
 
 // .text:0x00050DD8 size:0x448 mapped:0x8068FE6C
-void fn_3_50DD8(void) {
-    return;
+extern s16 lbl_3_data_48A4[];
+int fn_3_50DD8(int i, f32* x, f32* z, int mode) {
+    u8* f = g_Fielders + i * 0x268;
+    f32 d;
+    f32 dx;
+    f32 dz;
+    f32 inv;
+    if (g_d_GameSettings[0x11] != 0) {
+        return 0;
+    }
+    if (i == 0 || i == 1 || i == 2 || i == 4) {
+        return 0;
+    }
+    if (g_Ball[0x1BF1] != 0) {
+        *(s16*)(f + 0x18A) = 0;
+        return 0;
+    }
+    if (mode == 0) {
+        *(f32*)(f + 0x28) = *x;
+        *(f32*)(f + 0x2C) = *z;
+        d = (*(f32*)f - *(f32*)(f + 0x28)) * (*(f32*)f - *(f32*)(f + 0x28)) +
+            (*(f32*)(f + 8) - *(f32*)(f + 0x2C)) * (*(f32*)(f + 8) - *(f32*)(f + 0x2C));
+        SQRT_L(d);
+        if (d < *(f32*)(lbl_3_data_4930 + 0x7C)) {
+            return 0;
+        }
+        if (fn_3_50898(i, &dx, &dz) != 0) {
+            *x = dx;
+            *z = dz;
+        }
+        *(s16*)(f + 0x18A) = 1;
+        *(s16*)(f + 0x188) = 0x1E;
+    } else if (f[0x20E] == 0) {
+        if (*(s16*)(f + 0x18A) > lbl_3_data_48A4[f[0x1C4] + 10]) {
+            f[0x20E] = 1;
+        } else {
+            d = (*(f32*)(f + 0x20) - *(f32*)f) * (*(f32*)(f + 0x20) - *(f32*)f) +
+                (*(f32*)(f + 0x24) - *(f32*)(f + 8)) * (*(f32*)(f + 0x24) - *(f32*)(f + 8));
+            SQRT_L(d);
+            if (d < *(f32*)(lbl_3_data_4930 + 0x80)) {
+                f[0x20E] = 1;
+            }
+        }
+        *x = *(f32*)(f + 0x20);
+        *z = *(f32*)(f + 0x24);
+    } else {
+        dx = *(f32*)(f + 0x28) - *(f32*)(f + 0x20);
+        dz = *(f32*)(f + 0x2C) - *(f32*)(f + 0x24);
+        *(s16*)(f + 0x188) = *(s16*)(f + 0x188) - 1;
+        if (*(s16*)(f + 0x188) <= 0) {
+            *x = *(f32*)(f + 0x28);
+            *z = *(f32*)(f + 0x2C);
+            *(s16*)(f + 0x18A) = 0;
+        } else {
+            inv = 1.0f / (f32)*(s16*)(f + 0x188);
+            dx *= inv;
+            dz *= inv;
+            *x = *(f32*)(f + 0x20) + dx;
+            *z = *(f32*)(f + 0x24) + dz;
+        }
+    }
+    return 1;
 }
 
 // .text:0x00051220 size:0x42C mapped:0x806902B4

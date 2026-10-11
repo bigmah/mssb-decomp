@@ -220,7 +220,7 @@ void fn_3_4F504(void);
 void fn_3_4FB34(void);
 int fn_3_50898(int, f32*, f32*);
 void fn_3_50C20(int, f32*, f32*);
-void fn_3_50DD8(void);
+int fn_3_50DD8(int, f32*, f32*, int);
 void fn_3_51220(void);
 int fn_3_5164C(int, f32*);
 int fn_3_51798(int, f32*);
