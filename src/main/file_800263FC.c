@@ -401,8 +401,14 @@ void pitchingMachinePitching(void) {
 }
 
 // .text:0x80033928 size:0x3C
-void fn_80033928(void) {
-    return;
+s32 fn_80033928(u8 type) {
+    Emitter* e;
+    for (e = EMITTER_HEAD->next; e != NULL; e = e->next) {
+        if (e->type == type) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 // .text:0x80033964 size:0x8C
