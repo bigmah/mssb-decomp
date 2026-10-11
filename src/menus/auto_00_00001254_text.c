@@ -3157,7 +3157,7 @@ void fn_2_11698(void) {
     }
 }
 
-// NONMATCHING 60%: written as plain C; the original unrolls the per-class candidate scan four
+// NONMATCHING 50%: written as plain C; the original unrolls the per-class candidate scan four
 // times (one copy per class) and keeps every counter in its own register.
 #if NONMATCHING
 #define CHAR_CLASS(id) (lbl_8034E9A0[((id) / 9) * 0x5A0 + ((id) % 9) * 0xA0 + 0x31])
