@@ -39,6 +39,25 @@ extern ChMenuData lbl_1_data_0;
 extern s32 lbl_1_bss_0; // texture shown by the viewer
 extern ChDrawNode lbl_1_data_298[2];
 
+// .text:0x00001538 size:0x94
+// Queues this frame's texture draw node.
+// NONMATCHING 59%: original keeps &lbl_1_data_0 in r31 across the call (needs the .data
+// split into this unit, see docs/patterns/regalloc.md)
+#if NONMATCHING
+void fn_1_1538(void) {
+    ChMenuData* data = &lbl_1_data_0;
+    ChTexViewTask* task = lbl_803CC1B8;
+    ChTexDrawNode* node;
+
+    fn_800A7D4C(0, &data->nodes[lbl_803CBBC0]);
+    node = &data->nodes[lbl_803CBBC0];
+    node->tex = task->tex;
+    node->texIdx = lbl_1_bss_0;
+    node->mode = data->mode;
+    node->color = data->color;
+}
+#endif
+
 // .text:0x000015CC size:0x68
 void fn_1_15CC(void) {
     ChTexViewTask* task = lbl_803CC1B8;
