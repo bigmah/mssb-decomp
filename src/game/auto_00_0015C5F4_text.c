@@ -13,7 +13,15 @@ void fn_3_15C5F4(void) {
 
 // .text:0x0015C638 size:0xAC mapped:0x8079B6CC
 void fn_3_15C638(void) {
-    return;
+    ScoreBookTask* task = SB_TASK;
+
+    fn_80034E20(task, lbl_3_data_27C54);
+    if (lbl_80353A90._104 == 2) {
+        SB_OBJ(task, 0)->_64 = 0xD3;
+    } else if (lbl_80353A90._104 == 3) {
+        SB_OBJ(task, 0)->_64 = 0xC0;
+    }
+    SB_TASK->func = fn_3_15C5F4;
 }
 
 // .text:0x0015C6E4 size:0xAF4 mapped:0x8079B778
