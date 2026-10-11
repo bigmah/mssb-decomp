@@ -8,6 +8,7 @@
 #include "main/file_80021308.h"
 #include "main/file_80008E00.h"
 #include "C3/control.h"
+#include "main/file_8000F150.h"
 #include "musyx/musyx.h"
 #include "dolphin/os.h"
 #include "Dolphin/mtxext.h"
@@ -40,6 +41,20 @@ extern void fn_800324EC(u16 id, s32 charIndex, s32 c, s32* params);
 extern void fn_8004B1C0(s32 sound, CharSoundObj* obj, s32 kind, s32 c);
 
 extern camera_803c639c_s lbl_803C639C[4];
+extern MenuState lbl_8034E978;
+extern MenuDef lbl_800FEF70[0x5D];
+extern MenuWork lbl_803297E0;
+extern u8 lbl_80361B20[0xF8];
+extern struct SpaniDesc lbl_80108048;
+
+extern void fn_80034E20(SceneTask* task, struct SpaniDesc* desc);
+extern void fn_8006CF6C(void);
+
+static inline void SetMenu(s16 menu) {
+    lbl_8034E978.menu = menu;
+    lbl_8034E978.prevTrack = lbl_8034E978.track;
+    lbl_8034E978.track = lbl_800FEF70[menu].track;
+}
 
 // .text:0x800527C4 size:0xE8
 // TRUE when the point (with y folded below the ground plane) lands inside camera 0's view volume.
@@ -148,7 +163,19 @@ void fn_80056120(void) {
 
 // .text:0x800569C8 size:0x11C
 void fn_800569C8(void) {
-    return;
+    if (g_d_GameSettings._06 == 2) {
+        fn_800B0A5C_insertQueue(fn_80053FE8, 0);
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            SetMenu(0x15);
+        } else {
+            SetMenu(7);
+        }
+    } else if (g_d_GameSettings.GameModeSelected == 5) {
+        SetMenu(0x14);
+    } else {
+        SetMenu(6);
+    }
+    fn_800B0A5C_insertQueue(fn_80056120, 0x3000);
 }
 
 // .text:0x80056AE4 size:0x48C
@@ -173,7 +200,15 @@ void challengeCheckStarsMenuLoading(void) {
 
 // .text:0x80057C08 size:0xA4
 void starMenu(void) {
-    return;
+    SceneTask* task;
+    s32 i;
+
+    fn_80034E20(task = lbl_803CC1B8, &lbl_80108048);
+    for (i = 0; i < 9; i++) {
+        lbl_80371C30[12 + task->u14.objIdx + i].obj->_5C = i << 16;
+        fn_800363D8(task, i + 0x15, 1, 0x83, inMemRoster[0][i].stats.CharID);
+    }
+    lbl_803CC1B8->func = challengeCheckStarsMenuLoading;
 }
 
 // .text:0x80057CAC size:0x3A4
@@ -318,7 +353,41 @@ void fn_80061B9C(void) {
 
 // .text:0x8006236C size:0x20C
 void SetMenuNumber(void) {
-    return;
+    s32 i;
+    u8 any = FALSE;
+    s16 menu;
+
+    if (g_d_GameSettings._06 != 2) {
+        if (g_d_GameSettings.GameModeSelected == 5) {
+            menu = 0x16;
+        } else {
+            for (i = 0; i < 0x36; i++) {
+                if (lbl_80361B20[i] != 0) {
+                    any = TRUE;
+                    break;
+                }
+            }
+            if (any) {
+                menu = 4;
+            } else {
+                menu = 3;
+            }
+        }
+        SetMenu(menu);
+    }
+    {
+        u8 kind = lbl_803297E0.teamKind[lbl_803297E0.team];
+        if (kind != 2 && kind != 3) {
+            if (g_d_GameSettings.GameModeSelected == 5 && lbl_803297E0._CF70 != 0 && lbl_80361B20[0xE4] == 0) {
+                fn_800B0A5C_insertQueue(fn_8006CF6C, 0x3000);
+            }
+            fn_800B0A5C_insertQueue(fn_80061B9C, 0x3000);
+        } else if (kind == 2) {
+            fn_800B0A5C_insertQueue(fn_80058050, 0x3000);
+        } else {
+            fn_800B0A5C_insertQueue(starMenu, 0x3000);
+        }
+    }
 }
 
 // .text:0x80062578 size:0x2C

@@ -47,6 +47,40 @@ typedef struct LoopSfxState {
 } LoopSfxState; // size: 0x10
 
 BOOL fn_800527C4(Vec* pos);
+void fn_80053FE8(void);
+void fn_80056120(void);
+void fn_800569C8(void);
+void challengeCheckStarsMenuLoading(void);
+void starMenu(void);
+void fn_80058050(void);
+void fn_80061B9C(void);
+void SetMenuNumber(void);
+// lbl_8034E978: current menu screen.
+typedef struct MenuState {
+    /*0x00*/ u8 menu;
+    /*0x01*/ u8 _01[7];
+    /*0x08*/ u8 track; // from MenuDef.track of the current menu
+    /*0x09*/ u8 prevTrack;
+    /*0x0A*/ u8 _0A[0x1E];
+} MenuState; // size: 0x28
+
+// lbl_800FEF70: per-menu definitions.
+typedef struct MenuDef {
+    /*0x00*/ u8 _00[8];
+    /*0x08*/ u16 track;
+    /*0x0A*/ u8 _0A[6];
+} MenuDef; // size: 0x10
+
+// lbl_803297E0: menu work area (size 0x24C98), only the fields used here.
+typedef struct MenuWork {
+    /*0x0000*/ u8 _0000[0xCF3B];
+    /*0xCF3B*/ u8 team;
+    /*0xCF3C*/ u8 _CF3C[0x34];
+    /*0xCF70*/ u8 _CF70;
+    /*0xCF71*/ u8 _CF71[0x31];
+    /*0xCFA2*/ u8 teamKind[0x36];
+} MenuWork;
+
 void fn_800528B4(void);
 void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z);
 
