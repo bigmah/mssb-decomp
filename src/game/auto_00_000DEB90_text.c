@@ -51,9 +51,21 @@ void fn_3_DF608(void) {
 
 // NONMATCHING 95%: inlines fn_3_DF608 (same scheduling issue); the tail g_d_GameSettings._35 load is also hoisted
 // .text:0x000DF6D4 size:0x14C mapped:0x8071E768
+#if NONMATCHING
 void fn_3_DF6D4(void) {
-    return;
+    switch (g_GameLogic._125) {
+    case 0:
+        fn_3_DF608();
+        g_GameLogic._125++;
+    }
+    g_Minigame._190A = 1;
+    g_Minigame._19DA[g_d_GameSettings._35] = g_d_GameSettings._35;
+    lbl_3_common_bss_37400.humanPlayer = g_d_GameSettings._35;
+    g_Minigame.GameMode_MiniGame = g_d_GameSettings._33;
+    g_Minigame._19DF = 30;
+    fn_3_5A6D4(0x1B);
 }
+#endif
 
 // .text:0x000DF820 size:0xB4 mapped:0x8071E8B4
 void fn_3_DF820(void) {
