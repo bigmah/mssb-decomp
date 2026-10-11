@@ -14,17 +14,27 @@ typedef struct StaObj {
     /*0x78*/ void* shadow; // passed to fn_3_B8464
     /*0x7C*/ void (*update)(struct StaObj* o);
     /*0x80*/ void (*onHit)(s32 idx, s32 b, u8* c);
-    /*0x84*/ u8 _84[0x90 - 0x84];
+    /*0x84*/ void (*preDraw)(struct StaObj* o);
+    /*0x88*/ u8 _88[4];
+    /*0x8C*/ void* anim; // ShapeAnimPlayer* (lbl_3_bss_B578) for the shape-animated object
+
     /*0x90*/ u8 visible : 1;
     /*0x90*/ u8 hasShadow : 1;
     /*0x90*/ u8 bit5 : 1;
     /*0x90*/ u8 bits : 5;
-    /*0x91*/ u8 _91[0x9C - 0x91];
+    /*0x91*/ u8 _91;
+    /*0x92*/ u8 _92;
+    /*0x93*/ u8 _93;
+    /*0x94*/ s16 _94;
+    /*0x96*/ s16 _96;
+    /*0x98*/ u8 _98;
+    /*0x99*/ u8 _99[0x9C - 0x99];
     /*0x9C*/ f32 animTime;
     /*0xA0*/ u8 id;
     /*0xA1*/ u8 prevState;
     /*0xA2*/ u8 state;
-    /*0xA3*/ u8 _A3[0xE8 - 0xA3];
+    /*0xA3*/ u8 frame;
+    /*0xA4*/ u8 _A4[0xE8 - 0xA4];
 } StaObj; // size: 0xE8
 
 // Queue task (lbl_803CC1B8) that sets obj->bit5 after `timer` frames (fn_3_F92FC).
@@ -47,13 +57,34 @@ typedef struct StaHazeNode {
     /* 0x68 */ u8 _68[4];
 } StaHazeNode; // size: 0x6C
 
+// List hanging off lbl_3_common_bss_350E4 (+0x08 / +0x0C), set up by fn_3_FA58C.
+typedef struct StaExtList {
+    /*0x00*/ void* p0;      // stadium file + 0x60 / + 0xA0
+    /*0x04*/ void* p4;      // stadium file + 0x40 / + 0x80
+    /*0x08*/ void* p8;      // lbl_3_data_10F88 / lbl_3_data_11008
+    /*0x0C*/ void* pC;      // lbl_3_data_10F7C / lbl_3_data_10F84
+    /*0x10*/ u8* entries;   // count entries of 3 bytes
+    /*0x14*/ u16 count;
+    /*0x16*/ u16 nChoices;  // range of the random third byte
+    /*0x18*/ u16 n18;
+} StaExtList; // size: 0x1C
+
+// lbl_3_common_bss_350E4 + 0x10, set up by fn_3_FA58C.
+typedef struct StaExt10 {
+    /*0x00*/ u8 b[0x18];
+    /*0x18*/ void* file;    // stadium file
+    /*0x1C*/ f32 cosAngle;
+    /*0x20*/ u8 n20;
+} StaExt10; // size: 0x24
+
 // lbl_3_data_1BA98: where each object stands.
 typedef struct StaObjDef {
     /*0x00*/ Vec pos;
     /*0x0C*/ f32 rotY;
-    /*0x10*/ u8 _10[2];
+    /*0x10*/ u8 kind;    // initial StaObj.prevState; 4: copies, 5: free slot
+    /*0x11*/ u8 visible;
     /*0x12*/ u8 group;
-    /*0x13*/ u8 _13;
+    /*0x13*/ u8 state;   // initial StaObj.state; 8: random 0-2
 } StaObjDef; // size: 0x14
 
 // Queue task (lbl_803CC1B8) that moves a knocked object along with the ball (fn_3_F934C).
@@ -76,8 +107,8 @@ void fn_3_F8878(Emitter* e);
 void fn_3_F8ABC(void);
 void fn_3_F8B04(void);
 void fn_3_F8B30(void);
-void fn_3_F8B34(void);
-void fn_3_F8BA8(u8* o);
+void fn_3_F8B34(StaObj* o);
+void fn_3_F8BA8(StaObj* o);
 void fn_3_F8D00(void);
 void fn_3_F8E20(void);
 void fn_3_F9088(Vec* pos, s32 idx);
@@ -91,7 +122,7 @@ void fn_3_F9B9C(s32 idx, s32 b, u8* c);
 void fn_3_F9D94(StaObj* o);
 void fn_3_F9E78(s32 idx, s32 b, u8* c);
 void fn_3_FA3C0(void);
-void fn_3_FA58C(void);
+void fn_3_FA58C(void** files);
 void fn_3_FB3D8(StaHazeNode* node);
 void fn_3_FBBA0(TexImage* t);
 void fn_3_F8444(void);

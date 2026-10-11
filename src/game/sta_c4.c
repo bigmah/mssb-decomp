@@ -3,6 +3,12 @@
 #include "main/file_800263FC.h"
 #include "main/file_80011640.h"
 #include "C3/anim.h"
+#include "main/file_80024D2C.h"
+#include "main/file_800BD3EC.h"
+#include "game/sta_c0.h"
+#include "game/rep_1C0.h"
+#include "game/auto_00_000FBCD0_text.h"
+#include "game/rep_D0.h"
 #include "main/file_8004207C.h"
 #include "game/rep_23E8.h"
 #include "main/file_800B4A44.h"
@@ -48,9 +54,17 @@ extern void OSPanic(const char*, int, const char*, ...);
 extern int rand(void);
 typedef struct {
     StaObj* objs;
-    u8 pad4[0x2C];
-    s32 n;
-    u8 pad34[8];
+    StaObj* objsBackup;
+    StaExtList* ext08;
+    StaExtList* ext0C;
+    StaExt10* ext10;
+    u8 pad14[4];
+    void (*draw)(void);   // 0x18
+    void (*update)(void); // 0x1C
+    void* lights[4];      // 0x20
+    s32 n;                // 0x30
+    u32* fileIdx;         // 0x34: indices into the stadium file list (fn_3_B9D68)
+    u8 pad38[4];
     u32* a3C;
     u16* a40;
     u32* a44;
@@ -60,6 +74,8 @@ typedef struct {
     s16 cnt;
     u8 pad66[5];
     u8 b6B;
+    u8 pad6C;
+    u8 numActorObjs; // 0x6D
 } StaCommon;
 extern StaCommon lbl_3_common_bss_350E4;
 extern f64 cos(f64);
@@ -85,12 +101,27 @@ static SpaniGroup* lbl_3_bss_B628[1];
 static u8 lbl_3_bss_B620[8];
 static Vec lbl_3_bss_B5D8[6];
 static u8 lbl_3_bss_B5D4;
-static s32 lbl_3_bss_B574[0x18];
+static ShapeAnimPlayer lbl_3_bss_B578;
+static s32 lbl_3_bss_B574[1];
 static u8 lbl_3_bss_B570;
 extern void (*lbl_3_data_1BA88[])(s32, s32, u8*);
 extern void fn_3_F92FC(void);
 extern const f32 lbl_3_rodata_3060;
 extern const f32 lbl_3_rodata_3078;
+extern const f32 lbl_3_rodata_3068;
+extern const f32 lbl_3_rodata_306C;
+extern const f64 lbl_3_rodata_3070;
+extern SpaniDesc lbl_3_data_10E9C[];
+extern u8 lbl_3_data_10F7C[];       // TODO type
+extern u8 lbl_3_data_10F84[];       // TODO type
+extern u8 lbl_3_data_10F88[];       // TODO type
+extern u8 lbl_3_data_11008[];       // TODO type
+extern const u8 lbl_3_data_110A8[]; // 32 x 3 initial entries for ext08
+extern const u8 lbl_3_data_11138[]; // 16 x 3 initial entries for ext0C
+// rep_1D58 (stadium objects); not from rep_1D58.h, where these are still (u8*, u32) / u8* tables (as in rep_2998).
+void fn_3_B97C8(void* p);
+void fn_3_B97DC(ActorObject* obj, void* animBank);
+void fn_3_B9D68(void* names, s32 n, void** files, u32* out);
 extern const f32 lbl_3_rodata_307C;
 extern const f32 lbl_3_rodata_3080;
 extern const f32 lbl_3_rodata_3084;
@@ -252,7 +283,7 @@ void fn_3_F8B30(void) {
 }
 
 // .text:0x000F8B34 size:0x74 mapped:0x80737BC8
-void fn_3_F8B34(void) {
+void fn_3_F8B34(StaObj* o) {
     fn_3_B9510(0);
     GXLoadTexObj(&lbl_3_bss_B640, 7);
     GXSetIndTexOrder(0, 0, 7);
@@ -262,18 +293,19 @@ void fn_3_F8B34(void) {
 }
 
 // .text:0x000F8BA8 size:0x158 mapped:0x80737C3C
-void fn_3_F8BA8(u8* o) {
-    u32* r = *(u32**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)(o + 0x74)) + 0x18)) + 0x14) + 0x10) + 4);
+void fn_3_F8BA8(StaObj* o) {
+    // TODO type: actor -> +0x18 -> +0x14 -> +0x10 -> +0x4 is the texture image of the haze material
+    u32* r = *(u32**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)((u8*)o->actorObj->actor + 0x18)) + 0x14) + 0x10) + 4);
     s8 prev;
     u32 i, j;
-    if (o[0xA3] != 0 && o[0xA3] % 3 == 0) {
-        o[0xA2]++;
-        if (o[0xA2] > 0x19) {
-            o[0xA2] = 0xA;
-            o[0xA3] = 0;
+    if (o->frame != 0 && o->frame % 3 == 0) {
+        o->state++;
+        if (o->state > 0x19) {
+            o->state = 0xA;
+            o->frame = 0;
         }
         r[1] &= ~0x1FFF;
-        r[1] |= o[0xA2];
+        r[1] |= o->state;
         for (i = 0; i < 0x80; i++) {
             for (j = 0; j < 0x80; j++) {
                 if (j == 0) {
@@ -289,10 +321,11 @@ void fn_3_F8BA8(u8* o) {
         }
         DCFlushRange(lbl_3_bss_B63C, 0x8000);
     }
-    o[0xA3]++;
+    o->frame++;
 }
 
 // .text:0x000F8D00 size:0x120 mapped:0x80737D94
+#pragma dont_inline off
 void fn_3_F8D00(void) {
     f32 m[2][3];
     u32 i, j;
@@ -314,6 +347,7 @@ void fn_3_F8D00(void) {
         }
     }
 }
+#pragma dont_inline on
 
 // .text:0x000F8E20 size:0x268 mapped:0x80737EB4
 #pragma dont_inline off
@@ -743,9 +777,320 @@ void fn_3_FA3C0(void) {
 }
 
 // .text:0x000FA58C size:0xE4C mapped:0x80739620
-void fn_3_FA58C(void) {
-    return;
+static inline void sta_initObjTail(StaObj* p) {
+    p->_92 = 0xFF;
+    p->preDraw = NULL;
+    p->anim = NULL;
+    p->_94 = 0;
+    p->_96 = -1;
+    p->_98 = 1;
 }
+
+static inline u8 sta_hasShadow(StaObj* p) {
+    u8 t = 0;
+    if (p->visible && p->shadow != NULL) {
+        t = 1;
+    }
+    return t;
+}
+
+// NONMATCHING 87%: same structure and calls; the original reaches lbl_3_data_1BA88/1BA98 and this unit's .bss through
+// pooled base registers and keeps 0.0f in memory (ours hoists it into f31), so most remaining lines are register numbering
+#if NONMATCHING
+void fn_3_FA58C(void** files) {
+    void (*draw)(void);
+    u32* idx;
+    ActorObjectTable* tbl;
+    StaObj* p;
+    StaObj* q;
+    StaObj* o;
+    StaObjDef* def;
+    StaExtList* ext;
+    const u8* src;
+    u8* slot;
+    s32 last;
+    s32 dup;
+    s32 i;
+    s32 k;
+    s32 n;
+    s32 size;
+
+    last = 0;
+    draw = fn_3_FBCD0;
+    if (g_d_GameSettings.GameModeSelected == 7) {
+        draw = NULL;
+    }
+    lbl_3_common_bss_350E4.draw = draw;
+    lbl_3_common_bss_350E4.update = fn_3_F8454;
+    lbl_3_bss_B664[0] = 1;
+    idx = _OSAllocFromHeap(4, 0x44);
+    lbl_3_common_bss_350E4.fileIdx = idx;
+    fn_3_B9D68(&lbl_3_data_1BA98[50], 0x11, files, idx); // the file kinds follow the 50 object spots
+    lbl_3_bss_B660 = files[0];
+    fn_80035750(files[idx[16]], files[idx[15]], 5);
+    lbl_3_bss_B628[0] = fn_800B0A5C_insertQueue(fn_3_F8E20, 2);
+    fn_80034E20(lbl_3_bss_B628[0], lbl_3_data_10E9C);
+
+    tbl = ActorObjectInitTable(0x10);
+    lbl_8036E548.slots6C = tbl;
+    fn_800BDC88(tbl, 0, 0, files[idx[1]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 1, 1, files[idx[3]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 2, 2, files[idx[4]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 3, 3, files[idx[5]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 4, 4, files[idx[6]], NULL, NULL);
+    for (k = 0; k < 9; k++) {
+        fn_800BDC88(lbl_8036E548.slots6C, k + 5, k + 5, files[idx[2]], files[idx[2] + 2], NULL);
+        fn_3_B97DC(&lbl_8036E548.slots6C->objects[k + 5], files[idx[2] + 2]);
+        lbl_8036E548.slots6C->objects[k + 5].setAnimation = 0;
+    }
+    fn_800BDC88(lbl_8036E548.slots6C, 14, 14, files[idx[7]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 15, 15, files[idx[8]], NULL, NULL);
+    lbl_3_common_bss_350E4.numActorObjs = 0x10;
+    for (k = 0; k < 16; k++) {
+        fn_800BD548(&lbl_8036E548.slots6C->objects[k], 4, lbl_3_common_bss_350E4.lights[0], lbl_3_common_bss_350E4.lights[1],
+                    lbl_3_common_bss_350E4.lights[2], lbl_3_common_bss_350E4.lights[3]);
+    }
+    if (files[idx[13]] != NULL) {
+        fn_80025DDC(files[idx[13]]);
+        fn_80025C58(files[idx[13]], (ShapeModel**)&lbl_8036E548.slots6C->objects[15].actor); // TODO type: the shape model takes the actor slot
+        lbl_3_bss_B578.set = files[idx[14]];
+        fn_80025FFC(files[idx[13]], &lbl_3_bss_B578);
+        fn_80025EEC(&lbl_3_bss_B578, 0, 0);
+    }
+
+    lbl_3_common_bss_350E4.n = 0x34;
+    size = (g_d_GameSettings.miniGameStadiumIndicator == 0 ? 0xEC : 0) + 0x34 * sizeof(StaObj);
+    lbl_3_common_bss_350E4.objs = _OSAllocFromHeap(0x20, size);
+    memset(lbl_3_common_bss_350E4.objs, 0, size);
+    lbl_3_common_bss_350E4.objsBackup = _OSAllocFromHeap(0x20, size);
+    memset(lbl_3_common_bss_350E4.objsBackup, 0, size);
+    if (g_d_GameSettings.miniGameStadiumIndicator == 0) {
+        // the 0xEC extra bytes behind the backup objects: two lists, their entries and ext10
+        u8* extra = (u8*)&lbl_3_common_bss_350E4.objsBackup[0x34];
+        lbl_3_common_bss_350E4.ext08 = (StaExtList*)extra;
+        lbl_3_common_bss_350E4.ext0C = (StaExtList*)(extra + 0x1C);
+        lbl_3_common_bss_350E4.ext08->entries = (u8*)lbl_3_common_bss_350E4.ext0C + 0x1C;
+        lbl_3_common_bss_350E4.ext0C->entries = lbl_3_common_bss_350E4.ext08->entries + 0x60;
+        lbl_3_common_bss_350E4.ext10 = (StaExt10*)(lbl_3_common_bss_350E4.ext0C->entries + 0x30);
+    } else {
+        lbl_3_common_bss_350E4.ext08 = NULL;
+        lbl_3_common_bss_350E4.ext0C = NULL;
+        lbl_3_common_bss_350E4.ext10 = NULL;
+    }
+
+    p = lbl_3_common_bss_350E4.objs;
+    q = p;
+    if (g_d_GameSettings.GameModeSelected != 7) {
+        slot = lbl_3_bss_B630;
+        dup = 0;
+        lbl_3_bss_B62C = 0xFFFF;
+        for (i = 0; i < 0x34; i++, p++, q = p) {
+            def = &lbl_3_data_1BA98[i];
+            q->id = i;
+            if (def->kind == 5) {
+                // free slot for a knocked-off object (fn_3_F9E78)
+                q->prevState = 5;
+                if (lbl_3_bss_B62C == 0xFFFF) {
+                    lbl_3_bss_B62C = i;
+                }
+                *slot++ = 0xFF;
+                p->actorObj = &lbl_8036E548.slots6C->objects[i + 5];
+                p->shadow = NULL;
+                p->update = NULL;
+                p->onHit = NULL;
+                p->visible = 0;
+                p->hasShadow = 0;
+                p->bit5 = 0;
+                p->ctrl.base.type = 0;
+            } else if (dup != 0) {
+                q->prevState = 0;
+                q->state = 0;
+                p->actorObj = &lbl_8036E548.slots6C->objects[0];
+                p->shadow = files[idx[9]];
+                p->update = NULL;
+                p->onHit = NULL;
+                p->visible = 0;
+                p->hasShadow = 0;
+                p->bit5 = 1;
+                p->ctrl.base.type = 0;
+                CTRLSetTranslation(&p->ctrl.base, lbl_3_rodata_302C, lbl_3_rodata_302C, lbl_3_rodata_302C);
+                CTRLSetRotation(&p->ctrl.base, lbl_3_rodata_302C, lbl_3_rodata_302C, lbl_3_rodata_302C);
+            } else if ((dup = (def->kind == 4)) != 0) {
+                // copies of the first B62C spots, sunk into the ground
+                StaObjDef* d = lbl_3_data_1BA98;
+                for (k = 0; k < lbl_3_bss_B62C; k++, d++, i++, p++, q = p) {
+                    q->prevState = 0;
+                    q->state = 0;
+                    p->actorObj = &lbl_8036E548.slots6C->objects[4];
+                    p->shadow = NULL;
+                    p->update = NULL;
+                    p->onHit = NULL;
+                    p->visible = d->visible;
+                    p->hasShadow = 0;
+                    p->ctrl.base.type = 0;
+                    CTRLSetTranslation(&p->ctrl.base, d->pos.x, lbl_3_rodata_3068, d->pos.z);
+                    CTRLSetRotation(&p->ctrl.base, lbl_3_rodata_302C, d->rotY, lbl_3_rodata_302C);
+                    p->bit5 = 0;
+                    sta_initObjTail(p);
+                }
+                last = i;
+                i--;
+                p--;
+            } else {
+                q->prevState = def->kind;
+                q->state = def->state;
+                if (q->prevState == 3) {
+                    if (q->state == 8) {
+                        q->state = rand() % 3;
+                    }
+                } else if (q->prevState == 0 && q->state == 8) {
+                    q->state = rand() % 3;
+                } else {
+                    q->state = q->prevState;
+                }
+                p->actorObj = &lbl_8036E548.slots6C->objects[q->prevState];
+                p->shadow = files[idx[9 + q->state]];
+                p->update = NULL;
+                p->onHit = lbl_3_data_1BA88[q->prevState];
+                p->visible = def->visible;
+                p->hasShadow = sta_hasShadow(p);
+                p->ctrl.base.type = 0;
+                CTRLSetTranslation(&p->ctrl.base, def->pos.x, def->pos.y, def->pos.z);
+                CTRLSetRotation(&p->ctrl.base, lbl_3_rodata_302C, def->rotY, lbl_3_rodata_302C);
+                p->bit5 = 1;
+            }
+            sta_initObjTail(p);
+        }
+    }
+
+    // the haze object (fn_3_FB3D8) and its particles
+    o = &lbl_3_common_bss_350E4.objs[last];
+    o->id = 0x33;
+    o->prevState = 6;
+    o->state = 10;
+    {
+        Emitter* e = fn_80033A24(fn_3_F85B0, 0xF0, 0xD, 0x2A, 1, 0x7F); // fn_3_F8ABC
+        if (e != NULL) {
+            fn_3_F8878(e);
+        }
+    }
+    o->actorObj = &lbl_8036E548.slots6C->objects[14];
+    o->shadow = NULL;
+    o->update = fn_3_F8BA8;
+    o->onHit = NULL;
+    o->visible = 1;
+    o->hasShadow = sta_hasShadow(o);
+    o->ctrl.base.type = 0;
+    CTRLSetTranslation(&o->ctrl.base, lbl_3_rodata_302C, lbl_3_rodata_302C, lbl_3_rodata_302C);
+    CTRLSetRotation(&o->ctrl.base, lbl_3_rodata_302C, lbl_3_rodata_302C, lbl_3_rodata_302C);
+    o->bit5 = 1;
+    sta_initObjTail(o);
+    o->preDraw = fn_3_F8B34;
+    fn_3_F8D00();
+
+    // the shape-animated object
+    o++;
+    o->id = 0x33;
+    o->prevState = 7;
+    o->actorObj = &lbl_8036E548.slots6C->objects[15];
+    o->shadow = NULL;
+    o->update = NULL;
+    o->onHit = NULL;
+    o->visible = 1;
+    o->hasShadow = sta_hasShadow(o);
+    o->ctrl.base.type = 0;
+    CTRLSetTranslation(&o->ctrl.base, lbl_3_rodata_302C, lbl_3_rodata_306C, lbl_3_rodata_302C);
+    CTRLSetRotation(&o->ctrl.base, lbl_3_rodata_302C, lbl_3_rodata_302C, lbl_3_rodata_302C);
+    o->bit5 = 1;
+    sta_initObjTail(o);
+    o->anim = &lbl_3_bss_B578;
+
+    if (g_d_GameSettings.miniGameStadiumIndicator == 0) {
+        ext = lbl_3_common_bss_350E4.ext08;
+        ext->pC = lbl_3_data_10F7C;
+        ext->p8 = lbl_3_data_10F88;
+        ext->p0 = (u8*)g_UNK_StadiumDetails._00 + 0x60;
+        ext->p4 = (u8*)g_UNK_StadiumDetails._00 + 0x40;
+        ext->count = 0x20;
+        ext->n18 = 6;
+        ext->nChoices = 5;
+        src = lbl_3_data_110A8;
+        for (k = 0, n = 0; k < 0x20; k++, n += 3, src += 3) {
+            ext->entries[n] = src[0];
+            if (src[1] < 6) {
+                ext->entries[n + 1] = src[1];
+            } else {
+                ext->entries[n + 1] = rand() % 6;
+            }
+            if (src[2] < 5) {
+                ext->entries[n + 2] = src[2];
+            } else {
+                ext->entries[n + 2] = rand() % ext->nChoices;
+            }
+        }
+
+        ext = lbl_3_common_bss_350E4.ext0C;
+        ext->pC = lbl_3_data_10F84;
+        ext->p8 = lbl_3_data_11008;
+        ext->p0 = (u8*)g_UNK_StadiumDetails._00 + 0xA0;
+        ext->p4 = (u8*)g_UNK_StadiumDetails._00 + 0x80;
+        ext->count = 0x10;
+        ext->n18 = 2;
+        ext->nChoices = 8;
+        src = lbl_3_data_11138;
+        for (k = 0, n = 0; k < 0x10; k++, n += 3, src += 3) {
+            ext->entries[n] = src[0];
+            if (src[1] >= 2) {
+                ext->entries[n + 1] = src[1];
+            } else {
+                ext->entries[n + 1] = rand() % 6;
+            }
+            if (src[2] >= 8) {
+                ext->entries[n + 2] = src[2];
+            } else {
+                ext->entries[n + 2] = rand() % ext->nChoices;
+            }
+        }
+
+        fn_3_35E4((u32)fn_3_C9878); // TODO type: fn_3_35E4 stores a callback (u32 in rep_1C0)
+        {
+            StaExt10* e = lbl_3_common_bss_350E4.ext10;
+            e->file = g_UNK_StadiumDetails._00;
+            e->n20 = 2;
+            e->cosAngle = cos(lbl_3_rodata_3070);
+            e->b[0] = 8;
+            e->b[1] = 2;
+            e->b[2] = 7;
+            e->b[3] = 4;
+            e->b[4] = 7;
+            e->b[5] = 4;
+            e->b[6] = 9;
+            e->b[7] = 2;
+            e->b[8] = 7;
+            e->b[9] = 10;
+            e->b[10] = 7;
+            e->b[11] = 4;
+            e->b[12] = 8;
+            e->b[13] = 2;
+            e->b[14] = 7;
+            e->b[15] = 4;
+            e->b[16] = 7;
+            e->b[17] = 4;
+            e->b[18] = 9;
+            e->b[19] = 2;
+            e->b[20] = 7;
+            e->b[21] = 10;
+            e->b[22] = 7;
+            e->b[23] = 4;
+        }
+    }
+    lbl_3_common_bss_350E4.a48 = NULL;
+    if (g_d_GameSettings.GameModeSelected != 7) {
+        fn_3_FA3C0();
+    }
+    fn_3_B97C8(fn_3_F8444);
+}
+#endif
 
 // .text:0x000FB3D8 size:0x7C8 mapped:0x8073A46C
 // NONMATCHING 96%: register allocation only (min/max floats f0-f3 vs ours f1-f4, saved gprs rotated)
