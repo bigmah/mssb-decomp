@@ -264,4 +264,6 @@ void fn_2_B66C(void);
 
 void fn_2_AEE8(void);
 
+void fn_2_11340(u8 team);
+
 #endif

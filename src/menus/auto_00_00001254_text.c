@@ -12,6 +12,11 @@ extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
 extern u8 lbl_80108EC4[];
+extern u8 lbl_803CBCD8[];
+extern u8 lbl_80361B20[];
+extern u8 lbl_2_data_130C[];
+extern void fn_2_328(void);
+extern void fn_2_2DC(void);
 extern s32 fn_80062578(void);
 extern s32 fn_80050F78(s32 arg);
 extern void fn_2_19F2C(void);
@@ -1872,6 +1877,97 @@ void fn_2_ABC0(u8 team) {
     }
     for (i = 0; i < 0x36; i++) {
         lbl_8034E9A0[0x478D + team * 0x36 + i] = ids[i];
+    }
+}
+#endif
+
+// NONMATCHING 80%: stadium-selection pointer kept in a register differently; branch layout of the button chain
+#if NONMATCHING
+// fn_2_11340, size:0x358
+void fn_2_11340(u8 team) {
+    u8 found = 0;
+    s32* stadium = (s32*)(lbl_2_bss_F410 + 0x44);
+    s32 prev;
+    s32 r;
+    s8 port;
+    u16 repeat;
+    u16 down;
+    if (lbl_803CBCD8[0] != 0) {
+        prev = *stadium;
+        do {
+            if (lbl_80361B20[0xF5] != 0) {
+                r = fn_2_14F8(0, 5);
+            } else {
+                r = fn_2_14F8(0, 4);
+            }
+        } while (prev == r);
+        *stadium = r;
+        lbl_803CBCD8[1]--;
+        fn_800625A4(0, 0x28);
+        return;
+    }
+    if (lbl_803C66B0[0x55] != 0) {
+        return;
+    }
+    if (g_d_GameSettings.GameModeSelected != 5) {
+        port = lbl_8034E9A0[0x46F8 + team];
+        if (g_d_GameSettings.PlayerPorts[0] == port) {
+            found = 1;
+        }
+        if (g_d_GameSettings.PlayerPorts[1] == port) {
+            found = 1;
+        }
+        lbl_8034E9A0[0x46F8 + team] = port;
+        if (!found) {
+            return;
+        }
+    } else if (team != 0) {
+        return;
+    }
+    repeat = *(u16*)(lbl_8034E9A0 + team * 6 + 0x4730);
+    down = *(u16*)(lbl_8034E9A0 + team * 6 + 0x472E);
+    if (repeat & 1) {
+        if (lbl_803C66B0[0x5D] != 0x24) {
+            if (--*stadium < 0) {
+                *stadium = 5;
+            }
+            fn_800625A4(0, 0x28);
+            fn_2_1C34(1);
+        }
+    } else if (repeat & 2) {
+        if (lbl_803C66B0[0x5D] != 0x24) {
+            if (++*stadium == 6) {
+                *stadium = 0;
+            }
+            fn_800625A4(0, 0x28);
+            fn_2_1C34(2);
+        }
+    } else if (down & 0x20) {
+        if (g_d_GameSettings.GameModeSelected != 5) {
+            lbl_803CBCD8[0] = 1;
+            lbl_803CBCD8[1] = 6;
+        }
+    } else if (down & 0x100) {
+        if (*stadium < 6) {
+            if (lbl_80361B20[0xF5] == 0 && lbl_2_data_130C[*stadium] == 1) {
+                sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
+            } else if (lbl_803C66B0[0x5D] == 0) {
+                g_d_GameSettings.StadiumID = lbl_2_data_130C[*stadium];
+                lbl_2_bss_F468[0x58] = 1;
+                fn_2_328();
+                fn_2_1C34(0x100);
+                fn_800625A4(0, 0x25);
+                *(u16*)(lbl_803CBBCC[0] + 4) = 4;
+            }
+        }
+    } else if (down & 0x200) {
+        if (lbl_803CBCD8[0] == 0 && lbl_803C66B0[0x5D] == 0) {
+            fn_2_2DC();
+            fn_2_1C34(0x200);
+            *(u16*)(lbl_803CBBCC[0] + 6) = 0xC;
+            fn_800625A4(0, 0x24);
+            *(u16*)(lbl_803CBBCC[0] + 4) = 3;
+        }
     }
 }
 #endif
