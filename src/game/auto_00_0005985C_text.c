@@ -17,6 +17,21 @@ typedef struct DiskFileEntry {
 typedef void (*AramQueueCallback)(DiskFileEntry* entry, void* dst, void* user);
 extern s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user);
 extern DiskFileEntry lbl_800F1D78[];
+extern DiskFileEntry lbl_3_data_3D70;
+extern u8 lbl_3_data_3D80[0x430];
+extern void fn_800216F8(u8 group, s32 (*callback)(void));
+extern s32 fn_3_91064(void);
+extern s32 fn_3_90798(void);
+extern s32 fn_3_90928(void);
+extern void fn_3_906FC(void);
+extern void manageLoadingState(void);
+extern void fn_8001CE74(void);
+extern void fn_3_B42A8(void);
+extern void fn_8001A3FC(s32 arg);
+extern void fn_80019A60(void);
+extern s32 fn_3_1665E4(void);
+extern s32 fn_3_106E50(void);
+extern void fn_3_106DFC(void);
 
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h, which can't be
 // included here next to main/file_8004207C.h: their fn_80024D2C prototypes clash).
@@ -1428,5 +1443,106 @@ void fn_3_5BA2C(void) {
                 sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
             }
         }
+    }
+}
+
+// fn_3_59C2C, size:0x314
+void fn_3_59C2C(void) {
+    SceneTask* task = lbl_803CC1B8;
+    switch (unkSimulationRelatedStruct._04) {
+    case 0:
+        task->_10 = 0;
+        fn_800216F8(3, fn_3_91064);
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 1:
+        if (task->_10 != 0) {
+            task->_10 = 0;
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 2:
+        fn_800216F8(g_d_GameSettings.StadiumID + 0x27, fn_3_90798);
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 3:
+        if (task->_10 != 0) {
+            task->_10 = 0;
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 4:
+        lbl_3_data_228._10 = 0;
+        fn_800B0A5C_insertQueue(manageLoadingState, 0);
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 5:
+        if (lbl_3_data_228._10 == 1) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 6:
+        if (fn_80035838(lbl_3_data_3D80, 2) != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 7:
+        if (fn_80035838(lbl_3_data_3D80 + 0xE0, 0xB) != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 8:
+        if (fn_80035838(lbl_3_data_3D80 + 0x1D0, 9) != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 9:
+        lbl_3_common_bss_34C58._00 = ARAMTransfer(&lbl_3_data_3D70, 0, 0, 0); // TODO type: pointer in u32
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 10:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            fn_3_906FC();
+            lbl_3_common_bss_34C58._2C = 0;
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 11:
+        if (fn_3_90928() != 0) {
+            lbl_3_common_bss_34C58._2C = 0;
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 12:
+        fn_8001CE74();
+        fn_3_B42A8();
+        fn_8001A3FC(2);
+        lbl_8036E548._2D7D = 0;
+        fn_80019A60();
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 13:
+        if (lbl_8036E548._2D7D != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 14:
+        if (fn_3_1665E4() != 0) {
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    case 15:
+        fn_3_106E50();
+        unkSimulationRelatedStruct._04++;
+        break;
+    case 16:
+        if ((s32)lbl_803C6CF8._715 == 1) {
+            fn_3_106DFC();
+            unkSimulationRelatedStruct._04++;
+        }
+        break;
+    default:
+        task->func = fn_3_5AE0C;
+        break;
     }
 }
