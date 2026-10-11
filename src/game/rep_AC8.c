@@ -655,13 +655,13 @@ int fn_3_27FF4(int i) {
 #endif
 
 // .text:0x00028224 size:0xA84 mapped:0x806672B8
-void fn_3_28224(void) {
-    return;
+int fn_3_28224(int i) {
+    return 0;
 }
 
 // .text:0x00028CA8 size:0x14BC mapped:0x80667D3C
-void fn_3_28CA8(void) {
-    return;
+int fn_3_28CA8(int i) {
+    return 0;
 }
 
 // .text:0x0002A164 size:0x124 mapped:0x806691F8
@@ -704,9 +704,57 @@ int fn_3_2A164(int i) {
 }
 
 // .text:0x0002A288 size:0x414 mapped:0x8066931C
-void fn_3_2A288(void) {
-    return;
+// NONMATCHING 50%: the original inlines fn_3_27FF4 for the type-1 wall check; we call it (same behaviour)
+// nmverify: fn_3_27FF4 inlined on one side (calls match once expanded)
+#if NONMATCHING
+int fn_3_2A288(int i) {
+    int who = i;
+    u8* f = g_Fielders + i * 0x268;
+    if (g_d_GameSettings[0x11] != 0) {
+        if (i == 0) {
+            who = *(s8*)(g_Minigame + *(s8*)(g_Minigame + 0x1904) + 0x18CC);
+        } else {
+            who = *(s8*)(g_Minigame + i + 0x18F2);
+        }
+    } else if (i != *(s16*)(g_FieldingLogic + 0xB0)) {
+        return 0;
+    }
+    if (f[0x1C5] != 0 && (*(u8**)(g_FieldingLogic + 0x8C))[4] == 0) {
+        return 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B7A) == -1) {
+        return 0;
+    }
+    if (*(s16*)(g_Ball + 0x1B66) < f[0x1D2] + 5) {
+        return 0;
+    }
+    if (f[0x1C5] == 0) {
+        if (f[0x1CB] == 2) {
+            if (fn_3_28224(i) != 0) {
+                (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+                fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 1);
+                return 1;
+            }
+        } else if (f[0x1CB] == 1) {
+            if (fn_3_27FF4(i) != 0) {
+                (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+                return 1;
+            }
+        } else if (f[0x1CB] == 3) {
+            if (fn_3_30214(i) != 0) {
+                (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+                fn_3_1682AC(((int*)(lbl_8036E548 + 0x2C50))[who], 2);
+                return 1;
+            }
+        }
+    }
+    if (fn_3_28CA8(i) != 0) {
+        (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+        return 1;
+    }
+    return 0;
 }
+#endif
 
 // .text:0x0002A69C size:0x63C mapped:0x80669730
 void fn_3_2A69C(void) {
