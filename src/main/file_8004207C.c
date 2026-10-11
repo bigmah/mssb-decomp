@@ -255,9 +255,91 @@ s32 fn_80042598(u8 team, s32 slot) {
 #endif
 
 // .text:0x800426DC size:0x514
+// NONMATCHING ~80%: source stats indexed as [id/9][id%9] with u8 casts in the original; field copies use lhz/lha differently
+#if NONMATCHING
 void transferStatsToInMemRoster(u8 team) {
-    return;
+    s32 slot;
+    CharacterStats* dst;
+    CharacterStats* src;
+
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        return;
+    }
+    slot = lbl_803297E0.slot[team] - 1;
+    dst = &inMemRoster[team][slot];
+    if (lbl_80361B20[dst->stats.CharID] == 0) {
+        return;
+    }
+    if (++lbl_8034E9A0._4720[team] == 2) {
+        lbl_8034E9A0._4720[team] = 0;
+    }
+    if (g_d_GameSettings.GameModeSelected != 5) {
+        lbl_8034E9A0.boosted[team][slot] ^= 1;
+        memcpy(lbl_802E4B00[team], lbl_8034E9A0.boosted[team], 9);
+    } else {
+        lbl_8034E9A0.boosted[0][slot] = 1;
+    }
+    if (lbl_8034E9A0.boosted[team][slot] != 0) {
+        dst = &inMemRoster[team][slot];
+        dst->stats.SlapContactSize += lbl_800E86F0[0];
+        dst->stats.ChargeContactSize += lbl_800E86F0[1];
+        dst->stats.SlapHitPower += lbl_800E86F0[2];
+        dst->stats.ChargeHitPower += lbl_800E86F0[3];
+        dst->stats.Speed += lbl_800E86F0[5];
+        dst->stats.ThrowingArm += lbl_800E86F0[6];
+        dst->stats.BuntingContactSize += lbl_800E86F0[4];
+        dst->stats.CurveBallSpeed += lbl_800E86F0[7];
+        dst->stats.FastBallSpeed += lbl_800E86F0[8];
+        dst->stats.cursedBall += lbl_800E86F0[9];
+        dst->stats.Curve += lbl_800E86F0[10];
+        dst->stats.curveControl += lbl_800E86F0[11];
+        dst->stats.BattingStatBar += 2;
+        if (dst->stats.BattingStatBar > 10) {
+            dst->stats.BattingStatBar = 10;
+        }
+        inMemRoster[team][slot].stats.PitchingStatBar += 2;
+        if (inMemRoster[team][slot].stats.PitchingStatBar > 10) {
+            inMemRoster[team][slot].stats.PitchingStatBar = 10;
+        }
+        inMemRoster[team][slot].stats.RunningStatBar += 2;
+        if (inMemRoster[team][slot].stats.RunningStatBar > 10) {
+            inMemRoster[team][slot].stats.RunningStatBar = 10;
+        }
+        inMemRoster[team][slot].stats.FieldingStatBar += 2;
+        if (inMemRoster[team][slot].stats.FieldingStatBar > 10) {
+            inMemRoster[team][slot].stats.FieldingStatBar = 10;
+        }
+    } else {
+        CharacterStats* d = &inMemRoster[team][slot];
+        s32 i;
+
+        src = &lbl_8034E9A0.chars[dst->stats.CharID];
+        memcpy(d, src, 0x1E);
+        dst->stats.CharID = src->stats.CharID;
+        d->stats.FieldingArm = src->stats.FieldingArm;
+        d->stats.BattingStance = src->stats.BattingStance;
+        memcpy(&d->stats.SlapContactSize, &src->stats.SlapContactSize, 2);
+        memcpy(&d->stats.SlapHitPower, &src->stats.SlapHitPower, 2);
+        d->stats.BuntingContactSize = src->stats.BuntingContactSize;
+        d->stats.HitTrajectoryPushPull = src->stats.HitTrajectoryPushPull;
+        d->stats.HitTrajectoryHighLow = src->stats.HitTrajectoryHighLow;
+        d->stats.Speed = src->stats.Speed;
+        d->stats.ThrowingArm = src->stats.ThrowingArm;
+        d->stats.CharacterClass = src->stats.CharacterClass;
+        d->stats.Weight = src->stats.Weight;
+        d->stats.Captain = src->stats.Captain;
+        d->stats.CaptainStarHitPitch = src->stats.CaptainStarHitPitch;
+        memcpy(&d->stats.NonCaptainStarSwing, &src->stats.NonCaptainStarSwing, 2);
+        d->stats.FieldingStats = src->stats.FieldingStats;
+        memcpy(&d->stats.BattingStatBar, &src->stats.BattingStatBar, 4);
+        memcpy(&d->chemistry, &src->chemistry, sizeof(ChemistryTable));
+        d->BytesAfterChemistry[0] = src->BytesAfterChemistry[0];
+        for (i = 0; i < 21; i++) {
+            d->UnusedShorts[i] = src->UnusedShorts[i];
+        }
+    }
 }
+#endif
 
 // .text:0x80042BF0 size:0x54
 s32 randRange_FUN_80042bf0(s32 a, s32 b) {
