@@ -43,7 +43,9 @@ typedef struct RepFielder {
     /*0x18C*/ s16 coveringBase;
     /*0x18E*/ u8 _18E[0x192 - 0x18E];
     /*0x192*/ s16 _192;
-    /*0x194*/ u8 _194[0x1A0 - 0x194];
+    /*0x194*/ u8 _194[0x196 - 0x194];
+    /*0x196*/ s16 _196;
+    /*0x198*/ u8 _198[0x1A0 - 0x198];
     /*0x1A0*/ s16 _1A0;
     /*0x1A2*/ u8 _1A2[0x1AC - 0x1A2];
     /*0x1AC*/ s16 _1AC;
@@ -62,7 +64,9 @@ typedef struct RepFielder {
     /*0x1E0*/ u8 _1E0;
     /*0x1E1*/ u8 _1E1;
     /*0x1E2*/ u8 _1E2;
-    /*0x1E3*/ u8 _1E3[0x1ED - 0x1E3];
+    /*0x1E3*/ u8 _1E3;
+    /*0x1E4*/ u8 _1E4;
+    /*0x1E5*/ u8 _1E5[0x1ED - 0x1E5];
     /*0x1ED*/ u8 _1ED;
     /*0x1EE*/ u8 _1EE;
     /*0x1EF*/ u8 _1EF[0x1F5 - 0x1EF];
@@ -94,6 +98,14 @@ typedef struct RepRunningLogic {
 } RepRunningLogic;
 
 extern RepRunningLogic g_RunningLogic;
+
+// lbl_3_common_bss_37400, only the fields used here.
+typedef struct RepBss37400 {
+    /*0x00*/ u8 _00[0x40];
+    /*0x40*/ s16 _40; // team whose stats feed fn_3_161588
+} RepBss37400;
+
+extern RepBss37400 lbl_3_common_bss_37400;
 extern GameScores g_Scores;
 
 void fn_3_A009C(s32 fi);
@@ -154,6 +166,6 @@ void fn_3_AAC84(f32* x, f32* z);
 void fn_3_AAFF0(f32* x, f32* z);
 void fn_3_AB554(void);
 void fn_3_AB5B0(s32 maxFrames, f32* outAngle, f32* speed);
-void fn_3_ABDD0(void);
+void fn_3_ABDD0(s32 fi);
 
 #endif // !__GAME_rep_18E8_H_

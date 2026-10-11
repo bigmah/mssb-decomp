@@ -8,6 +8,11 @@
 #include "main/file_8004207C.h"
 #include "main/file_80011640.h"
 #include "game/auto_00_00167CC4_text.h"
+#include "game/auto_00_0006D4A0_text.h"
+#include "game/rep_1188.h"
+#include "game/rep_540.h"
+#include "game/rep_12D0.h"
+#include "main/file_80024184.h"
 #include "header_rep_data.h"
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
 
@@ -103,6 +108,12 @@ extern const f32 lbl_3_rodata_1960;
 extern const f32 lbl_3_rodata_1964;
 extern const f32 lbl_3_rodata_1968;
 extern const f32 lbl_3_rodata_1A38;
+extern s16 lbl_3_data_4638[2]; // chemistry thresholds (good, bad)
+extern u8 lbl_3_data_4908[2];  // bad-chemistry miss chance range
+extern void fn_3_161588(int, s16);
+// from game/m_sound.h (which conflicts with UnknownHomes_Game.h over playSoundEffect)
+u32 fn_3_8FF5C(s32 id, f32 x, f32 y, f32 z);
+u32 fn_3_90220(s32 idx, s32 off);
 extern const f32 lbl_3_rodata_1A14;
 extern const f32 lbl_3_rodata_1A44;
 extern const f32 lbl_3_rodata_1A48;
@@ -3275,9 +3286,177 @@ void fn_3_AB5B0(s32 maxFrames, f32* outAngle, f32* speedPtr) {
 #endif
 
 // .text:0x000ABDD0 size:0xC28 mapped:0x806EAE64
-void fn_3_ABDD0(void) {
-    return;
+// Releases the throw by fielder fi toward the chosen target.
+// NONMATCHING 66%: the original inlines fn_3_AAC84 (with fn_3_A6ABC) for the default target; here it is called
+#if NONMATCHING
+void fn_3_ABDD0(s32 fi) {
+    RepFielder* f;
+    s16 cover;
+    s32 rating;
+    s32 limit;
+    s32 rnd;
+    f32 tx;
+    f32 tz;
+    f32 dx;
+    f32 dz;
+    f32 a;
+    f32 b;
+    f32 d;
+    s16 ang;
+    s32 spread;
+    f32 angle;
+    f32 speed;
+    f32 horiz;
+    s32 i;
+
+    f = &g_Fielders[fi];
+    g_FieldingLogic._13E = 0;
+    g_Ball.IsAntichemistryThrow = 0;
+    g_Ball.AtBat_Contact_BallPos.x = f->pos.x + g_Ball.offsetWhilePickedUpHistory[0].x;
+    g_Ball.AtBat_Contact_BallPos.y = f->pos.y + g_Ball.offsetWhilePickedUpHistory[0].y;
+    g_Ball.AtBat_Contact_BallPos.z = f->pos.z + g_Ball.offsetWhilePickedUpHistory[0].z;
+    g_Ball.offsetWhilePickedUpHistory[0].x = lbl_3_rodata_193C;
+    g_Ball.offsetWhilePickedUpHistory[0].y = lbl_3_rodata_193C;
+    g_Ball.offsetWhilePickedUpHistory[0].z = lbl_3_rodata_193C;
+    if (g_FieldingLogic._0C4 >= 0 && g_FieldingLogic._0C4 <= 3) {
+        cover = g_FieldingLogic._0D0[g_FieldingLogic._0C4];
+        tx = lbl_3_data_4444[g_FieldingLogic._0C4 * 2];
+        tz = lbl_3_data_4444[g_FieldingLogic._0C4 * 2 + 1];
+        g_Ball.fielderBeingThrownTo = cover;
+        rating = fn_3_6D658(g_GameLogic.teamFielding, g_Fielders[fi]._17A, g_Fielders[cover]._17A);
+        if (rating >= lbl_3_data_4638[0] && g_FieldingLogic._0C4 == g_Fielders[g_Ball.fielderBeingThrownTo]._1F5) {
+            g_FieldingLogic._13E = 1;
+        }
+        if (rating < lbl_3_data_4638[1]) {
+            // bad chemistry: the throw may go off target
+            limit = LERPToNewRange_Float(rating, 0, 100, lbl_3_data_4908[0], lbl_3_data_4908[1]);
+            rnd = RandomInt_Game(100);
+            if ((g_d_GameSettings.GameModeSelected != 2 || g_Practice.instructionNumber < 0) && rnd < limit) {
+                dx = tx - g_Ball.AtBat_Contact_BallPos.x;
+                dz = tz - g_Ball.AtBat_Contact_BallPos.z;
+                g_Ball.IsAntichemistryThrow = 1;
+                a = dx * dx;
+                b = dz * dz;
+                d = a + b;
+                SQRT_L(d);
+                ang = fn_3_9FB8C(dx, dz);
+                spread = RandomInt_Game_Range(lbl_3_data_49DC[0x46 / 2], lbl_3_data_49DC[0x48 / 2]);
+                if (RandomInt_Game(2) != 0) {
+                    ang = ang + spread;
+                } else {
+                    ang = ang - spread;
+                }
+                getComponentsFromSAng(ang, &dx, &dz);
+                dx *= d;
+                dz *= d;
+                tx = g_Ball.AtBat_Contact_BallPos.x + dx;
+                tz = g_Ball.AtBat_Contact_BallPos.z + dz;
+            }
+        }
+    } else if (g_FieldingLogic._0C4 == 6 && g_FieldingLogic._0BE >= 0 && g_FieldingLogic._0BE != fi) {
+        fn_3_AAFF0(&tx, &tz);
+    } else {
+        fn_3_AAC84(&tx, &tz);
+    }
+    g_Ball.throwTarget.x = tx;
+    g_Ball.throwTarget.z = tz;
+    rating = fn_3_6E1D4(f->_1CE);
+    if (g_FieldingLogic._10B != 0) {
+        if (g_FieldingLogic._0E6 > 0x3C) {
+            g_FieldingLogic.throwSpeedType -= 2;
+        } else if (g_FieldingLogic._0E6 > 0x28) {
+            g_FieldingLogic.throwSpeedType -= 1;
+        }
+        g_FieldingLogic._10B = 0;
+    }
+    if (g_FieldingLogic._13E != 0) {
+        // good chemistry: faster throw
+        if (g_FieldingLogic.throwSpeedType != 0 && g_FieldingLogic.throwSpeedType <= 3) {
+            g_FieldingLogic.throwSpeedType -= 1;
+            playSoundEffect(0x1AB);
+        } else {
+            g_FieldingLogic._13E = 2;
+        }
+        if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400._40 == g_GameLogic.teamFielding) {
+            fn_3_161588(7, f->rosterID);
+        }
+    }
+    speed = (f32)rating / lbl_3_rodata_1938;
+    if (g_FieldingLogic._0C4 == 6 || g_FieldingLogic._0C4 == 5) {
+        fn_3_AB5B0(0, &angle, &speed);
+    } else {
+        fn_3_AB5B0(g_Fielders[g_FieldingLogic._0D0[g_FieldingLogic._0C4]].framesToDest, &angle, &speed);
+    }
+    g_Ball.physicsSubstruct.velocity.y = speed * (f32)sin(angle);
+    horiz = speed * (f32)cos(angle);
+    dx = g_Ball.throwTarget.x - g_Ball.AtBat_Contact_BallPos.x;
+    dz = g_Ball.throwTarget.z - g_Ball.AtBat_Contact_BallPos.z;
+    angle = atan2(dz, dx);
+    g_Ball.physicsSubstruct.velocity.x = horiz * (f32)cos(angle);
+    g_Ball.physicsSubstruct.velocity.z = horiz * (f32)sin(angle);
+    if (g_Ball.numThrowsDuringPlay < 0xFE) {
+        g_Ball.numThrowsDuringPlay++;
+    } else {
+        g_Ball.numThrowsDuringPlay = 0xFF;
+    }
+    dx = g_Ball.throwTarget.x - g_Ball.AtBat_Contact_BallPos.x;
+    dz = g_Ball.throwTarget.z - g_Ball.AtBat_Contact_BallPos.z;
+    f->speed = lbl_3_rodata_193C;
+    f->_196 = 0x3C;
+    d = dx * dx + dz * dz;
+    f->_1E3 = 1;
+    g_Ball.framesSinceThrowStarted = 0;
+    g_Ball.ballState = BALL_STATE_THROWN;
+    g_Ball.fielderWBallIndex = -1;
+    g_Ball.baseBallAndFielderAreOn = -1;
+    g_Ball.ballIsLooseInd_unused = 0;
+    g_Ball.fielderAboutToGetBall_hasBall = -1;
+    g_Ball.thrownBallHasHitGround = 0;
+    g_Ball.throwingFielder = fi;
+    g_Ball.matchFramesAndBallAngle.framesSinceLastThrow = g_Ball.timeSinceBallPickedUp;
+    g_Ball.timeSinceBallPickedUp = -1;
+    g_Ball.ballZoneFromHomeAtStartOfThrow = g_Ball.ballZoneAwayFromHome;
+    g_Ball.throwStartingLocation.x = g_Ball.AtBat_Contact_BallPos.x;
+    g_Ball.throwStartingLocation.z = g_Ball.AtBat_Contact_BallPos.z;
+    g_Ball.ballIsRollingIndicator = 0;
+    g_FieldingLogic._11A = 0;
+    g_FieldingLogic._11D = 0;
+    f->_1E4 = 0;
+    g_Pitcher.pickOffLoc = -1;
+    g_FieldingLogic._0CA = g_FieldingLogic._0C4;
+    g_FieldingLogic._124 = 0;
+    g_FieldingLogic._125 = -1;
+    g_FieldingLogic._12A = 0;
+    g_FieldingLogic._0C6 = -1;
+    SQRT_L(d);
+    g_Ball.throwDistance = d;
+    if (g_FieldingLogic._0BE == fi) {
+        g_FieldingLogic._0BE = -1;
+    }
+    for (i = 0; i < 4; i++) {
+        if (g_Runners[i].runnerOnFieldOrOutOrScored == 1) {
+            g_Runners[i].baseReachedAtTimeOfThrow = g_Runners[i].currentBase;
+        } else {
+            g_Runners[i].baseReachedAtTimeOfThrow = -1;
+        }
+    }
+    fn_3_A970(1);
+    if (g_FieldingLogic.throwSpeedType <= 2 && g_FieldingLogic._12D == 0) {
+        fn_3_8FF5C(0x16E, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
+    } else {
+        fn_3_8FF5C(0x16D, g_Ball.AtBat_Contact_BallPos.x, g_Ball.AtBat_Contact_BallPos.y, g_Ball.AtBat_Contact_BallPos.z);
+    }
+    fn_3_78574(fi);
+    if (g_FieldingLogic._13E != 0) {
+        fn_3_90220(f->_17A, 0);
+    }
+    if (g_Ball.IsAntichemistryThrow != 0) {
+        fn_3_90220(f->_17A, 10);
+    } else {
+        fn_3_90220(f->_17A, 5);
+    }
 }
+#endif
 
 
 #pragma dont_inline off
