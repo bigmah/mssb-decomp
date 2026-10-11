@@ -478,7 +478,95 @@ void fn_3_114A2C(void) {
 }
 
 // .text:0x00114A88 size:0x538 mapped:0x80753B1C
-void fn_3_114A88(void) {
-    return;
-}
+// g_Fielders entry (stride 0x268): only the fields used here.
+typedef struct {
+    Vec3_3290 pos;      // 0x00
+    u8 pad0C[0x30 - 0x0C];
+    f32 velX;           // 0x30
+    f32 velZ;           // 0x34
+    f32 dirX;           // 0x38
+    f32 dirZ;           // 0x3C
+    u8 pad40[0x50 - 0x40];
+    f32 speed;          // 0x50
+    u8 pad54[0x268 - 0x54];
+} Fielder_3290;
+extern Fielder_3290 g_Fielders[];
+typedef struct { f32 x, z; } V2_3290;
+extern V2_3290 lbl_3_data_450C;
+extern V2_3290 lbl_3_data_21500[];
 
+// g_Minigame +0x1A50: walk-to targets of the 4 fielders (x, z)
+typedef struct { u8 pad[0x1A50]; V2_3290 target[4]; } MgTargets_3290;
+
+// NONMATCHING 88%: float constants (incl. the inlined dolsqrtf2's) get pooled behind one base register
+#if NONMATCHING
+// Moves the fielders to their next positions over lbl_3_data_2167C[1] frames; init snaps them.
+void fn_3_114A88(s32 init) {
+    s32 i;
+    s32 d;
+    f32 inv;
+    f32 dx;
+    f32 dz;
+    Fielder_3290* f;
+    if (++*(s16*)(g_Minigame + 0x1A70) == 1 || init != 0) {
+        if (g_Minigame[0x1A2B] != 3 || g_Minigame[0x1909] != 0) {
+            f = &g_Fielders[*(s8*)(g_Minigame + 0x18F8 + *(s8*)(g_Minigame + 0x18E0 + (g_Minigame[0x190C] + 3) % 4))];
+            f->pos.x = *(f32*)(g_Minigame + 0x1A48);
+            f->pos.z = *(f32*)(g_Minigame + 0x1A4C);
+        }
+        for (i = 0; i < 4; i++) {
+            if (*(s8*)(g_Minigame + 0x18CC + i) >= 0) {
+                d = i - g_Minigame[0x190C];
+                if (d < 0) {
+                    d += g_Minigame[0x1906];
+                }
+                if (d == 0) {
+                    ((MgTargets_3290*)g_Minigame)->target[*(s8*)(g_Minigame + 0x18E0 + i)].x = lbl_3_data_450C.x;
+                    ((MgTargets_3290*)g_Minigame)->target[*(s8*)(g_Minigame + 0x18E0 + i)].z = lbl_3_data_450C.z;
+                } else {
+                    ((MgTargets_3290*)g_Minigame)->target[*(s8*)(g_Minigame + 0x18E0 + i)].x = lbl_3_data_21500[d].x;
+                    ((MgTargets_3290*)g_Minigame)->target[*(s8*)(g_Minigame + 0x18E0 + i)].z = lbl_3_data_21500[d].z;
+                }
+            }
+        }
+        if (init != 0) {
+            for (i = 0; i < g_Minigame[0x1906]; i++) {
+                f = &g_Fielders[*(s8*)(g_Minigame + 0x18F8 + i)];
+                f->pos.x = ((MgTargets_3290*)g_Minigame)->target[i].x;
+                f->pos.y = 0.0f;
+                f->pos.z = ((MgTargets_3290*)g_Minigame)->target[i].z;
+            }
+            return;
+        }
+    }
+    if (*(s16*)(g_Minigame + 0x1A70) >= lbl_3_data_2167C[1]) {
+        g_Minigame[0x1A7E] = 0;
+        for (i = 0; i < 4; i++) {
+            if (*(s8*)(g_Minigame + 0x18CC + i) >= 0) {
+                g_Fielders[*(s8*)(g_Minigame + 0x18F8 + i)].speed = 0.0f;
+            }
+        }
+    } else {
+        inv = 1.0f / (lbl_3_data_2167C[1] - *(s16*)(g_Minigame + 0x1A70));
+        for (i = 0; i < 4; i++) {
+            if (*(s8*)(g_Minigame + 0x18CC + i) >= 0) {
+                f = &g_Fielders[*(s8*)(g_Minigame + 0x18F8 + i)];
+                dx = (((MgTargets_3290*)g_Minigame)->target[i].x - f->pos.x) * inv;
+                dz = (((MgTargets_3290*)g_Minigame)->target[i].z - f->pos.z) * inv;
+                f->velX = dx;
+                f->velZ = dz;
+                f->pos.x += dx;
+                f->pos.z += dz;
+                f->speed = dolsqrtf2(dx * dx + dz * dz);
+                if (f->speed > 0.0f) {
+                    f->dirX = dx / f->speed;
+                    f->dirZ = dx / f->speed; // sic: original divides dx for both
+                }
+            }
+        }
+    }
+}
+#endif
+
+
+#pragma dont_inline off
