@@ -13,8 +13,8 @@ void fn_800B2C44(GameActor* actor, u16 bone, Vec* pos) {
 }
 
 // .text:0x800B2C88 size:0x34
-void fn_800B2C88(void) {
-    return;
+void fn_800B2C88(GameActor* actor, u16 bone, Mtx m) {
+    PSMTXCopy(actor->forwardMtxArray[bone], m);
 }
 
 // .text:0x800B2CBC size:0xA0
