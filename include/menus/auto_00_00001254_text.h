@@ -235,4 +235,6 @@ void fn_2_8940(void);
 
 void fn_2_2FC0(u8 mode, s32 b, s32 c);
 
+void fn_2_6AF4(void);
+
 #endif

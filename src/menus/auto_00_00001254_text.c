@@ -11,6 +11,7 @@ extern u8 lbl_803CBD24[];
 extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
 extern void fn_8004CC2C(void);
+extern u8 lbl_80108EC4[];
 extern void fn_800649BC(void);
 extern void fn_800671FC(void);
 extern void fn_800684A4(void);
@@ -1449,3 +1450,34 @@ void fn_2_2FC0(u8 mode, s32 b, s32 c) {
         break;
     }
 }
+
+// NONMATCHING 90%: preset base (+0x4380) hoisted differently; the ==1 test is cmpwi (enum field) in the original
+#if NONMATCHING
+// fn_2_6AF4, size:0x248
+void fn_2_6AF4(void) {
+    u8 idx = 0; // uninitialized in the original if no captain matches
+    s32 i;
+    u8 id;
+    for (i = 0; i < 12; i++) {
+        if ((s8)starMissionCompletionTracker[0x441F] == lbl_80108EC4[i]) {
+            idx = i;
+            break;
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        id = lbl_8034E9A0[0x4380 + idx * 0x48 + i];
+        lbl_80354720[0x24 + i * 4] = i;
+        lbl_80354720[0x26 + i * 4] = i;
+        lbl_80354720[0x25 + i * 4] = i;
+        lbl_803C6724[0xB + i] = *(s16*)(lbl_8034E9A0 + (u8)(id / 9) * 0x5A0 + (u8)(id % 9) * 0xA0 + 0x24);
+        lbl_803C6724[0x53 + i] = 1;
+    }
+    *(s32*)(lbl_8034E9A0 + 0x46E0) = starMissionCompletionTracker[0x441D];
+    *(s32*)(lbl_8034E9A0 + 0x46E4) = (s8)starMissionCompletionTracker[0x441F];
+    for (i = 0; i < 9; i++) {
+        if (starMissionCompletionTracker[(s8)lbl_803C6724[0xB + i] * 0x34 + 0x31] == 1) {
+            lbl_803C6724[0xB + i] = 0x36;
+        }
+    }
+}
+#endif
