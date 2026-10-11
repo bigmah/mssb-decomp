@@ -369,9 +369,124 @@ void fn_800E2B8C(HVQState* state, HVQMCPlane* mc, u8* dst, u8* ref0, u8* ref1) {
 }
 
 // .text:0x800E2C18 size:0x6D0
+// NONMATCHING 99%: register allocation of the row pointers
+#if NONMATCHING
 void fn_800E2C18(u8* dst, s32 dstStride, u8* src, s32 srcStride, s32 halfX, s32 halfY) {
-    return;
+    if (halfX == 0 && halfY == 0) {
+        u8* s0 = src + srcStride;
+        u8* d = dst + dstStride;
+
+        dst[0] = src[0];
+        dst[1] = src[1];
+        dst[2] = src[2];
+        dst[3] = src[3];
+        d[0] = s0[0];
+        d[1] = s0[1];
+        d[2] = s0[2];
+        d[3] = s0[3];
+        s0 += srcStride;
+        d += dstStride;
+        d[0] = s0[0];
+        d[1] = s0[1];
+        d[2] = s0[2];
+        d[3] = s0[3];
+        s0 += srcStride;
+        d += dstStride;
+        d[0] = s0[0];
+        d[1] = s0[1];
+        d[2] = s0[2];
+        d[3] = s0[3];
+        return;
+    }
+    if (halfX != 0 && halfY == 0) {
+        u8* s0 = src + srcStride;
+        u8* d = dst + dstStride;
+
+        dst[0] = (src[0] + src[1] + 1) >> 1;
+        dst[1] = (src[1] + src[2] + 1) >> 1;
+        dst[2] = (src[2] + src[3] + 1) >> 1;
+        dst[3] = (src[3] + src[4] + 1) >> 1;
+        d[0] = (s0[0] + s0[1] + 1) >> 1;
+        d[1] = (s0[1] + s0[2] + 1) >> 1;
+        d[2] = (s0[2] + s0[3] + 1) >> 1;
+        d[3] = (s0[3] + s0[4] + 1) >> 1;
+        s0 += srcStride;
+        d += dstStride;
+        d[0] = (s0[0] + s0[1] + 1) >> 1;
+        d[1] = (s0[1] + s0[2] + 1) >> 1;
+        d[2] = (s0[2] + s0[3] + 1) >> 1;
+        d[3] = (s0[3] + s0[4] + 1) >> 1;
+        s0 += srcStride;
+        d += dstStride;
+        d[0] = (s0[0] + s0[1] + 1) >> 1;
+        d[1] = (s0[1] + s0[2] + 1) >> 1;
+        d[2] = (s0[2] + s0[3] + 1) >> 1;
+        d[3] = (s0[3] + s0[4] + 1) >> 1;
+        return;
+    }
+    if (halfX == 0 && halfY != 0) {
+        u8* s0;
+        u8* s1 = src + srcStride;
+        u8* d = dst + dstStride;
+
+        dst[0] = (src[0] + s1[0] + 1) >> 1;
+        dst[1] = (src[1] + s1[1] + 1) >> 1;
+        dst[2] = (src[2] + s1[2] + 1) >> 1;
+        dst[3] = (src[3] + s1[3] + 1) >> 1;
+        s0 = s1;
+        s1 += srcStride;
+        d[0] = (s0[0] + s1[0] + 1) >> 1;
+        d[1] = (s0[1] + s1[1] + 1) >> 1;
+        d[2] = (s0[2] + s1[2] + 1) >> 1;
+        d[3] = (s0[3] + s1[3] + 1) >> 1;
+        s0 += srcStride;
+        s1 += srcStride;
+        d += dstStride;
+        d[0] = (s0[0] + s1[0] + 1) >> 1;
+        d[1] = (s0[1] + s1[1] + 1) >> 1;
+        d[2] = (s0[2] + s1[2] + 1) >> 1;
+        d[3] = (s0[3] + s1[3] + 1) >> 1;
+        s0 += srcStride;
+        s1 += srcStride;
+        d += dstStride;
+        d[0] = (s0[0] + s1[0] + 1) >> 1;
+        d[1] = (s0[1] + s1[1] + 1) >> 1;
+        d[2] = (s0[2] + s1[2] + 1) >> 1;
+        d[3] = (s0[3] + s1[3] + 1) >> 1;
+        return;
+    }
+    if (halfX != 0 && halfY != 0) {
+        u8* s0;
+        u8* s1 = src + srcStride;
+        u8* d = dst + dstStride;
+
+        dst[0] = (src[0] + src[1] + s1[0] + s1[1] + 2) >> 2;
+        dst[1] = (src[1] + src[2] + s1[1] + s1[2] + 2) >> 2;
+        dst[2] = (src[2] + src[3] + s1[2] + s1[3] + 2) >> 2;
+        dst[3] = (src[3] + src[4] + s1[3] + s1[4] + 2) >> 2;
+        s0 = s1;
+        s1 += srcStride;
+        d[0] = (s0[0] + s0[1] + s1[0] + s1[1] + 2) >> 2;
+        d[1] = (s0[1] + s0[2] + s1[1] + s1[2] + 2) >> 2;
+        d[2] = (s0[2] + s0[3] + s1[2] + s1[3] + 2) >> 2;
+        d[3] = (s0[3] + s0[4] + s1[3] + s1[4] + 2) >> 2;
+        s0 += srcStride;
+        s1 += srcStride;
+        d += dstStride;
+        d[0] = (s0[0] + s0[1] + s1[0] + s1[1] + 2) >> 2;
+        d[1] = (s0[1] + s0[2] + s1[1] + s1[2] + 2) >> 2;
+        d[2] = (s0[2] + s0[3] + s1[2] + s1[3] + 2) >> 2;
+        d[3] = (s0[3] + s0[4] + s1[3] + s1[4] + 2) >> 2;
+        s0 += srcStride;
+        s1 += srcStride;
+        d += dstStride;
+        d[0] = (s0[0] + s0[1] + s1[0] + s1[1] + 2) >> 2;
+        d[1] = (s0[1] + s0[2] + s1[1] + s1[2] + 2) >> 2;
+        d[2] = (s0[2] + s0[3] + s1[2] + s1[3] + 2) >> 2;
+        d[3] = (s0[3] + s0[4] + s1[3] + s1[4] + 2) >> 2;
+    }
 }
+#endif
 
 // .text:0x800E32E8 size:0xC4
 void fn_800E32E8(HVQState* state, HVQMCPlane* mc, s32 mvX, s32 mvY) {
