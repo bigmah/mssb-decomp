@@ -3226,3 +3226,107 @@ void fn_2_3CD34(void) {
         o[0x28] = 0;
     }
 }
+
+#define ROSTER_LIST(i) (((s16*)lbl_2_bss_1A824C[0])[(i) + 0x1977A2 / 2])
+#define ROSTER_B(i) (((s16*)lbl_2_bss_1A824C[0])[(i) + 0x19780E / 2])
+#define ROSTER_C(i) (((s16*)lbl_2_bss_1A824C[0])[(i) + 0x197818 / 2])
+#define ROSTER_SORT(i) (((SortEnt*)lbl_2_bss_1A824C[0])[(i) + 0x197450 / 8])
+#define CHAR_INFO(id) (*(u8**)(lbl_2_bss_1A8248[0] + (id) * 0x34))
+
+// fn_2_44504, size:0x928
+// NONMATCHING 95%: register allocation and loop scheduling differ; structure and calls match
+#if NONMATCHING
+void fn_2_44504(void) {
+    s32 i;
+    s32 k;
+    s32 n;
+    s32 cnt;
+    s32 c;
+    s32 id;
+    SortEnt tmp;
+    for (i = 0; i < 54; i++) {
+        ROSTER_LIST(i) = 10000;
+    }
+    for (k = 0; k < 5; k++) {
+        ROSTER_B(k) = -1;
+        ROSTER_C(k) = -1;
+    }
+    n = fn_8006C6C4();
+    cnt = 0;
+    for (i = 0; i < 54; i++) {
+        u8* m = lbl_2_bss_1A8248[0];
+        if ((s32)(m + i * 0x34)[0x31] == 1 && i != lbl_803CB8F0[m[0x441C]]) {
+            ROSTER_LIST(cnt++) = i;
+        }
+    }
+    c = 0;
+    for (k = 0; k < 9; k++) {
+        if (n + c < 32) {
+            id = *(s16*)(lbl_2_bss_1A8248[0] + 0x40B8 + k * 6);
+            if (*(s8*)(lbl_2_bss_1A8248[0] + id * 0x34 + 5) == 4) {
+                ROSTER_LIST(cnt++) = id;
+                c++;
+            }
+        }
+    }
+    c = 0;
+    for (i = 0; i < cnt; i++) {
+        id = ROSTER_LIST(i);
+        if (id != 10000 && (s32)CHAR_INFO(id)[2] == 4) {
+            ROSTER_C(c++) = id;
+            ROSTER_LIST(i) = 10000;
+        }
+    }
+    if (n >= 10) {
+        c = 0;
+        for (i = 0; i < cnt; i++) {
+            id = ROSTER_LIST(i);
+            if (id != 10000 && (s32)CHAR_INFO(id)[3] == 1) {
+                ROSTER_B(c++) = id;
+                ROSTER_LIST(i) = 10000;
+            }
+        }
+    }
+    for (i = 0; i < 55; i++) {
+        ROSTER_SORT(i).k = 10000;
+        ROSTER_SORT(i).v = 10000;
+    }
+    for (i = 0; i < cnt + 1; i++) {
+        id = ROSTER_LIST(i);
+        if (id != 10000) {
+            ROSTER_SORT(i + 1).k = (s8)CHAR_INFO(id)[2];
+            ROSTER_SORT(i + 1).v = ROSTER_LIST(i);
+        } else {
+            ROSTER_SORT(i + 1).k = 10000;
+            ROSTER_SORT(i + 1).v = 10000;
+        }
+    }
+    {
+        SortEnt* s = &ROSTER_SORT(0);
+        for (i = 1; i < 55; i++) {
+            tmp = s[i];
+            s[0] = tmp;
+            for (k = i - 1; tmp.k < s[k].k; k--) {
+                s[k + 1] = s[k];
+            }
+            s[k + 1] = tmp;
+        }
+    }
+    for (i = 0; i < 54; i++) {
+        ROSTER_LIST(i) = -1;
+    }
+    c = 0;
+    for (i = 0; i < 54; i++) {
+        if (ROSTER_SORT(i + 1).v != 10000) {
+            ROSTER_LIST(c++) = ROSTER_SORT(i + 1).v;
+        }
+    }
+    for (k = 0; k < 5; k++) {
+        if (ROSTER_C(k) == 0x26) {
+            s16 t = ROSTER_C(2);
+            ROSTER_C(2) = 0x26;
+            ROSTER_C(k) = t;
+        }
+    }
+}
+#endif
