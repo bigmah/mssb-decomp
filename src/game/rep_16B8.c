@@ -33,7 +33,6 @@ extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_3_data_EC1C[];
 extern u8 lbl_3_data_F430[];
 extern u8 lbl_3_data_EABC[];
-extern s16 lbl_3_data_BE50[][4]; // TODO type: 8-byte entries
 extern void fn_3_ED0F4(void);
 extern u8 lbl_3_data_F224[];
 extern u8 lbl_3_data_F200[];
@@ -44,6 +43,18 @@ extern u8 lbl_3_data_E758[];
 extern u8 lbl_3_data_F344[];
 extern u8 lbl_3_data_E75C[];
 #include "static/UnknownHomes_Static.h"
+#include "musyx/musyx.h"
+
+extern RepBannerData lbl_3_data_BE50;
+extern RepRunningLogic g_RunningLogic;
+extern RepSoundParams lbl_3_data_8404[];
+extern RepSoundParams lbl_3_data_84B8[];
+extern u16 lbl_3_data_81DC[];
+extern u8 lbl_800EF808[]; // TODO type: 0x39C-byte options block; [0x398] = rumble/sound flag
+extern RepFielderView g_Fielders[9];
+BOOL fn_3_1650C(int* outX, int* outY, BOOL r5, f32 pX, f32 pY, f32 pZ);
+extern void fn_8003649C(void* owner, s32 idx, s32 track, u16 animId, u32 frame);
+extern GameScores g_Scores;
 
 // .text:0x00091520 size:0x540 mapped:0x806D05B4
 void fn_3_91520(void) {
@@ -885,7 +896,7 @@ void fn_3_9698C(void) {
         }
     }
     if (task->_1E == 0) {
-        if ((REP_OBJ(task, 0)->_5C >> 16) >= lbl_3_data_BE50[task->_1C][1]) {
+        if ((REP_OBJ(task, 0)->_5C >> 16) >= lbl_3_data_BE50.kinds[task->_1C][1]) {
             task->_1E = 1;
             REP_OBJ(task, 0)->_68 = 0;
         }
@@ -899,7 +910,7 @@ void fn_3_9698C(void) {
             } else {
                 task->_1A = 0xFFFF;
             }
-            if (task->_1A >= lbl_3_data_BE50[task->_1C][2]) {
+            if (task->_1A >= lbl_3_data_BE50.kinds[task->_1C][2]) {
                 REP_OBJ(task, 0)->_68 = 1;
                 task->_1E = 2;
             }
@@ -915,7 +926,142 @@ remove:
 }
 
 // .text:0x00096CA4 size:0x4A0 mapped:0x806D5D38
+// NONMATCHING 87%: original reaches lbl_3_data_BE50 through the pooled lbl_3_data_8D88 base (+0x30C8/+0x3190/+0x31A4; data defined in this TU), so registers and stack frame differ
+#if NONMATCHING
 void fn_3_96CA4(void) {
-    return;
+    RepTask* task = lbl_803CC1B8[0];
+    s16 anim;
+    u32 stadium;
+    u8 v;
+    s32 voice;
+    s32 lead;
+    s16 runs;
+    if (g_UnkSound_32718._07 == 0xD && lbl_3_common_bss_32724[0x98] != 0) {
+        return;
+    }
+    task->_1C = g_UnkSound_32718._07;
+    anim = lbl_3_data_BE50.kinds[task->_1C][0];
+    if (g_d_GameSettings.minigamesEnabled == 0 && (anim == 0xBB || anim == 0xFD)) {
+        if (++lbl_3_common_bss_32724[0xA9] == 2) {
+            task->_1C = 0x17;
+        }
+        if (lbl_3_common_bss_32724[0xA9] == 3) {
+            task->_1C = 0x18;
+        }
+        anim = lbl_3_data_BE50.kinds[task->_1C][0];
+    }
+    switch (g_UnkSound_32718._07) {
+    case 1:
+        playSoundEffect(0x15C);
+        break;
+    case 2:
+        playSoundEffect(0x15D);
+        break;
+    case 5:
+        playSoundEffect(0x165);
+        break;
+    case 8:
+        playSoundEffect(0x15A);
+        break;
+    case 9:
+        playSoundEffect(0x15B);
+        break;
+    case 10:
+        playSoundEffect(0x162);
+        break;
+    case 11:
+        playSoundEffect(0x163);
+        break;
+    case 12:
+        playSoundEffect(0x15E);
+        break;
+    case 18:
+        playSoundEffect(0x15C);
+        break;
+    case 14:
+        playSoundEffect(0x15F);
+        break;
+    case 13:
+    case 17:
+        playSoundEffect(0x160);
+        break;
+    case 3:
+        playSoundEffect(0x164);
+        break;
+    case 4:
+        playSoundEffect(0x166);
+        break;
+    case 6:
+        playSoundEffect(0x167);
+        break;
+    case 21:
+        if (lbl_800EF808[0x398] == 1) {
+            stadium = g_d_GameSettings.StadiumID;
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                v = lbl_3_data_84B8[25].vol;
+            } else {
+                v = lbl_3_data_8404[stadium * 15 + 25].vol;
+            }
+            voice = sndFXStartEx(lbl_3_data_81DC[stadium] + 0x19, v, 0x3F, 0);
+            if (g_d_GameSettings.GameModeSelected == 6) {
+                v = lbl_3_data_84B8[25].ctrl;
+            } else {
+                v = lbl_3_data_8404[stadium * 15 + 25].ctrl;
+            }
+            sndFXCtrl(voice, 0x5B, v);
+        }
+        break;
+    case 16:
+        playSoundEffect(0x15A);
+        break;
+    case 22:
+        playSoundEffect(0x164);
+        break;
+    }
+    lbl_3_data_BE50.desc[0].animId = anim;
+    if (g_d_GameSettings.GameModeSelected != 6 && task->_1C == 0xF) {
+        lead = 0;
+        if (g_d_GameSettings.GameModeSelected == 2) {
+            lbl_3_data_BE50.desc[0].animId = lbl_3_data_BE50.runsAnim[g_RunningLogic.runsScored - 1];
+        } else {
+            runs = g_Scores.team[g_GameLogic.awayTeamBattingInd_battingTeam].runs[0];
+            if (g_Scores._A0 < runs && g_Scores._A0 + g_RunningLogic.runsScored > runs) {
+                lead = 1;
+            }
+            if (g_Scores.inning >= g_Scores.maxInnings && g_Scores._AD != 0 && g_Scores._A0 + g_RunningLogic.runsScored > runs) {
+                if (lead) {
+                    if (g_RunningLogic.runsScored == 4) {
+                        lbl_3_data_BE50.desc[0].animId = lbl_3_data_BE50.runsAnim[8];
+                    } else {
+                        lbl_3_data_BE50.desc[0].animId = lbl_3_data_BE50.runsAnim[7];
+                    }
+                } else {
+                    lbl_3_data_BE50.desc[0].animId = lbl_3_data_BE50.runsAnim[6];
+                }
+            } else if (lead) {
+                if (g_RunningLogic.runsScored == 4) {
+                    lbl_3_data_BE50.desc[0].animId = lbl_3_data_BE50.runsAnim[5];
+                } else {
+                    lbl_3_data_BE50.desc[0].animId = lbl_3_data_BE50.runsAnim[4];
+                }
+            } else {
+                lbl_3_data_BE50.desc[0].animId = lbl_3_data_BE50.runsAnim[g_RunningLogic.runsScored - 1];
+            }
+        }
+    }
+    if (task->_1C == 0x15) {
+        lbl_3_data_BE50.desc[0].texId = 0xE;
+    } else {
+        lbl_3_data_BE50.desc[0].texId = 2;
+    }
+    fn_80034E20(task, lbl_3_data_BE50.desc);
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        REP_OBJ(task, 0)->y = lbl_3_data_BE50.kinds[task->_1C][3];
+    }
+    task->timer = 0;
+    task->_1A = 0;
+    task->_1E = 0;
+    *(void**)lbl_803CC1B8[0] = fn_3_9698C;
 }
+#endif
 

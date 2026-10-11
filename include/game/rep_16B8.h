@@ -5,7 +5,6 @@
 #include "game/UnknownHomes_Game.h"
 #include "main/file_8000F150.h" // LayoutSlot lbl_80371C30
 
-extern GameScores g_Scores;
 
 // Sprite-layout task (lbl_803CC1B8[0] while one of this unit's tasks runs); only the fields used here.
 typedef struct RepTask {
@@ -30,10 +29,48 @@ typedef struct RepFielderView {
     /*0x010*/ u8 _010[0x268 - 0x10];
 } RepFielderView; // size: 0x268
 
-extern RepFielderView g_Fielders[9];
 
-BOOL fn_3_1650C(int* outX, int* outY, BOOL r5, f32 pX, f32 pY, f32 pZ);
-extern void fn_8003649C(void* owner, s32 idx, s32 track, u16 animId, u32 frame);
+// Sprite descriptor handed to fn_80034E20 (same layout as SpaniDesc).
+typedef struct RepSpriteDesc {
+    /*0x00*/ u16 type;
+    /*0x02*/ s16 animId;
+    /*0x04*/ f32 x;
+    /*0x08*/ f32 y;
+    /*0x0C*/ s32 unkC;
+    /*0x10*/ u8 playMode;
+    /*0x11*/ u8 layer;
+    /*0x12*/ u8 unk12[2];
+    /*0x14*/ u8 texId;
+    /*0x15*/ u8 unk15[3];
+    /*0x18*/ f32 scale;
+    /*0x1C*/ u8 is3D;
+    /*0x1D*/ u8 unk1D;
+    /*0x1E*/ s16 unk1E;
+} RepSpriteDesc; // size: 0x20
+
+// Event-banner data (lbl_3_data_BE50, 0x11C bytes).
+typedef struct RepBannerData {
+    /*0x00*/ s16 kinds[25][4];    // per banner kind: animId, frame that ends the intro, hold frames, minigame y
+    /*0xC8*/ u16 runsAnim[10];    // [runs scored - 1]; [4..8] walk-off / tying / go-ahead variants
+    /*0xDC*/ RepSpriteDesc desc[2];
+} RepBannerData; // size: 0x11C
+
+
+// g_RunningLogic (0x20 bytes); only the fields used here.
+typedef struct RepRunningLogic {
+    /*0x00*/ u8 _00[0x12];
+    /*0x12*/ u8 runsScored;
+    /*0x13*/ u8 _13[0x20 - 0x13];
+} RepRunningLogic;
+
+
+// Crowd sound settings: lbl_3_data_8404[stadium * 15 + sound], lbl_3_data_84B8[sound] for GameModeSelected 6.
+typedef struct RepSoundParams {
+    /*0x0*/ u8 vol;
+    /*0x1*/ u8 ctrl;
+} RepSoundParams;
+
+
 
 #define REP_OBJ(task, i) (lbl_80371C30[(task)->baseIdx + (i)].obj)
 
