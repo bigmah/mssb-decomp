@@ -133,4 +133,6 @@ void fn_3_B2AA0(void);
 
 void fn_3_AEC50(void);
 
+void fn_3_B3620(void);
+
 #endif
