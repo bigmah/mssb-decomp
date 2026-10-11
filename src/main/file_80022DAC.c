@@ -323,9 +323,43 @@ void fn_800238E0(ActorSlotTable* table, u16 index, s16 id, MActorLayout* layout)
 }
 
 // .text:0x8002399C size:0x108
-void fn_8002399C(void) {
-    return;
+// NONMATCHING 83%: the original recomputes &lbl_8017EBB0[index] after memset (6 saved regs) where we
+// keep it in a register; otherwise identical.
+#if NONMATCHING
+void fn_8002399C(ActorSlot* slot, u16 index, s16 id, MActorLayout* layout, u32 anim, u32 arg5) {
+    memset(lbl_8017EBB0[index], 0, lbl_803CBC5C);
+    layout->actorID = id;
+    slot->actor = f_InitActorWithLayout(layout, lbl_8017EBB0[index]);
+    fn_800B4724(slot->actor, arg5);
+    slot->unkE = 0;
+    slot->speed = lbl_803CC564;
+    slot->unk64 = 0;
+    slot->unk66 = 0;
+    slot->unk68 = 0;
+    slot->unk6D = 0;
+    slot->unk70[0] = 0;
+    slot->unk70[1] = 0;
+    slot->unk70[2] = 0;
+    slot->unk70[3] = 0;
+    slot->unk70[4] = 0;
+    slot->unk70[5] = 0;
+    slot->unk70[6] = 0;
+    slot->unk70[7] = 0;
+    slot->id = id;
+    slot->unk6C = 1;
+    if (anim != 0) {
+        slot->anim = anim;
+        slot->unk58 = 1;
+        slot->unk5A = 1;
+        slot->unk59 = 1;
+        slot->unk60 = lbl_803CC560;
+        if (slot->actor != NULL) {
+            slot->actor->unk99 = 0;
+        }
+    }
+    slot->unk8 = 0;
 }
+#endif
 
 // .text:0x80023AA4 size:0x60
 void fn_80023AA4(void) {

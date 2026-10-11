@@ -210,6 +210,7 @@ u8* fn_80023078(MDisplayObj* dispObj, MDisplayLayout* layout, u8* buffer);
 MActor* f_InitActorWithLayout(MActorLayout* layout, u8* buffer);
 void BuildBoneSkinOrientationMatrix(MBone* bone, MtxPtr parent);
 void fn_800238E0(ActorSlotTable* table, u16 index, s16 id, MActorLayout* layout);
+void fn_8002399C(ActorSlot* slot, u16 index, s16 id, MActorLayout* layout, u32 anim, u32 arg5);
 
 void fn_80023EEC(VecQueue* queue, Vec* entries, s32 capacity);
 
