@@ -427,9 +427,80 @@ void fn_80058E0C(void) {
 }
 
 // .text:0x80059458 size:0x27C
-void fn_80059458(void) {
-    return;
+// Shows the two set bits of mask (bit 0 also skips bit 1) as frames on two objects.
+// NONMATCHING 98%: li r0,12 hoisted above the first compare in the original; register swaps in the store tail
+#if NONMATCHING
+void fn_80059458(SceneTask* task, u8 port, u32 mask) {
+    s32 digits[2];
+    s32 i;
+    s32 n;
+
+    memset(digits, -1, 2);
+    for (i = 0, n = 0; i < 14; i++) {
+        if (mask & (1 << i)) {
+            switch (i) {
+            case 0:
+                i++;
+                break;
+            case 1:
+                digits[n++] = 1;
+                break;
+            case 2:
+                digits[n++] = 2;
+                break;
+            case 3:
+                digits[n++] = 3;
+                break;
+            case 4:
+                digits[n++] = 4;
+                break;
+            case 5:
+                digits[n++] = 5;
+                break;
+            case 6:
+                digits[n++] = 6;
+                break;
+            case 7:
+                digits[n++] = 7;
+                break;
+            case 8:
+                digits[n++] = 8;
+                break;
+            case 9:
+                digits[n++] = 9;
+                break;
+            case 10:
+                digits[n++] = 10;
+                break;
+            case 11:
+                digits[n++] = 11;
+                break;
+            case 12:
+                digits[n++] = 12;
+                break;
+            default:
+                digits[n++] = 13;
+                break;
+            }
+        }
+    }
+    digits[0]--;
+    digits[1]--;
+    if (digits[0] < 0) {
+        digits[0] = 12;
+    }
+    if (digits[1] < 0) {
+        digits[1] = 12;
+    }
+    if (g_d_GameSettings._06 != 2) {
+        TASK_OBJ(task, port + 0x1B4)->_5C = digits[0] << 16;
+        TASK_OBJ(task, port + 0x1B6)->_5C = digits[1] << 16;
+    } else {
+        TASK_OBJ(task, 0x125)->_5C = digits[0] << 16;
+        TASK_OBJ(task, 0x126)->_5C = digits[1] << 16;
+    }
 }
+#endif
 
 // .text:0x800596D4 size:0x464
 void fn_800596D4(void) {
@@ -551,9 +622,41 @@ void fn_8005F068(void) {
 }
 
 // .text:0x8005F734 size:0x29C
-void fn_8005F734(void) {
-    return;
+// NONMATCHING 95%: add operand order objIdx+port and r4/r8 swapped throughout
+#if NONMATCHING
+void fn_8005F734(SceneTask* task, s32 port) {
+    u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
+
+    if ((*(state += 0x37) == 0) ? TRUE : FALSE) {
+        TASK_OBJ(task, port)->_64 = 0x49;
+        TASK_OBJ(task, port)->_5C = 50 << 16;
+        TASK_OBJ(task, port)->_68 = 4;
+        TASK_OBJ(task, port + 2)->_64 = 0x52;
+        TASK_OBJ(task, port + 2)->_5C = 0;
+        TASK_OBJ(task, port + 2)->_68 = 1;
+        TASK_OBJ(task, port + 4)->_5C = 0;
+        TASK_OBJ(task, port + 4)->_68 = 1;
+        TASK_OBJ(task, port + 6)->_5C = 14 << 16;
+        TASK_OBJ(task, port + 6)->_68 = 1;
+        TASK_OBJ(task, port + 10)->flags |= 2;
+        TASK_OBJ(task, port + 10)->_5C = 0;
+        TASK_OBJ(task, port + 10)->_68 = 1;
+        TASK_OBJ(task, port + 20)->_5C = 0;
+        TASK_OBJ(task, port + 20)->_68 = 1;
+        if (((u8*)&g_d_GameSettings)[0x10] == 0 && port == 0) { // TODO type
+            TASK_OBJ(task, port + 18)->_5C = 30 << 16;
+            TASK_OBJ(task, port + 18)->_68 = 4;
+            TASK_OBJ(task, port + 24)->_5C = 0;
+            TASK_OBJ(task, port + 24)->_68 = 0;
+        } else {
+            TASK_OBJ(task, port + 18)->_5C = 0;
+            TASK_OBJ(task, port + 18)->_68 = 1;
+        }
+        fn_800626EC(port);
+        *state = 1;
+    }
 }
+#endif
 
 // .text:0x8005F9D0 size:0x2D0
 void fn_8005F9D0(void) {
