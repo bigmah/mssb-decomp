@@ -39,7 +39,8 @@ typedef struct ResHandle {
 // Scene/task object pointed to by lbl_803CC1B8.
 typedef struct SceneTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x0C - 0x04];
+    /*0x04*/ struct SceneTask* prev; // draw-queue links (fn_800B0A5C_insertQueue)
+    /*0x08*/ struct SceneTask* next;
     /*0x0C*/ struct SceneTask* parent;
     /*0x10*/ s16 _10;
     /*0x12*/ u16 priority;

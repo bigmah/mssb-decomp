@@ -265,7 +265,7 @@ MActor* f_InitActorWithLayout(MActorLayout* layout, u8* buffer) {
     if (actor->skinObject != NULL) {
         BuildBoneSkinOrientationMatrix((MBone*)actor->hierarchy.Root, identity);
     }
-    ACTSort((Actor*)actor);
+    ACTSort((struct GameActor*)actor);
     actor->unk80 = 0;
     actor->unk82 = 0;
     actor->unk84 = 0;
