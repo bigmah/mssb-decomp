@@ -31,6 +31,15 @@ extern PracticeOrderEntry lbl_80354720[2][9];
 // Character stats table (lbl_8034E9A0 viewed as CharacterStats records).
 extern CharacterStats lbl_8034E9A0[];
 
+// Runners on base at the start of each base-running practice level (lbl_3_data_FC08).
+extern u8 lbl_3_data_FC08[4][4];
+// Command script per practice level (lbl_3_data_10010).
+extern void* lbl_3_data_10010[4];
+extern u8 lbl_803CBC3C[];
+extern s32 fn_3_6BA64(void);
+extern void fn_3_B3C94(u8 state);
+extern void fn_3_B3C78(u8 state);
+
 #define SAVE_LEVEL_CLEARED(type) (lbl_80354768 + 0xCF4E + (type) * 4)
 
 extern u8 lbl_3_common_bss_34C90[];
@@ -552,7 +561,7 @@ void fn_3_B3BD0(void) {
     s32 i;
     for (i = 0; i < 4; i++) {
         InMemRunnerType* r = &g_Runners[i];
-        if (((u8*)&g_Practice)[0x1AB + i] != 0) {
+        if (g_Practice.startRunners[i] != 0) {
             if (g_GameLogic.secondaryGameMode == 0xE) {
                 fn_3_6D964(i - 1, i);
             }
@@ -833,9 +842,9 @@ void fn_3_B3FE8(void) {
     fn_800B0A5C_insertQueue((void*)fn_3_5BAC, 4);
     lbl_8036E548[0x307E] = 0;
     g_Practice.practiceType = 0;
-    g_Practice._1AB = 0;
-    g_Practice._1AC = 0;
-    g_Practice._1AD = 0;
+    g_Practice.startRunners[0] = 0;
+    g_Practice.startRunners[1] = 0;
+    g_Practice.startRunners[2] = 0;
     g_Practice._1A6 = 0;
     g_Practice._1A8 = 0;
     g_Practice._1A9 = 0;
@@ -877,5 +886,43 @@ void fn_3_B42A8(void) {
         for (k = 0; k < 9; k++) {
             memcpy(&inMemRoster[t][k], &lbl_8034E9A0[g_GameLogic.battingOrderAndPositionMapping[t][k + 1][0]], sizeof(CharacterStats));
         }
+    }
+}
+
+// .text:0x000B7620 size:0x15C
+void fn_3_B7620(void) {
+    switch (g_Practice.practiceState) {
+    case 0:
+        g_GameLogic.currentBatterPerTeam[0] = 1;
+        g_GameLogic.currentBatterPerTeam[1] = 1;
+        lbl_8036E548[0x307D] = 0;
+        g_Practice.startRunners[0] = lbl_3_data_FC08[g_Practice.practiceLevel][0];
+        g_Practice.startRunners[1] = lbl_3_data_FC08[g_Practice.practiceLevel][1];
+        g_Practice.startRunners[2] = lbl_3_data_FC08[g_Practice.practiceLevel][2];
+        g_Practice.startRunners[3] = lbl_3_data_FC08[g_Practice.practiceLevel][3];
+        fn_3_B3BD0();
+        lbl_3_common_bss_32724[0x9A] = 0;
+        lbl_803CBC3C[2] = 0;
+        g_Practice._1D9 = 0;
+        fn_3_B3C94(1);
+        break;
+    case 1:
+        if (fn_3_6BA64() != 0) {
+            fn_3_B3C94(4);
+        }
+        break;
+    case 4:
+        if (fn_3_B3CD4() != 0) {
+            fn_3_B3C94(7);
+        }
+        break;
+    case 7:
+        fn_3_B3B70();
+        fn_3_B27A4();
+        g_Practice.commandList = lbl_3_data_10010[g_Practice.practiceLevel];
+        changeScene(1, 6);
+        fn_3_5A6D4(7);
+        fn_3_B3C78(1);
+        break;
     }
 }

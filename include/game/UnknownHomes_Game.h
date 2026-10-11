@@ -936,10 +936,7 @@ typedef struct _PracticeStruct {
     /*0x1A8*/ u8 _1A8;
     /*0x1A9*/ u8 _1A9;
     /*0x1AA*/ u8 transitioningIndicator; // unsure
-    /*0x1AB*/ u8 _1AB;
-    /*0x1AC*/ u8 _1AC;
-    /*0x1AD*/ u8 _1AD;
-    /*0x1AE*/ u8 _1AE;
+    /*0x1AB*/ u8 startRunners[4]; // per base slot (0 = batter): occupied at practice start
     /*0x1AF*/ u8 returnToPracticeMenuState;
     /*0x1B0*/ u8 _1B0;
     /*0x1B1*/ u8 _1B1;
@@ -965,9 +962,16 @@ typedef struct _PracticeStruct {
     /*0x1D4*/ u8 loadingGuidedPractice; // unsure
     /*0x1D5*/ u8 _1D5;
     /*0x1D6*/ u8 practiceLevel_2;
-    /*0x1D7*/ u8 _1D7[0x1DB - 0x1D7];
+    /*0x1D7*/ u8 _1D7;
+    /*0x1D8*/ u8 _1D8;
+    /*0x1D9*/ u8 _1D9;
+    /*0x1DA*/ u8 _1DA;
     /*0x1DB*/ u8 _1DB;
-    /*0x1DC*/ u8 _1DC[0x1E1 - 0x1DC];
+    /*0x1DC*/ u8 _1DC;
+    /*0x1DD*/ u8 _1DD;
+    /*0x1DE*/ u8 _1DE;
+    /*0x1DF*/ u8 _1DF;
+    /*0x1E0*/ u8 _1E0;
     /*0x1E1*/ u8 hitVariablesSetIndicator;
     /*0x1E2*/ u8 _1E2;
     /*0x1E3*/ u8 aiBuntIndicator; // unsure
