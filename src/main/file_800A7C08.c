@@ -430,7 +430,20 @@ s32 fn_800A8E30(void* file, StreamTrack* track, u32 flags, void (*callback)(u32 
 
 // .text:0x800A8F68 size:0x74
 void fn_800A8F68(void) {
-    return;
+    lbl_803CC148 = STREAM_STATE_STOP;
+    lbl_803CC140 = STREAM_MODE_ONCE;
+    lbl_803CC13C = 0;
+    lbl_803CC138 = 12000;
+    lbl_803CC135 = 255;
+    lbl_803CC154 = NULL;
+    lbl_803CC150 = NULL;
+    lbl_803CC14C = NULL;
+    lbl_803CC134 = 255;
+    AISetStreamVolLeft(0);
+    AISetStreamVolRight(0);
+    AIRegisterStreamCallback(fn_800A9168);
+    AIResetStreamSampleCount();
+    AISetStreamPlayState(0);
 }
 
 // .text:0x800A8FDC size:0x58
