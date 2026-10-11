@@ -138,4 +138,6 @@ void fn_2_CCE0(u8 team);
 
 void fn_2_323C(void);
 
+void fn_2_B324(void);
+
 #endif

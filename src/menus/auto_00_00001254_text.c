@@ -1152,3 +1152,49 @@ void fn_2_323C(void) {
     }
 }
 #endif
+
+// NONMATCHING 75%: same instructions, store order/scheduling differs (second loop never runs, as in the original)
+#if NONMATCHING
+// fn_2_B324, size:0x1E4
+void fn_2_B324(void) {
+    s32 i;
+    s32 base0 = *(s32*)(lbl_8034E9A0 + 0x46E0);
+    s32 base1 = *(s32*)(lbl_8034E9A0 + 0x46E4);
+    for (i = 0; i < 9; i++) {
+        lbl_80354720[i * 4 + 0] = i;
+        lbl_80354720[i * 4 + 0x24] = i;
+        lbl_80354720[i * 4 + 1] = i;
+        lbl_80354720[i * 4 + 0x25] = i;
+        lbl_80354720[i * 4 + 2] = i;
+        lbl_80354720[i * 4 + 0x26] = i;
+        lbl_80354720[i * 4 + 3] = 1;
+        lbl_80354720[i * 4 + 0x27] = 1;
+        lbl_80353B98[i * 4 + 0] = i;
+        lbl_80353B98[i * 4 + 0x24] = i;
+        lbl_80353B98[i * 4 + 1] = i;
+        lbl_80353B98[i * 4 + 0x25] = i;
+        lbl_80353B98[i * 4 + 2] = i;
+        lbl_80353B98[i * 4 + 0x26] = i;
+        *(s16*)(inMemRoster + i * 0xA0 + 0x24) = base0 + i;
+        *(s16*)(inMemRoster + 0x5A0 + i * 0xA0 + 0x24) = base1 + i;
+    }
+    for (; i < 9; i++) {
+        lbl_80354720[i * 4 + 0] = i;
+        lbl_80354720[i * 4 + 0x24] = i;
+        lbl_80354720[i * 4 + 1] = -1;
+        lbl_80354720[i * 4 + 0x25] = -1;
+        lbl_80354720[i * 4 + 2] = -1;
+        lbl_80354720[i * 4 + 0x26] = -1;
+        lbl_80354720[i * 4 + 3] = -1;
+        lbl_80354720[i * 4 + 0x27] = -1;
+        lbl_80353B98[i * 4 + 0] = i;
+        lbl_80353B98[i * 4 + 0x24] = i;
+        lbl_80353B98[i * 4 + 1] = -1;
+        lbl_80353B98[i * 4 + 0x25] = -1;
+        lbl_80353B98[i * 4 + 2] = -1;
+        lbl_80353B98[i * 4 + 0x26] = -1;
+        *(s16*)(inMemRoster + i * 0xA0 + 0x24) = 0;
+        *(s16*)(inMemRoster + 0x5A0 + i * 0xA0 + 0x24) = 0;
+    }
+}
+#endif
