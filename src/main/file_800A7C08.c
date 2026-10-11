@@ -805,7 +805,8 @@ void fn_800A97D0(u8 shift, s32 threshold) {
 
 // .text:0x800A983C size:0x28
 void fn_800A983C(void) {
-    return;
+    PADInit();
+    SISetSamplingRate(0);
 }
 
 // .text:0x800A9864 size:0x98
