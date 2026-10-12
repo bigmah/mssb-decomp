@@ -631,7 +631,9 @@ typedef struct _InMemFielderType {
     /*0x118*/ u8 _118[0x120 - 0x118];
     /*0x120*/ f32 _120;
     /*0x124*/ f32 _124;
-    /*0x128*/ u8 _128[0x16C - 0x128];
+    /*0x128*/ u8 _128[0x15C - 0x128];
+    /*0x15C*/ f32 _15C;
+    /*0x160*/ u8 _160[0x16C - 0x160];
     /*0x16C*/ f32 _16C;
     /*0x170*/ u8 _170[0x174 - 0x170];
     /*0x174*/ f32 _174;
@@ -2959,7 +2961,12 @@ typedef struct {
 extern g_Stats_s g_Stats;
 
 typedef struct {
-    u8 pad[0x77];
+    /* 0x000 */ struct {
+        u8 _0[8];
+        f32 _8; // minigame (rep_3520): per player
+        u8 _C[0x1C - 0xC];
+    } _000[4];
+    u8 _070[0x77 - 0x70];
     /* 0x077 */ struct {
         u8 _0;
         u8 _1; // set when RandomInt_Game(100) rolls under the fielder's chance (fn_3_1DEB8)
