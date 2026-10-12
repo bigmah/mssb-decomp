@@ -10,9 +10,14 @@
 extern OSThread* GXGetCurrentGXThread(void);
 extern void fn_800A7D4C(s32 list, void* node);
 
-extern TexImage lbl_800F7A40;
-extern ScreenFxNode lbl_800F7A60[];
 extern u8 lbl_8023DD80[];
+
+// .data 0x800F7A40..0x800F7AB0 (file_8003A688's 32-byte aligned TLUT follows at 0x800F7AC0)
+TexImage lbl_800F7A40 = {lbl_8023DD80, NULL, 448, 640, 0, 0, 1, 1, 0.0f, 0, 0, 0, 4, 0, 0, 0, 0, {0, 0}};
+ScreenFxNode lbl_800F7A60[2] = {
+    {0, fn_80039FF8, {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {0, 0}}},
+    {0, fn_80039FF8, {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {0, 0}}},
+};
 extern ScreenFx lbl_803C5090;
 extern u8 lbl_803CBBC0;
 extern const f32 lbl_803CC7A0; // 640
