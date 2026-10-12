@@ -457,28 +457,28 @@ void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
 #endif
 
 // .text:0x000C1770 size:0x1C0 mapped:0x80700804
-// NONMATCHING 99.5%: j and the slot offset j << 5 get swapped saved registers (r30/r29)
-#if NONMATCHING
 void fn_3_C1770(s32 who) {
     u8* t = ((u8**)(lbl_8036E548 + 0x2C50))[who];
     s32 j;
     s16* q;
     s32 k;
+
     if (t != NULL) {
         j = 1;
         q = &lbl_3_data_17260[1].id;
         do {
-            if (*q == -1) {
+            if ((*q) == (-1)) {
                 break;
             }
             q -= 0x10;
-        } while (j-- != 0);
+        } while ((j--) != 0);
         if (j >= 0) {
-            lbl_3_data_172AC.tex = *(void**)(lbl_3_common_bss_35154 + 4);
+            lbl_3_data_172AC.tex = *((void**)(lbl_3_common_bss_35154 + 4));
             lbl_3_data_17260[j].id = who;
-            lbl_3_data_17260[j].p[0] = *(f32*)(t + 0x34);
-            lbl_3_data_17260[j].p[2] = *(f32*)(t + 0x3C);
-            lbl_3_data_17260[j].p[1] = -((f32)lbl_3_data_172EC[(s8)t[0x252]].v / lbl_3_rodata_1FD4);
+            k = 2;
+            lbl_3_data_17260[j].p[0] = *((f32*)(t + 0x34));
+            lbl_3_data_17260[j].p[k] = *((f32*)(t + 0x3C));
+            lbl_3_data_17260[j].p[1] = -(((f32)lbl_3_data_172EC[(s8)t[0x252]].v) / lbl_3_rodata_1FD4);
             memcpy(lbl_3_data_17260[j].v, lbl_3_data_17260[j].p, 0xC);
             lbl_3_data_17260[j].s2 = 0;
             k = 0x18;
@@ -492,7 +492,6 @@ void fn_3_C1770(s32 who) {
         }
     }
 }
-#endif
 
 // Returns the slot index whose id equals `id`, or -1.
 // .text:0x000C1930 size:0x34 mapped:0x807009C4
