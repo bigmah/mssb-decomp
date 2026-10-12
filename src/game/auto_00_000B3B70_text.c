@@ -118,11 +118,15 @@ typedef struct PracticeTextSystem {
     void* msgTable; // 0x7AC: ARAMTransfer result
 } PracticeTextSystem;
 extern PracticeTextSystem lbl_80366B18;
+#ifdef TARGET_PC
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8 (holds pointers)
+#else
 typedef struct PracticeAramLoader {
     u8 _000[0x715];
-    u8 done; // 0x715
+    u8 idle; // 0x715
 } PracticeAramLoader;
 extern PracticeAramLoader lbl_803C6CF8;
+#endif
 extern u8 lbl_3_data_10578[];
 extern void fn_800111B4(void* table);
 extern void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d);
@@ -1345,7 +1349,7 @@ void fn_3_B43E8(void) {
         g_GameLogic._125++;
         break;
     case 2:
-        if ((s32)lbl_803C6CF8.done == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             fn_800111B4(lbl_80366B18.msgTable);
             lbl_3_common_bss_34C58._2C = 0;
             g_GameLogic._125++;

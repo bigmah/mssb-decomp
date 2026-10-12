@@ -11,11 +11,16 @@ typedef struct FadeTask {
     /*0x22*/ s16 state; // fn_3_21AA8 wait task
 } FadeTask;
 
+#ifdef TARGET_PC
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8 (holds pointers)
+typedef ARAMLoader ARAMLoaderView;
+#else
 // View of the DVD/ARAM loader lbl_803C6CF8 (ARAMLoader in main/file_800A6870.h).
 typedef struct ARAMLoaderView {
     /*0x000*/ u8 _000[0x715];
     /*0x715*/ volatile u8 idle;
 } ARAMLoaderView;
+#endif
 
 // lbl_3_data_7F7C entry (indexed by lbl_800E8558[char]._2); only the fields used here.
 typedef struct CharVoiceAnim {

@@ -11,13 +11,18 @@ typedef struct {
     /*0x6*/ s16 charId; // roster value at +0x24 of the player's character
 } RankEnt; // size: 0x8
 
+#ifdef TARGET_PC
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8 (holds pointers)
+typedef ARAMLoader ARAMLoaderView;
+#else
 // View of lbl_803C6CF8 (ARAMLoader in main/aramloader.h, whose `idle` is a volatile s8;
 // this unit reads it as a plain byte).
 typedef struct {
     /*0x000*/ u8 _000[0x715];
-    /*0x715*/ u8 _715; // 1 when the pending disc/ARAM transfer finished (ARAMLoader.idle)
+    /*0x715*/ u8 idle; // 1 when the pending disc/ARAM transfer finished (ARAMLoader.idle)
     /*0x716*/ u8 _716[0x724 - 0x716];
 } ARAMLoaderView; // size: 0x724
+#endif
 
 // The minigame's scene task (g_Minigame._1E04, from fn_800B0A5C_insertQueue), only the fields used here.
 typedef struct MinigameTask {

@@ -10,7 +10,7 @@
 typedef struct ReplayAnimKey { u16 frame; u8 pad2[2]; struct { f32 x, y, z; } pos; f32 a; f32 b; } ReplayAnimKey; /* stride varies by track type */
 typedef struct ReplayAnimTrack { s16 parent; u8 pad2[2]; u16 count; u8 type; u8 flags; s32 target; u8 keys[1]; } ReplayAnimTrack; /* keys at 0xC */
 typedef struct ReplayAnimKeyF { u16 frame; u8 pad2[2]; f32 f[15]; } ReplayAnimKeyF; /* generic view of a key: groups of Vec3 */
-typedef struct ReplayAnim { u8 pad0[4]; u16 numFrames; s16 numTracks; u16* frameTbl; ReplayAnimTrack* tracks[1]; } ReplayAnim;
+typedef struct ReplayAnim { u8 pad0[4]; u16 numFrames; s16 numTracks; PTR32(u16) frameTbl; PTR32(ReplayAnimTrack) tracks[1]; } ReplayAnim;
 
 /* Camera parameters decoded from one camera animation frame (fn_3_1048E0). */
 typedef struct CamFrame {

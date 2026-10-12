@@ -251,7 +251,7 @@ void fn_3_106DFC(void) {
 
 // fn_3_106E50, size:0x60
 s32 fn_3_106E50(void) {
-    if ((s32)lbl_803C6CF8._715 == 1) {
+    if ((s32)lbl_803C6CF8.idle == 1) {
         g_Camera._1B4 = ARAMTransfer(lbl_3_data_20FDC, 0, 0, 0);
         return 1;
     }

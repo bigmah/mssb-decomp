@@ -57,6 +57,9 @@ void port_swap_offset_table(void* table, uint32_t count);
 void port_swap_char_stats(void* data, uint32_t count);
 // Stadium collision table, port/src/formats_game.c.
 void port_swap_stadium_collision(void* table);
+// Replay/scene camera animations, port/src/formats_game.c.
+void port_swap_camera_anim_list(void* list);
+void port_swap_camera_anim(void* anim);
 
 #ifdef __cplusplus
 }

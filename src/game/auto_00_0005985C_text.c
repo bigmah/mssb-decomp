@@ -27,14 +27,18 @@ typedef void (*AramQueueCallback)(DiskFileEntry* entry, void* dst, void* user);
 extern s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user);
 extern DiskFileEntry lbl_800F1D78[];
 
+#ifdef TARGET_PC
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8 (holds pointers)
+#else
 // View of lbl_803C6CF8 (ARAMLoader in main/file_800A6870.h, whose ARAMTransfer
 // prototype clashes with include/static/UnknownHomes_Static.h).
 typedef struct {
     /*0x000*/ u8 _000[0x715];
-    /*0x715*/ u8 _715; // 1 when the pending disc/ARAM transfer finished (ARAMLoader.idle)
+    /*0x715*/ u8 idle; // 1 when the pending disc/ARAM transfer finished (ARAMLoader.idle)
     /*0x716*/ u8 _716[0x724 - 0x716];
 } ARAMLoaderView; // size: 0x724
 extern ARAMLoaderView lbl_803C6CF8;
+#endif
 extern DiskFileEntry lbl_3_data_3D60;
 extern DiskFileEntry lbl_3_data_3D70;
 extern DiskFileEntry lbl_3_data_3D80[0x43];
@@ -679,7 +683,7 @@ void fn_3_5C418(void) {
             changeScene(3, 6);
         }
         if (lbl_8037169C._13 != 0 && inScene != 0) {
-            if ((s32)lbl_803C6CF8._715 == 1) {
+            if ((s32)lbl_803C6CF8.idle == 1) {
                 lbl_3_common_bss_32724.hudOff = 1;
                 g_GameLogic.framesOfExitingToMenu = 1;
                 return;
@@ -1588,7 +1592,7 @@ void fn_3_59C2C(void) {
         unkSimulationRelatedStruct._04++;
         break;
     case 10:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             fn_3_906FC();
             lbl_3_common_bss_34C58._2C = 0;
             unkSimulationRelatedStruct._04++;
@@ -1623,7 +1627,7 @@ void fn_3_59C2C(void) {
         unkSimulationRelatedStruct._04++;
         break;
     case 16:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             fn_3_106DFC();
             unkSimulationRelatedStruct._04++;
         }
@@ -1676,7 +1680,7 @@ void fn_3_59F40(void) {
         unkSimulationRelatedStruct._04++;
         break;
     case 4:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             fn_3_906FC();
             unkSimulationRelatedStruct._04++;
         }
@@ -1712,7 +1716,7 @@ void fn_3_59F40(void) {
         unkSimulationRelatedStruct._04++;
         break;
     case 11:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             fn_3_106DFC();
             unkSimulationRelatedStruct._04++;
         }
@@ -1722,7 +1726,7 @@ void fn_3_59F40(void) {
         unkSimulationRelatedStruct._04++;
         break;
     case 13:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             fn_800111B4(lbl_80366B18.tables[6]);
             unkSimulationRelatedStruct._04++;
         }
@@ -1869,7 +1873,7 @@ void fn_3_5A28C(void) {
         unkSimulationRelatedStruct._04++;
         break;
     case 18:
-        if ((s32)lbl_803C6CF8._715 == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             fn_3_906FC();
             unkSimulationRelatedStruct._04++;
         }
@@ -2469,7 +2473,7 @@ void fn_3_5F930(void) {
             if (lbl_803C77B8._02 & 0x1000) {
                 unkSimulationRelatedStruct._08 = 1;
             }
-        } else if ((s32)lbl_803C6CF8._715 == 1) {
+        } else if ((s32)lbl_803C6CF8.idle == 1) {
             u8 state = g_GameLogic._125;
             if (state == 1) {
                 lbl_8036E548._3082 = 1;
@@ -2760,7 +2764,7 @@ void fn_3_6011C(void) {
                 changeScene(3, 6);
             }
             if (lbl_8037169C._13 != 0 && inScene != 0) {
-                if ((s32)lbl_803C6CF8._715 == 1) {
+                if ((s32)lbl_803C6CF8.idle == 1) {
                     lbl_3_common_bss_32724.hudOff = 1;
                     g_GameLogic.framesOfExitingToMenu = 1;
                 } else if (unkSimulationRelatedStruct._09 == 0) {

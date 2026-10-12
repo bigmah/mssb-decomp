@@ -54,3 +54,54 @@ void port_swap_stadium_collision(void* table)
         }
     }
 }
+
+// Camera animation list (g_Camera views[0].animList): u32 offsets ending with
+// 0. Swapped once per file (remembered by address).
+void port_swap_camera_anim_list(void* list)
+{
+    static void* s_last;
+    if (list == s_last)
+        return;
+    s_last = list;
+    for (uint32_t* l = (uint32_t*)list;; l++)
+    {
+        *l = __builtin_bswap32(*l);
+        if (*l == 0)
+            break;
+    }
+}
+
+// One camera animation (rep_3090 ReplayAnim), copied out of the list before
+// fn_3_105C84 relocates it: u32 _0, u16 numFrames, s16 numTracks, u32
+// frameTbl, u32 tracks[numTracks]; frameTbl = u16 n, u16, then (frame, value)
+// u16 pairs; a track = s16 parent, u16 pad, u16 count, u8 type, u8 flags,
+// s32 target, then count keys of 52/56/48 bytes (type 0/1/2): u16 frame,
+// u16 pad, then 32-bit values.
+void port_swap_camera_anim(void* anim)
+{
+    static const uint32_t kStride[3] = {52, 56, 48};
+    uint8_t* b = (uint8_t*)anim;
+    swap32_inplace(b);
+    swap16_array(b + 4, 2);
+    int16_t numTracks = *(int16_t*)(b + 6);
+    swap32_array(b + 8, 1 + (uint32_t)numTracks);
+    uint32_t* offs = (uint32_t*)(b + 8);
+    uint16_t* tbl = (uint16_t*)(b + offs[0]);
+    swap16_array(tbl, 2);
+    swap16_array(tbl + 2, 2u * ((uint32_t)tbl[0] + 1));
+    for (int i = 0; i < numTracks; i++)
+    {
+        uint8_t* t = b + offs[1 + i];
+        swap16_array(t, 3);
+        swap32_inplace(t + 8);
+        uint16_t count = *(uint16_t*)(t + 4);
+        uint8_t type = t[6];
+        uint32_t stride = type < 3 ? kStride[type] : 52;
+        uint8_t* k = t + 0xC;
+        for (uint32_t j = 0; j < count; j++, k += stride)
+        {
+            swap16_inplace(k);
+            swap32_array(k + 4, (stride - 4) / 4);
+        }
+    }
+}

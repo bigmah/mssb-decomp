@@ -101,6 +101,9 @@ void fn_3_FC448(void) {
         CAMV = &g_Camera.views[i];
         n = 0;
         l = g_pCamera->views[0].animList;
+#ifdef TARGET_PC
+        port_swap_camera_anim_list(l); // big-endian offsets, once per file
+#endif
         while (*l != 0) {
             l++;
             n++;
@@ -133,6 +136,9 @@ void fn_3_FC938(void) {
     s32 n;
     n = 0;
     l = g_pCamera->views[0].animList;
+#ifdef TARGET_PC
+    port_swap_camera_anim_list(l);
+#endif
     while (*l != 0) {
         l++;
         n++;
@@ -1912,7 +1918,7 @@ void fn_3_104B3C(ReplayAnim* anim, s32 b, s32 c, s32 d, CamMtx* m) {
     u32 key = b;
     s16 track = c;
     u8 depth = d;
-    ReplayAnimTrack* trk = anim->tracks[track];
+    ReplayAnimTrack* trk = PTR32_GET(ReplayAnimTrack, anim->tracks[track]);
     u8* first = trk->keys;
     ReplayAnimKeyF* k;
     s32 stride;
@@ -2175,7 +2181,7 @@ void fn_3_1054D0(ReplayAnim* anim, u32 key, s16 track) {
     u16 lo = key;
     u32 frame = key >> 16;
     u8 hit = 0;
-    ReplayAnimTrack* trk = anim->tracks[track];
+    ReplayAnimTrack* trk = PTR32_GET(ReplayAnimTrack, anim->tracks[track]);
     u8* first = trk->keys;
     u16 count = trk->count;
     s32 stride = lbl_3_data_20FC4[trk->type];
@@ -2328,7 +2334,7 @@ u32 fn_3_105C28(ReplayAnim* p, u32 key) {
     u16* last;
     res = 0;
     hi = key >> 16;
-    tbl = p->frameTbl;
+    tbl = PTR32_GET(u16, p->frameTbl);
     lo = (u16)key;
     n = tbl[0];
     e = tbl + 2;
@@ -2350,7 +2356,10 @@ u32 fn_3_105C28(ReplayAnim* p, u32 key) {
 void fn_3_105C84(ReplayAnim* p) {
     u32* a;
     s16 i;
-    a = (u32*)&p->frameTbl; /* TODO(port): frameTbl/tracks[] hold 32-bit file offsets relocated in place */
+#ifdef TARGET_PC
+    port_swap_camera_anim(p); // a fresh big-endian copy (fn_3_FC448)
+#endif
+    a = (u32*)&p->frameTbl;
     *a += PTR_TO_U32(p);
     for (i = 0; i < p->numTracks; i++) {
         a[i + 1] += PTR_TO_U32(p);
