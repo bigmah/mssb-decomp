@@ -5260,3 +5260,53 @@ void fn_8001FDD4(ActorObject* slot) {
         fn_800B9AA8(slot->lights[0]);
     }
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .bss 0x80118220..0x80118740 (MWCC lays these out in reverse definition order)
+CharPart lbl_80118220[13];
+
+// .sdata 0x803CB790..0x803CB7C8
+extern DiskFileEntry lbl_800F1D78[];
+DiskFileEntry *lbl_803CB790 = lbl_800F1D78;
+extern DiskFileEntry lbl_800F71D8[];
+DiskFileEntry *lbl_803CB794 = lbl_800F71D8;
+u16 lbl_803CB798[4] = {74, 75, 65535, 0};
+u16 lbl_803CB7A0[4] = {47, 52, 65535, 0};
+extern DiskFileEntry lbl_800F5D98[];
+DiskFileEntry *lbl_803CB7A8 = lbl_800F5D98;
+CharDrawCallback lbl_803CB7AC[2] = {NULL, NULL};
+u8 lbl_803CB7B4[8] = {19, 25, 20, 26, 74, 75, 60, 61};
+f32 lbl_803CB7BC = 2.0f;
+u8 lbl_803CB7C0 = 32;
+u8 lbl_803CB7C1 = 255;
+u8 lbl_803CB7C2 = 1;
+u8 lbl_803CB7C4[4] = {0, 1, 2, 3}; // NOTE: type size 0x4 != symbol size 0x1
+// lbl_803CB7C5 is part of the object above
+
+// .sbss 0x803CBBF0..0x803CBC40 (MWCC lays these out in reverse definition order)
+u8 lbl_803CBC3C[4];
+u8 lbl_803CBC34[8];
+void* lbl_803CBC30;
+u8 lbl_803CBC2C;
+s32 lbl_803CBC28;
+u8* lbl_803CBC24;
+CharParts* lbl_803CBC20;
+CharPart* lbl_803CBC1C;
+CharActor* lbl_803CBC18;
+u8 lbl_803CBC15;
+u8 lbl_803CBC14;
+CharPart* lbl_803CBC10;
+u8 lbl_803CBC0C;
+void* lbl_803CBC08;
+u8 lbl_803CBC04;
+void* lbl_803CBC00;
+u8 lbl_803CBBFD;
+u8 lbl_803CBBFC;
+u8 lbl_803CBBFB;
+u8 lbl_803CBBFA;
+u8 lbl_803CBBF9;
+u8 lbl_803CBBF8;
+void (*lbl_803CBBF4)(void);
+u32 lbl_803CBBF0;
+
