@@ -168,11 +168,27 @@ reads 4-byte disc offsets as 8-byte pointers (deferred item 1).
 
 ## Phase 3: boot (in progress)
 
-How far it gets (`port/tools/run.sh 40 5` with `MSSB_INPUT="500:A,800:A"`):
-health & safety screen, Nintendo and Namco logos (rendered correctly), then
-the intro movie (HVQM4) panics on its header ("Invalid version"); skipping it
-locally, the title screen task runs but its spani animation doesn't advance
-(black screen).
+How far it gets: **the main menu**. Health & safety screen, Nintendo and
+Namco logos, the intro movie (HVQM4, video in sync), the title screen (spani
+animation) and, after START and the memory card prompts (no save file: "No",
+then "start anyway"), the main menu with the "Exhibition Game" panel
+(preview picture, text, icons). Reproduce with
+
+    IN="500:A,800:A,1300:START"; f=2200
+    for i in 1 2 3 4 5 6; do IN="$IN,$f:RIGHT,$((f+60)):A,$((f+120)):LEFT,$((f+180)):A"; f=$((f+240)); done
+    MSSB_SKIP_MOVIES=1 MSSB_INPUT="$IN" port/tools/run.sh 75 5
+
+Blockers / known problems:
+- Main menu: the left-hand mode list and the menu background are missing
+  (probably 3D layouts/actor models, not spani).
+- Text glyphs are cyan/pink instead of white (font palette/colour).
+- More task-struct views pad the header pointers as bytes (rep_16B8,
+  rep_1770, rep_2BF8, auto_00_0015C5F4, auto_00_00097144, auto_00_0011D3AC,
+  rep_7730, rep_7BF0): they will break when those screens run.
+- Untested: ARAM-cached menu/challenge movies, movie audio by ear, all 3D
+  model formats (no model drawn yet), stadium and challenge containers.
+- `lbl_2_data_2AADC` has 12 raw big-endian tail bytes (port/gen).
+- aurora patch 0002 applies the texcoord SU scale registers (glyph UVs).
 
 ### Tooling
 
@@ -207,7 +223,7 @@ through GameCube-offset views can also keep their layout with PTR32 fields
 | font archive (4 offsets) | file_8000F150 fn_80011000 | swapped, works |
 | texture archives (TexArchive/TexImage), DOTexInfo, challenge texture headers | file_800BDEA0 convertTextureHeader | swapped once (marker) + PTR32, works for logos |
 | TPL (TEXPalette, charPipeline) | file_800A7C08, file_80091450 | swapped + PTR32 (memory card banner/icons) |
-| spani 2D animation (SpaniAnim, tracks, blocks, keys), spani file headers | file_8000A0AC fn_8000B9C8, file_80034F50 | swapped + PTR32; title animation not advancing yet |
+| spani 2D animation (SpaniAnim, tracks, blocks, keys), spani file headers, SpaniDesc tables | file_8000A0AC fn_8000B9C8, file_80034F50 | swapped + PTR32, title and menus animate |
 | sprite elements (bitfields), RGBA colors | file_8000BA3C | PC bitfield order |
 | 2-offset resource files (RelocPair/ResHandle) | file_80069BDC | swapped + PTR32 |
 | menu song blocks, song tables, archives, model-set containers | menus, m_sound | offset tables swapped |
@@ -219,7 +235,7 @@ through GameCube-offset views can also keep their layout with PTR32 fields
 | character file tables | file_80011640, menus rep_0F60/rep_0568 | PTR32 tables, untested |
 | shape (morph) data, shape anim sets | file_80024D2C | swapped, untested |
 | file load records in .data (u8[] objects) | port/src/data_fixups.c | swapped at startup |
-| HVQM4 movies | file_800ADC40, file_800DFDD4 | in progress (header read fails) |
+| HVQM4 movies (headers swapped, YUV->BE texels) | file_800ADC40, file_800DFDD4 | intro plays; `MSSB_SKIP_MOVIES=1` skips |
 | stadium archives / sta_c* file tables, rep_1E08 assets, rep_3E00, auto_00_0011D3AC | game | not done |
 | challenge models (rep_0000, rep_0610, rep_74A0) | challenge | not done |
 
