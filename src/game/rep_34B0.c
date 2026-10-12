@@ -100,26 +100,24 @@ void fn_3_12E8FC(void) {
 
 // .text:0x0012EB10 size:0x270 mapped:0x8076DBA4
 // Drop the barrels above blown-up ones (state 4) down by one slot in each row.
-// NONMATCHING 86%: the original keeps base*0x34 per row (mulli) and a dead copy of i;
-// ours strength-reduces i*0x34 across the whole row loop.
+// NONMATCHING 99%: the original keeps the barrel-state test as 0x890(base) inside the loop; ours
+// hoists base+0x890.
 #if NONMATCHING
 void fn_3_12EB10(void) {
-    s32 i;
+    s32 i; // unused copy of the barrel index (kept: the original keeps it too)
     s32 row;
-    s32 base;
     s32 j;
     s32 k;
     s32 n;
 
-    base = 0;
     for (row = 0; row < 5; row++) {
-        for (j = 0, i = base; j < 2; j++, i++) {
+        for (j = 0, i = row * 3; j < 2; j++, i++) {
             for (;;) {
-                if (g_Minigame.barrels[i].barrelState != 4) {
+                if (g_Minigame.barrels[row * 3 + j].barrelState != 4) {
                     break;
                 }
                 for (k = j + 1; k < 3; k++) {
-                    n = k + base;
+                    n = k + row * 3;
                     g_Minigame.barrels[n - 1].barrelState = g_Minigame.barrels[n].barrelState;
                     g_Minigame.barrels[n - 1].barrelColour = g_Minigame.barrels[n].barrelColour;
                     g_Minigame.barrels[n - 1].currentPos.x = g_Minigame.barrels[n].currentPos.x;
@@ -129,11 +127,11 @@ void fn_3_12EB10(void) {
                 }
             }
         }
-        base += 3;
     }
     for (row = 0; row < 5; row++) {
-        if (g_Minigame.barrels[row * 3 + 2].barrelState == 4) {
-            g_Minigame.barrels[row * 3 + 2].barrelState = 0;
+        u8* s = &g_Minigame.barrels[row * 3 + 2].barrelState;
+        if (*s == 4) {
+            *s = 0;
         }
     }
 }
@@ -512,7 +510,7 @@ void fn_3_12FE84(void) {
 }
 
 // .text:0x0012FFD4 size:0x2B4 mapped:0x8076F068
-// NONMATCHING: the original inlines fn_3_12EB10 (itself not matching yet), so the call here is expected.
+// NONMATCHING 98%: inherits the fn_3_12EB10 difference (inlined in both).
 #if NONMATCHING
 void fn_3_12FFD4(void) {
     g_Minigame.bB_bombBarrelID = -1;
@@ -529,8 +527,7 @@ void fn_3_12FFD4(void) {
 // .text:0x00130288 size:0x548 mapped:0x8076F31C
 // Barrel Batter: end-of-pitch bookkeeping; once all barrels have settled,
 // refill the rack and move on to the next pitch or end the turn.
-// NONMATCHING 52%: only difference is that the original inlines fn_3_12FFD4
-// (which inlines fn_3_12EB10); both are NONMATCHING so ours keeps the call.
+// NONMATCHING 99%: inherits the fn_3_12EB10 difference (fn_3_12FFD4 and fn_3_12EB10 are inlined in both).
 #if NONMATCHING
 void fn_3_130288(void) {
     if (g_Minigame.turnOverStatus == 0 && g_Ball.framesSinceHit >= lbl_3_data_217A4[4]) {
@@ -597,7 +594,7 @@ void fn_3_1307D0(void) {
             fn_3_12EFA4(i);
         }
     }
-    fn_3_130288();
+    ((void (*)(void))fn_3_130288)(); // a call in the original (not inlined)
 }
 #endif
 
@@ -630,11 +627,7 @@ void fn_3_130ACC(void) {
     g_GameLogic.CountdownUntilFade -= 1;
     if (g_Minigame.pointsTargetReachedInd != 0) {
         if (g_GameLogic.CountdownUntilFade <= 0) {
-            g_Minigame.bB_bombBarrelID = -1;
-            g_GameLogic.pre_PostMiniGameInd = 1;
-            g_GameLogic.minigameLastTurnSuccessInd = 1;
-            g_GameLogic.hudLoadingRelated = 1;
-            fn_3_5A6D4(8);
+            fn_3_130A80();
         }
     } else if (g_GameLogic.CountdownUntilFade <= 0) {
         fn_3_5A6D4(0);
@@ -650,8 +643,7 @@ void fn_3_130ACC(void) {
 
 // .text:0x00130C6C size:0x4A8 mapped:0x8076FD00
 // Barrel Batter: per-frame update while a pitch is in play.
-// NONMATCHING 99%: registers only in the barrel loop (as fn_3_1307D0); the original also
-// inlines fn_3_130ACC (pasting its body gets 99%, so we keep the call).
+// NONMATCHING 99%: registers only in the barrel loop (as fn_3_1307D0); fn_3_130ACC is inlined in both.
 #if NONMATCHING
 void fn_3_130C6C(void) {
     BB_barrelStruct* b;
@@ -974,27 +966,46 @@ void fn_3_1323CC(void) {
     }
 }
 
+// The original expands fn_3_1307D0 into fn_3_1324E8. CW only does that with a larger inline size
+// limit (with -inline deferred, the value in effect at the end of the file counts) and only from a
+// copy that is always visible (fn_3_1307D0 itself is NONMATCHING).
+#pragma inline_max_size(100000)
+// Inline copy of fn_3_1307D0.
+static inline void fn_3_1307D0_inline(void) {
+    BB_barrelStruct* b;
+    s32 i;
+
+    ballPhysica();
+    fn_3_12F624();
+    for (i = 0; i < 15; i++) {
+        b = &g_Minigame.barrels[i];
+        if (b->animationCounter < 0x7FFE) {
+            b->animationCounter += 1;
+        } else {
+            b->animationCounter = 0x7FFF;
+        }
+        if (b->barrelState == 1) {
+            mgStep_1323CC(i);
+        }
+        if (b->barrelState == 3) {
+            fn_3_12F28C(i);
+        }
+        if (b->replacingBarrelInd != 0) {
+            fn_3_12EFA4(i);
+        }
+    }
+    ((void (*)(void))fn_3_130288)(); // a call in the original (not inlined)
+}
+
 // .text:0x001324E8 size:0x9F4 mapped:0x8077157C
 // Barrel Batter: per-frame dispatch on the game status.
-// NONMATCHING 10%: the original inlines fn_3_1307D0 (case 2), which is NONMATCHING, so ours
-// keeps a call and the rest of the function shifts (the other cases inline their siblings too).
-#if NONMATCHING
 void fn_3_1324E8(void) {
     switch (g_GameLogic.gameStatus) {
-    case 0:
-        fn_3_131C88();
-        break;
-    case 1:
-        fn_3_130C6C();
-        break;
-    case 2:
-        fn_3_1307D0();
-        break;
-    case 3:
-        fn_3_13119C();
-        break;
     case 4:
         fn_3_1320BC();
+        break;
+    case 26:
+        fn_3_13207C();
         break;
     case 6:
         fn_3_131FFC();
@@ -1002,18 +1013,26 @@ void fn_3_1324E8(void) {
     case 7:
         fn_3_131EC4();
         break;
+    case 0:
+        fn_3_131C88();
+        break;
+    case 1:
+        fn_3_130C6C();
+        break;
+    case 2:
+        fn_3_1307D0_inline();
+        break;
     case 8:
         fn_3_131540();
-        break;
-    case 15:
-        fn_3_1312D4();
         break;
     case 25:
         fn_3_13128C();
         break;
-    case 26:
-        fn_3_13207C();
+    case 3:
+        fn_3_13119C();
+        break;
+    case 15:
+        fn_3_1312D4();
         break;
     }
 }
-#endif
