@@ -447,6 +447,10 @@ game/rep_3090.c:
 game/rep_31A0.c:
 	.rodata     start:0x000031A0 end:0x000031F0
 
+auto_00_00106DFC_text:
+	.text       start:0x00106DFC end:0x00110634
+	.data       start:0x00021268 end:0x000224E8
+
 game/rep_31F0.c:
 	.text       start:0x00110634 end:0x00113398
 	.rodata     start:0x000031F0 end:0x00003290
