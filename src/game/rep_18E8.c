@@ -1589,8 +1589,51 @@ normal:
 #endif
 
 // .text:0x000A4A10 size:0x540 mapped:0x806E3AA4
-// NONMATCHING 41%: the original inlines fn_3_A53DC (with fn_3_A6ABC); here it is called. Loop structure matches
+// NONMATCHING 95%: fn_3_A53DC (with fn_3_A6ABC) inlined through a static-inline copy of its body; register allocation and
+// a few scheduling differences remain
 #if NONMATCHING
+static inline void InlA53DC(s32 i) {
+    InMemRunnerType* r = &g_Runners[i];
+    RepFielder* f = &g_Fielders[g_Ball.fielderWBallIndex];
+    f32 a;
+    f32 dx;
+    f32 d;
+    f32 step;
+    f32 dz;
+    f32 b;
+    s32 n;
+
+    if (i == 3 && r->baseStandingOn == 3 && g_RunningLogic._00 == 0x1000 && g_Ball.ballZoneAwayFromHome >= 4 &&
+        g_Ball.AtBat_ContactResult == 3) {
+        // inlined fn_3_A6ABC(home x, home z)
+        dx = lbl_3_data_4444[0] - f->pos.x;
+        step = (f32)f->_1CD / lbl_3_rodata_1938;
+        dz = lbl_3_data_4444[1] - f->pos.z;
+        a = dx * dx;
+        b = dz * dz;
+        d = a + b;
+        SQRT_L(d);
+        if (lbl_3_rodata_193C == step) {
+            step = lbl_3_rodata_1958;
+        }
+        if (d > lbl_3_rodata_195C) {
+            n = (s32)(lbl_3_rodata_1960 * d / step);
+        } else if (d > lbl_3_rodata_1964) {
+            n = (s32)(d / step);
+        } else {
+            n = (s32)(lbl_3_rodata_1968 * d / step);
+        }
+        if (d > lbl_3_rodata_196C) {
+            n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+        } else if (d > lbl_3_rodata_1974) {
+            n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+        }
+        lbl_3_bss_1828[i] = 0;
+        lbl_3_bss_1838[i] = -1;
+        lbl_3_bss_1848[i] = f->_192 + n + lbl_3_data_1C40 - r->framesToNextBase;
+    }
+}
+
 void fn_3_A4A10(void) {
     s32 i;
     InMemRunnerType* r;
@@ -1606,7 +1649,7 @@ void fn_3_A4A10(void) {
             if (r->tagUpInd == 2) {
                 fn_3_A4F50(i);
             } else if (r->baseStandingOn != -1 && r->forceOutCd <= 0) {
-                fn_3_A53DC(i);
+                InlA53DC(i);
             } else if (r->overrunBaseStage == 0) {
                 if (r->forceOutCd == 1) {
                     fn_3_A5704(i);
@@ -1741,48 +1784,10 @@ void fn_3_A4F50(s32 i) {
 #endif
 
 // .text:0x000A53DC size:0x328 mapped:0x806E4470
-// NONMATCHING 87.5%: instruction scheduling and register allocation differ; fn_3_A6ABC is inlined
+// NONMATCHING 90%: instruction scheduling and register allocation differ; body (with fn_3_A6ABC inlined) is InlA53DC above, shared with fn_3_A4A10
 #if NONMATCHING
 void fn_3_A53DC(s32 i) {
-    InMemRunnerType* r = &g_Runners[i];
-    RepFielder* f = &g_Fielders[g_Ball.fielderWBallIndex];
-    f32 a;
-    f32 dx;
-    f32 d;
-    f32 step;
-    f32 dz;
-    f32 b;
-    s32 n;
-
-    if (i == 3 && r->baseStandingOn == 3 && g_RunningLogic._00 == 0x1000 && g_Ball.ballZoneAwayFromHome >= 4 &&
-        g_Ball.AtBat_ContactResult == 3) {
-        // inlined fn_3_A6ABC(home x, home z)
-        dx = lbl_3_data_4444[0] - f->pos.x;
-        step = (f32)f->_1CD / lbl_3_rodata_1938;
-        dz = lbl_3_data_4444[1] - f->pos.z;
-        a = dx * dx;
-        b = dz * dz;
-        d = a + b;
-        SQRT_L(d);
-        if (lbl_3_rodata_193C == step) {
-            step = lbl_3_rodata_1958;
-        }
-        if (d > lbl_3_rodata_195C) {
-            n = (s32)(lbl_3_rodata_1960 * d / step);
-        } else if (d > lbl_3_rodata_1964) {
-            n = (s32)(d / step);
-        } else {
-            n = (s32)(lbl_3_rodata_1968 * d / step);
-        }
-        if (d > lbl_3_rodata_196C) {
-            n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
-        } else if (d > lbl_3_rodata_1974) {
-            n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
-        }
-        lbl_3_bss_1828[i] = 0;
-        lbl_3_bss_1838[i] = -1;
-        lbl_3_bss_1848[i] = f->_192 + n + lbl_3_data_1C40 - r->framesToNextBase;
-    }
+    InlA53DC(i);
 }
 #endif
 
