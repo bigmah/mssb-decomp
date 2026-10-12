@@ -158,7 +158,11 @@ SpaniObj* fn_80034F50(SpaniDesc* desc) {
 // NONMATCHING 97.5%: original keeps separate k*4 and texOverride walkers (r29/r30); regalloc
 #if NONMATCHING
 void fn_80035168(void) {
+#ifdef TARGET_PC
+    u16* sp8[1]; // loop marker out-parameter of fn_8000D838 (a u16*)
+#else
     u8 sp8[4];
+#endif
     Mtx inv;
     Mtx mtx;
     Mtx* views = lbl_800F78E0;
