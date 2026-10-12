@@ -695,7 +695,7 @@ config.libs = [
             Object(NonMatching, "main/file_8004C19C.c"),
             Object(NonMatching, "main/file_8004C5F8.c"),
             Object(NonMatching, "main/file_800527C4.c"),
-            Object(NonMatching, "main/file_80063028.c"),
+            Object(Matching, "main/file_80063028.c"),
             Object(NonMatching, "main/file_800639BC.c"),
             Object(NonMatching, "main/file_80069BDC.c"),
             Object(Matching, "main/file_80091450.c", mw_version="GC/1.2.5"),  # charPipeline (DSList/TEX)
