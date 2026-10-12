@@ -74,7 +74,7 @@ extern void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32
 
 // Field-by-field copy of a character's stats (inlined by the original).
 #if NONMATCHING
-static void copyCharacterStats(CharacterStats* dst, CharacterStats* src) {
+static inline void copyCharacterStats(CharacterStats* dst, CharacterStats* src) {
     s32 i;
 
     memcpy(&dst->stats, &src->stats, 0x1E);
@@ -1221,11 +1221,131 @@ void fn_8006877C(u8 track) {
 
 // .text:0x80068838 size:0xF78
 
-// NONMATCHING 69%: large function written as equivalent C; the original inlines copyCharacterStats,
-// fn_80067B40, fn_80066EAC, fn_80069854, fn_8006496C and fn_800678CC, and addresses
-// lbl_80108EC4/lbl_80108EDC relative to lbl_80108DB8
-// nmverify: fn_80067C48 fn_80069854 inlined on one side (calls match once expanded)
+// NONMATCHING 90%: copyCharacterStats, fn_80067B40, fn_80066EAC, fn_80069854, fn_8006496C and
+// fn_800678CC are inlined (static inline copies below) as in the original; left: the original addresses
+// lbl_80108EC4/lbl_80108EDC relative to lbl_80108DB8, and register allocation
 #if NONMATCHING
+// Copies of helpers that the original inlines into fn_80068838.
+static inline BOOL fn_80067B40_inline(s32 unused, u8 charId, u8 flag) {
+    s32 row;
+    s32 i;
+    s16* group;
+
+    if (charId == -1) {
+        return FALSE;
+    }
+    for (row = 0; row < 9; row++) {
+        for (i = 0; i < 5; i++) {
+            if (charId == lbl_80108EDC.groups[row][i]) {
+                group = lbl_80108EDC.groups[row];
+                for (i = 0; i < 5; i++) {
+                    if (group[i] != -1 && flag != 2) {
+                        lbl_8034E9A0.charFlag[group[i]] = flag;
+                    }
+                }
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+static inline void fn_80066EAC_inline(u8 team) {
+    // The sort pass compares against buf[9] as well (one past the 9 ids); the
+    // original buffer is 9 bytes there, so that byte is uninitialised.
+    s8 buf[10];
+    s32 i;
+    s32 j;
+    s32 k;
+    s16 id;
+    u8 chem;
+    s8 t;
+
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            id = inMemRoster[team][j].stats.CharID;
+            chem = ((u8*)&inMemRoster[team][i])[id + 0x3B]; // chemistry[id]
+            if (chem < 90 || chem == 100) {
+                buf[j] = -1;
+            } else {
+                buf[j] = id;
+            }
+        }
+        for (j = 0; j < 9; j++) {
+            for (k = 0; k < 10; k++) {
+                if (buf[j] > buf[k]) {
+                    t = buf[j];
+                    buf[j] = buf[k];
+                    buf[k] = t;
+                }
+            }
+        }
+        memcpy(lbl_8034E9A0.chemPartners[team][i], buf, 9);
+    }
+}
+
+static inline void fn_80069854_inline(void) {
+    s32 team;
+    s32 i;
+
+    for (team = 0; team < 2; team++) {
+        for (i = 0; i < 9; i++) {
+            if (lbl_8034E9A0.captain[team] == inMemRoster[team][i].stats.CharID) {
+                lbl_8034E9A0.captainSlot[team] = i;
+            }
+        }
+    }
+}
+
+static inline void fn_8006496C_inline(void) {
+    CharSelectState* cs = &lbl_8034E9A0;
+
+    g_d_GameSettings.PlayerPorts[0] = cs->ports[0];
+    if (g_d_GameSettings._10 == 0) {
+        if (cs->ports[0] == 0) {
+            g_d_GameSettings.PlayerPorts[1] = 5;
+        } else {
+            g_d_GameSettings.PlayerPorts[1] = 4;
+        }
+    } else {
+        g_d_GameSettings.PlayerPorts[1] = cs->ports[1];
+    }
+}
+
+static inline void fn_800678CC_inline(s32 team) {
+    s8 idx = -1;
+    s32 captain;
+    s32 i;
+    u8 variant;
+
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        if (team == 0) {
+            captain = lbl_8034E9A0.captain[team] = gChallengeState._441D;
+        } else {
+            captain = lbl_8034E9A0.captain[team] = (s8)gChallengeState._441F;
+        }
+    } else {
+        captain = lbl_8034E9A0.captain[team];
+    }
+    for (i = 0; i < 12; i++) {
+        if (captain == lbl_80108ED0[i]) {
+            idx = i;
+            break;
+        }
+    }
+    variant = fn_800675C4(team, captain);
+    if (variant == 0) {
+        variant = fn_80067264(team, captain);
+        if (variant != 0) {
+            lbl_8034E9A0.captainVariant[team] = idx * 4 + (variant - 1);
+        } else {
+            lbl_8034E9A0.captainVariant[team] = (idx + 1) * 4 - 1;
+        }
+    } else {
+        lbl_8034E9A0.captainVariant[team] = idx * 4 + (variant - 1);
+    }
+}
+
 // Challenge mode: sets up both teams' rosters (team 0 from the save, team 1 from
 // preset 11 with random recruited characters).
 void fn_80068838(void) {
@@ -1248,7 +1368,7 @@ void fn_80068838(void) {
     // Collect the recruited characters (one per model group).
     for (i = 0; i < 0x36; i++) {
         if (gChallengeState.trackers[i]._31 == 2) {
-            if (fn_80067B40(0, i, 1)) {
+            if (fn_80067B40_inline(0, i, 1)) {
                 for (row = 0; row < 9; row++) {
                     if (i == lbl_80108EDC.groups[row][0]) {
                         break;
@@ -1339,12 +1459,12 @@ void fn_80068838(void) {
         fn_80067C48(0);
         fn_80067C48(1);
     }
-    fn_80066EAC(0);
-    fn_80069854();
-    fn_8006496C();
-    fn_80069854();
-    fn_800678CC(0);
-    fn_800678CC(1);
+    fn_80066EAC_inline(0);
+    fn_80069854_inline();
+    fn_8006496C_inline();
+    fn_80069854_inline();
+    fn_800678CC_inline(0);
+    fn_800678CC_inline(1);
 }
 #endif
 
