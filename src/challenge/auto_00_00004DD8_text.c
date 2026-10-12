@@ -11,7 +11,7 @@ void fn_1_4DD8(u16* file) {
     lbl_1_common_bss_472B4.effects = (u32*)(file + 2);
     table = (u32*)(file + 2);
     for (i = (s16)file[0]; i >= 0; i--) {
-        // TODO port: file offsets are 32-bit; turning them into pointers needs a wider table
+        // TODO port: in-place 32-bit offset relocation; needs the port's relocation layer
         *table++ += (u32)file;
     }
 }
