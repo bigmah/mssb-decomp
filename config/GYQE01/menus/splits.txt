@@ -169,6 +169,10 @@ menus/rep_0D40.c:
 menus/rep_0D90.c:
 	.rodata     start:0x00000D90 end:0x00000DE0
 
+auto_00_00071EC4_text:
+	.text       start:0x00071EC4 end:0x0008563C
+	.bss        start:0x0000A840 end:0x0000B29C
+
 menus/rep_0DE0.c:
 	.text       start:0x0008563C end:0x0008782C
 	.rodata     start:0x00000DE0 end:0x00000F10
