@@ -263,8 +263,6 @@ void fn_2_708(void) {
     *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_554;
 }
 
-// NONMATCHING 96%: the inlined fn_2_978 switch compiles to a compare tree instead of the original jump table
-#if NONMATCHING
 // fn_2_794, size:0x1AC
 void fn_2_794(void) {
     u8* task = lbl_803CC1B8;
@@ -282,7 +280,7 @@ void fn_2_794(void) {
         *(u16*)lbl_803CBBCC[0] = 3;
         break;
     case 3:
-        fn_2_978(); // inlined in the original
+        fn_2_978(); // inlined
         *(u16*)lbl_803CBBCC[0] = 4;
     case 4:
         if (*(s16*)(task + 0x10) != 0) {
@@ -294,7 +292,6 @@ void fn_2_794(void) {
         break;
     }
 }
-#endif
 
 // fn_2_940, size:0x38
 void fn_2_940(void) {
