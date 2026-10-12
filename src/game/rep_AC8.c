@@ -10389,6 +10389,36 @@ void fn_3_47778(void) {
 #undef FL_STATE
 #undef IS_CHASING
 
+#if NONMATCHING
+static inline void Inl480B8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int base;
+    f32 x;
+    f32 z;
+    f32 dx, dz, d;
+    base = fn_3_47628();
+    if (base != -1) {
+        *(s16*)(f + 0x18E) = base;
+        if (fn_3_46E08(i, &x, &z) != 0) {
+            *(f32*)(f + 0x14) = x;
+            *(f32*)(f + 0x1C) = z;
+            dx = x - *(f32*)f;
+            dz = z - *(f32*)(f + 8);
+            if (0.0f == dx && 0.0f == dz) {
+                *(f32*)(f + 0x50) = 0.0f;
+                *(f32*)(f + 0x68) = 0.0f;
+            } else {
+                *(f32*)(f + 0x64) = atan2(dz, dx);
+                d = dx * dx + dz * dz;
+                SQRT_L(d);
+                *(f32*)(f + 0x68) = d;
+            }
+            f[0x1D9] = 1;
+        }
+    }
+}
+#endif
+
 // .text:0x000480B8 size:0x314 mapped:0x8068714C
 // NONMATCHING 99.9%: f0/f1 swapped for the 3.7f constant vs runner+0x64 in the inlined fn_3_47628 loop (same issue as fn_3_47628)
 #if NONMATCHING
@@ -10443,7 +10473,8 @@ void fn_3_483CC(int i) {
 }
 
 // .text:0x00048480 size:0x5D4 mapped:0x80687514
-// NONMATCHING 50%: the original inlines fn_3_480B8 (lead-runner cover + set target); we call it (expected nmverify flag). The rest matches apart from registers
+// NONMATCHING 99.5%: fn_3_480B8 (lead-runner cover + set target) inlined via Inl480B8; f0/f1 swapped in the inlined
+// fn_3_47628 loop (same issue as fn_3_47628) and a few other float registers
 #if NONMATCHING
 // Infielder i during a hit: cover the lead runner's base (fn_3_480B8), then react to the ball state.
 void fn_3_48480(int i) {
@@ -10457,7 +10488,7 @@ void fn_3_48480(int i) {
             fn_3_46ABC(i);
             fn_3_A7C88();
         } else if (*(int*)(g_Strikes + 8) < 3) {
-            fn_3_480B8(i);
+            Inl480B8(i);
             fn_3_526DC(i);
         }
         if (0.0f != *(f32*)(f + 0x50)) {
