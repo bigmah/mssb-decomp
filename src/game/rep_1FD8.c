@@ -1936,7 +1936,49 @@ extern const f64 lbl_3_rodata_21D0; // 0.25
 extern const f64 lbl_3_rodata_21D8; // -5.0
 extern const f64 lbl_3_rodata_21E8; // 0.2
 extern f32 lbl_3_rodata_21E0;        // -5.0f
-// NONMATCHING ~65%: the original inlines fn_3_C77AC in case 2 (CW won't auto-inline it here: 271 of 404 insns, the rest is register numbering)
+// The original expands fn_3_C77AC into fn_3_C7A0C. CW only does that with a larger inline size
+// limit (with -inline deferred, the value in effect at the end of the file counts) and only from a
+// copy that is always visible (fn_3_C77AC itself is NONMATCHING).
+#pragma inline_max_size(100000)
+// Inline copy of fn_3_C77AC.
+static inline void fn_3_C77AC_inline(void* hv, u8* b) {
+    u32 ang;
+    C4724P* p;
+    C4724Hdr* h = hv;
+    f32 a, fa;
+    u32 i;
+    p = h->head;
+    h->f18 = (Vec*)(b + 0x9C);
+    h->f20 = b;
+    h->tex = lbl_3_bss_9F0C;
+    h->f24 = 30;
+    i = 0;
+    ang = 0;
+    while (p != NULL) {
+        p->f38 = p->f3C = lbl_3_rodata_213C;
+        p->f1C = lbl_3_rodata_21AC - (f32)(rand() % 3);
+        fa = (f32)ang + *(f32*)(lbl_3_data_17514 + b[0xA8] * 0x14 + 0xC);
+        a = (fa * lbl_3_rodata_2158) / lbl_3_rodata_215C;
+        p->vx = 0.3499999940395355 * cos(a);
+        p->vy = (f32)-(rand() % 3);
+        p->vz = 0.3499999940395355 * sin(a);
+        ang += 30;
+        p->x = h->f18->x;
+        p->z = h->f18->z;
+        p->s48 = i >> 2;
+        i++;
+        p->f4D = 0x1C;
+        p->f4E = 0;
+        p->a42 = 0x7F;
+        p->a41 = 0x7F;
+        p->a40 = 0x7F;
+        p->a43 = 0x99;
+        p->s4A = 1;
+        p = p->next;
+    }
+}
+
+// NONMATCHING 98%: register numbering; the inlined fn_3_C77AC copy carries its fmuls operand-order difference
 #if NONMATCHING
 void fn_3_C7A0C(C7A0CEnt* e) {
     Vec pos;
@@ -2006,7 +2048,7 @@ void fn_3_C7A0C(C7A0CEnt* e) {
         if (lbl_3_rodata_2148 * e->speed + e->pos.y >= lbl_3_rodata_21D8) {
             h = fn_80033A24(fn_3_C75B8, 0x80, 0, 0xC, 1, (u8)(e->idx + 0x3E));
             if (h != NULL) {
-                fn_3_C77AC(h, (u8*)e);
+                fn_3_C77AC_inline(h, (u8*)e);
             }
         }
         break;
