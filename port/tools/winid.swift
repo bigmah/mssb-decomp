@@ -4,7 +4,7 @@ import CoreGraphics
 import Foundation
 
 let pid = Int32(CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "0") ?? 0
-let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+let list = CGWindowListCopyWindowInfo([.optionAll], kCGNullWindowID) as? [[String: Any]] ?? []
 for w in list {
     if let owner = w[kCGWindowOwnerPID as String] as? Int32, owner == pid,
        let layer = w[kCGWindowLayer as String] as? Int, layer == 0,
