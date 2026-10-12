@@ -313,22 +313,11 @@ extern u32 sndRemoveListener(SND_LISTENER* li);
 extern u32 sndUpdateListener(SND_LISTENER* li, SND_FVECTOR* pos, SND_FVECTOR* dir, SND_FVECTOR* heading,
                              SND_FVECTOR* up, u8 vol, SND_ROOM* room);
 
-extern const char lbl_1_rodata_5C8[];
-extern const char lbl_1_rodata_5C0[];
-extern const char lbl_1_rodata_5D0[];
 
 static inline struct SoundGroupData* SoundOptionValue(s32 index) {
     return lbl_800EF808[index + 1];
 }
 
-extern const f32 lbl_1_rodata_5E8; // 127.0f
-extern const f32 lbl_1_rodata_5EC; // 0.0f
-extern const f32 lbl_1_rodata_5F0; // 100.0f
-extern const f32 lbl_1_rodata_5F4; // 10.0f
-extern const f32 lbl_1_rodata_5F8; // 1.0f
-extern const f32 lbl_1_rodata_5FC; // -1.0f
-extern const f64 lbl_1_rodata_600; // 0.1
-extern const f64 lbl_1_rodata_608; // 10.0
 
 // .text:0x0000C188 size:0x11C
 void fn_1_C188(void) {
@@ -398,17 +387,13 @@ void fn_1_BFB0(void) {
 
 // .text:0x0000BF34 size:0x7C
 static inline const char* ReverbStatusName(u32 success) {
-    const char* status = lbl_1_rodata_5C8;
-    if (success != 0) {
-        status = lbl_1_rodata_5C0;
-    }
-    return status;
+    return success != 0 ? "succeed" : "failed";
 }
 
-u32 fn_1_BF34(u32 effect) {
+u32 fn_1_BF34(s16 effect) {
     u32 voice = sndFXStartEx(effect, 127, 63, 0);
     const char* status = ReverbStatusName(sndFXCtrl(voice, 0x5B, fn_800211F0()));
-    OSReport(lbl_1_rodata_5D0, status);
+    OSReport("sndFXReverb was %s.\n", status);
     return voice;
 }
 
@@ -543,15 +528,13 @@ void fn_1_BA64(void) {
 }
 
 // .text:0x0000B5B8 size:0x4AC
-// NONMATCHING: the original addresses lbl_1_bss_2FD8 / lbl_1_data_FC0 as pools through a base register
-// nmverify: lbl_1_bss_2FE0 lbl_1_bss_2FE1 lbl_1_bss_2FE2 lbl_1_bss_2FE4 lbl_1_bss_2FE6 lbl_1_bss_3044 lbl_1_bss_3048 lbl_1_bss_304C lbl_1_bss_3050 lbl_1_data_188C lbl_1_data_18EC lbl_1_data_1CA2 reached through a pooled base in original
-#if NONMATCHING
 void fn_1_B5B8(void) {
     u16 down = lbl_803C77B8._02;
     u16 repeat = lbl_803C77B8._04;
+    s32 fast = repeat & 0x800;
     s16 next;
 
-    if (repeat & 0x800) {
+    if (fast) {
         lbl_1_bss_2FE0 = 0;
     } else if (repeat & 0x400) {
         lbl_1_bss_2FE0 = 1;
@@ -578,7 +561,7 @@ void fn_1_B5B8(void) {
             ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A348;
         } else if (repeat & 1) {
             if (lbl_1_bss_2FE1 == 0) {
-                if (repeat & 0x800) {
+                if (fast) {
                     lbl_1_data_1CA2 -= 10;
                 } else {
                     lbl_1_data_1CA2--;
@@ -602,7 +585,7 @@ void fn_1_B5B8(void) {
         } else if (repeat & 2) {
             if (lbl_1_bss_2FE1 == 0) {
                 next = lbl_1_data_1CA2 + 1;
-                if (repeat & 0x800) {
+                if (fast) {
                     next = lbl_1_data_1CA2 + 10;
                 }
                 lbl_1_data_1CA2 = next;
@@ -631,7 +614,6 @@ void fn_1_B5B8(void) {
         }
     }
 }
-#endif
 
 // .text:0x0000B4A4 size:0x114
 void fn_1_B4A4(void) {
@@ -666,9 +648,6 @@ void fn_1_B4A4(void) {
 
 // .text:0x0000A95C size:0xB48
 // 3D sound test: A starts an emitter + listener, Y/X + left/right edits listener/emitter values.
-// NONMATCHING 92%: the original addresses the lbl_1_bss_2FD8 pool through a base register
-// nmverify: lbl_1_bss_2FEA lbl_1_bss_2FEC lbl_1_bss_2FED lbl_1_bss_2FF0 lbl_1_bss_300C reached through a pooled base in original
-#if NONMATCHING
 void fn_1_A95C(void) {
     u16 down = lbl_803C77B8._02;
     u16 held = lbl_803C77B8._00;
@@ -683,24 +662,24 @@ void fn_1_A95C(void) {
             sndRemoveEmitter(&lbl_1_common_bss_49994.emitter);
         }
         lbl_1_common_bss_49980.fxid = effect;
-        lbl_1_common_bss_49980.maxVol = lbl_1_rodata_5E8;
-        lbl_1_common_bss_49980.minVol = lbl_1_rodata_5EC;
-        lbl_1_common_bss_49980.comp = lbl_1_rodata_5EC;
-        lbl_1_common_bss_49980.maxDis = lbl_1_rodata_5F0;
+        lbl_1_common_bss_49980.maxVol = 127.0f;
+        lbl_1_common_bss_49980.minVol = 0.0f;
+        lbl_1_common_bss_49980.comp = 0.0f;
+        lbl_1_common_bss_49980.maxDis = 100.0f;
         sndAddEmitter(&lbl_1_common_bss_49994.emitter, &lbl_1_common_bss_49994.emitter.pos, &lbl_1_common_bss_49994.emitter.dir, lbl_1_common_bss_49980.maxDis,
                       lbl_1_common_bss_49980.comp, SND_EMITTER_CONTINUOUS, lbl_1_common_bss_49980.fxid,
                       (u8)lbl_1_common_bss_49980.maxVol, (u8)lbl_1_common_bss_49980.minVol, NULL);
 
-        lbl_1_common_bss_49970.frontSur = lbl_1_rodata_5F0;
-        lbl_1_common_bss_49970.backSur = lbl_1_rodata_5F4;
+        lbl_1_common_bss_49970.frontSur = 100.0f;
+        lbl_1_common_bss_49970.backSur = 10.0f;
         lbl_1_common_bss_49970.vol = 127;
-        lbl_1_common_bss_49970.soundSpeed = lbl_1_rodata_5F8;
-        lbl_1_common_bss_49994.listener.heading.x = lbl_1_rodata_5EC;
-        lbl_1_common_bss_49994.listener.heading.y = lbl_1_rodata_5EC;
-        lbl_1_common_bss_49994.listener.heading.z = lbl_1_rodata_5FC;
-        lbl_1_common_bss_49994.listener.up.x = lbl_1_rodata_5EC;
-        lbl_1_common_bss_49994.listener.up.y = lbl_1_rodata_5F8;
-        lbl_1_common_bss_49994.listener.up.z = lbl_1_rodata_5EC;
+        lbl_1_common_bss_49970.soundSpeed = 1.0f;
+        lbl_1_common_bss_49994.listener.heading.x = 0.0f;
+        lbl_1_common_bss_49994.listener.heading.y = 0.0f;
+        lbl_1_common_bss_49994.listener.heading.z = -1.0f;
+        lbl_1_common_bss_49994.listener.up.x = 0.0f;
+        lbl_1_common_bss_49994.listener.up.y = 1.0f;
+        lbl_1_common_bss_49994.listener.up.z = 0.0f;
         sndAddListener(&lbl_1_common_bss_49994.listener, &lbl_1_common_bss_49994.listener.pos, &lbl_1_common_bss_49994.listener.dir, &lbl_1_common_bss_49994.listener.heading,
                        &lbl_1_common_bss_49994.listener.up, lbl_1_common_bss_49970.frontSur, lbl_1_common_bss_49970.backSur,
                        lbl_1_common_bss_49970.soundSpeed, 0, lbl_1_common_bss_49970.vol, NULL);
@@ -713,42 +692,44 @@ void fn_1_A95C(void) {
         // Y held: edit the listener (note rows 3 and 4 both edit dir.y)
         if (repeat & 1) {
             switch (lbl_1_bss_2FEC) {
-            case 0: lbl_1_common_bss_49994.listener.pos.x -= lbl_1_rodata_600; break;
-            case 1: lbl_1_common_bss_49994.listener.pos.y -= lbl_1_rodata_600; break;
-            case 2: lbl_1_common_bss_49994.listener.pos.z -= lbl_1_rodata_600; break;
-            case 3: lbl_1_common_bss_49994.listener.dir.y -= lbl_1_rodata_600; break;
-            case 4: lbl_1_common_bss_49994.listener.dir.y -= lbl_1_rodata_600; break;
-            case 5: lbl_1_common_bss_49994.listener.dir.z -= lbl_1_rodata_600; break;
-            case 6: lbl_1_common_bss_49994.listener.heading.x -= lbl_1_rodata_600; break;
-            case 7: lbl_1_common_bss_49994.listener.heading.y -= lbl_1_rodata_600; break;
-            case 8: lbl_1_common_bss_49994.listener.heading.z -= lbl_1_rodata_600; break;
-            case 9: lbl_1_common_bss_49994.listener.up.x -= lbl_1_rodata_600; break;
-            case 10: lbl_1_common_bss_49994.listener.up.y -= lbl_1_rodata_600; break;
-            case 11: lbl_1_common_bss_49994.listener.up.z -= lbl_1_rodata_600; break;
-            case 12: lbl_1_common_bss_49994.listener.vol -= lbl_1_rodata_608; break;
+            case 0: lbl_1_common_bss_49994.listener.pos.x -= 0.1; break;
+            case 1: lbl_1_common_bss_49994.listener.pos.y -= 0.1; break;
+            case 2: lbl_1_common_bss_49994.listener.pos.z -= 0.1; break;
+            case 3: lbl_1_common_bss_49994.listener.dir.y -= 0.1; break;
+            case 4: lbl_1_common_bss_49994.listener.dir.y -= 0.1; break;
+            case 5: lbl_1_common_bss_49994.listener.dir.z -= 0.1; break;
+            case 6: lbl_1_common_bss_49994.listener.heading.x -= 0.1; break;
+            case 7: lbl_1_common_bss_49994.listener.heading.y -= 0.1; break;
+            case 8: lbl_1_common_bss_49994.listener.heading.z -= 0.1; break;
+            case 9: lbl_1_common_bss_49994.listener.up.x -= 0.1; break;
+            case 10: lbl_1_common_bss_49994.listener.up.y -= 0.1; break;
+            case 11: lbl_1_common_bss_49994.listener.up.z -= 0.1; break;
+            case 12: lbl_1_common_bss_49994.listener.vol -= 10.0; break;
             }
         } else if (repeat & 2) {
             switch (lbl_1_bss_2FEC) {
-            case 0: lbl_1_common_bss_49994.listener.pos.x += lbl_1_rodata_600; break;
-            case 1: lbl_1_common_bss_49994.listener.pos.y += lbl_1_rodata_600; break;
-            case 2: lbl_1_common_bss_49994.listener.pos.z += lbl_1_rodata_600; break;
-            case 3: lbl_1_common_bss_49994.listener.dir.y += lbl_1_rodata_600; break;
-            case 4: lbl_1_common_bss_49994.listener.dir.y += lbl_1_rodata_600; break;
-            case 5: lbl_1_common_bss_49994.listener.dir.z += lbl_1_rodata_600; break;
-            case 6: lbl_1_common_bss_49994.listener.heading.x += lbl_1_rodata_600; break;
-            case 7: lbl_1_common_bss_49994.listener.heading.y += lbl_1_rodata_600; break;
-            case 8: lbl_1_common_bss_49994.listener.heading.z += lbl_1_rodata_600; break;
-            case 9: lbl_1_common_bss_49994.listener.up.x += lbl_1_rodata_600; break;
-            case 10: lbl_1_common_bss_49994.listener.up.y += lbl_1_rodata_600; break;
-            case 11: lbl_1_common_bss_49994.listener.up.z += lbl_1_rodata_600; break;
-            case 12: lbl_1_common_bss_49994.listener.vol += lbl_1_rodata_608; break;
+            case 0: lbl_1_common_bss_49994.listener.pos.x += 0.1; break;
+            case 1: lbl_1_common_bss_49994.listener.pos.y += 0.1; break;
+            case 2: lbl_1_common_bss_49994.listener.pos.z += 0.1; break;
+            case 3: lbl_1_common_bss_49994.listener.dir.y += 0.1; break;
+            case 4: lbl_1_common_bss_49994.listener.dir.y += 0.1; break;
+            case 5: lbl_1_common_bss_49994.listener.dir.z += 0.1; break;
+            case 6: lbl_1_common_bss_49994.listener.heading.x += 0.1; break;
+            case 7: lbl_1_common_bss_49994.listener.heading.y += 0.1; break;
+            case 8: lbl_1_common_bss_49994.listener.heading.z += 0.1; break;
+            case 9: lbl_1_common_bss_49994.listener.up.x += 0.1; break;
+            case 10: lbl_1_common_bss_49994.listener.up.y += 0.1; break;
+            case 11: lbl_1_common_bss_49994.listener.up.z += 0.1; break;
+            case 12: lbl_1_common_bss_49994.listener.vol += 10.0; break;
             }
         } else if (repeat & 8) {
-            if (--lbl_1_bss_2FEC < 0) {
+            lbl_1_bss_2FEC--;
+            if (lbl_1_bss_2FEC < 0) {
                 lbl_1_bss_2FEC = 12;
             }
         } else if (repeat & 4) {
-            if (++lbl_1_bss_2FEC == 13) {
+            lbl_1_bss_2FEC++;
+            if (lbl_1_bss_2FEC == 13) {
                 lbl_1_bss_2FEC = 0;
             }
         }
@@ -756,30 +737,32 @@ void fn_1_A95C(void) {
         // X held: edit the emitter (note rows 3 and 4 both edit dir.y)
         if (repeat & 1) {
             switch (lbl_1_bss_2FED) {
-            case 0: lbl_1_common_bss_49994.emitter.pos.x -= lbl_1_rodata_600; break;
-            case 1: lbl_1_common_bss_49994.emitter.pos.y -= lbl_1_rodata_600; break;
-            case 2: lbl_1_common_bss_49994.emitter.pos.z -= lbl_1_rodata_600; break;
-            case 3: lbl_1_common_bss_49994.emitter.dir.y -= lbl_1_rodata_600; break;
-            case 4: lbl_1_common_bss_49994.emitter.dir.y -= lbl_1_rodata_600; break;
-            case 5: lbl_1_common_bss_49994.emitter.dir.z -= lbl_1_rodata_600; break;
-            case 6: lbl_1_common_bss_49994.emitter.maxVol -= lbl_1_rodata_608; break;
+            case 0: lbl_1_common_bss_49994.emitter.pos.x -= 0.1; break;
+            case 1: lbl_1_common_bss_49994.emitter.pos.y -= 0.1; break;
+            case 2: lbl_1_common_bss_49994.emitter.pos.z -= 0.1; break;
+            case 3: lbl_1_common_bss_49994.emitter.dir.y -= 0.1; break;
+            case 4: lbl_1_common_bss_49994.emitter.dir.y -= 0.1; break;
+            case 5: lbl_1_common_bss_49994.emitter.dir.z -= 0.1; break;
+            case 6: lbl_1_common_bss_49994.emitter.maxVol -= 10.0; break;
             }
         } else if (repeat & 2) {
             switch (lbl_1_bss_2FED) {
-            case 0: lbl_1_common_bss_49994.emitter.pos.x += lbl_1_rodata_600; break;
-            case 1: lbl_1_common_bss_49994.emitter.pos.y += lbl_1_rodata_600; break;
-            case 2: lbl_1_common_bss_49994.emitter.pos.z += lbl_1_rodata_600; break;
-            case 3: lbl_1_common_bss_49994.emitter.dir.y += lbl_1_rodata_600; break;
-            case 4: lbl_1_common_bss_49994.emitter.dir.y += lbl_1_rodata_600; break;
-            case 5: lbl_1_common_bss_49994.emitter.dir.z += lbl_1_rodata_600; break;
-            case 6: lbl_1_common_bss_49994.emitter.maxVol += lbl_1_rodata_608; break;
+            case 0: lbl_1_common_bss_49994.emitter.pos.x += 0.1; break;
+            case 1: lbl_1_common_bss_49994.emitter.pos.y += 0.1; break;
+            case 2: lbl_1_common_bss_49994.emitter.pos.z += 0.1; break;
+            case 3: lbl_1_common_bss_49994.emitter.dir.y += 0.1; break;
+            case 4: lbl_1_common_bss_49994.emitter.dir.y += 0.1; break;
+            case 5: lbl_1_common_bss_49994.emitter.dir.z += 0.1; break;
+            case 6: lbl_1_common_bss_49994.emitter.maxVol += 10.0; break;
             }
         } else if (repeat & 8) {
-            if (--lbl_1_bss_2FED < 0) {
+            lbl_1_bss_2FED--;
+            if (lbl_1_bss_2FED < 0) {
                 lbl_1_bss_2FED = 6;
             }
         } else if (repeat & 4) {
-            if (++lbl_1_bss_2FED == 7) {
+            lbl_1_bss_2FED++;
+            if (lbl_1_bss_2FED == 7) {
                 lbl_1_bss_2FED = 0;
             }
         }
@@ -829,7 +812,6 @@ void fn_1_A95C(void) {
         }
     }
 }
-#endif
 
 // .text:0x0000A908 size:0x54
 s32 fn_1_A908(void) {
