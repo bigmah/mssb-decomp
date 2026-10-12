@@ -1004,7 +1004,6 @@ config.libs = [
             Object(Matching, "auto_00_00016870_text", source="menus/auto_00_00016870_text.c"),
             Object(NonMatching, "auto_00_00000D08_text", source="menus/auto_00_00000D08_text.c"),
             Object(NonMatching, "auto_00_0001B1BC_text", source="menus/auto_00_0001B1BC_text.c"),
-            Object(NonMatching, "auto_00_00000000_text", source="menus/auto_00_00000000_text.c"),
             Object(NonMatching, "auto_00_00033E70_text", source="menus/auto_00_00033E70_text.c"),
             Object(NonMatching, "auto_00_0003C03C_text", source="menus/auto_00_0003C03C_text.c"),
             Object(NonMatching, "auto_00_00071EC4_text", source="menus/auto_00_00071EC4_text.c"),
