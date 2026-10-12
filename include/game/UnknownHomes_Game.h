@@ -2559,7 +2559,8 @@ typedef struct _MiniGameStruct {
     /*0x1E03*/ u8 _1E03;
     /*0x1E04*/ void* _1E04; // minigame task (fn_800B0A5C_insertQueue result)
     /*0x1E08*/ MiniGameResultSlot resultSlot[4];
-    /*0x1E10*/ u8 _1E10[0x1E22 - 0x1E10];
+    /*0x1E10*/ s16 _1E10[6];
+    /*0x1E1C*/ u8 _1E1C[6];
     /*0x1E22*/ u8 _1E22[4]; // per-player score (fn_3_E911C)
     /*0x1E26*/ u8 _1E26[4];
     /*0x1E2A*/ u8 _1E2A;    // round counter
@@ -2582,7 +2583,10 @@ typedef struct _BatterReachStruct {
 
 extern BatterReachStruct BatterHitbox[54];
 
+// The definition (game/auto_00_00106DFC_text.c) is u8 (s8); its callers were compiled against this one.
+#ifndef MINIGAME_CHECK_AI_INPUT_DEFINED
 extern u32 minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased(u8);
+#endif
 
 extern u8 swingSoundFrame[2][4];
 
@@ -2776,7 +2780,9 @@ typedef struct {
     /* 0x118 */ s16 _118;
     /* 0x11A */ s16 _11A;
     /* 0x11C */ u8 _11C;
-    artificial_padding(0x11C, 0xa50, u8);
+    artificial_padding(0x11C, 0x1b4, u8);
+    /* 0x1B4 */ void* _1B4; // ARAMTransfer result
+    artificial_padding(0x1b4, 0xa50, void*);
     /* 0xA50 */ int _A50;
     artificial_padding(0xa50, 0xa74, int);
     /* 0xA74 */ s16 _A74;
@@ -2803,7 +2809,7 @@ typedef struct {
     /* 0xAAA */ u16 _AAA; // fade-in active (fn_3_21DE4)
     /* 0xAAC */ u16 _AAC; // fade-out length in frames
     /* 0xAAE */ u16 _AAE; // fade-in length in frames
-    artificial_padding(0xaae, 0xab4, u16);
+    /* 0xAB0 */ void* _AB0; // heap buffer (0x8000 bytes)
     /* 0xAB5 */ u8 _AB4;
     /* 0xAB5 */ u8 _AB5;
     /* 0xAB6 */ u8 _AB6;
@@ -2823,7 +2829,9 @@ typedef struct {
     /* 0xAC8 */ u8 _ACA;
     artificial_padding(0xaca, 0xad8, u8);
     /* 0xAD8 */ u8 _AD8;
-    artificial_padding(0xad8, 0x2810, u8);
+    artificial_padding(0xad8, 0x146c, u8);
+    /* 0x146C */ void* _146C; // heap buffer (0x8000 bytes)
+    artificial_padding(0x146c, 0x2810, void*);
     /* 0x2810 */ s16 _2810;
     /* 0x2812 */ s16 _2812;
     /* 0x2814 */ s16 _2814;

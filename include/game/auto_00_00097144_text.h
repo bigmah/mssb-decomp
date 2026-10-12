@@ -78,7 +78,8 @@ typedef struct GamePauseState {
     /*0x000*/ s32 team; // team that opened the menu
     /*0x004*/ u8 _004[0xA - 0x4];
     /*0x00A*/ s16 _00A;
-    /*0x00C*/ u8 _00C[0x12 - 0xC];
+    /*0x00C*/ s16 _00C;
+    /*0x00E*/ u8 _00E[0x012 - 0x00E];
     /*0x012*/ s16 _012;
     /*0x014*/ u8 _014[0x1D0 - 0x14];
     /*0x1D0*/ u8 layout;  // index into the item layout table (lbl_3_data_D860)
