@@ -1,6 +1,7 @@
 #include "game/rep_3E58.h"
 #include "game/UnknownHomes_Game.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3E58
+#include "header_rep_inline.h"
 #include "game/auto_00_001690C0_text.h" // Bss35154View
 #include "game/auto_00_00167CC4_text.h" // SparkleTask
 #include "static/GameSettings.h"

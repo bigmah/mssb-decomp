@@ -1,5 +1,6 @@
 #include "game/rep_36D8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_36D8
+#include "header_rep_inline.h"
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
 
 

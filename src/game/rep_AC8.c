@@ -9,7 +9,8 @@
 #include "game/m_sound.h"
 #include "game/auto_00_0006C854_text.h"
 #include "game/auto_00_00106DFC_text.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_AC8
+#include "header_rep_inline.h"
 #include "stl/math.h"
 #include "stl/mem.h"
 #include "musyx/musyx.h"

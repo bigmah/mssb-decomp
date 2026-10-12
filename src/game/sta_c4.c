@@ -1,5 +1,6 @@
 #include "game/sta_c4.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_sta_c4
+#include "header_rep_inline.h"
 #include "main/file_800263FC.h"
 #include "main/file_80011640.h"
 #include "C3/anim.h"

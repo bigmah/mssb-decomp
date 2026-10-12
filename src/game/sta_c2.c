@@ -1,5 +1,6 @@
 #include "game/sta_c2.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_sta_c2
+#include "header_rep_inline.h"
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
 #include "Dolphin/vec.h"

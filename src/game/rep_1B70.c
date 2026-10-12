@@ -1,5 +1,6 @@
 #include "game/rep_1B70.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1B70
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 
 #define GL(off) (((u8 *)&g_GameLogic)[off])

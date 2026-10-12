@@ -1,5 +1,6 @@
 #include "game/rep_31F0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_31F0
+#include "header_rep_inline.h"
 
 #include "musyx/musyx.h"
 #include "Dolphin/mtx.h"

@@ -1,5 +1,6 @@
 #include "game/rep_3290.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3290
+#include "header_rep_inline.h"
 #include "stl/math.h"
 
 extern void* memset(void*, s32, u32);

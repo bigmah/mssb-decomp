@@ -1,5 +1,6 @@
 #include "game/rep_2308.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_2308
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/rep_1F58.h"
 #include "game/rep_3AE8.h"

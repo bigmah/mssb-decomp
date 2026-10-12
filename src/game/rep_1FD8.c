@@ -1,5 +1,6 @@
 #include "game/rep_1FD8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1FD8
+#include "header_rep_inline.h"
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/vec.h"

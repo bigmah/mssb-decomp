@@ -13,7 +13,8 @@
 #include "main/file_8004207C.h"
 #include "C3/control.h"
 #include "musyx/musyx.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_2998
+#include "header_rep_inline.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>

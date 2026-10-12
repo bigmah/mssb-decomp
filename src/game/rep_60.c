@@ -1,5 +1,6 @@
 #include "game/rep_60.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_60
+#include "header_rep_inline.h"
 #include "static/UnknownHomes_Static.h"
 
 extern u8* lbl_803CC1B8;

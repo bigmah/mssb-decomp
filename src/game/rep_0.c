@@ -1,7 +1,8 @@
 #include "game/rep_0.h"
 #include "Dolphin/stl.h"
 #include "game/UnknownHomes_Game.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_0
+#include "header_rep_inline.h"
 #include "static/UnknownHomes_Static.h"
 #include "game/rep_1E08.h"
 

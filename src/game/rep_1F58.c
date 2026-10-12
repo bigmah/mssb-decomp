@@ -1,5 +1,6 @@
 #include "game/rep_1F58.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1F58
+#include "header_rep_inline.h"
 #include "Dolphin/mtx.h"
 
 extern u8 lbl_3_common_bss_35154[];

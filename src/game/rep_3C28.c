@@ -1,5 +1,6 @@
 #include "game/rep_3C28.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3C28
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "Dolphin/vec.h"
 

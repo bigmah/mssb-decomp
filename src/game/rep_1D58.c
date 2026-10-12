@@ -1,5 +1,6 @@
 #include "game/rep_1D58.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1D58
+#include "header_rep_inline.h"
 #include "C3/control.h"
 #include "C3/light.h"
 #include "main/file_800BD8C4.h"

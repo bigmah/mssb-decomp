@@ -1,5 +1,6 @@
 #include "game/rep_3B70.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3B70
+#include "header_rep_inline.h"
 #include "Dolphin/mtx.h"
 
 typedef struct {

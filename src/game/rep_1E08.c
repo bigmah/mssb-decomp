@@ -1,5 +1,6 @@
 #include "game/rep_1E08.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1E08
+#include "header_rep_inline.h"
 #include "Dolphin/GX.h"
 #include "Dolphin/mtxext.h"
 extern V2f lbl_3_data_111C8[];

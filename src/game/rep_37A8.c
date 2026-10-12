@@ -1,5 +1,6 @@
 #include "game/rep_37A8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_37A8
+#include "header_rep_inline.h"
 
 extern u8 g_Minigame[];
 

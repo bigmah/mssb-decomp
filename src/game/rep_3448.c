@@ -1,5 +1,6 @@
 #include "game/rep_3448.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3448
+#include "header_rep_inline.h"
 #include "game/auto_00_00106DFC_text.h"
 #include "game/auto_00_000D8A10_text.h"
 #include "Dolphin/vec.h"

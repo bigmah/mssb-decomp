@@ -4,7 +4,8 @@
 #include "game/rep_1838.h"
 #include "game/rep_D0.h"
 #include "Dolphin/rand.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_540
+#include "header_rep_inline.h"
 #include "stl/math.h"
 
 // One g_Fielders entry (stride 0x268); only the fields used by this unit.
