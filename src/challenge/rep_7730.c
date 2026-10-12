@@ -1233,6 +1233,55 @@ extern const f64 lbl_1_rodata_7830;
 extern const f64 lbl_1_rodata_7838;
 extern Vec lbl_1_data_104D0;
 
+// Inline copy of fn_1_20950 (below) for fn_1_21CE8 and fn_1_21408, which the original inlines it into.
+// fn_1_20950 keeps its own body: a wrapper around this inline allocates its stack and registers differently.
+static inline void updateRopeObjects(ChallengeCurvePoint* points, s32 count, MtxPtr camera) {
+    ActorObject* obj;
+    s32 i;
+    Vec delta;
+    Vec mid;
+    Quaternion rot;
+    Quaternion align;
+    Mtx mtx;
+    f32 angle;
+    f32 zero;
+
+    i = 20;
+    while (i-- != 0) {
+        obj = &lbl_1_bss_6BE0[0]->objects[i];
+        obj->animateBones = i < count;
+        if (i < count) {
+            PSVECSubtract(&points[i + 1].position, &points[i].position, &delta);
+            PSVECScale(&delta, lbl_1_rodata_7814[0], &mid);
+            PSVECAdd(&points[i].position, &mid, &mid);
+            CTRLSetTranslation(&obj->worldControl.base, mid.x, -mid.y, mid.z);
+            if (PSVECMag(&delta)) {
+                PSVECNormalize(&delta, &delta);
+                delta.y = -delta.y;
+                mid.x = lbl_1_rodata_77E4;
+                mid.y = lbl_1_rodata_77D8;
+                mid.z = lbl_1_rodata_77D8;
+                C_QUATRotAxisRad(&rot, &mid,
+                    lbl_1_rodata_7828 * (lbl_1_rodata_7830 + (i & 1)) / lbl_1_rodata_7838);
+                angle = acos(PSVECDotProduct(&delta, &mid));
+                PSVECCrossProduct(&mid, &delta, &mid);
+                if (PSVECMag(&mid)) {
+                    C_QUATRotAxisRad(&align, &mid, angle);
+                    PSQUATMultiply(&align, &rot, &rot);
+                }
+                CTRLSetQuat(&obj->worldControl.base, rot.x, rot.y, rot.z, rot.w);
+            }
+            CTRLSetScale(&obj->worldControl.base, lbl_1_data_104D0.x, lbl_1_data_104D0.y, lbl_1_data_104D0.z);
+            fn_800BDA24(obj);
+        }
+        zero = *(volatile f32*)&lbl_1_rodata_77D8;
+        PSMTXTrans(mtx, zero, zero, zero);
+        PSMTXConcat(camera, mtx, mtx);
+        obj->actor->flags |= 3;
+    }
+    fn_800BD670(lbl_1_bss_6BE0[0], (MtxPtr)camera);
+}
+
 // .text:0x20950 size:0x288
 void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera) {
     ActorObject* obj;
@@ -2035,7 +2084,7 @@ extern const f64 lbl_1_rodata_7870;
 // NONMATCHING 99.8%: only the prologue's address temps get different GPRs (r5/r7/r9 vs r11/r5/r7)
 // .text:0x22874 size:0x580
 #if NONMATCHING
-s32 fn_1_22874(void) {
+s32 fn_1_22874(ChallengeCurveDrawing* unused) {
     ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
     s32 speed;
     f32 fine;
@@ -2568,24 +2617,22 @@ void fn_1_23B54(void) {
 
 extern const f32 lbl_1_rodata_7850;
 
-#if NONMATCHING
 // Shared by fn_1_21CE8 / fn_1_21408: drive the rope's free end with the stick, then simulate it.
 static inline void fn_1_21CE8_moveRope(ChallengeCurveDrawing* q) {
     ChallengeCurvePoint* tip;
     Vec force;
     f32 speed;
-    f32 mass;
 
     if (q->colorMode != 0) {
         // move the free end of the rope directly
-        if (((u8*)&lbl_803C77B8)[0x75] >= 0x50) {
+        if (lbl_803C77B8.triggerR3 >= 0x50) {
             speed = lbl_1_rodata_77FC * q->unk1C;
         } else {
             speed = lbl_1_rodata_7850 * q->unk1C;
         }
-        lbl_1_bss_6FE0[q->pointCount - 1].position.x += (s8)((u8*)&lbl_803C77B8)[0x70] * speed;
-        lbl_1_bss_6FE0[q->pointCount - 1].position.y += (s8)((u8*)&lbl_803C77B8)[0x73] * speed;
-        lbl_1_bss_6FE0[q->pointCount - 1].position.z += (s8)((u8*)&lbl_803C77B8)[0x71] * speed;
+        lbl_1_bss_6FE0[q->pointCount - 1].position.x += lbl_803C77B8.stickX3 * speed;
+        lbl_1_bss_6FE0[q->pointCount - 1].position.y += lbl_803C77B8.substickY3 * speed;
+        lbl_1_bss_6FE0[q->pointCount - 1].position.z += lbl_803C77B8.stickY3 * speed;
         tip = &lbl_1_bss_6FE0[q->pointCount - 1];
         memcpy(&tip->prevPos, &tip->position, sizeof(Vec));
         force.x = lbl_1_rodata_77D8;
@@ -2593,11 +2640,9 @@ static inline void fn_1_21CE8_moveRope(ChallengeCurveDrawing* q) {
         force.z = lbl_1_rodata_77D8;
     } else {
         // or pull it with a force
-        mass = lbl_1_bss_6FE0[q->pointCount - 1].mass;
-        speed = q->unk1C;
-        force.x = speed * ((s8)((u8*)&lbl_803C77B8)[0x70] * mass);
-        force.y = speed * ((s8)((u8*)&lbl_803C77B8)[0x73] * mass);
-        force.z = speed * ((s8)((u8*)&lbl_803C77B8)[0x71] * mass);
+        force.x = q->unk1C * (lbl_803C77B8.stickX3 * lbl_1_bss_6FE0[q->pointCount - 1].mass);
+        force.y = q->unk1C * (lbl_803C77B8.substickY3 * lbl_1_bss_6FE0[q->pointCount - 1].mass);
+        force.z = q->unk1C * (lbl_803C77B8.stickY3 * lbl_1_bss_6FE0[q->pointCount - 1].mass);
     }
     fn_80038B48(&lbl_1_bss_6FB8, lbl_1_bss_6FE0, q->pointCount, &force);
 }
@@ -2618,16 +2663,12 @@ static inline void fn_1_21CE8_setupDraw(void) {
     GXLoadPosMtxImm(lbl_1_bss_43EE0.view, 0);
     GXSetCurrentMtx(0);
 }
-#endif
 
-// NONMATCHING 63% (98% when fn_1_20950 is force-inlined, which then drops fn_1_20950's own copy): the original inlines fn_1_20950 here; ours calls it
 // .text:0x21CE8 size:0x8D0
-// nmverify: fn_1_20950 inlined on one side (calls match once expanded)
-#if NONMATCHING
 void fn_1_21CE8(void) {
     ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
 
-    if (fn_1_22874() != 0 || (lbl_803C77B8._02 & 0x100)) {
+    if (fn_1_22874(q) != 0 || (lbl_803C77B8._02 & 0x100)) {
         fn_1_21180(q);
     } else if (lbl_803C77B8._02 & 0x200) {
         *(void (**)(void))lbl_803CC1B8[0] = fn_1_21408;
@@ -2636,13 +2677,11 @@ void fn_1_21CE8(void) {
     fn_1_21CE8_setupDraw();
     fn_1_21040();
     fn_1_21298(q);
-    fn_1_20950(lbl_1_bss_6FE0, q->pointCount - 1, lbl_1_bss_43EE0.view);
+    updateRopeObjects(lbl_1_bss_6FE0, q->pointCount - 1, lbl_1_bss_43EE0.view);
 }
-#endif
 
-// NONMATCHING 63%: same shape as fn_1_21CE8 (the original inlines fn_1_20950 here; ours calls it)
+// NONMATCHING 99.9%: the pad base and q->colorMode swap r7/r8 in the inlined fn_1_21180
 // .text:0x21408 size:0x8E0
-// nmverify: fn_1_20950 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_21408(void) {
     ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
@@ -2661,7 +2700,7 @@ void fn_1_21408(void) {
     fn_1_21040();
     fn_1_21298(q);
     if (lbl_1_bss_6BE0[0] != NULL) {
-        fn_1_20950(lbl_1_bss_6FE0, q->pointCount - 1, lbl_1_bss_43EE0.view);
+        updateRopeObjects(lbl_1_bss_6FE0, q->pointCount - 1, lbl_1_bss_43EE0.view);
     }
 }
 #endif
