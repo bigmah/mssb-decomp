@@ -352,10 +352,8 @@ void fn_80035750(void* data, void* tex, s16 id) {
 
 
 // .text:0x80035838 size:0x1C8
-// NONMATCHING 99.7%: r0/r4 pick for the slot index in case 1
-#if NONMATCHING
 s32 fn_80035838(void* aramAddr, u8 id) {
-    s32 done = 0;
+    u8 done = 0;
 
     if (lbl_803CBC90 == 2) {
         lbl_803CBC90 = 0;
@@ -377,9 +375,12 @@ s32 fn_80035838(void* aramAddr, u8 id) {
         break;
     case 1:
         if ((s8)lbl_803C6CF8[0x715] == 1) {
-            SpaniTexSlot* s = &lbl_803C4BE0[lbl_803CBC91];
-            SpaniAnim** pa = &s->anim;
-            s32* hdr = s->data;
+            SpaniTexSlot* s = lbl_803C4BE0;
+            SpaniAnim** pa;
+            s32* hdr;
+            s += lbl_803CBC91;
+            pa = &s->anim;
+            hdr = s->data;
             s->tex = (u8*)hdr + hdr[0];
             *pa = (SpaniAnim*)((u8*)hdr + hdr[1]);
             convertTextureHeader(s->tex);
@@ -391,7 +392,6 @@ s32 fn_80035838(void* aramAddr, u8 id) {
     }
     return done;
 }
-#endif
 
 
 // .text:0x80035A00 size:0x150
