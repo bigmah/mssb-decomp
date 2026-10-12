@@ -38,9 +38,7 @@ typedef struct BatFxParams { // lbl_800FBF10
 
 typedef struct BatFxTables { // lbl_800FC0FC
     /*0x000*/ RGB8 colors[13];
-    /*0x027*/ u8 pad27;
-    /*0x028*/ u16 animIDs[32][7];
-} BatFxTables;
+} BatFxTables; // followed by u16 lbl_800FC124[32][7] (per-character anim IDs)
 
 void fn_800B2B74(GameActor* actor, u16 bone);
 struct DODisplayObj* fn_800B2BA8(GameActor* actor, u16 bone, GameActor* src, u16 srcBone);

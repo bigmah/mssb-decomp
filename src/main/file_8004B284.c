@@ -16,7 +16,6 @@ typedef struct UnkState_80366158 {
 
 extern UnkState_80366158 lbl_80366158;
 extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
-extern f32 lbl_803CC818; // 0.0f
 
 // Per-character [start, end] frame windows (indexed by charID).
 extern s16 lbl_800FB798[];
@@ -36,67 +35,61 @@ s32 fn_800698F8(s32 charID);
 
 // .data 0x800FBF10..0x800FC398: defined before fn_8004B284 because -inline auto emits
 // its jump tables when the function is compiled; lbl_800FC388 follows them.
-BatFxParams lbl_800FBF10 = {
+EffectParams lbl_800FBF10 = {
+    NULL,
+    4,
+    2,
+    80000,
+    30000,
+    {78000, 50, 5, 109000, 101000, 0, 40, 12800000, 8000000, 0, 0},
+    0xFFFFFF00,
+    {0, 75000, 0},
+};
+EffectParams lbl_800FBF60 = {
+    NULL,
+    4,
+    2,
+    80000,
+    30000,
+    {78000, 60, 10, 109000, 101000, 0, 40, 12800000, 8000000, 0, 0},
+    0xFFFFFF00,
+    {0, 75000, 0},
+};
+EffectParams lbl_800FBFB0 = {
+    NULL,
+    4,
+    2,
+    80000,
+    30000,
+    {78000, 60, 10, 109000, 101000, 0, 40, 12800000, 8000000, 0, 0},
+    0xFFFFFF00,
+    {0, 75000, 0},
+};
+EffectParamsB lbl_800FC000 = {
+    NULL,
+    29,
     {
-        {
-            NULL,
-            4,
-            2,
-            80000,
-            30000,
-            {78000, 50, 5, 109000, 101000, 0, 40, 12800000, 8000000, 0, 0},
-            0xFFFFFF00,
-            {0, 75000, 0},
-        },
-        {
-            NULL,
-            4,
-            2,
-            80000,
-            30000,
-            {78000, 60, 10, 109000, 101000, 0, 40, 12800000, 8000000, 0, 0},
-            0xFFFFFF00,
-            {0, 75000, 0},
-        },
-        {
-            NULL,
-            4,
-            2,
-            80000,
-            30000,
-            {78000, 60, 10, 109000, 101000, 0, 40, 12800000, 8000000, 0, 0},
-            0xFFFFFF00,
-            {0, 75000, 0},
-        },
+        15, 20, 30, 13000, 15000, -3000000, 3000000, 50000,
+        60000, 0, -1, 5, 10, 0, 0, 3000000,
+        0, 4500000, 1,
     },
+};
+EffectParamsB lbl_800FC054 = {
+    NULL,
+    29,
     {
-        {
-            NULL,
-            29,
-            {
-                15, 20, 30, 13000, 15000, -3000000, 3000000, 50000,
-                60000, 0, -1, 5, 10, 0, 0, 3000000,
-                0, 4500000, 1,
-            },
-        },
-        {
-            NULL,
-            29,
-            {
-                15, 20, 30, 13000, 15000, -3000000, 3000000, 50000,
-                60000, 0, -1, 5, 10, 0, 0, 3000000,
-                0, 4500000, 1,
-            },
-        },
-        {
-            NULL,
-            29,
-            {
-                15, 20, 30, 13000, 15000, -3000000, 3000000, 50000,
-                60000, 0, -1, 5, 10, 0, 0, 3000000,
-                0, 4500000, 1,
-            },
-        },
+        15, 20, 30, 13000, 15000, -3000000, 3000000, 50000,
+        60000, 0, -1, 5, 10, 0, 0, 3000000,
+        0, 4500000, 1,
+    },
+};
+EffectParamsB lbl_800FC0A8 = {
+    NULL,
+    29,
+    {
+        15, 20, 30, 13000, 15000, -3000000, 3000000, 50000,
+        60000, 0, -1, 5, 10, 0, 0, 3000000,
+        0, 4500000, 1,
     },
 };
 BatFxTables lbl_800FC0FC = {
@@ -115,57 +108,55 @@ BatFxTables lbl_800FC0FC = {
         {255, 232, 151},
         {200, 210, 220},
     },
-    0,
-    {
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-        {34, 4, 34, 4, 4, 4, 34},
-    },
+};
+u16 lbl_800FC124[32][7] = {
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
+    {34, 4, 34, 4, 4, 4, 34},
 };
 
 // Spawns the swing effect when `frame` is inside the character's window for animID.
 // .text:0x8004B284 size:0x468
-// NONMATCHING 91%: the original addresses lbl_800FC0FC through the lbl_800FBF10 base (same-TU data),
-// and its default case runs on with uninitialised values (here it returns)
-#if NONMATCHING
+// The six effect parameter blocks, the colour table and the anim-ID table are separate objects
+// reached through one pooled .data base.
 void fn_8004B284(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
-    BatFxParams* fx = &lbl_800FBF10;
     s32 slot;
+    s32 kind;
     f32 untilEnd;
     f32 sinceStart;
     EffectParams* params;
     EffectParamsB* paramsB;
-    Vec dir;
     Vec pos;
+    Vec dir;
 
     if (lbl_80366158.unk28 == 1) {
         return;
@@ -202,21 +193,18 @@ void fn_8004B284(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
         untilEnd = lbl_800FBC3C[model->kind] - frame;
         sinceStart = frame - lbl_800FBBD0[model->kind];
         break;
-    default:
-        // The original falls through here with slot/untilEnd uninitialised.
-        return;
     }
 
-    if (sinceStart < lbl_803CC818 || !(untilEnd >= lbl_803CC818)) {
+    // NOTE: other animIDs reach this test with slot/untilEnd/sinceStart uninitialised (as in the original).
+    if (sinceStart < 0.0f || untilEnd < 0.0f) {
         return;
     }
 
     dir.x = -sin(model->rot.y);
-    dir.y = lbl_803CC818;
     dir.z = -cos(model->rot.y);
-    if (!getAnimRelatedCoordinates(model->index,
-                                   lbl_800FC0FC.animIDs[fn_800698F8(model->kind)][slot],
-                                   (VecXYZ*)&pos)) {
+    dir.y = 0.0f;
+    kind = fn_800698F8(model->kind);
+    if (!getAnimRelatedCoordinates(model->index, lbl_800FC124[kind][slot], (VecXYZ*)&pos)) {
         memcpy(&pos, &model->pos, sizeof(Vec));
     }
 
@@ -225,14 +213,14 @@ void fn_8004B284(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     case 0x32:
     case 0x33:
     case 0x34:
-        params = &fx->params[0];
+        params = &lbl_800FBF10;
         break;
     case 0x1A:
     case 0x1B:
-        params = &fx->params[1];
+        params = &lbl_800FBF60;
         break;
     case 0x30:
-        params = &fx->params[2];
+        params = &lbl_800FBFB0;
         break;
     }
     paramsB = NULL;
@@ -240,19 +228,19 @@ void fn_8004B284(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     case 0x32:
     case 0x33:
     case 0x34:
-        paramsB = &fx->paramsB[0];
+        paramsB = &lbl_800FC000;
         break;
     case 0x1A:
     case 0x1B:
-        paramsB = &fx->paramsB[1];
+        paramsB = &lbl_800FC054;
         break;
     case 0x30:
-        paramsB = &fx->paramsB[2];
+        paramsB = &lbl_800FC0A8;
         break;
     }
 
     params->stamp = lbl_803CBD0C;
-    params->rgb = (lbl_800FC0FC.colors[colorIdx].r << 24) | (lbl_800FC0FC.colors[colorIdx].g << 16) |
+    params->rgb = (lbl_800FC0FC.colors[colorIdx].r << 24) | ((lbl_800FC0FC.colors[colorIdx].g & 0xFF) << 16) |
                   (lbl_800FC0FC.colors[colorIdx].b << 8);
     paramsB->stamp = lbl_803CBD0C;
 
@@ -274,7 +262,6 @@ void fn_8004B284(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
         break;
     }
 }
-#endif
 
 // .text:0x8004B6EC size:0xC8
 void fn_8004B6EC(CharActor* model, ActorObject* obj) {
@@ -315,7 +302,7 @@ typedef struct PartPair {
     u16 b;
 } PartPair;
 
-PartPair lbl_800FC388[4] = {{2, 3}, {6, 7}, {6, 7}, {4, 5}};
+PartPair lbl_800FC388[4] ATTRIBUTE_ALIGN(8) = {{2, 3}, {6, 7}, {6, 7}, {4, 5}};
 
 // .text:0x8004B7F4 size:0x2F8
 void fn_8004B7F4(CharActor* model, ActorObject* obj) {
