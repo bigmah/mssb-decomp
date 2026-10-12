@@ -7,7 +7,7 @@
 #include "math.h"
 #undef SQRT2_LINKAGE
 #include "game/UnknownHomes_Game.h"
-#include "menus/auto_00_0008E6A4_text.h"
+#include "menus/rep_0FD8.h"
 #include "main/file_800527C4.h"
 #include "menus/auto_00_00000D08_text.h"
 #include "static/UnknownHomes_Static.h"
@@ -21,6 +21,44 @@ extern void fn_8003F23C(void); // main/file_8003A688.h
 
 extern MenuScreenState lbl_2_bss_340234;
 static SceneTask* lbl_2_bss_B2C0; // confirm dialog task (fn_8006C0D0)
+
+// .data 0x2FFF8..0x307EC: only header statics (unreferenced copies), as in the original.
+// The section is padded to 8 bytes, so rep_1028's .data starts at 0x307F0.
+#include "menus/debug_menu_data.h"
+#include "menus/menu_asset.h"
+
+// ARAM file entries; the same table is in several other units' .data. TODO type
+static MenuAsset menuAssetTable[16] = {
+    {0x0000040B, 0x4037CF5C, 0x18B3A800, 0x00208AF0},
+    {0x0000040B, 0x400ADFFC, 0x18AEE800, 0x0004BAB0},
+    {0x0000040B, 0x400193E8, 0x191B8800, 0x000089D8},
+    {0x0000040B, 0x4010E5A0, 0x0E97A800, 0x0009BCAC},
+    {0x0000040B, 0x40016980, 0x0EA16800, 0x0000D6C4},
+    {0x0000040B, 0x40016980, 0x0EA24000, 0x0000C944},
+    {0x0000040B, 0x40016980, 0x0EA31000, 0x0000E700},
+    {0x0000040B, 0x40016980, 0x0EA3F800, 0x0000D64C},
+    {0x0000040B, 0x40016980, 0x0EA4D000, 0x0000C900},
+    {0x0000040B, 0x40016980, 0x0EA5A000, 0x0000CFFC},
+    {0x0000040B, 0x40016980, 0x0EA67000, 0x0000D720},
+    {0x0000040B, 0x40016980, 0x0EA74800, 0x0000D6CC},
+    {0x0000040B, 0x40016980, 0x0EA82000, 0x0000D21C},
+    {0x0000040B, 0x40016980, 0x0EA8F800, 0x0000D0BC},
+    {0x0000040B, 0x40016980, 0x0EA9D000, 0x0000B544},
+    {0x0000040B, 0x40016980, 0x0EAA8800, 0x0000C4F8},
+};
+
+// Settings menu names (unreferenced; also in two other units' .data).
+static char gameModeNames[8][0x20] = {"BATTING", "DEFENCE", "RUN", "FALL", "BATTING_2", "DEFENCE_2", "RUN_2", "FALL_2"};
+static char inningNames[5][0x20] = {"ONE   INNING", "THREE INNING", "FIVE  INNING", "SEVEN INNING", "NINE  INNING"};
+static char settingOnOffNames[2][0x20] = {"OFF", "ON"};
+static char manualAutoNames[2][0x20] = {"MANUAL", "AUTO"};
+static char noYesNames[2][0x20] = {"NO", "YES"};
+static char normalEasyNames[2][0x20] = {"NORMAL", "EASY"};
+static char firstLastNames[2][8] = {"FIRST", "LAST"};
+static char difficultyNames[4][0x20] = {"EASY      MODE", "NORMAL    MODE", "HARD      MODE", "VERY HARD MODE"};
+
+#include "menus/option_names_data.h"
+
 
 // .text:0x0008EEC8 size:0x22C
 void fn_2_8EEC8(void) {

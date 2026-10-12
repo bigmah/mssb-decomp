@@ -301,6 +301,10 @@ def TRKLib(lib_name:str, objects:List[object], flags :list[str]= cflags_base, ex
 
 # Helper function for REL script objects
 def Rel(lib_name: str, objects: List[Object], extra_cflags: List[str] = []) -> Dict[str, Any]:
+    if lib_name == "challenge":
+        # challenge.rel was also built with -common on (its .bss ends with common blocks,
+        # see docs/common_bss.md).
+        extra_cflags = ["-common on", *extra_cflags]
     return {
         "lib": lib_name,
         # "progress_category": lib_name,
@@ -317,7 +321,7 @@ Equivalent = config.non_matching  # Object should be linked when configured with
 config.warn_missing_config = True
 config.warn_missing_source = False
 config.libs = [
-    Rel("challenge", [Object(NonMatching, "challenge/rep_7920.c")]),
+    Rel("challenge", [Object(Matching, "challenge/rep_7920.c")]),
     Rel("challenge", [Object(NonMatching, "challenge/rep_7BF0.c")]),
     Rel("challenge", [Object(NonMatching, "challenge/rep_00B0.c")]),
     Rel("challenge", [Object(Matching, "challenge/rep_7978.c")]),
@@ -328,7 +332,7 @@ config.libs = [
         Object(Matching, "auto_00_00009EA0_text", source="challenge/auto_00_00009EA0_text.c"),
         Object(Matching, "auto_00_0000C2A4_text", source="challenge/auto_00_0000C2A4_text.c"),
         Object(Matching, "auto_00_00017EFC_text", source="challenge/auto_00_00017EFC_text.c"),
-        Object(NonMatching, "auto_00_0001D590_text", source="challenge/auto_00_0001D590_text.c"),
+        Object(Matching, "auto_00_0001D590_text", source="challenge/auto_00_0001D590_text.c"),
         Object(Matching, "auto_00_00026AF8_text", source="challenge/auto_00_00026AF8_text.c"),
     ]),
     Rel(
@@ -349,11 +353,11 @@ config.libs = [
     ),
     Rel(
         "challenge",
-        [Object(NonMatching, "challenge/rep_02A8.c")]
+        [Object(Matching, "challenge/rep_02A8.c")]
     ),
     Rel(
         "challenge",
-        [Object(NonMatching, "challenge/rep_0250.c")]
+        [Object(Matching, "challenge/rep_0250.c")]
     ),
     Rel(
         "challenge",
@@ -958,7 +962,6 @@ config.libs = [
             Object(NonMatching, "auto_00_00001254_text", source="menus/auto_00_00001254_text.c"),
             Object(NonMatching, "auto_00_0004B1AC_text", source="menus/auto_00_0004B1AC_text.c"),
             Object(Matching, "auto_00_00016870_text", source="menus/auto_00_00016870_text.c"),
-            Object(NonMatching, "auto_00_000194BC_text", source="menus/auto_00_000194BC_text.c"),
             Object(NonMatching, "auto_00_00000D08_text", source="menus/auto_00_00000D08_text.c"),
             Object(NonMatching, "auto_00_0001B1BC_text", source="menus/auto_00_0001B1BC_text.c"),
             Object(NonMatching, "auto_00_00000000_text", source="menus/auto_00_00000000_text.c"),
@@ -969,7 +972,6 @@ config.libs = [
             Object(NonMatching, "auto_00_0005597C_text", source="menus/auto_00_0005597C_text.c"),
             Object(NonMatching, "auto_00_0005E84C_text", source="menus/auto_00_0005E84C_text.c"),
             Object(NonMatching, "auto_00_0008782C_text", source="menus/auto_00_0008782C_text.c"),
-            Object(NonMatching, "auto_00_0008E6A4_text", source="menus/auto_00_0008E6A4_text.c"),
             Object(NonMatching, "menus/rep_0788.c"),
             Object(Matching, "menus/rep_07F0.c"),
             Object(Matching, "menus/rep_0840.c"),

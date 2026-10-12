@@ -96,7 +96,8 @@ typedef struct MenuActor {
     /*0x070*/ u8 _070[0x162 - 0x70];
     /*0x162*/ u16 joints[0x78];
     /*0x252*/ s8 kind;
-    /*0x253*/ u8 _253[0x255 - 0x253];
+    /*0x253*/ u8 _253;
+    /*0x254*/ u8 _254;
     /*0x255*/ s8 modelIndex;
     /*0x256*/ u8 _256[0x25D - 0x256];
     /*0x25D*/ u8 _25D[0x268 - 0x25D];
@@ -107,7 +108,29 @@ typedef struct MenuActor {
     /*0x26F*/ u8 _26F;
     /*0x270*/ u8 _270[0x277 - 0x270];
     /*0x277*/ u8 _277;
-} MenuActor; // size: 0x278 (0x27C stride)
+    /*0x278*/ u8 _278[0x27C - 0x278];
+} MenuActor; // size: 0x27C
+
+// View of lbl_8036E548 as used by the menus loaders (lbl_2_bss_340140 points at it).
+typedef struct MenuActorMgr {
+    /*0x0000*/ u8 _0000[0xC04];
+    /*0x0C04*/ MenuActor actors[13];
+    /*0x2C50*/ MenuActor* active[13];
+    /*0x2C84*/ u8 _2C84[0x307A - 0x2C84];
+    /*0x307A*/ u8 _307A;
+} MenuActorMgr;
+
+// Loader task run from the queue (lbl_803CC1B8); only the fields used here.
+typedef struct MenuLoadTask {
+    /*0x00*/ u8 _00[0xC];
+    /*0x0C*/ struct MenuLoadTask* parent;
+    /*0x10*/ s16 _10; // parent: set to 1 when the load finishes
+    /*0x12*/ u8 _12[2];
+    /*0x14*/ s16 count; // actors transferred so far
+    /*0x16*/ s16 kind;  // index into the ARAM file tables
+    /*0x18*/ u8 _18[0x28 - 0x18];
+    /*0x28*/ s8 step;
+} MenuLoadTask;
 
 void fn_2_8D24C(u8* object);
 
@@ -146,5 +169,9 @@ void fn_2_8B158(void);
 void fn_2_8D270(u8 index);
 
 void fn_2_8B418(void);
+
+void fn_2_8E6A4(void);
+void fn_2_8E8A4(void);
+void fn_2_8EA80(void);
 
 #endif
