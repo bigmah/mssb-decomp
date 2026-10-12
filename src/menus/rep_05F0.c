@@ -11,6 +11,9 @@
 #include "main/file_800BD8C4.h"
 #include "main/file_80021308.h"
 #include "main/file_80008E00.h"
+#include "main/menu_globals.h"  // lbl_803C66B0, lbl_8034E978, lbl_803C50E8, SavedSettings
+#include "main/file_8001FE00.h" // SceneFade lbl_8037169C
+extern SavedSettings lbl_800E8754;
 extern SoundManager lbl_800EF808;
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
@@ -23,20 +26,15 @@ extern SoundManager lbl_800EF808;
 
 OptionsMenu lbl_2_bss_1033C;
 
-extern u8 lbl_800E8754[];
 extern void fn_80021204(void);
 extern s32 fn_8003AE70(s32 selector);
 extern s32 lbl_2_bss_1598;
 extern u8* lbl_803CC1B8[];
-extern u8 lbl_8037169C[];
 extern void initializeUnknown(void);
 extern void fn_80021228(u8);
 extern void fn_80062A74(void);
 extern void fn_800A97EC(s32, u32, u8);
 extern u8 lbl_800EFBA4[]; // menu sound-effect volumes
-extern u8 lbl_803C50E8[];
-extern u8 lbl_8034E978[];
-extern u8 lbl_803C66B0[];
 extern MenuSelVars lbl_2_bss_F410;
 extern void fn_800625A4(s32 port, s32 sound);
 extern void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h);
@@ -74,7 +72,7 @@ void fn_2_19D04(void) {
     OptionsMenu* menu = &lbl_2_bss_1033C;
     switch (menu->state) {
     case 0:
-        if (lbl_8037169C[0x13] == 0) {
+        if (lbl_8037169C._13 == 0) {
             break;
         }
         menu->state = 1;
@@ -92,7 +90,7 @@ void fn_2_19D04(void) {
         lbl_2_bss_1033C.state = 2;
         break;
     case 2:
-        if (lbl_803C66B0[0x5D] == 0) {
+        if (lbl_803C66B0.step[0] == 0) {
             menu->state = 3;
         }
         break;
@@ -122,10 +120,10 @@ void fn_2_19D04(void) {
         break;
     }
     case 4:
-        if (lbl_803C66B0[0x55] == 0) {
+        if (lbl_803C66B0.active[0] == 0) {
             menu->_0F = 1;
             menu->state = 0;
-            lbl_8034E978[0x26] = 1;
+            lbl_8034E978._26 = 1;
             fn_2_11A0(5);
         }
         break;
@@ -160,7 +158,7 @@ void fn_2_197AC(u8 port) {
             lbl_2_bss_1033C.editing = 0;
             fn_800625A4(0, 0x5C);
             fn_2_19778();
-        } else if (lbl_803C50E8[0x47] != 0) {
+        } else if (lbl_803C50E8._47 != 0) {
             fn_2_194E8();
             fn_800625A4(0, 0x5A);
             lbl_2_bss_1033C.state = 4;
@@ -345,7 +343,7 @@ void fn_2_19520(void) {
 // fn_2_194E8, size:0x38
 void fn_2_194E8(void) {
     fn_80021204();
-    lbl_800E8754[0x25] = lbl_80366158._1F;
+    lbl_800E8754._23[2] = lbl_80366158._1F;
 }
 
 // fn_2_194BC, size:0x2C
