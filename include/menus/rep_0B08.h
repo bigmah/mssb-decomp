@@ -2,18 +2,12 @@
 #define __MENUS_REP_0B08_H__
 
 #include "mssbTypes.h"
+#include "menus/menu_work.h"
 #include "Dolphin/vec.h"
 
-typedef struct MenuEntry MenuEntry;
 
-typedef struct {
-    u8 padding[0x80];
-    s32 index;
-    u8 padding84[8];
-    f32 progress;
-    u8 padding90[4];
-    s16 state;
-} MenuFadeState;
+// Fading entities are MenuEntry objects (menus/menu_work.h).
+typedef MenuEntry MenuFadeState;
 
 // View of one lbl_803C77B8 controller entry (PadState in main/file_800A7C08.h).
 typedef struct MenuStickPad {
@@ -37,66 +31,66 @@ void fn_2_6E1D0(MenuEntry* owner);
 void fn_2_709A0(MenuEntry* owner);
 void fn_2_71098(MenuEntry* owner);
 void fn_2_6B4FC(MenuEntry* owner);
-void fn_2_71A38(u8* object);
+void fn_2_71A38(MenuEntry* object);
 void fn_2_6ACF4(void);
 
-void fn_2_70588(u8* object);
+void fn_2_70588(MenuEntry* object);
 
-void fn_2_704A0(u8* object);
+void fn_2_704A0(MenuEntry* object);
 
-void fn_2_70494(u8* object);
+void fn_2_70494(MenuEntry* object);
 
-void fn_2_7045C(u8* object);
+void fn_2_7045C(MenuEntry* object);
 
-void fn_2_6FE34(u8* object);
+void fn_2_6FE34(MenuEntry* object);
 
-void fn_2_6F6F4(u8* object);
+void fn_2_6F6F4(MenuEntry* object);
 
-void fn_2_6E880(u8* object);
+void fn_2_6E880(MenuEntry* object);
 
-void fn_2_6E848(u8* object);
+void fn_2_6E848(MenuEntry* object);
 
-void fn_2_6D840(u8* object);
+void fn_2_6D840(MenuEntry* object);
 
-void fn_2_6D748(u8* object);
+void fn_2_6D748(MenuEntry* object);
 
-void fn_2_6D710(u8* object);
+void fn_2_6D710(MenuEntry* object);
 
-void fn_2_6D4E8(u8* object);
+void fn_2_6D4E8(MenuEntry* object);
 
-void fn_2_6D4B0(u8* object);
+void fn_2_6D4B0(MenuEntry* object);
 
-void fn_2_6D288(u8* object);
+void fn_2_6D288(MenuEntry* object);
 
-void fn_2_6D250(u8* object);
+void fn_2_6D250(MenuEntry* object);
 
-void fn_2_6D078(u8* object);
+void fn_2_6D078(MenuEntry* object);
 
-void fn_2_6D040(u8* object);
+void fn_2_6D040(MenuEntry* object);
 
-void fn_2_6CB78(u8* object);
+void fn_2_6CB78(MenuEntry* object);
 
-void fn_2_6C97C(u8* object);
+void fn_2_6C97C(MenuEntry* object);
 
-void fn_2_6C970(u8* object);
+void fn_2_6C970(MenuEntry* object);
 
-void fn_2_6C938(u8* object);
+void fn_2_6C938(MenuEntry* object);
 
-void fn_2_6C28C(u8* object);
+void fn_2_6C28C(MenuEntry* object);
 
-void fn_2_6BF88(u8* object);
+void fn_2_6BF88(MenuEntry* object);
 
-void fn_2_6BDD4(u8* object);
+void fn_2_6BDD4(MenuEntry* object);
 
-void fn_2_6BD9C(u8* object);
+void fn_2_6BD9C(MenuEntry* object);
 
-void fn_2_6BC00(u8* object);
+void fn_2_6BC00(MenuEntry* object);
 
-void fn_2_6BBC8(u8* object);
+void fn_2_6BBC8(MenuEntry* object);
 
-void fn_2_6BA18(u8* object);
+void fn_2_6BA18(MenuEntry* object);
 
-void fn_2_6B4C4(u8* object);
+void fn_2_6B4C4(MenuEntry* object);
 
 void fn_2_6ACF0(void);
 
@@ -122,19 +116,19 @@ s32 fn_2_68690(s32 index);
 
 s32 fn_2_686B0(s32 index);
 
-void fn_2_6BAAC(u8* object);
+void fn_2_6BAAC(MenuEntry* object);
 
-void fn_2_6F72C(u8* object);
+void fn_2_6F72C(MenuEntry* object);
 
-void fn_2_6BFC0(u8* object);
+void fn_2_6BFC0(MenuEntry* object);
 
-void fn_2_6C2E8(u8* object);
+void fn_2_6C2E8(MenuEntry* object);
 
-void fn_2_6BA50(u8* object);
+void fn_2_6BA50(MenuEntry* object);
 
-void fn_2_6BB7C(u8* object);
+void fn_2_6BB7C(MenuEntry* object);
 
-void fn_2_6C120(u8* object);
+void fn_2_6C120(MenuEntry* object);
 
 s32 fn_2_6AF9C(s32 index);
 

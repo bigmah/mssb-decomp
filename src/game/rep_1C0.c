@@ -8,69 +8,21 @@
 #include "main/file_8000F150.h"
 #include "game/UnknownHomes_Game.h"
 #include "main/file_80039AC0.h"
+#include "C3/actor.h"      // ActorLayoutFile
+#include "C3/geoPalette.h" // DODisplayObj
+#include "game/rep_D0.h"    // g_UNK_StadiumDetails
+#include "game/rep_1D58.h"  // StadiumObjMgr, StaExtList
+#include "game/rep_3CE0.h"  // FadeState
+#include "main/file_80011640.h" // CharMgr
 #pragma dont_inline on
 
 typedef struct { u8 b[14]; } Tbl14;
 
-// Sky/backdrop object drawn per camera (two copies, indexed by lbl_803CBBC0).
-typedef struct StadiumSkyObj {
-    /*0x00*/ u32 link; // draw-list link (fn_800A7D4C)
-    /*0x04*/ void (*func)(struct StadiumSkyObj* obj);
-    /*0x08*/ Mtx model;
-    /*0x38*/ Mtx view;
-    /*0x68*/ void* layout; // actor layout drawn by fn_3_3638
-    /*0x6C*/ s32 camera;
-} StadiumSkyObj; // size: 0x70
-
-// Per-scene screen effect settings copied into lbl_803C5090.
-typedef struct StadiumScreenFx {
-    /*0x0*/ f32 scale;
-    /*0x4*/ f32 jitterX;
-    /*0x8*/ f32 jitterY;
-    /*0xC*/ u8 flags;
-    /*0xD*/ u8 alpha;
-    /*0xE*/ u16 lines;
-} StadiumScreenFx; // size: 0x10
-
-// Fog settings (fn_3_5BF0 uses the first entry; color.a is the GX fog type).
-typedef struct StadiumFog {
-    /*0x0*/ GXColor color;
-    /*0x4*/ f32 start;
-    /*0x8*/ f32 end;
-} StadiumFog; // size: 0xC
-
-// Per-stadium visual settings (fog, screen effects, sky speed); copied from lbl_3_data_23C.
-typedef struct StadiumVisual {
-    /*0x00*/ StadiumFog fog[3]; // read through raw offsets by fn_3_5BF0
-    /*0x24*/ StadiumScreenFx screenFx[3]; // scenes 1, 2, other
-    /*0x54*/ f32 skySpeed;
-    /*0x58*/ GXColor clearColor; // fn_3_35F0
-    /*0x5C*/ u8 _5C;
-    /*0x5D*/ u8 _5D; // passed to fn_8003AE5C
-    /*0x5E*/ u8 _5E[2];
-} StadiumVisual; // size: 0x60
-
-// View of g_UNK_StadiumDetails, only the fields used by this unit's sky code.
-typedef struct StadiumGfx {
-    /*0x000*/ void* textures; // texture list of the loaded stadium archive
-    /*0x004*/ void* texArchive;
-    /*0x008*/ StadiumSkyObj sky[7][2];
-    /*0x628*/ u8 _628[0x70A - 0x628];
-    /*0x70A*/ s16 lightCount;
-    /*0x70C*/ u8* lights; // relocated offset table
-    /*0x710*/ f32 skyAngle;
-    /*0x714*/ StadiumVisual visual;
-    /*0x774*/ u8 _774;
-    /*0x775*/ u8 _775[3];
-    /*0x778*/ u8* table2; // relocated offset table
-    /*0x77C*/ s16 table2Count;
-} StadiumGfx;
-#define sStadiumGfx (*(StadiumGfx*)g_UNK_StadiumDetails) // TODO type: g_UNK_StadiumDetails is u8[] here
 
 typedef struct StadiumAnimNode {
     /*0x0*/ u32 link;
     /*0x4*/ void (*func)(struct StadiumAnimNode* node); // fn_3_5C68
-    /*0x8*/ void* anim[2];
+    /*0x8*/ StaExtList* anim[2];
 } StadiumAnimNode;
 
 typedef struct StadiumFogNode {
@@ -99,16 +51,23 @@ typedef struct StadiumData23C {
     /*0x5A0*/ StadiumFogNode drawCallbackNodes[2];
 } StadiumData23C;
 
-typedef struct StadiumObjAnims {
-    /*0x0*/ u8 _0[8];
-    /*0x8*/ void* anim[2];
-} StadiumObjAnims; // view of lbl_3_common_bss_350E4 (StadiumObjMgr, game/rep_1D58.c)
+extern StadiumObjMgr lbl_3_common_bss_350E4;
+// Offsets (from the archive start) of the parts of a loaded stadium archive.
+typedef struct StadiumArchive {
+    /*0x00*/ u32 layout;
+    /*0x04*/ u32 skyLayout;
+    /*0x08*/ u32 lights;
+    /*0x0C*/ u32 geometry;
+    /*0x10*/ u32 skyGeometry;
+    /*0x14*/ u32 textures;
+    /*0x18*/ u32 _18[4];
+    /*0x28*/ u32 fadeTextures;
+    /*0x2C*/ u32 table2;   // optional
+    /*0x30*/ u32 textures3; // optional
+} StadiumArchive;
 
-extern StadiumObjAnims lbl_3_common_bss_350E4;
-extern u8 lbl_3_common_bss_35154[];
-extern u8 lbl_8036E548[];
+extern FadeState lbl_3_common_bss_35154;
 extern ScreenFx lbl_803C5090;
-extern void fn_800A7D4C(s32 list, void* node);
 extern void fn_8003A2C0(void);
 extern void fn_3_BD1D8(Mtx m);
 extern void fn_3_BCA20(void);
@@ -117,13 +76,11 @@ extern void fn_3_B8C08(Mtx view);
 #define STADIUM_EXTRA_CAMERAS 0
 
 extern u8 lbl_3_rodata_214[];
-extern void CTRLBuildMatrix(void*, void*);
-extern void DOVARender(void* obj, MtxPtr m, u8 flag, void* args); // args: va_list*
 extern s32 fn_800B7D3C(s32 index, Vec* box, Mtx m);
 extern u8 lbl_803CBBC0;
 
 // .data (laid out in definition order)
-u8 lbl_3_data_228[0x14] = {0}; // shared frame counters / random seed (other units view it as a struct)
+RandSeedView lbl_3_data_228 = {0};
 
 StadiumData23C lbl_3_data_23C = {
     {
@@ -200,7 +157,7 @@ StadiumDrawData lbl_3_data_7EC = {
         {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
         {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
     },
-    {{2, (void (*)(StadiumAnimNode*))fn_3_5C68, {NULL, NULL}}, {2, (void (*)(StadiumAnimNode*))fn_3_5C68, {NULL, NULL}}},
+    {{2, fn_3_5C68, {NULL, NULL}}, {2, fn_3_5C68, {NULL, NULL}}},
     -246,
     {{{2, fn_3_5BF0}, {2, fn_3_5BF0}}, {{2, fn_3_5BF0}, {2, fn_3_5BF0}}, {{2, fn_3_5BF0}, {2, fn_3_5BF0}}, {{2, fn_3_5BF0}, {2, fn_3_5BF0}}, {{2, fn_3_5BF0}, {0, fn_3_5BF0}}},
     {{{2, (void (*)(StadiumCameraNode*))fn_3_5BCC, 0}, {2, (void (*)(StadiumCameraNode*))fn_3_5BCC, 0}}, {{2, (void (*)(StadiumCameraNode*))fn_3_5BCC, 1}, {2, (void (*)(StadiumCameraNode*))fn_3_5BCC, 1}}, {{2, (void (*)(StadiumCameraNode*))fn_3_5BCC, 2}, {2, (void (*)(StadiumCameraNode*))fn_3_5BCC, 2}}, {{2, (void (*)(StadiumCameraNode*))fn_3_5BCC, 3}, {2, (void (*)(StadiumCameraNode*))fn_3_5BCC, 3}}},
@@ -216,14 +173,13 @@ extern f32 lbl_3_rodata_52C;
 extern f32 lbl_3_rodata_530;
 extern f32 lbl_3_rodata_520[];
 extern f32 lbl_3_rodata_538[];
-extern u8 g_UNK_StadiumDetails[];
 extern u32 fn_80009028(void);
 extern s32 fn_800527BC(void);
 extern void fn_80052694(s32 index);
 extern camera_803c639c_s* fn_80052734(s32);
-extern s32 lbl_3_rodata_210;
+extern GXColor lbl_3_rodata_210;
 extern void DCStoreRange(void*, u32);
-extern s32 fn_80023F0C(void*, void*, int, int, int, int, int, int);
+extern s32 fn_80023F0C(TexImage* src, TexImage* dst, s32 srcX, s32 srcY, s32 width, s32 height, s32 dstX, s32 dstY);
 
 // .text:0x000035D4 size:0x10
 void (*setFanObjPtr(void))(void) {
@@ -238,50 +194,49 @@ void fn_3_35E4(void (*val)(void)) {
 // .text:0x000035F0 size:0x48
 void fn_3_35F0(void) {
     if (fn_80009028() == 0) {
-        GXSetCopyClear(*(GXColor*)(g_UNK_StadiumDetails + 0x76C), 0xFFFFFF);
+        GXSetCopyClear(g_UNK_StadiumDetails.visual.clearColor, 0xFFFFFF);
     }
 }
 
 // .text:0x00003638 size:0x1E0
-void fn_3_3638(u8* obj) {
-    u8* e;
-    u8* pA;
-    u8* pB;
+void fn_3_3638(StadiumSkyObj* obj) {
+    MtxPtr pA;
+    MtxPtr pB;
     s32 i;
-    u8* hdr;
-    u8* m26;
-    u8* tbl;
+    ActorLayoutFile* hdr;
+    struct DODisplayObj* m26;
+    DODisplayData* tbl;
     Mtx m;
     f32 pts[24];
     i = 0;
-    pA = obj + 8;
-    pB = obj + 0x38;
-    hdr = *(u8**)(obj + 0x68);
-    tbl = *(u8**)(hdr + 0x10);
-    e = hdr;
-    for (i = 0; i < *(u16*)(hdr + 6); e += 0x1C, i++) {
-        u16 idx = *(u16*)(e + 0x34);
+    pA = obj->model;
+    pB = obj->view;
+    hdr = obj->layout;
+    tbl = hdr->header.geoPalette;
+    for (i = 0; i < hdr->header.totalBones; i++) {
+        u16 idx = hdr->bones[i].geoFileID;
         if (idx != 0xFFFF) {
-            m26 = *(u8**)(*(u8**)(tbl + 0x10) + idx * 8);
-            CTRLBuildMatrix(*(void**)(e + 0x20), m26 + 0x18);
-            PSMTXConcat((void*)pA, (void*)(m26 + 0x18), (void*)(m26 + 0x18));
-            PSMTXConcat((void*)pB, (void*)(m26 + 0x18), m);
-#define F(o) (*(f32*)(m26 + o))
-            pts[0] = F(0x58); pts[1] = F(0x60); pts[2] = F(0x64);
-            pts[3] = F(0x54); pts[4] = F(0x60); pts[5] = F(0x64);
-            pts[6] = F(0x54); pts[7] = F(0x60); pts[8] = F(0x68);
-            pts[9] = F(0x58); pts[10] = F(0x60); pts[11] = F(0x68);
-            pts[12] = F(0x58); pts[13] = F(0x5C); pts[14] = F(0x64);
-            pts[15] = F(0x54); pts[16] = F(0x5C); pts[17] = F(0x64);
-            pts[18] = F(0x54); pts[19] = F(0x5C); pts[20] = F(0x68);
-            pts[21] = F(0x58); pts[22] = F(0x5C); pts[23] = F(0x68);
-            if (fn_800B7D3C(*(s32*)(obj + 0x6C), (Vec*)pts, m)) {
-                if (*(u16*)(e + 0x3A) & 1) {
+            m26 = tbl->descriptorArray[idx].dispObj;
+            CTRLBuildMatrix(hdr->bones[i].orientationCtrl, m26->worldMatrix);
+            PSMTXConcat(pA, m26->worldMatrix, m26->worldMatrix);
+            PSMTXConcat(pB, m26->worldMatrix, m);
+#define F(o) (m26->bounds[o])
+            pts[0] = F(1); pts[1] = F(3); pts[2] = F(4);
+            pts[3] = F(0); pts[4] = F(3); pts[5] = F(4);
+            pts[6] = F(0); pts[7] = F(3); pts[8] = F(5);
+            pts[9] = F(1); pts[10] = F(3); pts[11] = F(5);
+            pts[12] = F(1); pts[13] = F(2); pts[14] = F(4);
+            pts[15] = F(0); pts[16] = F(2); pts[17] = F(4);
+            pts[18] = F(0); pts[19] = F(2); pts[20] = F(5);
+            pts[21] = F(1); pts[22] = F(2); pts[23] = F(5);
+#undef F
+            if (fn_800B7D3C(obj->camera, (Vec*)pts, m)) {
+                if (hdr->bones[i].flags & 1) {
                     GXSetZMode(1, 7, 1);
                 } else {
                     GXSetZMode(1, 3, 1);
                 }
-                switch (*(u16*)(e + 0x3A) & 6) {
+                switch (hdr->bones[i].flags & 6) {
                 case 2:
                     GXSetBlendMode(1, 1, 1, 0);
                     break;
@@ -292,7 +247,7 @@ void fn_3_3638(u8* obj) {
                     GXSetBlendMode(1, 4, 5, 0);
                     break;
                 }
-                DOVARender(m26, (MtxPtr)pB, 0, NULL);
+                DOVARender(m26, pB, 0, NULL);
             }
         }
     }
@@ -841,7 +796,7 @@ void fn_3_5518(void) {
     Mtx mtx;
     s32 idx;
 
-    images = sStadiumGfx.textures;
+    images = g_UNK_StadiumDetails._00;
     idx = boardImage[g_d_GameSettings.StadiumID];
     GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
     GXSetScissor(0, 0, 640, 448);
@@ -877,70 +832,70 @@ void fn_3_567C(void) {
     switch (g_GameLogic.sceneID) {
     case 1:
     case 2:
-        fx = &sStadiumGfx.visual.screenFx[g_GameLogic.sceneID - 1];
+        fx = &g_UNK_StadiumDetails.visual.screenFx[g_GameLogic.sceneID - 1];
         break;
     default:
-        fx = &sStadiumGfx.visual.screenFx[2];
+        fx = &g_UNK_StadiumDetails.visual.screenFx[2];
         break;
     }
-    if (lbl_8036E548[0x307E] == 0) { // TODO type: CharMgr._307E
+    if (lbl_8036E548._307E == 0) {
         return;
     }
-    lbl_3_common_bss_35154[0x3E0] = g_GameLogic.sceneID != 1; // TODO type: FadeState field 0x3E0
-    if (lbl_3_common_bss_35154[0x3E0]) {
+    lbl_3_common_bss_35154._3E0 = g_GameLogic.sceneID != 1;
+    if (lbl_3_common_bss_35154._3E0) {
         fn_3_BD1D8(fn_80052768_getCamera(0)->view);
     }
     fn_3_B8C08(fn_80052768_getCamera(0)->view);
-    sStadiumGfx.skyAngle += sStadiumGfx.visual.skySpeed;
-    if (sStadiumGfx.skyAngle >= 6.2831855f) {
-        sStadiumGfx.skyAngle -= 6.2831855f;
+    g_UNK_StadiumDetails.skyAngle += g_UNK_StadiumDetails.visual.skySpeed;
+    if (g_UNK_StadiumDetails.skyAngle >= 6.2831855f) {
+        g_UNK_StadiumDetails.skyAngle -= 6.2831855f;
     }
 
     if (fn_800527BC() >= 2) {
-        obj = &sStadiumGfx.sky[3][lbl_803CBBC0];
+        obj = &g_UNK_StadiumDetails.sky[3][lbl_803CBBC0];
         obj->camera = 1;
         PSMTXCopy(fn_80052734(1)->view, obj->view);
-        fn_800A7D4C(0, obj);
-        fn_800A7D4C(0, &lbl_3_data_7EC.fogNodes[1][lbl_803CBBC0]);
-        obj = &sStadiumGfx.sky[2][lbl_803CBBC0];
+        fn_800A7D4C(0, (DrawCallbackNode*)obj);
+        fn_800A7D4C(0, (DrawCallbackNode*)&lbl_3_data_7EC.fogNodes[1][lbl_803CBBC0]);
+        obj = &g_UNK_StadiumDetails.sky[2][lbl_803CBBC0];
         obj->camera = 1;
-        PSMTXRotRad(obj->model, 'Y', sStadiumGfx.skyAngle);
+        PSMTXRotRad(obj->model, 'Y', g_UNK_StadiumDetails.skyAngle);
         PSMTXCopy(fn_80052734(1)->view, obj->view);
         if (g_GameLogic.secondaryGameMode != 3) {
-            fn_800A7D4C(0, obj);
+            fn_800A7D4C(0, (DrawCallbackNode*)obj);
         }
-        fn_800A7D4C(0, &lbl_3_data_7EC.cameraNodes[1][lbl_803CBBC0]);
+        fn_800A7D4C(0, (DrawCallbackNode*)&lbl_3_data_7EC.cameraNodes[1][lbl_803CBBC0]);
     }
     if (fn_800527BC() > 2) {
         for (i = 0; i < STADIUM_EXTRA_CAMERAS; i++) {
-            obj = &sStadiumGfx.sky[6 + i][lbl_803CBBC0];
+            obj = &g_UNK_StadiumDetails.sky[6 + i][lbl_803CBBC0];
             obj->camera = i + 2;
             PSMTXCopy(fn_80052734(i + 2)->view, obj->view);
-            fn_800A7D4C(0, obj);
-            fn_800A7D4C(0, &lbl_3_data_7EC.fogNodes[i + 2][lbl_803CBBC0]);
-            obj = &sStadiumGfx.sky[4 + i][lbl_803CBBC0];
+            fn_800A7D4C(0, (DrawCallbackNode*)obj);
+            fn_800A7D4C(0, (DrawCallbackNode*)&lbl_3_data_7EC.fogNodes[i + 2][lbl_803CBBC0]);
+            obj = &g_UNK_StadiumDetails.sky[4 + i][lbl_803CBBC0];
             obj->camera = i + 2;
-            PSMTXRotRad(obj->model, 'Y', sStadiumGfx.skyAngle);
+            PSMTXRotRad(obj->model, 'Y', g_UNK_StadiumDetails.skyAngle);
             PSMTXCopy(fn_80052734(i + 2)->view, obj->view);
             if (g_GameLogic.secondaryGameMode != 3) {
-                fn_800A7D4C(0, obj);
+                fn_800A7D4C(0, (DrawCallbackNode*)obj);
             }
-            fn_800A7D4C(0, &lbl_3_data_7EC.cameraNodes[i + 2][lbl_803CBBC0]);
+            fn_800A7D4C(0, (DrawCallbackNode*)&lbl_3_data_7EC.cameraNodes[i + 2][lbl_803CBBC0]);
         }
     }
 
-    obj = &sStadiumGfx.sky[1][lbl_803CBBC0];
+    obj = &g_UNK_StadiumDetails.sky[1][lbl_803CBBC0];
     obj->camera = 0;
     PSMTXCopy(fn_80052734(0)->view, obj->view);
-    fn_800A7D4C(0, obj);
-    fn_800A7D4C(0, &lbl_3_data_7EC.fogNodes[0][lbl_803CBBC0]);
-    fn_800A7D4C(0, &lbl_3_data_23C.drawCallbackNodes[lbl_803CBBC0]);
-    obj = &sStadiumGfx.sky[0][lbl_803CBBC0];
+    fn_800A7D4C(0, (DrawCallbackNode*)obj);
+    fn_800A7D4C(0, (DrawCallbackNode*)&lbl_3_data_7EC.fogNodes[0][lbl_803CBBC0]);
+    fn_800A7D4C(0, (DrawCallbackNode*)&lbl_3_data_23C.drawCallbackNodes[lbl_803CBBC0]);
+    obj = &g_UNK_StadiumDetails.sky[0][lbl_803CBBC0];
     obj->camera = 0;
-    PSMTXRotRad(obj->model, 'Y', sStadiumGfx.skyAngle);
+    PSMTXRotRad(obj->model, 'Y', g_UNK_StadiumDetails.skyAngle);
     PSMTXCopy(fn_80052734(0)->view, obj->view);
-    fn_800A7D4C(0, obj);
-    fn_800A7D4C(0, &lbl_3_data_7EC.cameraNodes[0][lbl_803CBBC0]);
+    fn_800A7D4C(0, (DrawCallbackNode*)obj);
+    fn_800A7D4C(0, (DrawCallbackNode*)&lbl_3_data_7EC.cameraNodes[0][lbl_803CBBC0]);
 
     switch (g_d_GameSettings.StadiumID) {
     case 0:
@@ -955,8 +910,8 @@ void fn_3_567C(void) {
         lbl_3_data_7EC.animNodes[lbl_803CBBC0].anim[1] = NULL;
         break;
     }
-    fn_800A7D4C(0, &lbl_3_data_7EC.animNodes[lbl_803CBBC0]);
-    if (lbl_3_common_bss_35154[0x3E0]) {
+    fn_800A7D4C(0, (DrawCallbackNode*)&lbl_3_data_7EC.animNodes[lbl_803CBBC0]);
+    if (lbl_3_common_bss_35154._3E0) {
         fn_3_BCA20();
     }
     lbl_803C5090.flags = fx->flags;
@@ -981,67 +936,66 @@ void fn_3_5BAC(void) {
 
 // .text:0x00005BCC size:0x24 mapped:0x80644C60
 
-void fn_3_5BCC(u8* p) {
-    fn_80052694(*(s32*)(p + 8));
+void fn_3_5BCC(StadiumCameraNode* p) {
+    fn_80052694(p->camera);
 }
 
 // .text:0x00005BF0 size:0x78 mapped:0x80644C84
 void fn_3_5BF0(void) {
-    s32 col;
-    u8* d = g_UNK_StadiumDetails;
+    GXColor col;
+    UNK_StadiumCollision* d = &g_UNK_StadiumDetails;
     if (lbl_3_bss_18[0] != NULL) {
         lbl_3_bss_18[0]();
     }
-    col = *(s32*)(d + 0x714);
-    SetFog(d[0x717], (GXColor *)&col, *(f32*)(d + 0x718), *(f32*)(d + 0x71C), lbl_3_rodata_520[0], lbl_3_rodata_538[0]); // TODO type
+    col = d->visual.fog[0].color;
+    SetFog(d->visual.fog[0].color.a, &col, d->visual.fog[0].start, d->visual.fog[0].end, lbl_3_rodata_520[0], lbl_3_rodata_538[0]);
 }
 
 // .text:0x00005C68 size:0x1F8 mapped:0x80644CFC
-void fn_3_5C68(u8* obj) {
-    s32 col;
-    u8* p;
+void fn_3_5C68(StadiumAnimNode* obj) {
+    GXColor col;
+    StaExtList* p;
     s32 i;
     s32 k;
     s32 cnt;
     GXSetCullMode(2);
     col = lbl_3_rodata_210;
-    SetFog(0, (GXColor *)&col, lbl_3_rodata_504, lbl_3_rodata_504, lbl_3_rodata_504, lbl_3_rodata_504); // TODO type
+    SetFog(0, &col, lbl_3_rodata_504, lbl_3_rodata_504, lbl_3_rodata_504, lbl_3_rodata_504);
     GXSetBlendMode(1, 4, 5, 0);
     k = 2;
     while (k-- != 0) {
-        p = *(u8**)(obj + 8 + k * 4);
+        p = obj->anim[k];
         if (p != NULL) {
             cnt = 0;
-            for (i = 0; i < *(u16*)(p + 0x14); i++) {
-                u8* st = *(u8**)(p + 0x10);
+            for (i = 0; i < p->count; i++) {
+                u8* st = p->entries;
                 if (st[(i * 3) + 2]-- == 0) {
                     u8* e;
                     s32 m;
-                    u8* t;
                     s32 x, y, ax, ay; u8* tb;
-                    u8* st2 = *(u8**)(p + 0x10);
-                    st2[(i * 3) + 1] = (st2[(i * 3) + 1] + 1) % *(u16*)(p + 0x18);
+                    u8* st2 = p->entries;
+                    st2[(i * 3) + 1] = (st2[(i * 3) + 1] + 1) % p->n18;
                     ay = (i / 8) << 6;
                     ax = (i % 8) << 5;
-                    e = *(u8**)(p + 0x10) + (i * 3);
-                    m = (*(u8**)(p + 0xC))[e[1]];
+                    e = p->entries + (i * 3);
+                    m = ((u8*)p->pC)[e[1]];
                     if (k != 0) {
-                        tb = *(u8**)(p + 8);
+                        tb = p->p8;
                         x = tb[e[0] * 4 + m * 2] << 5;
                         y = tb[e[0] * 4 + m * 2 + 1] << 6;
                     } else {
-                        tb = *(u8**)(p + 8);
+                        tb = p->p8;
                         x = tb[e[0] * 8 + m * 2] << 5;
                         y = tb[e[0] * 8 + m * 2 + 1] << 6;
                     }
-                    fn_80023F0C(*(void**)p, *(void**)(p + 4), x, y, 0x20, 0x40, ax, ay);
+                    fn_80023F0C((TexImage*)p->p0, (TexImage*)p->p4, x, y, 0x20, 0x40, ax, ay);
                     cnt++;
-                    (*(u8**)(p + 0x10))[(i * 3) + 2] = *(u16*)(p + 0x16);
+                    p->entries[(i * 3) + 2] = p->nChoices;
                 }
             }
             if (cnt != 0) {
-                u8* tex = *(u8**)(p + 4);
-                DCStoreRange(*(void**)tex, *(u16*)(tex + 0xA) * *(u16*)(tex + 8));
+                TexImage* tex = (TexImage*)p->p4;
+                DCStoreRange(tex->data, tex->width * tex->height);
             }
         }
     }
@@ -1052,34 +1006,20 @@ void fn_3_5C68(u8* obj) {
 }
 
 
-extern u8 lbl_8036E548[];
 extern void fn_80035CA4(int);
 extern void fn_800BCDBC(void*);
 extern void fn_800ACFB0(void*);
 
 // .text:0x00005E60 size:0x60
 void fn_3_5E60(void) {
-    u8* b = lbl_8036E548;
-    u8* p = *(u8**)(b + 4);
+    CharMgr* b = &lbl_8036E548;
+    StadiumArchive* p = b->_0004[0];
     fn_80035CA4(5);
-    fn_800BCDBC(p + *(s32*)(p + 0x10));
-    fn_800BCDBC(p + *(s32*)(p + 0xC));
-    fn_800ACFB0(*(void**)(b + 4));
+    fn_800BCDBC((u8*)p + p->skyGeometry);
+    fn_800BCDBC((u8*)p + p->geometry);
+    fn_800ACFB0(b->_0004[0]);
 }
 
-// Offsets (from the archive start) of the parts of a loaded stadium archive.
-typedef struct StadiumArchive {
-    /*0x00*/ u32 layout;
-    /*0x04*/ u32 skyLayout;
-    /*0x08*/ u32 lights;
-    /*0x0C*/ u32 geometry;
-    /*0x10*/ u32 skyGeometry;
-    /*0x14*/ u32 textures;
-    /*0x18*/ u32 _18[4];
-    /*0x28*/ u32 fadeTextures;
-    /*0x2C*/ u32 table2;   // optional
-    /*0x30*/ u32 textures3; // optional
-} StadiumArchive;
 
 struct LoadedActorLayout;
 extern void fn_800B2AC8(struct LoadedActorLayout* layout);
@@ -1101,24 +1041,24 @@ void fn_3_5EC0(StadiumArchive* arc) {
     void* textures = (u8*)arc + arc->textures;
     s32 i;
 
-    sStadiumGfx.lightCount = fn_3_6424((u8*)arc + arc->lights, &sStadiumGfx.lights);
+    g_UNK_StadiumDetails.numCollisionBoxes = fn_3_6424((u8*)arc + arc->lights, &g_UNK_StadiumDetails.pCollisionBoxes);
     fn_800B49E4(layout);
     fn_800BCE38(geometry);
     convertTextureHeader(textures);
     fn_800BD190(geometry, textures);
     haveActLayoutPointToGeoHeader(layout, geometry);
     fn_800B2AC8(layout);
-    sStadiumGfx.texArchive = textures;
-    PSMTXIdentity(sStadiumGfx.sky[1][0].model);
-    sStadiumGfx.sky[1][0].link = 2;
-    sStadiumGfx.sky[1][0].func = (void (*)(StadiumSkyObj*))fn_3_3638;
-    sStadiumGfx.sky[1][0].layout = layout;
-    sStadiumGfx.sky[1][1] = sStadiumGfx.sky[1][0];
-    sStadiumGfx.sky[3][0] = sStadiumGfx.sky[1][0];
-    sStadiumGfx.sky[3][1] = sStadiumGfx.sky[1][0];
+    g_UNK_StadiumDetails._04 = textures;
+    PSMTXIdentity(g_UNK_StadiumDetails.sky[1][0].model);
+    g_UNK_StadiumDetails.sky[1][0].link = 2;
+    g_UNK_StadiumDetails.sky[1][0].func = fn_3_3638;
+    g_UNK_StadiumDetails.sky[1][0].layout = layout;
+    g_UNK_StadiumDetails.sky[1][1] = g_UNK_StadiumDetails.sky[1][0];
+    g_UNK_StadiumDetails.sky[3][0] = g_UNK_StadiumDetails.sky[1][0];
+    g_UNK_StadiumDetails.sky[3][1] = g_UNK_StadiumDetails.sky[1][0];
     for (i = 0; i < STADIUM_EXTRA_CAMERAS; i++) {
-        sStadiumGfx.sky[6 + i][0] = sStadiumGfx.sky[1][0];
-        sStadiumGfx.sky[6 + i][1] = sStadiumGfx.sky[1][0];
+        g_UNK_StadiumDetails.sky[6 + i][0] = g_UNK_StadiumDetails.sky[1][0];
+        g_UNK_StadiumDetails.sky[6 + i][1] = g_UNK_StadiumDetails.sky[1][0];
     }
 
     // The sky model shares the stadium textures.
@@ -1128,32 +1068,32 @@ void fn_3_5EC0(StadiumArchive* arc) {
     fn_800BCE38(geometry);
     fn_800BD190(geometry, textures);
     haveActLayoutPointToGeoHeader(layout, geometry);
-    sStadiumGfx.sky[0][0].link = 2;
-    sStadiumGfx.sky[0][0].func = (void (*)(StadiumSkyObj*))fn_3_3638;
-    sStadiumGfx.sky[0][0].layout = layout;
-    sStadiumGfx.sky[0][1] = sStadiumGfx.sky[0][0];
-    sStadiumGfx.sky[2][0] = sStadiumGfx.sky[0][0];
-    sStadiumGfx.sky[2][1] = sStadiumGfx.sky[0][0];
+    g_UNK_StadiumDetails.sky[0][0].link = 2;
+    g_UNK_StadiumDetails.sky[0][0].func = fn_3_3638;
+    g_UNK_StadiumDetails.sky[0][0].layout = layout;
+    g_UNK_StadiumDetails.sky[0][1] = g_UNK_StadiumDetails.sky[0][0];
+    g_UNK_StadiumDetails.sky[2][0] = g_UNK_StadiumDetails.sky[0][0];
+    g_UNK_StadiumDetails.sky[2][1] = g_UNK_StadiumDetails.sky[0][0];
     for (i = 0; i < STADIUM_EXTRA_CAMERAS; i++) {
-        sStadiumGfx.sky[4 + i][0] = sStadiumGfx.sky[0][0];
-        sStadiumGfx.sky[4 + i][1] = sStadiumGfx.sky[0][0];
+        g_UNK_StadiumDetails.sky[4 + i][0] = g_UNK_StadiumDetails.sky[0][0];
+        g_UNK_StadiumDetails.sky[4 + i][1] = g_UNK_StadiumDetails.sky[0][0];
     }
 
-    sStadiumGfx.visual =
+    g_UNK_StadiumDetails.visual =
         lbl_3_data_23C.visuals[g_d_GameSettings.miniGameStadiumIndicator * 7 + g_d_GameSettings.StadiumID];
-    sStadiumGfx.textures = (u8*)textures + 4; // TODO type: TexArchive entries
-    sStadiumGfx._774 = 0;
-    fn_8003AE5C(sStadiumGfx.visual._5D);
+    g_UNK_StadiumDetails._00 = ((TexArchive*)textures)->entries;
+    g_UNK_StadiumDetails._774 = 0;
+    fn_8003AE5C(g_UNK_StadiumDetails.visual._5D);
 
     geometry = (u8*)arc + arc->fadeTextures;
     convertTextureHeader(geometry);
-    *(void**)(lbl_3_common_bss_35154 + 0x3B4) = (u8*)geometry + 4; // TODO type: FadeState field 0x3B4
+    lbl_3_common_bss_35154.fadeImages = ((TexArchive*)geometry)->entries;
     fn_3_BD434(g_d_GameSettings.StadiumID, g_d_GameSettings.miniGameStadiumIndicator);
 
     if (arc->table2 != 0) {
-        sStadiumGfx.table2Count = fn_3_6424((u8*)arc + arc->table2, &sStadiumGfx.table2);
+        g_UNK_StadiumDetails.numCollisionBoxes2 = fn_3_6424((u8*)arc + arc->table2, &g_UNK_StadiumDetails.pCollisionBoxes2);
     } else {
-        sStadiumGfx.table2Count = 0;
+        g_UNK_StadiumDetails.numCollisionBoxes2 = 0;
     }
     if (arc->textures3 != 0) {
         geometry = (u8*)arc + arc->textures3;
@@ -1170,13 +1110,13 @@ void fn_3_64DC(void) {
 }
 
 // .text:0x00006424 size:0xB8
-s16 fn_3_6424(u8* base, u8** out) {
+s16 fn_3_6424(u8* base, CollisionBox** out) {
     s16 n = *(u16*)base;
     u32* p;
     s32 i;
-    p = (u32*)(*out = base + 4);
+    p = (u32*)(*out = (CollisionBox*)(base + 4));
     for (i = n; i >= 0; i--) {
-        *p += (u32)base;
+        *p += (u32)base; // TODO port: in-place 32-bit offset relocation; needs the port's relocation layer
         p++;
     }
     return n;

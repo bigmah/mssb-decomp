@@ -149,7 +149,7 @@ void capApplicationFunction(void) {
             SCALE_STAT(c->stats.Curve);
             SCALE_STAT(c->stats.curveControl);
             if (team == 0) {
-                u8* chem = (u8*)&c->chemistry;
+                u8* chem = c->chem;
                 bonus = gChallengeSave.chemistryBonus;
                 for (j = 0; j < (s32)sizeof(ChemistryTable); j++) {
                     chem[j] += bonus * 5;

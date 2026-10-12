@@ -2,8 +2,51 @@
 #define __GAME_rep_2308_H_
 
 #include "mssbTypes.h"
+#include "Dolphin/mtx.h"
+#include "game/rep_3F60.h" // EffectAnim
 
-void fn_3_CABF0(u8* p);
+// Rotation quaternion; its x/y/z part is built as a Vec (axis).
+typedef union Rep2308Quat {
+    Quaternion q;
+    Vec axis;
+} Rep2308Quat;
+
+// Display-list node for fn_800A7D4C that draws the pitch effect model (two per slot, indexed by lbl_803CBBC0).
+typedef struct E2308 {
+    /*0x00*/ void* next;                 // draw-list link
+    /*0x04*/ void (*draw)(struct E2308* p); // fn_3_CABF0
+    /*0x08*/ Vec pos;
+    /*0x14*/ Rep2308Quat rot;
+    /*0x24*/ u32 frame;
+} E2308; // size: 0x28
+
+typedef struct R2308 {
+    E2308 e[2];
+} R2308;
+
+// Scene task that feeds an E2308 each frame (lbl_803CC1B8 while it runs).
+typedef struct Rep2308Task {
+    /*0x00*/ u8 _00[0x14];
+    /*0x14*/ Vec pos;
+    /*0x20*/ Rep2308Quat rot;
+    /*0x30*/ u16 frame;
+    /*0x32*/ u8 slot;  // index into lbl_3_data_17D10 / lbl_3_data_17D18
+    /*0x33*/ u8 actor; // index into lbl_8036E548.active
+    /*0x34*/ u8 done;
+} Rep2308Task;
+
+// View of lbl_3_common_bss_35154, only the fields used here.
+typedef struct Rep2308Bss35154 {
+    /*0x000*/ EffectAnim anim[5]; // anim[0].table: models, anim[2..4]: the pitch effect's shape animations
+    /*0x1CC*/ u8 _1CC[0x3AC - 0x1CC];
+    /*0x3AC*/ u32 flags;
+    /*0x3B0*/ u8 _3B0[0x428 - 0x3B0];
+    /*0x428*/ Vec pos;
+    /*0x434*/ u8 _434[0x467 - 0x434];
+    /*0x467*/ s8 _467;
+} Rep2308Bss35154;
+
+void fn_3_CABF0(E2308* p);
 void fn_3_CAE00(void);
 void fn_3_CAF9C(void);
 void fn_3_CB1B0(int a, u8 b, int c);

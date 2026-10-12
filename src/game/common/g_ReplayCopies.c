@@ -2,4 +2,5 @@
 // one global per unit as in the original link (the linker puts all commons after the other .bss).
 #include "types.h"
 
-u32 g_ReplayCopies[0x452F]; // TODO type
+u8 g_ReplayCopies[0x114BC]; // replay snapshot: the game state globals packed at fixed offsets (rep_1330)
+// TODO port: the snapshot copies 32-bit-layout structs byte for byte at fixed offsets; needs the port layout

@@ -2,6 +2,8 @@
 #define __AUTO_00_00001254_TEXT_MENUS_H__
 
 #include "mssbTypes.h"
+#include "menus/menu_work.h"
+#include "game/character_stats.h"
 
 // Character table entry (lbl_800E8558); CharTableEntry in main/file_8004C5F8.h,
 // which declares fn_800506E8 with an s8 owner while menus calls it with an int.
@@ -14,77 +16,51 @@ typedef struct MenuCharEntry {
     /*0x5*/ u8 _5;
 } MenuCharEntry;
 
-// Character stats entry (0xA0 bytes): inMemRoster[2][9] and the CharSelectState roster at
-// lbl_8034E9A0. Field layout as copied by the menu code (see CharacterStats).
-typedef struct MenuCharStats {
-    /*0x00*/ u8 a[0x1E];
-    /*0x1E*/ u8 pad1E[2];
-    /*0x20*/ u32 w20;
-    /*0x24*/ s16 h24; // character id
-    /*0x26*/ u8 b26;
-    /*0x27*/ u8 b27;
-    /*0x28*/ u8 c28[2];
-    /*0x2A*/ u8 c2A[2];
-    /*0x2C*/ u8 b2C;
-    /*0x2D*/ u8 b2D;
-    /*0x2E*/ u8 b2E;
-    /*0x2F*/ u8 b2F;
-    /*0x30*/ u8 b30;
-    /*0x31*/ u8 b31;
-    /*0x32*/ u8 b32;
-    /*0x33*/ u8 b33;
-    /*0x34*/ u8 b34;
-    /*0x35*/ u8 c35[2];
-    /*0x37*/ u8 c37[4];
-    /*0x3B*/ u8 chem[0x36];
-    /*0x71*/ u8 b71;
-    /*0x72*/ u8 pad72[2];
-    /*0x74*/ u16 us[21];
-} MenuCharStats; // size: 0xA0
-
-#define MENU_COPY_CHAR_STATS(dst, src)              \
-    do {                                            \
-        memcpy((dst)->a, (src)->a, 0x1E);           \
-        (dst)->h24 = (src)->h24;                    \
-        (dst)->b26 = (src)->b26;                    \
-        (dst)->b27 = (src)->b27;                    \
-        memcpy((dst)->c28, (src)->c28, 2);          \
-        memcpy((dst)->c2A, (src)->c2A, 2);          \
-        (dst)->b2C = (src)->b2C;                    \
-        (dst)->b2D = (src)->b2D;                    \
-        (dst)->b2E = (src)->b2E;                    \
-        (dst)->b2F = (src)->b2F;                    \
-        (dst)->b30 = (src)->b30;                    \
-        (dst)->b31 = (src)->b31;                    \
-        (dst)->b32 = (src)->b32;                    \
-        (dst)->b33 = (src)->b33;                    \
-        (dst)->b34 = (src)->b34;                    \
-        memcpy((dst)->c35, (src)->c35, 2);          \
-        (dst)->w20 = (src)->w20;                    \
-        memcpy((dst)->c37, (src)->c37, 4);          \
-        memcpy((dst)->chem, (src)->chem, 0x36);     \
-        (dst)->b71 = (src)->b71;                    \
-        (dst)->us[0] = (src)->us[0];                \
-        (dst)->us[1] = (src)->us[1];                \
-        (dst)->us[2] = (src)->us[2];                \
-        (dst)->us[3] = (src)->us[3];                \
-        (dst)->us[4] = (src)->us[4];                \
-        (dst)->us[5] = (src)->us[5];                \
-        (dst)->us[6] = (src)->us[6];                \
-        (dst)->us[7] = (src)->us[7];                \
-        (dst)->us[8] = (src)->us[8];                \
-        (dst)->us[9] = (src)->us[9];                \
-        (dst)->us[10] = (src)->us[10];              \
-        (dst)->us[11] = (src)->us[11];              \
-        (dst)->us[12] = (src)->us[12];              \
-        (dst)->us[13] = (src)->us[13];              \
-        (dst)->us[14] = (src)->us[14];              \
-        (dst)->us[15] = (src)->us[15];              \
-        (dst)->us[16] = (src)->us[16];              \
-        (dst)->us[17] = (src)->us[17];              \
-        (dst)->us[18] = (src)->us[18];              \
-        (dst)->us[19] = (src)->us[19];              \
-        (dst)->us[20] = (src)->us[20];              \
+// Field-by-field copy of a CharacterStats (inMemRoster[2][9], the CharSelectState roster at
+// lbl_8034E9A0), in the order the menu code copies it.
+#define MENU_COPY_CHAR_STATS(dst, src)                                      \
+    do {                                                                    \
+        memcpy(&(dst)->stats, &(src)->stats, 0x1E);                         \
+        (dst)->stats.CharID = (src)->stats.CharID;                          \
+        (dst)->stats.FieldingArm = (src)->stats.FieldingArm;                \
+        (dst)->stats.BattingStance = (src)->stats.BattingStance;            \
+        memcpy(&(dst)->stats.SlapContactSize, &(src)->stats.SlapContactSize, 2);\
+        memcpy(&(dst)->stats.SlapHitPower, &(src)->stats.SlapHitPower, 2);  \
+        (dst)->stats.BuntingContactSize = (src)->stats.BuntingContactSize;  \
+        (dst)->stats.HitTrajectoryPushPull = (src)->stats.HitTrajectoryPushPull;\
+        (dst)->stats.HitTrajectoryHighLow = (src)->stats.HitTrajectoryHighLow;\
+        (dst)->stats.Speed = (src)->stats.Speed;                            \
+        (dst)->stats.ThrowingArm = (src)->stats.ThrowingArm;                \
+        (dst)->stats.CharacterClass = (src)->stats.CharacterClass;          \
+        (dst)->stats.Weight = (src)->stats.Weight;                          \
+        (dst)->stats.Captain = (src)->stats.Captain;                        \
+        (dst)->stats.CaptainStarHitPitch = (src)->stats.CaptainStarHitPitch;\
+        memcpy(&(dst)->stats.NonCaptainStarSwing, &(src)->stats.NonCaptainStarSwing, 2);\
+        (dst)->stats.FieldingStats = (src)->stats.FieldingStats;            \
+        memcpy(&(dst)->stats.BattingStatBar, &(src)->stats.BattingStatBar, 4);\
+        memcpy((dst)->chem, (src)->chem, sizeof(ChemistryTable));           \
+        (dst)->BytesAfterChemistry[0] = (src)->BytesAfterChemistry[0];      \
+        (dst)->UnusedShorts[0] = (src)->UnusedShorts[0];                    \
+        (dst)->UnusedShorts[1] = (src)->UnusedShorts[1];                    \
+        (dst)->UnusedShorts[2] = (src)->UnusedShorts[2];                    \
+        (dst)->UnusedShorts[3] = (src)->UnusedShorts[3];                    \
+        (dst)->UnusedShorts[4] = (src)->UnusedShorts[4];                    \
+        (dst)->UnusedShorts[5] = (src)->UnusedShorts[5];                    \
+        (dst)->UnusedShorts[6] = (src)->UnusedShorts[6];                    \
+        (dst)->UnusedShorts[7] = (src)->UnusedShorts[7];                    \
+        (dst)->UnusedShorts[8] = (src)->UnusedShorts[8];                    \
+        (dst)->UnusedShorts[9] = (src)->UnusedShorts[9];                    \
+        (dst)->UnusedShorts[10] = (src)->UnusedShorts[10];                  \
+        (dst)->UnusedShorts[11] = (src)->UnusedShorts[11];                  \
+        (dst)->UnusedShorts[12] = (src)->UnusedShorts[12];                  \
+        (dst)->UnusedShorts[13] = (src)->UnusedShorts[13];                  \
+        (dst)->UnusedShorts[14] = (src)->UnusedShorts[14];                  \
+        (dst)->UnusedShorts[15] = (src)->UnusedShorts[15];                  \
+        (dst)->UnusedShorts[16] = (src)->UnusedShorts[16];                  \
+        (dst)->UnusedShorts[17] = (src)->UnusedShorts[17];                  \
+        (dst)->UnusedShorts[18] = (src)->UnusedShorts[18];                  \
+        (dst)->UnusedShorts[19] = (src)->UnusedShorts[19];                  \
+        (dst)->UnusedShorts[20] = (src)->UnusedShorts[20];                  \
     } while (0)
 
 // Copy of the held/down/repeat words of one pad in CharSelectState (0x472C).
@@ -93,17 +69,6 @@ typedef struct MenuButtons {
     u16 down;
     u16 repeat;
 } MenuButtons;
-
-// Per-port controller state (lbl_803C77B8); same layout as PadState in main/file_800A7C08.h,
-// which can't be included next to UnknownHomes_Static.h.
-typedef struct MenuPad {
-    /*0x00*/ u16 held;
-    /*0x02*/ u16 down;
-    /*0x04*/ u16 repeat;
-    /*0x06*/ u16 prev;
-    /*0x08*/ s8 err;
-    /*0x09*/ u8 _09[0x20 - 0x09];
-} MenuPad;
 
 u32 fn_2_1258(const void* base, u32 offset, s32 size);
 

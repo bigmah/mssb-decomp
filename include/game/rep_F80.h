@@ -25,7 +25,8 @@ typedef struct RepF80Bss32220 {
 typedef struct RepF80Bss3223C {
     /*0x0*/ u8 _0[4];
     /*0x4*/ f32 cameraYaw;
-} RepF80Bss3223C;
+    /*0x8*/ u8 _8[0x4DC - 0x8];
+} RepF80Bss3223C; // size: 0x4DC
 
 // lbl_3_common_bss_35154, only the fields used here.
 typedef struct RepF80Bss35154 {

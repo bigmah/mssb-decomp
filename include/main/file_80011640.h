@@ -150,17 +150,21 @@ typedef void (*CharDrawCallback)(MtxPtr view, s32 a, s32 b);
 
 // lbl_8036E548
 typedef struct CharMgr {
-    /*0x0000*/ u8 _0000[0x4];
-    /*0x0004*/ u32 _0004[2];
+    /*0x0000*/ s32 _0000;
+    /*0x0004*/ void* _0004[2]; // [0]: a loaded file (rep_1FD8 fn_3_C24A0); [1]: stadium archive being loaded (rep_1D58)
     /*0x000C*/ u32 _000C[21];
     /*0x0060*/ ActorObjectTable* slots;
     /*0x0064*/ ActorObjectTable* slots64;
     /*0x0068*/ ActorObjectTable* slots68;
     /*0x006C*/ ActorObjectTable* slots6C;
-    /*0x0070*/ u32 _0070;
-    /*0x0074*/ u8 _0074[0xAC - 0x74];
+    /*0x0070*/ ActorObjectTable* _0070; // stadium actors (lights at lights[])
+    /*0x0074*/ s32 _0074;
+    /*0x0078*/ s32 _0078;
+    /*0x007C*/ u8 _007C[0xAC - 0x7C];
     /*0x00AC*/ void* lights[4];
-    /*0x00BC*/ u8 _00BC[0x13C - 0xBC];
+    /*0x00BC*/ u32 _00BC[0x15]; // indexed (cleared by menus fn_2_19F2C)
+    /*0x0110*/ s32 _0110;
+    /*0x0114*/ u8 _0114[0x13C - 0x114];
     /*0x013C*/ ActorObjectTable* partSlots;
     /*0x0140*/ CharParts partsPool[13];
     /*0x0C04*/ CharActor actors[13];
@@ -277,8 +281,12 @@ void fn_8001B308(s32 index, s32 enable);
 void fn_8001D074(s32 index, s32 enable);
 void fn_800177B4(void);
 void fn_8001C528(void);
+// game/rep_E08.c was compiled against (int x6, u8, int) / (int x5, u8, int) prototypes
+// and defines CHARANIM_REL_PROTOTYPES to keep them.
+#ifndef CHARANIM_REL_PROTOTYPES
 void QueueCharacterAnimation(s32 index, s32 anim, s32 a, s32 b, s32 c, s32 d, s32 e);
 void AnimateCharacter(s32 index, s32 anim, s32 a, u8 mode, s32 b, s32 c, s32 d, s32 e);
+#endif
 s32 fn_8001758C(u8* state, s32 actor, u8 kind, u8 team, u8 roster, s8 arg5, u8 index, u8 arg7);
 void challengeMapRelated(void);
 

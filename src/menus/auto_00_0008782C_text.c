@@ -1,4 +1,5 @@
 #include "menus/auto_00_0008782C_text.h"
+#include "main/menu_state.h" // MenuState lbl_8034E978
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 #include "main/file_8000F150.h"
@@ -11,7 +12,6 @@ extern void LoadActorLayout(void* layout);
 extern void convertGeometryAndSknHeader(void* geometry, void* sknHeader);
 extern s32 fn_80042DA8(void* owner, s32 idx, s32 value);
 extern void fn_80034E20(void* group, void* descs);
-extern u8 lbl_8034E978[]; // TODO type: MenuState (main/file_8004207C.h)
 extern UnlockFlags lbl_80361B20;
 
 extern SlotSelectState lbl_2_bss_33FBCC;
@@ -822,22 +822,31 @@ void fn_2_8975C(void) {
     }
 }
 
+// &lbl_2_data_2ECE4[n]. The original reaches these entries from the pooled base of this
+// unit's .data (debugBatOrderNames, 0x2EC bytes before the table), so the matching build
+// adds the .data offset; other builds index the table.
+#if NONMATCHING
+#define MENU_BUTTON_DESCS(n, dataOffset) (&lbl_2_data_2ECE4[n])
+#else
+#define MENU_BUTTON_DESCS(n, dataOffset) ((MenuSpriteDesc*)(data + (dataOffset)))
+#endif
+
 // .text:0x00089F70 size:0x98
 void fn_2_89F70(void) {
-    u8* data = (u8*)debugBatOrderNames; // TODO type: start of this unit's .data (pooled statics)
+    u8* data = (u8*)debugBatOrderNames; // pool base of this unit's .data (see MENU_BUTTON_DESCS)
     SceneTask* task = lbl_803CC1B8;
-    u8* descs;
+    MenuSpriteDesc* descs;
 
     switch (lbl_2_bss_33FBCC.mode) {
     case 0:
-        descs = data + 0xDCC;
+        descs = MENU_BUTTON_DESCS(87, 0xDCC);
         break;
     case 1:
     case 2:
-        descs = data + 0xCCC;
+        descs = MENU_BUTTON_DESCS(79, 0xCCC);
         break;
     case 3:
-        descs = data + 0xBAC;
+        descs = MENU_BUTTON_DESCS(70, 0xBAC);
         break;
     }
     fn_80034E20(task, descs);
@@ -1016,7 +1025,7 @@ void fn_2_8A824(void) {
         lbl_2_bss_33FBCC.animRunning = 0;
         fn_80034CEC(task);
         REMOVE_QUEUE_NOARG();
-        lbl_8034E978[3] = 0;
+        lbl_8034E978._03 = 0;
     }
 }
 
@@ -1027,7 +1036,7 @@ void fn_2_8ABFC(void) {
     fn_80034E20(task = lbl_803CC1B8, lbl_2_data_2ECE4);
     fn_2_8A008(task);
     if (lbl_8034E9A0._4756 == 1) {
-        lbl_2_bss_F410.slot = lbl_80361B20._F6[0];
+        lbl_2_bss_F410.slot = lbl_80361B20.saveSlot;
     }
     lbl_803CC1B8->func = fn_2_8A824;
 }

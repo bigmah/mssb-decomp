@@ -13,6 +13,9 @@
 #include "main/file_80008E00.h"
 #include "game/rep_1C0.h"
 #include "main/file_80034F50.h" // SpaniDesc
+#include "main/file_80011640.h" // CharMgr
+#include "main/aramloader.h"
+#include "game/UnknownHomes_Game.h"
 
 extern void* memcpy(void*, const void*, u32);
 extern f64 cos(f64);
@@ -21,7 +24,6 @@ extern int rand(void);
 extern s32 fn_3_8BBC4(s32 id, f32* pos, f32* vel, s32 kind);
 typedef struct { f32 x, y, z; } V3;
 
-typedef struct SortEnt SortEnt;
 
 // Expanded stadium light: position and colour.
 typedef struct LitPos {
@@ -29,61 +31,7 @@ typedef struct LitPos {
     GXColor color;
 } LitPos;
 
-// Shape (texture) animation attached to a stadium object.
-typedef struct StadiumObjShape {
-    /* 0x00 */ u8 pad0[0xC];
-    /* 0x0C */ ShapeAnimState anim;
-    /* 0x2C */ ShapeData* shape;
-} StadiumObjShape;
-
-// One 0xE8-byte stadium object (lbl_3_common_bss_350E4.objs[]).
-typedef struct StadiumObj {
-    /* 0x00 */ Control ctrl;
-    /* 0x3C */ u8 pad3C[8];
-    /* 0x44 */ Mtx mtx;
-    /* 0x74 */ ActorObject* actor;
-    /* 0x78 */ void* unk78; // collision model
-    /* 0x7C */ u8 pad7C[4];
-    /* 0x80 */ void (*func)(int, int, void*);
-    /* 0x84 */ void (*preDraw)(struct StadiumObj* obj);
-    /* 0x88 */ void (*postDraw)(struct StadiumObj* obj);
-    /* 0x8C */ StadiumObjShape* shapeAnim;
-    /* 0x90 */ u8 visible : 1;
-    /* 0x90 */ u8 flag40 : 1;
-    /* 0x90 */ u8 depthFade : 1; // sorted by depth; alpha scaled by the sort factor
-    /* 0x90 */ u8 customZ : 1;   // use the z mode bits below
-    /* 0x90 */ u8 zCompare : 1;
-    /* 0x90 */ u8 zAlways : 1;   // GX_ALWAYS instead of GX_LEQUAL
-    /* 0x90 */ u8 zUpdate : 1;
-    /* 0x90 */ u8 flag01 : 1;
-    /* 0x91 */ u8 pad91;
-    /* 0x92 */ u8 alpha;
-    /* 0x93 */ u8 viewFlags;     // low 2 bits: fn_800B3C04 result
-    /* 0x94 */ u16 attached;
-    /* 0x96 */ s16 attachJoint;  // -1: attach to the camera matrix
-    /* 0x98 */ u8 layer;
-    /* 0x99 */ u8 pad99;
-    /* 0x9A */ u8 castShadow;
-    /* 0x9B */ u8 pad9B[0xE8 - 0x9B];
-} StadiumObj; // size: 0xE8
-
-// lbl_3_common_bss_350E4: the stadium object manager.
-typedef struct StadiumObjMgr {
-    /* 0x00 */ StadiumObj* objs;
-    /* 0x04 */ StadiumObj* saved;
-    /* 0x08 */ u8 pad8[0xC];
-    /* 0x14 */ SortEnt* sort;
-    /* 0x18 */ u8 pad18[8];
-    /* 0x20 */ Light* lights[4];
-    /* 0x30 */ s32 count;
-    /* 0x34 */ u8 pad34[4];
-    /* 0x38 */ void* data;
-    /* 0x3C */ u8 pad3C[0x30];
-    /* 0x6C */ u8 sortByDepth;
-    /* 0x6D */ u8 pad6D[3];
-} StadiumObjMgr; // size: 0x70
-// TODO type: older functions in this file still view the manager as u8[].
-#define sStadiumMgr (*(StadiumObjMgr*)lbl_3_common_bss_350E4)
+extern StadiumObjMgr lbl_3_common_bss_350E4;
 
 // Stadium setup functions, indexed by stadium type (see fn_3_B9FB8).
 extern void fn_3_C9DB4(void** files);
@@ -245,23 +193,11 @@ struct DspObj {
     DspObj* next;
 };
 extern void fn_8003A548(void (*callback)(void));
-extern u8 g_Ball[];
-typedef struct StadW78 {
-    u8 pad[0x78];
-    void* w78;
-} StadW78;
-typedef struct StadObj78 {
-    u8 pad[0x78];
-    void* w78;
-    u8 pad7C[0xE8 - 0x7C];
-} StadObj78;
 extern void* fn_3_C823C(s32 idx, Mtx out);
 extern void* fn_3_E4BE8(s32 idx, Mtx m);
 extern void* fn_3_F6504(s32 idx, Mtx m);
 extern void* fn_3_E751C(s32 idx, Mtx m);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
-extern u8 lbl_803C6CF8[];
-extern u8 lbl_8036E548[];
 extern void* memset(void*, int, u32);
 extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void minigamesSetSomePointers(void);
@@ -273,7 +209,6 @@ extern void fn_3_16E328(void);
 extern void fn_800528B4(void);
 extern void fn_8001E474(void);
 extern void fn_8003A8A0(void* model, Mtx viewMtx, s32 unused);
-extern u8 lbl_3_common_bss_350E4[];
 extern void fn_800ACFB0(void* block);
 extern void* _OSAllocFromHeap(s32, s32);
 
@@ -294,16 +229,6 @@ typedef struct StadHdr {
     StadEnt** list;
 } StadHdr;
 
-typedef struct StadObj {
-    u8 pad0[0x80];
-    void (*fn)(int, int, void*);
-    u8 pad84[0xE8 - 0x84];
-} StadObj;
-typedef struct StadObjList {
-    StadObj* objs;
-    u8 pad4[0x2C];
-    s32 count;
-} StadObjList;
 
 struct SortEnt {
     f32 z;
@@ -324,7 +249,6 @@ extern StadiumLightRow lbl_800F7478[];
 // Draw callback: draws the visible stadium objects of one layer, in sort order.
 
 struct CharActor;
-extern u8 g_GameLogic[];
 extern void fn_8001E460(void (*draw)(MtxPtr view, s32 a, s32 b)); // CharDrawCallback, main/file_80011640.h
 extern void fn_800116DC(struct CharActor* actor, Mtx m, u16 joint);
 extern void fn_800117CC(Mtx src, Mtx m, Mtx dst);
@@ -336,14 +260,8 @@ extern void fn_3_E7388(MtxPtr view, void* sort); // sort: E7388Pair* in sta_c6
 // Per-frame update of the stadium objects: matrices, attachments, shadows and
 // shape animations, then the per-stadium sort/fade pass.
 
-extern u8 lbl_3_common_bss_350E4[];
 
 extern void fn_800638CC(void);
-typedef struct StadObjFn {
-    u8 pad[0x7C];
-    void (*fn)(struct StadObjFn*);
-    u8 pad80[0xE8 - 0x80];
-} StadObjFn;
 
 extern void fn_3_35E4(void (*val)(void));
 extern void fn_80023B90(void*, LitPos*);
@@ -373,7 +291,7 @@ void fn_3_B9FB8(u32 type, void* p) {
     GXColor color;
     s32 i;
     fn_8001E474();
-    memset(lbl_3_common_bss_350E4, 0, 0x70);
+    memset(&lbl_3_common_bss_350E4, 0, sizeof(lbl_3_common_bss_350E4));
     fn_3_35E4(NULL);
     if (p != NULL) {
         for (i = 0; i < 4; i++) {
@@ -383,16 +301,16 @@ void fn_3_B9FB8(u32 type, void* p) {
             LITInitPos(lit, pos.x, pos.y, pos.z);
             color = pos.color;
             LITInitColor(lit, &color);
-            *(void**)(lbl_3_common_bss_350E4 + 0x20 + i * 4) = lit;
+            lbl_3_common_bss_350E4.lights[i] = lit;
         }
-        *(void**)(lbl_3_common_bss_350E4 + 0x38) = p;
-        *(u32*)(lbl_3_common_bss_350E4 + 0x8) = 0;
-        *(u32*)(lbl_3_common_bss_350E4 + 0xC) = 0;
+        lbl_3_common_bss_350E4.data = p;
+        lbl_3_common_bss_350E4.anim[0] = NULL;
+        lbl_3_common_bss_350E4.anim[1] = NULL;
         lbl_3_data_10AB0[type](p);
-        *(void**)(lbl_3_common_bss_350E4 + 0x14) = _OSAllocFromHeap(4, *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 8);
+        lbl_3_common_bss_350E4.sort = _OSAllocFromHeap(4, lbl_3_common_bss_350E4.count * sizeof(SortEnt));
         fn_8001B214(fn_3_B8298);
-        *(s16*)(lbl_3_common_bss_350E4 + 0x66) = rand();
-        lbl_8036E548[0x3088] = 1;
+        lbl_3_common_bss_350E4.seed = rand();
+        lbl_8036E548._3088 = 1;
         lbl_3_bss_1901 = 0;
     }
 }
@@ -443,7 +361,7 @@ void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx) {
             n = *(u16*)sub;
             q = (u32*)(sub + 4);
             for (i = n; i >= 0; i--) {
-                *q += (u32)sub; // TODO type: offsets become pointers in place
+                *q += (u32)sub; // TODO port: in-place 32-bit offset relocation; needs the port's relocation layer
                 q++;
             }
             break;
@@ -464,40 +382,40 @@ void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx) {
         i++;
     } while (--count != 0);
     while (idx-- != 0) {
-        ((u32*)table)[idx] += (u32)table; // TODO type: offsets become pointers in place
+        ((u32*)table)[idx] += (u32)table; // TODO port: in-place 32-bit offset relocation; needs the port's relocation layer
     }
 }
 
 // .text:0x000B9BB4 size:0x1B4 mapped:0x806F8C48
 s32 fn_3_B9BB4(u32 type) {
-    if ((s32)lbl_803C6CF8[0x715] == 1) {
+    if (lbl_803C6CF8.idle == 1) {
     switch (type) {
         case 0:
-            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC[0], 0, 0, 0);
+            lbl_8036E548._0004[1] = ARAMTransfer(lbl_3_data_10ACC[0], 0, 0, 0);
             break;
         case 1:
-            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC[1], 0, 0, 0);
+            lbl_8036E548._0004[1] = ARAMTransfer(lbl_3_data_10ACC[1], 0, 0, 0);
             break;
         case 2:
-            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC[2], 0, 0, 0);
+            lbl_8036E548._0004[1] = ARAMTransfer(lbl_3_data_10ACC[2], 0, 0, 0);
             break;
         case 3:
-            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC[3], 0, 0, 0);
+            lbl_8036E548._0004[1] = ARAMTransfer(lbl_3_data_10ACC[3], 0, 0, 0);
             break;
         case 4:
-            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC[4], 0, 0, 0);
+            lbl_8036E548._0004[1] = ARAMTransfer(lbl_3_data_10ACC[4], 0, 0, 0);
             break;
         case 5:
-            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC[5], 0, 0, 0);
+            lbl_8036E548._0004[1] = ARAMTransfer(lbl_3_data_10ACC[5], 0, 0, 0);
             break;
         case 6:
-            *(void**)(lbl_8036E548 + 8) = ARAMTransfer(lbl_3_data_10ACC[6], 0, 0, 0);
+            lbl_8036E548._0004[1] = ARAMTransfer(lbl_3_data_10ACC[6], 0, 0, 0);
             break;
         default:
             return -1;
     }
     fn_800B0A5C_insertQueue(fn_3_B99E4, 0);
-    lbl_3_common_bss_350E4[0x6A] = 1;
+    lbl_3_common_bss_350E4.loading = 1;
     return 1;
     }
     return 0;
@@ -505,9 +423,9 @@ s32 fn_3_B9BB4(u32 type) {
 
 // .text:0x000B99E4 size:0x1D0 mapped:0x806F8A78
 void fn_3_B99E4(void) {
-    if ((s32)lbl_803C6CF8[0x715] == 1) {
-        lbl_3_common_bss_350E4[0x6A] = 0;
-        fn_3_B9FB8(g_d_GameSettings.StadiumID, *(void**)(lbl_8036E548 + 8));
+    if (lbl_803C6CF8.idle == 1) {
+        lbl_3_common_bss_350E4.loading = 0;
+        fn_3_B9FB8(g_d_GameSettings.StadiumID, lbl_8036E548._0004[1]);
         REMOVE_QUEUE_NOARG();
     }
 }
@@ -540,36 +458,36 @@ void fn_3_B98E8(void* p) {
 }
 
 // .text:0x000B97DC size:0x10C mapped:0x806F8870
-void fn_3_B97DC(u8* p, void* f) {
+void fn_3_B97DC(ActorObject* p, void* f) {
     if (p == NULL || f == NULL) {
         return;
     }
-    *(void**)(p + 4) = f;
-    *(u16*)(p + 0xE) = 0;
-    *(f32*)(p + 0x5C) = 0.0f;
-    p[0x58] = 1;
-    p[0x59] = (f != NULL);
-    p[0x5A] = (f != NULL);
-    *(f32*)(p + 0x60) = 0.0f;
-    p[0x5B] = 3;
-    *(f32*)(p + 0x5C) = 0.0f;
-    p[0x59] = 1;
-    *(f32*)(p + 0x54) = 1.0f;
-    p[0x5A] = 1;
-    *(u32*)(p + 0x68) = 0;
-    p[0x58] = 1;
-    if (p[0x58] != 0) {
-        ACTSetAnimation(*(void**)p, *(void**)(p + 4), 0, *(u16*)(p + 0xE), 0.0f, *(f32*)(p + 0x60));
-        fn_800B4BC8(*(void**)p, 1);
+    p->animBank = f;
+    p->seqNum = 0;
+    p->time = 0.0f;
+    p->setAnimation = 1;
+    p->setTime = (f != NULL);
+    p->setSpeed = (f != NULL);
+    p->speed = 0.0f;
+    p->visFlags = 3;
+    p->time = 0.0f;
+    p->setTime = 1;
+    p->unk54 = 1.0f;
+    p->setSpeed = 1;
+    p->boneRemap = NULL;
+    p->setAnimation = 1;
+    if (p->setAnimation != 0) {
+        ACTSetAnimation(p->actor, p->animBank, 0, p->seqNum, 0.0f, p->speed);
+        fn_800B4BC8(p->actor, 1);
     }
-    if (p[0x59] != 0) {
-        fn_800B4CA0(*(void**)p, *(f32*)(p + 0x5C));
+    if (p->setTime != 0) {
+        fn_800B4CA0(p->actor, p->time);
     }
-    if (p[0x5A] != 0) {
-        fn_800B4C04(*(void**)p, *(f32*)(p + 0x54));
+    if (p->setSpeed != 0) {
+        fn_800B4C04(p->actor, p->unk54);
     }
-    if (p[0x5B] & 1) {
-        fn_800B4AFC(*(void**)p, p[0x5B] & 1);
+    if (p->visFlags & 1) {
+        fn_800B4AFC(p->actor, p->visFlags & 1);
     }
 }
 
@@ -580,11 +498,19 @@ void fn_3_B97C8(void* p) {
     }
 }
 
+// lights[n - 1]; the original indexes from the word before lights[0], which
+// only matches when written that way.
+#if NONMATCHING
+#define LIGHT_1BASED(c, n) ((c)->lights[(n) - 1])
+#else
+#define LIGHT_1BASED(c, n) (((Light**)&(c)->update)[n])
+#endif
+
 // .text:0x000B95EC size:0x1DC mapped:0x806F8680
 void fn_3_B95EC(void) {
     u8 n;
-    u8* c;
-    u8* d;
+    StadiumObjMgr* c;
+    CharMgr* d;
     minigamesSetSomePointers();
     minigamesGXStuff();
     minigamesSetSomePointers2();
@@ -594,49 +520,49 @@ void fn_3_B95EC(void) {
     }
     if (g_d_GameSettings.minigamesEnabled != 0) {
         fn_8001B200();
-        if (*(void**)(lbl_3_common_bss_350E4 + 0x14) != 0) {
-            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x14));
+        if (lbl_3_common_bss_350E4.sort != 0) {
+            fn_800ACFB0(lbl_3_common_bss_350E4.sort);
         }
-        if (*(void**)(lbl_3_common_bss_350E4 + 0x48) != 0) {
-            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x48));
+        if (lbl_3_common_bss_350E4.groupBounds != 0) {
+            fn_800ACFB0(lbl_3_common_bss_350E4.groupBounds);
         }
-        if (*(void**)(lbl_3_common_bss_350E4 + 0x4) != 0) {
-            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x4));
+        if (lbl_3_common_bss_350E4.saved != 0) {
+            fn_800ACFB0(lbl_3_common_bss_350E4.saved);
         }
-        if (*(void**)(lbl_3_common_bss_350E4 + 0x0) != 0) {
-            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x0));
+        if (lbl_3_common_bss_350E4.objs != 0) {
+            fn_800ACFB0(lbl_3_common_bss_350E4.objs);
         }
-        d = lbl_8036E548;
-        if (*(void**)(d + 0x6C) != 0) {
-            n = lbl_3_common_bss_350E4[0x6D];
+        d = &lbl_8036E548;
+        if (d->slots6C != NULL) {
+            n = lbl_3_common_bss_350E4.numActorObjs;
             while (n != 0) {
-                fn_800B4278(*(void**)(*(u8**)(d + 0x6C) + n * 0x90 - 0x5C));
+                fn_800B4278(d->slots6C->objects[n - 1].actor);
                 n--;
             }
-            fn_800ACFB0(*(void**)(d + 0x6C));
-            *(void**)(d + 0x6C) = 0;
+            fn_800ACFB0(d->slots6C);
+            d->slots6C = NULL;
         }
-        if (*(void**)(lbl_3_common_bss_350E4 + 0x34) != 0) {
-            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x34));
+        if (lbl_3_common_bss_350E4.fileIdx != 0) {
+            fn_800ACFB0(lbl_3_common_bss_350E4.fileIdx);
         }
-        c = lbl_3_common_bss_350E4;
+        c = &lbl_3_common_bss_350E4;
         n = 4;
         while (n != 0) {
-            if (((void**)(c + 0x1C))[n] != 0) {
-                fn_800ACFB0(((void**)(c + 0x1C))[n]);
+            if (LIGHT_1BASED(c, n) != NULL) {
+                fn_800ACFB0(LIGHT_1BASED(c, n));
             }
             n--;
         }
-        if (*(void**)(lbl_3_common_bss_350E4 + 0x38) != 0) {
-            fn_800ACFB0(*(void**)(lbl_3_common_bss_350E4 + 0x38));
+        if (lbl_3_common_bss_350E4.data != 0) {
+            fn_800ACFB0(lbl_3_common_bss_350E4.data);
         }
-        lbl_8036E548[0x3088] = 0;
+        lbl_8036E548._3088 = 0;
         fn_3_C1964();
         fn_3_16E328();
         fn_800528B4();
         fn_8001E474();
         lbl_3_bss_1902 = 0;
-        memset(lbl_3_common_bss_350E4, 0, 0x70);
+        memset(&lbl_3_common_bss_350E4, 0, sizeof(lbl_3_common_bss_350E4));
         lbl_3_bss_1901 = 1;
     }
 }
@@ -671,26 +597,26 @@ void fn_3_B950C(void) {
 void fn_3_B93CC(void) {
     s32 i;
     if (g_d_GameSettings._55 == 0) {
-        if (g_GameLogic[0x11E] == 0) {
-            *(s16*)(lbl_3_common_bss_350E4 + 0x66) = rand();
+        if (g_GameLogic.gameStatus == 0) {
+            lbl_3_common_bss_350E4.seed = rand();
         }
         if (lbl_80366158._28 != 0) {
-            if (g_d_GameSettings.GameModeSelected == 2 && *(void**)(lbl_3_common_bss_350E4 + 0x1C) != NULL) {
-                (*(void (**)(void))(lbl_3_common_bss_350E4 + 0x1C))();
+            if (g_d_GameSettings.GameModeSelected == 2 && lbl_3_common_bss_350E4.update != NULL) {
+                lbl_3_common_bss_350E4.update();
             }
         } else {
-            if (*(void**)(lbl_3_common_bss_350E4 + 0x18) != NULL) {
-                (*(void (**)(void))(lbl_3_common_bss_350E4 + 0x18))();
+            if (lbl_3_common_bss_350E4.draw != NULL) {
+                lbl_3_common_bss_350E4.draw();
             }
-            if (*(void**)(lbl_3_common_bss_350E4 + 0x1C) != NULL) {
-                (*(void (**)(void))(lbl_3_common_bss_350E4 + 0x1C))();
+            if (lbl_3_common_bss_350E4.update != NULL) {
+                lbl_3_common_bss_350E4.update();
             }
-            if (g_GameLogic[0x11E] == 0) {
+            if (g_GameLogic.gameStatus == 0) {
                 fn_800638CC();
             }
-            for (i = 0; i < *(s32*)(lbl_3_common_bss_350E4 + 0x30); i++) {
-                if (((StadObjFn**)lbl_3_common_bss_350E4)[0][i].fn != NULL) {
-                    ((StadObjFn**)lbl_3_common_bss_350E4)[0][i].fn(&((StadObjFn**)lbl_3_common_bss_350E4)[0][i]);
+            for (i = 0; i < lbl_3_common_bss_350E4.count; i++) {
+                if (lbl_3_common_bss_350E4.objs[i].update != NULL) {
+                    lbl_3_common_bss_350E4.objs[i].update(&lbl_3_common_bss_350E4.objs[i]);
                 }
             }
         }
@@ -709,7 +635,7 @@ void fn_3_B93C4(void) {
 
 // .text:0x000B939C size:0x28 mapped:0x806F8430
 void fn_3_B939C(void) {
-    lbl_3_common_bss_350E4[0x6C] = (g_GameLogic[0x11E] == 2);
+    lbl_3_common_bss_350E4.sortByDepth = (g_GameLogic.gameStatus == 2);
 }
 
 // .text:0x000B91C8 size:0x1D4 mapped:0x806F825C
@@ -719,27 +645,27 @@ void* fn_3_B91C8(s32 type, s32 idx0, Mtx arg) {
         return fn_3_C823C(idx, arg);
     }
     if (type == 2) {
-        if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+        if (g_Ball.AtBat_ContactResult >= 2) {
             return 0;
         }
-        CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, arg);
-        return sStadiumMgr.objs[idx].unk78;
+        CTRLBuildMatrix(&lbl_3_common_bss_350E4.objs[idx].ctrl, arg);
+        return lbl_3_common_bss_350E4.objs[idx].unk78;
     }
     if (type == 3) {
-        if ((g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
+        if ((g_Ball.currentStarSwing2 == 0xB) | (g_Ball.currentStarSwing2 == 0xC)) {
             return 0;
         }
         return fn_3_E4BE8(idx, arg);
     }
     if (type == 4) {
-        if ((*(s16*)(g_Ball + 0x1B7A) >= 2) | (g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
+        if ((g_Ball.AtBat_ContactResult >= 2) | (g_Ball.currentStarSwing2 == 0xB) | (g_Ball.currentStarSwing2 == 0xC)) {
             return 0;
         }
-        CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, arg);
-        return sStadiumMgr.objs[idx].unk78;
+        CTRLBuildMatrix(&lbl_3_common_bss_350E4.objs[idx].ctrl, arg);
+        return lbl_3_common_bss_350E4.objs[idx].unk78;
     }
     if (type == 5) {
-        if (*(s16*)(g_Ball + 0x1B7A) >= 2) {
+        if (g_Ball.AtBat_ContactResult >= 2) {
             return 0;
         }
         return fn_3_F6504(idx, arg);
@@ -747,16 +673,16 @@ void* fn_3_B91C8(s32 type, s32 idx0, Mtx arg) {
     if (type == 6) {
         return fn_3_E751C(idx, arg);
     }
-    CTRLBuildMatrix(&sStadiumMgr.objs[idx].ctrl, arg);
-    return sStadiumMgr.objs[idx].unk78;
+    CTRLBuildMatrix(&lbl_3_common_bss_350E4.objs[idx].ctrl, arg);
+    return lbl_3_common_bss_350E4.objs[idx].unk78;
 }
 
 // .text:0x000B916C size:0x5C mapped:0x806F8200
 void processStadiumObjectFunction(int stadium, void* a, int b, void* c) {
-    StadObjList* l = (StadObjList*)lbl_3_common_bss_350E4;
+    StadiumObjMgr* l = &lbl_3_common_bss_350E4;
     s32 i = (s32)a;
     if (i < l->count) {
-        void (*f)(int, int, void*) = l->objs[i].fn;
+        void (*f)(int, int, void*) = l->objs[i].func;
         if (f != 0) {
             f(i, b, c);
         }
@@ -765,25 +691,25 @@ void processStadiumObjectFunction(int stadium, void* a, int b, void* c) {
 
 // .text:0x000B9124 size:0x48 mapped:0x806F81B8
 void fn_3_B9124(void) {
-    memcpy(*(void**)(lbl_3_common_bss_350E4 + 4), *(void**)lbl_3_common_bss_350E4, *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 0xE8);
-    *(s16*)(lbl_3_common_bss_350E4 + 0x68) = *(s16*)(lbl_3_common_bss_350E4 + 0x66);
+    memcpy(lbl_3_common_bss_350E4.saved, lbl_3_common_bss_350E4.objs, lbl_3_common_bss_350E4.count * sizeof(StadiumObj));
+    lbl_3_common_bss_350E4.savedSeed = lbl_3_common_bss_350E4.seed;
 }
 
 // .text:0x000B908C size:0x98 mapped:0x806F8120
 void fn_3_B908C(void) {
     if (lbl_3_bss_1904 == NULL) {
-        u8* c = lbl_3_common_bss_350E4;
-        lbl_3_bss_1904 = _OSAllocFromHeap(0x20, *(s32*)(c + 0x30) * 0xE8);
-        memcpy(lbl_3_bss_1904, *(void**)lbl_3_common_bss_350E4, *(s32*)(c + 0x30) * 0xE8);
+        StadiumObjMgr* c = &lbl_3_common_bss_350E4;
+        lbl_3_bss_1904 = _OSAllocFromHeap(0x20, c->count * sizeof(StadiumObj));
+        memcpy(lbl_3_bss_1904, lbl_3_common_bss_350E4.objs, c->count * sizeof(StadiumObj));
     }
-    memcpy(*(void**)lbl_3_common_bss_350E4, *(void**)(lbl_3_common_bss_350E4 + 4), *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 0xE8);
-    *(s16*)(lbl_3_common_bss_350E4 + 0x66) = *(s16*)(lbl_3_common_bss_350E4 + 0x68);
+    memcpy(lbl_3_common_bss_350E4.objs, lbl_3_common_bss_350E4.saved, lbl_3_common_bss_350E4.count * sizeof(StadiumObj));
+    lbl_3_common_bss_350E4.seed = lbl_3_common_bss_350E4.savedSeed;
 }
 
 // .text:0x000B902C size:0x60 mapped:0x806F80C0
 void fn_3_B902C(void) {
     if (lbl_3_bss_1904 != NULL) {
-        memcpy(*(void**)lbl_3_common_bss_350E4, lbl_3_bss_1904, *(s32*)(lbl_3_common_bss_350E4 + 0x30) * 0xE8);
+        memcpy(lbl_3_common_bss_350E4.objs, lbl_3_bss_1904, lbl_3_common_bss_350E4.count * sizeof(StadiumObj));
         fn_800ACFB0(lbl_3_bss_1904);
         lbl_3_bss_1904 = NULL;
     }
@@ -799,13 +725,13 @@ void fn_3_B8C08(MtxPtr view) {
     SortEnt* e;
     s32 i;
 
-    if (sStadiumMgr.data == NULL) {
+    if (lbl_3_common_bss_350E4.data == NULL) {
         return;
     }
     fn_3_38E8(fn_3_B8828);
     fn_8001E460((void (*)(MtxPtr, s32, s32))fn_3_B8828);
-    for (i = 0; i < sStadiumMgr.count; i++) {
-        obj = &sStadiumMgr.objs[i];
+    for (i = 0; i < lbl_3_common_bss_350E4.count; i++) {
+        obj = &lbl_3_common_bss_350E4.objs[i];
         if (obj->visible && obj->actor != NULL) {
             actor = obj->actor->actor;
             fn_800B2BFC(obj->actor->actor, obj->actor->unk64, obj->actor->unk66);
@@ -818,7 +744,7 @@ void fn_3_B8C08(MtxPtr view) {
                 if (obj->attachJoint == -1) {
                     fn_800117CC(obj->mtx, view, obj->mtx);
                 } else {
-                    fn_800116DC((struct CharActor*)obj->actor, modelView, obj->attachJoint); // TODO type
+                    fn_800116DC((struct CharActor*)obj->actor, modelView, obj->attachJoint); // only reads the leading GameActor*, shared with CharActor
                 }
             }
             obj->viewFlags = (obj->viewFlags & 0xFC) | fn_800B3C04(0, obj->actor->actor, modelView);
@@ -830,26 +756,26 @@ void fn_3_B8C08(MtxPtr view) {
             }
             if (obj->shapeAnim != NULL && lbl_80366158._28 == 0 && obj->viewFlags != 0) {
                 fn_80024DB0(&obj->shapeAnim->anim);
-                fn_80024FA4((ShapeModel**)obj->actor, obj->shapeAnim->shape, &obj->shapeAnim->anim, -1); // TODO type
+                fn_80024FA4((ShapeModel**)obj->actor, obj->shapeAnim->shape, &obj->shapeAnim->anim, -1); // model: the ActorObject's leading GameActor*
             }
         }
     }
     if (g_d_GameSettings.StadiumID == 2 && g_d_GameSettings.GameModeSelected != 7) {
-        fn_3_D55EC(view, sStadiumMgr.sort);
+        fn_3_D55EC(view, lbl_3_common_bss_350E4.sort);
     } else if (g_d_GameSettings.StadiumID == 5 && g_d_GameSettings.GameModeSelected != 7) {
-        fn_3_F6084(view, sStadiumMgr.sort);
+        fn_3_F6084(view, lbl_3_common_bss_350E4.sort);
     } else if (g_d_GameSettings.StadiumID == 6) {
-        fn_3_E7388(view, sStadiumMgr.sort);
+        fn_3_E7388(view, lbl_3_common_bss_350E4.sort);
     } else {
-        fn_3_B867C(view, sStadiumMgr.sort);
-        if (sStadiumMgr.sortByDepth) {
+        fn_3_B867C(view, lbl_3_common_bss_350E4.sort);
+        if (lbl_3_common_bss_350E4.sortByDepth) {
             Vec ballPos;
-            lbl_3_bss_1908 = g_GameLogic[0x11E] == 2 ? 0.25f : 0.0f; // TODO type: g_GameLogic field 0x11E
-            memcpy(&ballPos, g_Ball, sizeof(Vec)); // the ball position
+            lbl_3_bss_1908 = g_GameLogic.gameStatus == 2 ? 0.25f : 0.0f;
+            memcpy(&ballPos, &g_Ball, sizeof(Vec)); // the ball position
             PSMTXMultVec(view, &ballPos, &ballPos);
-            for (i = 0; i < sStadiumMgr.count; i++) {
-                e = &sStadiumMgr.sort[i];
-                if (sStadiumMgr.objs[e->idx].visible) {
+            for (i = 0; i < lbl_3_common_bss_350E4.count; i++) {
+                e = &lbl_3_common_bss_350E4.sort[i];
+                if (lbl_3_common_bss_350E4.objs[e->idx].visible) {
                     if (e->z < 2.0f + ballPos.z) {
                         e->z = 1.0f;
                     } else if (e->z > 22.0f + ballPos.z) {
@@ -861,8 +787,8 @@ void fn_3_B8C08(MtxPtr view) {
                 }
             }
         } else {
-            for (i = 0; i < sStadiumMgr.count; i++) {
-                sStadiumMgr.sort[i].z = 1.0f;
+            for (i = 0; i < lbl_3_common_bss_350E4.count; i++) {
+                lbl_3_common_bss_350E4.sort[i].z = 1.0f;
             }
         }
     }
@@ -885,44 +811,44 @@ void fn_3_B8828(MtxPtr view, s32 translucent, u32 layer) {
     drawColor = lbl_800F7478[g_d_GameSettings._54].ambient;
     ambient = drawColor;
     lights = lbl_80367318;
-    if (lbl_8036E548[0x3088] == 0) { // TODO type: CharMgr._3088 (stadium loaded)
+    if (lbl_8036E548._3088 == 0) { // stadium loaded
         return;
     }
     GXSetCullMode(GX_CULL_BACK);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     for (i = 0; i < 4; i++) {
-        if (sStadiumMgr.lights[i] != NULL) {
-            LITInitAttn(sStadiumMgr.lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
-            LITInitPos(sStadiumMgr.lights[i], lights[i].x, lights[i].y, lights[i].z);
+        if (lbl_3_common_bss_350E4.lights[i] != NULL) {
+            LITInitAttn(lbl_3_common_bss_350E4.lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+            LITInitPos(lbl_3_common_bss_350E4.lights[i], lights[i].x, lights[i].y, lights[i].z);
             color = lights[i].color;
-            LITInitColor(sStadiumMgr.lights[i], &color);
+            LITInitColor(lbl_3_common_bss_350E4.lights[i], &color);
             dir.x = lights[i].x;
             dir.y = lights[i].y;
             dir.z = lights[i].z;
             if (PSVECMag(&dir)) {
                 PSVECNormalize(&dir, &dir);
-                LITInitDir(sStadiumMgr.lights[i], dir.x, dir.y, dir.z);
+                LITInitDir(lbl_3_common_bss_350E4.lights[i], dir.x, dir.y, dir.z);
             }
         }
     }
     GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, GX_PERSPECTIVE);
-    for (i = 0; i < sStadiumMgr.count; i++) {
-        obj = &sStadiumMgr.objs[sStadiumMgr.sort[i].idx];
+    for (i = 0; i < lbl_3_common_bss_350E4.count; i++) {
+        obj = &lbl_3_common_bss_350E4.objs[lbl_3_common_bss_350E4.sort[i].idx];
         if (obj->visible && obj->actor != NULL && layer == obj->layer &&
             (layer != 1 || translucent == obj->depthFade)) {
             PSMTXConcat(view, obj->mtx, modelView);
             if (obj->depthFade) {
-                drawColor.a = obj->alpha * sStadiumMgr.sort[i].z;
+                drawColor.a = obj->alpha * lbl_3_common_bss_350E4.sort[i].z;
             } else {
                 drawColor.a = obj->alpha;
             }
             fn_800BD2CC(1, drawColor);
             for (j = 0; j < 4; j++) {
-                LITXForm(sStadiumMgr.lights[j], view);
+                LITXForm(lbl_3_common_bss_350E4.lights[j], view);
             }
             CTRLBuildMatrix(&obj->ctrl, inv);
             PSMTXInverse(inv, inv);
-            light = *sStadiumMgr.lights[0];
+            light = *lbl_3_common_bss_350E4.lights[0];
             PSMTXMultVecSR(inv, &light.direction, &light.direction);
             fn_800B9AA8(&light);
             obj->actor->actor->flags = obj->viewFlags;
@@ -949,12 +875,12 @@ void fn_3_B8828(MtxPtr view, s32 translucent, u32 layer) {
             }
         }
     }
-    fn_800B9AA8(sStadiumMgr.lights[0]);
+    fn_800B9AA8(lbl_3_common_bss_350E4.lights[0]);
 }
 
 // .text:0x000B867C size:0x1AC mapped:0x806F7710
 void fn_3_B867C(void* mtx, SortEnt* out) {
-    StadiumObjMgr* c = &sStadiumMgr;
+    StadiumObjMgr* c = &lbl_3_common_bss_350E4;
     Vec v;
     StadiumObj* obj;
     s32 i;
@@ -975,7 +901,7 @@ void fn_3_B867C(void* mtx, SortEnt* out) {
         } while (i-- != 0);
         k = c->count;
         i = c->count - 1;
-        obj = &sStadiumMgr.objs[i];
+        obj = &lbl_3_common_bss_350E4.objs[i];
         do {
             if (obj->visible) {
                 if (obj->depthFade) {
@@ -1014,15 +940,15 @@ s32 fn_3_B8658(f32* a, f32* b) {
 
 // .text:0x000B85DC size:0x7C mapped:0x806F7670
 void fn_3_B85DC(s32 i, void* a, void* b) {
-    u8* c = lbl_3_common_bss_350E4;
-    memcpy(a, *(u8**)(c + 0x48) + i * 0x18, 0xC);
-    memcpy(b, *(u8**)(c + 0x48) + (i * 2 + 1) * 0xC, 0xC);
+    StadiumObjMgr* c = &lbl_3_common_bss_350E4;
+    memcpy(a, &c->groupBounds[i * 2], sizeof(Vec));
+    memcpy(b, &c->groupBounds[i * 2 + 1], sizeof(Vec));
 }
 
 // .text:0x000B85A8 size:0x34 mapped:0x806F763C
 u32 fn_3_B85A8(int idx, u32** out) {
-    *out = *(u32**)(lbl_3_common_bss_350E4 + 0x44) + *(u16*)(*(u8**)(lbl_3_common_bss_350E4 + 0x40) + idx * 2);
-    return (*(u32**)(lbl_3_common_bss_350E4 + 0x3C))[idx];
+    *out = lbl_3_common_bss_350E4.groupObjs + lbl_3_common_bss_350E4.groupStart[idx];
+    return lbl_3_common_bss_350E4.groupCount[idx];
 }
 
 // .text:0x000B8574 size:0x34 mapped:0x806F7608
@@ -1088,24 +1014,23 @@ void fn_3_B8414(void* a, void* b) {
 void fn_3_B8298(void) {
     s32 off;
     u32 i;
-    u8* c;
-    void* pp;
-    u8* e;
+    StadiumObjMgr* c;
+    StadiumObj* e;
     switch (g_d_GameSettings.StadiumID) {
         case 3:
             fn_8003A548(fn_3_B80D0);
             break;
     }
-    c = lbl_3_common_bss_350E4;
+    c = &lbl_3_common_bss_350E4;
     i = 0;
     off = 0;
-    for (; i < *(u32*)(c + 0x30); i++) {
-        e = *(u8**)c + off;
-        if (((e[0x90] >> 7) & 1) && *(void**)(e + 0x74) != 0 && e[0x9A] != 0) {
-            lbl_3_bss_190C = (StadiumObj*)e;
-            fn_3_B8184(*(void**)(e + 0x74), *(u8**)((u8*)fn_800BF068() + 0x14) + 0x40);
+    for (; i < (u32)c->count; i++) {
+        e = (StadiumObj*)((u8*)c->objs + off);
+        if (e->visible && e->actor != NULL && e->castShadow != 0) {
+            lbl_3_bss_190C = e;
+            fn_3_B8184(e->actor, fn_800BF068()->cameras->view);
         }
-        off += 0xE8;
+        off += sizeof(StadiumObj);
     }
     fn_8003A548(NULL);
 }

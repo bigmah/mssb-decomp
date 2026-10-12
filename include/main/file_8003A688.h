@@ -93,7 +93,11 @@ extern SaveBannerData lbl_800F7B00;
 // Challenge-mode character records (lbl_8034E9A0).
 typedef struct ChallengeRoster {
     /*0x0000*/ CharacterStats teams[6][9];
-    /*0x21C0*/ u8 _21C0[0x4756 - 0x21C0];
+    /*0x21C0*/ u8 _21C0[0x46E0 - 0x21C0];
+    /*0x46E0*/ s32 _46E0;
+    /*0x46E4*/ u8 _46E4[0x4711 - 0x46E4];
+    /*0x4711*/ u8 _4711;
+    /*0x4712*/ u8 _4712[0x4756 - 0x4712];
     /*0x4756*/ u8 _4756;
     /*0x4757*/ u8 recruited[54];
     /*0x478D*/ u8 _478D[0x48AF - 0x478D];

@@ -120,6 +120,8 @@ typedef struct RepGaugeEntry {
 } RepGaugeEntry;
 
 #define REP_OBJ(task, i) (lbl_80371C30[(task)->baseIdx + (i)].obj)
+// Same slot, indexed by byte offset (the original scales the index after adding a constant, so it isn't folded into the load).
+#define REP_SLOT_OBJ(idx) (*(LayoutObj**)((u8*)lbl_80371C30 + (idx) * sizeof(LayoutSlot)))
 
 void fn_3_91520(void);
 void fn_3_91A60(void);

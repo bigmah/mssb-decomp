@@ -2,4 +2,4 @@
 // one global per unit as in the original link (the linker puts all commons after the other .bss).
 #include "types.h"
 
-u32 lbl_3_common_bss_32888[0x6C]; // TODO type
+s8 lbl_3_common_bss_32888[0x1B0]; // [team][100] lists (auto_00_000759BC); the rest is unreferenced

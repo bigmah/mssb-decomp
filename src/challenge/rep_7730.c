@@ -780,7 +780,7 @@ void fn_1_25F98(void) {
         GXLoadPosMtxImm(mtx.m, 0);
         GXSetCurrentMtx(0);
         bank = &CHALLENGE_TEX_SLOTS[CHALLENGE_SPRITE_OBJ(q)->_66];
-        SetDisplayStateTexture((struct TexImage*)(bank->tex + lbl_1_bss_6BDC * 32 + 4), 0, 0);
+        SetDisplayStateTexture((struct TexImage*)&bank->tex->entries[lbl_1_bss_6BDC], 0, 0);
         GXBegin(GX_QUADS, GX_VTXFMT0, 4);
         GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
         GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_78E4;
@@ -2123,7 +2123,7 @@ void fn_1_20E00(ChallengeModelLoadTask* obj) {
     ChallengeLightColor color = lbl_1_rodata_77B0;
     u8* data;
     u16 i;
-    u8* layout;
+    struct ActorLayout* layout;
     u8* geo;
 
     LITAlloc(lbl_1_bss_6FA4);
@@ -2132,14 +2132,14 @@ void fn_1_20E00(ChallengeModelLoadTask* obj) {
     LITInitDir(lbl_1_bss_6FA4[0], 0.0f, 0.0f, 0.0f);
     LITInitColor(lbl_1_bss_6FA4[0], LIT_COLOR(color));
     data = obj->data;
-    layout = data + ((s32*)data)[0];
+    layout = (struct ActorLayout*)(data + ((s32*)data)[0]);
     geo = data + ((s32*)data)[1];
     lbl_1_bss_6BE0[0] = ActorObjectInitTable(20);
     LoadActorLayout(layout);
     convertGeometryAndSknHeader(geo, NULL);
     haveActLayoutPointToGeoHeader(layout, geo);
     for (i = 0; i < 20; i++) {
-        fn_800BDC88(lbl_1_bss_6BE0[0], i, i, (struct ActorLayout *)layout, 0, 0); // TODO type
+        fn_800BDC88(lbl_1_bss_6BE0[0], i, i, layout, 0, 0);
         fn_800B2C08(lbl_1_bss_6BE0[0]->objects[i].actor, 0);
         fn_800BD548(&lbl_1_bss_6BE0[0]->objects[i], 1, lbl_1_bss_6FA4[0]);
     }
@@ -2347,10 +2347,12 @@ void fn_1_202A4(void) {
     fn_80048C28();
 }
 
+// NONMATCHING 99.5%: saved regs q=r25/i=r26 in orig, ours q=r26/i=r25 (decl/assign order variants did not help)
 // .text:0x2004C size:0x258
+#if NONMATCHING
 void fn_1_2004C(void) {
     ChallengeTextureStages* q = (ChallengeTextureStages*)lbl_803CC1B8;
-    s32 ids[9] = {5, 6, 7, 8, 9, 13, 0x60, 0x61, 0x55};
+    s32 ids[9] = { 5, 6, 7, 8, 9, 13, 0x60, 0x61, 0x55 };
     u8* data;
     u32 i;
 
@@ -2360,14 +2362,14 @@ void fn_1_2004C(void) {
         q->cursor++;
         break;
     case 1:
-        i = lbl_803C6CF8.idle;
-        if (((s32)i) == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             data = q->file;
-            q->tex = data + (*((s32*)(data + 0x14)));
+            q->tex = (ChallengeTexArchive*)(data + ((ChallengeFileHeader*)data)->texOffset);
             convertTextureHeader(q->tex);
             for (i = 0; i < 8; i++) {
                 lbl_1_bss_6E24[i] = i;
-                if (fn_1_2051C((ChallengeTextureHeader*)(q->tex + ids[i] * 32 + 4), &lbl_1_bss_6EA4[i], &lbl_1_bss_6E44[i], i)) {
+                if (fn_1_2051C(&q->tex->entries[ids[i]],
+                        &lbl_1_bss_6EA4[i], &lbl_1_bss_6E44[i], i)) {
                     lbl_1_bss_6E24[i] |= 0x80000000;
                 }
             }
@@ -2377,6 +2379,7 @@ void fn_1_2004C(void) {
         break;
     }
 }
+#endif
 
 // .text:0x1FD78 size:0x2D4
 void fn_1_1FD78(ChallengeTextureStages* menu) {
@@ -2667,7 +2670,7 @@ void fn_1_1F2D8(void) {
 
 // .text:0x0001F23C size:0x9C
 void fn_1_1F23C(ChallengeProjectionState* state) {
-    fn_800385F0((struct RigidBody *)&lbl_1_bss_6BF4, // TODO type
+    fn_800385F0((struct RigidBody *)&lbl_1_bss_6BF4, // same layout (rep_7730.h)
         BODY_TEST->length, BODY_TEST->frac,
         BODY_TEST->radius, BODY_TEST->mass);
     state->depth = -BODY_TEST->height;
@@ -2854,7 +2857,7 @@ void fn_1_1E5D0(ChallengeProjectionState* body) {
     GXWGFifo.u8 = 0xFF;
     GXBegin(GX_LINES, GX_VTXFMT0, 4);
     PSVECScale(&body->pos, lbl_1_rodata_77E4, &a);
-    PSVECAdd(&a, (Vec*)&body->quat, pb); // TODO type: reads quat.xyz as a vector
+    PSVECAdd(&a, (Vec*)&body->quat, pb); // quat.xyz as a vector (Quaternion starts with x, y, z)
     GXWGFifo.f32 = a.x;
     GXWGFifo.f32 = a.y;
     GXWGFifo.f32 = a.z;
@@ -3069,7 +3072,7 @@ void fn_1_1DA54(void) {
     if ((s32)lbl_803C6CF8.idle != 1) {
         return;
     }
-    q->tex = q->file + *(s32*)(q->file + 0x14); // file-relative offset in the header
+    q->tex = (ChallengeTexArchive*)(q->file + ((ChallengeFileHeader*)q->file)->texOffset);
     convertTextureHeader(q->tex);
     q->firstImage = 2;
     q->frameCount = 3;
@@ -3079,7 +3082,7 @@ void fn_1_1DA54(void) {
     q->width = 0;
     q->height = 0;
     q->header = _OSAllocFromHeap(0x20, 0x20);
-    memcpy(q->header, q->tex + 0x44, 0x20);
+    memcpy(q->header, &q->tex->entries[2], 0x20);
     tex = q->header;
     if (tex->palette != NULL) {
         switch (tex->paletteFormat) {
@@ -3088,7 +3091,7 @@ void fn_1_1DA54(void) {
         case 2:
             size = tex->paletteEntries * 2;
             q->header->palette = _OSAllocFromHeap(0x20, size);
-            memcpy(q->header->palette, *(void**)(q->tex + 0x48), size);
+            memcpy(q->header->palette, q->tex->entries[2].palette, size);
             break;
         }
         DCStoreRangeNoSync(q->header->palette, size);
@@ -3121,7 +3124,7 @@ void fn_1_1DA54(void) {
         }
     }
     q->header->image = _OSAllocFromHeap(0x20, size);
-    memcpy(q->header->image, *(void**)(q->tex + 0x44), size);
+    memcpy(q->header->image, q->tex->entries[2].image, size);
     DCStoreRangeNoSync(q->header->image, size);
     PPCSync();
     ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1D944;
@@ -3146,7 +3149,7 @@ void fn_1_1D944(void) {
         q->timer = q->delay;
         q->frame = (q->frame + 1) % q->frameCount;
     }
-    lbl_1_data_107E4[lbl_803CBBC0[0]].data = q->tex + (q->firstImage + q->frame) * 32 + 4;
+    lbl_1_data_107E4[lbl_803CBBC0[0]].data = &q->tex->entries[q->firstImage + q->frame];
     e = &lbl_1_data_107E4[lbl_803CBBC0[0]];
     e->width = q->width;
     e->height = q->height;

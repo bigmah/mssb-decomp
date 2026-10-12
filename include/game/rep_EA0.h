@@ -91,6 +91,9 @@ typedef struct TrailFielder {
     /*0x17C*/ u8 _17C[0x268 - 0x17C];
 } TrailFielder;
 
+// Ball/shadow model scales by trail type (main.dol .data, right after charSizeMultipliers).
+extern f32 lbl_800E84B0[13][3];
+
 void fn_3_6750C(TexArchive* archive);
 void fn_3_675B8(u16 frames);
 void fn_3_67620(s32 type, u16 frames);

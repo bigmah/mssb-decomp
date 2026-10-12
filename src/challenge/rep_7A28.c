@@ -14,31 +14,8 @@ extern void* _OSAllocFromHeap(s32, s32);
 extern void PSVECNormalize(const Vec*, Vec*);
 extern void* lbl_80366158[];
 
-// ParticleParams5 / ParticleParams8 from main/file_800263FC.h, which can't be
-// included next to UnknownHomes_Static.h (conflicting prototypes). Same layout.
-typedef struct ChParticleParams5 {
-    /* 0x00 */ struct TexArchive* tex;
-    /* 0x04 */ s32 texIndex;
-    /* 0x08 */ s32 count;
-    /* 0x0C */ s32 unkC;
-    /* 0x10 */ s32 unk10;
-    /* 0x14 */ s32 unk14;
-    /* 0x18 */ s32 unk18;
-    /* 0x1C */ s32 unk1C;
-    /* 0x20 */ s32 unk20;
-    /* 0x24 */ s32 unk24;
-    /* 0x28 */ s32 unk28;
-    /* 0x2C */ s32 unk2C;
-    /* 0x30 */ s32 unk30;
-    /* 0x34 */ s32 unk34;
-    /* 0x38 */ s32 unk38;
-    /* 0x3C */ s32 unk3C;
-    /* 0x40 */ u32 unk40;
-    /* 0x44 */ s32 unk44;
-    /* 0x48 */ s32 unk48;
-    /* 0x4C */ s32 unk4C;
-} ChParticleParams5;
-
+// ParticleParams8 from main/file_800263FC.h, which can't be included next to
+// UnknownHomes_Static.h (conflicting prototypes). Same layout.
 // Beam emitter parameters with its 8 texture frames (ParticleParams8 ends in a
 // count-sized array).
 typedef struct ChBeamParams {

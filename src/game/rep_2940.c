@@ -12,7 +12,6 @@
 extern void fn_3_6A25C(void);
 extern void fn_3_6A250(void);
 
-#define MGB ((u8*)&g_Minigame)
 extern f32 lbl_3_data_18DD4[];
 
 // g_Fielders entry (size 0x268), only the fields used here.
@@ -216,16 +215,16 @@ void fn_3_E11E0(void) {
         CharActor* e = lbl_8036E548.active[i];
         if (e != NULL) {
             e->mode[0] = 0;
-            if (MGB[0x1A13 + i] == 0 && *(s8*)(MGB + 0x19EA + i * 9) >= 0 &&
-                *(s8*)(MGB + 0x19EF + i * 9) != 0) {
-                s8 t = *(s8*)(MGB + 0x19DA + i);
+            if (g_Minigame._1A13[i] == 0 && g_Minigame._19E8[i]._2 >= 0 &&
+                g_Minigame._19E8[i]._7 != 0) {
+                s8 t = g_Minigame._19DA[i];
                 if (t >= 0) {
                     if (g_d_GameSettings.exhibitionMatchInd == 0) {
                         if (t >= 1) {
                         } else {
                             goto set;
                         }
-                    } else if (MGB[0x19E6] != 1 || g_d_GameSettings.GameModeSelected == 6 || MGB[0x1A3C] != 0 || t < 1) {
+                    } else if (g_Minigame._19E6 != 1 || g_d_GameSettings.GameModeSelected == 6 || g_Minigame._1A3C != 0 || t < 1) {
                     set:
                         e->mode[0] = 1;
                         e->pos.x = lbl_3_data_18DD4[i * 3];

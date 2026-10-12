@@ -14,20 +14,22 @@
 #include "string.h"
 #include "musyx/musyx.h"
 
-extern u8* lbl_2_bss_1A8248[];
-extern u8* lbl_2_bss_1A824C[];
-extern u8* lbl_2_bss_1A8244[];
-extern u8* lbl_2_bss_1A823C[];
-extern u8* lbl_2_bss_1A8234[];
-extern u8* lbl_2_bss_1A8230[];
-extern u8 lbl_2_bss_1A8250[];
-extern u8 lbl_80361B20[];
-extern u8 lbl_800E877C[];
-extern u8 lbl_8036E548[];
+extern MenuCtx* lbl_2_bss_1A8248[];
+extern MenuData* lbl_2_bss_1A824C[];
+extern MenuProgress* lbl_2_bss_1A8244[];
+extern MenuFlags* lbl_2_bss_1A823C[];
+extern MenuData* lbl_2_bss_1A8234[];
+extern MenuDrawArea* lbl_2_bss_1A8230[];
+extern MenuData lbl_2_bss_1A8250;
+extern MenuProgress lbl_80361B20;
+extern MenuFlags lbl_800E877C;
+#include "main/file_80011640.h" // CharMgr lbl_8036E548
 extern u8 lbl_800EFBA4[];
-extern u8 lbl_800EF808[];
+#include "main/file_80021308.h" // SoundManager
+extern SoundManager lbl_800EF808;
 extern MenuDef lbl_800FEF70[];
-extern Menu0A58Seed lbl_2_data_1F8F0[];
+extern Menu0A58Seed lbl_2_data_205D4[43]; // initial draw slots
+extern s16 lbl_2_data_1FD84[0x100];      // [0..]: per menu entry; [0xE8..]: per page
 extern const f32 lbl_2_rodata_AA8;
 
 extern void fn_2_549B4(void);
@@ -41,9 +43,6 @@ extern void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags);
 extern void fn_8001F228(void);
 extern s32 fn_80021410(void);
 
-#define WORK_S16(off) (*(s16*)(lbl_2_bss_1A824C[0] + (off))) // TODO type
-#define DIRECT_S16(off) (*(s16*)(lbl_2_bss_1A8250 + (off)))   // same memory as WORK_S16
-#define DRAW_U8(off) (lbl_2_bss_1A8234[0][(off)])               // TODO type
 #define MENU_PAD(port) (&((Menu0A58Pad*)&lbl_803C77B8)[(port)])
 
 // .text:0x00054BB0 size:0xDCC
@@ -63,30 +62,30 @@ void fn_2_54BB0(void) {
     s16 v;
     s16 n;
 
-    lbl_2_bss_1A8248[0] = (u8*)starMissionCompletionTracker;
-    lbl_2_bss_1A824C[0] = lbl_2_bss_1A8250;
-    lbl_2_bss_1A8244[0] = lbl_80361B20;
-    lbl_2_bss_1A823C[0] = lbl_800E877C;
-    lbl_2_bss_1A8234[0] = lbl_2_bss_1A8250;
+    lbl_2_bss_1A8248[0] = (MenuCtx*)starMissionCompletionTracker;
+    lbl_2_bss_1A824C[0] = &lbl_2_bss_1A8250;
+    lbl_2_bss_1A8244[0] = &lbl_80361B20;
+    lbl_2_bss_1A823C[0] = &lbl_800E877C;
+    lbl_2_bss_1A8234[0] = &lbl_2_bss_1A8250;
     task = (MenuSceneTask0A58*)lbl_803CC1B8;
-    lbl_2_bss_1A8230[0] = lbl_2_bss_1A8250 + 0x162998;
+    lbl_2_bss_1A8230[0] = &lbl_2_bss_1A8250.drawArea;
 
-    pad = MENU_PAD((s8)lbl_2_bss_1A8250[0x197863]);
+    pad = MENU_PAD(lbl_2_bss_1A8250.port);
     if (pad->kind == 0xC) {
         pad->repeat |= pad->held;
     }
 
     switch (lbl_803CBBCC->step) {
     case 0:
-        memset(lbl_2_bss_1A8250, 0, 0x1978FC);
+        memset(&lbl_2_bss_1A8250, 0, 0x1978FC);
         fn_2_54474();
-        lbl_2_bss_1A824C[0][0x197848] = 1;
+        lbl_2_bss_1A824C[0]->_197848 = 1;
         fn_2_94854(0);
         fn_2_9461C(-1);
         fn_2_94604(0);
         fn_2_93C64();
         g_d_GameSettings.StadiumID = 0;
-        lbl_2_bss_1A824C[0][0x197863] = lbl_8034E9A0.teamPort[0];
+        lbl_2_bss_1A824C[0]->port = lbl_8034E9A0.teamPort[0];
         ((MenuSceneTask0A58*)fn_800B0A5C_insertQueue(fn_2_549B4, 2))->_28 = 0;
         task->_10 = 0;
         fn_8000F4B8(0, -1, -1, -1);
@@ -107,7 +106,7 @@ void fn_2_54BB0(void) {
         position.x = lbl_2_rodata_AA8;
         fn_2_6AB3C(0, &position, lbl_2_rodata_AA8);
         fn_2_72054(0, 0);
-        DRAW_U8(0x162992) = 0;
+        (lbl_2_bss_1A8234[0]->done) = 0;
         lbl_8034E978.menu = 0x5C;
         lbl_8034E978.prevTrack = lbl_8034E978.track;
         lbl_8034E978.track = lbl_800FEF70[0x5C].track;
@@ -115,10 +114,10 @@ void fn_2_54BB0(void) {
         task = fn_800B0A5C_insertQueue(fn_2_5389C, 0);
         task->_1C = 0;
         task->_1E = 0;
-        seed = (Menu0A58Seed*)((u8*)lbl_2_data_1F8F0 + 0xCE4); // TODO type
+        seed = lbl_2_data_205D4;
         i = 43;
         do {
-            entry = &((MenuDrawEntry0A58(*)[864])lbl_2_bss_1A8234[0])[seed->row][seed->column];
+            entry = &lbl_2_bss_1A8234[0]->cells[seed->row][seed->column];
             entry->draw = seed->draw;
             entry->column = seed->column;
             entry->_0A = seed->_06;
@@ -127,43 +126,43 @@ void fn_2_54BB0(void) {
             entry->_10 = seed->_0C;
             seed++;
         } while (--i != 0);
-        DRAW_U8(0x162604) = 1;
-        DRAW_U8(0x162605) = 1;
-        DRAW_U8(0x162606) = 1;
-        DRAW_U8(0x162607) = 1;
-        DRAW_U8(0x16260A) = 1;
-        WORK_S16(0x1976F6) = 0;
-        WORK_S16(0x1976F4) = 0;
+        (lbl_2_bss_1A8234[0]->layerFlags[0][0]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[0][1]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[0][2]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[0][3]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[0][6]) = 1;
+        (lbl_2_bss_1A824C[0]->_1976F6) = 0;
+        (lbl_2_bss_1A824C[0]->_1976F4) = 0;
         lbl_803CBBCC->step = 3;
         break;
     case 3:
         if (lbl_8037169C.done) {
-            DRAW_U8(0x16264A) = 1;
-            DRAW_U8(0x16264B) = 1;
-            DRAW_U8(0x16264C) = 1;
-            *(s16*)&DRAW_U8(0x162600) = 0x10;
+            (lbl_2_bss_1A8234[0]->layerFlags[1][0]) = 1;
+            (lbl_2_bss_1A8234[0]->layerFlags[1][1]) = 1;
+            (lbl_2_bss_1A8234[0]->layerFlags[1][2]) = 1;
+            lbl_2_bss_1A8234[0]->timer = 0x10;
             lbl_803CBBCC->step = 4;
         }
         break;
     case 4:
-        v = (*(s16*)&DRAW_U8(0x162600))--;
+        v = (lbl_2_bss_1A8234[0]->timer)--;
         if (v == 0) {
-            DRAW_U8(0x16264E) = 1;
+            (lbl_2_bss_1A8234[0]->layerFlags[1][4]) = 1;
             lbl_803CBBCC->step = 5;
         }
         break;
     case 5:
-        pad = MENU_PAD((s8)lbl_2_bss_1A8250[0x197863]);
+        pad = MENU_PAD(lbl_2_bss_1A8250.port);
         if (pad->repeat == 1) {
-            DIRECT_S16(0x1976F6) = DIRECT_S16(0x1976F4);
-            WORK_S16(0x1976F4) = (WORK_S16(0x1976F4) + 10) % 11;
+            (lbl_2_bss_1A824C[0]->_1976F6) = (lbl_2_bss_1A824C[0]->_1976F4);
+            (lbl_2_bss_1A824C[0]->_1976F4) = ((lbl_2_bss_1A824C[0]->_1976F4) + 10) % 11;
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else if (pad->repeat == 2) {
-            DIRECT_S16(0x1976F6) = DIRECT_S16(0x1976F4);
-            WORK_S16(0x1976F4) = (WORK_S16(0x1976F4) + 1) % 11;
+            (lbl_2_bss_1A824C[0]->_1976F6) = (lbl_2_bss_1A824C[0]->_1976F4);
+            (lbl_2_bss_1A824C[0]->_1976F4) = ((lbl_2_bss_1A824C[0]->_1976F4) + 1) % 11;
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        down = MENU_PAD((s8)lbl_2_bss_1A824C[0][0x197863])->down;
+        down = MENU_PAD((s8)(u8)lbl_2_bss_1A824C[0]->port)->down;
         if (down & 0x100) {
             lbl_803CBBCC->step = 6;
             sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
@@ -173,87 +172,87 @@ void fn_2_54BB0(void) {
         }
         break;
     case 6:
-        DRAW_U8(0x162835) = 1;
-        DRAW_U8(0x162836) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[8][1]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[8][2]) = 1;
         lbl_803CBBCC->step = 7;
-        *(s16*)&DRAW_U8(0x162600) = 0x10;
+        lbl_2_bss_1A8234[0]->timer = 0x10;
         break;
     case 7:
-        v = (*(s16*)&DRAW_U8(0x162600))--;
+        v = (lbl_2_bss_1A8234[0]->timer)--;
         if (v == 0) {
             lbl_803CBBCC->step = 9;
         }
         break;
     case 8:
-        *(s16*)&DRAW_U8(0x162600) = 0x14;
-        DRAW_U8(0x162834) = 1;
-        DRAW_U8(0x162835) = 1;
-        DRAW_U8(0x162836) = 1;
-        DRAW_U8(0x162838) = 1;
+        lbl_2_bss_1A8234[0]->timer = 0x14;
+        (lbl_2_bss_1A8234[0]->layerFlags[8][0]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[8][1]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[8][2]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[8][4]) = 1;
         lbl_8034E978._05 = 1;
         lbl_803CBBCC->step = 0x10;
         break;
     case 9:
         fn_2_72054(0, 0x11);
-        WORK_S16(0x19772E) = 0xE7;
-        n = ((s16*)((u8*)lbl_2_data_1F8F0 + 0x664))[WORK_S16(0x1976F4)]; // TODO type
-        WORK_S16(0x197700) = n;
-        WORK_S16(0x1976FE) = n;
-        WORK_S16(0x1976FC) = 0;
-        WORK_S16(0x1976FA) = 0;
-        lbl_2_bss_1A824C[0][0x197822] = 0;
-        DRAW_U8(0x16264B) = 1;
-        DRAW_U8(0x16264D) = 1;
-        DRAW_U8(0x162650) = 1;
-        *(s16*)&DRAW_U8(0x162600) = 0x10;
+        (lbl_2_bss_1A824C[0]->_19772E) = 0xE7;
+        n = lbl_2_data_1FD84[0xE8 + (lbl_2_bss_1A824C[0]->_1976F4)];
+        (lbl_2_bss_1A824C[0]->_197700) = n;
+        (lbl_2_bss_1A824C[0]->_1976FE) = n;
+        (lbl_2_bss_1A824C[0]->_1976FC) = 0;
+        (lbl_2_bss_1A824C[0]->_1976FA) = 0;
+        lbl_2_bss_1A824C[0]->_197822 = 0;
+        (lbl_2_bss_1A8234[0]->layerFlags[1][1]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[1][3]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[1][6]) = 1;
+        lbl_2_bss_1A8234[0]->timer = 0x10;
         lbl_803CBBCC->step = 0xA;
         break;
     case 10:
-        v = (*(s16*)&DRAW_U8(0x162600))--;
+        v = (lbl_2_bss_1A8234[0]->timer)--;
         if (v == 0) {
-            DRAW_U8(0x16264F) = 1;
+            (lbl_2_bss_1A8234[0]->layerFlags[1][5]) = 1;
             lbl_803CBBCC->step = 0xC;
         }
         break;
     case 12:
-        pad = MENU_PAD((s8)lbl_2_bss_1A8250[0x197863]);
+        pad = MENU_PAD(lbl_2_bss_1A8250.port);
         if (pad->repeat == 1) {
-            DIRECT_S16(0x1976F6) = DIRECT_S16(0x1976F4);
-            WORK_S16(0x1976F4) = (WORK_S16(0x1976F4) + 10) % 11;
-            WORK_S16(0x197700) = WORK_S16(0x1976FE);
-            WORK_S16(0x1976FC) = WORK_S16(0x1976FA);
-            WORK_S16(0x1976FE) = ((s16*)((u8*)lbl_2_data_1F8F0 + 0x664))[WORK_S16(0x1976F4)];
-            WORK_S16(0x1976FA) = 0;
-            lbl_2_bss_1A824C[0][0x197822] = 0;
+            (lbl_2_bss_1A824C[0]->_1976F6) = (lbl_2_bss_1A824C[0]->_1976F4);
+            (lbl_2_bss_1A824C[0]->_1976F4) = ((lbl_2_bss_1A824C[0]->_1976F4) + 10) % 11;
+            (lbl_2_bss_1A824C[0]->_197700) = (lbl_2_bss_1A824C[0]->_1976FE);
+            (lbl_2_bss_1A824C[0]->_1976FC) = (lbl_2_bss_1A824C[0]->_1976FA);
+            (lbl_2_bss_1A824C[0]->_1976FE) = lbl_2_data_1FD84[0xE8 + (lbl_2_bss_1A824C[0]->_1976F4)];
+            (lbl_2_bss_1A824C[0]->_1976FA) = 0;
+            lbl_2_bss_1A824C[0]->_197822 = 0;
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
-            DRAW_U8(0x1626DC) = 1;
+            (lbl_2_bss_1A8234[0]->layerFlags[3][6]) = 1;
             lbl_803CBBCC->step = 0xF;
         } else if (pad->repeat == 2) {
-            DIRECT_S16(0x1976F6) = DIRECT_S16(0x1976F4);
-            WORK_S16(0x1976F4) = (WORK_S16(0x1976F4) + 1) % 11;
-            WORK_S16(0x197700) = WORK_S16(0x1976FE);
-            WORK_S16(0x1976FC) = WORK_S16(0x1976FA);
-            WORK_S16(0x1976FE) = ((s16*)((u8*)lbl_2_data_1F8F0 + 0x664))[WORK_S16(0x1976F4)];
-            WORK_S16(0x1976FA) = 0;
-            lbl_2_bss_1A824C[0][0x197822] = 0;
+            (lbl_2_bss_1A824C[0]->_1976F6) = (lbl_2_bss_1A824C[0]->_1976F4);
+            (lbl_2_bss_1A824C[0]->_1976F4) = ((lbl_2_bss_1A824C[0]->_1976F4) + 1) % 11;
+            (lbl_2_bss_1A824C[0]->_197700) = (lbl_2_bss_1A824C[0]->_1976FE);
+            (lbl_2_bss_1A824C[0]->_1976FC) = (lbl_2_bss_1A824C[0]->_1976FA);
+            (lbl_2_bss_1A824C[0]->_1976FE) = lbl_2_data_1FD84[0xE8 + (lbl_2_bss_1A824C[0]->_1976F4)];
+            (lbl_2_bss_1A824C[0]->_1976FA) = 0;
+            lbl_2_bss_1A824C[0]->_197822 = 0;
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
-            DRAW_U8(0x1626DC) = 1;
+            (lbl_2_bss_1A8234[0]->layerFlags[3][6]) = 1;
             lbl_803CBBCC->step = 0xF;
         } else if (pad->repeat == 8 || pad->repeat == 4) {
-            DIRECT_S16(0x197700) = DIRECT_S16(0x1976FE);
-            WORK_S16(0x1976FC) = WORK_S16(0x1976FA);
-            fn_2_46D94(&WORK_S16(0x1976FA), &WORK_S16(0x1976FE), WORK_S16(0x19772E), 5, 9);
-            WORK_S16(0x1976F4) = fn_2_5597C();
-            lbl_2_bss_1A824C[0][0x197822] = 0;
-            DRAW_U8(0x1626DC) = 1;
+            (lbl_2_bss_1A824C[0]->_197700) = (lbl_2_bss_1A824C[0]->_1976FE);
+            (lbl_2_bss_1A824C[0]->_1976FC) = (lbl_2_bss_1A824C[0]->_1976FA);
+            fn_2_46D94(&(lbl_2_bss_1A824C[0]->_1976FA), &(lbl_2_bss_1A824C[0]->_1976FE), (lbl_2_bss_1A824C[0]->_19772E), 5, 9);
+            (lbl_2_bss_1A824C[0]->_1976F4) = fn_2_5597C();
+            lbl_2_bss_1A824C[0]->_197822 = 0;
+            (lbl_2_bss_1A8234[0]->layerFlags[3][6]) = 1;
             lbl_803CBBCC->step = 0xF;
         } else {
             down = pad->down;
             if ((down & 0x100) &&
-                (n = ((s16*)((u8*)lbl_2_data_1F8F0 + 0x494))[DIRECT_S16(0x1976FA) + DIRECT_S16(0x1976FE)]) >= 2) {
-                lbl_2_bss_1A8250[0x197822] = ((s8)lbl_2_bss_1A8250[0x197822] + 1) % n;
+                (n = lbl_2_data_1FD84[(lbl_2_bss_1A824C[0]->_1976FA) + (lbl_2_bss_1A824C[0]->_1976FE)]) >= 2) {
+                *(u8*)&lbl_2_bss_1A8250._197822 = ((s8)lbl_2_bss_1A8250._197822 + 1) % n;
                 sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-                DRAW_U8(0x1627AE) = 1;
+                (lbl_2_bss_1A8234[0]->layerFlags[6][6]) = 1;
             } else if (down & 0x200) {
                 lbl_803CBBCC->step = 0xD;
                 sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
@@ -261,20 +260,20 @@ void fn_2_54BB0(void) {
         }
         break;
     case 13:
-        DRAW_U8(0x162835) = 1;
-        DRAW_U8(0x162837) = 1;
-        DRAW_U8(0x162839) = 1;
-        DRAW_U8(0x16283A) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[8][1]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[8][3]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[8][5]) = 1;
+        (lbl_2_bss_1A8234[0]->layerFlags[8][6]) = 1;
         fn_2_72054(0, 0x12);
-        *(s16*)&DRAW_U8(0x162600) = 0x10;
+        lbl_2_bss_1A8234[0]->timer = 0x10;
         lbl_803CBBCC->step = 0xE;
         break;
     case 14:
-        v = (*(s16*)&DRAW_U8(0x162600))--;
+        v = (lbl_2_bss_1A8234[0]->timer)--;
         if (v == 0) {
-            DRAW_U8(0x16264B) = 1;
-            DRAW_U8(0x16264C) = 1;
-            *(s16*)&DRAW_U8(0x162600) = 0x10;
+            (lbl_2_bss_1A8234[0]->layerFlags[1][1]) = 1;
+            (lbl_2_bss_1A8234[0]->layerFlags[1][2]) = 1;
+            lbl_2_bss_1A8234[0]->timer = 0x10;
             lbl_803CBBCC->step = 4;
         }
         break;
@@ -282,7 +281,7 @@ void fn_2_54BB0(void) {
         lbl_803CBBCC->step = 0xC;
         break;
     case 16:
-        v = (*(s16*)&DRAW_U8(0x162600))--;
+        v = (lbl_2_bss_1A8234[0]->timer)--;
         if (v == 0) {
             fn_80062948();
             changeScene(3, 6);
@@ -291,24 +290,24 @@ void fn_2_54BB0(void) {
         break;
     case 17:
         if (lbl_8037169C._13) {
-            lbl_8036E548[0x307A] = 0;
-            DRAW_U8(0x162992) = 1;
-            lbl_2_bss_1A8230[0][0x32A86] = 1;
+            lbl_8036E548._307A = 0;
+            (lbl_2_bss_1A8234[0]->done) = 1;
+            lbl_2_bss_1A8230[0]->_32A86 = 1;
             lbl_803CBBCC->step = 0x12;
         }
         break;
     case 18:
-        lbl_2_bss_1A8250[0x1972BC] = 1;
+        lbl_2_bss_1A8250._1972BC = 1;
         fn_2_4E7EC();
         fn_8001F228();
         fn_80021410();
-        fn_800ACFB0(*(void**)(lbl_800EF808 + 0x14)); // TODO type
+        fn_800ACFB0(lbl_800EF808.groups[4]);
         fn_80035B50(0xA);
         if (lbl_80366B18.tables[2] != NULL) {
             fn_800ACFB0(lbl_80366B18.tables[2]);
             lbl_80366B18.tables[2] = NULL;
         }
-        lbl_2_bss_1A823C[0][0x34] = 0;
+        lbl_2_bss_1A823C[0]->_34 = 0;
         fn_2_11A0(5);
         break;
     case 19:
@@ -322,12 +321,12 @@ void fn_2_54BB0(void) {
         }
         break;
     }
-    if (lbl_8036E548[0x307A] == 2) {
-        if (lbl_2_bss_1A8248[0][0x44F2] != 4) {
+    if (lbl_8036E548._307A == 2) {
+        if (lbl_2_bss_1A8248[0]->_44F2 != 4) {
             fn_2_68E68();
         }
         fn_2_47FF8();
-        if (lbl_2_bss_1A8248[0][0x44F2] != 4) {
+        if (lbl_2_bss_1A8248[0]->_44F2 != 4) {
             fn_2_47CFC();
         }
     }

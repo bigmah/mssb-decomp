@@ -2,6 +2,7 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/GameSettings.h"
 #include "game/rep_17E0.h"
+#include "main/file_80069BDC.h" // gChallengeState
 
 extern s32 rand(void);
 
@@ -213,7 +214,7 @@ s32 fn_3_9D374(void) {
                 lbl_3_common_bss_32A94._2 = 0xC;
             }
         } else if (earned == 1) {
-            s8 zone = *(s8*)&g_Ball.ballZoneWhenCaught; // TODO type: read as signed here
+            s8 zone = g_Ball.ballZoneWhenCaught;
             if (zone >= 0 && zone <= 1) {
                 if (diff != 0 && flag == 0) {
                     lbl_3_common_bss_32A94._0 = 9;
@@ -309,7 +310,7 @@ void fn_3_9D6A4(void) {
                                 s16 base;
                                 lbl_3_common_bss_32A94.plays[i].fielder = g_Ball.fielderWBallIndex;
                                 lbl_3_common_bss_32A94.plays[i].outs = g_Strikes.outs - g_Strikes.storedOuts;
-                                base = g_Fielders[g_Ball.fielderWBallIndex]._18C;
+                                base = g_Fielders[g_Ball.fielderWBallIndex].coveringBase;
                                 if (base >= 0 && base <= 3) {
                                     switch (base) {
                                     case 0:
@@ -578,14 +579,13 @@ s32 fn_3_9E834(void) {
     s32 i;
     if (g_d_GameSettings.exhibitionMatchInd == 0) {
         for (i = 0; i < 54; i++) {
-            // TODO type: starMissionCompletionTracker is 0x4508 bytes, header only covers the first 0xAF8
-            if (((u8*)starMissionCompletionTracker)[0x43D6 + i] != 0) {
+            if (gChallengeState._43D6[i] != 0) {
                 return 1;
             }
         }
     } else {
         for (i = 0; i < 54; i++) {
-            if (lbl_80361B20[i] != 0) {
+            if (lbl_80361B20.unlocked[i] != 0) {
                 return 1;
             }
         }

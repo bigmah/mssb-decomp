@@ -7,13 +7,15 @@
 #define REP_HEADER_FN repHeader_menus_0010
 #include "header_rep_inline.h"
 #include "menus/rep_0010.h"
+#include "static/GameSettings.h"
 #include "Dolphin/GX/GXPixel.h"
 #include "Dolphin/GX/GXTev.h"
 #include "Dolphin/OS/OSUtil.h"
 #include "musyx/musyx.h"
 #include "main/file_80008E00.h"
 #include "menus/auto_00_00000D08_text.h"
-extern u8 lbl_803C6CF8[]; // TODO type: ARAMLoader (main/file_800A6870.h); idle at 0x715
+#include "main/aramloader.h"
+extern ARAMLoader lbl_803C6CF8;
 
 extern void fn_800A7D4C(s32, void*);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
@@ -35,27 +37,19 @@ extern void fn_80062744(void);
 extern void fn_8001E474(void);
 extern s32 fn_80036C88(s32*, s32*);
 extern void fn_800B0D28(s32*);
-extern u8 lbl_800E877C[]; // TODO type: backing storage for the SceneFlow at lbl_803CBBCC
+extern MenuFlags lbl_800E877C; // the SceneFlow lbl_803CBBCC points at
 extern u8* lbl_803CC1B8;
 extern u32 lbl_803CB750;
 extern void fn_8004153C(void);
 extern void fn_800A97D0(s32, s32);
-extern u8 lbl_8034E9A0[];
-extern u8 lbl_803C66B0[];
+#include "main/charsel_state_type.h"
+extern CharSelectState lbl_8034E9A0;
 extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void fn_800216F8(u8 group, s32 (*callback)(u8* state));
-extern u8 g_d_GameSettings[];
 extern s32 fn_80022A24(u8, u8);
 extern void fn_800229CC(void);
 
-typedef struct {
-    u8 pad0[2];
-    u16 held;
-    u16 held4;
-    u8 pad6[0x1A];
-} PadEntry;
-extern u8* lbl_803CBBCC[];
-extern PadEntry lbl_803C77B8[];
+extern MenuPad lbl_803C77B8[];
 // Layer setup for fn_80036C88 (fn_2_0's GX setup is the layer callback in lbl_2_data_C0).
 s32 lbl_2_data_0[0x30] = {
     0xA40, 0, 0, 0, 0x900, 0x5E60, 0x4DE0, 0x2700, 0, 0, 0, 0, 0, 0x400, 0x8C0, 0x20, 0x6A0,
@@ -67,13 +61,13 @@ u32 lbl_2_data_C8[4] = {0, 0x46E0, 0x06CF8800, 0x46E0};
 // .bss 0x0..0x18 (only the queue pointer is used). mwcc emits file statics in
 // reverse order of definition.
 static u8 lbl_2_bss_8[0x10];
-static u8* lbl_2_bss_4; // command queue task (fn_2_374)
+static MenuCmdQueue* lbl_2_bss_4; // command queue task (fn_2_374)
 static u32 lbl_2_bss_0;
 
 // Common block 0xB644..0xFC68: lbl_2_bss_B644 is used here, the rest by other units.
 // mwcc lists unreferenced commons in reverse order of definition.
-u8 lbl_2_bss_F468[0x800];
-u8 lbl_2_bss_F410[0x58];
+MenuTeamSel lbl_2_bss_F468;
+MenuSelVars lbl_2_bss_F410;
 u8 lbl_2_bss_E8CC[0xB44];
 u8 lbl_2_bss_DCE8[0xBE4];
 u8 lbl_2_bss_D988[0x360]; // unreferenced
@@ -86,8 +80,8 @@ u32 lbl_2_bss_B644;
 void fn_2_A14(void) {
     fn_800B0A5C_insertQueue(fn_2_160, 0x1000);
     fn_800B0A5C_insertQueue(fn_2_110, 0xF000);
-    *(u16*)(lbl_803CBBCC[0] + 4) = 0;
-    *(u16*)(lbl_803CBBCC[0] + 2) = 0;
+    lbl_803CBBCC->step = 0;
+    lbl_803CBBCC->scene = 0;
 }
 
 // fn_2_978, size:0x9C
@@ -116,35 +110,35 @@ void fn_2_978(void) {
 
 // fn_2_940, size:0x38
 void fn_2_940(void) {
-    if (*(u16*)lbl_803CBBCC[0] == 5) {
+    if (lbl_803CBBCC->_00 == 5) {
         REMOVE_QUEUE_NOARG();
     }
 }
 
 // fn_2_794, size:0x1AC
 void fn_2_794(void) {
-    u8* task = lbl_803CC1B8;
-    switch (*(u16*)lbl_803CBBCC[0]) {
+    MenuTask* task = (MenuTask*)lbl_803CC1B8;
+    switch (lbl_803CBBCC->_00) {
     case 0:
-        *(s16*)(task + 0x10) = 0;
+        task->_10 = 0;
         fn_800B0A5C_insertQueue(fn_2_160, 0x1000);
         fn_800B0A5C_insertQueue(fn_2_110, 0xF000);
-        *(u16*)(lbl_803CBBCC[0] + 4) = 0;
-        *(u16*)(lbl_803CBBCC[0] + 2) = 0;
+        lbl_803CBBCC->step = 0;
+        lbl_803CBBCC->scene = 0;
         fn_800B0A5C_insertQueue(fn_2_940, 0x100);
-        (*(u16*)lbl_803CBBCC[0])++;
+        (lbl_803CBBCC->_00)++;
         break;
     case 1:
-        *(u16*)lbl_803CBBCC[0] = 3;
+        lbl_803CBBCC->_00 = 3;
         break;
     case 3:
         fn_2_978(); // inlined
-        *(u16*)lbl_803CBBCC[0] = 4;
+        lbl_803CBBCC->_00 = 4;
     case 4:
-        if (*(s16*)(task + 0x10) != 0) {
-            *(u16*)lbl_803CBBCC[0] = 5;
+        if (task->_10 != 0) {
+            lbl_803CBBCC->_00 = 5;
     case 5:
-            *(s16*)(*(u8**)(task + 0xC) + 0x10) = *(s16*)(task + 0x10);
+            task->parent->_10 = task->_10;
             REMOVE_QUEUE_NOARG();
         }
         break;
@@ -153,14 +147,14 @@ void fn_2_794(void) {
 
 // fn_2_708, size:0x8C
 void fn_2_708(void) {
-    u8* o = lbl_803CC1B8;
+    MenuBootTask* o = (MenuBootTask*)lbl_803CC1B8;
     lbl_803CB750 += OSGetTick();
     fn_8004153C();
     fn_800A97D0(0x10, 0x1E);
-    *(u16*)lbl_803CBBCC[0] = 0;
-    *(u16*)(o + 0x14) = 0;
+    lbl_803CBBCC->_00 = 0;
+    o->state = 0;
     fn_800B0A5C_insertQueue(fn_2_664, 0x1000);
-    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_554;
+    (*(MenuBootTask**)&lbl_803CC1B8)->func = fn_2_554;
 }
 
 // fn_2_664, size:0xA4
@@ -168,38 +162,38 @@ void fn_2_664(void) {
     s32 i;
     for (i = 0; i < 4; i++) {
         s8 a;
-        if (lbl_803C66B0[i + 0x55] == 1 || (a = lbl_8034E9A0[i + 0x46F8]) == -1) {
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x472C) = 0;
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x472E) = 0;
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x4730) = 0;
+        if (lbl_803C66B0.active[i] == 1 || (a = lbl_8034E9A0.ports[i]) == -1) {
+            lbl_8034E9A0.input[i].held = 0;
+            lbl_8034E9A0.input[i].pressed = 0;
+            lbl_8034E9A0.input[i].repeat = 0;
         } else {
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x472C) = *(u16*)((u8*)lbl_803C77B8 + (s8)lbl_8034E9A0[i + 0x46F8] * 32);
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x472E) = *(u16*)((u8*)lbl_803C77B8 + (s8)lbl_8034E9A0[i + 0x46F8] * 32 + 2);
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x4730) = *(u16*)((u8*)lbl_803C77B8 + (s8)lbl_8034E9A0[i + 0x46F8] * 32 + 4);
+            lbl_8034E9A0.input[i].held = lbl_803C77B8[(s8)lbl_8034E9A0.ports[i]].held;
+            lbl_8034E9A0.input[i].pressed = lbl_803C77B8[(s8)lbl_8034E9A0.ports[i]].down;
+            lbl_8034E9A0.input[i].repeat = lbl_803C77B8[(s8)lbl_8034E9A0.ports[i]].repeat;
         }
     }
 }
 
 // fn_2_554, size:0x110
 void fn_2_554(void) {
-    u8* o = lbl_803CC1B8;
-    switch (*(u16*)(o + 0x14)) {
+    MenuBootTask* o = (MenuBootTask*)lbl_803CC1B8;
+    switch (o->state) {
     case 0:
         lbl_2_bss_B644 = OSGetTick();
         fn_800216F8(2, fn_2_10FC);
-        *(u16*)(o + 0x14) = 1;
+        o->state = 1;
     case 1:
-        if (*(s16*)(*(u8**)&lbl_803CC1B8 + 0x10) != 0) {
+        if ((*(MenuBootTask**)&lbl_803CC1B8)->_10 != 0) {
             sndVolume(0x7F, 0xA, 0xFF);
-            *(u16*)(o + 0x14) = 2;
+            o->state = 2;
     case 2:
-            ARAMTransfer(lbl_2_data_C8, lbl_8034E9A0, 1, 0);
-            *(u16*)(o + 0x14) = 3;
+            ARAMTransfer(lbl_2_data_C8, &lbl_8034E9A0, 1, 0);
+            o->state = 3;
         }
         break;
     case 3:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
-            *(void**)o = fn_2_794;
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
+            o->func = fn_2_794;
             lbl_2_bss_4 = fn_800B0A5C_insertQueue(fn_2_374, 0x8000);
         }
         break;
@@ -207,41 +201,41 @@ void fn_2_554(void) {
 }
 
 // fn_2_510, size:0x44
-u8 fn_2_510(u8* q) {
-    if (q[0x16] == q[0x15]) {
+u8 fn_2_510(MenuCmdQueue* q) {
+    if (q->tail == q->head) {
         return 0;
     }
-    q[0x16] = (q[0x16] + 1) % 32;
-    return q[q[0x16] + 0x17];
+    q->tail = (q->tail + 1) % 32;
+    return q->cmds[q->tail];
 }
 
 // fn_2_4C4, size:0x4C
-s32 fn_2_4C4(u8* q, s8 value) {
-    u8 n = (q[0x15] + 1) % 32;
-    if (n == q[0x16]) {
+s32 fn_2_4C4(MenuCmdQueue* q, s8 value) {
+    u8 n = (q->head + 1) % 32;
+    if (n == q->tail) {
         return 0;
     }
-    q[0x15] = n;
-    q[q[0x15] + 0x17] = value;
+    q->head = n;
+    q->cmds[q->head] = value;
     return 1;
 }
 
 // fn_2_374, size:0x150
 void fn_2_374(void) {
-    u8* o = lbl_803CC1B8;
+    MenuCmdQueue* o = (MenuCmdQueue*)lbl_803CC1B8;
     u8 v;
-    switch (o[0x14]) {
+    switch (o->state) {
     case 0:
-        o[0x14] = fn_2_510(o);
+        o->state = fn_2_510(o);
         break;
     case 1:
-        if (fn_80022A24(g_d_GameSettings[9], g_d_GameSettings[0xA]) != 0) {
+        if (fn_80022A24(g_d_GameSettings.StadiumID, g_d_GameSettings.miniGameStadiumIndicator) != 0) {
             v = fn_2_510(o);
-            o[0x14] = v;
+            o->state = v;
             if (v == 2) {
     case 2:
                 fn_800229CC();
-                o[0x14] = fn_2_510(o);
+                o->state = fn_2_510(o);
             }
         }
         break;
@@ -250,21 +244,21 @@ void fn_2_374(void) {
 
 // fn_2_328, size:0x4C
 void fn_2_328(void) {
-    u8* q = lbl_2_bss_4;
-    u8 n = (q[0x15] + 1) % 32;
-    if (n != q[0x16]) {
-        q[0x15] = n;
-        q[q[0x15] + 0x17] = 1;
+    MenuCmdQueue* q = lbl_2_bss_4;
+    u8 n = (q->head + 1) % 32;
+    if (n != q->tail) {
+        q->head = n;
+        q->cmds[q->head] = 1;
     }
 }
 
 // fn_2_2DC, size:0x4C
 void fn_2_2DC(void) {
-    u8* q = lbl_2_bss_4;
-    u8 n = (q[0x15] + 1) % 32;
-    if (n != q[0x16]) {
-        q[0x15] = n;
-        q[q[0x15] + 0x17] = 2;
+    MenuCmdQueue* q = lbl_2_bss_4;
+    u8 n = (q->head + 1) % 32;
+    if (n != q->tail) {
+        q->head = n;
+        q->cmds[q->head] = 2;
     }
 }
 
@@ -278,18 +272,18 @@ s32 fn_2_1A8(u8 idx, u8 kind, u16 mask) {
     s32 r = -1;
     switch (kind) {
     case 0:
-        v = *(u16*)((u8*)lbl_803C77B8 + idx * 32);
+        v = lbl_803C77B8[idx].held;
         break;
     case 1:
-        v = ((u16*)(lbl_803CBBCC[0] + 0xC))[idx];
+        v = lbl_803CBBCC->padHeld[idx];
         break;
     case 2:
-        v = lbl_803C77B8[idx].held4;
+        v = lbl_803C77B8[idx].repeat;
         break;
     }
     v &= mask;
     if (kind == 1) {
-        lbl_803CBBCC[0][0x10] |= 1 << idx;
+        lbl_803CBBCC->_10 |= 1 << idx;
     }
     if (v & 0x100) {
         r = 4;
@@ -313,18 +307,18 @@ s32 fn_2_1A8(u8 idx, u8 kind, u16 mask) {
 
 // fn_2_160, size:0x48
 void fn_2_160(void) {
-    *(u16*)(lbl_803CBBCC[0] + 0xC) |= *(u16*)((u8*)lbl_803C77B8 + 2);
-    *(u16*)(lbl_803CBBCC[0] + 0xE) |= *(u16*)((u8*)lbl_803C77B8 + 0x22);
-    lbl_803CBBCC[0][0x10] = 0;
+    lbl_803CBBCC->padHeld[0] |= lbl_803C77B8[0].down;
+    lbl_803CBBCC->padHeld[1] |= lbl_803C77B8[1].down;
+    lbl_803CBBCC->_10 = 0;
 }
 
 // fn_2_110, size:0x50
 void fn_2_110(void) {
     u8 i;
     for (i = 0; i < 2; i++) {
-        u8* p = lbl_803CBBCC[0];
-        if (p[0x10] & (1 << (u8)i)) {
-            *(u16*)(p + i * 2 + 0xC) = 0;
+        SceneFlow* p = lbl_803CBBCC;
+        if (p->_10 & (1 << (u8)i)) {
+            p->padHeld[i] = 0;
         }
     }
 }
@@ -332,8 +326,8 @@ void fn_2_110(void) {
 // _prolog, size:0x88
 void _prolog(void) {
     s32* layers;
-    lbl_803CBBCC[0] = lbl_800E877C;
-    *(u16*)(lbl_800E877C + 2) = 0; // TODO type: SceneFlow.scene
+    lbl_803CBBCC = (SceneFlow*)&lbl_800E877C; // MenuFlags starts with a SceneFlow
+    lbl_800E877C.scene = 0;
     fn_800A7D4C(0, &lbl_2_data_C0);
     fn_800B0A5C_insertQueue(fn_2_708, 0x8000);
     fn_80062744();

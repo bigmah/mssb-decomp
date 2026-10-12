@@ -14,6 +14,8 @@
 // (head lbl_803CBC84).
 
 
+struct ActorObject;
+
 typedef struct Particle {
     /* 0x00 */ struct Particle* next;
     /* 0x04 */ Vec pos;
@@ -66,6 +68,11 @@ typedef struct Particle {
             /* 0x1C */ s16 phase1; // frames of the first phase
             /* 0x1E */ s16 life0;
         } tE;
+        struct {
+            /* 0x10 */ f32* pos; // followed position (game.rel rep_3880)
+            /* 0x14 */ f32* rot; // followed rotation, degrees
+            /* 0x18 */ s16 id;   // owner id (fn_3_154238 kills by id)
+        } follow;
         struct {
             /* 0x10 */ f32 dSizeY1;
             /* 0x14 */ f32 dSizeY2;
@@ -169,6 +176,27 @@ typedef struct Emitter {
             /* 0x3C */ s32 texIndex;
             /* 0x40 */ u16 unk40;
         } t10;
+        struct {
+            /* 0x18 */ struct ActorObject* obj; // actor whose bones the particles follow (game.rel rep_3880)
+        } follow;
+        struct {
+            /* 0x18 */ Vec origin; // game.rel rep_3880 sweep (fn_3_14B53C)
+            /* 0x24 */ Vec pos;
+            /* 0x30 */ f32 len;
+            /* 0x34 */ s16 total;
+            /* 0x36 */ s16 left;
+        } sweep;
+        struct {
+            /* 0x18 */ s32 index; // game.rel rep_3880 (fn_3_157AC4)
+            /* 0x1C */ s32 count;
+        } seq;
+        struct {
+            /* 0x18 */ s32 _18;
+            /* 0x1C */ u8 _1C[4];
+            /* 0x20 */ void* owner; // game: the stadium object the burst belongs to (sta_c2)
+            /* 0x24 */ u8 _24;
+            /* 0x25 */ u8 drawn;    // game: set once drawn this frame (sta_c2 fn_3_CDFA4)
+        } game;
         /* 0x18 */ f32 f[0x12]; // per-type parameters, see fn_80027918
         /* 0x18 */ u8 raw[0x48];
     } u;
@@ -233,31 +261,7 @@ typedef struct ParticleParamsB {
     /* 0x4C */ u32 color;
 } ParticleParamsB;
 
-// Spawn parameters of the type-5 emitters (ring/burst variants). Fixed
-// point x100000 where floats are meant; the meaning of most words depends
-// on the init function.
-typedef struct ParticleParams5 {
-    /* 0x00 */ TexArchive* tex;
-    /* 0x04 */ s32 texIndex;
-    /* 0x08 */ s32 count;
-    /* 0x0C */ s32 unkC;
-    /* 0x10 */ s32 unk10;
-    /* 0x14 */ s32 unk14;
-    /* 0x18 */ s32 unk18;
-    /* 0x1C */ s32 unk1C;
-    /* 0x20 */ s32 unk20;
-    /* 0x24 */ s32 unk24;
-    /* 0x28 */ s32 unk28;
-    /* 0x2C */ s32 unk2C;
-    /* 0x30 */ s32 unk30;
-    /* 0x34 */ s32 unk34;
-    /* 0x38 */ s32 unk38;
-    /* 0x3C */ s32 unk3C;
-    /* 0x40 */ u32 unk40;
-    /* 0x44 */ s32 unk44;
-    /* 0x48 */ s32 unk48;
-    /* 0x4C */ s32 unk4C;
-} ParticleParams5;
+#include "main/particle_params5.h" // ParticleParams5
 
 // Spawn parameters of the beam emitter (type 8): count pairs of particles
 // placed along a direction. Fixed point x100000.

@@ -38,7 +38,7 @@ void fn_3_B9D68(void* names, s32 n, void** files, u32* out);
 extern StadiumObjList lbl_3_common_bss_350E4;
 extern PiranhaSpot lbl_3_data_18ED0[];
 extern PiranhaFielder g_Fielders[9];
-extern u8 lbl_3_data_19004[];             // TODO type: file name table for fn_3_B9D68
+extern u8 lbl_3_data_19004[];             // file kinds for fn_3_B9D68
 extern u16 lbl_3_data_81DC[];             // per stadium: crowd sound id base
 extern MinigameSoundParams lbl_3_data_8404[];
 extern MinigameSoundParams lbl_3_data_84B8[];
@@ -200,15 +200,12 @@ void fn_3_E2118(s32 idx) {
 // .text:0x000E22A4 size:0x80 mapped:0x80721338
 // Before drawing: pick the texture frame (blink while rising or sinking).
 void fn_3_E22A4(PiranhaPlant* p) {
-    u8* d = (u8*)p->actorObj->actor->pal; // TODO type: display data chain down to the material
+    // first display state of the first object: its setting holds the texture frame
     u8 st;
     u8 v;
-    u32* r;
-    d = *(u8**)(d + 0x10);
-    d = *(u8**)d;
-    d = *(u8**)(d + 0x10);
-    r = *(u32**)(d + 4);
-    r[1] &= ~0x1FFF;
+    DisplayStateList* r;
+    r = p->actorObj->actor->pal->descriptorArray[0].dispObj->displayData->displayStateList;
+    r->setting &= ~0x1FFF;
     st = p->state;
     if (st != 0) {
         v = p->sleepy + 1;
@@ -217,7 +214,7 @@ void fn_3_E22A4(PiranhaPlant* p) {
                 v = 0;
             }
         }
-        r[1] |= v;
+        r->setting |= v;
     }
 }
 
@@ -759,7 +756,7 @@ void fn_3_E48D0(PiranhaPlant* p) {
 
 // .text:0x000E4A38 size:0x1B0 mapped:0x80723ACC
 // Bounding box of a display list's vertices (the result is not used).
-void fn_3_E4A38(Mtx m, u8* b) {
+void fn_3_E4A38(Mtx m, VtxBatchSet* b) {
     Vec sp14;
     Vec sp8;
     int n;
@@ -769,23 +766,23 @@ void fn_3_E4A38(Mtx m, u8* b) {
     f32 minx, miny, minz, maxx, maxy, maxz;
     minz = miny = minx = lbl_3_rodata_2B2C;
     maxz = maxy = maxx = lbl_3_rodata_2B30;
-    p = *(u8**)(b + 8); // TODO type: vertex batch list
+    p = b->batches;
     for (;;) {
-        cnt = *(u16*)(p + 2);
+        cnt = ((VtxBatchHdr*)p)->count;
         if (cnt == 0) break;
         t = cnt * 3;
-        if (p[1] != 0) {
+        if (((VtxBatchHdr*)p)->strip != 0) {
             t = cnt + 2;
         }
         n = t;
-        p += 4;
+        p += sizeof(VtxBatchHdr);
         do {
             if (lbl_3_bss_AE01 == 0) {
-                PSMTXMultVec(m, (Vec*)p, &sp14);
+                PSMTXMultVec(m, &((VtxBatchVtx*)p)->pos, &sp14);
             } else {
-                PSVECScale((Vec*)p, 1.0f, &sp14);
+                PSVECScale(&((VtxBatchVtx*)p)->pos, 1.0f, &sp14);
             }
-            p += 0x10;
+            p += sizeof(VtxBatchVtx);
             if (minx > sp14.x) minx = sp14.x;
             if (miny > sp14.y) miny = sp14.y;
             if (minz > sp14.z) minz = sp14.z;

@@ -27,7 +27,7 @@ static SceneTask* lbl_2_bss_B2C0; // confirm dialog task (fn_8006C0D0)
 #include "menus/debug_menu_data.h"
 #include "menus/menu_asset.h"
 
-// ARAM file entries; the same table is in several other units' .data. TODO type
+// ARAM file entries; the same table is in several other units' .data.
 static MenuAsset menuAssetTable[16] = {
     {0x0000040B, 0x4037CF5C, 0x18B3A800, 0x00208AF0},
     {0x0000040B, 0x400ADFFC, 0x18AEE800, 0x0004BAB0},

@@ -124,7 +124,25 @@ void fn_3_E45F0(PiranhaPlant* p);
 void fn_3_E4658(PiranhaPlant* p);
 void fn_3_E4760(PiranhaPlant* p);
 void fn_3_E48D0(PiranhaPlant* p);
-void fn_3_E4A38(Mtx m, u8* b);
+// Vertex batch stream read by fn_3_E4A38: each batch is a VtxBatchHdr followed by its
+// vertices (VtxBatchVtx); a batch with count 0 ends the stream.
+typedef struct VtxBatchHdr {
+    /*0x0*/ u8 _0;
+    /*0x1*/ u8 strip; // nonzero: count + 2 vertices, else count * 3
+    /*0x2*/ u16 count;
+} VtxBatchHdr;
+
+typedef struct VtxBatchVtx {
+    /*0x00*/ Vec pos;
+    /*0x0C*/ u8 _0C[4];
+} VtxBatchVtx; // size: 0x10
+
+typedef struct VtxBatchSet {
+    /*0x0*/ u8 _0[8];
+    /*0x8*/ u8* batches; // VtxBatchHdr / VtxBatchVtx stream
+} VtxBatchSet;
+
+void fn_3_E4A38(Mtx m, VtxBatchSet* b);
 void* fn_3_E4BE8(s32 idx, Mtx m);
 void fn_3_E4CB0(s32* group, s32* obj);
 void fn_3_E4EF4(void);

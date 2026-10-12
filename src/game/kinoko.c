@@ -2,46 +2,74 @@
 #include "header_rep_data.h"
 #include "Dolphin/GX/GXFifo.h"
 #include "static/GameSettings.h"
+#include "static/Camera.h"
+#include "Dolphin/GX/GXTypes.h"
+#include "main/file_80008E00.h" // lbl_80366158
+#include "game/UnknownHomes_Game.h" // g_Minigame
 #pragma dont_inline on
 
+// One mushroom-ribbon segment (0x2C bytes).
+typedef struct KinokoSeg {
+    /*0x00*/ Vec pos;
+    /*0x0C*/ Vec edgeA;     // pos + side * lbl_3_rodata_4038 (fn_3_169E70)
+    /*0x18*/ Vec edgeB;     // pos + side * lbl_3_rodata_403C
+    /*0x24*/ GXColor color; // a fades along the ribbon
+    /*0x28*/ u8 colorFrom;  // lbl_3_data_2A308 indices blended by fn_3_16B5B4
+    /*0x29*/ u8 colorTo;
+    /*0x2A*/ u8 active;
+    /*0x2B*/ u8 _2B;
+} KinokoSeg; // size: 0x2C
+
+// lbl_3_data_28928: the mushroom ribbon effect.
+typedef struct KinokoState {
+    /*0x0000*/ KinokoSeg ribbon[6][25]; // [0] is the head of each ribbon
+    /*0x19C8*/ u8 _19C8[0x19D4 - 0x19C8];
+    /*0x19D4*/ s32 tick;
+    /*0x19D8*/ u8 _19D8[0x19DC - 0x19D8];
+    /*0x19DC*/ s8 charId;
+    /*0x19DD*/ u8 enabled;
+    /*0x19DE*/ u8 _19DE[2];
+} KinokoState; // size: 0x19E0
+
+// lbl_3_bss_BA00: the texture the mushroom aura currently uses (one of lbl_3_bss_BA08's two).
 typedef struct {
-    u8* buf;
-    void* tex;
-    s32 cnt;
+    /*0x0*/ u8* buf;      // KinokoTex.img0 or img1
+    /*0x4*/ GXTexObj* tex; // KinokoTex.tex0 or tex1
 } KinokoCtl;
+// lbl_3_bss_BA08 (right after lbl_3_bss_BA00): frame counter and the two 4x4 IA8 aura textures.
+typedef struct {
+    /*0x00*/ s32 frame;
+    /*0x04*/ GXTexObj tex1;
+    /*0x24*/ GXTexObj tex0;
+    /*0x44*/ u8 _44[0x58 - 0x44];
+    /*0x58*/ u8 img1[0x40]; // 32-byte aligned
+    /*0x98*/ u8 img0[0x40];
+} KinokoTex; // size: 0xD8
 extern KinokoCtl lbl_3_bss_BA00;
-extern s32 lbl_3_bss_BA08[];
-extern u8 lbl_80366158[];
+extern KinokoTex lbl_3_bss_BA08;
+// The original reaches lbl_3_bss_BA08's members as offsets from lbl_3_bss_BA00 (the two are
+// adjacent in .bss); the port names them.
+#if NONMATCHING
+#define KINOKO_FRAME(c) (lbl_3_bss_BA08.frame)
+#define KINOKO_TEX0(c) (&lbl_3_bss_BA08.tex0)
+#define KINOKO_TEX1(c) (&lbl_3_bss_BA08.tex1)
+#define KINOKO_IMG0(c) (lbl_3_bss_BA08.img0)
+#define KINOKO_IMG1(c) (lbl_3_bss_BA08.img1)
+#else
+// c: lbl_3_bss_BA00 as a u8*.
+#define KINOKO_FRAME(c) (*(s32*)((c) + 8))
+#define KINOKO_TEX0(c) ((GXTexObj*)((c) + 0x2C))
+#define KINOKO_TEX1(c) ((GXTexObj*)((c) + 0xC))
+#define KINOKO_IMG0(c) ((c) + 0xA0)
+#define KINOKO_IMG1(c) ((c) + 0x60)
+#endif
 extern s8 lbl_3_data_2A330;
 extern s32 fn_800247E4(s32, s32, s32, s32);
 extern void DCFlushRange(void*, u32);
 
-extern void GXLoadTexObj(void*, s32);
-extern void GXSetTexCoordGen2(s32, s32, s32, s32, s32, s32);
-extern void GXSetTevOrder(s32, s32, s32, s32);
-extern void GXSetTevColorIn(s32, s32, s32, s32, s32);
-extern void GXSetTevColorOp(s32, s32, s32, s32, s32, s32);
-extern void GXSetTevAlphaIn(s32, s32, s32, s32, s32);
-extern void GXSetTevAlphaOp(s32, s32, s32, s32, s32, s32);
 
-extern void GXInitTexObj(void*, void*, s32, s32, s32, s32, s32, s32);
-extern void GXInitTexObjLOD(void*, s32, s32, f32, f32, f32, s32, s32, s32);
-extern void GXSetZMode(s32, s32, s32);
-extern void GXSetBlendMode(s32, s32, s32, s32);
-extern void GXSetCullMode(s32);
-extern void GXClearVtxDesc(void);
-extern void GXSetVtxDesc(s32, s32);
-extern void GXSetVtxAttrFmt(s32, s32, s32, s32, s32);
-extern void GXSetChanCtrl(s32, s32, s32, s32, s32, s32, s32);
-extern void GXSetNumChans(s32);
-extern void GXSetNumTexGens(s32);
-extern void GXSetNumTevStages(s32);
-extern void GXSetTevOp(s32, s32);
-extern void GXLoadPosMtxImm(void*, s32);
-extern void GXSetCurrentMtx(s32);
-extern void GXSetProjection(void*, s32);
 extern s32 fn_8005268C(void);
-extern u8* fn_80052768_getCamera(s32);
+extern camera_803c639c_s* fn_80052768_getCamera(s32);
 
 // .text:0x0016917C size:0x2C0
 void fn_3_16917C(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2) {
@@ -49,8 +77,8 @@ void fn_3_16917C(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2) {
     s32 v;
     s32 i;
     s32 t;
-    c->cnt += (lbl_80366158[0x28] == 0);
-    if ((c->cnt & 1) == 0) {
+    KINOKO_FRAME((u8*)c) += (lbl_80366158._28 == 0);
+    if ((KINOKO_FRAME((u8*)c) & 1) == 0) {
         v = c->buf[fn_800247E4(0, 0, 4, 4)];
         v += lbl_3_data_2A330 * 2;
         if (v > 0xFF) {
@@ -70,7 +98,7 @@ void fn_3_16917C(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2) {
     GXLoadTexObj(c->tex, *map);
     GXSetTexCoordGen2(*coord, 1, 4, 0x3C, 0, 0x7D);
     GXSetTevOrder(*stage, *coord, *map, 0xFF);
-    if (c->buf == (u8*)c + 0xA0) {
+    if (c->buf == KINOKO_IMG0((u8*)c)) {
         GXSetTevColorIn(*stage, 0, 8, 9, 0xF);
         GXSetTevColorOp(*stage, 0, 0, 0, 1, 0);
         GXSetTevAlphaIn(*stage, 7, 7, 7, 0);
@@ -93,8 +121,8 @@ void fn_3_16943C(void) {
     s32 v;
     s32 i;
     s32 t;
-    lbl_3_bss_BA08[0] += (lbl_80366158[0x28] == 0);
-    if ((lbl_3_bss_BA08[0] & 1) == 0) {
+    lbl_3_bss_BA08.frame += (lbl_80366158._28 == 0);
+    if ((lbl_3_bss_BA08.frame & 1) == 0) {
         v = lbl_3_bss_BA00.buf[fn_800247E4(0, 0, 4, 4)];
         v += lbl_3_data_2A330 * 2;
         if (v > 0xFF) {
@@ -123,19 +151,18 @@ extern void fn_80011604(s32, void*);
 void fn_3_1695A4(s32 a, u8 flag) {
     u8* p = (u8*)&lbl_3_bss_BA00;
     if (flag == 0) {
-        *(u8**)p = p + 0xA0;
-        *(u8**)(p + 4) = p + 0x2C;
+        ((KinokoCtl*)p)->buf = KINOKO_IMG0(p);
+        ((KinokoCtl*)p)->tex = KINOKO_TEX0(p);
     } else {
-        *(u8**)p = p + 0x60;
-        *(u8**)(p + 4) = p + 0xC;
+        ((KinokoCtl*)p)->buf = KINOKO_IMG1(p);
+        ((KinokoCtl*)p)->tex = KINOKO_TEX1(p);
     }
     fn_80011604(a, fn_3_16917C);
 }
 
-// The ribbon state (6 ribbons of 25 segments of 0x2C bytes, stride 0x44C; +0x19D4 frame counter,
-// +0x19DC character id, +0x19DD enabled), the colour table and the two draw nodes. Defined here:
-// the original addresses them through one pooled base.
-u8 lbl_3_data_28928[0x19E0] = { 0 };
+// The ribbon state, the colour table and the two draw nodes. Defined here: the original
+// addresses them through one pooled base.
+KinokoState lbl_3_data_28928 = { 0 };
 u8 lbl_3_data_2A308[6][4] = {
     { 0xFF, 0x00, 0x00, 0xC8 }, { 0xFF, 0xFF, 0x00, 0xC8 }, { 0x00, 0xFF, 0x00, 0xC8 },
     { 0x00, 0xFF, 0xFF, 0xC8 }, { 0x00, 0x00, 0xFF, 0xC8 }, { 0xFF, 0x00, 0xFF, 0xC8 },
@@ -149,35 +176,30 @@ KinokoNode lbl_3_data_2A320[2] = {
     { 0, fn_3_169984 },
 };
 s8 lbl_3_data_2A330 = -1; // ribbon sway direction (+1/-1)
+// One ribbon quad (between two segments) for fn_3_169984.
 typedef struct {
-    void* p[8];
-    f32 v[3];
+    struct {
+        Vec* pos;
+        GXColor* color;
+    } vtx[4];
+    Vec v; // centre, for the depth sort
     u8 flag;
     u8 pad[3];
 } RibEnt;
 extern RibEnt lbl_3_bss_BAE0[];
-extern void PSVECAdd(void*, void*, void*);
-extern void PSVECScale(void*, void*, f32);
-extern f32 PSVECMag(void*);
-extern void PSVECNormalize(void*, void*);
-extern void PSVECSubtract(void*, void*, void*);
-extern void PSVECCrossProduct(void*, void*, void*);
 extern void* memcpy(void*, void*, u32);
 extern void fn_3_16A07C(void);
-extern void PSMTXCopy(void* src, void* dst);
-extern void PSMTXMultVec(void* m, void* src, void* dst);
-extern void GXBegin(s32 type, s32 fmt, u16 n);
 extern f32 lbl_3_rodata_402C; // -1.0f
 extern void* memset(void*, s32, u32);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 
 // .text:0x0016C394 size:0x7C
 void fn_3_16C394(s8 a) {
-    memset(lbl_3_data_28928, 0, 0x19E0);
+    memset(&lbl_3_data_28928, 0, sizeof(lbl_3_data_28928));
     memset(lbl_3_bss_BAE0, 0, 0x1BF0);
-    lbl_3_data_28928[0x19DC] = a;
-    lbl_3_data_28928[0x19DD] = 1;
-    *(s32*)(lbl_3_data_28928 + 0x19D4) = 1;
+    lbl_3_data_28928.charId = a;
+    lbl_3_data_28928.enabled = 1;
+    lbl_3_data_28928.tick = 1;
     fn_3_16B884();
     fn_800B0A5C_insertQueue(fn_3_16A07C, 0);
 }
@@ -193,22 +215,22 @@ void fn_3_16B488(void* out, s8 id) {
         OSPanic(lbl_3_rodata_4050, 0x11C, lbl_3_rodata_405C);
     }
     memset(out, 0, 0xC);
-    if (fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], id, out) == 0) {
+    if (fn_8001B728(lbl_3_data_28928.charId, id, out) == 0) {
         switch (id) {
         case 28:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x1E, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x1E, out);
             break;
         case 32:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x22, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x22, out);
             break;
         case 7:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 5, out);
+            fn_8001B728(lbl_3_data_28928.charId, 5, out);
             break;
         case 18:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x13, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x13, out);
             break;
         case 24:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x19, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x19, out);
             break;
         }
     }
@@ -225,14 +247,14 @@ void fn_3_169600(void) {
         for (j = 0; j < 4; j++) {
             idx = fn_800247E4(j, i, 4, 4);
             if (idx < 0x20) {
-                p = base + 0xA0;
+                p = KINOKO_IMG0(base);
                 p += idx;
                 p[2] = 0xFF;
                 p[0] = 0xFF;
                 p[3] = 0x9B;
                 p[1] = 0x9B;
             } else {
-                p = base + 0xA0;
+                p = KINOKO_IMG0(base);
                 p += idx;
                 p[2] = 0;
                 p[0] = 0;
@@ -245,14 +267,14 @@ void fn_3_169600(void) {
         for (j = 0; j < 4; j++) {
             idx = fn_800247E4(j, i, 4, 4);
             if (idx < 0x20) {
-                p = base + 0x60;
+                p = KINOKO_IMG1(base);
                 p += idx;
                 p[2] = 0xFF;
                 p[0] = 0xFF;
                 p[3] = 0;
                 p[1] = 0;
             } else {
-                p = base + 0x60;
+                p = KINOKO_IMG1(base);
                 p += idx;
                 p[2] = 0x9B;
                 p[0] = 0x9B;
@@ -261,12 +283,12 @@ void fn_3_169600(void) {
             }
         }
     }
-    GXInitTexObj(base + 0x2C, base + 0xA0, 4, 4, 6, 1, 1, 0);
-    GXInitTexObjLOD(base + 0x2C, 1, 1, 0, 0, 0, 0.0f, 0.0f, 0.0f);
-    GXInitTexObj(base + 0xC, base + 0x60, 4, 4, 6, 1, 1, 0);
-    GXInitTexObjLOD(base + 0xC, 1, 1, 0, 0, 0, 0.0f, 0.0f, 0.0f);
+    GXInitTexObj(KINOKO_TEX0(base), KINOKO_IMG0(base), 4, 4, 6, 1, 1, 0);
+    GXInitTexObjLOD(KINOKO_TEX0(base), 1, 1, 0, 0, 0, 0.0f, 0.0f, 0.0f);
+    GXInitTexObj(KINOKO_TEX1(base), KINOKO_IMG1(base), 4, 4, 6, 1, 1, 0);
+    GXInitTexObjLOD(KINOKO_TEX1(base), 1, 1, 0, 0, 0, 0.0f, 0.0f, 0.0f);
     lbl_3_data_2A330 = -1;
-    *(s32*)(base + 8) = 0;
+    KINOKO_FRAME(base) = 0;
 }
 
 // .text:0x00169804 size:0x180
@@ -289,9 +311,9 @@ void fn_3_169804(void) {
     GXSetTevOp(0, 4);
     GXSetTevColorOp(0, 0, 0, 0, 0, 0);
     GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
-    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C()) + 0x40, 0);
+    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C())->view, 0);
     GXSetCurrentMtx(0);
-    GXSetProjection(fn_80052768_getCamera(fn_8005268C()), 0);
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, 0);
 }
 
 // .text:0x00169984 size:0x37C mapped:0x807A8A18
@@ -306,7 +328,7 @@ typedef struct RibSortEnt {
 #if NONMATCHING
 void fn_3_169984(void) {
     RibSortEnt swap;
-    f32 viewPos[3];
+    Vec viewPos;
     f32 view[3][4];
     RibSortEnt list[149];
     RibSortEnt* sorted;
@@ -319,7 +341,7 @@ void fn_3_169984(void) {
     u32 j;
     f32 noDepth;
 
-    PSMTXCopy(fn_80052768_getCamera(fn_8005268C()) + 0x40, view);
+    PSMTXCopy(fn_80052768_getCamera(fn_8005268C())->view, view);
     sorted = list;
     noDepth = lbl_3_rodata_402C;
     e = lbl_3_bss_BAE0;
@@ -331,8 +353,8 @@ void fn_3_169984(void) {
             back->depth = noDepth;
             back--;
         } else {
-            PSMTXMultVec(view, e->v, viewPos);
-            front->depth = viewPos[2];
+            PSMTXMultVec(view, &e->v, &viewPos);
+            front->depth = viewPos.z;
             front->idx = i;
             front++;
         }
@@ -369,16 +391,16 @@ void fn_3_169984(void) {
     GXSetTevOp(0, 4);
     GXSetTevColorOp(0, 0, 0, 0, 0, 0);
     GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
-    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C()) + 0x40, 0);
+    GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C())->view, 0);
     GXSetCurrentMtx(0);
-    GXSetProjection(fn_80052768_getCamera(fn_8005268C()), 0);
+    GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, 0);
 
     for (i = 0; i < 149; i++) {
         e = &lbl_3_bss_BAE0[sorted->idx];
         if (e->flag != 0) {
             GXBegin(0x80, 0, 4);
             {
-                f32* q = e->p[0];
+                f32* q = &e->vtx[0].pos->x;
                 f32 z = q[2];
                 f32 y = q[1];
                 f32 x = q[0];
@@ -386,9 +408,9 @@ void fn_3_169984(void) {
                 GXWGFifo.f32 = y;
                 GXWGFifo.f32 = z;
             }
-            GXWGFifo.u32 = *(u32*)e->p[1];
+            GXWGFifo.u32 = *(u32*)e->vtx[0].color;
             {
-                f32* q = e->p[2];
+                f32* q = &e->vtx[1].pos->x;
                 f32 z = q[2];
                 f32 y = q[1];
                 f32 x = q[0];
@@ -396,9 +418,9 @@ void fn_3_169984(void) {
                 GXWGFifo.f32 = y;
                 GXWGFifo.f32 = z;
             }
-            GXWGFifo.u32 = *(u32*)e->p[3];
+            GXWGFifo.u32 = *(u32*)e->vtx[1].color;
             {
-                f32* q = e->p[4];
+                f32* q = &e->vtx[2].pos->x;
                 f32 z = q[2];
                 f32 y = q[1];
                 f32 x = q[0];
@@ -406,9 +428,9 @@ void fn_3_169984(void) {
                 GXWGFifo.f32 = y;
                 GXWGFifo.f32 = z;
             }
-            GXWGFifo.u32 = *(u32*)e->p[5];
+            GXWGFifo.u32 = *(u32*)e->vtx[2].color;
             {
-                f32* q = e->p[6];
+                f32* q = &e->vtx[3].pos->x;
                 f32 z = q[2];
                 f32 y = q[1];
                 f32 x = q[0];
@@ -416,7 +438,7 @@ void fn_3_169984(void) {
                 GXWGFifo.f32 = y;
                 GXWGFifo.f32 = z;
             }
-            GXWGFifo.u32 = *(u32*)e->p[7];
+            GXWGFifo.u32 = *(u32*)e->vtx[3].color;
         }
         sorted++;
     }
@@ -424,27 +446,27 @@ void fn_3_169984(void) {
 #endif
 
 // .text:0x00169D00 size:0x170
-void fn_3_169D00(u8* base, u32* cnt) {
-    u8* p = base + 0x420;
-    u8* q;
+void fn_3_169D00(KinokoSeg* base, u32* cnt) {
+    KinokoSeg* p = &base[24];
+    KinokoSeg* q;
     u32 i = 0x18;
     while (i != 0 && *cnt < 0x95) {
-        if (p[0x2A] != 0) {
-            q = base + (i - 1) * 0x2C;
-            PSVECAdd(p, q, lbl_3_bss_BAE0[*cnt].v);
-            PSVECScale(lbl_3_bss_BAE0[*cnt].v, lbl_3_bss_BAE0[*cnt].v, 0.5f);
-            lbl_3_bss_BAE0[*cnt].p[0] = q + 0xC;
-            lbl_3_bss_BAE0[*cnt].p[1] = q + 0x24;
-            lbl_3_bss_BAE0[*cnt].p[2] = q + 0x18;
-            lbl_3_bss_BAE0[*cnt].p[3] = q + 0x24;
-            lbl_3_bss_BAE0[*cnt].p[4] = p + 0x18;
-            lbl_3_bss_BAE0[*cnt].p[5] = p + 0x24;
-            lbl_3_bss_BAE0[*cnt].p[6] = p + 0xC;
-            lbl_3_bss_BAE0[*cnt].p[7] = p + 0x24;
+        if (p->active != 0) {
+            q = &base[i - 1];
+            PSVECAdd(&p->pos, &q->pos, &lbl_3_bss_BAE0[*cnt].v);
+            PSVECScale(&lbl_3_bss_BAE0[*cnt].v, 0.5f, &lbl_3_bss_BAE0[*cnt].v);
+            lbl_3_bss_BAE0[*cnt].vtx[0].pos = &q->edgeA;
+            lbl_3_bss_BAE0[*cnt].vtx[0].color = &q->color;
+            lbl_3_bss_BAE0[*cnt].vtx[1].pos = &q->edgeB;
+            lbl_3_bss_BAE0[*cnt].vtx[1].color = &q->color;
+            lbl_3_bss_BAE0[*cnt].vtx[2].pos = &p->edgeB;
+            lbl_3_bss_BAE0[*cnt].vtx[2].color = &p->color;
+            lbl_3_bss_BAE0[*cnt].vtx[3].pos = &p->edgeA;
+            lbl_3_bss_BAE0[*cnt].vtx[3].color = &p->color;
             lbl_3_bss_BAE0[*cnt].flag = 1;
             *cnt += 1;
         }
-        p -= 0x2C;
+        p--;
         i--;
     }
 }
@@ -456,62 +478,62 @@ extern f32 lbl_3_rodata_4038;
 extern f32 lbl_3_rodata_403C;
 
 // .text:0x00169E70 size:0x20C
-void fn_3_169E70(u8* base) {
-    f32 a[3];
-    f32 b[3];
-    f32 c[3];
-    f32 d[3];
-    f32 e[3];
-    u8* cam = fn_80052768_getCamera(0);
-    u8* p = base;
+void fn_3_169E70(KinokoSeg* base) {
+    Vec a;
+    Vec b;
+    Vec c;
+    Vec d;
+    Vec e;
+    camera_803c639c_s* cam = fn_80052768_getCamera(0);
+    KinokoSeg* p = base;
     u32 i = 0;
     f32 m;
     do {
-        if (p[0x2A] != 0) {
-            a[0] = *(f32*)(cam + 0x60);
-            a[1] = *(f32*)(cam + 0x64);
-            a[2] = *(f32*)(cam + 0x68);
-            m = PSVECMag(a);
+        if (p->active != 0) {
+            a.x = cam->view[2][0];
+            a.y = cam->view[2][1];
+            a.z = cam->view[2][2];
+            m = PSVECMag(&a);
             if (m == lbl_3_rodata_4028) {
-                a[0] = lbl_3_rodata_4028;
-                a[1] = lbl_3_rodata_4028;
-                a[2] = lbl_3_rodata_4034;
+                a.x = lbl_3_rodata_4028;
+                a.y = lbl_3_rodata_4028;
+                a.z = lbl_3_rodata_4034;
             } else {
-                PSVECNormalize(a, a);
+                PSVECNormalize(&a, &a);
             }
             if (i == 0) {
-                memcpy(b, p, 0xC);
+                memcpy(&b, &p->pos, sizeof(Vec));
             } else {
-                memcpy(b, base + (i - 1) * 0x2C, 0xC);
+                memcpy(&b, &base[i - 1].pos, sizeof(Vec));
             }
             if (i == 0x18) {
-                memcpy(c, p, 0xC);
+                memcpy(&c, &p->pos, sizeof(Vec));
             } else {
-                memcpy(c, base + (i + 1) * 0x2C, 0xC);
+                memcpy(&c, &base[i + 1].pos, sizeof(Vec));
             }
-            PSVECSubtract(b, c, d);
-            m = PSVECMag(d);
+            PSVECSubtract(&b, &c, &d);
+            m = PSVECMag(&d);
             if (m == lbl_3_rodata_4028) {
-                d[2] = lbl_3_rodata_4028;
-                d[1] = lbl_3_rodata_4028;
-                d[0] = lbl_3_rodata_4034;
+                d.z = lbl_3_rodata_4028;
+                d.y = lbl_3_rodata_4028;
+                d.x = lbl_3_rodata_4034;
             }
-            PSVECNormalize(d, d);
-            PSVECCrossProduct(d, a, e);
-            m = PSVECMag(e);
+            PSVECNormalize(&d, &d);
+            PSVECCrossProduct(&d, &a, &e);
+            m = PSVECMag(&e);
             if (m == lbl_3_rodata_4028) {
-                e[2] = lbl_3_rodata_4028;
-                e[1] = lbl_3_rodata_4028;
-                e[0] = lbl_3_rodata_402C;
+                e.z = lbl_3_rodata_4028;
+                e.y = lbl_3_rodata_4028;
+                e.x = lbl_3_rodata_402C;
             }
-            PSVECNormalize(e, e);
-            PSVECScale(e, p + 0xC, lbl_3_rodata_4038);
-            PSVECScale(e, p + 0x18, lbl_3_rodata_403C);
-            PSVECAdd(p + 0xC, p, p + 0xC);
-            PSVECAdd(p + 0x18, p, p + 0x18);
+            PSVECNormalize(&e, &e);
+            PSVECScale(&e, lbl_3_rodata_4038, &p->edgeA);
+            PSVECScale(&e, lbl_3_rodata_403C, &p->edgeB);
+            PSVECAdd(&p->edgeA, &p->pos, &p->edgeA);
+            PSVECAdd(&p->edgeB, &p->pos, &p->edgeB);
         }
         i++;
-        p += 0x2C;
+        p++;
     } while (i < 0x19);
 }
 
@@ -533,9 +555,14 @@ extern void fn_800B0A14_removeQueue(void*);
 #define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
 #endif
 #endif
-extern u8 g_Minigame[];
-#define KINOKO_RIBBON(r) (lbl_3_data_28928 + (r) * 0x44C)   // 6 ribbons of 25 segments (0x2C each)
-#define KINOKO_TICK (*(s32*)(lbl_3_data_28928 + 0x19D4))
+#define KINOKO_RIBBON(r) (lbl_3_data_28928.ribbon[r])
+#define KINOKO_TICK (lbl_3_data_28928.tick)
+// Segment i of ribbon r takes segment i - 1's place, faded to `alpha`.
+#define KINOKO_TRAIL(r, i, alpha)                                                            \
+    do {                                                                                     \
+        memcpy(&KINOKO_RIBBON(r)[i], &KINOKO_RIBBON(r)[(i) - 1], sizeof(KinokoSeg));        \
+        KINOKO_RIBBON(r)[i].color.a = (alpha);                                               \
+    } while (0)
 
 // Advances a ribbon colour index (0..5).
 #define KINOKO_NEXT_COLOR(c)      \
@@ -547,27 +574,27 @@ extern u8 g_Minigame[];
     } while (0)
 
 // Inline copy of fn_3_169D00 (the original expands it once per ribbon in fn_3_16A07C).
-static inline void fn_3_169D00_inline(u8* base, u32* cnt) {
-    u8* p = base + 0x420;
-    u8* q;
+static inline void fn_3_169D00_inline(KinokoSeg* base, u32* cnt) {
+    KinokoSeg* p = &base[24];
+    KinokoSeg* q;
     u32 i = 0x18;
     while (i != 0 && *cnt < 0x95) {
-        if (p[0x2A] != 0) {
-            q = base + (i - 1) * 0x2C;
-            PSVECAdd(p, q, lbl_3_bss_BAE0[*cnt].v);
-            PSVECScale(lbl_3_bss_BAE0[*cnt].v, lbl_3_bss_BAE0[*cnt].v, 0.5f);
-            lbl_3_bss_BAE0[*cnt].p[0] = q + 0xC;
-            lbl_3_bss_BAE0[*cnt].p[1] = q + 0x24;
-            lbl_3_bss_BAE0[*cnt].p[2] = q + 0x18;
-            lbl_3_bss_BAE0[*cnt].p[3] = q + 0x24;
-            lbl_3_bss_BAE0[*cnt].p[4] = p + 0x18;
-            lbl_3_bss_BAE0[*cnt].p[5] = p + 0x24;
-            lbl_3_bss_BAE0[*cnt].p[6] = p + 0xC;
-            lbl_3_bss_BAE0[*cnt].p[7] = p + 0x24;
+        if (p->active != 0) {
+            q = &base[i - 1];
+            PSVECAdd(&p->pos, &q->pos, &lbl_3_bss_BAE0[*cnt].v);
+            PSVECScale(&lbl_3_bss_BAE0[*cnt].v, 0.5f, &lbl_3_bss_BAE0[*cnt].v);
+            lbl_3_bss_BAE0[*cnt].vtx[0].pos = &q->edgeA;
+            lbl_3_bss_BAE0[*cnt].vtx[0].color = &q->color;
+            lbl_3_bss_BAE0[*cnt].vtx[1].pos = &q->edgeB;
+            lbl_3_bss_BAE0[*cnt].vtx[1].color = &q->color;
+            lbl_3_bss_BAE0[*cnt].vtx[2].pos = &p->edgeB;
+            lbl_3_bss_BAE0[*cnt].vtx[2].color = &p->color;
+            lbl_3_bss_BAE0[*cnt].vtx[3].pos = &p->edgeA;
+            lbl_3_bss_BAE0[*cnt].vtx[3].color = &p->color;
             lbl_3_bss_BAE0[*cnt].flag = 1;
             *cnt += 1;
         }
-        p -= 0x2C;
+        p--;
         i--;
     }
 }
@@ -578,57 +605,47 @@ static inline void fn_3_169D00_inline(u8* base, u32* cnt) {
 // fn_3_169E70 calls in saved registers and reuses them in the inlined fn_3_169D00 loops.
 #if NONMATCHING
 void fn_3_16A07C(void) {
-    u8* dst;
-    u8* src;
     u32 i;
     u32 count;
     u8 alpha;
     u8 v;
 
-    if (g_d_GameSettings._55 != 0 || g_Minigame[0x1A40] != 0) { // TODO type: g_Minigame._1A40
+    if (g_d_GameSettings._55 != 0 || g_Minigame._1A40 != 0) {
         REMOVE_QUEUE_NOARG(); // removes the running task
-        memset(lbl_3_data_28928, 0, 0x19E0);
+        memset(&lbl_3_data_28928, 0, sizeof(lbl_3_data_28928));
         return;
     }
-    if (*(s8*)(g_Minigame + 0x1D74) == -1 || lbl_3_data_28928[0x19DD] == 0) { // TODO type: g_Minigame.playerIDWithPowerup[0]
+    if (g_Minigame.playerIDWithPowerup[0] == -1 || lbl_3_data_28928.enabled == 0) {
         REMOVE_QUEUE_NOARG();
-        memset(lbl_3_data_28928, 0, 0x19E0);
+        memset(&lbl_3_data_28928, 0, sizeof(lbl_3_data_28928));
         return;
     }
 
-    if (lbl_80366158[0x28] == 0) {
+    if (lbl_80366158._28 == 0) {
         KINOKO_TICK++;
-        dst = lbl_3_data_28928 + 24 * 0x2C;
+        // Trail: every segment takes the previous one's place.
         for (i = 24; i != 0; i--) {
             alpha = (24 - i) * 8;
-            src = lbl_3_data_28928 + (i - 1) * 0x2C;
-            memcpy(dst, src, 0x2C);
-            dst[0x27] = alpha;
-            memcpy(dst + 0x44C, src + 0x44C, 0x2C);
-            dst[0x44C + 0x27] = alpha;
-            memcpy(dst + 0x898, src + 0x898, 0x2C);
-            dst[0x898 + 0x27] = alpha;
-            memcpy(dst + 0xCE4, src + 0xCE4, 0x2C);
-            dst[0xCE4 + 0x27] = alpha;
-            memcpy(dst + 0x1130, src + 0x1130, 0x2C);
-            dst[0x1130 + 0x27] = alpha;
-            memcpy(dst + 0x157C, src + 0x157C, 0x2C);
-            dst[0x157C + 0x27] = alpha;
-            dst -= 0x2C;
+            KINOKO_TRAIL(0, i, alpha);
+            KINOKO_TRAIL(1, i, alpha);
+            KINOKO_TRAIL(2, i, alpha);
+            KINOKO_TRAIL(3, i, alpha);
+            KINOKO_TRAIL(4, i, alpha);
+            KINOKO_TRAIL(5, i, alpha);
         }
         if (KINOKO_TICK % 5 == 0) {
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(0)[0x28]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(0)[0x29]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(1)[0x28]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(1)[0x29]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(2)[0x28]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(2)[0x29]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(3)[0x28]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(3)[0x29]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(4)[0x28]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(4)[0x29]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(5)[0x28]);
-            KINOKO_NEXT_COLOR(KINOKO_RIBBON(5)[0x29]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(0)[0].colorFrom);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(0)[0].colorTo);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(1)[0].colorFrom);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(1)[0].colorTo);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(2)[0].colorFrom);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(2)[0].colorTo);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(3)[0].colorFrom);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(3)[0].colorTo);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(4)[0].colorFrom);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(4)[0].colorTo);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(5)[0].colorFrom);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(5)[0].colorTo);
         }
         fn_3_16B5B4(KINOKO_RIBBON(0), 0x1C, KINOKO_TICK % 5);
         fn_3_16B5B4(KINOKO_RIBBON(1), 0x20, KINOKO_TICK % 5);
@@ -660,35 +677,35 @@ extern const f32 lbl_3_rodata_4040;
 extern const f64 lbl_3_rodata_4048;
 
 // .text:0x0016B5B4 size:0x2D0 mapped:0x807AA648
-void fn_3_16B5B4(u8* out, s8 id, int t) {
+void fn_3_16B5B4(KinokoSeg* out, s8 id, int t) {
     f64 k1;
     f32 k = (f32)t / lbl_3_rodata_4040;
     k1 = lbl_3_rodata_4048 - k;
-    out[0x24] = k1 * lbl_3_data_2A308[out[0x28]][0] + k * lbl_3_data_2A308[out[0x29]][0];
-    out[0x25] = k1 * lbl_3_data_2A308[out[0x28]][1] + k * lbl_3_data_2A308[out[0x29]][1];
-    out[0x26] = k1 * lbl_3_data_2A308[out[0x28]][2] + k * lbl_3_data_2A308[out[0x29]][2];
-    out[0x27] = k1 * lbl_3_data_2A308[out[0x28]][3] + k * lbl_3_data_2A308[out[0x29]][3];
-    out[0x2A] = 1;
+    out->color.r = k1 * lbl_3_data_2A308[out->colorFrom][0] + k * lbl_3_data_2A308[out->colorTo][0];
+    out->color.g = k1 * lbl_3_data_2A308[out->colorFrom][1] + k * lbl_3_data_2A308[out->colorTo][1];
+    out->color.b = k1 * lbl_3_data_2A308[out->colorFrom][2] + k * lbl_3_data_2A308[out->colorTo][2];
+    out->color.a = k1 * lbl_3_data_2A308[out->colorFrom][3] + k * lbl_3_data_2A308[out->colorTo][3];
+    out->active = 1;
     if (out == NULL) {
         OSPanic(lbl_3_rodata_4050, 0x11C, lbl_3_rodata_405C);
     }
-    memset(out, 0, 0xC);
-    if (fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], id, out) == 0) {
+    memset(&out->pos, 0, sizeof(Vec));
+    if (fn_8001B728(lbl_3_data_28928.charId, id, &out->pos) == 0) {
         switch (id) {
         case 28:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x1E, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x1E, out);
             break;
         case 32:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x22, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x22, out);
             break;
         case 7:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 5, out);
+            fn_8001B728(lbl_3_data_28928.charId, 5, out);
             break;
         case 18:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x13, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x13, out);
             break;
         case 24:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x19, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x19, out);
             break;
         }
     }
@@ -696,89 +713,76 @@ void fn_3_16B5B4(u8* out, s8 id, int t) {
 
 // Inline copy of fn_3_16B5B4 for fn_3_16B884 (the original inlines it there with t = 0; the 5.0f
 // literal lets k fold to a 0.0f constant).
-static inline void fn_3_16B5B4_inline(u8* out, s8 id, int t) {
+static inline void fn_3_16B5B4_inline(KinokoSeg* out, s8 id, int t) {
     f64 k1;
     f32 k = (f32)t / 5.0f;
     k1 = lbl_3_rodata_4048 - k;
-    out[0x24] = k1 * lbl_3_data_2A308[out[0x28]][0] + k * lbl_3_data_2A308[out[0x29]][0];
-    out[0x25] = k1 * lbl_3_data_2A308[out[0x28]][1] + k * lbl_3_data_2A308[out[0x29]][1];
-    out[0x26] = k1 * lbl_3_data_2A308[out[0x28]][2] + k * lbl_3_data_2A308[out[0x29]][2];
-    out[0x27] = k1 * lbl_3_data_2A308[out[0x28]][3] + k * lbl_3_data_2A308[out[0x29]][3];
-    out[0x2A] = 1;
+    out->color.r = k1 * lbl_3_data_2A308[out->colorFrom][0] + k * lbl_3_data_2A308[out->colorTo][0];
+    out->color.g = k1 * lbl_3_data_2A308[out->colorFrom][1] + k * lbl_3_data_2A308[out->colorTo][1];
+    out->color.b = k1 * lbl_3_data_2A308[out->colorFrom][2] + k * lbl_3_data_2A308[out->colorTo][2];
+    out->color.a = k1 * lbl_3_data_2A308[out->colorFrom][3] + k * lbl_3_data_2A308[out->colorTo][3];
+    out->active = 1;
     if (out == NULL) {
         OSPanic(lbl_3_rodata_4050, 0x11C, lbl_3_rodata_405C);
     }
-    memset(out, 0, 0xC);
-    if (fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], id, out) == 0) {
+    memset(&out->pos, 0, sizeof(Vec));
+    if (fn_8001B728(lbl_3_data_28928.charId, id, &out->pos) == 0) {
         switch (id) {
         case 28:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x1E, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x1E, out);
             break;
         case 32:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x22, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x22, out);
             break;
         case 7:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 5, out);
+            fn_8001B728(lbl_3_data_28928.charId, 5, out);
             break;
         case 18:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x13, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x13, out);
             break;
         case 24:
-            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x19, out);
+            fn_8001B728(lbl_3_data_28928.charId, 0x19, out);
             break;
         }
     }
 }
 
 // .text:0x0016B884 size:0xB10 mapped:0x807AA918
-// Resets the six mushroom ribbons: each ribbon is 25 segments of 0x2C bytes
-// (stride 0x44C); segment +0x24 is the RGBA colour, +0x27 its alpha,
-// +0x28/+0x29 the from/to colour indices into lbl_3_data_2A308.
+// Resets the six mushroom ribbons (25 KinokoSeg each).
 // NONMATCHING 72%: the original computes 1.0 - k once (f31) for all six inlined copies and re-reads
 // the stored from/to indices with clrlslwi; register allocation differs throughout.
 #if NONMATCHING
 void fn_3_16B884(void) {
-    u8* src;
-    u8* dst;
     u32 i;
     u8 alpha;
 
-    lbl_3_data_28928[0x28] = 0;
-    lbl_3_data_28928[0x29] = 1;
-    fn_3_16B5B4_inline(lbl_3_data_28928, 0x1C, 0);
-    lbl_3_data_28928[0x44C + 0x28] = 1;
-    lbl_3_data_28928[0x44C + 0x29] = 2;
-    fn_3_16B5B4_inline(lbl_3_data_28928 + 0x44C, 0x20, 0);
-    lbl_3_data_28928[0x898 + 0x28] = 2;
-    lbl_3_data_28928[0x898 + 0x29] = 3;
-    fn_3_16B5B4_inline(lbl_3_data_28928 + 0x898, 4, 0);
-    lbl_3_data_28928[0xCE4 + 0x28] = 3;
-    lbl_3_data_28928[0xCE4 + 0x29] = 4;
-    fn_3_16B5B4_inline(lbl_3_data_28928 + 0xCE4, 7, 0);
-    lbl_3_data_28928[0x1130 + 0x28] = 4;
-    lbl_3_data_28928[0x1130 + 0x29] = 5;
-    fn_3_16B5B4_inline(lbl_3_data_28928 + 0x1130, 0x12, 0);
-    lbl_3_data_28928[0x157C + 0x28] = 5;
-    lbl_3_data_28928[0x157C + 0x29] = 0;
-    fn_3_16B5B4_inline(lbl_3_data_28928 + 0x157C, 0x18, 0);
+    KINOKO_RIBBON(0)[0].colorFrom = 0;
+    KINOKO_RIBBON(0)[0].colorTo = 1;
+    fn_3_16B5B4_inline(KINOKO_RIBBON(0), 0x1C, 0);
+    KINOKO_RIBBON(1)[0].colorFrom = 1;
+    KINOKO_RIBBON(1)[0].colorTo = 2;
+    fn_3_16B5B4_inline(KINOKO_RIBBON(1), 0x20, 0);
+    KINOKO_RIBBON(2)[0].colorFrom = 2;
+    KINOKO_RIBBON(2)[0].colorTo = 3;
+    fn_3_16B5B4_inline(KINOKO_RIBBON(2), 4, 0);
+    KINOKO_RIBBON(3)[0].colorFrom = 3;
+    KINOKO_RIBBON(3)[0].colorTo = 4;
+    fn_3_16B5B4_inline(KINOKO_RIBBON(3), 7, 0);
+    KINOKO_RIBBON(4)[0].colorFrom = 4;
+    KINOKO_RIBBON(4)[0].colorTo = 5;
+    fn_3_16B5B4_inline(KINOKO_RIBBON(4), 0x12, 0);
+    KINOKO_RIBBON(5)[0].colorFrom = 5;
+    KINOKO_RIBBON(5)[0].colorTo = 0;
+    fn_3_16B5B4_inline(KINOKO_RIBBON(5), 0x18, 0);
 
-    dst = lbl_3_data_28928 + 0x2C;
     for (i = 1; i < 25; i++) {
         alpha = (24 - i) * 8;
-        src = lbl_3_data_28928 + (i - 1) * 0x2C;
-        memcpy(dst, src, 0x2C);
-        dst[0x27] = alpha;
-        memcpy(dst + 0x44C, src + 0x44C, 0x2C);
-        dst[0x44C + 0x27] = alpha;
-        memcpy(dst + 0x898, src + 0x898, 0x2C);
-        dst[0x898 + 0x27] = alpha;
-        memcpy(dst + 0xCE4, src + 0xCE4, 0x2C);
-        dst[0xCE4 + 0x27] = alpha;
-        memcpy(dst + 0x1130, src + 0x1130, 0x2C);
-        dst[0x1130 + 0x27] = alpha;
-        memcpy(dst + 0x157C, src + 0x157C, 0x2C);
-        dst[0x157C + 0x27] = alpha;
-        dst += 0x2C;
+        KINOKO_TRAIL(0, i, alpha);
+        KINOKO_TRAIL(1, i, alpha);
+        KINOKO_TRAIL(2, i, alpha);
+        KINOKO_TRAIL(3, i, alpha);
+        KINOKO_TRAIL(4, i, alpha);
+        KINOKO_TRAIL(5, i, alpha);
     }
 }
 #endif

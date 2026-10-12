@@ -7,7 +7,8 @@
 #include "game/auto_00_000DEB90_text.h"
 
 extern MinigameBss37400View lbl_3_common_bss_37400;
-extern u8 lbl_800EF808[];          // TODO type: options block (0x398: sound/rumble setting)
+#include "main/file_80021308.h" // SoundManager
+extern SoundManager lbl_800EF808;
 extern u16 lbl_3_data_81DC[];      // per stadium: crowd sound id base
 extern MinigameSoundParams lbl_3_data_8404[];
 extern MinigameSoundParams lbl_3_data_84B8[];
@@ -55,13 +56,12 @@ void fn_3_D8A10(void) {
         }
         g_Minigame._19BA = 0;
         g_Minigame._19CE = 2;
-        // TODO type: _1914.._1917 and _1918.._191B are per-player u8[4] arrays
         for (i = 0; i < 4; i++) {
-            if ((&g_Minigame._1918)[i] != 0) {
-                (&g_Minigame._1914)[i] = 0;
+            if (g_Minigame._1918[i] != 0) {
+                g_Minigame._1914[i] = 0;
             }
         }
-        if (lbl_800EF808[0x398] == 1) {
+        if (lbl_800EF808.unk398 == 1) {
             playCrowdSound(26);
         }
     }
@@ -161,9 +161,9 @@ void fn_3_D8CD0(void) {
             playCrowdSound(5);
             awardTurnPoints(16);
             snapshotPoints();
-            g_Minigame._1915 = 1;
-            g_Minigame._1916 = 1;
-            g_Minigame._1917 = 1;
+            g_Minigame._1914[1] = 1;
+            g_Minigame._1914[2] = 1;
+            g_Minigame._1914[3] = 1;
         } else if (g_Minigame._192D == 6) {
             g_Minigame._19C6 = g_Minigame.rosterID;
             playCrowdSound(11);
@@ -291,7 +291,7 @@ void fn_3_D9A30(void) {
         fn_3_1608F0(7, 0, 0);
     }
     if (g_Minigame._192D == 7) {
-        if (g_Minigame._1915 == 0 && g_Minigame._1916 == 0 && g_Minigame._1917 == 0) {
+        if (g_Minigame._1914[1] == 0 && g_Minigame._1914[2] == 0 && g_Minigame._1914[3] == 0) {
             g_Minigame._192D = 8;
         } else if (rand() % 100 < lbl_3_data_189AC[11]) {
             g_Minigame._192D = 8;

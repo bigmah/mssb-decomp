@@ -4,7 +4,24 @@
 #include "game/UnknownHomes_Game.h"
 #include "Dolphin/rand.h"
 
-extern u8 lbl_3_common_bss_37400[];
+#include "game/auto_00_001658F0_text.h" // StarChanceState
+#include "main/file_80069BDC.h"         // gChallengeState, ScoutFlagTable
+extern StarChanceState lbl_3_common_bss_37400;
+
+// Scout flags character `e` can earn at difficulty b, level a (as an unsigned byte):
+// ((ScoutFlagTable*)e->scoutFlagPointer)->flags[b][a]. The matching build spells it
+// as pointer + 4 + index, the only form that keeps the original's addi/lbzx.
+#if NONMATCHING
+#define SCOUT_FLAGS(e, b, a) (*(u8*)&((ScoutFlagTable*)(e)->scoutFlagPointer)->flags[b][a])
+#else
+#define SCOUT_FLAGS(e, b, a) (*((u8*)(e)->scoutFlagPointer + 4 + (b) * 6 + (a)))
+#endif
+// Same with a precomputed flat index k = b * 6 + a.
+#if NONMATCHING
+#define SCOUT_FLAGS_K(e, k) (*(u8*)&(&((ScoutFlagTable*)(e)->scoutFlagPointer)->flags[0][0])[k])
+#else
+#define SCOUT_FLAGS_K(e, k) (*((u8*)(e)->scoutFlagPointer + 4 + (k)))
+#endif
 typedef struct {
     u8 pad[9];
     s8 v;
@@ -13,12 +30,7 @@ typedef struct {
 
 extern Rec15 lbl_80109420[];
 
-typedef struct {
-    u8 pad0;
-    u8 trk;
-    u8 row;
-    u8 pad3[3];
-} MissionIdx;
+typedef ChallengeTeamInfo MissionIdx; // lbl_800E8558 entry (main/file_80069BDC.h)
 
 typedef struct {
     s16 type;
@@ -27,7 +39,6 @@ typedef struct {
     u8 pad[4];
 } MissionRec;
 
-extern MissionIdx lbl_800E8558[];
 extern MissionRec lbl_80109AE8[][10];
 
 // Only the fields used here.
@@ -76,24 +87,6 @@ extern struct {
 } lbl_8034E9A0;
 #include "static/GameSettings.h"
 
-// lbl_3_common_bss_37400 as used by fn_3_164A74 (the other functions here index it as bytes).
-typedef struct {
-    /*0x00*/ u8 _00[0x12];
-    /*0x12*/ struct {
-        u8 achieved;
-        u8 max;
-        s8 bonus;
-        u8 active;
-        s8 charID;
-    } award[9]; // scout flags handed out (fn_3_16440C / fn_3_163E94)
-    /*0x3F*/ u8 _3F;
-    /*0x40*/ s16 team;
-    /*0x42*/ u8 _42[4];
-    /*0x46*/ u8 kind;   // lbl_80109420 index (the challenge being played)
-    /*0x47*/ u8 result; // 0 running, 1 failed, 2 cleared
-    /*0x48*/ u8 _48;
-    /*0x49*/ s8 bonus;
-} MissionChallengeState;
 // g_RunningLogic (GameRunningLogic in game/auto_00_0009CD90_text.h); only the fields used here.
 extern struct {
     /*0x00*/ s16 _00;
@@ -175,7 +168,7 @@ static inline void countMission(ChallengeTrackingStruct* trk, s32 i, MissionRec*
 // .text:0x00161588 size:0xAF8
 #if NONMATCHING
 void fn_3_161588(s32 event, s32 rosterIdx) {
-    MissionIdx* mi = &lbl_800E8558[inMemRoster[*(s16*)(lbl_3_common_bss_37400 + 0x40)][rosterIdx].stats.CharID]; // TODO type
+    MissionIdx* mi = &lbl_800E8558[inMemRoster[lbl_3_common_bss_37400.humanPlayer][rosterIdx].stats.CharID];
     ChallengeTrackingStruct* trk;
     MissionRec* rec;
     MissionFielderView* fielder;
@@ -263,7 +256,7 @@ void fn_3_161588(s32 event, s32 rosterIdx) {
 #if NONMATCHING
 void fn_3_162080(void) {
     MissionIdx* mi;
-    u8* q = lbl_3_common_bss_37400;
+    StarChanceState* q = &lbl_3_common_bss_37400;
     s32 i;
     u8 sp;
     s8* sv;
@@ -272,27 +265,27 @@ void fn_3_162080(void) {
     s32 k;
     s32 done;
     MissionRec* rec;
-    s8* e;
+    ChallengeTrackingStruct* e;
     u8 so;
     u8 sc;
     u8 sw;
-    if (*(s16*)(q + 0x40) == g_GameLogic.teamFielding) {
+    if (q->humanPlayer == g_GameLogic.teamFielding) {
         mi = &lbl_800E8558[g_Pitcher.charID];
-        e = (s8*)&starMissionCompletionTracker[mi->trk];
+        e = &starMissionCompletionTracker[mi->trk];
         rec = lbl_80109AE8[mi->row];
-        for (i = 0; i < 10; i++, e += 2, rec++) {
-            st = e[9];
+        for (i = 0; i < 10; i++, rec++) {
+            st = MISSION_STATUS(e, i);
             if (st >= 0) {
                 done = 0;
                 if (rec->type == 3) {
                     if (g_Pitcher.starPitchType != 0) {
-                        e[9] = st | 1;
-                        if (e[9] == 0x11) {
-                            e[9] = -1;
+                        MISSION_STATUS(e, i) = st | 1;
+                        if (MISSION_STATUS(e, i) == 0x11) {
+                            MISSION_STATUS(e, i) = -1;
                         }
                     }
                 } else {
-                    sv = e + 9;
+                    sv = &MISSION_STATUS(e, i);
                     sp = g_Pitcher.starPitchType;
                     cp = g_Pitcher.ChargePitchType;
                     for (k = 4; k < 13; k++) {
@@ -324,26 +317,26 @@ void fn_3_162080(void) {
             }
         }
     }
-    if (*(s16*)(q + 0x40) == g_GameLogic.teamBatting) {
+    if (q->humanPlayer == g_GameLogic.teamBatting) {
         mi = &lbl_800E8558[g_Batter.charID];
-        e = (s8*)&starMissionCompletionTracker[mi->trk];
+        e = &starMissionCompletionTracker[mi->trk];
         rec = lbl_80109AE8[mi->row];
         sw = g_Ball.currentStarSwing2;
         sc = g_GameLogic.IsStarChance;
         so = g_GameLogic.stadiumStarObtained;
-        for (i = 0; i < 10; i++, e += 2, rec++) {
-            st = e[9];
+        for (i = 0; i < 10; i++, rec++) {
+            st = MISSION_STATUS(e, i);
             if (st >= 0) {
                 if (rec->type == 3 && sw != 0) {
-                    e[9] = st | 0x10;
-                    if (e[9] == 0x11) {
-                        e[9] = -1;
+                    MISSION_STATUS(e, i) = st | 0x10;
+                    if (MISSION_STATUS(e, i) == 0x11) {
+                        MISSION_STATUS(e, i) = -1;
                     }
                 }
                 if (rec->type == 2 && (sc == 3 || so != 0)) {
-                    e[9] += 1;
-                    if (e[9] >= rec->target) {
-                        e[9] = -1;
+                    MISSION_STATUS(e, i) += 1;
+                    if (MISSION_STATUS(e, i) >= rec->target) {
+                        MISSION_STATUS(e, i) = -1;
                     }
                 }
             }
@@ -358,7 +351,7 @@ void fn_3_162080(void) {
 // .text:0x0016230C size:0xA48 mapped:0x807A13A0
 #if NONMATCHING
 void fn_3_16230C(s32 result, u8 rbi) {
-    u8* q = lbl_3_common_bss_37400;
+    StarChanceState* q = &lbl_3_common_bss_37400;
     InMemPitcherType* pi;
     GameScores* sc;
     InMemBallType* ball;
@@ -375,7 +368,7 @@ void fn_3_16230C(s32 result, u8 rbi) {
     s32 n;
     s8 fielder;
 
-    if (*(s16*)(q + 0x40) == g_GameLogic.teamFielding) { // TODO type
+    if (q->humanPlayer == g_GameLogic.teamFielding) {
         // Pitcher missions.
         mi = &lbl_800E8558[g_Pitcher.charID];
         trk = &starMissionCompletionTracker[mi->trk];
@@ -453,7 +446,7 @@ void fn_3_16230C(s32 result, u8 rbi) {
         }
     }
 
-    if (*(s16*)(q + 0x40) == g_GameLogic.teamBatting) { // TODO type
+    if (q->humanPlayer == g_GameLogic.teamBatting) {
         // Batter missions.
         mi = &lbl_800E8558[g_Batter.charID];
         pi = &g_Pitcher;
@@ -553,8 +546,8 @@ void fn_3_16230C(s32 result, u8 rbi) {
                             case 30:
                                 if (result == 10) {
                                     for (p = 0; p < 9; p++) {
-                                        if (rec->target == lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].row &&
-                                            lbl_803537E4[*(s16*)(q + 0x40)][p]._09 != 0) {
+                                        if (rec->target == lbl_800E8558[inMemRoster[q->humanPlayer][p].stats.CharID].row &&
+                                            lbl_803537E4[q->humanPlayer][p]._09 != 0) {
                                             MISSION_STATUS(trk, i) = -1;
                                             break;
                                         }
@@ -620,12 +613,12 @@ void fn_3_16230C(s32 result, u8 rbi) {
         if (result == 10) {
             other = &lbl_800E8558[g_Batter.charID];
             for (p = 0; p < 9; p++) {
-                mi = &lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID];
+                mi = &lbl_800E8558[inMemRoster[q->humanPlayer][p].stats.CharID];
                 trk = &starMissionCompletionTracker[mi->trk];
                 rec = lbl_80109AE8[mi->row];
                 for (i = 0; i < 10; i++, rec++) {
                     if (MISSION_STATUS(trk, i) >= 0 && rec->type == 30 &&
-                        rec->target == other->row && lbl_803537E4[*(s16*)(q + 0x40)][p]._09 != 0) {
+                        rec->target == other->row && lbl_803537E4[q->humanPlayer][p]._09 != 0) {
                         MISSION_STATUS(trk, i) = -1;
                     }
                 }
@@ -642,7 +635,7 @@ void fn_3_16230C(s32 result, u8 rbi) {
 // .text:0x00162D54 size:0xA98
 #if NONMATCHING
 void fn_3_162D54(void) {
-    u8* q = lbl_3_common_bss_37400;
+    StarChanceState* q = &lbl_3_common_bss_37400;
     s32 side;
     s32 p;
     s32 i;
@@ -653,11 +646,11 @@ void fn_3_162D54(void) {
     MissionRec* rec;
     MissionBatterRecord* br;
 
-    side = *(s16*)(q + 0x40) ^ g_GameLogic._000; // TODO type
+    side = q->humanPlayer ^ g_GameLogic._000;
     if (g_d_GameSettings.bJMatchInd != 1) {
         if (lbl_3_common_bss_32A94._4C[side] == 1) {
-            player = lbl_80353A90._0BE[*(s16*)(q + 0x40)].player;
-            t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][player].stats.CharID].trk;
+            player = lbl_80353A90._0BE[q->humanPlayer].player;
+            t = lbl_800E8558[inMemRoster[q->humanPlayer][player].stats.CharID].trk;
             trk = &starMissionCompletionTracker[t];
             rec = lbl_80109AE8[lbl_800E8558[t].row];
             for (i = 0; i < 10; i++, rec++) {
@@ -670,7 +663,7 @@ void fn_3_162D54(void) {
                         break;
                     case 6:
                     case 9:
-                        if (lbl_803535C8[*(s16*)(q + 0x40)][player]._18 != 0) {
+                        if (lbl_803535C8[q->humanPlayer][player]._18 != 0) {
                             if (rec->type == 6) {
                                 if (rec->target == lbl_800E8558[lbl_8034E9A0._46E4].row) {
                                     MISSION_STATUS(trk, i) = -1;
@@ -690,8 +683,8 @@ void fn_3_162D54(void) {
 
         // Batting average (type 25) and type 26 missions.
         for (p = 0; p < 9; p++) {
-            br = &lbl_803537E4[*(s16*)(q + 0x40)][p];
-            t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].trk;
+            br = &lbl_803537E4[q->humanPlayer][p];
+            t = lbl_800E8558[inMemRoster[q->humanPlayer][p].stats.CharID].trk;
             trk = &starMissionCompletionTracker[t];
             rec = lbl_80109AE8[lbl_800E8558[t].row];
             for (i = 0; i < 10; i++, rec++) {
@@ -717,7 +710,7 @@ void fn_3_162D54(void) {
                 }
             }
             for (p = 0; p < 9; p++) {
-                t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].trk;
+                t = lbl_800E8558[inMemRoster[q->humanPlayer][p].stats.CharID].trk;
                 trk = &starMissionCompletionTracker[t];
                 rec = lbl_80109AE8[lbl_800E8558[t].row];
                 for (i = 0; i < 10; i++, rec++) {
@@ -729,7 +722,7 @@ void fn_3_162D54(void) {
         } else {
             // Lost: missions flagged "needs a win" are not completed.
             for (p = 0; p < 9; p++) {
-                t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].trk;
+                t = lbl_800E8558[inMemRoster[q->humanPlayer][p].stats.CharID].trk;
                 trk = &starMissionCompletionTracker[t];
                 rec = lbl_80109AE8[lbl_800E8558[t].row];
                 for (i = 0; i < 10; i++, rec++) {
@@ -743,7 +736,7 @@ void fn_3_162D54(void) {
 
     // Missions that need a minimum difficulty.
     for (p = 0; p < 9; p++) {
-        t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].trk;
+        t = lbl_800E8558[inMemRoster[q->humanPlayer][p].stats.CharID].trk;
         trk = &starMissionCompletionTracker[t];
         rec = lbl_80109AE8[lbl_800E8558[t].row];
         for (i = 0; i < 10; i++, rec++) {
@@ -764,12 +757,12 @@ void fn_3_162D54(void) {
     }
 
     for (p = 0; p < 9; p++) {
-        t = lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].trk;
+        t = lbl_800E8558[inMemRoster[q->humanPlayer][p].stats.CharID].trk;
         trk = &starMissionCompletionTracker[t];
         rec = lbl_80109AE8[lbl_800E8558[t].row];
         for (i = 0; i < 10; i++, rec++) {
             if (MISSION_STATUS(trk, i) == -1 && (rec->flags & 0x800) && lbl_8034E9A0._46E4 != 9 &&
-                *(s16*)((u8*)starMissionCompletionTracker + 0x16C2) != 0x2A) { // TODO type
+                gChallengeState._16C2 != 0x2A) {
                 MISSION_STATUS(trk, i) = 0;
             }
         }
@@ -797,15 +790,15 @@ void fn_3_1637EC(void) {
     s32 j;
     ChallengeTrackingStruct* e;
     ChallengeTrackingStruct* t = starMissionCompletionTracker;
-    a = *((u8*)starMissionCompletionTracker + 0x441C);
-    b = *((u8*)starMissionCompletionTracker + 0x4415);
+    a = gChallengeState._441C;
+    b = gChallengeState._4415;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
     for (j = 0; j < 9; j++) {
         if (ids[j] != -1) {
             e = &t[ids[j]];
-            m = *((u8*)e->scoutFlagPointer + 4 + b * 6 + a);
+            m = SCOUT_FLAGS(e, b, a);
             if ((s8)m != 0 && (s8)e->scoutFlagsAchieved < (s8)m) {
                 e->scoutFlagsAchieved = m;
             }
@@ -816,13 +809,13 @@ void fn_3_1637EC(void) {
 // .text:0x00163948 size:0x134
 s32 fn_3_163948(void) {
     s16 ids[9];
-    u8* q;
-    u8* p;
+    StarChanceState* q;
+    StarChanceState* p;
     s32 i;
     s32 r;
     s32 m;
     s32 j;
-    q = lbl_3_common_bss_37400;
+    q = &lbl_3_common_bss_37400;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
@@ -830,8 +823,8 @@ s32 fn_3_163948(void) {
     r = 0;
     for (j = 0; j < 9; j++) {
         if (ids[j] != -1) {
-            m = p[j * 2 + 1];
-            if ((s8)m != 0 && (s8)p[j * 2] < (s8)m) {
+            m = p->_00[j][1];
+            if ((s8)m != 0 && (s8)p->_00[j][0] < (s8)m) {
                 r = 1;
             }
         }
@@ -848,23 +841,23 @@ s32 fn_3_163A7C(s32 r) {
     ChallengeTrackingStruct* e;
     s32 id;
     ChallengeTrackingStruct* t = starMissionCompletionTracker;
-    u8* q = lbl_3_common_bss_37400;
+    StarChanceState* q = &lbl_3_common_bss_37400;
     InMemBatterType* ba = &g_Batter;
     InMemPitcherType* pi = &g_Pitcher;
-    a = *((u8*)starMissionCompletionTracker + 0x441C);
-    b = *((u8*)starMissionCompletionTracker + 0x4415);
+    a = gChallengeState._441C;
+    b = gChallengeState._4415;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
-    if (q[0x46] == 2) {
+    if (q->type == 2) {
         id = pi->charID;
-    } else if (q[0x46] == 1) {
+    } else if (q->type == 1) {
         id = ba->charID;
     }
     for (i = 0; i < 9; i++) {
         if (id == ids[i]) {
             e = &t[ids[i]];
-            if ((s8)*((u8*)e->scoutFlagPointer + 4 + b * 6 + a) != 0) {
+            if ((s8)SCOUT_FLAGS(e, b, a) != 0) {
                 r = 1;
             }
         }
@@ -883,8 +876,8 @@ s32 fn_3_163BD4(void) {
     s32 j;
     ChallengeTrackingStruct* e;
     ChallengeTrackingStruct* t = starMissionCompletionTracker;
-    a = *((u8*)starMissionCompletionTracker + 0x441C);
-    b = *((u8*)starMissionCompletionTracker + 0x4415);
+    a = gChallengeState._441C;
+    b = gChallengeState._4415;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
@@ -892,7 +885,7 @@ s32 fn_3_163BD4(void) {
     for (j = 0; j < 9; j++) {
         if (ids[j] != -1) {
             e = &t[ids[j]];
-            m = *((u8*)e->scoutFlagPointer + 4 + b * 6 + a);
+            m = SCOUT_FLAGS(e, b, a);
             if ((s8)m != 0 && (s8)e->scoutFlagsAchieved < (s8)m) {
                 r = 1;
             }
@@ -905,15 +898,15 @@ s32 fn_3_163BD4(void) {
 void fn_3_163D34(void) {
     s16 ids[9];
     s32 i;
-    u8* q;
+    StarChanceState* q;
     u8 a;
     u8 b;
-    u8* p;
+    StarChanceState* p;
     ChallengeTrackingStruct* e;
     ChallengeTrackingStruct* t = starMissionCompletionTracker;
-    a = *((u8*)starMissionCompletionTracker + 0x441C);
-    b = *((u8*)starMissionCompletionTracker + 0x4415);
-    q = lbl_3_common_bss_37400;
+    a = gChallengeState._441C;
+    b = gChallengeState._4415;
+    q = &lbl_3_common_bss_37400;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
@@ -921,9 +914,9 @@ void fn_3_163D34(void) {
     for (i = 0; i < 9; i++) {
         if (ids[i] != -1) {
             e = &t[ids[i]];
-            if ((s8)*((u8*)e->scoutFlagPointer + 4 + b * 6 + a) != 0) {
-                p[i * 2] = e->scoutFlagsAchieved;
-                p[i * 2 + 1] = *((u8*)e->scoutFlagPointer + 4 + b * 6 + a);
+            if ((s8)SCOUT_FLAGS(e, b, a) != 0) {
+                p->_00[i][0] = e->scoutFlagsAchieved;
+                p->_00[i][1] = SCOUT_FLAGS(e, b, a);
             }
         }
     }
@@ -943,12 +936,12 @@ void fn_3_163E94(void) {
     s32 r;
     s32 id;
     s32 m;
-    u8* q = lbl_3_common_bss_37400;
+    StarChanceState* q = &lbl_3_common_bss_37400;
     ChallengeTrackingStruct* e;
     ChallengeTrackingStruct* t = starMissionCompletionTracker;
-    a = *((u8*)starMissionCompletionTracker + 0x441C);
-    b = *((u8*)starMissionCompletionTracker + 0x4415);
-    bonus = lbl_80109420[q[0x46]].v;
+    a = gChallengeState._441C;
+    b = gChallengeState._4415;
+    bonus = lbl_80109420[q->type].v;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
@@ -959,16 +952,16 @@ void fn_3_163E94(void) {
         while (bonus > 0) {
             id = ids[i];
             if (id != -1) {
-                m = q[i * 2 + 1];
+                m = q->_00[i][1];
                 e = &t[id];
-                if ((s8)m != 0 && (s8)q[i * 2] < (s8)m) {
+                if ((s8)m != 0 && (s8)q->_00[i][0] < (s8)m) {
                     bonus--;
-                    q[i * 5 + 0x13] = *((u8*)e->scoutFlagPointer + 4 + b * 6 + a);
-                    q[i * 5 + 0x12] = e->scoutFlagsAchieved;
-                    q[i * 5 + 0x14]++;
-                    q[i * 5 + 0x15] = 1;
-                    q[i * 5 + 0x16] = id;
-                    q[i * 2]++;
+                    q->slots[i].target = SCOUT_FLAGS(e, b, a);
+                    q->slots[i].achieved = e->scoutFlagsAchieved;
+                    q->slots[i].bonus++;
+                    q->slots[i].active = 1;
+                    q->slots[i].charID = id;
+                    q->_00[i][0]++;
                 }
             }
             i = (i + 1) % 9;
@@ -987,35 +980,35 @@ void fn_3_16440C(s32 id) {
     s32 j;
     s32 m;
     ChallengeTrackingStruct* t = starMissionCompletionTracker;
-    u8* q = lbl_3_common_bss_37400;
+    StarChanceState* q = &lbl_3_common_bss_37400;
     InMemBatterType* ba = &g_Batter;
     u8 a;
     InMemPitcherType* pi = &g_Pitcher;
     u8 b;
     s32 v;
     ChallengeTrackingStruct* e;
-    a = *((u8*)starMissionCompletionTracker + 0x441C);
-    b = *((u8*)starMissionCompletionTracker + 0x4415);
-    v = lbl_80109420[q[0x46]].v;
+    a = gChallengeState._441C;
+    b = gChallengeState._4415;
+    v = lbl_80109420[q->type].v;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
-    if (q[0x46] == 2) {
+    if (q->type == 2) {
         id = pi->charID;
-    } else if (q[0x46] == 1) {
+    } else if (q->type == 1) {
         id = ba->charID;
     }
     for (j = 0; j < 9; j++) {
         if (id == ids[j]) {
             e = &t[ids[j]];
-            m = *((u8*)e->scoutFlagPointer + 4 + b * 6 + a);
+            m = SCOUT_FLAGS(e, b, a);
             if ((s8)m != 0) {
-                q[j * 5 + 0x13] = m;
-                q[j * 5 + 0x12] = e->scoutFlagsAchieved;
-                q[j * 5 + 0x14] = v;
+                q->slots[j].target = m;
+                q->slots[j].achieved = e->scoutFlagsAchieved;
+                q->slots[j].bonus = v;
                 v = 0;
-                q[j * 5 + 0x15] = 1;
-                q[j * 5 + 0x16] = ids[j];
+                q->slots[j].active = 1;
+                q->slots[j].charID = ids[j];
             }
         }
     }
@@ -1024,8 +1017,8 @@ void fn_3_16440C(s32 id) {
 // .text:0x00164554 size:0x110
 void fn_3_164554(void) {
     s16 ids[9];
-    s8* p;
-    s8* q;
+    StarChanceState* p;
+    StarChanceState* q;
     s32 i;
     s32 k;
     u8 a;
@@ -1033,20 +1026,20 @@ void fn_3_164554(void) {
     u8 m;
     ChallengeTrackingStruct* e;
     ChallengeTrackingStruct* t = starMissionCompletionTracker;
-    a = *((u8*)starMissionCompletionTracker + 0x441C);
-    b = *((u8*)starMissionCompletionTracker + 0x4415);
-    q = (s8*)lbl_3_common_bss_37400;
+    a = gChallengeState._441C;
+    b = gChallengeState._4415;
+    q = &lbl_3_common_bss_37400;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
     p = q;
     { s32 t6 = b * 6; k = t6 + a; }
-    for (i = 0; i < 9; i++, p += 5) {
-        if (ids[i] != -1 && p[0x15] == 1) {
+    for (i = 0; i < 9; i++) {
+        if (ids[i] != -1 && (s8)p->slots[i].active == 1) {
             e = &t[ids[i]];
-            if (*((s8*)e->scoutFlagPointer + 4 + k) != 0) {
-                e->scoutFlagsAchieved += p[0x14];
-                if ((s8)e->scoutFlagsAchieved > (s8)(m = *((u8*)e->scoutFlagPointer + 4 + k))) {
+            if ((&((ScoutFlagTable*)e->scoutFlagPointer)->flags[0][0])[k] != 0) {
+                e->scoutFlagsAchieved += p->slots[i].bonus;
+                if ((s8)e->scoutFlagsAchieved > (s8)(m = SCOUT_FLAGS_K(e, k))) {
                     e->scoutFlagsAchieved = m;
                 }
             }
@@ -1069,10 +1062,10 @@ void fn_3_164664(void) {
     s32 m;
     ChallengeTrackingStruct* e;
     ChallengeTrackingStruct* t = starMissionCompletionTracker;
-    u8* q = lbl_3_common_bss_37400;
-    a = *((u8*)starMissionCompletionTracker + 0x441C);
-    b = *((u8*)starMissionCompletionTracker + 0x4415);
-    bonus = lbl_80109420[q[0x46]].v;
+    StarChanceState* q = &lbl_3_common_bss_37400;
+    a = gChallengeState._441C;
+    b = gChallengeState._4415;
+    bonus = lbl_80109420[q->type].v;
     for (i = 0; i < 9; i++) {
         ids[i] = inMemRoster[1][i].stats.CharID;
     }
@@ -1082,7 +1075,7 @@ void fn_3_164664(void) {
         while (bonus > 0) {
             if (ids[i] != -1) {
                 e = &t[ids[i]];
-                m = *((u8*)e->scoutFlagPointer + 4 + b * 6 + a);
+                m = SCOUT_FLAGS(e, b, a);
                 if ((s8)m != 0 && (s8)e->scoutFlagsAchieved < (s8)m) {
                     bonus--;
                     e->scoutFlagsAchieved++;
@@ -1104,7 +1097,7 @@ void fn_3_164664(void) {
 // .text:0x00164A74 size:0xE7C
 #if NONMATCHING
 void fn_3_164A74(void) {
-    MissionChallengeState* st = (MissionChallengeState*)lbl_3_common_bss_37400; // TODO type
+    StarChanceState* st = &lbl_3_common_bss_37400;
     s32 reward = 0;
     s32 outcome = 0;
     s32 forced;
@@ -1113,37 +1106,37 @@ void fn_3_164A74(void) {
     ChallengeTrackingStruct* e;
     u8 m;
 
-    st->result = 1;
-    st->bonus = lbl_80109420[st->kind].v;
-    switch (st->kind) {
+    st->_47 = 1;
+    st->_49 = lbl_80109420[st->type].v;
+    switch (st->type) {
     case 1:
         if (g_FieldingLogic._107 != 0) {
             if (g_Strikes.outs >= 3) {
-                st->result = 2;
+                st->_47 = 2;
             } else if (g_Pitcher.strikeOutOrWalk == 1) {
-                st->_48 = 0;
+                st->state = 0;
             } else {
-                st->result = 0;
+                st->_47 = 0;
             }
         } else if ((g_Strikes.outs > g_Strikes.storedOuts && lbl_3_common_bss_32A94._22 == 0) ||
                    g_Pitcher.strikeOutOrWalk == 1) {
             if (g_Pitcher.strikeOutOrWalk == 1 || lbl_3_common_bss_32A94._24 == 0xE) {
                 reward = 1;
-                st->result = 2;
+                st->_47 = 2;
             } else {
                 reward = 0;
-                st->result = 2;
+                st->_47 = 2;
             }
         }
         break;
     case 2:
         if (g_FieldingLogic._107 != 0) {
             if (g_Strikes.outs >= 3) {
-                st->_48 = 0;
+                st->state = 0;
             } else if (g_Pitcher.strikeOutOrWalk == 1) {
-                st->_48 = 0;
+                st->state = 0;
             } else {
-                st->result = 0;
+                st->_47 = 0;
             }
         } else if ((g_Strikes.allForcedRunnersReachedTheirBaseInd == 1 || lbl_3_common_bss_32A94._22 >= 1) &&
                    lbl_3_common_bss_32A94._24 == 0 && lbl_3_common_bss_32A94._20 <= 0) {
@@ -1160,20 +1153,20 @@ void fn_3_164A74(void) {
             } else if (lbl_3_common_bss_32A94._23 >= 3) {
                 reward = 2;
             }
-            st->result = 2;
+            st->_47 = 2;
         }
         break;
     case 3:
         if (g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0] > g_Scores._A0 || g_Ball.deadBallReason == 1 ||
             ((g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3) && g_RunningLogic._12 >= 4)) {
-            st->result = 2;
-            st->_48 = 0;
+            st->_47 = 2;
+            st->state = 0;
         } else if (g_Strikes.outs >= 3 ||
                    (g_Strikes.outs == 2 && g_Pitcher.strikeOutOrWalk == 1 && g_FieldingLogic._107 == 0)) {
-            st->_48 = 0;
+            st->state = 0;
         } else {
-            st->_48 = 1;
-            st->result = 0;
+            st->state = 1;
+            st->_47 = 0;
         }
         break;
     case 4: {
@@ -1182,58 +1175,58 @@ void fn_3_164A74(void) {
             (g_Ball.deadBallReason == 1 && g_Scores._A0 + g_RunningLogic._12 > batting) ||
             ((g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3) && g_RunningLogic._12 >= 4 &&
              g_Scores._A0 == batting)) {
-            st->result = 2;
-            st->_48 = 0;
+            st->_47 = 2;
+            st->state = 0;
         } else if (g_Strikes.outs >= 3 || (g_Strikes.outs == 2 && g_Pitcher.strikeOutOrWalk == 1)) {
-            st->_48 = 0;
+            st->state = 0;
         } else {
-            st->_48 = 1;
-            st->result = 0;
+            st->state = 1;
+            st->_47 = 0;
         }
         break;
     }
     case 5:
         if (g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0] > g_Scores._A0 || g_Ball.deadBallReason == 1 ||
             (g_RunningLogic.occupiedBases == 0x1111 && (g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3))) {
-            st->_48 = 0;
+            st->state = 0;
         } else if ((g_Strikes.outs >= 2 && g_Pitcher.strikeOutOrWalk == 1 && g_FieldingLogic._107 == 0) ||
                    g_Strikes.outs >= 3) {
-            st->result = 2;
-            st->_48 = 0;
+            st->_47 = 2;
+            st->state = 0;
         } else {
-            st->_48 = 1;
-            st->result = 0;
+            st->state = 1;
+            st->_47 = 0;
         }
         break;
     case 6:
         if (g_Strikes.outs >= g_Strikes.storedOuts + 2) {
-            st->result = 2;
-            st->_48 = 0;
+            st->_47 = 2;
+            st->state = 0;
         } else if (g_FieldingLogic._107 != 0) {
-            st->_48 = 1;
-            st->result = 0;
+            st->state = 1;
+            st->_47 = 0;
         } else {
-            st->_48 = 0;
+            st->state = 0;
         }
         break;
     case 7:
         if (g_Pitcher.strikeOutOrWalk == 1) {
-            st->result = 2;
-            st->_48 = 0;
+            st->_47 = 2;
+            st->state = 0;
         } else if (g_FieldingLogic._107 != 0) {
             if (g_Strikes.outs >= 3) {
-                st->_48 = 0;
+                st->state = 0;
             } else {
-                st->_48 = 1;
-                st->result = 0;
+                st->state = 1;
+                st->_47 = 0;
             }
         }
         break;
     case 8:
         if (lbl_3_common_bss_32A94._61 == 3 &&
             ((g_Strikes.outs >= 2 && g_Pitcher.strikeOutOrWalk == 1 && g_FieldingLogic._107 == 0) || g_Strikes.outs >= 3)) {
-            st->result = 2;
-            st->_48 = 0;
+            st->_47 = 2;
+            st->state = 0;
         } else {
             forced = 0;
             if (g_Ball.deadBallReason == 3) {
@@ -1253,32 +1246,32 @@ void fn_3_164A74(void) {
                 }
             }
             if (lbl_3_common_bss_32A94._61 == 3 && g_FieldingLogic._107 == 0) {
-                st->_48 = 0;
+                st->state = 0;
             } else if (g_Scores._A0 < g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0]) {
-                st->_48 = 0;
+                st->state = 0;
             } else if (g_Ball.deadBallReason == 1 || forced) {
-                st->_48 = 0;
+                st->state = 0;
             } else {
-                st->_48 = 1;
-                st->result = 0;
+                st->state = 1;
+                st->_47 = 0;
             }
         }
         break;
     case 9:
         if (lbl_3_common_bss_32A94._24 == 1) {
-            st->result = 2;
-            st->_48 = 0;
+            st->_47 = 2;
+            st->state = 0;
         } else if (g_FieldingLogic._107 != 0) {
             if (g_Strikes.outs >= 3) {
-                st->_48 = 0;
+                st->state = 0;
             } else if (g_Pitcher.strikeOutOrWalk == 1) {
-                st->_48 = 0;
+                st->state = 0;
             } else {
-                st->_48 = 1;
-                st->result = 0;
+                st->state = 1;
+                st->_47 = 0;
             }
         } else {
-            st->_48 = 0;
+            st->state = 0;
         }
         break;
     case 10:
@@ -1287,21 +1280,21 @@ void fn_3_164A74(void) {
             outcome = 1;
         }
         if (outcome) {
-            st->result = 2;
-            st->_48 = 0;
+            st->_47 = 2;
+            st->state = 0;
         } else if (g_FieldingLogic._107 != 0) {
             if (g_Strikes.outs >= 3) {
-                st->_48 = 0;
+                st->state = 0;
             } else if (g_Pitcher.strikeOutOrWalk == 1) {
-                st->_48 = 0;
+                st->state = 0;
             } else if (g_Runners[3].runnerOnFieldOrOutOrScored != 1) {
-                st->_48 = 0;
+                st->state = 0;
             } else {
-                st->_48 = 1;
-                st->result = 0;
+                st->state = 1;
+                st->_47 = 0;
             }
         } else {
-            st->_48 = 0;
+            st->state = 0;
         }
         break;
     case 11:
@@ -1315,79 +1308,78 @@ void fn_3_164A74(void) {
             }
         }
         if (outcome == 2) {
-            st->result = 1;
-            st->_48 = 0;
+            st->_47 = 1;
+            st->state = 0;
         } else if (outcome != 0) {
-            st->result = 2;
-            st->_48 = 0;
+            st->_47 = 2;
+            st->state = 0;
         } else if (g_FieldingLogic._107 != 0) {
             if (g_Strikes.outs >= 3) {
-                st->_48 = 0;
+                st->state = 0;
             } else if (g_Pitcher.strikeOutOrWalk == 1) {
-                st->_48 = 0;
+                st->state = 0;
             } else {
-                st->_48 = 1;
-                st->result = 0;
+                st->state = 1;
+                st->_47 = 0;
             }
         } else {
-            st->_48 = 0;
+            st->state = 0;
         }
         break;
     case 12:
         if (g_GameLogic.EventTriggers_EndOfGame != 0) {
             if ((g_GameLogic._000 ^ (g_Scores._A4 == g_d_GameSettings.humanTeamNumber)) != 0 && g_Scores._A4 != 2) {
-                st->result = 2;
+                st->_47 = 2;
             } else {
-                st->result = 1;
+                st->_47 = 1;
             }
-            st->_48 = 0;
+            st->state = 0;
         } else if (g_Scores.inning >= g_Scores.maxInnings && g_Scores._AD != 0) {
             if (g_Ball.deadBallReason == 1 &&
                 g_Scores._A0 + g_RunningLogic._12 > g_Scores.team[g_GameLogic.awayTeamBattingInd_battingTeam].runs[0]) {
                 if (g_GameLogic.teamBatting == g_d_GameSettings.humanTeamNumber) {
-                    st->result = 2;
+                    st->_47 = 2;
                 }
-                st->_48 = 0;
+                st->state = 0;
             } else if (g_Strikes.outs >= 2 && g_Pitcher.strikeOutOrWalk == 1) {
-                if ((g_Scores.team[1].runs[0] > g_Scores.team[0].runs[0] && st->team == g_GameLogic.teamBatting) ||
-                    (g_Scores.team[1].runs[0] < g_Scores.team[0].runs[0] && st->team == g_GameLogic.teamFielding)) {
-                    st->result = 2;
+                if ((g_Scores.team[1].runs[0] > g_Scores.team[0].runs[0] && st->humanPlayer == g_GameLogic.teamBatting) ||
+                    (g_Scores.team[1].runs[0] < g_Scores.team[0].runs[0] && st->humanPlayer == g_GameLogic.teamFielding)) {
+                    st->_47 = 2;
                 }
-                st->_48 = 0;
+                st->state = 0;
             } else if (g_RunningLogic._10 == 4 && (g_Pitcher.strikeOutOrWalk == 2 || g_Pitcher.strikeOutOrWalk == 3)) {
                 if (g_Scores.team[1].runs[0] == g_Scores.team[0].runs[0]) {
                     if (g_GameLogic.teamBatting == g_d_GameSettings.humanTeamNumber) {
-                        st->result = 2;
+                        st->_47 = 2;
                     }
-                    st->_48 = 0;
+                    st->state = 0;
                 } else {
-                    st->_48 = 1;
-                    st->result = 0;
+                    st->state = 1;
+                    st->_47 = 0;
                 }
             } else {
-                st->_48 = 1;
-                st->result = 0;
+                st->state = 1;
+                st->_47 = 0;
             }
         } else {
-            st->_48 = 1;
-            st->result = 0;
+            st->state = 1;
+            st->_47 = 0;
         }
         break;
     }
 
-    if (st->result == 2) {
-        if (st->kind == 2 || st->kind == 1) {
+    if (st->_47 == 2) {
+        if (st->type == 2 || st->type == 1) {
             // Reward (lbl_80109420[kind].v + reward) for the scouted character.
-            v = (&lbl_80109420[st->kind].v)[reward];
-            e = &starMissionCompletionTracker[*((u8*)starMissionCompletionTracker + 0x43C0)]; // TODO type
+            v = (&lbl_80109420[st->type].v)[reward];
+            e = &starMissionCompletionTracker[gChallengeState._43C0];
             for (j = 0; j < 9; j++) {
-                if (st->award[j].active == 1) {
-                    st->award[j].bonus = v;
+                if (st->slots[j].active == 1) {
+                    st->slots[j].bonus = v;
                 }
             }
             e->scoutFlagsAchieved += v;
-            m = *((u8*)e->scoutFlagPointer + 4 + *((u8*)starMissionCompletionTracker + 0x4415) * 6 +
-                  *((u8*)starMissionCompletionTracker + 0x441C));
+            m = SCOUT_FLAGS(e, gChallengeState._4415, gChallengeState._441C);
             if ((s8)e->scoutFlagsAchieved > (s8)m) {
                 e->scoutFlagsAchieved = m;
             }

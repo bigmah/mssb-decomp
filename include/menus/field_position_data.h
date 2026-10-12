@@ -5,7 +5,7 @@
 
 // Unreferenced table of field positions (values 0..8), 5 rows of 8. File-scope static
 // of a header: each including unit has its own copy in .data (11 copies in menus.rel).
-// TODO type: meaning of the rows.
+// The meaning of the rows is unknown.
 static u8 fieldPositionTable[5][8] = {
     {2, 5, 4, 3, 8, 3, 4, 5},
     {2, 6, 0, 1, 8, 6, 7, 1},

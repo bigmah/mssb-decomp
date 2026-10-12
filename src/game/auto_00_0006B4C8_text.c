@@ -186,7 +186,7 @@ void fn_3_6B674(void) {
                     }
                 }
                 if (g_d_GameSettings.GameModeSelected == 6 && g_GameLogic.sceneID == 1 &&
-                    (s8)g_Minigame.minigameFielderIndex[i] >= 1) { // TODO type: indexed up to 12
+                    (s8)g_Minigame.minigameFielderIndex[i] >= 1) { // TODO port: i runs to 12, past the 4 entries into _18FC.. (as the original reads); out of bounds in C
                     visible = 0;
                 }
             } else if (g_GameLogic.secondaryGameMode != 0xE && g_Stats.replayInd == 0 && i != 0 && i != 9 &&

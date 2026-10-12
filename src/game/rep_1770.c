@@ -3,6 +3,7 @@
 #include "header_rep_inline.h"
 
 #include "static/UnknownHomes_Static.h"
+#include "main/file_80069BDC.h" // gChallengeState
 
 extern u8 lbl_3_data_D258[];
 extern u8 lbl_3_data_D250[5];
@@ -436,8 +437,7 @@ void fn_3_9A8A4(void) {
     HUD_OBJ(task, 46)->_5C = 0x1E0000;
     HUD_OBJ(task, 47)->_5C = 0x1E0000;
     if (g_d_GameSettings.exhibitionMatchInd == 0) {
-        // TODO type: per-character "starred" flags live 0x43D6 bytes into this save block
-        u8* starred = (u8*)starMissionCompletionTracker + 0x43D6;
+        u8* starred = gChallengeState._43D6; // per character id: star icon shown
         if (starred[g_Pitcher.charID] != 0 && g_GameLogic._13E[g_GameLogic.teamFielding] == 0) {
             HUD_OBJ(task, 48)->flags |= 2;
         }
@@ -567,8 +567,9 @@ void fn_3_9B7F4(void) {
 
 // .text:0x0009BEE0 size:0x134 mapped:0x806DAF74
 void fn_3_9BEE0(HudTask* task) {
-    // TODO type: strikes/balls/outs read as an s32[3]; the named fields change register allocation
-    s32 target = ((s32*)&g_Strikes)[2];
+    // TODO type: balls is read as ((s32*)&g_Strikes)[1]; with every count named (g_Strikes.balls) the
+    // saved registers rotate (r27-r31), and some access must go through the s32 view to keep them.
+    s32 target = g_Strikes.outs;
     s32 i;
     if (g_d_GameSettings.GameModeSelected == 6) {
         target = g_Minigame._190D - g_Minigame._1910;
@@ -579,10 +580,10 @@ void fn_3_9BEE0(HudTask* task) {
             break;
         }
         if (i < 2) {
-            if (task->state == ((s32*)&g_Strikes)[0]) {
+            if (task->state == g_Strikes.strikes) {
                 continue;
             }
-            if (((s32*)&g_Strikes)[0] >= i + 1) {
+            if (g_Strikes.strikes >= i + 1) {
                 state = 0;
             }
         } else if (i < 5) {
@@ -602,7 +603,7 @@ void fn_3_9BEE0(HudTask* task) {
         }
         fn_8003649C(task, i + 1, i + 1, 0x107, state);
     }
-    task->state = ((s32*)&g_Strikes)[0];
+    task->state = g_Strikes.strikes;
     task->_1E = ((s32*)&g_Strikes)[1];
     task->_20 = target;
 }

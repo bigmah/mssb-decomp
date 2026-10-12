@@ -4,15 +4,14 @@
 #include "Dolphin/stl.h"
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
+#include "game/UnknownHomes_Game.h"
+#include "main/file_80011640.h" // CharMgr
 
 // Scoreboard overlay: two-digit counters (score, outs, ...) drawn as textured quads.
 // Functions are written in reverse address order (-inline deferred emits them last-first).
 
-extern u8 lbl_8036E548[];
 extern u8 lbl_803CBBC0[];
-extern u8 g_GameLogic[];
-extern u8 g_Scores[];
-extern u8 g_Strikes[];
+extern GameScores g_Scores;
 extern void fn_800A7D4C(int, void*);
 extern s32 fn_8005268C(void);
 extern void fn_80033B58(void*, s32, s32, s32);
@@ -88,13 +87,13 @@ void fn_3_16E2FC(u16* p, s32 i) {
 void fn_3_16E1EC(void) {
     s32 x;
     u32 idx;
-    if (((u32)lbl_3_bss_D6E4 == 0) | (lbl_3_bss_D6EC | (lbl_8036E548[0x3088] == 0))) {
+    if ((lbl_3_bss_D6E4 == 0) | (lbl_3_bss_D6EC | (lbl_8036E548._3088 == 0))) {
         lbl_3_bss_D6E4 = NULL;
         lbl_3_bss_D6E8 = -1;
         lbl_3_bss_D6EC = 0;
         REMOVE_QUEUE_NOARG();
     }
-    x = g_GameLogic[0x11E];
+    x = g_GameLogic.gameStatus;
     if ((x != 0x13) & (x != 0x14)) {
         fn_3_16E1A0();
     }
@@ -105,12 +104,12 @@ void fn_3_16E1EC(void) {
 // .text:0x0016E1A0
 void fn_3_16E1A0(void) {
     s32* o = lbl_3_bss_D6F0;
-    o[0] = *(s16*)(g_Scores + 0x2A);
-    o[1] = *(s16*)(g_Scores + 4);
-    o[2] = *(s32*)g_Scores;
-    o[3] = *(s32*)g_Strikes;
-    o[4] = *(s32*)(g_Strikes + 4);
-    o[5] = *(s32*)(g_Strikes + 8);
+    o[0] = g_Scores.team[1].runs[0];
+    o[1] = g_Scores.team[0].runs[0];
+    o[2] = g_Scores.inning;
+    o[3] = g_Strikes.strikes;
+    o[4] = g_Strikes.balls;
+    o[5] = g_Strikes.outs;
 }
 
 // .text:0x0016DFC4 size:0x1DC

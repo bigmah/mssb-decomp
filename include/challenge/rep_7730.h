@@ -29,7 +29,22 @@ typedef struct {
     u16 paletteEntries;
     u8 paletteFormat;
     u8 padding1B;
-} ChallengeTextureHeader;
+    u16 index; // archive: entry whose image this texture uses
+    u8 padding1E[2];
+} ChallengeTextureHeader; // TexImage (main/file_80024184.h); size: 0x20
+
+// Texture archive (TexArchive): a count followed by its images, relocated in place by convertTextureHeader.
+typedef struct ChallengeTexArchive {
+    /* 0x00 */ u16 count;
+    /* 0x02 */ u8 pad2[2];
+    /* 0x04 */ ChallengeTextureHeader entries[1]; // count entries
+} ChallengeTexArchive;
+
+// Header of the loaded test files: 32-bit offsets of their parts from the file start.
+typedef struct ChallengeFileHeader {
+    /* 0x00 */ s32 offsets[5];
+    /* 0x14 */ s32 texOffset; // ChallengeTexArchive
+} ChallengeFileHeader;
 
 // Texture-animation draw node (lbl_1_data_107E4, drawn by fn_1_1D694).
 typedef struct ChallengeAnimEntry {
@@ -48,7 +63,7 @@ typedef struct ChallengeAnimEntry {
 typedef struct ChallengeAnimTest {
     /* 0x00 */ ChTaskHeader h;
     /* 0x14 */ u8* file;
-    /* 0x18 */ u8* tex; // texture archive inside `file`
+    /* 0x18 */ ChallengeTexArchive* tex; // texture archive inside `file`
     /* 0x1C */ u16 frameCount;
     /* 0x1E */ u16 frame;
     /* 0x20 */ u16 timer;
@@ -68,12 +83,13 @@ typedef struct {
 } ChallengeTransfer;
 
 // Same layout as RigidBody (main/file_80037054.h); simulated by fn_800385F0/fn_80037BAC.
+// That header can't be included here: its rope prototypes clash with this file's curve types.
 typedef struct {
     /* 0x000 */ Vec p0;
     /* 0x00C */ Vec p1;
     /* 0x018 */ Vec d;
     /* 0x024 */ u8 pad24[0x50 - 0x24];
-    /* 0x050 */ f32 depth;
+    /* 0x050 */ f32 depth; // RigidBody.unk50
     /* 0x054 */ f32 unk54;
     /* 0x058 */ Mtx world;
     /* 0x088 */ Mtx rot;
@@ -159,7 +175,7 @@ typedef struct ChallengeSpriteTask {
 typedef struct {
     /* 0x00 */ Mtx mtx;
     /* 0x30 */ void* data;
-    /* 0x34 */ u8* tex;
+    /* 0x34 */ ChallengeTexArchive* tex;
     /* 0x38 */ struct Anim* anim;
 } ChallengeTexSlot;
 
@@ -236,7 +252,7 @@ typedef struct {
 typedef struct {
     /* 0x00 */ void (*func)(void);
     /* 0x04 */ u8 pad4[0x10];
-    /* 0x14 */ u8* tex;  // texture archive inside `file` (convertTextureHeader'd)
+    /* 0x14 */ ChallengeTexArchive* tex; // texture archive inside `file` (convertTextureHeader'd)
     /* 0x18 */ u8* file; // loaded by fn_1_2004C
     /* 0x1C */ u32 value;
     /* 0x20 */ u8 toggle; // also the page: index into lbl_1_data_10508 / lbl_1_data_10510

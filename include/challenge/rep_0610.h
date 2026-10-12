@@ -94,6 +94,31 @@ typedef struct ChViewer {
     /*0x119*/ u8 _119[3];
 } ChViewer;
 
+// One step of the challenge animation script being played/edited (lbl_1_bss_3218, 8 entries).
+typedef struct ChallengeStep {
+    /* 0x0 */ s16 group;  // < 0: unused slot
+    /* 0x2 */ s16 index;
+    /* 0x4 */ s16 frame;  // advance when the animation reaches this frame (< 0: on A press)
+    /* 0x6 */ s16 sync;
+} ChallengeStep;
+
+// One step of a stored animation script (ChScriptRecord.steps).
+typedef struct ChScriptStep {
+    /* 0x0 */ s8 used;
+    /* 0x1 */ s8 sync;
+    /* 0x2 */ s16 group;
+    /* 0x4 */ s16 index;
+    /* 0x6 */ s16 frame; // -2: the animation's length
+} ChScriptStep;
+
+// Stored animation script (lbl_1_data_F2F4); a record whose first step is unused ends the list.
+typedef struct ChScriptRecord {
+    /* 0x00 */ char name[0x10];
+    /* 0x10 */ ChScriptStep steps[8];
+} ChScriptRecord; // size: 0x50
+
+struct ChDrawMtxNode;
+
 void fn_1_163FC(void);
 
 void fn_1_D2F0(void);
@@ -144,7 +169,7 @@ void fn_1_17954(void);
 
 void fn_1_1073C(CharActor* object);
 
-void fn_1_12F18(u8* object);
+void fn_1_12F18(struct ChDrawMtxNode* object);
 
 void fn_1_106C4(void);
 
@@ -179,7 +204,7 @@ void fn_1_DE1C(void);
 
 void fn_1_D7A4(s32 index);
 
-void fn_1_10CEC(u8* object);
+void fn_1_10CEC(struct ChDrawMtxNode* object);
 
 void fn_1_E8D4(void);
 
@@ -235,13 +260,13 @@ void fn_1_CDC8(void);
 
 void fn_1_10044(void);
 
-void fn_1_10E2C(void* model, f32 (*view)[4], u32 colorX, u32 colorY, u32 colorZ);
+void fn_1_10E2C(Mtx model, Mtx view, u32 colorX, u32 colorY, u32 colorZ);
 
 void fn_1_C5AC(void);
 
 void fn_1_D9B8(void);
 
-void fn_1_1125C(u8* object);
+void fn_1_1125C(struct ChDrawMtxNode* object);
 
 void fn_1_FB98(void);
 
@@ -249,7 +274,7 @@ void fn_1_129D0(void);
 
 void fn_1_15760(void);
 
-void fn_1_11714(u8* object);
+void fn_1_11714(struct ChDrawMtxNode* object);
 
 void fn_1_1496C(u8* object);
 

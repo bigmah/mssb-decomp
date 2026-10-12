@@ -44,7 +44,8 @@ typedef struct StarMissionIndex {
     /* 0x0 */ u8 unk0;
     /* 0x1 */ u8 trackerIndex;
     /* 0x2 */ u8 missionRow;
-    /* 0x3 */ u8 pad3[3];
+    /* 0x3 */ u8 hasMissions; // 1: the character has star missions (row missionRow)
+    /* 0x4 */ u8 pad4[2];
 } StarMissionIndex;
 
 // lbl_80109AE8[row][10] entries.
@@ -53,7 +54,7 @@ typedef struct StarMission {
     /* 0x2 */ s16 target;
     /* 0x4 */ s16 flags;
     /* 0x6 */ s16 minLevel;
-    /* 0x8 */ u8 pad8[2];
+    /* 0x8 */ s16 _8;
 } StarMission;
 
 typedef struct FielderSortInfo {

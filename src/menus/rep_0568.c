@@ -4,12 +4,15 @@
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
 #include "main/file_80011640.h"
+#include "menus/menu_work.h"
+#include "main/menu_globals.h" // SceneFlow lbl_803CBBCC, TutorialSteps lbl_803C66B0
+#include "menus/menu_asset.h"
 
-extern u8 lbl_2_bss_100B8[];
+extern CaptainSelMenu lbl_2_bss_100B8;
 extern MenuCharLoadTask* lbl_803CC1B8;
-extern u8 lbl_800FE930[];
+extern u8 lbl_800FE930[][6]; // per lbl_80361B20._F4
 extern u8 lbl_800FE5D4[];
-extern u8 lbl_80361B20[];
+extern MenuProgress lbl_80361B20;
 // Menu selection state (lbl_2_bss_F410), only the fields used here.
 typedef struct MenuSelect0568 {
     /*0x00*/ u8 _00[0x10];
@@ -19,7 +22,7 @@ typedef struct MenuSelect0568 {
 extern MenuSelect0568 lbl_2_bss_F410;
 extern MenuCharLoadTask* lbl_2_bss_1224;
 extern u8* lbl_2_bss_122C;
-extern u8* lbl_2_data_2780[];
+extern MenuAsset* lbl_2_data_2780[];
 extern void* _OSAllocFromHeap(s32, s32);
 typedef struct {
     u8* p;
@@ -52,9 +55,8 @@ typedef struct MenuCharSelect {
 } MenuCharSelect;
 extern MenuCharSelect lbl_8034E9A0;
 extern MenuRosterChar inMemRoster[2][9];
-extern u8* lbl_803CBBCC[];
-extern u8 lbl_803C6CF8[];
-extern u8 lbl_803C66B0[];
+#include "main/aramloader.h"
+extern ARAMLoader lbl_803C6CF8;
 extern u8 lbl_2_bss_100B4[];
 // ARAM load descriptors of the menu character models (AssetLoadInstructions).
 typedef struct MenuAssetInfo {
@@ -133,10 +135,10 @@ void fn_2_190B8(ActorObject* slot) {
 void fn_2_16CE0(void) {
     CharActor* actor;
     s32 i;
-    for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+    for (i = 0; i < lbl_2_bss_100B8.count; i++) {
         actor = lbl_8036E548.active[i];
         if (actor != NULL && actor->anim[0] == 0x6B) {
-            lbl_2_bss_100B8[i + 0x40] = 1;
+            lbl_2_bss_100B8.animState[i] = 1;
         }
     }
 }
@@ -144,15 +146,15 @@ void fn_2_16CE0(void) {
 // fn_2_16D38, size:0x70
 void fn_2_16D38(void) {
     s32 i;
-    for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+    for (i = 0; i < lbl_2_bss_100B8.count; i++) {
         memset(lbl_8036E548.actors[i].files, 0, 0x5C);
     }
 }
 
 // fn_2_18650, size:0xF8
 s32 fn_2_18650(s32 a) {
-    s32 next = (*(s8*)&lbl_2_bss_100B8[0] + 1) % 10;
-    if (next != *(s8*)&lbl_2_bss_100B8[1]) {
+    s32 next = (lbl_2_bss_100B8.qHead + 1) % 10;
+    if (next != lbl_2_bss_100B8.qTail) {
         if (lbl_2_bss_1224 == NULL) {
             lbl_2_bss_1224 = fn_800B0A5C_insertQueue(fn_2_18398, 0xFFFF);
             if (lbl_2_bss_1224 != NULL) {
@@ -162,9 +164,9 @@ s32 fn_2_18650(s32 a) {
                 return 0;
             }
         }
-        lbl_2_bss_100B8[*(s8*)&lbl_2_bss_100B8[0] + 2] = a;
-        lbl_2_bss_100B8[0] = next;
-        lbl_2_bss_100B8[a + 0x42] = 1;
+        lbl_2_bss_100B8.queue[lbl_2_bss_100B8.qHead] = a;
+        lbl_2_bss_100B8.qHead = next;
+        lbl_2_bss_100B8.loading[a] = 1;
         return 1;
     }
     return 0;
@@ -172,26 +174,26 @@ s32 fn_2_18650(s32 a) {
 
 // fn_2_18FBC, size:0xFC
 void fn_2_18FBC(void) {
-    u8* q;
+    MenuCharLoadTask* q;
     s32 i;
     q = fn_800B0A5C_insertQueue(fn_2_188EC, 0x6000);
-    lbl_2_bss_100B8[0x19] = 0;
-    lbl_2_bss_100B8[0x1B] = 1;
+    lbl_2_bss_100B8.active = 0;
+    lbl_2_bss_100B8._1B = 1;
     if (lbl_8034E9A0._4701 == 0) {
-        for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
-            ((s8*)lbl_2_bss_100B8)[i + 0x27] = -1;
+        for (i = 0; i < lbl_2_bss_100B8.count; i++) {
+            lbl_2_bss_100B8._27[i] = -1;
         }
-        q[0x1C] = 0;
+        q->_1C = 0;
     } else {
-        for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
-            lbl_2_bss_100B8[i + 0x14] = 0;
+        for (i = 0; i < lbl_2_bss_100B8.count; i++) {
+            lbl_2_bss_100B8.loadReq[i] = 0;
         }
-        q[0x1C] = 0;
+        q->_1C = 0;
     }
-    lbl_2_bss_100B8[0] = i = 0;
-    lbl_2_bss_100B8[1] = 0;
+    lbl_2_bss_100B8.qHead = i = 0;
+    lbl_2_bss_100B8.qTail = 0;
     for (; i < 10; i++) {
-        ((s8*)lbl_2_bss_100B8)[i + 2] = -1;
+        ((s8*)lbl_2_bss_100B8.queue)[i] = -1;
     }
 }
 
@@ -225,9 +227,9 @@ void fn_2_1937C(ActorObjectTable* list, MtxPtr view) {
 void fn_2_17AB8(void) {
     s32 size;
     s32 i;
-    size = ((*(u32*)(lbl_2_data_2780[0] + 4) & 0x0FFFFFFF) + 0x1F) & ~0x1F;
-    lbl_2_bss_122C = _OSAllocFromHeap(0x20, size * lbl_2_bss_100B8[0x2D]);
-    for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+    size = ((lbl_2_data_2780[0]->sizeFlags & 0x0FFFFFFF) + 0x1F) & ~0x1F;
+    lbl_2_bss_122C = _OSAllocFromHeap(0x20, size * lbl_2_bss_100B8.count);
+    for (i = 0; i < lbl_2_bss_100B8.count; i++) {
         lbl_2_bss_101AC[i].p = lbl_2_bss_122C + size * i;
         lbl_2_bss_101AC[i].b = -1;
         lbl_2_bss_101AC[i].a = -1;
@@ -241,7 +243,7 @@ void fn_2_18148(MenuCharLoadTask* task) {
     case 0:
         task->actor = &lbl_8036E548.actors[task->index];
         task->actor->kind = task->charId[task->index];
-        task->showFlag = lbl_2_bss_100B8[task->index + 0x46];
+        task->showFlag = lbl_2_bss_100B8._46[task->index];
         lbl_8036E548.actors[task->index].mode[0] = 0;
         task->actor->_068 = -1;
         lbl_2_bss_100B4[1] = 1;
@@ -252,24 +254,24 @@ void fn_2_18148(MenuCharLoadTask* task) {
         task->step++;
         break;
     case 2:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             fn_2_16F78(task->index);
             gf = g_d_GameSettings._10;
-            if (gf == 0 && lbl_803C66B0[0x59] == 0 && task->index == 1) {
+            if (gf == 0 && lbl_803C66B0.portOf[0] == 0 && task->index == 1) {
                 lbl_8036E548.actors[task->index].mode[0] = 0;
             } else {
                 lbl_8036E548.actors[task->index].mode[0] = (task->showFlag != 0);
             }
-            if (g_d_GameSettings.GameModeSelected == 5 || gf != 0 || *(u16*)(lbl_803CBBCC[0] + 6) == 5) {
+            if (g_d_GameSettings.GameModeSelected == 5 || gf != 0 || lbl_803CBBCC->prevScene == 5) {
                 fn_2_14BB8(task->index, 1);
-            } else if (lbl_2_bss_100B8[0x10] != 0) {
+            } else if (lbl_2_bss_100B8.picked[0] != 0) {
                 fn_2_14BB8(task->index, task->index != 0);
             }
             task->step = 0;
-            lbl_2_bss_100B8[0x32] = 1;
+            lbl_2_bss_100B8._32 = 1;
             lbl_2_bss_100B4[1] = 0;
-            lbl_2_bss_100B8[0x18] = 1;
-            lbl_2_bss_100B8[task->index + 0x42] = 0;
+            lbl_2_bss_100B8._18 = 1;
+            lbl_2_bss_100B8.loading[task->index] = 0;
         }
         break;
     }
@@ -281,9 +283,9 @@ void fn_2_18748(void) {
     s32 i;
     switch ((task = lbl_803CC1B8)->state) {
     case 0:
-        for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+        for (i = 0; i < lbl_2_bss_100B8.count; i++) {
             if (g_d_GameSettings.GameModeSelected == 5) {
-                task->charId[i] = (lbl_800FE930 + lbl_80361B20[0xF4] * 6)[lbl_2_bss_F410.charSel[task->index]];
+                task->charId[i] = lbl_800FE930[lbl_80361B20._F4][lbl_2_bss_F410.charSel[task->index]];
             } else {
                 task->charId[i] = lbl_800FE5D4[lbl_2_bss_F410.charSel[task->index]];
             }
@@ -296,16 +298,16 @@ void fn_2_18748(void) {
         task->state++;
     case 1:
         fn_2_18148(task);
-        if (lbl_2_bss_100B8[0x18] != 0) {
-            lbl_2_bss_100B8[0x18] = 0;
-            lbl_2_bss_100B8[0x32] = 0;
+        if (lbl_2_bss_100B8._18 != 0) {
+            lbl_2_bss_100B8._18 = 0;
+            lbl_2_bss_100B8._32 = 0;
             task->step = 0;
             task->timer = 0;
             task->index++;
-            if (task->index >= lbl_2_bss_100B8[0x2D]) {
+            if (task->index >= lbl_2_bss_100B8.count) {
                 task->index = 0;
                 task->state = 0;
-                lbl_2_bss_100B8[0x19] = 1;
+                lbl_2_bss_100B8.active = 1;
                 REMOVE_QUEUE_NOARG(); // arg unused
             } else {
                 task->state = 0;
@@ -323,20 +325,20 @@ void fn_2_18748(void) {
 void fn_2_16DA8(void) {
     s32 i;
     lbl_8036E548._3078 = 0;
-    for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+    for (i = 0; i < lbl_2_bss_100B8.count; i++) {
         lbl_8036E548.active[i] = &lbl_8036E548.actors[i];
     }
     i = 3;
     do {
-        lbl_2_bss_100B8[i + 0x42] = 0;
+        lbl_2_bss_100B8.loading[i] = 0;
     } while (i-- != 0);
-    if (*(u16*)(lbl_803CBBCC[0] + 6) == 5 || g_d_GameSettings.GameModeSelected == 5) {
-        lbl_2_bss_100B8[0x46] = 1;
-        lbl_2_bss_100B8[0x47] = 0;
+    if (lbl_803CBBCC->prevScene == 5 || g_d_GameSettings.GameModeSelected == 5) {
+        lbl_2_bss_100B8._46[0] = 1;
+        lbl_2_bss_100B8._46[1] = 0;
         return;
     }
-    lbl_2_bss_100B8[0x46] = 1;
-    lbl_2_bss_100B8[0x47] = 1;
+    lbl_2_bss_100B8._46[0] = 1;
+    lbl_2_bss_100B8._46[1] = 1;
 }
 
 // fn_2_16F0C, size:0x6C
@@ -632,12 +634,12 @@ void fn_2_17648(void) {
     }
 done:
     bufSize = (maxSize + 0x1F) & ~0x1F;
-    lbl_2_bss_1228 = _OSAllocFromHeap(0x20, bufSize * lbl_2_bss_100B8[0x2D] * 2);
-    for (n = 0; n < lbl_2_bss_100B8[0x2D]; n++) {
+    lbl_2_bss_1228 = _OSAllocFromHeap(0x20, bufSize * lbl_2_bss_100B8.count * 2);
+    for (n = 0; n < lbl_2_bss_100B8.count; n++) {
         lbl_8036E548.partsPool[n].part[0].files = (void**)(lbl_2_bss_1228 + bufSize * (u32)(n * 2));
         lbl_8036E548.partsPool[n].part[1].files = (void**)(lbl_2_bss_1228 + bufSize * (u32)(n * 2 + 1));
     }
-    for (n = 0; n < lbl_2_bss_100B8[0x2D]; n++) {
+    for (n = 0; n < lbl_2_bss_100B8.count; n++) {
         lbl_8036E548.partsPool[n]._CF = -1;
         lbl_8036E548.partsPool[n]._D1 = -1;
         lbl_8036E548.partsPool[n]._D0 = -1;
@@ -674,8 +676,8 @@ void fn_2_17C88(void) {
     }
 done:
     bufSize = (maxSize + 0x1F) & ~0x1F;
-    lbl_8036E548.fileBuf = _OSAllocFromHeap(0x20, bufSize * lbl_2_bss_100B8[0x2D]);
-    for (n = 0; n < lbl_2_bss_100B8[0x2D]; n++) {
+    lbl_8036E548.fileBuf = _OSAllocFromHeap(0x20, bufSize * lbl_2_bss_100B8.count);
+    for (n = 0; n < lbl_2_bss_100B8.count; n++) {
         lbl_8036E548.actors[n].files = (void**)(lbl_8036E548.fileBuf + bufSize * (u32)n);
     }
 }
@@ -684,7 +686,7 @@ done:
 // fn_2_17C88 (inlined) plus the part slots of the menu actors.
 void fn_2_17ED8(void) {
     fn_2_17C88();
-    fn_80014204(lbl_2_bss_100B8[0x2D]);
+    fn_80014204(lbl_2_bss_100B8.count);
     lbl_8036E548.partSlots = fn_80023AA4();
     fn_80023B04(4);
 }
@@ -729,7 +731,7 @@ void fn_2_16A98(s32 index, s32 anim, u8 loop, u8 b, s16 frame, u8 d, u8 blend) {
         fn_80025EEC(&actor->parts->part[1].player, 5, entry);
         fn_80025EEC(&actor->parts->part[0].player, 5, entry);
     }
-    if (index < lbl_2_bss_100B8[0x2D] && (bankData = actor->banks.b[bank]) != NULL) {
+    if (index < lbl_2_bss_100B8.count && (bankData = actor->banks.b[bank]) != NULL) {
         if (idx >= bankData->count) {
             return;
         }
@@ -766,31 +768,31 @@ void fn_2_18398(void) {
 
     switch ((task = lbl_803CC1B8)->state) {
     case 0:
-        next = (lbl_2_bss_100B8 + 2)[*(s8*)&lbl_2_bss_100B8[1]];
+        next = lbl_2_bss_100B8.queue[lbl_2_bss_100B8.qTail];
         if ((s8)next == -1) {
-            lbl_2_bss_100B8[0x18] = 0;
-            lbl_2_bss_100B8[0x1B] = 1;
-            lbl_2_bss_100B8[0x1A] = 0;
-            lbl_2_bss_100B8[0x32] = 0;
+            lbl_2_bss_100B8._18 = 0;
+            lbl_2_bss_100B8._1B = 1;
+            lbl_2_bss_100B8.busy = 0;
+            lbl_2_bss_100B8._32 = 0;
             lbl_2_bss_1224 = NULL;
             REMOVE_QUEUE_NOARG(); // arg unused
             return;
         }
         task->index = next;
-        ((s8*)(lbl_2_bss_100B8 + 2))[*(s8*)&lbl_2_bss_100B8[1]] = -1;
-        lbl_2_bss_100B8[0x1A] = 1;
-        lbl_2_bss_100B8[0x1B] = 0;
-        lbl_2_bss_100B8[1] = (*(s8*)&lbl_2_bss_100B8[1] + 1) % 10;
-        lbl_2_bss_100B8[task->index + 0x27] = task->index;
+        ((s8*)lbl_2_bss_100B8.queue)[lbl_2_bss_100B8.qTail] = -1;
+        lbl_2_bss_100B8.busy = 1;
+        lbl_2_bss_100B8._1B = 0;
+        lbl_2_bss_100B8.qTail = (lbl_2_bss_100B8.qTail + 1) % 10;
+        lbl_2_bss_100B8._27[task->index] = task->index;
         task->state = 1;
         task->timer = 0;
         mode = g_d_GameSettings.GameModeSelected;
         sel = lbl_8034E9A0._4755;
         if (sel == 0) {
             if (mode == 5) {
-                task->charId[task->index] = (lbl_800FE930 + lbl_80361B20[0xF4] * 6)[*(s32*)((u8*)lbl_2_bss_F410.charSel + task->index * 4)];
+                task->charId[task->index] = lbl_800FE930[lbl_80361B20._F4][lbl_2_bss_F410.charSel[task->index]];
             } else {
-                task->charId[task->index] = lbl_800FE5D4[*(s32*)((u8*)lbl_2_bss_F410.charSel + task->index * 4)];
+                task->charId[task->index] = lbl_800FE5D4[lbl_2_bss_F410.charSel[task->index]];
             }
             if (task->index == 2) {
                 task->index = 0;
@@ -812,17 +814,17 @@ void fn_2_18398(void) {
         fn_2_18148(task);
         if (lbl_2_bss_100B4[0] != 0 && lbl_2_bss_100B4[1] == 0) {
             lbl_2_bss_1224 = NULL;
-            lbl_2_bss_100B8[0x18] = 0;
-            lbl_2_bss_100B8[0x1B] = 1;
-            lbl_2_bss_100B8[0x1A] = 0;
-            lbl_2_bss_100B8[0x32] = 0;
+            lbl_2_bss_100B8._18 = 0;
+            lbl_2_bss_100B8._1B = 1;
+            lbl_2_bss_100B8.busy = 0;
+            lbl_2_bss_100B8._32 = 0;
             task->state = 0;
             REMOVE_QUEUE_NOARG(); // arg unused
             return;
         }
-        if (lbl_2_bss_100B8[0x18] != 0) {
-            lbl_2_bss_100B8[0x18] = 0;
-            lbl_2_bss_100B8[0x1A] = 0;
+        if (lbl_2_bss_100B8._18 != 0) {
+            lbl_2_bss_100B8._18 = 0;
+            lbl_2_bss_100B8.busy = 0;
             task->state = 0;
         }
         break;
@@ -839,9 +841,9 @@ void fn_2_18398(void) {
 // same code as a separate function).
 static inline void menuQueueRequested(void) {
     s32 i;
-    for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
-        if (lbl_2_bss_100B8[i + 0x14] != 0 && fn_2_18650(i)) {
-            lbl_2_bss_100B8[i + 0x14] = 0;
+    for (i = 0; i < lbl_2_bss_100B8.count; i++) {
+        if (lbl_2_bss_100B8.loadReq[i] != 0 && fn_2_18650(i)) {
+            lbl_2_bss_100B8.loadReq[i] = 0;
         }
     }
     lbl_8036E548._307A = 5;
@@ -876,19 +878,19 @@ void fn_2_188EC(void) {
     case 2:
         if (lbl_2_bss_100B4[0] != 0) {
             // Wait until every actor is loaded, then drop them and finish.
-            for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
-                if (lbl_2_bss_100B8[i + 0x40] == 0) {
+            for (i = 0; i < lbl_2_bss_100B8.count; i++) {
+                if (lbl_2_bss_100B8.animState[i] == 0) {
                     goto loading;
                 }
             }
-            for (i = 0; i < lbl_2_bss_100B8[0x2D]; i++) {
+            for (i = 0; i < lbl_2_bss_100B8.count; i++) {
                 lbl_8036E548.active[i] = NULL;
             }
             REMOVE_QUEUE_NOARG(); // arg unused
             return;
         }
     loading:
-        if (lbl_2_bss_100B8[0x19] != 0) {
+        if (lbl_2_bss_100B8.active != 0) {
             menuQueueRequested();
         }
         break;

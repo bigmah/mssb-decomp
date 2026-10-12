@@ -4,6 +4,100 @@
 #include "mssbTypes.h"
 #include "Dolphin/vec.h"
 #include "Dolphin/mtx.h"
+#include "C3/control.h"         // Control
+#include "main/file_800BD8C4.h" // ActorObject
+
+// One stadium object slot of lbl_3_common_bss_350E4 (0xE8 bytes), as set up by fn_3_C8650.
+typedef struct StadObj1FD8 {
+    union {
+        Control ctrl;
+        GameControl gctrl; // the whole 0x44-byte control (copied by fn_3_C71CC)
+        u8 raw[0x74];
+    } u;
+    ActorObject* model; // 0x74
+    void* anim;         // 0x78
+    void* update;       // 0x7C
+    void* hit;          // 0x80
+    void* draw;         // 0x84
+    void* draw2;        // 0x88
+    void* animPlayer;   // 0x8C
+    u8 visible : 1;     // 0x90
+    u8 animated : 1;
+    u8 b5 : 1;
+    u8 bits : 5;
+    u8 pad91;
+    u8 alpha; // 0x92
+    u8 pad93;
+    s16 f94;
+    s16 f96;
+    u8 f98;
+    u8 placed; // 0x99
+    u8 f9A;
+    u8 pad9B;
+    Vec pos;  // 0x9C
+    u8 idx;   // 0xA8
+    u8 type;  // 0xA9
+    u8 padAA[2];
+    union {
+        struct {
+            f32 speed;
+            u8 state, timer, armed;
+        } a; // group A (fn_3_C7A0C)
+        struct {
+            f32 v[3];
+            u16 b8, ba;
+            u8 bc, bd;
+        } b; // group B (fn_3_C63D0)
+    } x;
+    u8 padC0[0xE8 - 0xC0];
+} StadObj1FD8; // size: 0xE8
+typedef struct {
+    f32 x, y, z;
+    f32 rotY;
+    u8 type; // 7 = end of list
+    u8 visible;
+    u8 f12;
+    u8 pad13;
+} StadPlace14; // lbl_3_data_17514 / lbl_3_data_17704
+
+// Group C spots and their stadium file ids (lbl_3_data_17704).
+typedef struct StadPlaceGroupC {
+    StadPlace14 place[11];
+    u8 fileIdx[16]; // passed to fn_3_B9D68
+} StadPlaceGroupC; // size: 0xEC
+typedef struct {
+    f32 x, y, z;
+    f32 rotY;
+    u8 type;
+    u8 visible;
+    u8 f12;
+    u8 pad13;
+    u16 f14;
+    u16 f16;
+} StadPlace18; // lbl_3_data_175FC
+
+// Stadium object list (lbl_3_common_bss_350E4) and the per-group shadow/collision batch
+// buffers built by fn_3_C82B4: p48 = n pairs of Vec (bounds), p3C = counts, p44 = indices,
+// p40 = u16 first-index per group.
+typedef struct C42A4Bss {
+    StadObj1FD8* arr;
+    void* arr2; // 0x04: second 0x1D00 buffer
+    u8 pad8[0x18 - 8];
+    void (*f18)(void); // 0x18
+    u8 pad1C[0x20 - 0x1C];
+    void* lights[4]; // 0x20: passed to fn_800BD548 for every actor
+    s32 count;       // 0x30: object slots
+    s32* fileIdx;    // 0x34: indices into the stadium file list (fn_3_B9D68)
+    u8 pad38[0x3C - 0x38];
+    u32* p3C;
+    u16* p40;
+    u32* p44;
+    u8* p48;
+    u8 pad4C[0x64 - 0x4C];
+    s16 groups;
+    u8 pad66[0x6D - 0x66];
+    u8 nActors; // 0x6D
+} C42A4Bss;
 
 void fn_3_C19C8(void);
 struct Rep1FD8Ent;
@@ -16,42 +110,43 @@ void fn_3_C2644(void);
 void fn_3_C2974(void);
 void fn_3_C298C(void);
 u8 fn_3_C2AA0(Vec* pos, f32 w, f32 h);
-void fn_3_C2C80(void* p, u8* h);
+struct C366CHdr;
+void fn_3_C2C80(void* p, struct C366CHdr* h);
 void fn_3_C2EDC(void* p);
 struct C366CHdr;
 s32 fn_3_C30F0(struct C366CHdr* h);
 void fn_3_C366C(void* hv, u8 idx);
 void fn_3_C39C8(void);
-void fn_3_C3A38(u8* obj);
+struct camera_803c639c_s;
+void fn_3_C3A38(struct camera_803c639c_s* obj);
 void fn_3_C3C2C(void);
 void fn_3_C3E94(f32* pos, s32 idx);
-void fn_3_C3F70(u8* a);
-void fn_3_C4068(u8* a);
-void fn_3_C40EC(u8* a);
+void fn_3_C3F70(StadObj1FD8* a);
+void fn_3_C4068(StadObj1FD8* a);
+void fn_3_C40EC(StadObj1FD8* a);
 void fn_3_C414C(int idx);
 void fn_3_C42A4(s32* a, s32* b);
-void fn_3_C444C(void* h, u8* b);
+void fn_3_C444C(void* h, StadObj1FD8* b);
 u32 fn_3_C4724(void* h);
 void fn_3_C48D0(void* h, Vec* src);
 void fn_3_C4B80(void);
 void fn_3_C4CF4(void* hv, u8 type);
 s32 fn_3_C4F00(void* hv);
-void fn_3_C5304(void* h, u8* b);
-void fn_3_C54D0(u8* a);
-void fn_3_C56E8(u8* a);
+void fn_3_C5304(void* h, StadObj1FD8* b);
+void fn_3_C54D0(StadObj1FD8* a);
+void fn_3_C56E8(StadObj1FD8* a);
 void fn_3_C597C(s32 idx);
-u8 fn_3_C5CE0(u8* a);
+u8 fn_3_C5CE0(StadObj1FD8* a);
 void fn_3_C5DDC(void);
-u8 fn_3_C625C(u8* a);
+u8 fn_3_C625C(StadObj1FD8* a);
 struct StadObj1FD8;
 void fn_3_C63D0(struct StadObj1FD8* o);
 void fn_3_C71CC(s32* a, s32* b);
-void fn_3_C7444(u8* a);
+void fn_3_C7444(StadObj1FD8* a);
 void fn_3_C749C(void);
 u32 fn_3_C75B8(void* h);
-void fn_3_C77AC(void* h, u8* b);
-struct C7A0CEnt;
-void fn_3_C7A0C(struct C7A0CEnt* e);
+void fn_3_C77AC(void* h, StadObj1FD8* b);
+void fn_3_C7A0C(StadObj1FD8* e);
 void fn_3_C805C(s32* a, s32* b);
 void* fn_3_C823C(s32 idx, Mtx out);
 void fn_3_C82B4(void);

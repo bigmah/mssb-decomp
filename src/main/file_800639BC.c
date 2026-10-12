@@ -618,7 +618,7 @@ static inline void fn_80066EAC_inline(u8 team) {
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++) {
             id = inMemRoster[team][j].stats.CharID;
-            chem = ((u8*)&inMemRoster[team][i])[id + 0x3B]; // chemistry[id]
+            chem = inMemRoster[team][i].chem[id];
             if (chem < 90 || chem == 100) {
                 buf[j] = -1;
             } else {
@@ -779,7 +779,7 @@ void fn_80066EAC(u8 team) {
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++) {
             id = inMemRoster[team][j].stats.CharID;
-            chem = ((u8*)&inMemRoster[team][i])[id + 0x3B]; // chemistry[id]
+            chem = inMemRoster[team][i].chem[id];
             if (chem < 90 || chem == 100) {
                 buf[j] = -1;
             } else {
@@ -1153,8 +1153,8 @@ void fn_80067F70(u8 team) {
         }
     done:
         lbl_803C6724.picks[team][slot] = c;
-        // roster[c / 9][c % 9].chemistry[captain] (0x3B: offset of chemistry)
-        lbl_803C6724.rating[team][slot] = (((u8*)lbl_8034E9A0.roster) + captain)[(c / 9) * sizeof(lbl_8034E9A0.roster[0]) + (c % 9) * sizeof(CharacterStats) + 0x3B];
+        // roster[c / 9][c % 9].chemistry[captain], spelled as byte offsets to match
+        lbl_803C6724.rating[team][slot] = (((u8*)lbl_8034E9A0.roster) + captain)[(c / 9) * sizeof(lbl_8034E9A0.roster[0]) + (c % 9) * sizeof(CharacterStats) + LAYOUT_OFFSETOF(CharacterStats, chemistry)];
     }
     for (i = 0; i < 9; i++) {
         lbl_80354720[team][i][0] = lbl_80354720[team][i][1] = lbl_80354720[team][i][2] = i;

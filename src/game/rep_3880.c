@@ -1,8 +1,60 @@
 #include "game/rep_3880.h"
+#include "game/UnknownHomes_Game.h"
+#include "main/file_800263FC.h"
+#include "main/file_80008E00.h"
+#include "main/file_80011640.h"
+#include "main/file_800BD8C4.h"
+#include "main/file_800B0724.h"
+#include "main/file_8004C5F8.h"
+#include "static/GameSettings.h"
+
+// lbl_3_common_bss_32724 (GameHudFlags in game/auto_00_00097144_text.h), only the fields used here.
+typedef struct EffectBss32724 {
+    /*0x00*/ u8 _00[0x64];
+    /*0x64*/ TexArchive* textures[3];
+    /*0x70*/ u8 _70[0x124 - 0x70];
+} EffectBss32724; // size: 0x124
+
+// lbl_3_common_bss_35154 (0x480), only the fields used here.
+typedef struct EffectBss35154 {
+    /*0x000*/ u8 _000[0x4];
+    /*0x004*/ TexArchive* tex;
+    /*0x008*/ u8 _008[0x480 - 0x8];
+} EffectBss35154; // size: 0x480
+
+typedef struct V3I {
+    s32 x, y, z;
+} V3I;
+
+// lbl_3_data_266A8 (0x14C): spark/trail parameters for the minigame-5 ring effect (fn_3_15767C).
+typedef struct EffectData266A8 {
+    /*0x000*/ f32 scale[2];
+    /*0x008*/ ParticleParams5 sparks[3];
+    /*0x0F8*/ ParticleParams8 trail;
+    /*0x120*/ s32 trailTex[7]; // continues trail.texIndex2
+    /*0x13C*/ s16 sparkTex[4][2];
+} EffectData266A8; // size: 0x14C
+
+// lbl_3_data_26894 (0x308), only the fields used here.
+typedef struct EffectData26894 {
+    /*0x000*/ u8 _000[0x50];
+    /*0x050*/ ParticleParams5* sparks[3];
+    /*0x05C*/ u8 _05C[0x68 - 0x5C];
+    /*0x068*/ V3I offsets[54]; // per character kind, fixed point (x100000)
+    /*0x2F0*/ u32 colors[4];
+    /*0x300*/ f32 trailScale[2];
+} EffectData26894; // size: 0x308
+
+// A particle of the fn_3_157588 emitter used as storage for seven positions (fn_3_15730C).
+typedef struct VecSlotParticle {
+    /*0x00*/ struct Particle* next;
+    /*0x04*/ Vec v[7];
+} VecSlotParticle;
+
 #define REP_HEADER_FN repHeader_3880
 #include "header_rep_inline.h"
 
-extern u8 lbl_3_data_26C94[];
+extern s32 lbl_3_data_26C94[];
 extern const f32 lbl_3_rodata_39F8;
 extern const f32 lbl_3_rodata_39F4;
 extern const f32 lbl_3_rodata_39FC;
@@ -10,70 +62,63 @@ extern const f32 lbl_3_rodata_39BC;
 extern const f64 lbl_3_rodata_39E8;
 extern s32 lbl_3_data_26D00[];
 extern void fn_8003403C(f32, f32);
-extern u8 lbl_3_common_bss_32724[];
-extern u8 lbl_3_data_26D5C[];
-extern u8 lbl_3_data_21770[];
-extern u8 lbl_3_data_26E9C[];
-extern void* fn_800337CC(void* e, s32 n, s32 strict);
+extern EffectBss32724 lbl_3_common_bss_32724;
+extern s32 lbl_3_data_26D5C[];
+extern f32 lbl_3_data_21770[];
+extern s32 lbl_3_data_26E9C[];
 extern s8 lbl_3_bss_B85C[];
-extern void fn_80033794(void*);
-extern u8 lbl_3_data_26BDC[];
-extern u8 lbl_3_data_26BEC[];
+extern s32 lbl_3_data_26BDC[];
+extern s32 lbl_3_data_26BEC[];
 extern f32 lbl_3_rodata_3A18;
 extern f32 fn_3_119854(u8 i);
 
-extern u8 lbl_8036E548[];
-extern u8 g_GameLogic[];
 extern const f32 lbl_3_rodata_3A34;
 extern const f32 lbl_3_rodata_3A38;
 extern const f32 lbl_3_rodata_3A3C;
 extern const f32 lbl_3_rodata_3A40;
 extern const f32 lbl_3_rodata_3A44;
-#include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
 #include "C3/control.h"
 #include "main/file_80024184.h"
 
 
-extern u8 g_Minigame[];
-extern u8 lbl_3_data_26E00[];
+extern Vec lbl_3_data_26E00[];
 extern const Vec lbl_3_rodata_3908;
 extern f32 lbl_3_data_266A8[];
+// lbl_3_data_266A8 and the tables after it, read through one pooled view (the original does the same).
+#define EFFECT266A8 ((EffectData266A8*)lbl_3_data_266A8)
+extern s32* lbl_3_data_268E4[]; // spark parameter sets, then (from [6]) per-character V3I offsets
+extern u32 lbl_3_data_26B84[];
+extern f32 lbl_3_data_26B94[];
 extern Vec lbl_3_data_26BB4;
 extern f64 __fabs(f64);
 extern f32 __fabsf(f32);
-extern u8 lbl_3_data_26BC0[];
+extern s32 lbl_3_data_26BC0[];
 extern const f32 lbl_3_rodata_3950;
 extern const f64 lbl_3_rodata_3A08;
 extern const Vec lbl_3_rodata_38D0;
 extern f32 fn_3_119D28(void);
 extern u8 lbl_3_data_26CB8[];
-extern s32 fn_8001B728(s32, s32, void*);
 extern int rand(void);
-extern void* fn_80033A24(void*, int, int, int, int, int);
-extern u8 lbl_3_data_26E24[];
-extern u8 lbl_3_data_26C3C[];
+extern s32 lbl_3_data_26E24[];
+extern s32 lbl_3_data_26C3C[];
 extern u8 lbl_3_bss_B894[];
 extern const f32 lbl_3_rodata_3930;
 extern const f32 lbl_3_rodata_39B8;
 extern const f32 lbl_3_rodata_39AC;
 extern const f64 lbl_3_rodata_39C8;
-extern u8 lbl_80366158[];
-extern u8 lbl_3_data_26E40[];
-extern void fn_80033620(void* emitter); // Emitter*
+extern s32 lbl_3_data_26E40[];
 extern void fn_80033F64(f32, f32, f32);
-extern void fn_80033CC8(void*, void*);
-extern u8 lbl_3_data_26D50[];
-extern u8 lbl_3_data_26CD0[];
+extern Vec lbl_3_data_26D50[];
+extern s32 lbl_3_data_26CD0[];
 extern const f32 lbl_3_rodata_39E0;
 extern const f32 lbl_3_rodata_39C0;
 extern const f32 lbl_3_rodata_39F0;
 extern f32 shortAngleToRad(s16);
-extern u8 lbl_3_data_26E7C[];
-extern u8 lbl_3_data_26D88[];
-extern u8 lbl_3_data_26DC4[];
-extern void* fn_80031F34(void*, u32);
+extern s32 lbl_3_data_26E7C[];
+extern s32 lbl_3_data_26D88[];
+extern s32 lbl_3_data_26DC4[];
 extern void fn_8003403C(f32, f32);
 extern const f32 lbl_3_rodata_3970;
 extern const f32 lbl_3_rodata_39C4;
@@ -91,27 +136,21 @@ extern const Vec lbl_3_rodata_38DC;
 extern const f32 lbl_3_rodata_3A04;
 extern f32 lbl_3_rodata_3948;
 extern s32 fn_8005268C(void);
-extern u8* fn_80052734(s32 index);
 extern f64 acos(f64);
 extern const Vec lbl_3_rodata_3914;
-extern u8 lbl_3_data_26BFC[];
+extern s32 lbl_3_data_26BFC[];
 extern void* memcpy(void*, const void*, unsigned long);
 extern void fn_3_11F4B4(s32 idx, s32 flag);
-extern u8 lbl_3_data_26C1C[];
+extern f32 lbl_3_data_26C1C[];
 extern const f32 lbl_3_rodata_3934[];
 typedef struct { f32 x, y, z; } V3B;
-typedef struct { s32 x, y, z; } V3I;
-extern u8* lbl_3_bss_B850;
+extern Emitter* lbl_3_bss_B850;
 extern void* memset(void*, int, unsigned long);
-extern u8 lbl_3_data_26C0C[];
+extern s32 lbl_3_data_26C0C[];
 extern const f32 lbl_3_rodata_3938;
-extern u8 g_Ball[];
-extern void fn_80030D88(Vec*, Vec*, void*, int);
-extern void fn_8002F5F4(Vec* pos, Vec* dir, void* prm); // prm: ParticleParams8*
-extern void fn_80030470(Vec*, Vec*, Vec*, void*, int);
-extern u8 lbl_3_common_bss_35154[];
+extern EffectBss35154 lbl_3_common_bss_35154;
 extern TexImage* lbl_3_bss_B854;
-extern u8 lbl_3_data_26B9C[];
+extern u32 lbl_3_data_26B9C[];
 extern u8 lbl_3_bss_B858;
 extern const Vec lbl_3_rodata_3920;
 extern const f64 lbl_3_rodata_39B0;
@@ -135,29 +174,32 @@ extern const f32 lbl_3_rodata_3A30;
 extern void fn_800B1468(Vec* pos, u32 color, TexImage* tex);
 extern void fn_800B27DC(Mtx44 m, s32 type);
 extern void fn_800B2160(u8 value);
-extern u8 lbl_80366158[];
-typedef struct { s32 color; s32 v; u8 pad[0x48]; } Ln50;
+
 #pragma dont_inline on
 
-typedef struct {
-    u8 pad0[0xC];
-    u8* head;
-    u8 pad[0x14 - 0x10];
-    u16 hi : 4;
-    u16 cnt : 12;
-} H154238;
+// g_Minigame + 0xA8: 0x28 tracked objects of the minigame-5 ring effect (fn_3_15767C), 0x28 bytes each.
+typedef struct EffectMgObj {
+    /*0x00*/ Vec pos;
+    /*0x0C*/ u8 _0C[0x1C - 0xC];
+    /*0x1C*/ s32 colorIdx;
+    /*0x20*/ u8 _20[0x26 - 0x20];
+    /*0x26*/ u8 active;
+    /*0x27*/ u8 _27;
+} EffectMgObj; // size: 0x28
+#define EFFECT_MG_OBJS ((EffectMgObj*)&g_Minigame._A8)
+
 
 // NONMATCHING 83%: table index (p[0x4C]==1 ? 0 : 10) is recomputed per access in the orig with a different load order
 // .text:0x0014737C size:0x3FC mapped:0x80786410
 #pragma dont_inline off
-static inline s32 k737c(u8* p) { s32 k = 10; if (p[0x4C] == 1) k = 0; return k; }
+static inline s32 k737c(Particle* p) { s32 k = 10; if (p->unk4C == 1) k = 0; return k; }
 #if NONMATCHING
-u32 fn_3_14737C(u8* o) {
+u32 fn_3_14737C(Emitter* o) {
     s32 n;
-    u8* p;
-    u8** pp;
-    u8* prev;
-    u8* d;
+    Particle* p;
+    Particle** pp;
+    Particle* prev;
+    s32* d;
     s32 t30;
     s32 t29;
     s32 a;
@@ -166,33 +208,33 @@ u32 fn_3_14737C(u8* o) {
     f32 sc;
     f32 df;
     n = 0;
-    p = fn_80031F34(*(void**)(o + 0xC), ((H154238*)o)->cnt);
-    *(u8**)(o + 0xC) = p;
-    pp = (u8**)(o + 0xC);
+    p = fn_80031F34(o->particles, o->count);
+    o->particles = p;
+    pp = &o->particles;
     prev = NULL;
     GXSetZMode(1, 7, 0);
     d = lbl_3_data_26E9C;
     do {
-        if (*(s16*)(p + 0x4A) != 0) {
-            if (*(s16*)(p + 0x48) <= 0) {
-                t30 = (p[0x4C] == 1) ? *(s32*)(d + 0xC) : *(s32*)(d + 0x34);
-                t29 = (p[0x4C] == 1) ? *(s32*)(d + 4) : *(s32*)(d + 0x2C);
-                if (p[0x4C] == 1) {
+        if (p->life != 0) {
+            if (p->delay <= 0) {
+                t30 = (p->unk4C == 1) ? d[3] : d[13];
+                t29 = (p->unk4C == 1) ? d[1] : d[11];
+                if (p->unk4C == 1) {
                     GXSetBlendMode(1, 4, 6, 0);
                 } else {
                     GXSetBlendMode(1, 4, 5, 0);
                 }
-                fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
-                fn_80033CC8(p, *(void**)(o + 0x10));
-                a = p[0x43];
-                sc = (p[0x4C] == 1) ? *(f32*)(p + 0x10) : lbl_3_rodata_392C;
-                if (t30 > t29 - *(s16*)(p + 0x4A)) {
-                    df = sc * (((f32)((s32*)lbl_3_data_26E9C)[k737c(p) + 5] / lbl_3_rodata_3930 - (f32)((s32*)lbl_3_data_26E9C)[k737c(p) + 4] / lbl_3_rodata_3930) / (f32)t30);
-                    delta = (((s32*)lbl_3_data_26E9C)[k737c(p) + 8] - ((s32*)lbl_3_data_26E9C)[k737c(p) + 7]) / t30;
+                fn_8003403C(p->sizeX, p->sizeY);
+                fn_80033CC8(p, o->tex);
+                a = p->color.c.a;
+                sc = (p->unk4C == 1) ? p->u.phys.vel.x : lbl_3_rodata_392C;
+                if (t30 > t29 - p->life) {
+                    df = sc * (((f32)lbl_3_data_26E9C[(k737c(p)) + 5] / lbl_3_rodata_3930 - (f32)lbl_3_data_26E9C[(k737c(p)) + 4] / lbl_3_rodata_3930) / (f32)t30);
+                    delta = (lbl_3_data_26E9C[(k737c(p)) + 8] - lbl_3_data_26E9C[(k737c(p)) + 7]) / t30;
                 } else {
                     s = t29 - t30;
-                    df = sc * (((f32)((s32*)lbl_3_data_26E9C)[k737c(p) + 6] / lbl_3_rodata_3930 - (f32)((s32*)lbl_3_data_26E9C)[k737c(p) + 5] / lbl_3_rodata_3930) / (f32)s);
-                    delta = (((s32*)lbl_3_data_26E9C)[k737c(p) + 9] - ((s32*)lbl_3_data_26E9C)[k737c(p) + 8]) / s;
+                    df = sc * (((f32)lbl_3_data_26E9C[(k737c(p)) + 6] / lbl_3_rodata_3930 - (f32)lbl_3_data_26E9C[(k737c(p)) + 5] / lbl_3_rodata_3930) / (f32)s);
+                    delta = (lbl_3_data_26E9C[(k737c(p)) + 9] - lbl_3_data_26E9C[(k737c(p)) + 8]) / s;
                 }
                 a += delta;
                 if (a < 0) {
@@ -200,25 +242,25 @@ u32 fn_3_14737C(u8* o) {
                 } else if (a > 0xFF) {
                     a = 0xFF;
                 }
-                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + df;
-                p[0x43] = a;
-                *(f32*)(p + 8) -= (p[0x4C] == 1) ? lbl_3_rodata_3934[0] : lbl_3_rodata_3938;
-                *(s16*)(p + 0x4A) -= 1;
-                if (*(s16*)(p + 0x4A) == 0) {
-                    *pp = *(u8**)p;
+                p->sizeY = p->sizeX = p->sizeX + df;
+                p->color.c.a = a;
+                p->pos.y -= (p->unk4C == 1) ? lbl_3_rodata_3934[0] : lbl_3_rodata_3938;
+                p->life -= 1;
+                if (p->life == 0) {
+                    *pp = p->next;
                     if (prev != NULL) {
-                        *(u8**)prev = p;
+                        prev->next = p;
                     }
                     prev = p;
-                    *(u8**)p = NULL;
-                    ((H154238*)o)->cnt--;
+                    p->next = NULL;
+                    o->count--;
                 } else {
-                    pp = (u8**)p;
+                    pp = &p->next;
                     n++;
                 }
             } else {
-                *(s16*)(p + 0x48) -= 1;
-                pp = (u8**)p;
+                p->delay -= 1;
+                pp = &p->next;
                 n++;
             }
         }
@@ -232,87 +274,87 @@ u32 fn_3_14737C(u8* o) {
 // NONMATCHING 98%: only the ring-angle int->double conversions in the first branch are scheduled in the other order
 // .text:0x00147778 size:0x488 mapped:0x8078680C
 #if NONMATCHING
-void fn_3_147778(u8* e, Vec* pos) {
+void fn_3_147778(Emitter* e, Vec* pos) {
     s16 delay;
-    u8* p;
+    Particle* p;
     u32 i;
     u8 nA;
     u8 nB;
     f64 ang;
     f32 size;
     i = 0;
-    nA = *(s32*)(lbl_3_data_26E9C + 8);
-    nB = *(s32*)(lbl_3_data_26E9C + 0x30);
+    nA = lbl_3_data_26E9C[2];
+    nB = lbl_3_data_26E9C[12];
     if (pos->y > lbl_3_rodata_3934[0]) {
         pos->y *= lbl_3_rodata_3948;
     }
     delay = 0;
-    *(void**)(e + 0x10) = *(void**)(lbl_3_common_bss_32724 + 0x6C);
-    p = *(u8**)(e + 0xC);
+    e->tex = lbl_3_common_bss_32724.textures[2];
+    p = e->particles;
     do {
         if (i < nA) {
-            p[0x4C] = 1;
-            *(f32*)(p + 0x10) = (i == 0) ? lbl_3_rodata_394C : lbl_3_rodata_3950;
-            *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26E9C + 4);
-            size = (f32)*(s32*)(lbl_3_data_26E9C + 0x10) / lbl_3_rodata_3930 * *(f32*)(p + 0x10);
-            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = size;
-            p[0x43] = *(s32*)(lbl_3_data_26E9C + 0x1C);
-            memcpy(p + 4, pos, sizeof(Vec));
+            p->unk4C = 1;
+            p->u.phys.vel.x = (i == 0) ? lbl_3_rodata_394C : lbl_3_rodata_3950;
+            p->life = lbl_3_data_26E9C[1];
+            size = (f32)lbl_3_data_26E9C[4] / lbl_3_rodata_3930 * p->u.phys.vel.x;
+            p->sizeX = p->sizeY = size;
+            p->color.c.a = lbl_3_data_26E9C[7];
+            memcpy(&p->pos, pos, sizeof(Vec));
             if (i != 0) {
                 ang = lbl_3_rodata_3958 * (lbl_3_rodata_3960 / (f64)nA) * (f64)(i - 1);
-                *(f32*)(p + 4) = lbl_3_rodata_3950 * (f32)cos((f32)ang) + *(f32*)(p + 4);
-                *(f32*)(p + 8) = lbl_3_rodata_3950 * (f32)sin((f32)ang) + *(f32*)(p + 8);
-                *(f32*)(p + 4) = lbl_3_rodata_3968 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3978) + *(f32*)(p + 4);
-                *(f32*)(p + 8) = lbl_3_rodata_3968 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3978) + *(f32*)(p + 8);
+                p->pos.x = lbl_3_rodata_3950 * (f32)cos((f32)ang) + p->pos.x;
+                p->pos.y = lbl_3_rodata_3950 * (f32)sin((f32)ang) + p->pos.y;
+                p->pos.x = lbl_3_rodata_3968 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3978) + p->pos.x;
+                p->pos.y = lbl_3_rodata_3968 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3978) + p->pos.y;
             }
-            p[0x4D] = *(s32*)lbl_3_data_26E9C;
-            *(s16*)(p + 0x48) = delay;
+            p->texIndex = lbl_3_data_26E9C[0];
+            p->delay = delay;
         } else {
-            p[0x4C] = 2;
-            *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26E9C + 0x2C);
-            size = (f32)*(s32*)(lbl_3_data_26E9C + 0x38) / lbl_3_rodata_3930;
-            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = size;
-            p[0x43] = *(s32*)(lbl_3_data_26E9C + 0x44);
-            memcpy(p + 4, pos, sizeof(Vec));
+            p->unk4C = 2;
+            p->life = lbl_3_data_26E9C[11];
+            size = (f32)lbl_3_data_26E9C[14] / lbl_3_rodata_3930;
+            p->sizeX = p->sizeY = size;
+            p->color.c.a = lbl_3_data_26E9C[17];
+            memcpy(&p->pos, pos, sizeof(Vec));
             ang = lbl_3_rodata_3958 * (lbl_3_rodata_3960 / (f64)nB) * (f64)(u8)(i - nA);
-            *(f32*)(p + 4) = lbl_3_rodata_3980 * (f32)cos((f32)ang) + *(f32*)(p + 4);
-            *(f32*)(p + 8) = lbl_3_rodata_3980 * (f32)sin((f32)ang) + *(f32*)(p + 8);
-            *(f32*)(p + 4) = lbl_3_rodata_3988 * (lbl_3_rodata_3990 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3968)) + *(f32*)(p + 4);
-            *(f32*)(p + 8) = lbl_3_rodata_3998 * (lbl_3_rodata_3948 * ((f32)rand() / lbl_3_rodata_3970)) + *(f32*)(p + 8);
-            p[0x4D] = *(s32*)(lbl_3_data_26E9C + 0x28);
-            *(s16*)(p + 0x48) = 5;
+            p->pos.x = lbl_3_rodata_3980 * (f32)cos((f32)ang) + p->pos.x;
+            p->pos.y = lbl_3_rodata_3980 * (f32)sin((f32)ang) + p->pos.y;
+            p->pos.x = lbl_3_rodata_3988 * (lbl_3_rodata_3990 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3968)) + p->pos.x;
+            p->pos.y = lbl_3_rodata_3998 * (lbl_3_rodata_3948 * ((f32)rand() / lbl_3_rodata_3970)) + p->pos.y;
+            p->texIndex = lbl_3_data_26E9C[10];
+            p->delay = 5;
         }
-        p[0x42] = 0xFF;
+        p->color.c.b = 0xFF;
         delay += 2;
         i++;
-        p[0x41] = 0xFF;
-        p[0x40] = 0xFF;
-        p[0x4E] = 0;
-        p = *(u8**)p;
+        p->color.c.g = 0xFF;
+        p->color.c.r = 0xFF;
+        p->uvFrame = 0;
+        p = p->next;
     } while (p != NULL);
 }
 #endif
 
 // .text:0x00147C00 size:0xFC mapped:0x80786C94
 void fn_3_147C00(void* arg) {
-    u8 buf[0x5C];
-    u8* h = fn_800339F0(0, 0x26);
-    u8* n;
-    u8* p;
-    H154238* hh;
+    Emitter buf; // only its particle list is filled in
+    Emitter* h = fn_800339F0(0, 0x26);
+    Emitter* n;
+    Particle* p;
+    Emitter* hh;
     if (h != NULL) {
-        n = fn_800337CC(buf, *(int*)(lbl_3_data_26E9C + 8) + *(int*)(lbl_3_data_26E9C + 0x30), 1);
+        n = fn_800337CC(&buf, lbl_3_data_26E9C[2] + lbl_3_data_26E9C[12], 1);
         if (n != NULL) {
             fn_3_147778(n, arg);
-            p = *(u8**)(h + 0xC);
-            while (*(u8**)p != NULL) {
-                p = *(u8**)p;
+            p = h->particles;
+            while (p->next != NULL) {
+                p = p->next;
             }
-            *(u8**)p = *(u8**)(n + 0xC);
-            ((H154238*)h)->cnt += ((H154238*)n)->cnt;
+            p->next = n->particles;
+            h->count += n->count;
         }
     } else {
-        n = fn_80033A24(fn_3_14737C, 0x80, 0, *(int*)(lbl_3_data_26E9C + 8) + *(int*)(lbl_3_data_26E9C + 0x30), 1, 0x26);
+        n = fn_80033A24((EmitterUpdateFn)fn_3_14737C, 0x80, 0, lbl_3_data_26E9C[2] + lbl_3_data_26E9C[12], 1, 0x26);
         if (n != NULL) {
             fn_3_147778(n, arg);
         }
@@ -321,27 +363,27 @@ void fn_3_147C00(void* arg) {
 
 // .text:0x00147CFC size:0x100 mapped:0x80786D90
 void fn_3_147CFC(void* arg) {
-    u8 buf[0x5C];
-    u8* h;
-    u8* n;
-    u8* p;
+    Emitter buf; // only its particle list is filled in
+    Emitter* h;
+    Emitter* n;
+    Particle* p;
     if (arg == NULL) {
         return;
     }
     h = fn_800339F0(0, 0x26);
     if (h != NULL) {
-        n = fn_800337CC(buf, *(int*)(lbl_3_data_26E9C + 8) + *(int*)(lbl_3_data_26E9C + 0x30), 1);
+        n = fn_800337CC(&buf, lbl_3_data_26E9C[2] + lbl_3_data_26E9C[12], 1);
         if (n != NULL) {
             fn_3_147778(n, arg);
-            p = *(u8**)(h + 0xC);
-            while (*(u8**)p != NULL) {
-                p = *(u8**)p;
+            p = h->particles;
+            while (p->next != NULL) {
+                p = p->next;
             }
-            *(u8**)p = *(u8**)(n + 0xC);
-            ((H154238*)h)->cnt += ((H154238*)n)->cnt;
+            p->next = n->particles;
+            h->count += n->count;
         }
     } else {
-        n = fn_80033A24(fn_3_14737C, 0x80, 0, *(int*)(lbl_3_data_26E9C + 8) + *(int*)(lbl_3_data_26E9C + 0x30), 1, 0x26);
+        n = fn_80033A24((EmitterUpdateFn)fn_3_14737C, 0x80, 0, lbl_3_data_26E9C[2] + lbl_3_data_26E9C[12], 1, 0x26);
         if (n != NULL) {
             fn_3_147778(n, arg);
         }
@@ -374,7 +416,7 @@ void fn_3_147E20(void) {
     GXSetTevOrder(0, 0, 0, 4);
     GXSetTevColorOp(0, 0, 0, 0, 0, 0);
     GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
-    GXLoadPosMtxImm((void*)((u8*)fn_80052768_getCamera(0) + 0x40), 0);
+    GXLoadPosMtxImm(fn_80052768_getCamera(0)->view, 0);
     GXSetCurrentMtx(0);
 }
 
@@ -402,7 +444,7 @@ void fn_3_147F94(void) {
 // NONMATCHING 96%: orig reads vertices 2-3 of the 2nd quad via lfsu (r4 = base+0xc); we fold to base-relative lfs; also li r3,1 scheduling
 // .text:0x001480E0 size:0x174 mapped:0x80787174
 #if NONMATCHING
-void fn_3_1480E0(u8* o) {
+void fn_3_1480E0(Particle* o) {
     f32* v;
     GXSetCullMode(2);
     GXBegin(0x80, 0, 4);
@@ -410,19 +452,19 @@ void fn_3_1480E0(u8* o) {
     GXWGFifo.f32 = v[0];
     GXWGFifo.f32 = v[1];
     GXWGFifo.f32 = v[2];
-    GXWGFifo.u32 = *(u32*)(o + 0x40);
+    GXWGFifo.u32 = o->color.rgba;
     GXWGFifo.f32 = v[3];
     GXWGFifo.f32 = v[4];
     GXWGFifo.f32 = v[5];
-    GXWGFifo.u32 = *(u32*)(o + 0x40);
+    GXWGFifo.u32 = o->color.rgba;
     GXWGFifo.f32 = v[6];
     GXWGFifo.f32 = v[7];
     GXWGFifo.f32 = v[8];
-    GXWGFifo.u32 = *(u32*)(o + 0x40);
+    GXWGFifo.u32 = o->color.rgba;
     GXWGFifo.f32 = v[9];
     GXWGFifo.f32 = v[10];
     GXWGFifo.f32 = v[11];
-    GXWGFifo.u32 = *(u32*)(o + 0x40);
+    GXWGFifo.u32 = o->color.rgba;
     GXSetCullMode(1);
     GXBegin(0x80, 0, 4);
     {
@@ -430,36 +472,36 @@ void fn_3_1480E0(u8* o) {
     GXWGFifo.f32 = v[0];
     GXWGFifo.f32 = v[1];
     GXWGFifo.f32 = v[2];
-    GXWGFifo.u32 = *(u32*)(o + 0x44);
+    GXWGFifo.u32 = o->colorStep.all;
     GXWGFifo.f32 = v[3];
     GXWGFifo.f32 = v[4];
     GXWGFifo.f32 = v[5];
-    GXWGFifo.u32 = *(u32*)(o + 0x44);
+    GXWGFifo.u32 = o->colorStep.all;
     GXWGFifo.f32 = p[3];
     GXWGFifo.f32 = p[4];
     GXWGFifo.f32 = p[5];
-    GXWGFifo.u32 = *(u32*)(o + 0x44);
+    GXWGFifo.u32 = o->colorStep.all;
     GXWGFifo.f32 = p[6];
     GXWGFifo.f32 = p[7];
     GXWGFifo.f32 = p[8];
-    GXWGFifo.u32 = *(u32*)(o + 0x44);
+    GXWGFifo.u32 = o->colorStep.all;
     }
 }
 #endif
 
 // .text:0x00148254 size:0x180 mapped:0x807872E8
-void fn_3_148254(u8* a, u8* b) {
+void fn_3_148254(Emitter* a, Particle* b) {
     Control c;
     Mtx m;
     Vec v;
     f32 hx;
     f32 hy;
-    u8* t;
-    f32 h = *(f32*)(b + 0x3C);
-    hx = *(f32*)(b + 0x38);
+    CharActor* t;
+    f32 h = b->sizeY;
+    hx = b->sizeX;
     hx *= lbl_3_rodata_39A8;
     hy = h * lbl_3_rodata_39A8;
-    t = ((u8**)(lbl_8036E548 + 0x2C50))[(s8)a[0x18]];
+    t = lbl_8036E548.active[((s8)a->u.t5.unk18)];
     lbl_3_bss_B860[3] = hx;
     lbl_3_bss_B860[0] = -hx;
     lbl_3_bss_B860[1] = -hy;
@@ -468,21 +510,21 @@ void fn_3_148254(u8* a, u8* b) {
     lbl_3_bss_B860[7] = hy;
     lbl_3_bss_B860[9] = -hx;
     lbl_3_bss_B860[10] = hy;
-    PSMTXInverse((void*)((u8*)fn_80052768_getCamera(0) + 0x40), m);
+    PSMTXInverse(fn_80052768_getCamera(0)->view, m);
     m[2][1] = lbl_3_rodata_3934[0];
     m[1][2] = lbl_3_rodata_3934[0];
     m[1][0] = lbl_3_rodata_3934[0];
     m[0][1] = lbl_3_rodata_3934[0];
     m[1][1] = lbl_3_rodata_392C;
-    v.x = *(f32*)(b + 4);
-    v.y = *(f32*)(b + 8);
-    v.z = *(f32*)(b + 0xC);
+    v.x = b->pos.x;
+    v.y = b->pos.y;
+    v.z = b->pos.z;
     PSMTXMultVecSR(m, &v, &v);
     c.type = 0;
-    CTRLSetRotation(&c, *(f32*)(b + 0x1C), *(f32*)(b + 0x20), *(f32*)(b + 0x24));
-    CTRLSetTranslation(&c, *(f32*)(t + 0x34) + v.x, -*(f32*)(t + 0x38) + v.y, *(f32*)(t + 0x3C) + v.z);
+    CTRLSetRotation(&c, b->u.phys.accel.x, b->u.phys.accel.y, b->u.phys.accel.z);
+    CTRLSetTranslation(&c, t->pos.x + v.x, -t->pos.y + v.y, t->pos.z + v.z);
     CTRLBuildMatrix(&c, m);
-    PSMTXConcat((void*)((u8*)fn_80052768_getCamera(0) + 0x40), m, m);
+    PSMTXConcat(fn_80052768_getCamera(0)->view, m, m);
     GXLoadPosMtxImm(m, 0);
     GXSetCurrentMtx(0);
 }
@@ -495,25 +537,25 @@ u8 fn_3_1483D4(void) {
 // NONMATCHING 72%: the original inlines 147F94/148254/1480E0/1483D4/148EF0/148FD0/147E20; CW won't auto-inline 148254/1480E0 (Control/fifo bodies), so those stay calls. With explicit static-inline copies of those two it reaches 93% (register numbering), which checks the structure
 // .text:0x0014841C size:0xAD4 mapped:0x807874B0
 #if NONMATCHING
-u32 fn_3_14841C(u8* o) {
+u32 fn_3_14841C(Emitter* o) {
     Vec up;
     Vec dir;
-    u8* p;
-    u8* t;
+    Particle* p;
+    CharActor* t;
     f32 ang;
     f32 r;
-    p = *(u8**)(o + 0xC);
-    t = ((u8**)(lbl_8036E548 + 0x2C50))[(s8)o[0x18]];
+    p = o->particles;
+    t = lbl_8036E548.active[((s8)o->u.t5.unk18)];
     fn_3_147F94();
     do {
-        if (*(s16*)(p + 0x48) <= 0) {
+        if (p->delay <= 0) {
             fn_3_148254(o, p);
             fn_3_1480E0(p);
-            PSVECAdd((Vec*)(p + 0x10), (Vec*)(p + 4), (Vec*)(p + 4));
-            PSVECAdd((Vec*)(p + 0x28), (Vec*)(p + 0x1C), (Vec*)(p + 0x1C));
+            PSVECAdd(&p->u.phys.vel, &p->pos, &p->pos);
+            PSVECAdd(&p->u.phys.force, &p->u.phys.accel, &p->u.phys.accel);
             if (fn_3_1483D4()) {
                 up = lbl_3_rodata_3920;
-                memcpy(&dir, p + 0x10, sizeof(Vec));
+                memcpy(&dir, &p->u, sizeof(Vec));
                 PSVECNormalize(&dir, &dir);
                 ang = lbl_3_rodata_39AC * (f32)acos(PSVECDotProduct(&up, &dir));
                 if (dir.x < lbl_3_rodata_3934[0]) {
@@ -526,15 +568,15 @@ u32 fn_3_14841C(u8* o) {
                     ang = ang + r;
                 }
                 fn_3_148EF0(p, ang);
-                p[0x4C]++;
+                p->unk4C++;
             }
-            if (-*(f32*)(p + 8) - *(f32*)(p + 0x3C) < *(f32*)(t + 0x38)) {
+            if (-p->pos.y - p->sizeY < t->pos.y) {
                 fn_3_148FD0(o, p);
             }
         } else {
-            *(s16*)(p + 0x48) -= 1;
+            p->delay -= 1;
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
     fn_3_147E20();
     return 0;
@@ -543,71 +585,71 @@ u32 fn_3_14841C(u8* o) {
 
 #pragma dont_inline off
 // .text:0x00148EF0 size:0xE0 mapped:0x80787F84
-void fn_3_148EF0(u8* o, f32 ang) {
+void fn_3_148EF0(Particle* o, f32 ang) {
     f32 s;
     f32 a;
     f32 c;
     a = lbl_3_rodata_39B8 * ang;
     s = (f32)sin(a);
     c = (f32)cos(a);
-    *(f32*)(o + 0x10) = s * (f32)*(s32*)(lbl_3_data_26E7C + 4) / lbl_3_rodata_3930;
-    *(f32*)(o + 0x14) = c * (f32)*(s32*)(lbl_3_data_26E7C + 4) / lbl_3_rodata_3930;
-    *(f32*)(o + 0x18) = 0.0f;
+    o->u.phys.vel.x = s * (f32)lbl_3_data_26E7C[1] / lbl_3_rodata_3930;
+    o->u.phys.vel.y = c * (f32)lbl_3_data_26E7C[1] / lbl_3_rodata_3930;
+    o->u.phys.vel.z = 0.0f;
 }
 #pragma dont_inline on
 
 // The original inlines 148FD0 into 149340 into 14975C into 149BA8; CW only inlines bodies that big with a raised limit
 // (600 is enough; 1000 also inlines fn_3_14E234 into fn_3_14E7C0, which the original does not).
 #pragma inline_max_size(600)
-static inline void Inl148FD0(u8* a, u8* p) {
-    s32 base = ((s32*)lbl_3_data_26E7C)[6];
-    u8* t = ((u8**)(lbl_8036E548 + 0x2C50))[(s8)a[0x18]];
+static inline void Inl148FD0(Emitter* a, Particle* p) {
+    s32 base = lbl_3_data_26E7C[6];
+    CharActor* t = lbl_8036E548.active[((s8)a->u.t5.unk18)];
     u8 lo;
     u8 range;
     s32 r;
     lo = base;
-    *(f32*)(p + 4) = lbl_3_rodata_3934[0];
-    *(f32*)(p + 8) = -((f32)((s32*)lbl_3_data_26E7C)[5] / lbl_3_rodata_3930 + *(f32*)(t + 0x38));
-    *(f32*)(p + 0xC) = lbl_3_rodata_3934[0];
-    fn_3_148EF0(p, lbl_3_rodata_39BC * ((f32)(((s32*)lbl_3_data_26E7C)[0] / 2 - *(s16*)(p + 0x4A)) / ((f32)((s32*)lbl_3_data_26E7C)[0] * lbl_3_rodata_39A8)));
-    *(f32*)(p + 0x1C) = *(f32*)(p + 0x20) = *(f32*)(p + 0x24) = 0.0f;
-    r = lbl_3_rodata_39C0 * ((f32)((s32*)lbl_3_data_26E7C)[2] / lbl_3_rodata_3930);
-    *(f32*)(p + 0x28) = (f32)(rand() % r) / lbl_3_rodata_39C0;
-    *(f32*)(p + 0x2C) = (f32)(rand() % r) / lbl_3_rodata_39C0;
-    *(f32*)(p + 0x30) = (f32)(rand() % r) / lbl_3_rodata_39C0;
-    p[0x47] = 0xFF;
-    p[0x43] = 0xFF;
+    p->pos.x = lbl_3_rodata_3934[0];
+    p->pos.y = -((f32)lbl_3_data_26E7C[5] / lbl_3_rodata_3930 + t->pos.y);
+    p->pos.z = lbl_3_rodata_3934[0];
+    fn_3_148EF0(p, lbl_3_rodata_39BC * ((f32)(lbl_3_data_26E7C[0] / 2 - p->life) / ((f32)lbl_3_data_26E7C[0] * lbl_3_rodata_39A8)));
+    p->u.phys.accel.x = p->u.phys.accel.y = p->u.phys.accel.z = 0.0f;
+    r = lbl_3_rodata_39C0 * ((f32)lbl_3_data_26E7C[2] / lbl_3_rodata_3930);
+    p->u.phys.force.x = (f32)(rand() % r) / lbl_3_rodata_39C0;
+    p->u.phys.force.y = (f32)(rand() % r) / lbl_3_rodata_39C0;
+    p->u.phys.force.z = (f32)(rand() % r) / lbl_3_rodata_39C0;
+    p->colorStep.v[3] = 0xFF;
+    p->color.c.a = 0xFF;
     range = 0xFF - base;
-    p[0x41] = lo + rand() % range;
-    p[0x42] = lo + rand() % range;
-    p[0x44] = lo + rand() % range;
-    p[0x45] = lo + rand() % range;
-    p[0x46] = lo + rand() % range;
-    p[0x4C] = 0;
+    p->color.c.g = lo + rand() % range;
+    p->color.c.b = lo + rand() % range;
+    p->colorStep.v[0] = lo + rand() % range;
+    p->colorStep.v[1] = lo + rand() % range;
+    p->colorStep.v[2] = lo + rand() % range;
+    p->unk4C = 0;
 }
 
-static inline void Inl149340(u8* o) {
-    u8* p;
+static inline void Inl149340(Emitter* o) {
+    Particle* p;
     u32 i;
     s32 q;
-    p = *(u8**)(o + 0xC);
+    p = o->particles;
     i = 0;
     do {
-        *(s16*)(p + 0x4A) = i;
-        *(f32*)(p + 0x38) = (f32)*(s32*)(lbl_3_data_26E7C + 0xC) / lbl_3_rodata_3930;
-        *(f32*)(p + 0x3C) = (f32)*(s32*)(lbl_3_data_26E7C + 0x10) / lbl_3_rodata_3930;
+        p->life = i;
+        p->sizeX = (f32)lbl_3_data_26E7C[3] / lbl_3_rodata_3930;
+        p->sizeY = (f32)lbl_3_data_26E7C[4] / lbl_3_rodata_3930;
         Inl148FD0(o, p);
-        q = *(s32*)lbl_3_data_26E7C / 5;
-        *(s16*)(p + 0x48) = ((i % 5) * q + rand() % q) * 2;
+        q = lbl_3_data_26E7C[0] / 5;
+        p->delay = ((i % 5) * q + rand() % q) * 2;
         i++;
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
 }
 
 static inline void Inl14975C(s8 a) {
-    u8* e = fn_80033A24(fn_3_14841C, 0x80, 0, *(s32*)lbl_3_data_26E7C, 1, 0x25);
+    Emitter* e = fn_80033A24((EmitterUpdateFn)fn_3_14841C, 0x80, 0, lbl_3_data_26E7C[0], 1, 0x25);
     if (e != NULL) {
-        e[0x18] = a;
+        e->u.t5.unk18 = a;
         Inl149340(e);
     }
 }
@@ -616,7 +658,7 @@ static inline void Inl14975C(s8 a) {
 // .text:0x00148FD0 size:0x370 mapped:0x80788064
 #pragma dont_inline off
 #if NONMATCHING
-void fn_3_148FD0(u8* a, u8* p) {
+void fn_3_148FD0(Emitter* a, Particle* p) {
     Inl148FD0(a, p);
 }
 #endif
@@ -626,7 +668,7 @@ void fn_3_148FD0(u8* a, u8* p) {
 // .text:0x00149340 size:0x41C mapped:0x807883D4
 #pragma dont_inline off
 #if NONMATCHING
-void fn_3_149340(u8* o) {
+void fn_3_149340(Emitter* o) {
     Inl149340(o);
 }
 #endif
@@ -649,9 +691,9 @@ void fn_3_14975C(s8 a) {
 void fn_3_149BA8(void) {
     u32 i;
     if (g_d_GameSettings.GameModeSelected != 7 && g_d_GameSettings.GameModeSelected != 6) {
-        *(s32*)(lbl_3_data_26E7C + 0x14) = 930000;
+        lbl_3_data_26E7C[5] = 930000;
     } else {
-        *(s32*)(lbl_3_data_26E7C + 0x14) = 750000;
+        lbl_3_data_26E7C[5] = 750000;
     }
     for (i = 0; i < 4; i++) {
         if (lbl_3_bss_B85C[i] > -1) {
@@ -680,37 +722,37 @@ void fn_3_14A164(void) {
 
 // NONMATCHING 99%: only the flag base addr is addi r3 (orig: lis/addi r4 before stmw); computing delta after df in the else branch fixed the float regs
 // .text:0x0014A188 size:0x1F4 mapped:0x8078921C
-u32 fn_3_14A188(u8* o) {
-    u8* p;
-    u8* d;
+u32 fn_3_14A188(Emitter* o) {
+    Particle* p;
+    s32* d;
     s32 a;
     s32 alive = 0;
     s32 delta;
     f32 df;
     f32 q;
     s32 s;
-    if (lbl_80366158[0x28] != 0) {
+    if (lbl_80366158._28 != 0) {
         return 0;
     }
     fn_80033620(o);
-    p = *(u8**)(o + 0xC);
+    p = o->particles;
     GXSetZMode(1, 3, 0);
     GXSetBlendMode(1, 4, 5, 0);
     d = lbl_3_data_26E40;
     do {
-        if (*(s16*)(p + 0x4A) != 0) {
-            a = p[0x43];
-            fn_80033F64(*(f32*)(p + 0x38), *(f32*)(p + 0x3C), *(f32*)(p + 0x10));
-            fn_80033CC8(p, *(void**)(o + 0x10));
-            if (*(s32*)(d + 8) - *(s16*)(p + 0x4A) < *(s32*)(d + 0x10)) {
-                df = (*(f32*)(p + 0x18) - (f32)*(s32*)(d + 0x14) / lbl_3_rodata_3930) / (f32)*(s32*)(d + 0x10);
-                delta = (*(s32*)(d + 0x28) - *(s32*)(d + 0x24)) / *(s32*)(d + 0x10);
+        if (p->life != 0) {
+            a = p->color.c.a;
+            fn_80033F64(p->sizeX, p->sizeY, p->u.phys.vel.x);
+            fn_80033CC8(p, o->tex);
+            if (d[2] - p->life < d[4]) {
+                df = (p->u.phys.vel.z - (f32)d[5] / lbl_3_rodata_3930) / (f32)d[4];
+                delta = (d[10] - d[9]) / d[4];
             } else {
-                s = *(s32*)(d + 8) - *(s32*)(d + 0x10);
-                q = (f32)*(s32*)(d + 0x20) / lbl_3_rodata_3930;
-                df = q + *(f32*)(p + 0x18);
+                s = d[2] - d[4];
+                q = (f32)d[8] / lbl_3_rodata_3930;
+                df = q + p->u.phys.vel.z;
                 df /= (f32)s;
-                delta = (*(s32*)(d + 0x2C) - *(s32*)(d + 0x28)) / s;
+                delta = (d[11] - d[10]) / s;
             }
             a += delta;
             if (a < 0) {
@@ -719,147 +761,147 @@ u32 fn_3_14A188(u8* o) {
             if (a > 0xFF) {
                 a = 0xFF;
             }
-            p[0x43] = a;
-            *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + df;
-            *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
-            *(f32*)(p + 0x10) = *(f32*)(p + 0x10) + *(f32*)(p + 0x14);
-            if ((*(s16*)(p + 0x4A) = *(s16*)(p + 0x4A) - 1) != 0) {
+            p->color.c.a = a;
+            p->sizeX = p->sizeX + df;
+            p->sizeY = p->sizeX;
+            p->u.phys.vel.x = p->u.phys.vel.x + p->u.phys.vel.y;
+            if ((p->life = p->life - 1) != 0) {
                 alive++;
             }
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
     return alive == 0;
 }
 
 // .text:0x0014A37C size:0x2B0 mapped:0x80789410
-void fn_3_14A37C(u8* o, f32* v) {
-    u8* p;
-    u8* d;
+void fn_3_14A37C(Emitter* o, f32* v) {
+    Particle* p;
+    s32* d;
     s32 i;
     f32 ang;
     f32 c;
-    *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
-    p = *(u8**)(o + 0xC);
+    o->tex = lbl_3_common_bss_32724.textures[2];
+    p = o->particles;
     d = lbl_3_data_26E40;
     i = 0;
     do {
-        p[0x4D] = *(s32*)d;
-        p[0x4E] = 0;
-        *(s16*)(p + 0x4A) = *(s32*)(d + 8);
-        *(s16*)(p + 0x48) = 0;
-        *(f32*)(p + 4) = v[0];
-        *(f32*)(p + 8) = -v[1];
-        *(f32*)(p + 0xC) = v[2];
-        ang = (f32)(u32)(0x168 / *(s32*)(d + 4) * i);
+        p->texIndex = *d;
+        p->uvFrame = 0;
+        p->life = d[2];
+        p->delay = 0;
+        p->pos.x = v[0];
+        p->pos.y = -v[1];
+        p->pos.z = v[2];
+        ang = (f32)(u32)(0x168 / d[1] * i);
         ang = lbl_3_rodata_39B8 * ang;
         c = (f32)cos(ang);
-        *(f32*)(p + 4) = *(f32*)(p + 4) + (f32)*(s32*)(d + 0xC) * c / lbl_3_rodata_3930;
+        p->pos.x = p->pos.x + (f32)d[3] * c / lbl_3_rodata_3930;
         c = (f32)sin(ang);
-        *(f32*)(p + 8) = *(f32*)(p + 8) + (f32)*(s32*)(d + 0xC) * c / lbl_3_rodata_3930;
-        *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)*(s32*)(d + 0x14) / lbl_3_rodata_3930;
-        p[0x42] = 0xFF;
-        p[0x41] = 0xFF;
-        p[0x40] = 0xFF;
-        p[0x43] = *(s32*)(d + 0x24);
-        *(f32*)(p + 0x10) = lbl_3_rodata_3934[0];
-        *(f32*)(p + 0x14) = (f32)(*(s32*)(d + 0x30) - rand() % *(s32*)(d + 0x34));
-        *(f32*)(p + 0x14) = *(f32*)(p + 0x14) / lbl_3_rodata_3930;
-        *(f32*)(p + 0x14) = *(f32*)(p + 0x14) * (f32)(-(rand() % 2 * 2) + 1);
-        *(f32*)(p + 0x18) = (f32)(*(s32*)(d + 0x18) - rand() % *(s32*)(d + 0x1C));
-        *(f32*)(p + 0x18) = *(f32*)(p + 0x18) / lbl_3_rodata_3930;
+        p->pos.y = p->pos.y + (f32)d[3] * c / lbl_3_rodata_3930;
+        p->sizeX = p->sizeY = (f32)d[5] / lbl_3_rodata_3930;
+        p->color.c.b = 0xFF;
+        p->color.c.g = 0xFF;
+        p->color.c.r = 0xFF;
+        p->color.c.a = d[9];
+        p->u.phys.vel.x = lbl_3_rodata_3934[0];
+        p->u.phys.vel.y = (f32)(d[12] - rand() % d[13]);
+        p->u.phys.vel.y = p->u.phys.vel.y / lbl_3_rodata_3930;
+        p->u.phys.vel.y = p->u.phys.vel.y * (f32)(-(rand() % 2 * 2) + 1);
+        p->u.phys.vel.z = (f32)(d[6] - rand() % d[7]);
+        p->u.phys.vel.z = p->u.phys.vel.z / lbl_3_rodata_3930;
         i++;
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
 }
 
 // .text:0x0014A62C size:0x2E0 mapped:0x807896C0
 void fn_3_14A62C(f32* v) {
-    u8* o;
-    u8* d;
+    Emitter* o;
+    s32* d;
     s32 i;
-    u8* p;
+    Particle* p;
     f32 ang;
     f32 c;
-    o = fn_80033A24(fn_3_14A188, 0x80, 0, *(s32*)(lbl_3_data_26E40 + 4), 1, 0x24);
+    o = fn_80033A24((EmitterUpdateFn)fn_3_14A188, 0x80, 0, lbl_3_data_26E40[1], 1, 0x24);
     if (o != NULL) {
-        *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
-        p = *(u8**)(o + 0xC);
+        o->tex = lbl_3_common_bss_32724.textures[2];
+        p = o->particles;
         d = lbl_3_data_26E40;
         i = 0;
         do {
-            p[0x4D] = *(s32*)d;
-            p[0x4E] = 0;
-            *(s16*)(p + 0x4A) = *(s32*)(d + 8);
-            *(s16*)(p + 0x48) = 0;
-            *(f32*)(p + 4) = v[0];
-            *(f32*)(p + 8) = -v[1];
-            *(f32*)(p + 0xC) = v[2];
-            ang = (f32)(u32)(0x168 / *(s32*)(lbl_3_data_26E40 + 4) * i);
+            p->texIndex = *d;
+            p->uvFrame = 0;
+            p->life = d[2];
+            p->delay = 0;
+            p->pos.x = v[0];
+            p->pos.y = -v[1];
+            p->pos.z = v[2];
+            ang = (f32)(u32)(0x168 / lbl_3_data_26E40[1] * i);
             ang = lbl_3_rodata_39B8 * ang;
             c = (f32)cos(ang);
-            *(f32*)(p + 4) = *(f32*)(p + 4) + (f32)*(s32*)(d + 0xC) * c / lbl_3_rodata_3930;
+            p->pos.x = p->pos.x + (f32)d[3] * c / lbl_3_rodata_3930;
             c = (f32)sin(ang);
-            *(f32*)(p + 8) = *(f32*)(p + 8) + (f32)*(s32*)(d + 0xC) * c / lbl_3_rodata_3930;
-            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)*(s32*)(d + 0x14) / lbl_3_rodata_3930;
-            p[0x42] = 0xFF;
-            p[0x41] = 0xFF;
-            p[0x40] = 0xFF;
-            p[0x43] = *(s32*)(d + 0x24);
-            *(f32*)(p + 0x10) = lbl_3_rodata_3934[0];
-            *(f32*)(p + 0x14) = (f32)(*(s32*)(d + 0x30) - rand() % *(s32*)(d + 0x34));
-            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) / lbl_3_rodata_3930;
-            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) * (f32)(-(rand() % 2 * 2) + 1);
-            *(f32*)(p + 0x18) = (f32)(*(s32*)(d + 0x18) - rand() % *(s32*)(d + 0x1C));
-            *(f32*)(p + 0x18) = *(f32*)(p + 0x18) / lbl_3_rodata_3930;
+            p->pos.y = p->pos.y + (f32)d[3] * c / lbl_3_rodata_3930;
+            p->sizeX = p->sizeY = (f32)d[5] / lbl_3_rodata_3930;
+            p->color.c.b = 0xFF;
+            p->color.c.g = 0xFF;
+            p->color.c.r = 0xFF;
+            p->color.c.a = d[9];
+            p->u.phys.vel.x = lbl_3_rodata_3934[0];
+            p->u.phys.vel.y = (f32)(d[12] - rand() % d[13]);
+            p->u.phys.vel.y = p->u.phys.vel.y / lbl_3_rodata_3930;
+            p->u.phys.vel.y = p->u.phys.vel.y * (f32)(-(rand() % 2 * 2) + 1);
+            p->u.phys.vel.z = (f32)(d[6] - rand() % d[7]);
+            p->u.phys.vel.z = p->u.phys.vel.z / lbl_3_rodata_3930;
             i++;
-            p = *(u8**)p;
+            p = p->next;
         } while (p != NULL);
     }
 }
 
 // .text:0x0014A90C size:0x310 mapped:0x807899A0
 void fn_3_14A90C(f32* v) {
-    u8* o;
-    u8* d;
+    Emitter* o;
+    s32* d;
     s32 i;
-    u8* p;
+    Particle* p;
     f32 ang;
     f32 c;
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 3 && v != NULL) {
-    o = fn_80033A24(fn_3_14A188, 0x80, 0, *(s32*)(lbl_3_data_26E40 + 4), 1, 0x24);
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame.GameMode_MiniGame == 3 && v != NULL) {
+    o = fn_80033A24((EmitterUpdateFn)fn_3_14A188, 0x80, 0, lbl_3_data_26E40[1], 1, 0x24);
     if (o != NULL) {
-        *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
-        p = *(u8**)(o + 0xC);
+        o->tex = lbl_3_common_bss_32724.textures[2];
+        p = o->particles;
         d = lbl_3_data_26E40;
         i = 0;
         do {
-            p[0x4D] = *(s32*)d;
-            p[0x4E] = 0;
-            *(s16*)(p + 0x4A) = *(s32*)(d + 8);
-            *(s16*)(p + 0x48) = 0;
-            *(f32*)(p + 4) = v[0];
-            *(f32*)(p + 8) = -v[1];
-            *(f32*)(p + 0xC) = v[2];
-            ang = (f32)(u32)(0x168 / *(s32*)(lbl_3_data_26E40 + 4) * i);
+            p->texIndex = *d;
+            p->uvFrame = 0;
+            p->life = d[2];
+            p->delay = 0;
+            p->pos.x = v[0];
+            p->pos.y = -v[1];
+            p->pos.z = v[2];
+            ang = (f32)(u32)(0x168 / lbl_3_data_26E40[1] * i);
             ang = lbl_3_rodata_39B8 * ang;
             c = (f32)cos(ang);
-            *(f32*)(p + 4) = *(f32*)(p + 4) + (f32)*(s32*)(d + 0xC) * c / lbl_3_rodata_3930;
+            p->pos.x = p->pos.x + (f32)d[3] * c / lbl_3_rodata_3930;
             c = (f32)sin(ang);
-            *(f32*)(p + 8) = *(f32*)(p + 8) + (f32)*(s32*)(d + 0xC) * c / lbl_3_rodata_3930;
-            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)*(s32*)(d + 0x14) / lbl_3_rodata_3930;
-            p[0x42] = 0xFF;
-            p[0x41] = 0xFF;
-            p[0x40] = 0xFF;
-            p[0x43] = *(s32*)(d + 0x24);
-            *(f32*)(p + 0x10) = lbl_3_rodata_3934[0];
-            *(f32*)(p + 0x14) = (f32)(*(s32*)(d + 0x30) - rand() % *(s32*)(d + 0x34));
-            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) / lbl_3_rodata_3930;
-            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) * (f32)(-(rand() % 2 * 2) + 1);
-            *(f32*)(p + 0x18) = (f32)(*(s32*)(d + 0x18) - rand() % *(s32*)(d + 0x1C));
-            *(f32*)(p + 0x18) = *(f32*)(p + 0x18) / lbl_3_rodata_3930;
+            p->pos.y = p->pos.y + (f32)d[3] * c / lbl_3_rodata_3930;
+            p->sizeX = p->sizeY = (f32)d[5] / lbl_3_rodata_3930;
+            p->color.c.b = 0xFF;
+            p->color.c.g = 0xFF;
+            p->color.c.r = 0xFF;
+            p->color.c.a = d[9];
+            p->u.phys.vel.x = lbl_3_rodata_3934[0];
+            p->u.phys.vel.y = (f32)(d[12] - rand() % d[13]);
+            p->u.phys.vel.y = p->u.phys.vel.y / lbl_3_rodata_3930;
+            p->u.phys.vel.y = p->u.phys.vel.y * (f32)(-(rand() % 2 * 2) + 1);
+            p->u.phys.vel.z = (f32)(d[6] - rand() % d[7]);
+            p->u.phys.vel.z = p->u.phys.vel.z / lbl_3_rodata_3930;
             i++;
-            p = *(u8**)p;
+            p = p->next;
         } while (p != NULL);
     }
     }
@@ -873,37 +915,37 @@ void fn_3_14AC1C(void) {
 // NONMATCHING 99%: 14B3F4/14B248 inlined; only FPR numbering of the inlined 14B248 angle/radius temps differs
 // .text:0x0014AC40 size:0x608 mapped:0x80789CD4
 #if NONMATCHING
-u32 fn_3_14AC40(u8* o) {
-    u8* p;
+u32 fn_3_14AC40(Emitter* o) {
+    Particle* p;
     s32 da;
     f32 ds;
     s32 a;
-    if (lbl_80366158[0x28] != 0) {
+    if (lbl_80366158._28 != 0) {
         return 0;
     }
     fn_80033620(o);
-    p = *(u8**)(o + 0xC);
+    p = o->particles;
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
-    if (lbl_80366158[0x28] == 0) {
+    if (lbl_80366158._28 == 0) {
         fn_3_14B3F4(o);
-        *(s16*)(o + 0x36) -= 1;
+        o->u.sweep.left -= 1;
     }
-    da = (*(s32*)(lbl_3_data_26E24 + 0x18) - *(s32*)(lbl_3_data_26E24 + 0x14)) / *(s32*)(lbl_3_data_26E24 + 4) * 2;
-    ds = lbl_3_rodata_39C4 * ((f32)(*(s32*)(lbl_3_data_26E24 + 0x10) - *(s32*)(lbl_3_data_26E24 + 0xC)) / lbl_3_rodata_3930 /
-                              (f32)*(s32*)(lbl_3_data_26E24 + 4));
+    da = (lbl_3_data_26E24[6] - lbl_3_data_26E24[5]) / lbl_3_data_26E24[1] * 2;
+    ds = lbl_3_rodata_39C4 * ((f32)(lbl_3_data_26E24[4] - lbl_3_data_26E24[3]) / lbl_3_rodata_3930 /
+                              (f32)lbl_3_data_26E24[1]);
     do {
-        if (*(s16*)(p + 0x4A) != 0) {
-            if (*(s16*)(p + 0x48) > 0) {
-                *(s16*)(p + 0x48) -= 1;
-                if (*(s16*)(p + 0x48) == 0) {
+        if (p->life != 0) {
+            if (p->delay > 0) {
+                p->delay -= 1;
+                if (p->delay == 0) {
                     fn_3_14B248(o, p);
                 }
             } else {
-                fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
-                fn_80033CC8(p, *(void**)(o + 0x10));
-                a = p[0x43];
-                if (*(s32*)(lbl_3_data_26E24 + 4) / *(s16*)(p + 0x4A) < 2) {
+                fn_8003403C(p->sizeX, p->sizeY);
+                fn_80033CC8(p, o->tex);
+                a = p->color.c.a;
+                if (lbl_3_data_26E24[1] / p->life < 2) {
                     ds = __fabs(ds);
                     da = __fabs(da);
                 } else {
@@ -917,24 +959,24 @@ u32 fn_3_14AC40(u8* o) {
                 if (a < 0) {
                     a = 0;
                 }
-                *(f32*)(p + 0x38) += ds;
-                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
-                p[0x43] = a;
-                *(s16*)(p + 0x4A) -= 1;
-                if (*(s16*)(p + 0x4A) == 0) {
+                p->sizeX += ds;
+                p->sizeY = p->sizeX;
+                p->color.c.a = a;
+                p->life -= 1;
+                if (p->life == 0) {
                     fn_3_14B248(o, p);
                 }
             }
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
-    return *(s16*)(o + 0x36) == 0;
+    return o->u.sweep.left == 0;
 }
 #endif
 
 #pragma dont_inline off
 // .text:0x0014B248 size:0x1AC mapped:0x8078A2DC
-void fn_3_14B248(u8* a, u8* b) {
+void fn_3_14B248(Emitter* a, Particle* b) {
     f32 c;
     f32 sn;
     f32 ang;
@@ -942,43 +984,43 @@ void fn_3_14B248(u8* a, u8* b) {
     f32 d;
     f32 px;
     f32 py;
-    d = (f32)*(s32*)(lbl_3_data_26E24 + 0xC) / lbl_3_rodata_3930;
-    *(f32*)(b + 0x3C) = d;
-    *(f32*)(b + 0x38) = d;
-    b[0x43] = *(s32*)(lbl_3_data_26E24 + 0x14);
+    d = (f32)lbl_3_data_26E24[3] / lbl_3_rodata_3930;
+    b->sizeY = d;
+    b->sizeX = d;
+    b->color.c.a = lbl_3_data_26E24[5];
     ang = lbl_3_rodata_39B8 * (f32)(rand() % 360);
     r = (f32)((f64)((u32)rand() % 200) / lbl_3_rodata_39C8);
     c = (f32)cos(ang);
     px = r * c;
     sn = (f32)sin(ang);
     py = r * sn;
-    *(f32*)(b + 4) = *(f32*)(a + 0x24) + px;
-    *(f32*)(b + 8) = *(f32*)(a + 0x28) + py;
-    *(f32*)(b + 0xC) = *(f32*)(a + 0x2C) + lbl_3_rodata_3934[0];
-    *(s16*)(b + 0x4A) = *(s32*)(lbl_3_data_26E24 + 4);
+    b->pos.x = a->u.t1.dir.x + px;
+    b->pos.y = a->u.t1.dir.y + py;
+    b->pos.z = a->u.t1.dir.z + lbl_3_rodata_3934[0];
+    b->life = lbl_3_data_26E24[1];
 }
 
 // .text:0x0014B3F4 size:0x148 mapped:0x8078A488
-void fn_3_14B3F4(u8* a) {
+void fn_3_14B3F4(Emitter* a) {
     f32* p;
     f32* q;
     f32 t;
     f32 s;
-    s32 d = *(s16*)(a + 0x34) - *(s16*)(a + 0x36);
-    f32 len = *(f32*)(a + 0x30);
+    s32 d = a->u.sweep.total - a->u.sweep.left;
+    f32 len = a->u.sweep.len;
     if ((f32)d < len) {
-        p = (f32*)lbl_3_data_26E00;
-        q = (f32*)(lbl_3_data_26E00 + 0xC);
+        p = &lbl_3_data_26E00[0].x;
+        q = &lbl_3_data_26E00[1].x;
         t = (f32)d / len;
     } else {
-        p = (f32*)(lbl_3_data_26E00 + 0xC);
-        q = (f32*)(lbl_3_data_26E00 + 0x18);
-        t = (f32)d / ((f32)*(s16*)(a + 0x34) - len);
+        p = &lbl_3_data_26E00[1].x;
+        q = &lbl_3_data_26E00[2].x;
+        t = (f32)d / ((f32)a->u.sweep.total - len);
     }
     s = fn_3_119D28();
-    *(f32*)(a + 0x24) = s * (p[0] * (1.0f - t) + q[0] * t) + *(f32*)(a + 0x18);
-    *(f32*)(a + 0x28) = s * (p[1] * (1.0f - t) + q[1] * t) + *(f32*)(a + 0x1C);
-    *(f32*)(a + 0x2C) = s * (p[2] * (1.0f - t) + q[2] * t) + *(f32*)(a + 0x20);
+    a->u.sweep.pos.x = s * (p[0] * (1.0f - t) + q[0] * t) + a->u.sweep.origin.x;
+    a->u.sweep.pos.y = s * (p[1] * (1.0f - t) + q[1] * t) + a->u.sweep.origin.y;
+    a->u.sweep.pos.z = s * (p[2] * (1.0f - t) + q[2] * t) + a->u.sweep.origin.z;
 }
 #pragma dont_inline on
 
@@ -986,36 +1028,36 @@ void fn_3_14B3F4(u8* a) {
 // .text:0x0014B53C size:0x3F0 mapped:0x8078A5D0
 #pragma dont_inline off
 #if NONMATCHING
-void fn_3_14B53C(u8* o, u32 n, Vec* pos) {
+void fn_3_14B53C(Emitter* o, u32 n, Vec* pos) {
     Vec d;
     f32 len;
     f32 len2;
-    u8* p;
+    Particle* p;
     s32 i;
-    *(Vec*)(o + 0x18) = *pos;
+    o->u.sweep.origin = *pos;
     i = 0;
-    *(void**)(o + 0x10) = *(void**)(lbl_3_common_bss_32724 + 0x6C);
-    *(s16*)(o + 0x34) = n;
-    *(s16*)(o + 0x36) = n;
-    PSVECSubtract((Vec*)lbl_3_data_26E00, (Vec*)(lbl_3_data_26E00 + 0xC), &d);
+    o->tex = lbl_3_common_bss_32724.textures[2];
+    o->u.sweep.total = n;
+    o->u.sweep.left = n;
+    PSVECSubtract((Vec*)lbl_3_data_26E00, &lbl_3_data_26E00[1], &d);
     len = PSVECMag(&d);
-    PSVECSubtract((Vec*)(lbl_3_data_26E00 + 0xC), (Vec*)(lbl_3_data_26E00 + 0x18), &d);
+    PSVECSubtract(&lbl_3_data_26E00[1], &lbl_3_data_26E00[2], &d);
     len2 = PSVECMag(&d);
-    *(f32*)(o + 0x30) = len / ((len2 + len) / (f32)n);
+    o->u.sweep.len = len / ((len2 + len) / (f32)n);
     fn_3_14B3F4(o);
-    p = *(u8**)(o + 0xC);
+    p = o->particles;
     do {
-        p[0x4D] = *(s32*)lbl_3_data_26E24;
-        p[0x4E] = 0;
-        *(s16*)(p + 0x48) = (f32)i * ((f32)*(s16*)(o + 0x34) / (f32)*(s32*)(lbl_3_data_26E24 + 8));
-        p[0x42] = 0xFF;
-        p[0x41] = 0xFF;
-        p[0x40] = 0xFF;
-        *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26E24 + 4);
-        if (*(s16*)(p + 0x48) == 0) {
+        p->texIndex = lbl_3_data_26E24[0];
+        p->uvFrame = 0;
+        p->delay = (f32)i * ((f32)o->u.sweep.total / (f32)lbl_3_data_26E24[2]);
+        p->color.c.b = 0xFF;
+        p->color.c.g = 0xFF;
+        p->color.c.r = 0xFF;
+        p->life = lbl_3_data_26E24[1];
+        if (p->delay == 0) {
             fn_3_14B248(o, p);
         }
-        p = *(u8**)p;
+        p = p->next;
         i++;
     } while (p != NULL);
 }
@@ -1024,7 +1066,7 @@ void fn_3_14B53C(u8* o, u32 n, Vec* pos) {
 
 // .text:0x0014B92C size:0x74 mapped:0x8078A9C0
 void fn_3_14B92C(u32 a, Vec* b) {
-    void* p = fn_80033A24(fn_3_14AC40, 0x80, 0, *(int*)(lbl_3_data_26E24 + 8), 1, 0x23);
+    Emitter* p = fn_80033A24((EmitterUpdateFn)fn_3_14AC40, 0x80, 0, lbl_3_data_26E24[2], 1, 0x23);
     if (p != 0) {
         fn_3_14B53C(p, a, b);
     }
@@ -1032,71 +1074,72 @@ void fn_3_14B92C(u32 a, Vec* b) {
 
 // .text:0x0014B9A0 size:0x50 mapped:0x8078AA34
 void fn_3_14B9A0(u32 a, Vec* b) {
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 3 && b != NULL) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame.GameMode_MiniGame == 3 && b != NULL) {
         fn_3_14B92C(a, b);
     }
 }
 
 // .text:0x0014B9F0 size:0x50 mapped:0x8078AA84
 void fn_3_14B9F0(void) {
-    u8* p = fn_800339F0(0, 0x22);
-    if (p != NULL) {
-        p = *(u8**)(p + 0xC);
+    Emitter* e = fn_800339F0(0, 0x22);
+    Particle* p;
+    if (e != NULL) {
+        p = e->particles;
         do {
-            *(s16*)(p + 0x4A) = 0;
-            p = *(u8**)p;
+            p->life = 0;
+            p = p->next;
         } while (p != NULL);
     }
     pitchingMachinePitching(0x22);
 }
 
 // .text:0x0014BA40 size:0x270 mapped:0x8078AAD4
-u32 fn_3_14BA40(u8* o) {
+u32 fn_3_14BA40(Emitter* o) {
     s32 s;
-    u8* d;
-    u8* p;
-    u8** pp;
-    u8* first;
-    u8* prev;
+    s32* d;
+    Particle* p;
+    Particle** pp;
+    Particle* first;
+    Particle* prev;
     s32 t26;
     s32 n;
     s32 a;
     s32 t23;
-    u8* q;
-    u8* t;
+    Particle* q;
+    Particle* t;
     s32 delta;
     f32 df;
     n = 0;
-    if (lbl_80366158[0x28] != 0) {
+    if (lbl_80366158._28 != 0) {
         return 0;
     }
-    t = fn_80031F34(*(void**)(o + 0xC), ((H154238*)o)->cnt);
-    *(u8**)(o + 0xC) = t;
+    t = fn_80031F34(o->particles, o->count);
+    o->particles = t;
     p = t;
-    pp = (u8**)(o + 0xC);
+    pp = &o->particles;
     prev = NULL;
     first = NULL;
     GXSetZMode(1, 3, 0);
     GXSetBlendMode(1, 4, 5, 0);
     do {
-        if (*(s16*)(p + 0x4A) != 0) {
-            if (p[0x4F] == 0) {
+        if (p->life != 0) {
+            if (p->uvOrder == 0) {
                 d = lbl_3_data_26D88;
             } else {
                 d = lbl_3_data_26DC4;
             }
-            t23 = *(s32*)(d + 8);
-            t26 = *(s32*)(d + 0xC);
-            fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
-            fn_80033CC8(p, *(void**)(o + 0x10));
-            a = p[0x43];
-            if (t23 - *(s16*)(p + 0x4A) < t26) {
-                df = (f32)((*(s32*)(d + 0x14) - *(s32*)(d + 0x10)) / t26) / lbl_3_rodata_3930;
-                delta = (*(s32*)(d + 0x2C) - *(s32*)(d + 0x28)) / t26;
+            t23 = d[2];
+            t26 = d[3];
+            fn_8003403C(p->sizeX, p->sizeY);
+            fn_80033CC8(p, o->tex);
+            a = p->color.c.a;
+            if (t23 - p->life < t26) {
+                df = (f32)((d[5] - d[4]) / t26) / lbl_3_rodata_3930;
+                delta = (d[11] - d[10]) / t26;
             } else {
                 s = t23 - t26;
-                df = (f32)((*(s32*)(d + 0x18) - *(s32*)(d + 0x14)) / s) / lbl_3_rodata_3930;
-                delta = (*(s32*)(d + 0x30) - *(s32*)(d + 0x2C)) / s;
+                df = (f32)((d[6] - d[5]) / s) / lbl_3_rodata_3930;
+                delta = (d[12] - d[11]) / s;
             }
             a += delta;
             if (a > 0xFF) {
@@ -1105,22 +1148,22 @@ u32 fn_3_14BA40(u8* o) {
             if (a < 0) {
                 a = 0;
             }
-            p[0x43] = a;
-            *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + df;
-            *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
-            *(s16*)(p + 0x4A) -= 1;
-            if (*(s16*)(p + 0x4A) == 0) {
-                *pp = *(u8**)p;
+            p->color.c.a = a;
+            p->sizeX = p->sizeX + df;
+            p->sizeY = p->sizeX;
+            p->life -= 1;
+            if (p->life == 0) {
+                *pp = p->next;
                 if (prev != NULL) {
-                    *(u8**)prev = p;
+                    prev->next = p;
                 } else {
                     first = p;
                 }
                 prev = p;
-                *(u8**)p = NULL;
-                ((H154238*)o)->cnt--;
+                p->next = NULL;
+                o->count--;
             } else {
-                pp = (u8**)p;
+                pp = &p->next;
                 n++;
             }
         }
@@ -1129,9 +1172,9 @@ u32 fn_3_14BA40(u8* o) {
     if (first != NULL) {
         q = first;
         do {
-            q[0x4C] = 0;
-            *(s16*)(q + 0x48) = 0;
-            q = *(u8**)q;
+            q->unk4C = 0;
+            q->delay = 0;
+            q = q->next;
         } while (q != NULL);
         fn_80033794(first);
     }
@@ -1140,9 +1183,9 @@ u32 fn_3_14BA40(u8* o) {
 
 #pragma dont_inline off
 // .text:0x0014BCB0 size:0x21C mapped:0x8078AD44
-void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
-    u8* p;
-    u8* d;
+void fn_3_14BCB0(Emitter* o, f32* v, u8 flag) {
+    Particle* p;
+    s32* d;
     u32 n;
     f32 t;
     f32 ang;
@@ -1150,35 +1193,35 @@ void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
     f32 c;
     f32 r;
     f64 u;
-    *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    o->tex = lbl_3_common_bss_32724.textures[2];
     n = 0;
-    p = *(u8**)(o + 0xC);
+    p = o->particles;
     d = (flag != 0) ? lbl_3_data_26DC4 : lbl_3_data_26D88;
     do {
-        if (*(s16*)(p + 0x4A) == 0) {
-            p[0x4D] = *(s32*)d;
-            p[0x4E] = 0;
-            *(s16*)(p + 0x4A) = *(s32*)(d + 8);
-            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)*(s32*)(d + 0x10) / lbl_3_rodata_3930;
-            p[0x43] = *(s32*)(d + 0x28);
-            p[0x40] = *(s32*)(d + 0x1C);
-            p[0x41] = *(s32*)(d + 0x20);
-            p[0x42] = *(s32*)(d + 0x24);
+        if (p->life == 0) {
+            p->texIndex = *d;
+            p->uvFrame = 0;
+            p->life = d[2];
+            p->sizeX = p->sizeY = (f32)d[4] / lbl_3_rodata_3930;
+            p->color.c.a = d[10];
+            p->color.c.r = d[7];
+            p->color.c.g = d[8];
+            p->color.c.b = d[9];
             t = (f32)rand() / lbl_3_rodata_3970;
             u = (f64)t - lbl_3_rodata_3968;
             u = lbl_3_rodata_3990 * u;
             r = lbl_3_rodata_39C4 * u;
-            ang = lbl_3_rodata_39B8 * (f32)(180.0 / (f64)*(s32*)(d + 4) * (f64)n);
+            ang = lbl_3_rodata_39B8 * (f32)(180.0 / (f64)d[1] * (f64)n);
             c = (f32)cos(ang);
-            *(f32*)(p + 4) = r * c + v[0];
+            p->pos.x = r * c + v[0];
             s = (f32)sin(ang);
             n++;
-            *(f32*)(p + 8) = (f32)((f64)(v[1] - r * s) - lbl_3_rodata_3978);
-            *(f32*)(p + 0xC) = v[2];
-            p[0x4F] = flag;
+            p->pos.y = (f32)((f64)(v[1] - r * s) - lbl_3_rodata_3978);
+            p->pos.z = v[2];
+            p->uvOrder = flag;
         }
-        p = *(u8**)p;
-    } while (p != NULL && n < *(u32*)(lbl_3_data_26D88 + 4));
+        p = p->next;
+    } while (p != NULL && n < (u32)lbl_3_data_26D88[1]);
 }
 #pragma dont_inline on
 
@@ -1187,22 +1230,22 @@ void fn_3_14BCB0(u8* o, f32* v, u8 flag) {
 #pragma dont_inline off
 #if NONMATCHING
 void fn_3_14BECC(f32* v, u8 flag) {
-    u8 buf[0x5C];
-    u8* h;
-    u8* n;
-    u8* p;
+    Emitter buf; // only its particle list is filled in
+    Emitter* h;
+    Emitter* n;
+    Particle* p;
     h = fn_800339F0(NULL, 0x22);
     if (h != NULL) {
-        n = fn_800337CC(buf, *(s32*)(lbl_3_data_26D88 + 4), 1);
+        n = fn_800337CC(&buf, lbl_3_data_26D88[1], 1);
         fn_3_14BCB0(n, v, flag);
-        p = *(u8**)(h + 0xC);
-        while (*(u8**)p != NULL) {
-            p = *(u8**)p;
+        p = h->particles;
+        while (p->next != NULL) {
+            p = p->next;
         }
-        *(u8**)p = *(u8**)(n + 0xC);
-        ((H154238*)h)->cnt += ((H154238*)n)->cnt;
+        p->next = n->particles;
+        h->count += n->count;
     } else {
-        n = fn_80033A24(fn_3_14BA40, 0x80, 0, *(s32*)(lbl_3_data_26D88 + 4), 1, 0x22);
+        n = fn_80033A24((EmitterUpdateFn)fn_3_14BA40, 0x80, 0, lbl_3_data_26D88[1], 1, 0x22);
         if (n != NULL) {
             fn_3_14BCB0(n, v, flag);
         }
@@ -1213,7 +1256,7 @@ void fn_3_14BECC(f32* v, u8 flag) {
 
 // .text:0x0014C348 size:0x50 mapped:0x8078B3DC
 void fn_3_14C348(f32* a, u8 b) {
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 2 && a != NULL) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame.GameMode_MiniGame == 2 && a != NULL) {
         fn_3_14BECC(a, b);
     }
 }
@@ -1224,51 +1267,51 @@ void fn_3_14C398(void) {
 }
 
 // .text:0x0014C3BC size:0x10C mapped:0x8078B450
-void fn_3_14C3BC(u8* o) {
+void fn_3_14C3BC(Particle* o) {
     Vec v;
     Mtx m;
     PSVECScale((Vec*)lbl_3_data_26D50, lbl_3_rodata_39E0, &v);
-    PSMTXRotRad(m, 'Y', shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8)));
+    PSMTXRotRad(m, 'Y', shortAngleToRad(g_Minigame._1AF8));
     PSMTXMultVec(m, &v, &v);
-    *(f32*)(o + 4) = *(f32*)(g_Minigame + 0x1AE0) + v.x + (f32)*(s32*)(lbl_3_data_26D5C + 0x14) / 100000.0f * lbl_3_rodata_39A8;
-    *(f32*)(o + 8) = v.y - ((f32)*(s32*)(lbl_3_data_26D5C + 0x14) / 100000.0f * lbl_3_rodata_39A8 + *(f32*)(g_Minigame + 0x1AE4));
-    *(f32*)(o + 0xC) = *(f32*)(g_Minigame + 0x1AE8) + v.z;
+    o->pos.x = g_Minigame._1AE0 + v.x + (f32)lbl_3_data_26D5C[5] / 100000.0f * lbl_3_rodata_39A8;
+    o->pos.y = v.y - ((f32)lbl_3_data_26D5C[5] / 100000.0f * lbl_3_rodata_39A8 + g_Minigame._1AE4);
+    o->pos.z = g_Minigame._1AE8 + v.z;
 }
 
 // .text:0x0014C4C8 size:0x2D4 mapped:0x8078B55C
-u32 fn_3_14C4C8(u8* o) {
+u32 fn_3_14C4C8(Emitter* o) {
     Mtx m;
     Vec dir;
-    u8* p;
-    u8* d;
+    Particle* p;
+    s32* d;
     s32 a;
     s32 s;
     s32 delta;
     f32 df;
-    if (lbl_80366158[0x28] != 0) {
+    if (lbl_80366158._28 != 0) {
         return 0;
     }
-    p = *(u8**)(o + 0xC);
-    if (*(s16*)(p + 0x4A) != 0) {
+    p = o->particles;
+    if (p->life != 0) {
         GXSetZMode(1, 3, 0);
         GXSetBlendMode(1, 1, 1, 0);
         PSVECScale((Vec*)lbl_3_data_26D50, lbl_3_rodata_39E0, &dir);
-        PSMTXRotRad(m, 'Y', shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8)));
+        PSMTXRotRad(m, 'Y', shortAngleToRad(g_Minigame._1AF8));
         PSMTXMultVec(m, &dir, &dir);
         d = lbl_3_data_26D5C;
-        *(f32*)(p + 4) = (f32)*(s32*)(d + 0x14) / 100000.0f * lbl_3_rodata_39A8 + (*(f32*)(g_Minigame + 0x1AE0) + dir.x);
-        *(f32*)(p + 8) = dir.y - ((f32)*(s32*)(d + 0x14) / 100000.0f * lbl_3_rodata_39A8 + *(f32*)(g_Minigame + 0x1AE4));
-        *(f32*)(p + 0xC) = *(f32*)(g_Minigame + 0x1AE8) + dir.z;
-        fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
-        fn_80033CC8(p, *(void**)(o + 0x10));
-        a = p[0x43];
-        s = *(s32*)(lbl_3_data_26D5C + 8) - *(s32*)(lbl_3_data_26D5C + 0xC);
-        if (s < *(s16*)(p + 0x4A)) {
-            df = (f32)(*(s32*)(d + 0x14) - *(s32*)(lbl_3_data_26D5C + 0x10)) / 100000.0f / (f32)*(s32*)(lbl_3_data_26D5C + 0xC);
-            delta = (*(s32*)(lbl_3_data_26D5C + 0x20) - *(s32*)(lbl_3_data_26D5C + 0x1C)) / *(s32*)(lbl_3_data_26D5C + 0xC);
+        p->pos.x = (f32)d[5] / 100000.0f * lbl_3_rodata_39A8 + (g_Minigame._1AE0 + dir.x);
+        p->pos.y = dir.y - ((f32)d[5] / 100000.0f * lbl_3_rodata_39A8 + g_Minigame._1AE4);
+        p->pos.z = g_Minigame._1AE8 + dir.z;
+        fn_8003403C(p->sizeX, p->sizeY);
+        fn_80033CC8(p, o->tex);
+        a = p->color.c.a;
+        s = lbl_3_data_26D5C[2] - lbl_3_data_26D5C[3];
+        if (s < p->life) {
+            df = (f32)(d[5] - lbl_3_data_26D5C[4]) / 100000.0f / (f32)lbl_3_data_26D5C[3];
+            delta = (lbl_3_data_26D5C[8] - lbl_3_data_26D5C[7]) / lbl_3_data_26D5C[3];
         } else {
-            df = (f32)(*(s32*)(lbl_3_data_26D5C + 0x18) - *(s32*)(d + 0x14)) / 100000.0f / (f32)s;
-            delta = (*(s32*)(lbl_3_data_26D5C + 0x24) - *(s32*)(lbl_3_data_26D5C + 0x20)) / s;
+            df = (f32)(lbl_3_data_26D5C[6] - d[5]) / 100000.0f / (f32)s;
+            delta = (lbl_3_data_26D5C[9] - lbl_3_data_26D5C[8]) / s;
         }
         a += delta;
         if (a < 0) {
@@ -1277,14 +1320,14 @@ u32 fn_3_14C4C8(u8* o) {
         if (a > 0xFF) {
             a = 0xFF;
         }
-        *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + df;
-        *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
-        p[0x43] = a;
-        a = p[0x43];
-        p[0x42] = a;
-        p[0x41] = a;
-        p[0x40] = a;
-        *(s16*)(p + 0x4A) = *(s16*)(p + 0x4A) - 1;
+        p->sizeX = p->sizeX + df;
+        p->sizeY = p->sizeX;
+        p->color.c.a = a;
+        a = p->color.c.a;
+        p->color.c.b = a;
+        p->color.c.g = a;
+        p->color.c.r = a;
+        p->life = p->life - 1;
     } else {
         return 1;
     }
@@ -1292,64 +1335,64 @@ u32 fn_3_14C4C8(u8* o) {
 }
 
 // .text:0x0014C79C size:0x94 mapped:0x8078B830
-void fn_3_14C79C(u8* a) {
-    u8* p;
+void fn_3_14C79C(Emitter* a) {
+    Particle* p;
     f32 f;
-    *(u32*)(a + 0x10) = *(u32*)(lbl_3_common_bss_32724 + 0x6C);
-    p = *(u8**)(a + 0xC);
-    p[0x4D] = *(u32*)lbl_3_data_26D5C;
-    p[0x4E] = 0;
-    *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26D5C + 8);
-    f = *(s32*)(lbl_3_data_26D5C + 0x10) / 100000.0f;
-    *(f32*)(p + 0x3C) = f;
-    *(f32*)(p + 0x38) = f;
-    p[0x43] = *(s32*)(lbl_3_data_26D5C + 0x1C);
-    p[0x42] = 0xFF;
-    p[0x41] = 0xFF;
-    p[0x40] = 0xFF;
+    a->tex = lbl_3_common_bss_32724.textures[2];
+    p = a->particles;
+    p->texIndex = lbl_3_data_26D5C[0];
+    p->uvFrame = 0;
+    p->life = lbl_3_data_26D5C[2];
+    f = lbl_3_data_26D5C[4] / 100000.0f;
+    p->sizeY = f;
+    p->sizeX = f;
+    p->color.c.a = lbl_3_data_26D5C[7];
+    p->color.c.b = 0xFF;
+    p->color.c.g = 0xFF;
+    p->color.c.r = 0xFF;
 }
 
 // .text:0x0014C830 size:0xD4 mapped:0x8078B8C4
 void fn_3_14C830(void) {
-    u8* a = fn_80033A24(fn_3_14C4C8, 0x80, 0, *(int*)(lbl_3_data_26D5C + 4), 1, 0xA);
-    u8* p;
+    Emitter* a = fn_80033A24((EmitterUpdateFn)fn_3_14C4C8, 0x80, 0, lbl_3_data_26D5C[1], 1, 0xA);
+    Particle* p;
     f32 f;
     if (a != NULL) {
-        *(u32*)(a + 0x10) = *(u32*)(lbl_3_common_bss_32724 + 0x6C);
-        p = *(u8**)(a + 0xC);
-        p[0x4D] = *(u32*)lbl_3_data_26D5C;
-        p[0x4E] = 0;
-        *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26D5C + 8);
-        f = *(s32*)(lbl_3_data_26D5C + 0x10) / 100000.0f;
-        *(f32*)(p + 0x3C) = f;
-        *(f32*)(p + 0x38) = f;
-        p[0x43] = *(s32*)(lbl_3_data_26D5C + 0x1C);
-        p[0x42] = 0xFF;
-        p[0x41] = 0xFF;
-        p[0x40] = 0xFF;
+        a->tex = lbl_3_common_bss_32724.textures[2];
+        p = a->particles;
+        p->texIndex = lbl_3_data_26D5C[0];
+        p->uvFrame = 0;
+        p->life = lbl_3_data_26D5C[2];
+        f = lbl_3_data_26D5C[4] / 100000.0f;
+        p->sizeY = f;
+        p->sizeX = f;
+        p->color.c.a = lbl_3_data_26D5C[7];
+        p->color.c.b = 0xFF;
+        p->color.c.g = 0xFF;
+        p->color.c.r = 0xFF;
     }
 }
 
 // .text:0x0014C904 size:0xFC mapped:0x8078B998
 void fn_3_14C904(void) {
-    u8* a;
-    u8* p;
+    Emitter* a;
+    Particle* p;
     f32 f;
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 4) {
-        a = fn_80033A24(fn_3_14C4C8, 0x80, 0, *(int*)(lbl_3_data_26D5C + 4), 1, 0xA);
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame.GameMode_MiniGame == 4) {
+        a = fn_80033A24((EmitterUpdateFn)fn_3_14C4C8, 0x80, 0, lbl_3_data_26D5C[1], 1, 0xA);
         if (a != NULL) {
-            *(u32*)(a + 0x10) = *(u32*)(lbl_3_common_bss_32724 + 0x6C);
-            p = *(u8**)(a + 0xC);
-            p[0x4D] = *(u32*)lbl_3_data_26D5C;
-            p[0x4E] = 0;
-            *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26D5C + 8);
-            f = *(s32*)(lbl_3_data_26D5C + 0x10) / 100000.0f;
-            *(f32*)(p + 0x3C) = f;
-            *(f32*)(p + 0x38) = f;
-            p[0x43] = *(s32*)(lbl_3_data_26D5C + 0x1C);
-            p[0x42] = 0xFF;
-            p[0x41] = 0xFF;
-            p[0x40] = 0xFF;
+            a->tex = lbl_3_common_bss_32724.textures[2];
+            p = a->particles;
+            p->texIndex = lbl_3_data_26D5C[0];
+            p->uvFrame = 0;
+            p->life = lbl_3_data_26D5C[2];
+            f = lbl_3_data_26D5C[4] / 100000.0f;
+            p->sizeY = f;
+            p->sizeX = f;
+            p->color.c.a = lbl_3_data_26D5C[7];
+            p->color.c.b = 0xFF;
+            p->color.c.g = 0xFF;
+            p->color.c.r = 0xFF;
         }
     }
 }
@@ -1358,17 +1401,17 @@ void fn_3_14C904(void) {
 void fn_3_14CA00(void) {
     u32 i = 0;
     do {
-        u8* h = (u8*)fn_800339F0(0, 0x20);
+        Emitter* h = fn_800339F0(0, 0x20);
         if (h != 0) {
-            u8* n = *(u8**)(h + 0xC);
+            Particle* n = h->particles;
             do {
-                if (n[0x45] == (s8)i) {
-                    n[0x44] = 0;
-                    n[0x45] = 0xFF;
-                    *(s16*)(n + 0x4A) = 0;
-                    n[0x4C] = 0;
+                if (n->colorStep.v[1] == (s8)i) {
+                    n->colorStep.v[0] = 0;
+                    n->colorStep.v[1] = 0xFF;
+                    n->life = 0;
+                    n->unk4C = 0;
                 }
-                n = *(u8**)n;
+                n = n->next;
             } while (n != 0);
         }
         i++;
@@ -1377,63 +1420,63 @@ void fn_3_14CA00(void) {
 }
 
 // .text:0x0014CA98 size:0x1C mapped:0x8078BB2C
-void fn_3_14CA98(u8* p) {
-    p[0x44] = 0;
-    p[0x45] = 0xFF;
-    *(s16*)(p + 0x4A) = 0;
-    p[0x4C] = 0;
+void fn_3_14CA98(Particle* p) {
+    p->colorStep.v[0] = 0;
+    p->colorStep.v[1] = 0xFF;
+    p->life = 0;
+    p->unk4C = 0;
 }
 
 // .text:0x0014CAB4 size:0x74 mapped:0x8078BB48
 void fn_3_14CAB4(s8 a) {
-    u8* p = fn_800339F0(0, 0x20);
+    Emitter* p = fn_800339F0(0, 0x20);
     if (p != NULL) {
-        u8* q = *(u8**)(p + 0xC);
+        Particle* q = p->particles;
         do {
-            if (q[0x45] == a) {
-                q[0x44] = 0;
-                q[0x45] = 0xFF;
-                *(s16*)(q + 0x4A) = 0;
-                q[0x4C] = 0;
+            if (q->colorStep.v[1] == a) {
+                q->colorStep.v[0] = 0;
+                q->colorStep.v[1] = 0xFF;
+                q->life = 0;
+                q->unk4C = 0;
             }
-            q = *(u8**)q;
+            q = q->next;
         } while (q != NULL);
     }
 }
 
 // .text:0x0014CB28 size:0x8C mapped:0x8078BBBC
 void fn_3_14CB28(s8 a) {
-    u8* p; s32 id;
+    Emitter* e; Particle* p; s32 id;
     if (a >= 0xF || a < 0) {
         return;
     }
-    p = fn_800339F0(0, 0x20);
-    if (p != NULL) {
-        p = *(u8**)(p + 0xC);
+    e = fn_800339F0(0, 0x20);
+    if (e != NULL) {
+        p = e->particles;
         id = a;
         do {
-            if (p[0x45] == id) {
-                p[0x44] = 0;
-                p[0x45] = 0xFF;
-                *(s16*)(p + 0x4A) = 0;
-                p[0x4C] = 0;
+            if (p->colorStep.v[1] == id) {
+                p->colorStep.v[0] = 0;
+                p->colorStep.v[1] = 0xFF;
+                p->life = 0;
+                p->unk4C = 0;
             }
-            p = *(u8**)p;
+            p = p->next;
         } while (p != NULL);
     }
 }
 
 // .text:0x0014CBB4 size:0x18C mapped:0x8078BC48
 #pragma dont_inline off
-void fn_3_14CBB4(u8* a, u8* o) {
+void fn_3_14CBB4(Emitter* a, Particle* o) {
     s32 delta;
     f32 df;
     s32 c;
     GXSetBlendMode(1, 4, 5, 0);
-    fn_8003403C(*(f32*)(o + 0x38), *(f32*)(o + 0x3C));
-    fn_80033CC8(o, *(void**)(a + 0x10));
-    c = o[0x43];
-    if (-*(s16*)(o + 0x48) < lbl_3_data_26D00[10]) {
+    fn_8003403C(o->sizeX, o->sizeY);
+    fn_80033CC8(o, a->tex);
+    c = o->color.c.a;
+    if (-o->delay < lbl_3_data_26D00[10]) {
         df = ((f32)lbl_3_data_26D00[12] / lbl_3_rodata_3930) / (f32)lbl_3_data_26D00[10];
         delta = lbl_3_data_26D00[15] / lbl_3_data_26D00[10];
     } else {
@@ -1446,24 +1489,24 @@ void fn_3_14CBB4(u8* a, u8* o) {
     } else if (c < 0) {
         c = 0;
     }
-    o[0x43] = c;
-    o[0x40] = o[0x41] = o[0x42] = o[0x43];
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x38) + df;
-    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38);
+    o->color.c.a = c;
+    o->color.c.r = o->color.c.g = o->color.c.b = o->color.c.a;
+    o->sizeX = o->sizeX + df;
+    o->sizeY = o->sizeX;
 }
 #pragma dont_inline on
 
 // .text:0x0014CD40 size:0x18C mapped:0x8078BDD4
 #pragma dont_inline off
-void fn_3_14CD40(u8* a, u8* o) {
+void fn_3_14CD40(Emitter* a, Particle* o) {
     s32 delta;
     f32 df;
     s32 c;
     GXSetBlendMode(1, 1, 1, 0);
-    fn_8003403C(*(f32*)(o + 0x38), *(f32*)(o + 0x3C));
-    fn_80033CC8(o, *(void**)(a + 0x10));
-    c = o[0x43];
-    if (-*(s16*)(o + 0x48) < lbl_3_data_26D00[3]) {
+    fn_8003403C(o->sizeX, o->sizeY);
+    fn_80033CC8(o, a->tex);
+    c = o->color.c.a;
+    if (-o->delay < lbl_3_data_26D00[3]) {
         df = ((f32)lbl_3_data_26D00[5] / lbl_3_rodata_3930) / (f32)lbl_3_data_26D00[3];
         delta = lbl_3_data_26D00[8] / lbl_3_data_26D00[3];
     } else {
@@ -1476,46 +1519,46 @@ void fn_3_14CD40(u8* a, u8* o) {
     } else if (c < 0) {
         c = 0;
     }
-    o[0x43] = c;
-    o[0x40] = o[0x41] = o[0x42] = o[0x43];
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x38) + df;
-    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38);
+    o->color.c.a = c;
+    o->color.c.r = o->color.c.g = o->color.c.b = o->color.c.a;
+    o->sizeX = o->sizeX + df;
+    o->sizeY = o->sizeX;
 }
 #pragma dont_inline on
 
 // NONMATCHING 99%: only the lbl_80366158 flag address (orig lis/addi r4 scheduled before the reg saves, ours addi r3 after mr), same as fn_3_14A188; 14CD40/14CBB4/14D2C0 are inlined via dont_inline off
 // .text:0x0014CECC size:0x3F4 mapped:0x8078BF60
 #pragma dont_inline off
-u32 fn_3_14CECC(u8* o) {
-    u8* p;
-    if (lbl_80366158[0x28] != 0) {
+u32 fn_3_14CECC(Emitter* o) {
+    Particle* p;
+    if (lbl_80366158._28 != 0) {
         return 0;
     }
     fn_80033620(o);
-    p = *(u8**)(o + 0xC);
+    p = o->particles;
     GXSetZMode(1, 3, 0);
     do {
-        if (p[0x44] != 0 && *(s16*)(p + 0x4A) != 0) {
-            if (*(s16*)(p + 0x48) <= 0) {
-                if (p[0x44] == 1) {
+        if (p->colorStep.v[0] != 0 && p->life != 0) {
+            if (p->delay <= 0) {
+                if (p->colorStep.v[0] == 1) {
                     fn_3_14CD40(o, p);
                 } else {
-                    if (*(s16*)(p + 0x48) == 0) {
+                    if (p->delay == 0) {
                         fn_3_14D2C0(p);
                     }
                     fn_3_14CBB4(o, p);
                 }
-                *(s16*)(p + 0x4A) -= 1;
-                if (*(s16*)(p + 0x4A) == 0) {
-                    p[0x44] = 0;
-                    p[0x45] = 0xFF;
-                    *(s16*)(p + 0x4A) = 0;
-                    p[0x4C] = 0;
+                p->life -= 1;
+                if (p->life == 0) {
+                    p->colorStep.v[0] = 0;
+                    p->colorStep.v[1] = 0xFF;
+                    p->life = 0;
+                    p->unk4C = 0;
                 }
             }
-            *(s16*)(p + 0x48) -= 1;
+            p->delay -= 1;
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
     return 0;
 }
@@ -1523,134 +1566,137 @@ u32 fn_3_14CECC(u8* o) {
 
 // .text:0x0014D2C0 size:0x58 mapped:0x8078C354
 #pragma dont_inline off
-void fn_3_14D2C0(u8* p) {
-    u8** arr = *(u8***)(*(u8**)(lbl_8036E548 + 0x68) + (p[0x45] + 0x10) * 0x90 + 0x34);
-    u8* e;
-    arr = *(u8***)((u8*)arr + 0x18);
-    e = arr[p[0x46]];
-    *(f32*)(p + 4) = *(f32*)(*(u8**)(e + 0xEC) + 0xC);
-    *(f32*)(p + 8) = *(f32*)(*(u8**)(e + 0xEC) + 0x1C);
-    *(f32*)(p + 0xC) = *(f32*)(*(u8**)(e + 0xEC) + 0x2C);
+void fn_3_14D2C0(Particle* p) {
+    // objects[p->colorStep.v[1] + 0x10].actor, indexed by bytes as the original does
+    GameBone** arr = *(GameBone***)((u8*)lbl_8036E548.slots68 + (p->colorStep.v[1] + 0x10) * sizeof(ActorObject) +
+                                   OFFSET_OF(ActorObjectTable, objects));
+    GameBone* e;
+    arr = ((GameActor*)arr)->boneArray;
+    e = arr[p->colorStep.v[2]];
+    p->pos.x = e->forwardMtx[0][3];
+    p->pos.y = e->forwardMtx[1][3];
+    p->pos.z = e->forwardMtx[2][3];
 }
 #pragma dont_inline on
 
 // .text:0x0014D318 size:0x134 mapped:0x8078C3AC
-void fn_3_14D318(u8* a) {
-    f32* q = (f32*)(g_Minigame + a[0x45] * 0x34 + 0x860);
-    f32* d = (f32*)lbl_3_data_21770; f32 h = 0.5f;
-    *(f32*)(a + 4) = q[0];
-    *(f32*)(a + 8) = -(d[3] * h + q[1]);
-    *(f32*)(a + 0xC) = q[2];
-    *(f32*)(a + 4) = *(f32*)(a + 4) + (rand() % 100 - 50) / 100.0;
-    *(f32*)(a + 8) = *(f32*)(a + 8) + (rand() % 100 - 50) / 100.0;
+void fn_3_14D318(Particle* a) {
+    f32* q = &g_Minigame.barrels[a->colorStep.v[1]].currentPos.x;
+    f32* d = lbl_3_data_21770; f32 h = 0.5f;
+    a->pos.x = q[0];
+    a->pos.y = -(d[3] * h + q[1]);
+    a->pos.z = q[2];
+    a->pos.x = a->pos.x + (rand() % 100 - 50) / 100.0;
+    a->pos.y = a->pos.y + (rand() % 100 - 50) / 100.0;
 }
 
 // fn_3_14D44C body for fn_3_14D710, which inlines it twice (CW will not auto-inline the real one)
-static inline void Inl14D44C(u8* a, u8 kind) {
-    u8* p = *(u8**)(a + 0xC);
+static inline void Inl14D44C(Emitter* a, u8 kind) {
+    Particle* p = a->particles;
     s32 n = 0;
     do {
-        if (p[0x44] == 0 && *(s16*)(p + 0x4A) == 0) {
+        if (p->colorStep.v[0] == 0 && p->life == 0) {
             if (n < 3) {
-                f32* d = (f32*)lbl_3_data_21770;
+                f32* d = lbl_3_data_21770;
                 f32* q;
                 f32 h = 0.5f;
-                p[0x44] = 1;
-                p[0x45] = kind;
-                p[0x46] = 0xFF;
-                p[0x4D] = lbl_3_data_26D00[0];
-                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)lbl_3_data_26D00[4];
-                p[0x43] = lbl_3_data_26D00[7];
-                q = (f32*)(g_Minigame + p[0x45] * 0x34 + 0x860);
-                *(f32*)(p + 4) = q[0];
-                *(f32*)(p + 8) = -(d[3] * h + q[1]);
-                *(f32*)(p + 0xC) = q[2];
-                *(f32*)(p + 4) = *(f32*)(p + 4) + (rand() % 100 - 50) / 100.0;
-                *(f32*)(p + 8) = *(f32*)(p + 8) + (rand() % 100 - 50) / 100.0;
-                *(s16*)(p + 0x4A) = lbl_3_data_26D00[17];
-                *(s16*)(p + 0x48) = 0;
+                p->colorStep.v[0] = 1;
+                p->colorStep.v[1] = kind;
+                p->colorStep.v[2] = 0xFF;
+                p->texIndex = lbl_3_data_26D00[0];
+                p->sizeX = p->sizeY = (f32)lbl_3_data_26D00[4];
+                p->color.c.a = lbl_3_data_26D00[7];
+                q = &g_Minigame.barrels[p->colorStep.v[1]].currentPos.x;
+                p->pos.x = q[0];
+                p->pos.y = -(d[3] * h + q[1]);
+                p->pos.z = q[2];
+                p->pos.x = p->pos.x + (rand() % 100 - 50) / 100.0;
+                p->pos.y = p->pos.y + (rand() % 100 - 50) / 100.0;
+                p->life = lbl_3_data_26D00[17];
+                p->delay = 0;
             } else {
-                p[0x44] = 2;
-                p[0x45] = kind;
-                p[0x46] = (n - 3) / 5;
-                p[0x4D] = lbl_3_data_26D00[1];
-                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)lbl_3_data_26D00[11];
-                p[0x43] = lbl_3_data_26D00[14];
-                *(s16*)(p + 0x48) = (n - 3) % 5 * 4 + 1;
-                *(s16*)(p + 0x4A) = lbl_3_data_26D00[18];
+                p->colorStep.v[0] = 2;
+                p->colorStep.v[1] = kind;
+                p->colorStep.v[2] = (n - 3) / 5;
+                p->texIndex = lbl_3_data_26D00[1];
+                p->sizeX = p->sizeY = (f32)lbl_3_data_26D00[11];
+                p->color.c.a = lbl_3_data_26D00[14];
+                p->delay = (n - 3) % 5 * 4 + 1;
+                p->life = lbl_3_data_26D00[18];
             }
             n++;
-            p[0x40] = p[0x41] = p[0x42] = 0xFF;
+            p->color.c.r = p->color.c.g = p->color.c.b = 0xFF;
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL && n < 0x2B);
 }
 
 #pragma dont_inline off
 // .text:0x0014D44C size:0x288 mapped:0x8078C4E0
-void fn_3_14D44C(u8* a, u32 kind0) {
+void fn_3_14D44C(Emitter* a, u32 kind0) {
     u8 kind = kind0;
-    u8* p = *(u8**)(a + 0xC);
+    Particle* p = a->particles;
     s32 n = 0;
     do {
-        if (p[0x44] == 0 && *(s16*)(p + 0x4A) == 0) {
+        if (p->colorStep.v[0] == 0 && p->life == 0) {
             if (n < 3) {
-                f32* d = (f32*)lbl_3_data_21770;
+                f32* d = lbl_3_data_21770;
                 f32* q;
                 f32 h = 0.5f;
-                p[0x44] = 1;
-                p[0x45] = kind;
-                p[0x46] = 0xFF;
-                p[0x4D] = lbl_3_data_26D00[0];
-                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)lbl_3_data_26D00[4];
-                p[0x43] = lbl_3_data_26D00[7];
-                q = (f32*)(g_Minigame + p[0x45] * 0x34 + 0x860);
-                *(f32*)(p + 4) = q[0];
-                *(f32*)(p + 8) = -(d[3] * h + q[1]);
-                *(f32*)(p + 0xC) = q[2];
-                *(f32*)(p + 4) = *(f32*)(p + 4) + (rand() % 100 - 50) / 100.0;
-                *(f32*)(p + 8) = *(f32*)(p + 8) + (rand() % 100 - 50) / 100.0;
-                *(s16*)(p + 0x4A) = lbl_3_data_26D00[17];
-                *(s16*)(p + 0x48) = 0;
+                p->colorStep.v[0] = 1;
+                p->colorStep.v[1] = kind;
+                p->colorStep.v[2] = 0xFF;
+                p->texIndex = lbl_3_data_26D00[0];
+                p->sizeX = p->sizeY = (f32)lbl_3_data_26D00[4];
+                p->color.c.a = lbl_3_data_26D00[7];
+                q = &g_Minigame.barrels[p->colorStep.v[1]].currentPos.x;
+                p->pos.x = q[0];
+                p->pos.y = -(d[3] * h + q[1]);
+                p->pos.z = q[2];
+                p->pos.x = p->pos.x + (rand() % 100 - 50) / 100.0;
+                p->pos.y = p->pos.y + (rand() % 100 - 50) / 100.0;
+                p->life = lbl_3_data_26D00[17];
+                p->delay = 0;
             } else {
-                p[0x44] = 2;
-                p[0x45] = kind;
-                p[0x46] = (n - 3) / 5;
-                p[0x4D] = lbl_3_data_26D00[1];
-                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)lbl_3_data_26D00[11];
-                p[0x43] = lbl_3_data_26D00[14];
-                *(s16*)(p + 0x48) = (n - 3) % 5 * 4 + 1;
-                *(s16*)(p + 0x4A) = lbl_3_data_26D00[18];
+                p->colorStep.v[0] = 2;
+                p->colorStep.v[1] = kind;
+                p->colorStep.v[2] = (n - 3) / 5;
+                p->texIndex = lbl_3_data_26D00[1];
+                p->sizeX = p->sizeY = (f32)lbl_3_data_26D00[11];
+                p->color.c.a = lbl_3_data_26D00[14];
+                p->delay = (n - 3) % 5 * 4 + 1;
+                p->life = lbl_3_data_26D00[18];
             }
             n++;
-            p[0x40] = p[0x41] = p[0x42] = 0xFF;
+            p->color.c.r = p->color.c.g = p->color.c.b = 0xFF;
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL && n < 0x2B);
 }
 
 // .text:0x0014D6D4 size:0x3C mapped:0x8078C768
 
-void fn_3_14D6D4(u8* p) {
-    *(u32*)(p + 0x10) = *(u32*)(lbl_3_common_bss_32724 + 0x6C);
-    p = *(u8**)(p + 0xC);
+void fn_3_14D6D4(Emitter* e) {
+    Particle* p;
+    e->tex = lbl_3_common_bss_32724.textures[2];
+    p = e->particles;
     do {
-        p[0x46] = 0;
-        p[0x45] = 0;
-        p[0x44] = 0;
-        *(s16*)(p + 0x4A) = 0;
-        p[0x4E] = 0;
-        p = *(u8**)p;
+        p->colorStep.v[2] = 0;
+        p->colorStep.v[1] = 0;
+        p->colorStep.v[0] = 0;
+        p->life = 0;
+        p->uvFrame = 0;
+        p = p->next;
     } while (p != NULL);
 }
 
 // .text:0x0014D710 size:0x570 mapped:0x8078C7A4
 void fn_3_14D710(s8 a) {
-    u8* e = fn_800339F0(NULL, 0x20);
+    Emitter* e = fn_800339F0(NULL, 0x20);
     if (e != NULL) {
         Inl14D44C(e, a);
     } else {
-        e = fn_80033A24(fn_3_14CECC, 0xF0, 0, lbl_3_data_26D00[2], 1, 0x20);
+        e = fn_80033A24((EmitterUpdateFn)fn_3_14CECC, 0xF0, 0, lbl_3_data_26D00[2], 1, 0x20);
         if (e != NULL) {
             fn_3_14D6D4(e);
             Inl14D44C(e, a);
@@ -1661,7 +1707,7 @@ void fn_3_14D710(s8 a) {
 
 // .text:0x0014DC80 size:0x60 mapped:0x8078CD14
 void fn_3_14DC80(s8 a) {
-    if (g_d_GameSettings.GameModeSelected != 7 || g_Minigame[0x1A2A] != 3 || a >= 0xF || a < 0) {
+    if (g_d_GameSettings.GameModeSelected != 7 || g_Minigame.GameMode_MiniGame != 3 || a >= 0xF || a < 0) {
         return;
     }
     fn_3_14D710(a);
@@ -1673,61 +1719,61 @@ void fn_3_14DCE0(void) {
 }
 
 // .text:0x0014DD04 size:0x268 mapped:0x8078CD98
-u32 fn_3_14DD04(u8* o) {
-    u8* t;
-    u8* d;
-    u8* p;
-    u8** pp;
-    u8* prev;
+u32 fn_3_14DD04(Emitter* o) {
+    Particle* t;
+    s32* d;
+    Particle* p;
+    Particle** pp;
+    Particle* prev;
     s32 n;
     s32 a;
     s32 t8;
     s32 delta;
     f32 df;
     n = 0;
-    t = fn_80031F34(*(void**)(o + 0xC), ((H154238*)o)->cnt);
-    *(u8**)(o + 0xC) = t;
+    t = fn_80031F34(o->particles, o->count);
+    o->particles = t;
     p = t;
-    pp = (u8**)(o + 0xC);
+    pp = &o->particles;
     prev = NULL;
     GXSetZMode(1, 3, 1);
     GXSetBlendMode(1, 4, 6, 0);
     d = lbl_3_data_26CD0;
     do {
-        if (*(s16*)(p + 0x4A) != 0) {
-            fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
-            fn_80033CC8(p, *(void**)(o + 0x10));
-            *(f32*)(p + 8) = *(f32*)(p + 8) - *(f32*)(p + 0x14);
-            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) - (f32)*(s32*)(d + 0x28) / lbl_3_rodata_3930;
-            a = p[0x43];
-            t8 = *(s32*)(d + 8);
-            if (t8 / *(s16*)(p + 0x4A) < 2) {
-                df = *(f32*)(p + 0x1C) * ((f32)(*(s32*)(d + 0x10) - *(s32*)(d + 0xC)) / lbl_3_rodata_3930 / (f32)(t8 / 2));
-                delta = (*(s32*)(d + 0x1C) - *(s32*)(d + 0x18)) / (t8 / 2);
+        if (p->life != 0) {
+            fn_8003403C(p->sizeX, p->sizeY);
+            fn_80033CC8(p, o->tex);
+            p->pos.y = p->pos.y - p->u.phys.vel.y;
+            p->u.phys.vel.y = p->u.phys.vel.y - (f32)d[10] / lbl_3_rodata_3930;
+            a = p->color.c.a;
+            t8 = d[2];
+            if (t8 / p->life < 2) {
+                df = p->u.phys.accel.x * ((f32)(d[4] - d[3]) / lbl_3_rodata_3930 / (f32)(t8 / 2));
+                delta = (d[7] - d[6]) / (t8 / 2);
             } else {
-                df = *(f32*)(p + 0x1C) * ((f32)(*(s32*)(d + 0x14) - *(s32*)(d + 0x10)) / lbl_3_rodata_3930 / (f32)(t8 / 2));
-                delta = (*(s32*)(d + 0x20) - *(s32*)(d + 0x1C)) / (t8 / 2);
+                df = p->u.phys.accel.x * ((f32)(d[5] - d[4]) / lbl_3_rodata_3930 / (f32)(t8 / 2));
+                delta = (d[8] - d[7]) / (t8 / 2);
             }
             a += delta;
-            *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + df;
-            *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+            p->sizeX = p->sizeX + df;
+            p->sizeY = p->sizeX;
             if (a < 0) {
                 a = 0;
             } else if (a > 0xFF) {
                 a = 0xFF;
             }
-            p[0x43] = a;
-            *(s16*)(p + 0x4A) -= 1;
-            if (*(s16*)(p + 0x4A) == 0) {
-                *pp = *(u8**)p;
+            p->color.c.a = a;
+            p->life -= 1;
+            if (p->life == 0) {
+                *pp = p->next;
                 if (prev != NULL) {
-                    *(u8**)prev = p;
+                    prev->next = p;
                 }
                 prev = p;
-                *(u8**)p = NULL;
-                ((H154238*)o)->cnt--;
+                p->next = NULL;
+                o->count--;
             } else {
-                pp = (u8**)p;
+                pp = &p->next;
                 n++;
             }
         }
@@ -1738,61 +1784,61 @@ u32 fn_3_14DD04(u8* o) {
 
 #pragma dont_inline off
 // .text:0x0014DF6C size:0x2C8 mapped:0x8078D000
-void fn_3_14DF6C(u8* o, f32* v) {
-    u8* p;
-    u8* d;
+void fn_3_14DF6C(Emitter* o, f32* v) {
+    Particle* p;
+    s32* d;
     f32 h;
     f32 t;
     s32 n;
     s32 r;
-    p = *(u8**)(o + 0xC);
-    *(s32*)(o + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    p = o->particles;
+    o->tex = lbl_3_common_bss_32724.textures[2];
     d = lbl_3_data_26CD0;
     do {
-        p[0x4D] = *(s32*)d;
-        p[0x4E] = 0;
-        *(f32*)(p + 4) = v[0] + (f32)(rand() % 1000 - 500) / lbl_3_rodata_39C0;
-        *(f32*)(p + 8) = -(lbl_3_rodata_39E0 + v[1]);
-        *(f32*)(p + 0xC) = v[2] + (f32)(rand() % 1000 - 500) / lbl_3_rodata_39C0;
-        *(f32*)(p + 0x18) = lbl_3_rodata_3934[0];
-        *(f32*)(p + 0x10) = lbl_3_rodata_3934[0];
-        *(f32*)(p + 0x14) = (f32)*(s32*)(d + 0x24) / lbl_3_rodata_3930;
-        h = *(f32*)(p + 0x14);
+        p->texIndex = *d;
+        p->uvFrame = 0;
+        p->pos.x = v[0] + (f32)(rand() % 1000 - 500) / lbl_3_rodata_39C0;
+        p->pos.y = -(lbl_3_rodata_39E0 + v[1]);
+        p->pos.z = v[2] + (f32)(rand() % 1000 - 500) / lbl_3_rodata_39C0;
+        p->u.phys.vel.z = lbl_3_rodata_3934[0];
+        p->u.phys.vel.x = lbl_3_rodata_3934[0];
+        p->u.phys.vel.y = (f32)d[9] / lbl_3_rodata_3930;
+        h = p->u.phys.vel.y;
         t = -(lbl_3_rodata_39C0 * (h * lbl_3_rodata_39F0) - (f32)(rand() % (s32)(lbl_3_rodata_39C0 * (h * lbl_3_rodata_39A8)))) / lbl_3_rodata_39C0;
-        *(f32*)(p + 0x14) = *(f32*)(p + 0x14) + t;
-        p[0x42] = 0xFF;
-        p[0x41] = 0xFF;
-        p[0x40] = 0xFF;
-        p[0x43] = *(s32*)(d + 0x18);
-        *(f32*)(p + 0x1C) = (f32)(rand() % 1000 + 500) / lbl_3_rodata_39C0;
-        h = (f32)*(s32*)(d + 0xC) / lbl_3_rodata_3930;
-        *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = h * *(f32*)(p + 0x1C);
-        *(s16*)(p + 0x4A) = *(s32*)(d + 8);
-        *(s16*)(p + 0x48) = 0;
-        p = *(u8**)p;
+        p->u.phys.vel.y = p->u.phys.vel.y + t;
+        p->color.c.b = 0xFF;
+        p->color.c.g = 0xFF;
+        p->color.c.r = 0xFF;
+        p->color.c.a = d[6];
+        p->u.phys.accel.x = (f32)(rand() % 1000 + 500) / lbl_3_rodata_39C0;
+        h = (f32)d[3] / lbl_3_rodata_3930;
+        p->sizeX = p->sizeY = h * p->u.phys.accel.x;
+        p->life = d[2];
+        p->delay = 0;
+        p = p->next;
     } while (p != NULL);
 }
 
 // .text:0x0014E234 size:0x58C mapped:0x8078D2C8
 void fn_3_14E234(f32* v) {
-    u8 buf[0x5C];
-    u8* h;
-    u8* n;
-    u8* p;
+    Emitter buf; // only its particle list is filled in
+    Emitter* h;
+    Emitter* n;
+    Particle* p;
     h = fn_800339F0(NULL, 0x1F);
     if (h != NULL) {
-        n = fn_800337CC(buf, *(s32*)(lbl_3_data_26CD0 + 4), 1);
+        n = fn_800337CC(&buf, lbl_3_data_26CD0[1], 1);
         if (n != NULL) {
             fn_3_14DF6C(n, v);
-            p = *(u8**)(h + 0xC);
-            while (*(u8**)p != NULL) {
-                p = *(u8**)p;
+            p = h->particles;
+            while (p->next != NULL) {
+                p = p->next;
             }
-            *(u8**)p = *(u8**)(n + 0xC);
-            ((H154238*)h)->cnt += ((H154238*)n)->cnt;
+            p->next = n->particles;
+            h->count += n->count;
         }
     } else {
-        n = fn_80033A24(fn_3_14DD04, 0x80, 0, *(s32*)(lbl_3_data_26CD0 + 4), 1, 0x1F);
+        n = fn_80033A24((EmitterUpdateFn)fn_3_14DD04, 0x80, 0, lbl_3_data_26CD0[1], 1, 0x1F);
         if (n != NULL) {
             fn_3_14DF6C(n, v);
         }
@@ -1802,7 +1848,7 @@ void fn_3_14E234(f32* v) {
 
 // .text:0x0014E7C0 size:0x50 mapped:0x8078D854
 void fn_3_14E7C0(f32* a) {
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 6 && a != NULL) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame.GameMode_MiniGame == 6 && a != NULL) {
         fn_3_14E234(a);
     }
 }
@@ -1811,15 +1857,15 @@ void fn_3_14E7C0(f32* a) {
 void fn_3_14E810(void) {
     u32 i = 0;
     do {
-        u8* p = fn_800339F0(0, 0x1E);
+        Emitter* p = fn_800339F0(0, 0x1E);
         if (p != NULL) {
-            u8* q = *(u8**)(p + 0xC);
+            Particle* q = p->particles;
             s32 v = (s8)i + 1;
             do {
-                if (q[0x4C] == v) {
-                    *(s16*)(q + 0x4A) = 0;
+                if (q->unk4C == v) {
+                    q->life = 0;
                 }
-                q = *(u8**)q;
+                q = q->next;
             } while (q != NULL);
         }
         i++;
@@ -1835,15 +1881,15 @@ void fn_3_14E894(void) {
     s16 z = 0;
     do {
         s8 k = i;
-        u8* p = fn_800339F0(0, 0x1E);
+        Emitter* p = fn_800339F0(0, 0x1E);
         if (p != NULL) {
-            u8* q = *(u8**)(p + 0xC);
+            Particle* q = p->particles;
             s32 v = k + 1;
             do {
-                if (q[0x4C] == v) {
-                    *(s16*)(q + 0x4A) = z;
+                if (q->unk4C == v) {
+                    q->life = z;
                 }
-                q = *(u8**)q;
+                q = q->next;
             } while (q != NULL);
         }
         i++;
@@ -1854,89 +1900,89 @@ void fn_3_14E894(void) {
 
 // .text:0x0014E920 size:0x68 mapped:0x8078D9B4
 void fn_3_14E920(s8 a) {
-    u8* p = fn_800339F0(0, 0x1E);
+    Emitter* p = fn_800339F0(0, 0x1E);
     if (p != NULL) {
-        u8* q = *(u8**)(p + 0xC);
+        Particle* q = p->particles;
         s32 v = a + 1;
         do {
-            if (q[0x4C] == v) {
-                *(s16*)(q + 0x4A) = 0;
+            if (q->unk4C == v) {
+                q->life = 0;
             }
-            q = *(u8**)q;
+            q = q->next;
         } while (q != NULL);
     }
 }
 
 // .text:0x0014E988 size:0x68 mapped:0x8078DA1C
 void fn_3_14E988(s8 a) {
-    u8* p = fn_800339F0(0, 0x1E);
+    Emitter* p = fn_800339F0(0, 0x1E);
     if (p != NULL) {
-        u8* q = *(u8**)(p + 0xC);
+        Particle* q = p->particles;
         s32 v = a + 1;
         do {
-            if (q[0x4C] == v) {
-                *(s16*)(q + 0x4A) = 0;
+            if (q->unk4C == v) {
+                q->life = 0;
             }
-            q = *(u8**)q;
+            q = q->next;
         } while (q != NULL);
     }
 }
 
 // .text:0x0014E9F0 size:0x104 mapped:0x8078DA84
-void fn_3_14E9F0(u8* a) {
+void fn_3_14E9F0(Particle* a) {
     Vec v;
-    if (a[0x4C] < 5) {
+    if (a->unk4C < 5) {
         u8 k = lbl_3_data_26CB8[(u32)rand() % 23];
         v.z = 0.0f;
         v.y = 0.0f;
         v.x = 0.0f;
-        if (fn_8001B728(a[0x4C] - 1, k, &v) == 0) {
+        if (fn_8001B728(a->unk4C - 1, k, &v) == 0) {
             memset(&v, 0, 0xC);
-            fn_8001B728(a[0x4C] - 1, 4, &v);
+            fn_8001B728(a->unk4C - 1, 4, &v);
         }
     } else {
-        v.x = *(f32*)(g_Minigame + 0x6E8);
-        v.y = -*(f32*)(g_Minigame + 0x6EC);
-        v.z = *(f32*)(g_Minigame + 0x6F0);
+        v.x = g_Minigame._6E8;
+        v.y = -g_Minigame._6EC;
+        v.z = g_Minigame._6F0;
     }
-    *(f32*)(a + 4) += v.x;
-    *(f32*)(a + 8) += v.y;
-    *(f32*)(a + 0xC) += v.z;
+    a->pos.x += v.x;
+    a->pos.y += v.y;
+    a->pos.z += v.z;
 }
 
 #pragma dont_inline off
 // .text:0x0014EAF4 size:0x230 mapped:0x8078DB88
-void fn_3_14EAF4(u8* o) {
+void fn_3_14EAF4(Particle* o) {
     Vec v = lbl_3_rodata_3914;
     Vec w;
-    if (o[0x4C] == 5) {
+    if (o->unk4C == 5) {
         v.x += (f32)(rand() % 10000 - 5000) / lbl_3_rodata_39F4;
         v.y += (f32)(rand() % 10000 - 5000) / lbl_3_rodata_39F4;
-        *(f32*)(o + 4) = v.x;
-        *(f32*)(o + 8) = v.y - lbl_3_rodata_39A8;
-        *(f32*)(o + 0xC) = v.z;
+        o->pos.x = v.x;
+        o->pos.y = v.y - lbl_3_rodata_39A8;
+        o->pos.z = v.z;
     } else {
-        *(f32*)(o + 0xC) = lbl_3_rodata_3934[0];
-        *(f32*)(o + 8) = lbl_3_rodata_3934[0];
-        *(f32*)(o + 4) = lbl_3_rodata_3934[0];
+        o->pos.z = lbl_3_rodata_3934[0];
+        o->pos.y = lbl_3_rodata_3934[0];
+        o->pos.x = lbl_3_rodata_3934[0];
     }
-    if (o[0x4C] < 5) {
+    if (o->unk4C < 5) {
         u8 k = lbl_3_data_26CB8[(u32)rand() % 23];
         w.z = 0.0f;
         w.y = 0.0f;
         w.x = 0.0f;
-        if (fn_8001B728(o[0x4C] - 1, k, &w) == 0) {
+        if (fn_8001B728(o->unk4C - 1, k, &w) == 0) {
             memset(&w, 0, 0xC);
-            fn_8001B728(o[0x4C] - 1, 4, &w);
+            fn_8001B728(o->unk4C - 1, 4, &w);
         }
     } else {
-        w.x = *(f32*)(g_Minigame + 0x6E8);
-        w.y = -*(f32*)(g_Minigame + 0x6EC);
-        w.z = *(f32*)(g_Minigame + 0x6F0);
+        w.x = g_Minigame._6E8;
+        w.y = -g_Minigame._6EC;
+        w.z = g_Minigame._6F0;
     }
-    *(f32*)(o + 4) += w.x;
-    *(f32*)(o + 8) += w.y;
-    *(f32*)(o + 0xC) += w.z;
+    o->pos.x += w.x;
+    o->pos.y += w.y;
+    o->pos.z += w.z;
 }
 #pragma dont_inline on
 
@@ -1944,50 +1990,50 @@ void fn_3_14EAF4(u8* o) {
 // .text:0x0014ED24 size:0x6A8 mapped:0x8078DDB8
 #pragma dont_inline off
 #if NONMATCHING
-u32 fn_3_14ED24(u8* o) {
-    u8* p;
+u32 fn_3_14ED24(Emitter* o) {
+    Particle* p;
     s32* d;
     s32 a;
     fn_80033620(o);
-    p = *(u8**)(o + 0xC);
+    p = o->particles;
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     do {
-        if (*(s16*)(p + 0x4A) != 0) {
-            if (*(s16*)(p + 0x48) <= 0) {
+        if (p->life != 0) {
+            if (p->delay <= 0) {
                 GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
-                fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
-                fn_80033CC8(p, *(void**)(o + 0x10));
+                fn_8003403C(p->sizeX, p->sizeY);
+                fn_80033CC8(p, o->tex);
                 d = (s32*)lbl_3_data_26C94;
-                if (d[7] / *(s16*)(p + 0x4A) < 2) {
-                    a = p[0x43] + d[6] / (d[7] / 2);
+                if (d[7] / p->life < 2) {
+                    a = p->color.c.a + d[6] / (d[7] / 2);
                     if (a > d[6]) {
                         a = d[6];
                     }
-                    p[0x43] = a;
-                    *(f32*)(p + 0x38) += (f32)(d[3] - d[2]) / lbl_3_rodata_3930 / (f32)(d[7] / 2);
-                    *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+                    p->color.c.a = a;
+                    p->sizeX += (f32)(d[3] - d[2]) / lbl_3_rodata_3930 / (f32)(d[7] / 2);
+                    p->sizeY = p->sizeX;
                 } else {
-                    a = p[0x43] - d[6] / (d[7] / 2);
+                    a = p->color.c.a - d[6] / (d[7] / 2);
                     if (a < d[5]) {
                         a = d[5];
                     }
-                    p[0x43] = a;
-                    *(f32*)(p + 0x38) += (f32)(d[4] - d[3]) / lbl_3_rodata_3930 / (f32)(d[7] / 2);
-                    *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+                    p->color.c.a = a;
+                    p->sizeX += (f32)(d[4] - d[3]) / lbl_3_rodata_3930 / (f32)(d[7] / 2);
+                    p->sizeY = p->sizeX;
                 }
-                *(s16*)(p + 0x4A) -= 1;
-                if (*(s16*)(p + 0x4A) == 0) {
+                p->life -= 1;
+                if (p->life == 0) {
                     fn_3_14F544(p);
                     fn_3_14EAF4(p);
                 }
             } else {
-                *(s16*)(p + 0x48) -= 1;
-                if (*(s16*)(p + 0x48) == 0) {
+                p->delay -= 1;
+                if (p->delay == 0) {
                     fn_3_14EAF4(p);
                 }
             }
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
     return 0;
 }
@@ -1995,33 +2041,33 @@ u32 fn_3_14ED24(u8* o) {
 #pragma dont_inline on
 
 // .text:0x0014F3CC size:0x178 mapped:0x8078E460
-void fn_3_14F3CC(u8* o) {
+void fn_3_14F3CC(Particle* o) {
     Vec v = lbl_3_rodata_3908;
     f32 off;
     s16 r1, r2;
-    if (o[0x4C] < 5) {
+    if (o->unk4C < 5) {
         off = lbl_3_rodata_39F8;
     } else {
         off = lbl_3_rodata_39A8;
     }
-    r1 = o[0x4C] < 5 ? 20000 : 10000;
-    r2 = o[0x4C] < 5 ? 20000 : 10000;
+    r1 = o->unk4C < 5 ? 20000 : 10000;
+    r2 = o->unk4C < 5 ? 20000 : 10000;
     v.x += (f32)(rand() % r1 - r1 / 2) / lbl_3_rodata_39F4;
     v.y += (f32)(rand() % r2 - r2 / 2) / lbl_3_rodata_39F4;
-    *(f32*)(o + 4) = v.x;
-    *(f32*)(o + 8) = v.y - off;
-    *(f32*)(o + 0xC) = v.z;
+    o->pos.x = v.x;
+    o->pos.y = v.y - off;
+    o->pos.z = v.z;
 }
 
 #pragma dont_inline off
 // .text:0x0014F544 size:0x60 mapped:0x8078E5D8
-void fn_3_14F544(u8* a) {
+void fn_3_14F544(Particle* a) {
     f32 f;
-    *(s16*)(a + 0x4A) = *(s32*)(lbl_3_data_26C94 + 0x1C);
-    a[0x43] = *(s32*)(lbl_3_data_26C94 + 0x14);
-    f = *(s32*)(lbl_3_data_26C94 + 8) / 100000.0f;
-    *(f32*)(a + 0x3C) = f;
-    *(f32*)(a + 0x38) = f;
+    a->life = lbl_3_data_26C94[7];
+    a->color.c.a = lbl_3_data_26C94[5];
+    f = lbl_3_data_26C94[2] / 100000.0f;
+    a->sizeY = f;
+    a->sizeX = f;
 }
 #pragma dont_inline on
 
@@ -2029,24 +2075,24 @@ void fn_3_14F544(u8* a) {
 // .text:0x0014F5A4 size:0x32C mapped:0x8078E638
 #pragma dont_inline off
 #if NONMATCHING
-void fn_3_14F5A4(u8* o, s8 a) {
-    u8* p;
+void fn_3_14F5A4(Emitter* o, s8 a) {
+    Particle* p;
     u32 i = 0;
-    p = *(u8**)(o + 0xC);
+    p = o->particles;
     do {
-        if (p[0x4C] == a + 1) {
+        if (p->unk4C == a + 1) {
             fn_3_14F544(p);
-            *(s16*)(p + 0x48) = (f32)*(s16*)(p + 0x4A) / lbl_3_rodata_39FC * (f32)i;
-            if (*(s16*)(p + 0x48) == 0) {
+            p->delay = (f32)p->life / lbl_3_rodata_39FC * (f32)i;
+            if (p->delay == 0) {
                 fn_3_14EAF4(p);
             }
-            p[0x42] = 0xFF;
+            p->color.c.b = 0xFF;
             i++;
-            p[0x41] = 0xFF;
-            p[0x40] = 0xFF;
-            *(f32*)(p + 0x34) = 0.0f;
+            p->color.c.g = 0xFF;
+            p->color.c.r = 0xFF;
+            p->u.phys.mass = 0.0f;
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
 }
 #endif
@@ -2054,18 +2100,18 @@ void fn_3_14F5A4(u8* o, s8 a) {
 
 #pragma dont_inline off
 // .text:0x0014F8D0 size:0x60 mapped:0x8078E964
-void fn_3_14F8D0(u8* a) {
-    u8* p;
+void fn_3_14F8D0(Emitter* a) {
+    Particle* p;
     u32 i = 0;
-    *(u32*)(a + 0x10) = *(u32*)(lbl_3_common_bss_32724 + 0x6C);
-    p = *(u8**)(a + 0xC);
+    a->tex = lbl_3_common_bss_32724.textures[2];
+    p = a->particles;
     do {
-        p[0x4F] = 0;
-        p[0x4D] = *(u32*)lbl_3_data_26C94;
-        p[0x4E] = 0;
-        p[0x4C] = i / 18 + 1;
+        p->uvOrder = 0;
+        p->texIndex = lbl_3_data_26C94[0];
+        p->uvFrame = 0;
+        p->unk4C = i / 18 + 1;
         i++;
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
 }
 
@@ -2073,11 +2119,11 @@ void fn_3_14F8D0(u8* a) {
 // .text:0x0014F930 size:0x6E0 mapped:0x8078E9C4
 #if NONMATCHING
 void fn_3_14F930(s8 a) {
-    u8* e = fn_800339F0(NULL, 0x1E);
+    Emitter* e = fn_800339F0(NULL, 0x1E);
     if (e != NULL) {
         fn_3_14F5A4(e, a);
     } else {
-        e = fn_80033A24(fn_3_14ED24, 0x80, 0, *(s32*)(lbl_3_data_26C94 + 4), 1, 0x1E);
+        e = fn_80033A24((EmitterUpdateFn)fn_3_14ED24, 0x80, 0, lbl_3_data_26C94[1], 1, 0x1E);
         if (e != NULL) {
             fn_3_14F8D0(e);
             fn_3_14F5A4(e, a);
@@ -2089,20 +2135,21 @@ void fn_3_14F930(s8 a) {
 
 // .text:0x00150010 size:0x60 mapped:0x8078F0A4
 void fn_3_150010(s8 a) {
-    if (g_d_GameSettings.GameModeSelected != 7 || g_Minigame[0x1A2A] != 6 || a > 4 || a < 0) { return; }
+    if (g_d_GameSettings.GameModeSelected != 7 || g_Minigame.GameMode_MiniGame != 6 || a > 4 || a < 0) { return; }
     fn_3_14F930(a);
 }
 
 // .text:0x00150070 size:0x58 mapped:0x8078F104
 void fn_3_150070(void) {
-    u8* p = fn_800339F0(0, 0x1D);
-    if (p != NULL) {
-        p = *(u8**)(p + 0xC);
+    Emitter* e = fn_800339F0(0, 0x1D);
+    Particle* p;
+    if (e != NULL) {
+        p = e->particles;
         do {
-            *(s16*)(p + 0x4A) = 0;
-            *(s16*)(p + 0x48) = 0;
-            p[0x4C] = 0;
-            p = *(u8**)p;
+            p->life = 0;
+            p->delay = 0;
+            p->unk4C = 0;
+            p = p->next;
         } while (p != NULL);
     }
     pitchingMachinePitching(0x1D);
@@ -2110,14 +2157,15 @@ void fn_3_150070(void) {
 
 // .text:0x001500C8 size:0x58 mapped:0x8078F15C
 void fn_3_1500C8(void) {
-    u8* p = fn_800339F0(0, 0x1D);
-    if (p != NULL) {
-        p = *(u8**)(p + 0xC);
+    Emitter* e = fn_800339F0(0, 0x1D);
+    Particle* p;
+    if (e != NULL) {
+        p = e->particles;
         do {
-            *(s16*)(p + 0x4A) = 0;
-            *(s16*)(p + 0x48) = 0;
-            p[0x4C] = 0;
-            p = *(u8**)p;
+            p->life = 0;
+            p->delay = 0;
+            p->unk4C = 0;
+            p = p->next;
         } while (p != NULL);
     }
     pitchingMachinePitching(0x1D);
@@ -2132,40 +2180,40 @@ static inline s32 rnd_range(s32* r) {
 // NONMATCHING 99%: only the last rnd_range block schedules the 57.29578f/100000 constant loads in the other order
 // .text:0x00150120 size:0x3CC mapped:0x8078F1B4
 #if NONMATCHING
-void fn_3_150120(u8* o, u8* p) {
+void fn_3_150120(Emitter* o, Particle* p) {
     f32 speed;
     f32 ang;
-    if (*(s16*)(p + 0x48) != 0) {
-        *(s16*)(p + 0x48) -= 1;
+    if (p->delay != 0) {
+        p->delay -= 1;
         return;
     }
-    fn_80033F64(*(f32*)(p + 0x38), *(f32*)(p + 0x3C), *(f32*)(p + 0x1C));
-    fn_80033CC8(p, *(void**)(o + 0x10));
-    *(f32*)(p + 4) += *(f32*)(p + 0x10);
-    *(f32*)(p + 8) -= *(f32*)(p + 0x14);
-    *(f32*)(p + 0xC) += *(f32*)(p + 0x18);
-    if (*(f32*)(p + 8) > 0.0f) {
-        *(f32*)(p + 8) = 0.0f;
-        *(f32*)(p + 0x14) = -*(f32*)(p + 0x14) * ((f32)*(s32*)(lbl_3_data_26C3C + 0x3C) / lbl_3_rodata_3930);
+    fn_80033F64(p->sizeX, p->sizeY, p->u.phys.accel.x);
+    fn_80033CC8(p, o->tex);
+    p->pos.x += p->u.phys.vel.x;
+    p->pos.y -= p->u.phys.vel.y;
+    p->pos.z += p->u.phys.vel.z;
+    if (p->pos.y > 0.0f) {
+        p->pos.y = 0.0f;
+        p->u.phys.vel.y = -p->u.phys.vel.y * ((f32)lbl_3_data_26C3C[15] / lbl_3_rodata_3930);
     }
-    if (--*(s16*)(p + 0x4A) == 0) {
-        *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26C3C + 0x50);
-        *(f32*)(p + 4) = *(f32*)(o + 0x1C);
-        *(f32*)(p + 8) = -*(f32*)(o + 0x20);
-        *(f32*)(p + 0xC) = *(f32*)(o + 0x24);
-                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) =
-            (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x28)) / lbl_3_rodata_3930;
-                *(f32*)(p + 0x14) = (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x30)) / lbl_3_rodata_3930;
+    if (--p->life == 0) {
+        p->life = lbl_3_data_26C3C[20];
+        p->pos.x = o->u.t1.pos.y;
+        p->pos.y = -o->u.t1.pos.z;
+        p->pos.z = o->u.t1.dir.x;
+                p->sizeX = p->sizeY =
+            (f32)rnd_range(&lbl_3_data_26C3C[10]) / lbl_3_rodata_3930;
+                p->u.phys.vel.y = (f32)rnd_range(&lbl_3_data_26C3C[12]) / lbl_3_rodata_3930;
         ang = lbl_3_rodata_39B8 * (f32)((f64)(rand() % 36000) / lbl_3_rodata_39E8);
-        speed = (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x40)) / lbl_3_rodata_3930;
-        *(f32*)(p + 0x10) = speed * (f32)cos(ang);
-        *(f32*)(p + 0x18) = speed * (f32)sin(ang);
-                *(f32*)(p + 0x1C) = lbl_3_rodata_39AC * ((f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x48)) / lbl_3_rodata_3930);
-        *(f32*)(p + 0x1C) *= (f32)(-((rand() % 2) * 2) + 1);
-        p[0x43] = 0xFF;
-        p[0x42] = 0xFF;
-        p[0x41] = 0xFF;
-        p[0x40] = 0xFF;
+        speed = (f32)rnd_range(&lbl_3_data_26C3C[16]) / lbl_3_rodata_3930;
+        p->u.phys.vel.x = speed * (f32)cos(ang);
+        p->u.phys.vel.z = speed * (f32)sin(ang);
+                p->u.phys.accel.x = lbl_3_rodata_39AC * ((f32)rnd_range(&lbl_3_data_26C3C[18]) / lbl_3_rodata_3930);
+        p->u.phys.accel.x *= (f32)(-((rand() % 2) * 2) + 1);
+        p->color.c.a = 0xFF;
+        p->color.c.b = 0xFF;
+        p->color.c.g = 0xFF;
+        p->color.c.r = 0xFF;
     }
 }
 #endif
@@ -2174,51 +2222,51 @@ void fn_3_150120(u8* o, u8* p) {
 // NONMATCHING 92%: respawn block (inlined twice) gets f29/f31 swapped for x/z, and the half-life divide is scheduled later in the fade branch
 // .text:0x001504EC size:0x454 mapped:0x8078F580
 #if NONMATCHING
-static inline void respawn_1504EC(u8* o, u8* p) {
+static inline void respawn_1504EC(Emitter* o, Particle* p) {
     Mtx m;
-    u8* obj;
+    GameBone* obj;
     f32* src;
     f32 x;
     f32 y;
     f32 z;
-    *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26C3C + 0x18);
-    obj = (*(u8***)(**(u8***)(o + 0x18) + 0x18))[*(s32*)(lbl_3_data_26C3C + 0x1C)];
+    p->life = lbl_3_data_26C3C[6];
+    obj = o->u.follow.obj->actor->boneArray[lbl_3_data_26C3C[7]];
     PSMTXIdentity(m);
-    src = *(f32**)(obj + 0xEC);
+    src = (f32*)obj->forwardMtx;
     x = src[3];
     y = src[7];
     z = src[11];
     x += (rand() % 100 - 50) / lbl_3_rodata_39E8;
     y += (rand() % 150 - 75) / lbl_3_rodata_39E8;
-    *(f32*)(p + 4) = x;
-    *(f32*)(p + 8) = y;
-    *(f32*)(p + 0xC) = z;
-    *(f32*)(p + 0x3C) = *(f32*)(p + 0x38) = *(s32*)(lbl_3_data_26C3C + 8);
-    p[0x43] = *(s32*)(lbl_3_data_26C3C + 0x10);
+    p->pos.x = x;
+    p->pos.y = y;
+    p->pos.z = z;
+    p->sizeY = p->sizeX = lbl_3_data_26C3C[2];
+    p->color.c.a = lbl_3_data_26C3C[4];
 }
 
-void fn_3_1504EC(u8* o, u8* p) {
+void fn_3_1504EC(Emitter* o, Particle* p) {
     s32 half;
     s32 da;
     f32 ds;
     s32 a;
-    if (*(s16*)(p + 0x48) != 0) {
-        *(s16*)(p + 0x48) -= 1;
-        if (*(s16*)(p + 0x48) == 0) {
+    if (p->delay != 0) {
+        p->delay -= 1;
+        if (p->delay == 0) {
             respawn_1504EC(o, p);
         }
     } else {
-        fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
-        fn_80033CC8(p, *(void**)(o + 0x10));
-        a = p[0x43];
-        if (*(s32*)(lbl_3_data_26C3C + 0x18) / *(s16*)(p + 0x4A) < 2) {
-            half = *(s32*)(lbl_3_data_26C3C + 0x18) / 2;
-            da = *(s32*)(lbl_3_data_26C3C + 0x14) / half;
-            ds = ((f32)*(s32*)(lbl_3_data_26C3C + 0xC) / lbl_3_rodata_3930) / (f32)half;
+        fn_8003403C(p->sizeX, p->sizeY);
+        fn_80033CC8(p, o->tex);
+        a = p->color.c.a;
+        if (lbl_3_data_26C3C[6] / p->life < 2) {
+            half = lbl_3_data_26C3C[6] / 2;
+            da = lbl_3_data_26C3C[5] / half;
+            ds = ((f32)lbl_3_data_26C3C[3] / lbl_3_rodata_3930) / (f32)half;
         } else {
-            half = *(s32*)(lbl_3_data_26C3C + 0x18) / 2;
-            da = -*(s32*)(lbl_3_data_26C3C + 0x14) / half;
-            ds = -((f32)*(s32*)(lbl_3_data_26C3C + 0xC) / lbl_3_rodata_3930) / (f32)half;
+            half = lbl_3_data_26C3C[6] / 2;
+            da = -lbl_3_data_26C3C[5] / half;
+            ds = -((f32)lbl_3_data_26C3C[3] / lbl_3_rodata_3930) / (f32)half;
         }
         a += da;
         if (a > 0xFF) {
@@ -2226,11 +2274,11 @@ void fn_3_1504EC(u8* o, u8* p) {
         } else if (a < 0) {
             a = 0;
         }
-        p[0x43] = a;
-        *(f32*)(p + 0x38) += ds;
-        *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
-        *(s16*)(p + 0x4A) -= 1;
-        if (*(s16*)(p + 0x4A) == 0) {
+        p->color.c.a = a;
+        p->sizeX += ds;
+        p->sizeY = p->sizeX;
+        p->life -= 1;
+        if (p->life == 0) {
             respawn_1504EC(o, p);
         }
     }
@@ -2240,139 +2288,138 @@ void fn_3_1504EC(u8* o, u8* p) {
 // NONMATCHING 98% (measured with 150120 unwrapped and inlined): o/p saved regs r28/r29 swapped, plus 150120's constant-load order
 // .text:0x00150940 size:0x444 mapped:0x8078F9D4
 #if NONMATCHING
-u32 fn_3_150940(u8* o) {
-    u8* p;
-    if (lbl_80366158[0x28] != 0) {
+u32 fn_3_150940(Emitter* o) {
+    Particle* p;
+    if (lbl_80366158._28 != 0) {
         return 0;
     }
-    if ((*(u8**)(o + 0x18))[0x6C] == 0) {
+    if (o->u.follow.obj->animateBones == 0) {
         return 0;
     }
     fn_80033620(o);
-    p = *(u8**)(o + 0xC);
+    p = o->particles;
     GXSetZMode(1, 3, 0);
     GXSetBlendMode(1, 4, 6, 0);
     do {
-        if (*(s16*)(p + 0x4A) != 0) {
-            if (p[0x4C] == 1) {
+        if (p->life != 0) {
+            if (p->unk4C == 1) {
                 fn_3_1504EC(o, p);
-            } else if (p[0x4C] == 2) {
+            } else if (p->unk4C == 2) {
                 fn_3_150120(o, p);
             }
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
     return 0;
 }
 #endif
 
 // .text:0x00150D84 size:0x2E4 mapped:0x8078FE18
-void fn_3_150D84(u8* a, u8* o) {
+void fn_3_150D84(Emitter* a, Particle* o) {
     s32* d;
     f32 ang;
     f32 s;
     d = (s32*)lbl_3_data_26C3C;
-    *(s16*)(o + 0x4A) = d[20];
-    *(f32*)(o + 4) = *(f32*)(a + 0x1C);
-    *(f32*)(o + 8) = -*(f32*)(a + 0x20);
-    *(f32*)(o + 0xC) = *(f32*)(a + 0x24);
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)(d[10] + rand() % (d[11] - d[10])) / lbl_3_rodata_3930;
+    o->life = d[20];
+    o->pos.x = a->u.t1.pos.y;
+    o->pos.y = -a->u.t1.pos.z;
+    o->pos.z = a->u.t1.dir.x;
+    o->sizeX = o->sizeY = (f32)(d[10] + rand() % (d[11] - d[10])) / lbl_3_rodata_3930;
     d = (s32*)lbl_3_data_26C3C;
-    *(f32*)(o + 0x14) = (f32)(d[12] + rand() % (d[13] - d[12])) / lbl_3_rodata_3930;
+    o->u.phys.vel.y = (f32)(d[12] + rand() % (d[13] - d[12])) / lbl_3_rodata_3930;
     d = (s32*)lbl_3_data_26C3C;
     ang = lbl_3_rodata_39B8 * (f32)((f64)(rand() % 36000) / lbl_3_rodata_39E8);
     d = (s32*)lbl_3_data_26C3C;
     s = (f32)(d[16] + rand() % (d[17] - d[16])) / lbl_3_rodata_3930;
-    *(f32*)(o + 0x10) = s * (f32)cos(ang);
-    *(f32*)(o + 0x18) = s * (f32)sin(ang);
+    o->u.phys.vel.x = s * (f32)cos(ang);
+    o->u.phys.vel.z = s * (f32)sin(ang);
     d = (s32*)lbl_3_data_26C3C;
-    *(f32*)(o + 0x1C) = lbl_3_rodata_39AC * ((f32)(d[18] + rand() % (d[19] - d[18])) / lbl_3_rodata_3930);
-    *(f32*)(o + 0x1C) = *(f32*)(o + 0x1C) * (f32)(-(rand() % 2 * 2) + 1);
-    o[0x43] = 0xFF;
-    o[0x42] = 0xFF;
-    o[0x41] = 0xFF;
-    o[0x40] = 0xFF;
+    o->u.phys.accel.x = lbl_3_rodata_39AC * ((f32)(d[18] + rand() % (d[19] - d[18])) / lbl_3_rodata_3930);
+    o->u.phys.accel.x = o->u.phys.accel.x * (f32)(-(rand() % 2 * 2) + 1);
+    o->color.c.a = 0xFF;
+    o->color.c.b = 0xFF;
+    o->color.c.g = 0xFF;
+    o->color.c.r = 0xFF;
 }
 
 // .text:0x00151068 size:0x19C mapped:0x807900FC
-void fn_3_151068(u8* a, u8* o) {
+void fn_3_151068(Emitter* a, Particle* o) {
     Mtx m;
-    u8* obj;
-    u8* mp;
-    u8* t;
+    GameBone* obj;
+    MtxPtr mp;
     f32 x, y, z;
     s32* d = (s32*)lbl_3_data_26C3C;
-    *(s16*)(o + 0x4A) = d[6];
-    obj = (*(u8***)(*(u8**)(*(u8**)(a + 0x18))+0x18))[d[7]];
+    o->life = d[6];
+    obj = a->u.follow.obj->actor->boneArray[d[7]];
     PSMTXIdentity(m);
-    mp = *(u8**)(obj + 0xEC);
-    x = *(f32*)(mp + 0xC);
-    y = *(f32*)(mp + 0x1C);
-    z = *(f32*)(mp + 0x2C);
+    mp = obj->forwardMtx;
+    x = mp[0][3];
+    y = mp[1][3];
+    z = mp[2][3];
     x += (f64)(rand() % 100 - 50) / lbl_3_rodata_39E8;
     y += (f64)(rand() % 150 - 75) / lbl_3_rodata_39E8;
-    *(f32*)(o + 4) = x;
-    *(f32*)(o + 8) = y;
-    *(f32*)(o + 0xC) = z;
-    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = *(s32*)(lbl_3_data_26C3C + 8);
-    o[0x43] = *(s32*)(lbl_3_data_26C3C + 0x10);
+    o->pos.x = x;
+    o->pos.y = y;
+    o->pos.z = z;
+    o->sizeY = o->sizeX = lbl_3_data_26C3C[2];
+    o->color.c.a = lbl_3_data_26C3C[4];
 }
 
 // NONMATCHING 97% (with respawn_1504EC visible): CW hoists the rnd_range table addresses (d+0x2C, ...) into extra saved regs; otherwise only register numbering
 // .text:0x00151204 size:0x490 mapped:0x80790298
 #if NONMATCHING
-void fn_3_151204(u8* o, void* owner, Vec* pos) {
-    u8* p;
+void fn_3_151204(Emitter* o, void* owner, Vec* pos) {
+    Particle* p;
     s32 i;
     s32 j;
     f32 ang;
     f32 speed;
     i = 0;
     j = 0;
-    *(void**)(o + 0x10) = *(void**)(lbl_3_common_bss_32724 + 0x6C);
-    *(void**)(o + 0x18) = owner;
-    memcpy(o + 0x1C, pos, sizeof(Vec));
-    p = *(u8**)(o + 0xC);
+    o->tex = lbl_3_common_bss_32724.textures[2];
+    o->u.follow.obj = owner;
+    memcpy(&o->u.t1.pos.y, pos, sizeof(Vec));
+    p = o->particles;
     do {
-        if (i < *(u32*)(lbl_3_data_26C3C + 4)) {
-            *(s16*)(p + 0x48) = ++i;
-            p[0x4D] = *(s32*)lbl_3_data_26C3C;
-            p[0x4C] = 1;
-            *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26C3C + 0x18);
-            if (*(s16*)(p + 0x48) == 0) {
+        if (i < (u32)lbl_3_data_26C3C[1]) {
+            p->delay = ++i;
+            p->texIndex = lbl_3_data_26C3C[0];
+            p->unk4C = 1;
+            p->life = lbl_3_data_26C3C[6];
+            if (p->delay == 0) {
                 respawn_1504EC(o, p);
             }
         } else {
-            *(s16*)(p + 0x48) = j++;
-            p[0x4D] = *(s32*)(lbl_3_data_26C3C + 0x20);
-            p[0x4C] = 2;
-            *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26C3C + 0x50);
-            *(f32*)(p + 4) = *(f32*)(o + 0x1C);
-            *(f32*)(p + 8) = -*(f32*)(o + 0x20);
-            *(f32*)(p + 0xC) = *(f32*)(o + 0x24);
-            *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) =
-                (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x28)) / lbl_3_rodata_3930;
-            *(f32*)(p + 0x14) = (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x30)) / lbl_3_rodata_3930;
+            p->delay = j++;
+            p->texIndex = lbl_3_data_26C3C[8];
+            p->unk4C = 2;
+            p->life = lbl_3_data_26C3C[20];
+            p->pos.x = o->u.t1.pos.y;
+            p->pos.y = -o->u.t1.pos.z;
+            p->pos.z = o->u.t1.dir.x;
+            p->sizeX = p->sizeY =
+                (f32)rnd_range(&lbl_3_data_26C3C[10]) / lbl_3_rodata_3930;
+            p->u.phys.vel.y = (f32)rnd_range(&lbl_3_data_26C3C[12]) / lbl_3_rodata_3930;
             ang = lbl_3_rodata_39B8 * (f32)((f64)(rand() % 36000) / lbl_3_rodata_39E8);
-            speed = (f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x40)) / lbl_3_rodata_3930;
-            *(f32*)(p + 0x10) = speed * (f32)cos(ang);
-            *(f32*)(p + 0x18) = speed * (f32)sin(ang);
-            *(f32*)(p + 0x1C) = lbl_3_rodata_39AC * ((f32)rnd_range((s32*)(lbl_3_data_26C3C + 0x48)) / lbl_3_rodata_3930);
-            *(f32*)(p + 0x1C) *= (f32)(-((rand() % 2) * 2) + 1);
-            p[0x43] = 0xFF;
-            p[0x42] = 0xFF;
-            p[0x41] = 0xFF;
-            p[0x40] = 0xFF;
+            speed = (f32)rnd_range(&lbl_3_data_26C3C[16]) / lbl_3_rodata_3930;
+            p->u.phys.vel.x = speed * (f32)cos(ang);
+            p->u.phys.vel.z = speed * (f32)sin(ang);
+            p->u.phys.accel.x = lbl_3_rodata_39AC * ((f32)rnd_range(&lbl_3_data_26C3C[18]) / lbl_3_rodata_3930);
+            p->u.phys.accel.x *= (f32)(-((rand() % 2) * 2) + 1);
+            p->color.c.a = 0xFF;
+            p->color.c.b = 0xFF;
+            p->color.c.g = 0xFF;
+            p->color.c.r = 0xFF;
         }
-        p[0x4E] = 0;
-        p = *(u8**)p;
+        p->uvFrame = 0;
+        p = p->next;
     } while (p != NULL);
 }
 #endif
 
 // .text:0x00151694 size:0x7C mapped:0x80790728
 void fn_3_151694(void* a, Vec* b) {
-    void* p = fn_80033A24(fn_3_150940, 0x80, 0, *(int*)(lbl_3_data_26C3C + 4) + *(int*)(lbl_3_data_26C3C + 0x24), 1, 0x1D);
+    Emitter* p = fn_80033A24((EmitterUpdateFn)fn_3_150940, 0x80, 0, lbl_3_data_26C3C[1] + lbl_3_data_26C3C[9], 1, 0x1D);
     if (p != 0) {
         fn_3_151204(p, a, b);
     }
@@ -2380,7 +2427,7 @@ void fn_3_151694(void* a, Vec* b) {
 
 // .text:0x00151710 size:0x50 mapped:0x807907A4
 void fn_3_151710(void* a, Vec* b) {
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 2 && a != NULL) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame.GameMode_MiniGame == 2 && a != NULL) {
         fn_3_151694(a, b);
     }
 }
@@ -2401,11 +2448,10 @@ void fn_3_151798(void) {
 // .text:0x001517D0 size:0x228 mapped:0x80790864
 typedef struct { f32 f[8]; } Tex8;
 extern const Tex8 lbl_3_rodata_38E8;
-extern void fn_80033B58(void*, s32, s32, s32);
 
 typedef struct { f32 u, v; } UV;
 #if NONMATCHING
-void fn_3_1517D0(u8* a, u8* o) {
+void fn_3_1517D0(Particle* a, Emitter* o) {
     Mtx m;
     Mtx44 m44;
     Vec vt[4];
@@ -2415,8 +2461,8 @@ void fn_3_1517D0(u8* a, u8* o) {
     f32* p;
     UV* uv;
     s32 i;
-    hx = *(f32*)(a + 0x38) * lbl_3_rodata_39A8;
-    hy = *(f32*)(a + 0x3C) * lbl_3_rodata_39A8;
+    hx = a->sizeX * lbl_3_rodata_39A8;
+    hy = a->sizeY * lbl_3_rodata_39A8;
     ((s32*)&tx)[0] = ((const s32*)&lbl_3_rodata_38E8)[0];
     ((s32*)&tx)[1] = ((const s32*)&lbl_3_rodata_38E8)[1];
     ((s32*)&tx)[2] = ((const s32*)&lbl_3_rodata_38E8)[2];
@@ -2442,16 +2488,16 @@ void fn_3_1517D0(u8* a, u8* o) {
     GXLoadPosMtxImm(m, 0);
     GXSetCurrentMtx(0);
     GXSetProjection(m44, 0);
-    fn_80033B58(*(void**)(o + 0x10), a[0x4D], 0, 0);
+    fn_80033B58(o->tex, a->texIndex, 0, 0);
     GXBegin(0x80, 0, 4);
     p = &vt[0].x;
     for (i = 0; i < 4; i++, p += 3) {
-        GXPosition3f32(*(f32*)(a + 4) + p[0], *(f32*)(a + 8) + p[1], -1.0f);
-        GXColor1u32(*(u32*)(a + 0x40));
-        uv = &((UV*)&tx)[a[0x4E] + i];
+        GXPosition3f32(a->pos.x + p[0], a->pos.y + p[1], -1.0f);
+        GXColor1u32(a->color.rgba);
+        uv = &((UV*)&tx)[a->uvFrame + i];
         GXTexCoord2f32(uv->u, uv->v);
     }
-    GXLoadPosMtxImm((void*)((u8*)fn_80052768_getCamera(0) + 0x40), 0);
+    GXLoadPosMtxImm(fn_80052768_getCamera(0)->view, 0);
     GXSetCurrentMtx(0);
     GXSetProjection((void*)fn_80052768_getCamera(0), 0);
 }
@@ -2459,62 +2505,62 @@ void fn_3_1517D0(u8* a, u8* o) {
 
 #pragma dont_inline off
 // .text:0x001519F8 size:0x1B4 mapped:0x80790A8C
-void fn_3_1519F8(u8* a, u8* o) {
+void fn_3_1519F8(Emitter* a, Particle* o) {
     Vec v;
     Vec dir;
     Vec ref;
     f32 mag;
-    u8* tbl;
+    f32* tbl;
     fn_3_1517D0(o, a);
-    if (lbl_80366158[0x28] != 0) {
+    if (lbl_80366158._28 != 0) {
         return;
     }
-    PSVECAdd((Vec*)(o + 4), (Vec*)(o + 0x10), (Vec*)(o + 4));
-    memcpy(&v, o + 4, 0xC);
-    tbl = lbl_3_data_26C1C + 4;
-    v.x = *(f32*)(lbl_3_data_26C1C + o[0x44] * 8) - v.x;
-    v.y = *(f32*)(tbl + o[0x44] * 8) - v.y;
+    PSVECAdd(&o->pos, &o->u.phys.vel, &o->pos);
+    memcpy(&v, &o->pos, 0xC);
+    tbl = &lbl_3_data_26C1C[1];
+    v.x = lbl_3_data_26C1C[2 * o->colorStep.v[0]] - v.x;
+    v.y = tbl[o->colorStep.v[0] * 2] - v.y;
     v.z = lbl_3_rodata_3934[0];
     PSVECNormalize(&v, &dir);
     mag = PSVECMag(&v);
     PSVECScale(&dir, lbl_3_rodata_3A00 * (lbl_3_rodata_392C / (mag * mag)), &v);
-    PSVECAdd((Vec*)(o + 0x10), &v, (Vec*)(o + 0x10));
-    ref.x = *(f32*)(lbl_3_data_26C1C + o[0x44] * 8);
-    ref.y = *(f32*)(tbl + o[0x44] * 8);
+    PSVECAdd(&o->u.phys.vel, &v, &o->u.phys.vel);
+    ref.x = lbl_3_data_26C1C[2 * o->colorStep.v[0]];
+    ref.y = tbl[o->colorStep.v[0] * 2];
     ref.z = lbl_3_rodata_3934[0];
     PSVECNormalize(&ref, &ref);
     if (PSVECDotProduct(&dir, &ref) < lbl_3_rodata_3934[0] || mag == lbl_3_rodata_3934[0]) {
-        *(s16*)(o + 0x4A) = 0;
+        o->life = 0;
     }
-    if (*(s16*)(o + 0x4A) == 0 && o[0x45] != 0) {
-        fn_3_11F4B4(o[0x44], o[0x4D] == 1);
-        o[0x45] = 0;
+    if (o->life == 0 && o->colorStep.v[1] != 0) {
+        fn_3_11F4B4(o->colorStep.v[0], o->texIndex == 1);
+        o->colorStep.v[1] = 0;
     }
 }
 
 // .text:0x00151BAC size:0x1C0 mapped:0x80790C40
-void fn_3_151BAC(u8* a, u8* o) {
+void fn_3_151BAC(Emitter* a, Particle* o) {
     s32 c;
     s32 delta;
     s32 half;
     f32 df;
     f32 r;
-    fn_8003403C(*(f32*)(o + 0x38), *(f32*)(o + 0x3C));
-    fn_80033CC8(o, *(void**)(a + 0x10));
-    if (o[0x4D] != 0) {
+    fn_8003403C(o->sizeX, o->sizeY);
+    fn_80033CC8(o, a->tex);
+    if (o->texIndex != 0) {
         r = fn_3_119854(2);
     } else {
         r = fn_3_119854(0);
     }
-    c = o[0x43];
-    if (*(s32*)(lbl_3_data_26BFC + 0xC) / *(s16*)(o + 0x4A) < 2) {
-        half = *(s32*)(lbl_3_data_26BFC + 0xC) / 2;
-        delta = *(s32*)(lbl_3_data_26BDC + 8) / half;
-        df = (f32)*(s32*)(lbl_3_data_26BFC + 4) * r / lbl_3_rodata_3930 / (f32)half;
+    c = o->color.c.a;
+    if (lbl_3_data_26BFC[3] / o->life < 2) {
+        half = lbl_3_data_26BFC[3] / 2;
+        delta = lbl_3_data_26BDC[2] / half;
+        df = (f32)lbl_3_data_26BFC[1] * r / lbl_3_rodata_3930 / (f32)half;
     } else {
-        half = *(s32*)(lbl_3_data_26BFC + 0xC) / 2;
-        delta = -*(s32*)(lbl_3_data_26BDC + 8) / half;
-        df = -((f32)*(s32*)(lbl_3_data_26BFC + 4) * r / lbl_3_rodata_3930) / (f32)half;
+        half = lbl_3_data_26BFC[3] / 2;
+        delta = -lbl_3_data_26BDC[2] / half;
+        df = -((f32)lbl_3_data_26BFC[1] * r / lbl_3_rodata_3930) / (f32)half;
     }
     c += delta;
     if (c < 0) {
@@ -2522,36 +2568,36 @@ void fn_3_151BAC(u8* a, u8* o) {
     } else if (c > 0xFF) {
         c = 0xFF;
     }
-    o[0x43] = c;
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x38) + df;
-    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38);
-    PSVECAdd((Vec*)(o + 4), (Vec*)(o + 0x10), (Vec*)(o + 4));
-    *(s16*)(o + 0x4A) -= 1;
+    o->color.c.a = c;
+    o->sizeX = o->sizeX + df;
+    o->sizeY = o->sizeX;
+    PSVECAdd(&o->pos, &o->u.phys.vel, &o->pos);
+    o->life -= 1;
 }
 
 // .text:0x00151D6C size:0x1C0 mapped:0x80790E00
-void fn_3_151D6C(u8* a, u8* o) {
+void fn_3_151D6C(Emitter* a, Particle* o) {
     s32 c;
     s32 delta;
     s32 half;
     f32 df;
     f32 r;
-    fn_8003403C(*(f32*)(o + 0x38), *(f32*)(o + 0x3C));
-    fn_80033CC8(o, *(void**)(a + 0x10));
-    if (o[0x4D] != 0) {
+    fn_8003403C(o->sizeX, o->sizeY);
+    fn_80033CC8(o, a->tex);
+    if (o->texIndex != 0) {
         r = fn_3_119854(2);
     } else {
         r = fn_3_119854(0);
     }
-    c = o[0x43];
-    if (*(s32*)(lbl_3_data_26BEC + 0xC) / *(s16*)(o + 0x4A) < 2) {
-        half = *(s32*)(lbl_3_data_26BEC + 0xC) / 2;
-        delta = *(s32*)(lbl_3_data_26BDC + 8) / half;
-        df = (f32)*(s32*)(lbl_3_data_26BEC + 4) * r / lbl_3_rodata_3930 / (f32)half;
+    c = o->color.c.a;
+    if (lbl_3_data_26BEC[3] / o->life < 2) {
+        half = lbl_3_data_26BEC[3] / 2;
+        delta = lbl_3_data_26BDC[2] / half;
+        df = (f32)lbl_3_data_26BEC[1] * r / lbl_3_rodata_3930 / (f32)half;
     } else {
-        half = *(s32*)(lbl_3_data_26BEC + 0xC) / 2;
-        delta = -*(s32*)(lbl_3_data_26BDC + 8) / half;
-        df = -((f32)*(s32*)(lbl_3_data_26BEC + 4) * r / lbl_3_rodata_3930) / (f32)half;
+        half = lbl_3_data_26BEC[3] / 2;
+        delta = -lbl_3_data_26BDC[2] / half;
+        df = -((f32)lbl_3_data_26BEC[1] * r / lbl_3_rodata_3930) / (f32)half;
     }
     c += delta;
     if (c < 0) {
@@ -2559,39 +2605,39 @@ void fn_3_151D6C(u8* a, u8* o) {
     } else if (c > 0xFF) {
         c = 0xFF;
     }
-    o[0x43] = c;
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x38) + df;
-    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38);
-    PSVECAdd((Vec*)(o + 4), (Vec*)(o + 0x10), (Vec*)(o + 4));
-    *(s16*)(o + 0x4A) -= 1;
+    o->color.c.a = c;
+    o->sizeX = o->sizeX + df;
+    o->sizeY = o->sizeX;
+    PSVECAdd(&o->pos, &o->u.phys.vel, &o->pos);
+    o->life -= 1;
 }
 
 // NONMATCHING 95%: 151D6C/151BAC/1519F8 inlined; the original reaches 26BDC/26BEC/26BFC/26C1C through one pooled lbl_3_data_266A8 base (this TU's .data), we use the separate symbols
 // .text:0x00151F2C size:0x5BC mapped:0x80790FC0
 #if NONMATCHING
-u32 fn_3_151F2C(u8* e) {
-    u8* p;
+u32 fn_3_151F2C(Emitter* e) {
+    Particle* p;
     s16 delay;
-    if (lbl_80366158[0x28] != 0) {
+    if (lbl_80366158._28 != 0) {
         return 0;
     }
     fn_80033620(e);
-    p = *(u8**)(e + 0xC);
-    if (p[0x4C] != 3) {
+    p = e->particles;
+    if (p->unk4C != 3) {
         GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     } else {
         GXSetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
     }
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
     do {
-        delay = *(s16*)(p + 0x48);
-        if (delay <= 0 && *(s16*)(p + 0x4A) != 0) {
-            if (p[0x4D] != 0) {
+        delay = p->delay;
+        if (delay <= 0 && p->life != 0) {
+            if (p->texIndex != 0) {
                 fn_3_119854(2);
             } else {
                 fn_3_119854(0);
             }
-            switch (p[0x4C]) {
+            switch (p->unk4C) {
             case 1:
                 fn_3_151D6C(e, p);
                 break;
@@ -2603,12 +2649,12 @@ u32 fn_3_151F2C(u8* e) {
                 break;
             }
         } else if (delay != 0) {
-            *(s16*)(p + 0x48) -= 1;
+            p->delay -= 1;
         }
-        if (*(s16*)(p + 0x4A) == 0 && (p[0x4C] == 1 || p[0x4C] == 2)) {
+        if (p->life == 0 && (p->unk4C == 1 || p->unk4C == 2)) {
             fn_3_1536A8(p, 2);
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
     return 0;
 }
@@ -2617,7 +2663,7 @@ u32 fn_3_151F2C(u8* e) {
 
 #pragma dont_inline off
 // .text:0x001524E8 size:0x2AC mapped:0x8079157C
-void fn_3_1524E8(u8* o, u8 flag) {
+void fn_3_1524E8(Particle* o, u8 flag) {
     Mtx m;
     Vec off;
     Vec dir;
@@ -2625,9 +2671,9 @@ void fn_3_1524E8(u8* o, u8 flag) {
     Vec up;
     f32 ang;
     f32 r;
-    u8* cam;
+    camera_803c639c_s* cam;
     cam = fn_80052734(fn_8005268C());
-    if (o[0x4D] != 0) {
+    if (o->texIndex != 0) {
         r = fn_3_119854(2);
     } else {
         r = fn_3_119854(0);
@@ -2641,7 +2687,7 @@ void fn_3_1524E8(u8* o, u8 flag) {
         off.y += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
         off.z += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
     }
-    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECSubtract(&cam->eye, &o->u.phys.accel, &dir);
     PSVECNormalize(&dir, &dir);
     ang = (f32)acos(PSVECDotProduct(&up, &dir));
     PSVECCrossProduct(&up, &dir, &axis);
@@ -2652,14 +2698,14 @@ void fn_3_1524E8(u8* o, u8 flag) {
     }
     PSMTXRotAxisRad(m, &axis, ang);
     PSMTXMultVec(m, &off, &off);
-    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
-    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
-    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
+    o->pos.x = o->u.phys.accel.x + off.x;
+    o->pos.y = o->u.phys.accel.y + off.y;
+    o->pos.z = o->u.phys.accel.z + off.z;
 }
 
 #pragma dont_inline off
 // .text:0x00152794 size:0x320 mapped:0x80791828
-void fn_3_152794(u8* o) {
+void fn_3_152794(Particle* o) {
     Mtx m;
     Vec up;
     Vec axis;
@@ -2667,9 +2713,9 @@ void fn_3_152794(u8* o) {
     Vec off;
     f32 ang;
     f32 r;
-    u8* cam;
+    camera_803c639c_s* cam;
     cam = fn_80052734(fn_8005268C());
-    if (o[0x4D] != 0) {
+    if (o->texIndex != 0) {
         r = fn_3_119854(2);
     } else {
         r = fn_3_119854(0);
@@ -2681,7 +2727,7 @@ void fn_3_152794(u8* o) {
     off.x += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
     off.y += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
     off.z += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
-    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECSubtract(&cam->eye, &o->u.phys.accel, &dir);
     PSVECNormalize(&dir, &dir);
     ang = (f32)acos(PSVECDotProduct(&up, &dir));
     PSVECCrossProduct(&up, &dir, &axis);
@@ -2692,14 +2738,14 @@ void fn_3_152794(u8* o) {
     }
     PSMTXRotAxisRad(m, &axis, ang);
     PSMTXMultVec(m, &off, &off);
-    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
-    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
-    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26C0C;
-    o[0x4C] = 3;
-    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26C0C + 0xC);
-    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
-    *(f32*)(o + 0x14) = -((f32)*(s32*)(lbl_3_data_26C0C + 8) / lbl_3_rodata_3930);
+    o->pos.x = o->u.phys.accel.x + off.x;
+    o->pos.y = o->u.phys.accel.y + off.y;
+    o->pos.z = o->u.phys.accel.z + off.z;
+    o->sizeX = o->sizeY = (f32)lbl_3_data_26C0C[0];
+    o->unk4C = 3;
+    o->life = lbl_3_data_26C0C[3];
+    o->u.phys.vel.x = o->u.phys.vel.z = lbl_3_rodata_3934[0];
+    o->u.phys.vel.y = -((f32)lbl_3_data_26C0C[2] / lbl_3_rodata_3930);
 }
 
 // NONMATCHING 94%: 1524E8 inlined; the original keeps tgt+4 in its own saved reg (one more stmw reg) and FPR numbering differs
@@ -2710,48 +2756,48 @@ void fn_3_152AB4(u8 flag, u8 idx) {
     Vec view;
     Vec diff;
     Vec v;
-    u8* p;
-    u8* e;
-    u8* cam;
+    Particle* p;
+    Emitter* e;
+    camera_803c639c_s* cam;
     f32* tgt;
     f32 ang;
     f32 k;
     s32 count;
     count = 0;
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 4) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame.GameMode_MiniGame == 4) {
         e = fn_800339F0(NULL, 0x1C);
         if (e != NULL) {
-            p = *(u8**)(e + 0xC);
-            tgt = (f32*)(lbl_3_data_26C1C + idx * 8);
+            p = e->particles;
+            tgt = &lbl_3_data_26C1C[2 * idx];
             do {
-                if (p[0x4F] == flag && *(s16*)(p + 0x4A) != 0) {
-                    *(s16*)(p + 0x48) = 0;
-                    p[0x4F] = 0xFF;
+                if (p->uvOrder == flag && p->life != 0) {
+                    p->delay = 0;
+                    p->uvOrder = 0xFF;
                     fn_3_1524E8(p, 1);
                     cam = fn_80052734(fn_8005268C());
-                    w.x = *(f32*)(p + 4);
-                    w.y = *(f32*)(p + 8);
-                    w.z = *(f32*)(p + 0xC);
-                    PSMTXMultVec((MtxPtr)(cam + 0x40), &w, &view);
+                    w.x = p->pos.x;
+                    w.y = p->pos.y;
+                    w.z = p->pos.z;
+                    PSMTXMultVec(cam->view, &w, &view);
                     v.z = v.y = v.x = lbl_3_rodata_3934[0];
-                    PSVECSubtract(&v, (Vec*)(cam + 0x70), &v);
-                    *(f32*)(p + 0x34) = PSVECMag(&v);
-                    PSMTX44MultVec((f32(*)[4])cam, &view, &view);
+                    PSVECSubtract(&v, &cam->eye, &v);
+                    p->u.phys.mass = PSVECMag(&v);
+                    PSMTX44MultVec(cam->proj, &view, &view);
                     view.z = lbl_3_rodata_3948;
-                    *(f32*)(p + 4) = view.x;
-                    *(f32*)(p + 8) = view.y;
-                    *(f32*)(p + 0xC) = view.z;
-                    *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)*(s32*)lbl_3_data_26C0C / lbl_3_rodata_3930;
-                    w.x = w.y = *(f32*)(p + 0x38);
-                    w.z = *(f32*)(p + 0x34);
-                    PSMTX44MultVec((f32(*)[4])cam, &w, &view);
-                    *(f32*)(p + 0x38) = view.x * (p[0x4D] != 0 ? lbl_3_rodata_3A08 : lbl_3_rodata_3978);
-                    *(f32*)(p + 0x3C) = view.y * (p[0x4D] != 0 ? lbl_3_rodata_3A08 : lbl_3_rodata_3978);
-                    p[0x4C] = 3;
-                    *(s16*)(p + 0x4A) = *(s32*)(lbl_3_data_26C0C + 0xC);
+                    p->pos.x = view.x;
+                    p->pos.y = view.y;
+                    p->pos.z = view.z;
+                    p->sizeX = p->sizeY = (f32)lbl_3_data_26C0C[0] / lbl_3_rodata_3930;
+                    w.x = w.y = p->sizeX;
+                    w.z = p->u.phys.mass;
+                    PSMTX44MultVec(cam->proj, &w, &view);
+                    p->sizeX = view.x * (p->texIndex != 0 ? lbl_3_rodata_3A08 : lbl_3_rodata_3978);
+                    p->sizeY = view.y * (p->texIndex != 0 ? lbl_3_rodata_3A08 : lbl_3_rodata_3978);
+                    p->unk4C = 3;
+                    p->life = lbl_3_data_26C0C[3];
                     ang = lbl_3_rodata_39B8 * (f32)(lbl_3_rodata_3A10 * (lbl_3_rodata_3990 * ((f64)((f32)rand() / lbl_3_rodata_3970) - lbl_3_rodata_3968)));
-                    diff.x = tgt[0] - *(f32*)(p + 4);
-                    diff.y = tgt[1] - *(f32*)(p + 8);
+                    diff.x = tgt[0] - p->pos.x;
+                    diff.y = tgt[1] - p->pos.y;
                     diff.z = lbl_3_rodata_3934[0];
                     if (PSVECMag(&diff) >= lbl_3_rodata_3978) {
                         k = lbl_3_rodata_392C;
@@ -2764,18 +2810,18 @@ void fn_3_152AB4(u8 flag, u8 idx) {
                     v.x = diff.x * (f32)cos(ang) + -diff.y * (f32)sin(ang);
                     v.y = diff.x * (f32)sin(ang) + diff.y * (f32)cos(ang);
                     v.z = lbl_3_rodata_3934[0];
-                    PSVECScale(&v, (f32)*(s32*)(lbl_3_data_26C0C + 8) / lbl_3_rodata_3930 * k, &v);
-                    v.z = *(f32*)(p + 0x34);
-                    PSMTX44MultVec((f32(*)[4])cam, &v, &v);
+                    PSVECScale(&v, (f32)lbl_3_data_26C0C[2] / lbl_3_rodata_3930 * k, &v);
+                    v.z = p->u.phys.mass;
+                    PSMTX44MultVec(cam->proj, &v, &v);
                     v.z = lbl_3_rodata_3934[0];
-                    *(f32*)(p + 0x10) = v.x;
-                    *(f32*)(p + 0x14) = v.y;
-                    *(f32*)(p + 0x18) = v.z;
-                    p[0x43] = 0xFF;
-                    p[0x44] = idx;
-                    p[0x45] = count++ == 0;
+                    p->u.phys.vel.x = v.x;
+                    p->u.phys.vel.y = v.y;
+                    p->u.phys.vel.z = v.z;
+                    p->color.c.a = 0xFF;
+                    p->colorStep.v[0] = idx;
+                    p->colorStep.v[1] = count++ == 0;
                 }
-                p = *(u8**)p;
+                p = p->next;
             } while (p != NULL);
         }
     }
@@ -2783,7 +2829,7 @@ void fn_3_152AB4(u8 flag, u8 idx) {
 #endif
 
 // .text:0x001531A4 size:0x31C mapped:0x80792238
-void fn_3_1531A4(u8* o) {
+void fn_3_1531A4(Particle* o) {
     Mtx m;
     Vec up;
     Vec axis;
@@ -2791,9 +2837,9 @@ void fn_3_1531A4(u8* o) {
     Vec off;
     f32 ang;
     f32 r;
-    u8* cam;
+    camera_803c639c_s* cam;
     cam = fn_80052734(fn_8005268C());
-    if (o[0x4D] != 0) {
+    if (o->texIndex != 0) {
         r = fn_3_119854(2);
     } else {
         r = fn_3_119854(0);
@@ -2805,7 +2851,7 @@ void fn_3_1531A4(u8* o) {
     off.x += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
     off.y += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
     off.z += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
-    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECSubtract(&cam->eye, &o->u.phys.accel, &dir);
     PSVECNormalize(&dir, &dir);
     ang = (f32)acos(PSVECDotProduct(&up, &dir));
     PSVECCrossProduct(&up, &dir, &axis);
@@ -2816,18 +2862,18 @@ void fn_3_1531A4(u8* o) {
     }
     PSMTXRotAxisRad(m, &axis, ang);
     PSMTXMultVec(m, &off, &off);
-    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
-    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
-    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26BFC;
-    o[0x4C] = 2;
-    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BFC + 0xC);
-    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
-    *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BFC + 8) / lbl_3_rodata_3930;
+    o->pos.x = o->u.phys.accel.x + off.x;
+    o->pos.y = o->u.phys.accel.y + off.y;
+    o->pos.z = o->u.phys.accel.z + off.z;
+    o->sizeX = o->sizeY = (f32)lbl_3_data_26BFC[0];
+    o->unk4C = 2;
+    o->life = lbl_3_data_26BFC[3];
+    o->u.phys.vel.x = o->u.phys.vel.z = lbl_3_rodata_3934[0];
+    o->u.phys.vel.y = (f32)lbl_3_data_26BFC[2] / lbl_3_rodata_3930;
 }
 
 // .text:0x001534C0 size:0x1E8 mapped:0x80792554
-void fn_3_1534C0(u8* o) {
+void fn_3_1534C0(Particle* o) {
     Mtx m;
     Vec up;
     Vec axis;
@@ -2835,9 +2881,9 @@ void fn_3_1534C0(u8* o) {
     Vec off;
     f32 ang;
     f32 r;
-    u8* cam;
+    camera_803c639c_s* cam;
     cam = fn_80052734(fn_8005268C());
-    if (o[0x4D] != 0) {
+    if (o->texIndex != 0) {
         r = fn_3_119854(2);
     } else {
         r = fn_3_119854(0);
@@ -2846,7 +2892,7 @@ void fn_3_1534C0(u8* o) {
     off.x = lbl_3_rodata_3934[0];
     off.y = lbl_3_rodata_3934[0];
     off.z = lbl_3_rodata_3A04 * r;
-    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECSubtract(&cam->eye, &o->u.phys.accel, &dir);
     PSVECNormalize(&dir, &dir);
     ang = (f32)acos(PSVECDotProduct(&up, &dir));
     PSVECCrossProduct(&up, &dir, &axis);
@@ -2857,18 +2903,18 @@ void fn_3_1534C0(u8* o) {
     }
     PSMTXRotAxisRad(m, &axis, ang);
     PSMTXMultVec(m, &off, &off);
-    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
-    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
-    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26BEC;
-    o[0x4C] = 1;
-    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BEC + 0xC);
-    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
-    *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BEC + 8) / lbl_3_rodata_3930;
+    o->pos.x = o->u.phys.accel.x + off.x;
+    o->pos.y = o->u.phys.accel.y + off.y;
+    o->pos.z = o->u.phys.accel.z + off.z;
+    o->sizeX = o->sizeY = (f32)lbl_3_data_26BEC[0];
+    o->unk4C = 1;
+    o->life = lbl_3_data_26BEC[3];
+    o->u.phys.vel.x = o->u.phys.vel.z = lbl_3_rodata_3934[0];
+    o->u.phys.vel.y = (f32)lbl_3_data_26BEC[2] / lbl_3_rodata_3930;
 }
 
 #if NONMATCHING
-static inline void Inl1534C0(u8* o) {
+static inline void Inl1534C0(Particle* o) {
     Mtx m;
     Vec up;
     Vec axis;
@@ -2876,9 +2922,9 @@ static inline void Inl1534C0(u8* o) {
     Vec off;
     f32 ang;
     f32 r;
-    u8* cam;
+    camera_803c639c_s* cam;
     cam = fn_80052734(fn_8005268C());
-    if (o[0x4D] != 0) {
+    if (o->texIndex != 0) {
         r = fn_3_119854(2);
     } else {
         r = fn_3_119854(0);
@@ -2887,7 +2933,7 @@ static inline void Inl1534C0(u8* o) {
     off.x = lbl_3_rodata_3934[0];
     off.y = lbl_3_rodata_3934[0];
     off.z = lbl_3_rodata_3A04 * r;
-    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECSubtract(&cam->eye, &o->u.phys.accel, &dir);
     PSVECNormalize(&dir, &dir);
     ang = (f32)acos(PSVECDotProduct(&up, &dir));
     PSVECCrossProduct(&up, &dir, &axis);
@@ -2898,19 +2944,19 @@ static inline void Inl1534C0(u8* o) {
     }
     PSMTXRotAxisRad(m, &axis, ang);
     PSMTXMultVec(m, &off, &off);
-    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
-    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
-    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26BEC;
-    o[0x4C] = 1;
-    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BEC + 0xC);
-    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
-    *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BEC + 8) / lbl_3_rodata_3930;
+    o->pos.x = o->u.phys.accel.x + off.x;
+    o->pos.y = o->u.phys.accel.y + off.y;
+    o->pos.z = o->u.phys.accel.z + off.z;
+    o->sizeX = o->sizeY = (f32)lbl_3_data_26BEC[0];
+    o->unk4C = 1;
+    o->life = lbl_3_data_26BEC[3];
+    o->u.phys.vel.x = o->u.phys.vel.z = lbl_3_rodata_3934[0];
+    o->u.phys.vel.y = (f32)lbl_3_data_26BEC[2] / lbl_3_rodata_3930;
 }
 #endif
 
 #if NONMATCHING
-static inline void Inl1531A4(u8* o) {
+static inline void Inl1531A4(Particle* o) {
     Mtx m;
     Vec up;
     Vec axis;
@@ -2918,9 +2964,9 @@ static inline void Inl1531A4(u8* o) {
     Vec off;
     f32 ang;
     f32 r;
-    u8* cam;
+    camera_803c639c_s* cam;
     cam = fn_80052734(fn_8005268C());
-    if (o[0x4D] != 0) {
+    if (o->texIndex != 0) {
         r = fn_3_119854(2);
     } else {
         r = fn_3_119854(0);
@@ -2932,7 +2978,7 @@ static inline void Inl1531A4(u8* o) {
     off.x += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
     off.y += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
     off.z += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
-    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECSubtract(&cam->eye, &o->u.phys.accel, &dir);
     PSVECNormalize(&dir, &dir);
     ang = (f32)acos(PSVECDotProduct(&up, &dir));
     PSVECCrossProduct(&up, &dir, &axis);
@@ -2943,19 +2989,19 @@ static inline void Inl1531A4(u8* o) {
     }
     PSMTXRotAxisRad(m, &axis, ang);
     PSMTXMultVec(m, &off, &off);
-    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
-    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
-    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26BFC;
-    o[0x4C] = 2;
-    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BFC + 0xC);
-    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
-    *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BFC + 8) / lbl_3_rodata_3930;
+    o->pos.x = o->u.phys.accel.x + off.x;
+    o->pos.y = o->u.phys.accel.y + off.y;
+    o->pos.z = o->u.phys.accel.z + off.z;
+    o->sizeX = o->sizeY = (f32)lbl_3_data_26BFC[0];
+    o->unk4C = 2;
+    o->life = lbl_3_data_26BFC[3];
+    o->u.phys.vel.x = o->u.phys.vel.z = lbl_3_rodata_3934[0];
+    o->u.phys.vel.y = (f32)lbl_3_data_26BFC[2] / lbl_3_rodata_3930;
 }
 #endif
 
 #if NONMATCHING
-static inline void Inl152794(u8* o) {
+static inline void Inl152794(Particle* o) {
     Mtx m;
     Vec up;
     Vec axis;
@@ -2963,9 +3009,9 @@ static inline void Inl152794(u8* o) {
     Vec off;
     f32 ang;
     f32 r;
-    u8* cam;
+    camera_803c639c_s* cam;
     cam = fn_80052734(fn_8005268C());
-    if (o[0x4D] != 0) {
+    if (o->texIndex != 0) {
         r = fn_3_119854(2);
     } else {
         r = fn_3_119854(0);
@@ -2977,7 +3023,7 @@ static inline void Inl152794(u8* o) {
     off.x += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
     off.y += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
     off.z += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
-    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECSubtract(&cam->eye, &o->u.phys.accel, &dir);
     PSVECNormalize(&dir, &dir);
     ang = (f32)acos(PSVECDotProduct(&up, &dir));
     PSVECCrossProduct(&up, &dir, &axis);
@@ -2988,14 +3034,14 @@ static inline void Inl152794(u8* o) {
     }
     PSMTXRotAxisRad(m, &axis, ang);
     PSMTXMultVec(m, &off, &off);
-    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
-    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
-    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
-    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26C0C;
-    o[0x4C] = 3;
-    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26C0C + 0xC);
-    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
-    *(f32*)(o + 0x14) = -((f32)*(s32*)(lbl_3_data_26C0C + 8) / lbl_3_rodata_3930);
+    o->pos.x = o->u.phys.accel.x + off.x;
+    o->pos.y = o->u.phys.accel.y + off.y;
+    o->pos.z = o->u.phys.accel.z + off.z;
+    o->sizeX = o->sizeY = (f32)lbl_3_data_26C0C[0];
+    o->unk4C = 3;
+    o->life = lbl_3_data_26C0C[3];
+    o->u.phys.vel.x = o->u.phys.vel.z = lbl_3_rodata_3934[0];
+    o->u.phys.vel.y = -((f32)lbl_3_data_26C0C[2] / lbl_3_rodata_3930);
 }
 #endif
 
@@ -3004,7 +3050,7 @@ static inline void Inl152794(u8* o) {
 // The rest is the original reaching 26BEC/26BFC/26C0C through the pooled lbl_3_data_266A8 base
 // .text:0x001536A8 size:0x7E4 mapped:0x8079273C
 #if NONMATCHING
-void fn_3_1536A8(u8* obj, u8 mode) {
+void fn_3_1536A8(Particle* obj, u8 mode) {
     switch (mode) {
     case 1:
         Inl1534C0(obj);
@@ -3021,83 +3067,83 @@ void fn_3_1536A8(u8* obj, u8 mode) {
 #pragma dont_inline on
 
 // .text:0x00153E8C size:0x100 mapped:0x80792F20
-void fn_3_153E8C(u8* obj, f32* pos, u8 b, u8 c, u8 d) {
+void fn_3_153E8C(Particle* obj, f32* pos, u8 b, u8 c, u8 d) {
     f32 r;
-    *(s16*)(obj + 0x48) = (d != 0) * *(s32*)(lbl_3_data_26BEC + 0xC) + (s32)(d * *(s32*)(lbl_3_data_26BDC + 0xC)) / *(s32*)lbl_3_data_26BDC;
-    obj[0x4D] = c == 4;
-    obj[0x4E] = 0;
-    obj[0x4F] = b;
-    obj[0x42] = 0xFF;
-    obj[0x41] = 0xFF;
-    obj[0x40] = 0xFF;
-    obj[0x43] = *(s32*)(lbl_3_data_26BDC + 4);
-    *(f32*)(obj + 0x1C) = pos[0];
-    if (obj[0x4D] != 0) {
+    obj->delay = (d != 0) * lbl_3_data_26BEC[3] + (s32)(d * lbl_3_data_26BDC[3]) / lbl_3_data_26BDC[0];
+    obj->texIndex = c == 4;
+    obj->uvFrame = 0;
+    obj->uvOrder = b;
+    obj->color.c.b = 0xFF;
+    obj->color.c.g = 0xFF;
+    obj->color.c.r = 0xFF;
+    obj->color.c.a = lbl_3_data_26BDC[1];
+    obj->u.phys.accel.x = pos[0];
+    if (obj->texIndex != 0) {
         r = fn_3_119854(2);
     } else {
         r = fn_3_119854(0);
     }
-    *(f32*)(obj + 0x20) = -pos[1] - lbl_3_rodata_3A18 * r;
-    *(f32*)(obj + 0x24) = pos[2];
-    obj[0x45] = 0;
-    obj[0x44] = 0;
+    obj->u.phys.accel.y = -pos[1] - lbl_3_rodata_3A18 * r;
+    obj->u.phys.accel.z = pos[2];
+    obj->colorStep.v[1] = 0;
+    obj->colorStep.v[0] = 0;
 }
 
 // .text:0x00153F8C size:0x158 mapped:0x80793020
-void fn_3_153F8C(void* h, u32 a, u32 b, Vec* c) {
+void fn_3_153F8C(Emitter* h, u32 a, u32 b, Vec* c) {
     f32* pos;
     f32 r;
     u8 flag;
-    u8* q;
+    Particle* q;
     u8 i;
     i = 0;
-    q = *(u8**)((u8*)h + 0xC);
+    q = h->particles;
     pos = (f32*)c;
-    *(s32*)((u8*)h + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    h->tex = lbl_3_common_bss_32724.textures[2];
     do {
-        if (*(s16*)(q + 0x4A) == 0) {
+        if (q->life == 0) {
             flag = i != 0;
-            *(s16*)(q + 0x48) = flag * *(s32*)(lbl_3_data_26BEC + 0xC) + (s32)(i * *(s32*)(lbl_3_data_26BDC + 0xC)) / *(s32*)lbl_3_data_26BDC;
-            q[0x4D] = (u8)b == 4;
-            q[0x4E] = 0;
-            q[0x4F] = a;
-            q[0x42] = 0xFF;
-            q[0x41] = 0xFF;
-            q[0x40] = 0xFF;
-            q[0x43] = *(s32*)(lbl_3_data_26BDC + 4);
-            *(f32*)(q + 0x1C) = pos[0];
-            if (q[0x4D] != 0) {
+            q->delay = flag * lbl_3_data_26BEC[3] + (s32)(i * lbl_3_data_26BDC[3]) / lbl_3_data_26BDC[0];
+            q->texIndex = (u8)b == 4;
+            q->uvFrame = 0;
+            q->uvOrder = a;
+            q->color.c.b = 0xFF;
+            q->color.c.g = 0xFF;
+            q->color.c.r = 0xFF;
+            q->color.c.a = lbl_3_data_26BDC[1];
+            q->u.phys.accel.x = pos[0];
+            if (q->texIndex != 0) {
                 r = fn_3_119854(2);
             } else {
                 r = fn_3_119854(0);
             }
-            *(f32*)(q + 0x20) = -pos[1] - lbl_3_rodata_3A18 * r;
-            *(f32*)(q + 0x24) = pos[2];
-            q[0x45] = 0;
-            q[0x44] = 0;
+            q->u.phys.accel.y = -pos[1] - lbl_3_rodata_3A18 * r;
+            q->u.phys.accel.z = pos[2];
+            q->colorStep.v[1] = 0;
+            q->colorStep.v[0] = 0;
             fn_3_1536A8(q, flag + 1);
             i++;
         }
-        q = *(u8**)q;
-    } while (q != NULL && i < *(s32*)lbl_3_data_26BDC);
+        q = q->next;
+    } while (q != NULL && i < lbl_3_data_26BDC[0]);
 }
 
 // .text:0x001540E4 size:0xE0 mapped:0x80793178
 void fn_3_1540E4(u32 a, u32 b, Vec* c) {
-    u8* p;
-    u8* h = fn_800339F0(0, 0x1C);
+    Particle* p;
+    Emitter* h = fn_800339F0(0, 0x1C);
     if (h != NULL) {
         fn_3_153F8C(h, a, b, c);
         return;
     }
-    h = fn_80033A24(fn_3_151F2C, 0x80, 0, *(int*)lbl_3_data_26BDC * 0xF, 1, 0x1C);
+    h = fn_80033A24((EmitterUpdateFn)fn_3_151F2C, 0x80, 0, lbl_3_data_26BDC[0] * 0xF, 1, 0x1C);
     if (h != NULL) {
-        p = *(u8**)(h + 0xC);
+        p = h->particles;
         do {
-            *(s16*)(p + 0x4A) = 0;
-            p[0x4C] = 0;
-            p[0x4F] = 0xFF;
-            p = *(u8**)p;
+            p->life = 0;
+            p->unk4C = 0;
+            p->uvOrder = 0xFF;
+            p = p->next;
         } while (p != NULL);
         fn_3_153F8C(h, a, b, c);
         memset(lbl_3_bss_B894, 0, 0xF);
@@ -3106,7 +3152,7 @@ void fn_3_1540E4(u32 a, u32 b, Vec* c) {
 
 // .text:0x001541C4 size:0x50 mapped:0x80793258
 void fn_3_1541C4(u32 a, u32 b, Vec* c) {
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 4 && c != NULL) {
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame.GameMode_MiniGame == 4 && c != NULL) {
         fn_3_1540E4(a, b, c);
     }
 }
@@ -3119,29 +3165,29 @@ void fn_3_154214(void) {
 // .text:0x00154238 size:0xBC mapped:0x807932CC
 
 void fn_3_154238(s16 id) {
-    u8* p;
-    u8** link;
-    u8* first;
-    u8* last;
-    H154238* h = fn_800339F0(0, 0x27);
+    Particle* p;
+    Particle** link;
+    Particle* first;
+    Particle* last;
+    Emitter* h = fn_800339F0(0, 0x27);
     if (h != NULL) {
-        p = h->head;
-        link = &h->head;
+        p = h->particles;
+        link = &h->particles;
         last = NULL;
         first = NULL;
         do {
-            if (*(s16*)(p + 0x18) == id) {
-                *link = *(u8**)p;
+            if (p->u.follow.id == id) {
+                *link = p->next;
                 if (last != NULL) {
-                    *(u8**)last = p;
+                    last->next = p;
                 } else {
                     first = p;
                 }
-                *(u8**)p = NULL;
+                p->next = NULL;
                 last = p;
-                h->cnt--;
+                h->count--;
             } else {
-                link = (u8**)p;
+                link = &p->next;
             }
             p = *link;
         } while (p != NULL);
@@ -3154,20 +3200,20 @@ void fn_3_154238(s16 id) {
 // NONMATCHING 93%: respawn block inlined twice (as in the original); remaining diffs are scheduling of the list-head store and the pooled data base
 // .text:0x001542F4 size:0x6FC mapped:0x80793388
 #if NONMATCHING
-static inline void respawn_1542F4(u8* o) {
+static inline void respawn_1542F4(Particle* o) {
     struct { Control c; u32 pad[2]; } cc;
     Mtx m;
     Vec dir;
     Vec v;
     f32* pos;
     f32* rot;
-    rot = *(f32**)(o + 0x14);
-    pos = *(f32**)(o + 0x10);
-    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+    rot = o->u.follow.rot;
+    pos = o->u.follow.pos;
+    o->life = lbl_3_data_26BC0[6];
     cc.c.type = 0;
     CTRLSetRotation(&cc.c, lbl_3_rodata_39AC * rot[0], lbl_3_rodata_39AC * rot[1], lbl_3_rodata_39AC * rot[2]);
     CTRLBuildMatrix(&cc.c, m);
-    if (g_Minigame[0x1A2A] == 1) {
+    if (g_Minigame.GameMode_MiniGame == 1) {
         dir = lbl_3_data_26BB4;
     } else {
         PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
@@ -3179,90 +3225,90 @@ static inline void respawn_1542F4(u8* o) {
     v.x = v.x + pos[0];
     v.y = v.y - __fabs(pos[1]);
     v.z = v.z + pos[2];
-    *(f32*)(o + 4) = v.x;
-    *(f32*)(o + 8) = v.y;
-    *(f32*)(o + 0xC) = v.z;
-    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
-    o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+    o->pos.x = v.x;
+    o->pos.y = v.y;
+    o->pos.z = v.z;
+    o->sizeY = o->sizeX = (f32)lbl_3_data_26BC0[2];
+    o->color.c.a = lbl_3_data_26BC0[4];
 }
 
-u32 fn_3_1542F4(u8* e) {
-    u8* p;
+u32 fn_3_1542F4(Emitter* e) {
+    Particle* p;
     s32* d;
     s32 a;
-    if (lbl_80366158[0x28] != 0) {
+    if (lbl_80366158._28 != 0) {
         return 0;
     }
-    if (*(u8**)(e + 0xC) == NULL) {
+    if (e->particles == NULL) {
         return 0;
     }
-    p = fn_80031F34(*(void**)(e + 0xC), ((H154238*)e)->cnt);
-    *(u8**)(e + 0xC) = p;
+    p = fn_80031F34(e->particles, e->count);
+    e->particles = p;
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
     d = (s32*)lbl_3_data_26BC0;
     do {
-        if (*(s16*)(p + 0x48) != 0) {
-            *(s16*)(p + 0x48) -= 1;
-            if (*(s16*)(p + 0x48) == 0) {
+        if (p->delay != 0) {
+            p->delay -= 1;
+            if (p->delay == 0) {
                 respawn_1542F4(p);
             }
-        } else if (*(s16*)(p + 0x4A) != 0) {
-            fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
-            fn_80033CC8(p, *(void**)(e + 0x10));
-            if (d[6] / *(s16*)(p + 0x4A) < 2) {
-                a = p[0x43] + d[5] / (d[6] / 2);
+        } else if (p->life != 0) {
+            fn_8003403C(p->sizeX, p->sizeY);
+            fn_80033CC8(p, e->tex);
+            if (d[6] / p->life < 2) {
+                a = p->color.c.a + d[5] / (d[6] / 2);
                 if (a > d[5]) {
                     a = d[5];
                 }
-                p[0x43] = a;
-                *(f32*)(p + 0x38) = lbl_3_rodata_394C * ((f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2)) + *(f32*)(p + 0x38);
-                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+                p->color.c.a = a;
+                p->sizeX = lbl_3_rodata_394C * ((f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2)) + p->sizeX;
+                p->sizeY = p->sizeX;
             } else {
-                a = p[0x43] - d[5] / (d[6] / 2);
+                a = p->color.c.a - d[5] / (d[6] / 2);
                 if (a < d[4]) {
                     a = d[4];
                 }
-                p[0x43] = a;
-                *(f32*)(p + 0x38) = *(f32*)(p + 0x38) - lbl_3_rodata_394C * ((f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2));
-                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+                p->color.c.a = a;
+                p->sizeX = p->sizeX - lbl_3_rodata_394C * ((f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2));
+                p->sizeY = p->sizeX;
             }
-            p[0x40] = p[0x41] = p[0x42] = (s32)(lbl_3_rodata_3A1C * ((f32)p[0x43] / lbl_3_rodata_3A1C));
-            *(s16*)(p + 0x4A) -= 1;
+            p->color.c.r = p->color.c.g = p->color.c.b = (s32)(lbl_3_rodata_3A1C * ((f32)p->color.c.a / lbl_3_rodata_3A1C));
+            p->life -= 1;
         }
-        if (*(s16*)(p + 0x4A) == 0 && *(s16*)(p + 0x48) <= 0) {
+        if (p->life == 0 && p->delay <= 0) {
             respawn_1542F4(p);
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
     return 0;
 }
 #endif
 
 // .text:0x001549F0 size:0x28C mapped:0x80793A84
-void fn_3_1549F0(u8* a, s16 b, f32* pos, f32* rot) {
+void fn_3_1549F0(Emitter* a, s16 b, f32* pos, f32* rot) {
     struct { Control c; u32 pad[2]; } cc;
     Mtx m;
     Vec dir;
     f64 t;
     Vec v;
-    u8* o;
+    Particle* o;
     u8 i = 0;
-    o = *(u8**)(a + 0xC);
-    *(s32*)(a + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    o = a->particles;
+    a->tex = lbl_3_common_bss_32724.textures[2];
     do {
-        *(s16*)(o + 0x18) = b;
-        *(f32**)(o + 0x10) = pos;
-        *(f32**)(o + 0x14) = rot;
-        *(s16*)(o + 0x48) = i++;
-        o[0x4D] = *(s32*)lbl_3_data_26BC0;
-        o[0x4E] = 0;
-        if (*(s16*)(o + 0x48) == 0) {
-            *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+        o->u.follow.id = b;
+        o->u.follow.pos = pos;
+        o->u.follow.rot = rot;
+        o->delay = i++;
+        o->texIndex = lbl_3_data_26BC0[0];
+        o->uvFrame = 0;
+        if (o->delay == 0) {
+            o->life = lbl_3_data_26BC0[6];
             cc.c.type = 0;
             CTRLSetRotation(&cc.c, rot[0], rot[1], rot[2]);
             CTRLBuildMatrix(&cc.c, m);
-            if (g_Minigame[0x1A2A] == 1) {
+            if (g_Minigame.GameMode_MiniGame == 1) {
                 dir = lbl_3_data_26BB4;
             } else {
                 PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
@@ -3275,41 +3321,41 @@ void fn_3_1549F0(u8* a, s16 b, f32* pos, f32* rot) {
             t = __fabs(pos[1]);
             v.y = v.y - t;
             v.z = v.z + pos[2];
-            *(f32*)(o + 4) = v.x;
-            *(f32*)(o + 8) = v.y;
-            *(f32*)(o + 0xC) = v.z;
-            *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
-            o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+            o->pos.x = v.x;
+            o->pos.y = v.y;
+            o->pos.z = v.z;
+            o->sizeY = o->sizeX = (f32)lbl_3_data_26BC0[2];
+            o->color.c.a = lbl_3_data_26BC0[4];
         }
-        o = *(u8**)o;
+        o = o->next;
     } while (o != NULL);
 }
 
 // fn_3_1549F0's body for fn_3_154C7C, which inlines it twice (CW won't auto-inline the real one; dir/v are declared
 // in the other order here, which the inlined copies' stack layout needs)
-static inline void Inl1549F0(u8* a, s16 b, f32* pos, f32* rot) {
+static inline void Inl1549F0(Emitter* a, s16 b, f32* pos, f32* rot) {
     struct { Control c; u32 pad[2]; } cc;
     Mtx m;
     Vec v;
     f64 t;
     Vec dir;
-    u8* o;
+    Particle* o;
     u8 i = 0;
-    o = *(u8**)(a + 0xC);
-    *(s32*)(a + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    o = a->particles;
+    a->tex = lbl_3_common_bss_32724.textures[2];
     do {
-        *(s16*)(o + 0x18) = b;
-        *(f32**)(o + 0x10) = pos;
-        *(f32**)(o + 0x14) = rot;
-        *(s16*)(o + 0x48) = i++;
-        o[0x4D] = *(s32*)lbl_3_data_26BC0;
-        o[0x4E] = 0;
-        if (*(s16*)(o + 0x48) == 0) {
-            *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+        o->u.follow.id = b;
+        o->u.follow.pos = pos;
+        o->u.follow.rot = rot;
+        o->delay = i++;
+        o->texIndex = lbl_3_data_26BC0[0];
+        o->uvFrame = 0;
+        if (o->delay == 0) {
+            o->life = lbl_3_data_26BC0[6];
             cc.c.type = 0;
             CTRLSetRotation(&cc.c, rot[0], rot[1], rot[2]);
             CTRLBuildMatrix(&cc.c, m);
-            if (g_Minigame[0x1A2A] == 1) {
+            if (g_Minigame.GameMode_MiniGame == 1) {
                 dir = lbl_3_data_26BB4;
             } else {
                 PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
@@ -3322,39 +3368,39 @@ static inline void Inl1549F0(u8* a, s16 b, f32* pos, f32* rot) {
             t = __fabs(pos[1]);
             v.y = v.y - t;
             v.z = v.z + pos[2];
-            *(f32*)(o + 4) = v.x;
-            *(f32*)(o + 8) = v.y;
-            *(f32*)(o + 0xC) = v.z;
-            *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
-            o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+            o->pos.x = v.x;
+            o->pos.y = v.y;
+            o->pos.z = v.z;
+            o->sizeY = o->sizeX = (f32)lbl_3_data_26BC0[2];
+            o->color.c.a = lbl_3_data_26BC0[4];
         }
-        o = *(u8**)o;
+        o = o->next;
     } while (o != NULL);
 }
 
 void fn_3_154C7C(s16 id, f32* pos, f32* rot) {
-    u8 buf[0x5C];
-    u8* h;
-    u8* n;
-    u8* p;
+    Emitter buf; // only its particle list is filled in
+    Emitter* h;
+    Emitter* n;
+    Particle* p;
     h = fn_800339F0(NULL, 0x27);
     if (h != NULL) {
-        n = fn_800337CC(buf, *(s32*)(lbl_3_data_26BC0 + 4), 1);
+        n = fn_800337CC(&buf, lbl_3_data_26BC0[1], 1);
         if (n != NULL) {
             Inl1549F0(n, id, pos, rot);
-            p = *(u8**)(h + 0xC);
+            p = h->particles;
             if (p != NULL) {
-                while (*(u8**)p != NULL) {
-                    p = *(u8**)p;
+                while (p->next != NULL) {
+                    p = p->next;
                 }
-                *(u8**)p = *(u8**)(n + 0xC);
+                p->next = n->particles;
             } else {
-                *(u8**)(h + 0xC) = *(u8**)(n + 0xC);
+                h->particles = n->particles;
             }
-            ((H154238*)h)->cnt += ((H154238*)n)->cnt;
+            h->count += n->count;
         }
     } else {
-        n = fn_80033A24(fn_3_1542F4, 0x80, 0, *(s32*)(lbl_3_data_26BC0 + 4), 1, 0x27);
+        n = fn_80033A24((EmitterUpdateFn)fn_3_1542F4, 0x80, 0, lbl_3_data_26BC0[1], 1, 0x27);
         if (n != NULL) {
             Inl1549F0(n, id, pos, rot);
         }
@@ -3382,7 +3428,7 @@ void fn_3_155288(void) {
 // NONMATCHING 99%: respawn (155C28's spawn block) inlined twice; register numbering of the data/g_Ball bases differs
 // .text:0x001552AC size:0x738 mapped:0x80794340
 #if NONMATCHING
-static inline void respawn_1552AC(u8* o) {
+static inline void respawn_1552AC(Particle* o) {
     struct { Control c; u32 pad[2]; } cc;
     Mtx m;
     Vec dir;
@@ -3391,14 +3437,14 @@ static inline void respawn_1552AC(u8* o) {
     f32 ry;
     f32 rz;
     f64 t;
-    rx = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA6));
-    ry = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA8));
-    rz = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BAA));
-    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+    rx = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.yaw);
+    ry = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.pitch);
+    rz = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.roll);
+    o->life = lbl_3_data_26BC0[6];
     cc.c.type = 0;
     CTRLSetRotation(&cc.c, rx, ry, rz);
     CTRLBuildMatrix(&cc.c, m);
-    if (g_Minigame[0x1A2A] == 1) {
+    if (g_Minigame.GameMode_MiniGame == 1) {
         dir = lbl_3_data_26BB4;
     } else {
         PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
@@ -3407,79 +3453,79 @@ static inline void respawn_1552AC(u8* o) {
     v.y = dir.y;
     v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
     PSMTXMultVec(m, &v, &v);
-    v.x = v.x + *(f32*)g_Ball;
-    t = __fabs(*(f32*)(g_Ball + 4));
+    v.x = v.x + g_Ball.AtBat_Contact_BallPos.x;
+    t = __fabs(g_Ball.AtBat_Contact_BallPos.y);
     v.y = v.y - t;
-    v.z = v.z + *(f32*)(g_Ball + 8);
-    *(f32*)(o + 4) = v.x;
-    *(f32*)(o + 8) = v.y;
-    *(f32*)(o + 0xC) = v.z;
-    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
-    o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+    v.z = v.z + g_Ball.AtBat_Contact_BallPos.z;
+    o->pos.x = v.x;
+    o->pos.y = v.y;
+    o->pos.z = v.z;
+    o->sizeY = o->sizeX = (f32)lbl_3_data_26BC0[2];
+    o->color.c.a = lbl_3_data_26BC0[4];
 }
 
-u32 fn_3_1552AC(u8* e) {
-    u8* p;
+u32 fn_3_1552AC(Emitter* e) {
+    Particle* p;
     s32* d;
     s32 a;
-    if (lbl_80366158[0x28] != 0) {
+    if (lbl_80366158._28 != 0) {
         return 0;
     }
     fn_80033620(e);
-    p = *(u8**)(e + 0xC);
+    p = e->particles;
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
     d = (s32*)lbl_3_data_26BC0;
     do {
-        if (*(s16*)(p + 0x48) != 0) {
-            *(s16*)(p + 0x48) -= 1;
-            if (*(s16*)(p + 0x48) == 0) {
+        if (p->delay != 0) {
+            p->delay -= 1;
+            if (p->delay == 0) {
                 respawn_1552AC(p);
             }
-        } else if (*(s16*)(p + 0x4A) != 0) {
-            fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
-            fn_80033CC8(p, *(void**)(e + 0x10));
-            if (d[6] / *(s16*)(p + 0x4A) < 2) {
-                a = p[0x43] + d[5] / (d[6] / 2);
+        } else if (p->life != 0) {
+            fn_8003403C(p->sizeX, p->sizeY);
+            fn_80033CC8(p, e->tex);
+            if (d[6] / p->life < 2) {
+                a = p->color.c.a + d[5] / (d[6] / 2);
                 if (a > d[5]) {
                     a = d[5];
                 }
-                p[0x43] = a;
-                *(f32*)(p + 0x38) = *(f32*)(p + 0x38) + (f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2);
-                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+                p->color.c.a = a;
+                p->sizeX = p->sizeX + (f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2);
+                p->sizeY = p->sizeX;
             } else {
-                a = p[0x43] - d[5] / (d[6] / 2);
+                a = p->color.c.a - d[5] / (d[6] / 2);
                 if (a < d[4]) {
                     a = d[4];
                 }
-                p[0x43] = a;
-                *(f32*)(p + 0x38) = *(f32*)(p + 0x38) - (f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2);
-                *(f32*)(p + 0x3C) = *(f32*)(p + 0x38);
+                p->color.c.a = a;
+                p->sizeX = p->sizeX - (f32)d[3] / lbl_3_rodata_3930 / (f32)(d[6] / 2);
+                p->sizeY = p->sizeX;
             }
-            p[0x40] = p[0x41] = p[0x42] = (s32)(lbl_3_rodata_3A1C * ((f32)p[0x43] / lbl_3_rodata_3A1C));
-            *(s16*)(p + 0x4A) -= 1;
+            p->color.c.r = p->color.c.g = p->color.c.b = (s32)(lbl_3_rodata_3A1C * ((f32)p->color.c.a / lbl_3_rodata_3A1C));
+            p->life -= 1;
         }
-        if (*(s16*)(p + 0x4A) == 0 && *(s16*)(p + 0x48) <= 0) {
+        if (p->life == 0 && p->delay <= 0) {
             respawn_1552AC(p);
         }
-        p = *(u8**)p;
+        p = p->next;
     } while (p != NULL);
     return 0;
 }
 #endif
 
 // .text:0x001559E4 size:0x244 mapped:0x80794A78
-void fn_3_1559E4(u8* o, f32* pos, f32* rot) {
+void fn_3_1559E4(Particle* o, f32* pos, f32* rot) {
     struct { Control c; u32 pad[2]; } cc;
     Mtx m;
     Vec v;
     Vec dir;
     f64 t;
-    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+    o->life = lbl_3_data_26BC0[6];
     cc.c.type = 0;
     CTRLSetRotation(&cc.c, rot[0], rot[1], rot[2]);
     CTRLBuildMatrix(&cc.c, m);
-    if (g_Minigame[0x1A2A] == 1) {
+    if (g_Minigame.GameMode_MiniGame == 1) {
         dir = lbl_3_data_26BB4;
     } else {
         PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
@@ -3492,40 +3538,40 @@ void fn_3_1559E4(u8* o, f32* pos, f32* rot) {
     t = __fabs(pos[1]);
     v.y = v.y - t;
     v.z = v.z + pos[2];
-    *(f32*)(o + 4) = v.x;
-    *(f32*)(o + 8) = v.y;
-    *(f32*)(o + 0xC) = v.z;
-    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
-    o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+    o->pos.x = v.x;
+    o->pos.y = v.y;
+    o->pos.z = v.z;
+    o->sizeY = o->sizeX = (f32)lbl_3_data_26BC0[2];
+    o->color.c.a = lbl_3_data_26BC0[4];
 }
 
 // .text:0x00155C28 size:0x2E0 mapped:0x80794CBC
-void fn_3_155C28(u8* a) {
+void fn_3_155C28(Emitter* a) {
     struct { Control c; u32 pad[2]; } cc;
     Mtx m;
     Vec dir;
     Vec v;
-    u8* o;
+    Particle* o;
     u8 i = 0;
     f32 rx;
     f32 ry;
     f32 rz;
     f64 t;
-    o = *(u8**)(a + 0xC);
-    *(s32*)(a + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    o = a->particles;
+    a->tex = lbl_3_common_bss_32724.textures[2];
     do {
-        *(s16*)(o + 0x48) = i++;
-        o[0x4D] = *(s32*)lbl_3_data_26BC0;
-        o[0x4E] = 0;
-        if (*(s16*)(o + 0x48) == 0) {
-            rx = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA6));
-            ry = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA8));
-            rz = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BAA));
-            *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+        o->delay = i++;
+        o->texIndex = lbl_3_data_26BC0[0];
+        o->uvFrame = 0;
+        if (o->delay == 0) {
+            rx = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.yaw);
+            ry = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.pitch);
+            rz = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.roll);
+            o->life = lbl_3_data_26BC0[6];
             cc.c.type = 0;
             CTRLSetRotation(&cc.c, rx, ry, rz);
             CTRLBuildMatrix(&cc.c, m);
-            if (g_Minigame[0x1A2A] == 1) {
+            if (g_Minigame.GameMode_MiniGame == 1) {
                 dir = lbl_3_data_26BB4;
             } else {
                 PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
@@ -3534,17 +3580,17 @@ void fn_3_155C28(u8* a) {
             v.y = dir.y;
             v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
             PSMTXMultVec(m, &v, &v);
-            v.x = v.x + *(f32*)g_Ball;
-            t = __fabs(*(f32*)(g_Ball + 4));
+            v.x = v.x + g_Ball.AtBat_Contact_BallPos.x;
+            t = __fabs(g_Ball.AtBat_Contact_BallPos.y);
             v.y = v.y - t;
-            v.z = v.z + *(f32*)(g_Ball + 8);
-            *(f32*)(o + 4) = v.x;
-            *(f32*)(o + 8) = v.y;
-            *(f32*)(o + 0xC) = v.z;
-            *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
-            o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+            v.z = v.z + g_Ball.AtBat_Contact_BallPos.z;
+            o->pos.x = v.x;
+            o->pos.y = v.y;
+            o->pos.z = v.z;
+            o->sizeY = o->sizeX = (f32)lbl_3_data_26BC0[2];
+            o->color.c.a = lbl_3_data_26BC0[4];
         }
-        o = *(u8**)o;
+        o = o->next;
     } while (o != NULL);
 }
 
@@ -3555,30 +3601,30 @@ void fn_3_155F08(void) {
     Vec dir;
     Vec v;
     u8 i;
-    u8* o;
-    u8* a;
+    Particle* o;
+    Emitter* a;
     f32 rx;
     f32 ry;
     f32 rz;
     f64 t;
-    a = fn_80033A24(fn_3_1552AC, 0x80, 0, *(s32*)(lbl_3_data_26BC0 + 4), 1, 0x1B);
+    a = fn_80033A24((EmitterUpdateFn)fn_3_1552AC, 0x80, 0, lbl_3_data_26BC0[1], 1, 0x1B);
     if (a != NULL) {
-        o = *(u8**)(a + 0xC);
-        *(s32*)(a + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+        o = a->particles;
+        a->tex = lbl_3_common_bss_32724.textures[2];
         i = 0;
         do {
-            *(s16*)(o + 0x48) = i++;
-            o[0x4D] = *(s32*)lbl_3_data_26BC0;
-            o[0x4E] = 0;
-            if (*(s16*)(o + 0x48) == 0) {
-                rx = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA6));
-                ry = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA8));
-                rz = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BAA));
-                *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+            o->delay = i++;
+            o->texIndex = lbl_3_data_26BC0[0];
+            o->uvFrame = 0;
+            if (o->delay == 0) {
+                rx = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.yaw);
+                ry = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.pitch);
+                rz = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.roll);
+                o->life = lbl_3_data_26BC0[6];
                 cc.c.type = 0;
                 CTRLSetRotation(&cc.c, rx, ry, rz);
                 CTRLBuildMatrix(&cc.c, m);
-                if (g_Minigame[0x1A2A] == 1) {
+                if (g_Minigame.GameMode_MiniGame == 1) {
                     dir = lbl_3_data_26BB4;
                 } else {
                     PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
@@ -3587,17 +3633,17 @@ void fn_3_155F08(void) {
                 v.y = dir.y;
                 v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
                 PSMTXMultVec(m, &v, &v);
-                v.x = v.x + *(f32*)g_Ball;
-                t = __fabs(*(f32*)(g_Ball + 4));
+                v.x = v.x + g_Ball.AtBat_Contact_BallPos.x;
+                t = __fabs(g_Ball.AtBat_Contact_BallPos.y);
                 v.y = v.y - t;
-                v.z = v.z + *(f32*)(g_Ball + 8);
-                *(f32*)(o + 4) = v.x;
-                *(f32*)(o + 8) = v.y;
-                *(f32*)(o + 0xC) = v.z;
-                *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
-                o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+                v.z = v.z + g_Ball.AtBat_Contact_BallPos.z;
+                o->pos.x = v.x;
+                o->pos.y = v.y;
+                o->pos.z = v.z;
+                o->sizeY = o->sizeX = (f32)lbl_3_data_26BC0[2];
+                o->color.c.a = lbl_3_data_26BC0[4];
             }
-            o = *(u8**)o;
+            o = o->next;
         } while (o != NULL);
     }
 }
@@ -3609,31 +3655,31 @@ void fn_3_156218(void) {
     Vec dir;
     Vec v;
     u8 i;
-    u8* o;
-    u8* a;
+    Particle* o;
+    Emitter* a;
     f32 rx;
     f32 ry;
     f32 rz;
     f64 t;
-    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame[0x1A2A] == 1) {
-        a = fn_80033A24(fn_3_1552AC, 0x80, 0, *(s32*)(lbl_3_data_26BC0 + 4), 1, 0x1B);
+    if (g_d_GameSettings.GameModeSelected == 7 && g_Minigame.GameMode_MiniGame == 1) {
+        a = fn_80033A24((EmitterUpdateFn)fn_3_1552AC, 0x80, 0, lbl_3_data_26BC0[1], 1, 0x1B);
         if (a != NULL) {
-            o = *(u8**)(a + 0xC);
-            *(s32*)(a + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+            o = a->particles;
+            a->tex = lbl_3_common_bss_32724.textures[2];
             i = 0;
             do {
-                *(s16*)(o + 0x48) = i++;
-                o[0x4D] = *(s32*)lbl_3_data_26BC0;
-                o[0x4E] = 0;
-                if (*(s16*)(o + 0x48) == 0) {
-                    rx = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA6));
-                    ry = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BA8));
-                    rz = lbl_3_rodata_39AC * shortAngleToRad(*(s16*)(g_Ball + 0x1BAA));
-                    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+                o->delay = i++;
+                o->texIndex = lbl_3_data_26BC0[0];
+                o->uvFrame = 0;
+                if (o->delay == 0) {
+                    rx = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.yaw);
+                    ry = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.pitch);
+                    rz = lbl_3_rodata_39AC * shortAngleToRad(g_Ball.matchFramesAndBallAngle.ballSpinAngle.roll);
+                    o->life = lbl_3_data_26BC0[6];
                     cc.c.type = 0;
                     CTRLSetRotation(&cc.c, rx, ry, rz);
                     CTRLBuildMatrix(&cc.c, m);
-                    if (g_Minigame[0x1A2A] == 1) {
+                    if (g_Minigame.GameMode_MiniGame == 1) {
                         dir = lbl_3_data_26BB4;
                     } else {
                         PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
@@ -3642,17 +3688,17 @@ void fn_3_156218(void) {
                     v.y = dir.y;
                     v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
                     PSMTXMultVec(m, &v, &v);
-                    v.x = v.x + *(f32*)g_Ball;
-                    t = __fabs(*(f32*)(g_Ball + 4));
+                    v.x = v.x + g_Ball.AtBat_Contact_BallPos.x;
+                    t = __fabs(g_Ball.AtBat_Contact_BallPos.y);
                     v.y = v.y - t;
-                    v.z = v.z + *(f32*)(g_Ball + 8);
-                    *(f32*)(o + 4) = v.x;
-                    *(f32*)(o + 8) = v.y;
-                    *(f32*)(o + 0xC) = v.z;
-                    *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
-                    o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+                    v.z = v.z + g_Ball.AtBat_Contact_BallPos.z;
+                    o->pos.x = v.x;
+                    o->pos.y = v.y;
+                    o->pos.z = v.z;
+                    o->sizeY = o->sizeX = (f32)lbl_3_data_26BC0[2];
+                    o->color.c.a = lbl_3_data_26BC0[4];
                 }
-                o = *(u8**)o;
+                o = o->next;
             } while (o != NULL);
         }
     }
@@ -3683,11 +3729,11 @@ void fn_3_156548(u32 n, f32 x, f32 y, f32 z) {
     C_MTXFrustum(proj, lbl_3_rodata_3A20 * k, lbl_3_rodata_3A24 * k, lbl_3_rodata_39F0 * k, lbl_3_rodata_3A28 * k,
                  lbl_3_rodata_392C, lbl_3_rodata_3A2C);
     fn_800B27DC(proj, 0);
-    PSMTXMultVec((MtxPtr)((u8*)fn_80052734(0) + 0x40), v, &oldPos);
+    PSMTXMultVec(((camera_803c639c_s*)fn_80052734(0))->view, v, &oldPos);
     v->x = x;
     v->y = y;
     v->z = z;
-    PSMTXMultVec((MtxPtr)((u8*)fn_80052734(0) + 0x40), v, &newPos);
+    PSMTXMultVec(((camera_803c639c_s*)fn_80052734(0))->view, v, &newPos);
     PSVECSubtract(&oldPos, &newPos, &oldPos);
     fn_800B2160(2);
     i = 7;
@@ -3717,7 +3763,7 @@ void fn_3_156548(u32 n, f32 x, f32 y, f32 z) {
             quad[3].y = trail.y - h;
             quad[3].z = trail.z;
             fn_800B2160(3);
-            arc = *(TexArchive**)(lbl_3_common_bss_32724 + 0x68);
+            arc = lbl_3_common_bss_32724.textures[1];
             fn_800B1468(quad, 0xFFFFFFFF, TEX_ARCHIVE_IMG(arc, 0));
             if (i >= 4) {
                 size = lbl_3_rodata_39A8 * (f32)(7 - i) * lbl_3_rodata_39F0 + lbl_3_rodata_39A8;
@@ -3734,7 +3780,7 @@ void fn_3_156548(u32 n, f32 x, f32 y, f32 z) {
             quad[3].x = trail.x + h;
             quad[3].y = trail.y - h;
             fn_800B2160(2);
-            arc = *(TexArchive**)(lbl_3_common_bss_32724 + 0x68);
+            arc = lbl_3_common_bss_32724.textures[1];
             fn_800B1468(quad, 0xFFFFFFFF, &arc->entries[arc->entries[(u8)(i + 1)].index]);
             break;
         }
@@ -3760,7 +3806,7 @@ void fn_3_156970(Vec* pos, u32 color, TexImage* tex) {
     for (i = 0; i < 4; i++) {
         memcpy(&v[i].pos, &pos[i], sizeof(Vec));
         v[i].color = color;
-        memcpy(v[i].uv, &((u32*)lbl_3_data_26B9C)[i], 4);
+        memcpy(v[i].uv, &lbl_3_data_26B9C[i], 4);
     }
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
@@ -3822,8 +3868,8 @@ void fn_3_156D04(u32 n, f32 x, f32 y, f32 z) {
     f32 size;
     f32 h;
     s32 i;
-    colors = (u32*)((u8*)lbl_3_data_266A8 + 0x4DC);
-    ci = *(s32*)(g_Minigame + n * 0x28 + 0xC4);
+    colors = lbl_3_data_26B84;
+    ci = EFFECT_MG_OBJS[n].colorIdx;
     k = lbl_3_rodata_392C / fn_80052768_getCamera(0)->zoom;
     fn_800B24D4(0xD);
     v = fn_3_1575F0(n);
@@ -3833,11 +3879,11 @@ void fn_3_156D04(u32 n, f32 x, f32 y, f32 z) {
     C_MTXFrustum(proj, lbl_3_rodata_3A20 * k, lbl_3_rodata_3A24 * k, lbl_3_rodata_39F0 * k, lbl_3_rodata_3A28 * k,
                  lbl_3_rodata_392C, lbl_3_rodata_3A2C);
     GXSetProjection(proj, GX_PERSPECTIVE);
-    PSMTXMultVec((MtxPtr)((u8*)fn_80052734(0) + 0x40), v, &oldPos);
+    PSMTXMultVec(((camera_803c639c_s*)fn_80052734(0))->view, v, &oldPos);
     v->x = x;
     v->y = y;
     v->z = z;
-    PSMTXMultVec((MtxPtr)((u8*)fn_80052734(0) + 0x40), v, &newPos);
+    PSMTXMultVec(((camera_803c639c_s*)fn_80052734(0))->view, v, &newPos);
     PSVECSubtract(&oldPos, &newPos, &oldPos);
     tmp = oldPos;
     ang = lbl_3_rodata_39B8 * (f32)((f64)(rand() % 15000) / lbl_3_rodata_39C8);
@@ -3853,7 +3899,7 @@ void fn_3_156D04(u32 n, f32 x, f32 y, f32 z) {
         case 0:
         case 4:
         case 7:
-            PSVECScale(&oldPos, scale * (lbl_3_data_266A8[0x13B] + ((f32)i * (lbl_3_data_266A8[0x13C] - lbl_3_data_266A8[0x13B])) / lbl_3_rodata_3A30), &trail);
+            PSVECScale(&oldPos, scale * (lbl_3_data_26B94[0] + ((f32)i * (lbl_3_data_26B94[1] - lbl_3_data_26B94[0])) / lbl_3_rodata_3A30), &trail);
             PSVECAdd(&newPos, &trail, &trail);
             if (i >= 4) {
                 size = (f32)(7 - i) * lbl_3_rodata_39F0 + lbl_3_rodata_392C;
@@ -3875,7 +3921,7 @@ void fn_3_156D04(u32 n, f32 x, f32 y, f32 z) {
             quad[3].z = trail.z;
             GXSetBlendMode(GX_BM_SUBTRACT, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
             if (lbl_3_bss_B858 != 0) {
-                arc = *(TexArchive**)(lbl_3_common_bss_32724 + 0x68);
+                arc = lbl_3_common_bss_32724.textures[1];
                 fn_3_156970(quad, 0xFFFFFFFF, TEX_ARCHIVE_IMG(arc, 0));
             }
             if (i >= 4) {
@@ -3893,7 +3939,7 @@ void fn_3_156D04(u32 n, f32 x, f32 y, f32 z) {
             quad[3].x = trail.x + h;
             quad[3].y = trail.y - h;
             GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
-            arc = *(TexArchive**)(lbl_3_common_bss_32724 + 0x6C);
+            arc = lbl_3_common_bss_32724.textures[2];
             fn_3_156970(quad, colors[ci], TEX_ARCHIVE_IMG(arc, (u8)(i + 10)));
             break;
         }
@@ -3904,15 +3950,16 @@ void fn_3_156D04(u32 n, f32 x, f32 y, f32 z) {
 
 // .text:0x0015730C size:0xA0 mapped:0x807963A0
 void fn_3_15730C(u32 n, f32 x, f32 y, f32 z) {
-    u8* p = ((u8**)&lbl_3_bss_B850)[0];
+    Emitter* e = lbl_3_bss_B850;
+    Particle* p;
     f32* v;
-    if (p != NULL) {
-        p = *(u8**)(p + 0xC);
+    if (e != NULL) {
+        p = e->particles;
         while (n >= 7) {
-            p = *(u8**)p;
+            p = p->next;
             n -= 7;
         }
-        v = (f32*)(p + n * 0xC + 4);
+        v = &((VecSlotParticle*)p)->v[n].x;
     } else {
         v = NULL;
     }
@@ -3926,63 +3973,63 @@ void fn_3_15730C(u32 n, f32 x, f32 y, f32 z) {
 // NONMATCHING 94%: lbl_3_data_266A8 is this TU's own .data (orig keeps r29 = d+0x23C, t[0] via 0x23c(r31)); also f3/f4 swapped in the int->float divides
 // .text:0x001573AC size:0x1C4 mapped:0x80796440
 #if NONMATCHING
-void fn_3_1573AC(u8* o) {
+void fn_3_1573AC(struct CharActor* o) {
     Vec pos;
     Vec dir;
     struct { Control c; u32 pad[2]; } c;
     Mtx m;
-    u8* d = (u8*)lbl_3_data_266A8;
     V3I* e;
-    s32** t;
+    ParticleParams5** t;
     s16* q;
     s32 i;
-    e = (V3I*)(d + 0x254);
-    pos.x = (f32)e[(s8)o[0x252]].x / lbl_3_rodata_3930;
-    pos.y = (f32)e[(s8)o[0x252]].y / lbl_3_rodata_3930;
-    pos.z = (f32)e[(s8)o[0x252]].z / lbl_3_rodata_3930;
-    fn_8001B728(*(s8*)(o + 0x255), 4, &pos);
+    e = ((V3I*)&lbl_3_data_268E4[6]);
+    pos.x = (f32)e[o->kind].x / lbl_3_rodata_3930;
+    pos.y = (f32)e[o->kind].y / lbl_3_rodata_3930;
+    pos.z = (f32)e[o->kind].z / lbl_3_rodata_3930;
+    fn_8001B728(o->modelIndex, 4, &pos);
     c.c.type = 0;
-    CTRLSetRotation(&c.c, *(f32*)(o + 0x40), *(f32*)(o + 0x44), *(f32*)(o + 0x48));
+    CTRLSetRotation(&c.c, o->rot.x, o->rot.y, o->rot.z);
     CTRLBuildMatrix(&c.c, m);
     dir.y = dir.x = lbl_3_rodata_3934[0];
     dir.z = lbl_3_rodata_392C;
     PSMTXMultVec(m, &dir, &dir);
-    t = (s32**)(d + 0x23C);
-    t[0][0] = t[1][0] = t[2][0] = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
-    q = (s16*)(d + 0x13C);
-    q += (s8)o[0x254] * 2;
-    t[0][1] = t[1][1] = q[1];
-    fn_80030D88(&pos, &dir, *(s32**)(d + 0x23C), 0x29);
+    t = ((ParticleParams5**)lbl_3_data_268E4);
+    t[0]->tex = t[1]->tex = t[2]->tex = lbl_3_common_bss_32724.textures[2];
+    q = EFFECT266A8->sparkTex[0];
+    q += o->index * 2;
+    t[0]->texIndex = t[1]->texIndex = q[1];
+    fn_80030D88(&pos, &dir, ((ParticleParams5**)lbl_3_data_268E4)[0], 0x29);
     fn_80030D88(&pos, &dir, t[1], 0x29);
     fn_80030D88(&pos, &dir, t[2], 0x29);
 }
 #endif
 
 // .text:0x00157570 size:0x18 mapped:0x80796604
-extern u8* lbl_3_bss_B850;
+extern Emitter* lbl_3_bss_B850;
 
 void fn_3_157570(void) {
-    lbl_3_bss_B850[0x18] = 1;
+    lbl_3_bss_B850->u.t5.unk18 = 1;
 }
 
 // .text:0x00157588 size:0x68 mapped:0x8079661C
 void fn_3_157588(int n) {
-    u8* p = fn_80033A24(fn_3_15767C, 0x80, 0, (n + 6) / 7, 1, 0x28);
+    Emitter* p = fn_80033A24((EmitterUpdateFn)fn_3_15767C, 0x80, 0, (n + 6) / 7, 1, 0x28);
     lbl_3_bss_B850 = p;
-    p[0x18] = 0;
+    p->u.t5.unk18 = 0;
 }
 
 // .text:0x001575F0 size:0x8C mapped:0x80796684
 #pragma dont_inline off
 void* fn_3_1575F0(u32 n) {
-    u8* p = ((u8**)&lbl_3_bss_B850)[0];
-    if (p != NULL) {
-        p = *(u8**)(p + 0xC);
+    Emitter* e = lbl_3_bss_B850;
+    Particle* p;
+    if (e != NULL) {
+        p = e->particles;
         while (n >= 7) {
-            p = *(u8**)p;
+            p = p->next;
             n -= 7;
         }
-        return p + n * 0xC + 4;
+        return &((VecSlotParticle*)p)->v[n];
     }
     return NULL;
 }
@@ -3995,53 +4042,52 @@ void fn_3_15767C(void) {
     Vec pos;
     Vec dir;
     Vec diff;
-    u8* d = (u8*)lbl_3_data_266A8;
-    u8* m;
-    u8* f;
+    EffectData266A8* d = EFFECT266A8;
+    EffectMgObj* f;
     Vec* tgt;
     u32 i;
     s32 j;
     if (g_d_GameSettings.GameModeSelected == 7) {
-        if (g_Minigame[0x1A2A] == 5 && ((u8**)&lbl_3_bss_B850)[0][0x18] == 0) {
+        if (g_Minigame.GameMode_MiniGame == 5 && lbl_3_bss_B850->u.t5.unk18 == 0) {
         for (i = 0; i < 0x28; i++) {
-            m = g_Minigame + i * 0x28;
-            f = m + 0xA8;
-            if (m[0xCE] != 0) {
-                pos.x = *(f32*)f;
-                pos.y = -*(f32*)(f + 4);
-                pos.z = *(f32*)(f + 8);
+            f = &EFFECT_MG_OBJS[i];
+            if (f->active != 0) {
+                pos.x = f->pos.x;
+                pos.y = -f->pos.y;
+                pos.z = f->pos.z;
                 {
-                    u8* p = ((u8**)&lbl_3_bss_B850)[0];
+                    Emitter* e = lbl_3_bss_B850;
+                    Particle* p;
                     u32 n = i;
-                    if (p != NULL) {
-                        p = *(u8**)(p + 0xC);
+                    if (e != NULL) {
+                        p = e->particles;
                         while (n >= 7) {
-                            p = *(u8**)p;
+                            p = p->next;
                             n -= 7;
                         }
-                        tgt = (Vec*)(p + n * 0xC + 4);
+                        tgt = &((VecSlotParticle*)p)->v[n];
                     } else {
                         tgt = NULL;
                     }
                 }
                 PSVECSubtract(tgt, &pos, &dir);
                 if (0.0f != PSVECMag(&dir)) {
-                    s32 k = *(s32*)(f + 0x1C);
-                    ((Ln50*)(d + 8))[0].color = ((Ln50*)(d + 8))[1].color = ((Ln50*)(d + 8))[2].color = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
-                    *(s32*)(d + 0xF8) = *(s32*)(lbl_3_common_bss_35154 + 4);
+                    s32 k = f->colorIdx;
+                    d->sparks[0].tex = d->sparks[1].tex = d->sparks[2].tex = lbl_3_common_bss_32724.textures[2];
+                    d->trail.tex = lbl_3_common_bss_35154.tex;
                     if (k <= 3 && k >= 0) {
-                        s16* q = (s16*)(d + 0x13C);
+                        s16* q = d->sparkTex[0];
                         q += k * 2;
                         for (j = 0; j < 2; j++) {
-                            ((Ln50*)(d + 8))[j].v = q[j];
+                            d->sparks[j].texIndex = q[j];
                         }
-                        fn_8002F5F4(&pos, &dir, d + 0xF8);
-                        if (lbl_80366158[0x28] == 0) {
-                            fn_80030D88(&pos, &dir, &((Ln50*)(d + 8))[1], 0x29);
-                            fn_80030D88(&pos, &dir, &((Ln50*)(d + 8))[2], 0x29);
+                        fn_8002F5F4(&pos, &dir, &d->trail);
+                        if (lbl_80366158._28 == 0) {
+                            fn_80030D88(&pos, &dir, &d->sparks[1], 0x29);
+                            fn_80030D88(&pos, &dir, &d->sparks[2], 0x29);
                             PSVECNormalize(&dir, &dir);
                             PSVECSubtract(&pos, tgt, &diff);
-                            fn_80030470(&pos, &dir, &diff, d + 8, 0x29);
+                            fn_80030470(&pos, &dir, &diff, d->sparks, 0x29);
                         }
                     }
                 }
@@ -4050,8 +4096,8 @@ void fn_3_15767C(void) {
         lbl_3_bss_B854 = NULL;
         }
     }
-    if (((u8**)&lbl_3_bss_B850)[0][0x18] != 0) {
-        ((u8**)&lbl_3_bss_B850)[0] = NULL;
+    if (lbl_3_bss_B850->u.t5.unk18 != 0) {
+        lbl_3_bss_B850 = NULL;
     }
 }
 #endif
@@ -4075,7 +4121,7 @@ f32 fn_3_15791C(s32 i) {
     r = c * lbl_3_rodata_39A8;
     r += lbl_3_rodata_39A8;
     if (q != 0) {
-        u8 gs = g_GameLogic[0x11E];
+        u8 gs = g_GameLogic.gameStatus;
         if (gs != 0xE && gs != 0x22 && gs != 0x24 && gs != 0x26) {
             r += lbl_3_rodata_39A8 * ((f32)i - lbl_3_rodata_3A3C) / lbl_3_rodata_3A40;
         }
@@ -4086,22 +4132,22 @@ f32 fn_3_15791C(s32 i) {
 // NONMATCHING 95%: wave code is fn_3_15791C inlined by hand (call keeps f3/f4 swapped); only the 38D0 Vec copy loads are scheduled above the prologue stores
 // .text:0x00157AC4 size:0x2F4 mapped:0x80796B58
 #if NONMATCHING
-u32 fn_3_157AC4(u8* o) {
+u32 fn_3_157AC4(Emitter* o) {
     Mtx m;
     s32 q;
     s32 i;
-    u8* p;
+    Particle* p;
     s32 t;
     f32 w;
     f32 c;
     f32 r;
     u32 res;
     Vec dir;
-    p = *(u8**)(o + 0xC);
+    p = o->particles;
     dir = lbl_3_rodata_38D0;
-    PSMTXRotRad(m, 'Y', shortAngleToRad(*(s16*)(g_Minigame + 0x1AF8)));
+    PSMTXRotRad(m, 'Y', shortAngleToRad(g_Minigame._1AF8));
     PSMTXMultVec(m, &dir, &dir);
-    i = *(s32*)(o + 0x18);
+    i = o->u.seq.index;
     q = (i + 0x30) / 120;
     t = (i + 0x30) % 120;
     if (t >= 48) {
@@ -4112,28 +4158,28 @@ u32 fn_3_157AC4(u8* o) {
     r = c * lbl_3_rodata_39A8;
     r += lbl_3_rodata_39A8;
     if (q != 0) {
-        u8 gs = g_GameLogic[0x11E];
+        u8 gs = g_GameLogic.gameStatus;
         if (gs != 0xE && gs != 0x22 && gs != 0x24 && gs != 0x26) {
             r += lbl_3_rodata_39A8 * ((f32)i - lbl_3_rodata_3A3C) / lbl_3_rodata_3A40;
         }
     }
     w = lbl_3_rodata_3A44 * r;
-    *(f32*)(p + 0x3C) = w;
-    *(f32*)(p + 0x38) = w;
-    *(f32*)(p + 4) = *(f32*)(g_Minigame + 0x1AE0) + dir.x + *(f32*)(p + 0x38) * lbl_3_data_266A8[0];
-    *(f32*)(p + 8) = *(f32*)(g_Minigame + 0x1AE4) + dir.y + *(f32*)(p + 0x3C) * lbl_3_data_266A8[1];
-    *(f32*)(p + 0xC) = *(f32*)(g_Minigame + 0x1AE8) + dir.z;
-    fn_8003403C(*(f32*)(p + 0x38), *(f32*)(p + 0x3C));
-    fn_80033CC8(*(void**)(o + 0xC), *(void**)(lbl_3_common_bss_32724 + 0x64));
-    if (lbl_80366158[0x28] == 0) {
-        *(s32*)(o + 0x18) += 1;
+    p->sizeY = w;
+    p->sizeX = w;
+    p->pos.x = g_Minigame._1AE0 + dir.x + p->sizeX * EFFECT266A8->scale[0];
+    p->pos.y = g_Minigame._1AE4 + dir.y + p->sizeY * EFFECT266A8->scale[1];
+    p->pos.z = g_Minigame._1AE8 + dir.z;
+    fn_8003403C(p->sizeX, p->sizeY);
+    fn_80033CC8(o->particles, lbl_3_common_bss_32724.textures[0]);
+    if (lbl_80366158._28 == 0) {
+        o->u.seq.index += 1;
     }
-    if (g_Minigame[0x1A40] != 0) {
+    if (g_Minigame._1A40 != 0) {
         res = 1;
     } else {
         res = 0;
-        if (*(s32*)(o + 0x18) == *(s32*)(o + 0x1C)) {
-            if (g_GameLogic[0x11E] != 0xE) {
+        if (o->u.seq.index == o->u.seq.count) {
+            if (g_GameLogic.gameStatus != 0xE) {
                 res = 1;
             }
         }
@@ -4179,80 +4225,77 @@ s32 lbl_3_data_26894[20] = {
 s32* lbl_3_data_268E4[168] = {lbl_3_data_267F4, lbl_3_data_26844, lbl_3_data_26894};
 u32 lbl_3_data_26B84[4] = {0xFF0000FF, 0x0000FFFF, 0xFFFF00FF, 0x00FF00FF}; // RGBA colours (lbl_3_data_266A8 + 0x4DC)
 f32 lbl_3_data_26B94[2] = {-0.4f, 6.0f}; // trail scale range (lbl_3_data_266A8[0x13B..0x13C])
-u8 lbl_3_data_26B9C[16] = {0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1};
+u32 lbl_3_data_26B9C[4] = {
+    0x00000000, 0x00010000, 0x00010001, 0x00000001,
+};
 f32 lbl_3_data_26BAC = -0.2f;
 f32 lbl_3_data_26BB0 = 3.0f;
 Vec lbl_3_data_26BB4 = {0.087f, -0.757f, 0.001f};
-u8 lbl_3_data_26BC0[28] = {0, 0, 0, 3, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 136, 184, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 32};
-u8 lbl_3_data_26BDC[16] = {0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 28};
-u8 lbl_3_data_26BEC[16] = {0, 0, 0, 0, 0, 2, 73, 240, 0, 0, 0, 0, 0, 0, 0, 16};
-u8 lbl_3_data_26BFC[16] = {0, 0, 0, 0, 0, 0, 58, 152, 0, 0, 0, 0, 0, 0, 0, 32};
-u8 lbl_3_data_26C0C[16] = {0, 1, 134, 160, 0, 1, 134, 160, 0, 0, 39, 16, 0, 0, 0, 64};
-u8 lbl_3_data_26C1C[32] = {
-    191, 64, 0, 0, 63, 51, 51, 51, 63, 64, 0, 0, 63, 51, 51, 51,
-    191, 64, 0, 0, 191, 51, 51, 51, 63, 64, 0, 0, 191, 51, 51, 51,
+s32 lbl_3_data_26BC0[7] = {
+    3, 32, 0, 35000, 0, 255, 32,
 };
-u8 lbl_3_data_26C3C[88] = {
-    0, 0, 0, 2, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 195, 80,
-    0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 32, 0, 0, 0, 15,
-    0, 0, 0, 9, 0, 0, 0, 150, 0, 0, 156, 64, 0, 1, 17, 112,
-    0, 0, 117, 48, 0, 1, 56, 128, 0, 0, 17, 48, 0, 0, 195, 80,
-    0, 0, 46, 224, 0, 0, 58, 152, 0, 0, 0, 0, 0, 1, 153, 15,
-    0, 0, 0, 60, 0, 0, 0, 29,
+s32 lbl_3_data_26BDC[4] = {
+    16, 0, 255, 28,
 };
-u8 lbl_3_data_26C94[36] = {
-    0, 0, 0, 2, 0, 0, 0, 90, 0, 3, 13, 64, 0, 1, 134, 160,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 36,
-    0, 0, 0, 30,
+s32 lbl_3_data_26BEC[4] = {
+    0, 150000, 0, 16,
+};
+s32 lbl_3_data_26BFC[4] = {
+    0, 15000, 0, 32,
+};
+s32 lbl_3_data_26C0C[4] = {
+    100000, 100000, 10000, 64,
+};
+f32 lbl_3_data_26C1C[8] = {
+    -0.75f, 0.699999988f, 0.75f, 0.699999988f, -0.75f, -0.699999988f, 0.75f, -0.699999988f,
+};
+s32 lbl_3_data_26C3C[22] = {
+    2, 32, 0, 50000, 0, 255, 32, 15,
+    9, 150, 40000, 70000, 30000, 80000, 4400, 50000,
+    12000, 15000, 0, 104719, 60, 29,
+};
+s32 lbl_3_data_26C94[9] = {
+    2, 90, 200000, 100000, 0, 0, 255, 36,
+    30,
 };
 u8 lbl_3_data_26CB8[24] = {4, 5, 6, 7, 8, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 28, 29, 30, 31, 32, 33, 34, 35, 0};
-u8 lbl_3_data_26CD0[48] = {
-    0, 0, 0, 2, 0, 0, 0, 6, 0, 0, 0, 40, 0, 1, 134, 160,
-    0, 0, 195, 80, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 127,
-    0, 0, 0, 0, 0, 0, 156, 64, 0, 0, 1, 184, 0, 0, 0, 31,
+s32 lbl_3_data_26CD0[12] = {
+    2, 6, 40, 100000, 50000, 0, 255, 127,
+    0, 40000, 440, 31,
 };
 s32 lbl_3_data_26D00[20] = {6, 5, 645, 5, 0, 600000, 800000, 0, 255, 0, 2, 0, 200000, 300000, 0, 255, 0, 20, 20, 32};
-u8 lbl_3_data_26D50[12] = {64, 108, 204, 205, 193, 20, 204, 205, 0, 0, 0, 0};
-u8 lbl_3_data_26D5C[44] = {
-    0, 0, 0, 7, 0, 0, 0, 1, 0, 0, 0, 8, 0, 0, 0, 5,
-    0, 0, 0, 0, 0, 15, 66, 64, 0, 18, 79, 128, 0, 0, 0, 0,
-    0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 33,
+Vec lbl_3_data_26D50[1] = {
+    {3.70000005f, -9.30000019f, 0.0f},
 };
-u8 lbl_3_data_26D88[60] = {
-    0, 0, 0, 8, 0, 0, 0, 5, 0, 0, 0, 30, 0, 0, 0, 5,
-    0, 0, 0, 0, 0, 3, 208, 144, 0, 6, 26, 128, 0, 0, 0, 255,
-    0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 80,
-    0, 0, 0, 0, 0, 1, 134, 160, 0, 0, 0, 34,
+s32 lbl_3_data_26D5C[11] = {
+    7, 1, 8, 5, 0, 1000000, 1200000, 0,
+    255, 0, 33,
 };
-u8 lbl_3_data_26DC4[60] = {
-    0, 0, 0, 8, 0, 0, 0, 16, 0, 0, 0, 30, 0, 0, 0, 15,
-    0, 3, 208, 144, 0, 5, 184, 216, 0, 7, 161, 32, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 127,
-    0, 0, 0, 0, 0, 1, 134, 160, 0, 0, 0, 34,
+s32 lbl_3_data_26D88[15] = {
+    8, 5, 30, 5, 0, 250000, 400000, 255,
+    255, 255, 0, 80, 0, 100000, 34,
 };
-u8 lbl_3_data_26E00[36] = {
-    64, 2, 61, 113, 192, 182, 249, 219, 63, 129, 202, 193, 63, 229, 129, 6,
-    192, 144, 188, 106, 63, 105, 251, 231, 63, 165, 30, 184, 192, 131, 206, 217,
-    63, 80, 163, 215,
+s32 lbl_3_data_26DC4[15] = {
+    8, 16, 30, 15, 250000, 375000, 500000, 0,
+    0, 0, 255, 127, 0, 100000, 34,
 };
-u8 lbl_3_data_26E24[28] = {0, 0, 0, 3, 0, 0, 0, 16, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 117, 48, 0, 0, 0, 0, 0, 0, 0, 255};
-u8 lbl_3_data_26E40[60] = {
-    0, 0, 0, 8, 0, 0, 0, 6, 0, 0, 0, 60, 0, 0, 117, 48,
-    0, 0, 0, 5, 0, 0, 0, 0, 0, 1, 134, 160, 0, 0, 156, 64,
-    0, 0, 195, 80, 0, 0, 0, 0, 0, 0, 0, 220, 0, 0, 0, 0,
-    0, 0, 117, 48, 0, 0, 58, 152, 0, 0, 0, 36,
+Vec lbl_3_data_26E00[3] = {
+    {2.03500009f, -5.71799994f, 1.01400006f}, {1.79299998f, -4.52299976f, 0.913999975f}, {1.28999996f, -4.11899996f, 0.814999998f},
 };
-u8 lbl_3_data_26E7C[32] = {
-    0, 0, 0, 100, 0, 0, 19, 136, 0, 18, 79, 128, 0, 0, 58, 152,
-    0, 0, 58, 152, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 37,
+s32 lbl_3_data_26E24[7] = {
+    3, 16, 100, 0, 30000, 0, 255,
 };
-u8 lbl_3_data_26E9C[100] = {
-    0, 0, 0, 6, 0, 0, 0, 30, 0, 0, 0, 4, 0, 0, 0, 5,
-    0, 0, 0, 0, 0, 3, 208, 144, 0, 5, 87, 48, 0, 0, 0, 0,
-    0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 20,
-    0, 0, 0, 7, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3, 208, 144,
-    0, 5, 87, 48, 0, 0, 0, 0, 0, 0, 0, 120, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 65, 0, 69, 0, 77, 0, 73, 0, 63, 0, 0,
-    0, 0, 0, 0,
+s32 lbl_3_data_26E40[15] = {
+    8, 6, 60, 30000, 5, 0, 100000, 40000,
+    50000, 0, 220, 0, 30000, 15000, 36,
+};
+s32 lbl_3_data_26E7C[8] = {
+    100, 5000, 1200000, 15000, 15000, 0, 60, 37,
+};
+s32 lbl_3_data_26E9C[25] = {
+    6, 30, 4, 5, 0, 250000, 350000, 0,
+    255, 0, 5, 20, 7, 2, 0, 250000,
+    350000, 0, 120, 0, 0, 4259909, 5046345, 4128768,
+    0,
 };
 

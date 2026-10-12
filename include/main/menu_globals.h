@@ -34,11 +34,15 @@ extern TutorialSteps lbl_803C66B0;
 typedef struct Unk803C5EA4 {
     /*0x00*/ u8 _00[5];
     /*0x05*/ u8 _05;
-    /*0x06*/ u8 _06[0xF - 0x6];
+    /*0x06*/ u8 _06[2];
+    /*0x08*/ u8 _08[2]; // indexed by team
+    /*0x0A*/ u8 _0A[2]; // indexed by team
+    /*0x0C*/ u8 _0C[2]; // indexed by team
+    /*0x0E*/ u8 _0E;
     /*0x0F*/ u8 _0F;
     /*0x10*/ u8 _10;
     /*0x11*/ u8 _11;
-    /*0x12*/ u8 _12[0x36 - 0x12];
+    /*0x12*/ s16 _12[2][9]; // indexed by team, slot
     /*0x36*/ u8 _36;
     /*0x37*/ u8 prevMode;
     /*0x38*/ u8 mode;
@@ -135,32 +139,7 @@ typedef struct MenuWork {
 
 extern MenuWork lbl_803297E0;
 
-// lbl_8034E978: current menu screen.
-typedef struct MenuState {
-    /*0x00*/ u8 menu;
-    /*0x01*/ u8 prevMenu;
-    /*0x02*/ u8 prev03;
-    /*0x03*/ u8 _03;
-    /*0x04*/ u8 _04;
-    /*0x05*/ u8 _05;
-    /*0x06*/ u8 _06;
-    /*0x07*/ u8 _07;
-    /*0x08*/ u8 track; // from MenuDef.track of the current menu
-    /*0x09*/ u8 prevTrack;
-    /*0x0A*/ s8 text[10]; // text entries for the menu description
-    /*0x14*/ u8 textCount;
-    /*0x15*/ u8 textCur;
-    /*0x16*/ u8 textDone[10]; // 0xFF: free
-    /*0x20*/ u8 descState;
-    /*0x21*/ u8 _21[2];
-    /*0x23*/ u8 _23;
-    /*0x24*/ u8 _24;
-    /*0x25*/ u8 _25;
-    /*0x26*/ u8 _26;
-    /*0x27*/ u8 _27;
-} MenuState; // size: 0x28
-
-extern MenuState lbl_8034E978;
+#include "main/menu_state.h" // MenuState lbl_8034E978
 
 // Message box with optional voice (lbl_803C50E8 is the shared one).
 typedef struct MsgBox {

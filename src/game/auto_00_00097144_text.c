@@ -8,12 +8,13 @@
 #include "game/rep_2BF8.h"
 #include "game/auto_00_0015C5F4_text.h"
 
-extern s16 lbl_3_data_BE50[][4];  // TODO type: 8-byte entries, first field read here
+extern RepBannerData lbl_3_data_BE50; // rep_16B8.h
 extern u8 lbl_3_data_D648[];      // sprite descriptors for fn_80034E20
 extern u8 lbl_3_data_D7A8[];
 extern u8 lbl_3_data_D9E4[];
 extern u8 lbl_3_data_DA50[];
-extern u8 lbl_3_common_bss_37400[];
+#include "game/rep_36D8.h" // RepBss37400View
+extern RepBss37400View lbl_3_common_bss_37400;
 extern u16 lbl_3_data_DA44[2][3];
 extern u16 lbl_3_data_E0D0[8];
 extern PauseLayout lbl_3_data_D860[];
@@ -53,7 +54,7 @@ void fn_3_97144(void) {
             g_UnkSound_32718._00 = 0x3C;
         }
     }
-    if (lbl_3_data_BE50[g_UnkSound_32718._07][0] >= 0 && started) {
+    if (lbl_3_data_BE50.kinds[g_UnkSound_32718._07][0] >= 0 && started) {
         fn_800B0A5C_insertQueue(fn_3_96CA4, 2);
     }
 }
@@ -115,7 +116,7 @@ void fn_3_973EC(void) {
         if (lbl_3_common_bss_32724._B4 == 1) {
             lbl_3_common_bss_32724._B4 = 2;
             fn_800B0A5C_insertQueue(fn_3_952DC, 2);
-            if (lbl_3_common_bss_37400[0x47] == 2) { // TODO type
+            if (lbl_3_common_bss_37400._47 == 2) {
                 fn_800B0A5C_insertQueue(fn_3_94BC4, 2);
             }
         }

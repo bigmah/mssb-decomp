@@ -15,7 +15,9 @@ typedef struct FieldingChangeWork {
     /*0x014*/ LineupSlot lineup[2][10]; // per team, slot 0 is the pitcher
     /*0x0B4*/ u8 _0B4[0x168 - 0xB4];
     /*0x168*/ s16 savedOrder[2][10][2]; // per team: copy of GameControlsStruct.battingOrderAndPositionMapping
-    /*0x1B8*/ u8 _1B8[0x202 - 0x1B8];
+    /*0x1B8*/ u8 _1B8[0x1D5 - 0x1B8];
+    /*0x1D5*/ u8 _1D5; // nonzero: fielders frozen (rep_AC8 skips fielder input/turning)
+    /*0x1D6*/ u8 _1D6[0x202 - 0x1D6];
     /*0x202*/ u8 changed[2]; // per team: the pitcher was replaced
     /*0x204*/ u8 _204[0x20A - 0x204];
     /*0x20A*/ u8 orderByte[2][9]; // per team: lbl_80354720[team][i]._3

@@ -1702,8 +1702,8 @@ void fn_3_B940(void) {
     if (idx >= 0) {
         fl = &g_Fielders[idx];
         if (g_d_GameSettings.minigamesEnabled != 0) {
-            // TODO type: per-fielder player slot table at g_Minigame + 0x18F2
-            id = g_Minigame.minigameControlStruct[0].characterIndex[((s8*)&g_Minigame)[idx + 0x18F2]];
+            // the original reads g_Minigame + 0x18F2 + idx, i.e. fieldOrder[idx - 2]
+            id = g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame.minigameControlStruct[0].fieldOrder[idx - 2]];
         }
         anim = fl->animID;
         if (anim == 0x11 && g_FieldingLogic._109 != 0) {

@@ -2099,7 +2099,7 @@ void fn_2_5AE54(void) {
     fn_2_53F88(task);
     fn_2_54120();
     if (lbl_2_bss_1A8234->done != 0) {
-        fn_2_53DF8((u8*)task);
+        fn_2_53DF8((MenuTask*)task);
         fn_8000F8F4((LayoutGroup*)task);
         fn_8000FE54();
         fn_2_4E858(task);
@@ -3302,9 +3302,11 @@ void fn_2_5E104(void) {
 }
 #endif
 
+#include "Unknown/File_0x800a64e0.h" // AssetLoadInstructions
+
 // File-load entries and medal names (0x20BF0-0x20C68; read by auto 5E84C, which is this TU's text).
-u8 lbl_2_data_20BF0[16] = {0, 0, 4, 11, 64, 7, 106, 224, 24, 237, 112, 0, 0, 3, 107, 200}; // TODO type: DiskFileEntry
-u8 lbl_2_data_20C00[16] = {0, 0, 0, 0, 0, 0, 101, 38, 8, 234, 224, 0, 0, 0, 101, 40}; // TODO type: DiskFileEntry
+AssetLoadInstructions lbl_2_data_20BF0 = {0x0000040B, {0x40076AE0}, {0x18ED7000}, 0x00036BC8};
+AssetLoadInstructions lbl_2_data_20C00 = {0x00000000, {0x00006526}, {0x08EAE000}, 0x00006528};
 char lbl_2_data_20C10[4][10] = {"none", "bronze", "silver", "gold"};
 s16 lbl_2_data_20C38[8] = {0, 1, 4, 3, 2, 5, 7, 0};
 s16 lbl_2_data_20C48[8] = {0, 1, 3, 4, 2, 5, 7, 0};

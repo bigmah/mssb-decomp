@@ -96,14 +96,7 @@ typedef struct MenuDef {
 
 
 
-// lbl_8010A768: challenge mission definitions [mission set][mission].
-typedef struct ChallengeMission {
-    /*0x0*/ s16 msg;
-    /*0x2*/ s16 type;
-    /*0x4*/ s16 starsNeeded;
-    /*0x6*/ s16 _6;
-    /*0x8*/ s16 _8;
-} ChallengeMission; // size: 0xA
+#include "main/challenge_mission.h" // ChallengeMission
 
 
 

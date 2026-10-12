@@ -10,7 +10,10 @@ struct ActorObject;
 
 // Scene task (fn_800B0A5C_insertQueue) that streams the menu characters in (fn_2_18748).
 typedef struct MenuCharLoadTask {
-    /*0x00*/ u8 _00[0x10];
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ void* prev;
+    /*0x08*/ void* next;
+    /*0x0C*/ void* parent;
     /*0x10*/ s16 timer;
     /*0x12*/ u8 _12[2];
     /*0x14*/ struct CharActor* actor;

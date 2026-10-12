@@ -6,10 +6,12 @@
 #include "menus/auto_00_00000D08_text.h"
 #include "menus/rep_01A0.h"
 #include "static/UnknownHomes_Static.h"
+#include "menus/menu_work.h"
+#include "main/file_80021308.h"
 
-extern u8 lbl_800EF808[];
-extern u8* lbl_803CC1B8[];
-extern u8* lbl_803CBBCC[];
+extern SoundManager lbl_800EF808;
+extern MenuTask* lbl_803CC1B8[];
+extern MenuFlags* lbl_803CBBCC[];
 extern u32 lbl_2_bss_D974[];
 extern s16 lbl_2_bss_D958[];
 extern u8* lbl_2_bss_D984;
@@ -88,6 +90,7 @@ void fn_2_1018(u16 ch) {
 
 // fn_2_10AC, size:0x50
 void fn_2_10AC(u8* data) {
+    // TODO port: relocates the file's two leading 32-bit offsets into pointers in place
     *(u32*)data = *(u32*)data + (u32)data;
     *(u32*)(data + 4) = *(u32*)(data + 4) + (u32)data;
     lbl_2_bss_D974[0] = -1;
@@ -103,21 +106,21 @@ void fn_2_10AC(u8* data) {
 
 // fn_2_10FC, size:0x34
 s32 fn_2_10FC(u8* state) {
-    fn_80021518(0x1F, *(struct SoundGroupData**)(lbl_800EF808 + 0xC)); // TODO type: SoundManager.groups[2]
+    fn_80021518(0x1F, lbl_800EF808.groups[2]);
     return 0;
 }
 
 // fn_2_1130, size:0x34
 void fn_2_1130(s16 value) {
-    u8* object = *(u8**)(lbl_803CC1B8[0] + 0xC);
-    *(s16*)(object + 0x10) = value;
+    MenuTask* object = lbl_803CC1B8[0]->parent;
+    object->_10 = value;
     REMOVE_QUEUE_NOARG();
 }
 
 // fn_2_1164, size:0x38
 void fn_2_1164(void) {
-    u8* object = *(u8**)(lbl_803CC1B8[0] + 0xC);
-    *(s16*)(object + 0x10) = 1;
+    MenuTask* object = lbl_803CC1B8[0]->parent;
+    object->_10 = 1;
     fn_800B0A14_removeQueue(object);
 }
 
@@ -127,13 +130,13 @@ void fn_2_119C(void) {
 
 // fn_2_11A0, size:0x38
 void fn_2_11A0(u16 value) {
-    *(u16*)(lbl_803CBBCC[0] + 6) = *(u16*)(lbl_803CBBCC[0] + 2);
-    *(u16*)(lbl_803CBBCC[0] + 8) = *(u16*)(lbl_803CBBCC[0] + 4);
-    *(u16*)(lbl_803CBBCC[0] + 2) = value;
-    *(u16*)(lbl_803CBBCC[0] + 4) = 0;
+    lbl_803CBBCC[0]->prevScene = lbl_803CBBCC[0]->scene;
+    lbl_803CBBCC[0]->prevStep = lbl_803CBBCC[0]->step;
+    lbl_803CBBCC[0]->scene = value;
+    lbl_803CBBCC[0]->step = 0;
 }
 
 // fn_2_11D8, size:0x44
 void fn_2_11D8(void) {
-    lbl_2_data_138[*(u16*)(lbl_803CBBCC[0] + 2)]();
+    lbl_2_data_138[lbl_803CBBCC[0]->scene]();
 }

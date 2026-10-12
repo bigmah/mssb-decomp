@@ -3,15 +3,15 @@
 #include "header_rep_inline.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/GX/GXPixel.h"
+#include "game/rep_1E08.h" // SprAnim, SprAnimElem, fn_3_BF8F8, fn_3_BFDA4
 
-extern f32 fn_3_BFDA4(void*, s32, f32, s32, u8, u8*);
 
 typedef struct {
     f32 f[12];
 } M12;
 // .bss (laid out last-defined-first)
-static u8 lbl_3_bss_9F34;
-static u8 lbl_3_bss_9F20[0x14];
+static u8 lbl_3_bss_9F34; // 0: start, 1: running, 2: done
+static Rep21F8Logo lbl_3_bss_9F20;
 // .data lbl_3_data_17898..17B98: the stadium-intro logo effect. Separate initialized statics
 // that the code reaches through one pooled base (CW keeps .data in definition order).
 // Keyframe of an effect curve, read by fn_3_BFDA4 (same layout as BFDA4Key in rep_1E08.c).
@@ -23,22 +23,7 @@ typedef struct FxCurveKey {
     u8 a;
     u8 b;
 } FxCurveKey;
-// Effect description: 8 curves (scale x/y, ..., rotation Y/Z, alpha), see fn_3_C9590.
-typedef struct FxCurveSet {
-    /*0x00*/ f32 _00[4];
-    /*0x10*/ u32 _10;
-    /*0x14*/ FxCurveKey* curves[8];
-    /*0x34*/ u8 counts[8];
-    /*0x3C*/ u8 cur[8]; // current key of each curve
-} FxCurveSet;
-typedef struct E21F8 {
-    /*0x00*/ FxCurveSet* set;
-    /*0x04*/ void* tex;
-    /*0x08*/ s32 _08;
-    /*0x0C*/ s32 _0C;
-    /*0x10*/ f32 _10;
-    /*0x14*/ f32 time;
-} E21F8;
+// Effect description (SprAnimElem, game/rep_1E08.h): 8 curves (scale x/y, ..., rotation Y/Z, alpha), see fn_3_C9590.
 static FxCurveKey lbl_3_data_17898[2] = {
     {1.0f, 0.5f, 1, 0, 1, 1},
     {2.0f, 0.0f, 0, 14, 0, 0},
@@ -97,27 +82,25 @@ static FxCurveKey lbl_3_data_17A54[9] = {
     {1.0f, 1.0f, 1, 0, 0, 1},
     {0.0f, 0.0f, 0, 16, 0, 0},
 };
-static FxCurveSet lbl_3_data_17AC0 = {
-    {-1.0f, -0.5f, 1.0f, 1.0f},
-    0,
+static SprAnimElem lbl_3_data_17AC0 = {
+    -1.0f, -0.5f, 1.0f, 1.0f,
+    0, 0,
     {lbl_3_data_17898, lbl_3_data_178B0, lbl_3_data_17910, NULL, NULL, lbl_3_data_17A00, lbl_3_data_17940, lbl_3_data_17A54},
     {2, 3, 2, 0, 0, 1, 1, 3},
     {0, 0, 0, 0, 0, 0, 0, 0},
 };
-static E21F8 lbl_3_data_17B04[5] = {
-    {&lbl_3_data_17AC0, NULL, 0x11, 1, 16.0f, 0.0f},
-    {&lbl_3_data_17AC0, NULL, 0x11, 1, 16.0f, 0.0f},
-    {&lbl_3_data_17AC0, NULL, 0x12, 1, 16.0f, 0.0f},
-    {&lbl_3_data_17AC0, NULL, 0x12, 1, 16.0f, 0.0f},
-    {NULL, NULL, 0, 0, 0.0f, 0.0f},
+static SprAnim lbl_3_data_17B04[5] = { // the four logos (_0C: 1)
+    {&lbl_3_data_17AC0, NULL, 0x11, {0, 0, 0, 1}, 16.0f, 0.0f},
+    {&lbl_3_data_17AC0, NULL, 0x11, {0, 0, 0, 1}, 16.0f, 0.0f},
+    {&lbl_3_data_17AC0, NULL, 0x12, {0, 0, 0, 1}, 16.0f, 0.0f},
+    {&lbl_3_data_17AC0, NULL, 0x12, {0, 0, 0, 1}, 16.0f, 0.0f},
+    {NULL, NULL, 0, {0, 0, 0, 0}, 0.0f, 0.0f},
 };
 u32 lbl_3_data_17B7C = 0xFF;
 static u8 lbl_3_data_17B80 = 1;       // depth test on while drawing
 static f32 lbl_3_data_17B84[5] = {4.0f, 2.0f, 1.0f, 0.9f, 0.0f}; // scale per logo (last entry unused)
-extern u8 lbl_3_common_bss_35154[];
+extern Rep21F8Bss35154 lbl_3_common_bss_35154;
 extern void fn_80034120(Mtx);
-extern void fn_3_BF8F8(void*, Mtx, void*, void*);
-extern void fn_3_C9590(u8*, s32, f32*, f32);
 
 // .text:0x000C9734 size:0x10
 void fn_3_C9734(void) {
@@ -125,74 +108,77 @@ void fn_3_C9734(void) {
 }
 
 // .text:0x000C9590 size:0x1A4 mapped:0x80708624
-void fn_3_C9590(u8* o, s32 k, f32* m, f32 t) {
+f32 fn_3_C9590(SprAnimElem* o, s32 k, MtxPtr m, f32 t) {
     Mtx tmp;
     f32 v;
-    PSMTXIdentity((f32(*)[4])m);
-    m[0] = fn_3_BFDA4(*(void**)(o + 0x14), o[0x34], t, k, o[0x3C], o + 0x3C);
-    m[5] = fn_3_BFDA4(*(void**)(o + 0x18), o[0x35], t, k, o[0x3D], o + 0x3D);
-    if (*(void**)(o + 0x1C) != NULL) {
-        v = fn_3_BFDA4(*(void**)(o + 0x1C), o[0x36], t, k, o[0x3E], o + 0x3E);
+    PSMTXIdentity(m);
+    m[0][0] = fn_3_BFDA4(o->ch[0], o->chMode[0], t, k, o->chState[0], &o->chState[0]);
+    m[1][1] = fn_3_BFDA4(o->ch[1], o->chMode[1], t, k, o->chState[1], &o->chState[1]);
+    if (o->ch[2] != NULL) {
+        v = fn_3_BFDA4(o->ch[2], o->chMode[2], t, k, o->chState[2], &o->chState[2]);
     } else {
         v = 0.0f;
     }
-    m[3] = v;
-    if (*(void**)(o + 0x28) != NULL) {
-        v = fn_3_BFDA4(*(void**)(o + 0x28), o[0x39], t, k, o[0x41], o + 0x41);
+    m[0][3] = v;
+    if (o->ch[5] != NULL) {
+        v = fn_3_BFDA4(o->ch[5], o->chMode[5], t, k, o->chState[5], &o->chState[5]);
     } else {
         v = 0.0f;
     }
     if (v) {
         PSMTXRotRad(tmp, 'Y', v);
-        PSMTXConcat(tmp, (f32(*)[4])m, (f32(*)[4])m);
+        PSMTXConcat(tmp, m, m);
     }
-    if (*(void**)(o + 0x2C) != NULL) {
-        v = fn_3_BFDA4(*(void**)(o + 0x2C), o[0x3A], t, k, o[0x42], o + 0x42);
+    if (o->ch[6] != NULL) {
+        v = fn_3_BFDA4(o->ch[6], o->chMode[6], t, k, o->chState[6], &o->chState[6]);
     } else {
         v = 0.0f;
     }
     if (v) {
         PSMTXRotRad(tmp, 'Z', v);
-        PSMTXConcat(tmp, (f32(*)[4])m, (f32(*)[4])m);
+        PSMTXConcat(tmp, m, m);
     }
-    fn_3_BFDA4(*(void**)(o + 0x30), o[0x3B], t, k, o[0x43], o + 0x43);
+    return fn_3_BFDA4(o->ch[7], o->chMode[7], t, k, o->chState[7], &o->chState[7]);
 }
 
 // .text:0x000C937C size:0x214 mapped:0x80708410
 int fn_3_C937C(void) {
-    u8* b = lbl_3_bss_9F20;
+    Rep21F8Logo* b = &lbl_3_bss_9F20;
+    // TODO type: this is *state, the bss object right after lbl_3_bss_9F20; the original
+    // reaches it through lbl_3_bss_9F20's address (naming it directly changes the codegen).
+    u8* state = (u8*)(b + 1);
     Mtx sm;
     s32 i;
     M12 id = {{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f}};
     Mtx a;
     f32 sc;
-    switch (b[0x14]) {
+    switch (*state) {
     case 0:
-        b[0x14] = 1;
-        *(f32*)(b + 0x10) = 0.0f;
+        *state = 1;
+        b->time = 0.0f;
     case 1:
-        *(f32*)(b + 0x10) += 1.0f;
-        if (*(f32*)(b + 0x10) >= 16.0f) {
-            b[0x14] = 2;
+        b->time += 1.0f;
+        if (b->time >= 16.0f) {
+            *state = 2;
         }
         break;
     }
     fn_80034120(a);
     PSMTXConcat(a, (f32(*)[4])&id, a);
-    sc = lbl_3_data_17B84[b[0]];
+    sc = lbl_3_data_17B84[b->logo];
     PSMTXScale(sm, sc, sc, sc);
     PSMTXConcat(a, sm, a);
-    i = b[0];
-    lbl_3_data_17B04[i].time = *(f32*)(b + 0x10);
-    lbl_3_data_17B04[i].tex = lbl_3_common_bss_35154 + 4;
+    i = b->logo;
+    lbl_3_data_17B04[i]._14 = b->time; // animation time
+    lbl_3_data_17B04[i].textures = &lbl_3_common_bss_35154.tex;
     if (lbl_3_data_17B80 != 0) {
         GXSetZMode(1, 7, 1);
     }
     GXSetBlendMode(1, 4, 6, 0);
-    fn_3_BF8F8(&lbl_3_data_17B04[b[0]], a, b + 4, fn_3_C9590);
+    fn_3_BF8F8(&lbl_3_data_17B04[b->logo], a, b->pos, fn_3_C9590);
     if (lbl_3_data_17B80 != 0) {
         GXSetZMode(1, 3, 1);
     }
     GXSetBlendMode(1, 4, 5, 0);
-    return b[0x14] == 2;
+    return *state == 2;
 }
