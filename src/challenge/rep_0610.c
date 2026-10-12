@@ -4798,6 +4798,26 @@ static inline void getAnimBank(s32 group) {
 
 #endif
 
+#if !NONMATCHING
+// Switch jump tables of fn_1_16978; mwcc emits them itself once the function matches.
+void* jumptable_1_data_F7D4[15] = {
+    (u8*)fn_1_16978 + 0xC94, (u8*)fn_1_16978 + 0xCA8, (u8*)fn_1_16978 + 0xCCC, (u8*)fn_1_16978 + 0xC94,
+    (u8*)fn_1_16978 + 0xCA8, (u8*)fn_1_16978 + 0xCCC, (u8*)fn_1_16978 + 0xC94, (u8*)fn_1_16978 + 0xCA8,
+    (u8*)fn_1_16978 + 0xCCC, (u8*)fn_1_16978 + 0xC94, (u8*)fn_1_16978 + 0xCA8, (u8*)fn_1_16978 + 0xCCC,
+    (u8*)fn_1_16978 + 0xC94, (u8*)fn_1_16978 + 0xCA8, (u8*)fn_1_16978 + 0xCCC,
+};
+void* jumptable_1_data_F810[30] = {
+    (u8*)fn_1_16978 + 0x54, (u8*)fn_1_16978 + 0x8C, (u8*)fn_1_16978 + 0xB4, (u8*)fn_1_16978 + 0xC8,
+    (u8*)fn_1_16978 + 0xF8, (u8*)fn_1_16978 + 0x17C, (u8*)fn_1_16978 + 0x19C, (u8*)fn_1_16978 + 0x248,
+    (u8*)fn_1_16978 + 0x290, (u8*)fn_1_16978 + 0x340, (u8*)fn_1_16978 + 0x388, (u8*)fn_1_16978 + 0x438,
+    (u8*)fn_1_16978 + 0x480, (u8*)fn_1_16978 + 0x530, (u8*)fn_1_16978 + 0x578, (u8*)fn_1_16978 + 0x628,
+    (u8*)fn_1_16978 + 0x670, (u8*)fn_1_16978 + 0x720, (u8*)fn_1_16978 + 0x768, (u8*)fn_1_16978 + 0x81C,
+    (u8*)fn_1_16978 + 0x87C, (u8*)fn_1_16978 + 0x938, (u8*)fn_1_16978 + 0x958, (u8*)fn_1_16978 + 0x9D0,
+    (u8*)fn_1_16978 + 0x9F0, (u8*)fn_1_16978 + 0xA2C, (u8*)fn_1_16978 + 0xA4C, (u8*)fn_1_16978 + 0xC04,
+    (u8*)fn_1_16978 + 0xC34, (u8*)fn_1_16978 + 0xD44,
+};
+#endif
+
 // .text:0x16978 size:0xD74
 // Challenge loader state machine (queue state at +0x10): streams the player's animation banks,
 // models and textures from ARAM, then hands over to fn_1_168C8.
@@ -5826,6 +5846,24 @@ done:
         }
     }
 }
+
+#if !NONMATCHING
+// Switch jump tables of fn_1_135C0; mwcc emits them itself once the function matches.
+void* jumptable_1_data_F690[48] = {
+    (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0xA90, (u8*)fn_1_135C0 + 0x112C,
+    (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C,
+    (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C,
+    (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x10DC, (u8*)fn_1_135C0 + 0x112C,
+    (u8*)fn_1_135C0 + 0x1104, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0xE14, (u8*)fn_1_135C0 + 0xAB8,
+    (u8*)fn_1_135C0 + 0xAE0, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C,
+    (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C,
+    (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0x112C,
+    (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0xA80, (u8*)fn_1_135C0 + 0xA80, (u8*)fn_1_135C0 + 0xA80,
+    (u8*)fn_1_135C0 + 0xA80, (u8*)fn_1_135C0 + 0x10DC, (u8*)fn_1_135C0 + 0xB08, (u8*)fn_1_135C0 + 0x112C,
+    (u8*)fn_1_135C0 + 0xE14, (u8*)fn_1_135C0 + 0xDF0, (u8*)fn_1_135C0 + 0x112C, (u8*)fn_1_135C0 + 0xAE0,
+    (u8*)fn_1_135C0 + 0x1104, (u8*)fn_1_135C0 + 0x1104, (u8*)fn_1_135C0 + 0x1104, (u8*)fn_1_135C0 + 0x1104,
+};
+#endif
 
 // .text:0x135C0 size:0x1150
 // Challenge scene setup: builds the actor tables from the loaded files, binds animation/shape
@@ -7093,6 +7131,18 @@ void fn_1_10044(void) {
         lbl_1_bss_5F71 = 10;
     }
 }
+#endif
+
+#if !NONMATCHING
+// Switch jump tables of fn_1_FB98; mwcc emits them itself once the function matches.
+void* jumptable_1_data_F650[8] = {
+    (u8*)fn_1_FB98 + 0x2BC, (u8*)fn_1_FB98 + 0x2DC, (u8*)fn_1_FB98 + 0x320, (u8*)fn_1_FB98 + 0x360,
+    (u8*)fn_1_FB98 + 0x3A0, (u8*)fn_1_FB98 + 0x3E0, (u8*)fn_1_FB98 + 0x420, (u8*)fn_1_FB98 + 0x430,
+};
+void* jumptable_1_data_F670[8] = {
+    (u8*)fn_1_FB98 + 0xCC, (u8*)fn_1_FB98 + 0xE8, (u8*)fn_1_FB98 + 0x12C, (u8*)fn_1_FB98 + 0x16C,
+    (u8*)fn_1_FB98 + 0x1AC, (u8*)fn_1_FB98 + 0x1EC, (u8*)fn_1_FB98 + 0x22C, (u8*)fn_1_FB98 + 0x24C,
+};
 #endif
 
 // .text:0xFB98 size:0x4AC

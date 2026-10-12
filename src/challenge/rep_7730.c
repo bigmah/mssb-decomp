@@ -853,6 +853,15 @@ void fn_1_25C68(void) {
 }
 #endif
 
+#if !NONMATCHING
+// Switch jump tables of fn_1_25064; mwcc emits them itself once the function matches.
+void* jumptable_1_data_108B4[11] = {
+    (u8*)fn_1_25064 + 0x7C, (u8*)fn_1_25064 + 0x3C4, (u8*)fn_1_25064 + 0x418, (u8*)fn_1_25064 + 0x458,
+    (u8*)fn_1_25064 + 0x498, (u8*)fn_1_25064 + 0x4D8, (u8*)fn_1_25064 + 0x518, (u8*)fn_1_25064 + 0x558,
+    (u8*)fn_1_25064 + 0x598, (u8*)fn_1_25064 + 0x5D8, (u8*)fn_1_25064 + 0x618,
+};
+#endif
+
 // NONMATCHING 86%: the original inlines fn_1_248BC (and fn_1_24A8C/fn_1_247A0) here; ours calls fn_1_248BC
 // .text:0x25064 size:0xC04
 // nmverify: fn_1_248BC inlined on one side (calls match once expanded)
@@ -1258,6 +1267,14 @@ void fn_1_24410(void) {
     }
     *(void (**)(void))lbl_803CC1B8[0] = fn_1_23B54;
 }
+
+#if !NONMATCHING
+// Switch jump tables of fn_1_23B54; mwcc emits them itself once the function matches.
+void* jumptable_1_data_10894[8] = {
+    (u8*)fn_1_23B54 + 0x60, (u8*)fn_1_23B54 + 0xC8, (u8*)fn_1_23B54 + 0x130, (u8*)fn_1_23B54 + 0x15C,
+    (u8*)fn_1_23B54 + 0x1C4, (u8*)fn_1_23B54 + 0x22C, (u8*)fn_1_23B54 + 0x258, (u8*)fn_1_23B54 + 0x2C8,
+};
+#endif
 
 // NONMATCHING 90%: inherits fn_1_22F4C's indexing mismatch (inlined), and the height lookup uses lfs/add instead of lfsx
 // .text:0x23B54 size:0x8BC
@@ -1751,6 +1768,16 @@ void fn_1_22DF4(ChallengeCurveDrawing* arg) {
     fn_80038E2C(&lbl_1_bss_6FB8);
     fn_1_21180(arg);
 }
+
+#if !NONMATCHING
+// Switch jump tables of fn_1_22874; mwcc emits them itself once the function matches.
+void* jumptable_1_data_1085C[14] = {
+    (u8*)fn_1_22874 + 0xEC, (u8*)fn_1_22874 + 0x140, (u8*)fn_1_22874 + 0x190, (u8*)fn_1_22874 + 0x1D8,
+    (u8*)fn_1_22874 + 0x218, (u8*)fn_1_22874 + 0x258, (u8*)fn_1_22874 + 0x298, (u8*)fn_1_22874 + 0x2D8,
+    (u8*)fn_1_22874 + 0x318, (u8*)fn_1_22874 + 0x398, (u8*)fn_1_22874 + 0x3C4, (u8*)fn_1_22874 + 0x3F0,
+    (u8*)fn_1_22874 + 0x450, (u8*)fn_1_22874 + 0x4A8,
+};
+#endif
 
 // NONMATCHING 99.8%: only the prologue's address temps get different GPRs (r5/r7/r9 vs r11/r5/r7)
 // .text:0x22874 size:0x580
@@ -2713,6 +2740,18 @@ void fn_1_1EFF4(void) {
         fn_1_1E5D0(&lbl_1_bss_6BF4);
     }
 }
+
+#if !NONMATCHING
+// Switch jump tables of fn_1_1E90C; mwcc emits them itself once the function matches.
+void* jumptable_1_data_1081C[8] = {
+    (u8*)fn_1_1E90C + 0x3C0, (u8*)fn_1_1E90C + 0x678, (u8*)fn_1_1E90C + 0x678, (u8*)fn_1_1E90C + 0x3EC,
+    (u8*)fn_1_1E90C + 0x450, (u8*)fn_1_1E90C + 0x4B4, (u8*)fn_1_1E90C + 0x518, (u8*)fn_1_1E90C + 0x57C,
+};
+void* jumptable_1_data_1083C[8] = {
+    (u8*)fn_1_1E90C + 0x1CC, (u8*)fn_1_1E90C + 0x678, (u8*)fn_1_1E90C + 0x678, (u8*)fn_1_1E90C + 0x1F8,
+    (u8*)fn_1_1E90C + 0x260, (u8*)fn_1_1E90C + 0x2C8, (u8*)fn_1_1E90C + 0x678, (u8*)fn_1_1E90C + 0x330,
+};
+#endif
 
 // NONMATCHING 98%: f0/f1 swapped in the inlined step/clamp helper (orig negates into a fresh reg), r0/r4 in the modulo paths
 // .text:0x1E90C size:0x6E8
