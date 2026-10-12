@@ -951,21 +951,15 @@ s32 fn_8004D93C(s32 arg) {
 }
 
 // .text:0x8004D990 size:0x200
-// NONMATCHING 97%: the -1/-2 constants are loaded before the arg1 branch in the original
-#if NONMATCHING
 void fn_8004D990(s8 arg0, s32 arg1, u8 table) {
     RosterSelect* rs = &lbl_803C6028;
     s32 i;
-    if (arg1 != 0) {
-        for (i = 0; i < 4; i++) {
-            rs->_78[i] = 0;
-            rs->cursor[i] = -1;
+    for (i = 0; i < 4; i++) {
+        rs->_78[i] = 0;
+        rs->cursor[i] = -1;
+        if (arg1 != 0) {
             rs->_7F[i] = -1;
-        }
-    } else {
-        for (i = 0; i < 4; i++) {
-            rs->_78[i] = 0;
-            rs->cursor[i] = -1;
+        } else {
             rs->_7F[i] = -2;
         }
     }
@@ -984,7 +978,6 @@ void fn_8004D990(s8 arg0, s32 arg1, u8 table) {
         rs->slotOwner[i] = -1;
     }
 }
-#endif
 
 // .text:0x8004DB90 size:0x75C
 // NONMATCHING 91%: register allocation and frame size differ
