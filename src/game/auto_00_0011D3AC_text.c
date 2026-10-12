@@ -10,10 +10,10 @@ extern MinigameAssets lbl_3_common_bss_32724;
 extern MinigameCharMgrAssets lbl_8036E548;
 extern PasswordSlot lbl_80371C30[];
 extern void* lbl_803CC1B8; // current queue task
-extern u8 lbl_803C6CF8[];  // ARAMLoader; [0x715]: transfer done
-extern u8 lbl_3_common_bss_34C90[];
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
+extern MinigamePauseView lbl_3_common_bss_34C90;
 extern u8 lbl_800EFBA4[];
-extern u8 lbl_3_data_225F0[];        // ARAM load instructions at +0x10
+extern AssetLoadInstructions lbl_3_data_225F0[3]; // ARAM load records (rep_3310)
 extern SpaniDesc lbl_3_data_25464[46];        // sprite descriptors (fn_80034E20)
 extern SpaniDesc lbl_3_data_25A24[38];
 extern SpaniDesc lbl_3_data_25EE4[23];
@@ -100,11 +100,11 @@ void fn_3_11D3AC(void) {
 s32 fn_3_11D6A0(void) {
     switch (lbl_3_common_bss_32724.loadState) {
     case 0:
-        lbl_8036E548.file = (u32*)ARAMTransfer(lbl_3_data_225F0 + 0x10, 0, 0, 0); // TODO type
+        lbl_8036E548.file = (u32*)ARAMTransfer(&lbl_3_data_225F0[1], 0, 0, 0);
         lbl_3_common_bss_32724.loadState++;
         break;
     case 1:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             lbl_3_common_bss_32724.loadState++;
         }
         break;
@@ -442,7 +442,7 @@ static inline u32 ScoreBoard_ShouldClose(void) {
         return 1;
     }
     if (g_Minigame.pauseInd != 0) {
-        u8 menu = lbl_3_common_bss_34C90[0x1D2]; // TODO type: MinigameBss34C90View._1D2
+        u8 menu = lbl_3_common_bss_34C90.state;
 
         if (menu == 7 || menu == 9) {
             return 1;
