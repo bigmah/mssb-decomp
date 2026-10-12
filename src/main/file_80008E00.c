@@ -598,6 +598,7 @@ void fn_800097A0(void) {
 #ifdef TARGET_PC
         // user.ini skipfe: set up an exhibition game and load game.rel.
         if (port_skipfe_pending()) {
+            task->state = 8; // case 7 falls through to here
             if (port_skipfe_step()) {
                 // As when the menus end (case 10).
                 fn_80021410();
