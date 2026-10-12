@@ -114,8 +114,6 @@ void fn_80063028(Control* control, Mtx m, u32 flipFlags) {
 
 // Like fn_80063028, but the whole rotation+translation matrix is mirrored in Y.
 // .text:0x800633AC size:0x36C
-// NONMATCHING 99.7%: f1/f2/f3 swapped for the 0.0f/1.0f/cos values in the X-rotation block
-#if NONMATCHING
 void fn_800633AC(Control* control, Mtx m, u32 flipFlags) {
     f32 nRad;
     f32 nSin;
@@ -216,7 +214,6 @@ void fn_800633AC(Control* control, Mtx m, u32 flipFlags) {
     PSMTXConcat(S, e, e);
     PSMTXCopy(e, m);
 }
-#endif
 
 extern u32 lbl_803CB890;
 
