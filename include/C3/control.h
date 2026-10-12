@@ -34,6 +34,18 @@ typedef struct Control {
     /* 0x04 */ ControlParams controlParams;
 } Control;
 
+// View volume used for visibility tests: the 8 corners of the frustum in view space,
+// its projection matrix and the near/far distances.
+typedef struct CTRLFrustum {
+    /* 0x00 */ Vec corners[8];
+    /* 0x60 */ Mtx44 proj;
+    /* 0xA0 */ f32 near;
+    /* 0xA4 */ f32 far;
+} CTRLFrustum; // size 0xA8
+
+// One per view (main.dol common .bss, src/main/common/sFrustums.c).
+extern CTRLFrustum sFrustums[4];
+
 // control.c
 void CTRLSetScale(Control *control, f32 x, f32 y, f32 z);
 void CTRLSetRotation(Control *control, f32 x, f32 y, f32 z);

@@ -1,22 +1,7 @@
 #include "Unknown/File_0x800a6304.h"
 #include "stl/mem.h"
 
-typedef struct
-{
-    u32 _00; // 00
-    u32 _04; // 04
-} lbl_803C6780_inner_struct;
-
-typedef struct
-{
-    u32 tempValue;  // 000
-    u32 count1;     // 004
-    u32 count2;     // 008
-    lbl_803C6780_inner_struct values1[0x20]; // 00C
-    lbl_803C6780_inner_struct values2[0x20]; // 10C
-} lbl_803C6780_struct;
-
-static lbl_803C6780_struct data_803C6780;
+// data_803C6780 (AramStack) is a common global defined in src/main/common/data_803C6780.c.
 
 void fn_800A6304(void)
 {

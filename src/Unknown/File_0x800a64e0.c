@@ -2,7 +2,7 @@
 #include "Dolphin/os.h"
 
 
-DataVars gDataDecompressorValues;
+// gDataDecompressorValues (DataVars) is a common global defined in src/main/common/gDataDecompressorValues.c.
 
 #define LZSS_FLAG_SIZE 1
 #define LZSS_BYTE_SIZE 8

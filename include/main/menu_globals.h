@@ -129,7 +129,8 @@ typedef struct MenuWork {
     /*0xCFA0*/ u8 _CFA0;
     /*0xCFA1*/ u8 _CFA1;
     /*0xCFA2*/ u8 _CFA2[2];
-} MenuWork;
+    /*0xCFA4*/ u8 _CFA4[0x14];
+} MenuWork; // size: 0xCFB8 (from the common block's inflated slot, docs/common_bss.md)
 
 
 extern MenuWork lbl_803297E0;

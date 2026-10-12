@@ -14,6 +14,117 @@ Sections:
 	.sdata2     type:rodata align:4
 	.sbss2      type:bss align:32
 
+main/common/lbl_803297E0.c: order:1
+	.bss        start:0x803297E0 end:0x80366158 align:4 common
+
+main/common/lbl_80366158.c: order:2
+	.bss        start:0x80366158 end:0x80366188 align:4 common
+
+main/common/lbl_80366188.c: order:3
+	.bss        start:0x80366188 end:0x80366218 align:4 common
+
+main/common/lbl_80366218.c: order:4
+	.bss        start:0x80366218 end:0x80367318 align:4 common
+
+main/common/lbl_80367318.c: order:5
+	.bss        start:0x80367318 end:0x8037169C align:4 common
+
+main/common/lbl_8037169C.c: order:6
+	.bss        start:0x8037169C end:0x803716B8 align:4 common
+
+main/common/lbl_803716B8.c: order:7
+	.bss        start:0x803716B8 end:0x80371C30 align:4 common
+
+main/common/lbl_80371C30.c: order:8
+	.bss        start:0x80371C30 end:0x803C5090 align:4 common
+
+main/common/lbl_803C5090.c: order:9
+	.bss        start:0x803C5090 end:0x803C50B0 align:4 common
+
+main/common/lbl_803C50B0.c: order:10
+	.bss        start:0x803C50B0 end:0x803C50E8 align:4 common
+
+main/common/lbl_803C50E8.c: order:11
+	.bss        start:0x803C50E8 end:0x803C5144 align:4 common
+
+main/common/lbl_803C5144.c: order:12
+	.bss        start:0x803C5144 end:0x803C5EA4 align:4 common
+
+main/common/lbl_803C5EA4.c: order:13
+	.bss        start:0x803C5EA4 end:0x803C5EE0 align:4 common
+
+main/common/lbl_803C5EE0.c: order:14
+	.bss        start:0x803C5EE0 end:0x803C5EF8 align:4 common
+
+main/common/lbl_803C5EF8.c: order:15
+	.bss        start:0x803C5EF8 end:0x803C5F04 align:4 common
+
+main/common/lbl_803C5F04.c: order:16
+	.bss        start:0x803C5F04 end:0x803C5F74 align:4 common
+
+main/common/lbl_803C5F74.c: order:17
+	.bss        start:0x803C5F74 end:0x803C6028 align:4 common
+
+main/common/lbl_803C6028.c: order:18
+	.bss        start:0x803C6028 end:0x803C60BC align:4 common
+
+main/common/lbl_803C60BC.c: order:19
+	.bss        start:0x803C60BC end:0x803C639C align:4 common
+
+main/common/lbl_803C639C.c: order:20
+	.bss        start:0x803C639C end:0x803C663C align:4 common
+
+main/common/lbl_803C663C.c: order:21
+	.bss        start:0x803C663C end:0x803C6714 align:4 common
+
+main/common/lbl_803C6714.c: order:22
+	.bss        start:0x803C6714 end:0x803C6724 align:4 common
+
+main/common/lbl_803C6724.c: order:23
+	.bss        start:0x803C6724 end:0x803C6780 align:4 common
+
+main/common/data_803C6780.c: order:24
+	.bss        start:0x803C6780 end:0x803C6990 align:4 common
+
+main/common/gDataDecompressorValues.c: order:25
+	.bss        start:0x803C6990 end:0x803C6CF8 align:4 common
+
+main/common/lbl_803C6CF8.c: order:26
+	.bss        start:0x803C6CF8 end:0x803C7420 align:4 common
+
+main/common/lbl_803C7420.c: order:27
+	.bss        start:0x803C7420 end:0x803C77B8 align:4 common
+
+main/common/lbl_803C77B8.c: order:28
+	.bss        start:0x803C77B8 end:0x803C7838 align:4 common
+
+main/common/lbl_803C7838.c: order:29
+	.bss        start:0x803C7838 end:0x803C7898 align:4 common
+
+main/common/lbl_803C7898.c: order:30
+	.bss        start:0x803C7898 end:0x803C78A4 align:4 common
+
+main/common/lbl_803C78A4.c: order:31
+	.bss        start:0x803C78A4 end:0x803C78C4 align:4 common
+
+main/common/lbl_803C78C4.c: order:32
+	.bss        start:0x803C78C4 end:0x803C7A24 align:4 common
+
+main/common/lbl_803C7A24.c: order:33
+	.bss        start:0x803C7A24 end:0x803C8A24 align:4 common
+
+main/common/lbl_803C8A24.c: order:34
+	.bss        start:0x803C8A24 end:0x803CB1FC align:4 common
+
+main/common/sFrustums.c: order:35
+	.bss        start:0x803CB1FC end:0x803CB49C align:4 common
+
+main/common/lbl_803CB49C.c: order:36
+	.bss        start:0x803CB49C end:0x803CB6FC align:4 common
+
+main/common/lbl_803CB6FC.c: order:37
+	.bss        start:0x803CB6FC end:0x803CB734 align:4 common
+
 main/file_80008E00.c:
 	extab       start:0x80005600 end:0x80005640
 	extabindex  start:0x80006C60 end:0x80006CC0

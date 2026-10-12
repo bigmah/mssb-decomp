@@ -1,5 +1,6 @@
 #include "main/file_800ADC40.h"
 #include "main/file_800A6870.h"
+#include "Unknown/File_0x800a6304.h"
 #include "main/file_80008E00.h"
 #include "static/GameSettings.h"
 #include "static/Camera.h"
@@ -60,8 +61,6 @@ extern ARQRequest lbl_803C7994[2]; // MRAM -> ARAM
 extern MovAramRing lbl_803C79D4;
 extern MovMramRing lbl_803C7A00;
 extern MovSync lbl_803C7420;
-// TODO: static in Unknown/File_0x800a6304.c; first word is the free ARAM byte count.
-extern u32 data_803C6780[];
 
 extern u16 lbl_801101C0[128]; // volume table
 extern YuvTable lbl_801102C0;
@@ -1313,7 +1312,7 @@ void fn_800B05E4(s32 aramSize, u32 mramSize) {
     lbl_803CC1A8 = 0;
     memset(aram, 0, sizeof(MovAramRing));
     if (aramSize == -1) {
-        aram->size = (lbl_803CC1AC < data_803C6780[0]) ? lbl_803CC1AC : data_803C6780[0];
+        aram->size = (lbl_803CC1AC < data_803C6780.tempValue) ? lbl_803CC1AC : data_803C6780.tempValue;
     } else {
         aram->size = (lbl_803CC1AC < (u32)aramSize) ? lbl_803CC1AC : (u32)aramSize;
     }

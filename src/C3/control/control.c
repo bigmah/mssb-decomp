@@ -637,16 +637,7 @@ void CTRL_GetQuatUnk(const Control *control, float *x, float *y, float *z, float
     *w = control->controlParams.q.w;
 }
 
-// View volume used for visibility tests: the 8 corners of the frustum in view space,
-// its projection matrix and the near/far distances.
-typedef struct CTRLFrustum {
-    /* 0x00 */ Vec corners[8];
-    /* 0x60 */ Mtx44 proj;
-    /* 0xA0 */ f32 near;
-    /* 0xA4 */ f32 far;
-} CTRLFrustum; // size 0xA8
-
-static CTRLFrustum sFrustums[4];
+// sFrustums (CTRLFrustum, C3/control.h) is a common global defined in src/main/common/sFrustums.c.
 
 // Box edges and faces by corner index (box corners in the same order as CTRLFrustum.corners).
 // TODO: these live just before control.c's .data in the DOL (0x80111670 / 0x80111688)
