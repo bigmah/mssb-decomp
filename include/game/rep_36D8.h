@@ -174,7 +174,8 @@ typedef struct RepMinigameView {
 typedef struct RepBss37400View {
     /*0x00*/ u8 _00[0x40];
     /*0x40*/ s16 humanPlayer;
-} RepBss37400View;
+    /*0x42*/ u8 _42[0x4E - 0x42];
+} RepBss37400View; // size: 0x4E
 
 // View of g_Ball, only the fields used here.
 typedef struct RepBallView {
