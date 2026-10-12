@@ -183,7 +183,7 @@ void fn_3_7D458(void) {
         fn_3_7CF88();
         g_Stats._38 = 2;
     }
-    if (g_pCamera->views[0]._09A5 != 0) {
+    if (g_pCamera->_AC5 != 0) {
         fn_3_15D7C(0);
         fn_3_15D64();
         if (g_Stats._3C != 12 && g_Stats._3C != 1) {

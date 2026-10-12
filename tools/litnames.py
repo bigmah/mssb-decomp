@@ -72,6 +72,8 @@ def main():
     ap.add_argument("--dry", action="store_true")
     ap.add_argument("--no-trim", action="store_true")
     ap.add_argument("--no-rename", action="store_true")
+    ap.add_argument("--incomplete", action="store_true",
+                    help="also rename jump tables (of matched switch functions) in units with unmatched functions")
     a = ap.parse_args()
     mod = a.module
     cfgdir = Path("config/GYQE01") / mod
@@ -108,7 +110,7 @@ def main():
         if not u["name"].startswith(mod + "/") or not u.get("base_path"):
             continue
         uname = u["name"].split("/", 1)[1]
-        if uname not in complete or (want and uname not in want):
+        if (uname not in complete and not a.incomplete) or (want and uname not in want):
             continue
         srcname = uname + ".c" if not uname.startswith("auto_") else uname
         sp = split_of.get(srcname)
@@ -125,6 +127,8 @@ def main():
             if not a.no_rename and sec != ".bss":
                 for s in ts:
                     if not re.fullmatch(r"(lbl|jumptable)_\d_\w+", s["name"]) or s["name"] in referenced:
+                        continue
+                    if uname not in complete and not s["name"].startswith("jumptable_"):
                         continue
                     tb = tsec[sec][s["value"]:s["value"] + s["size"]]
                     hit = None

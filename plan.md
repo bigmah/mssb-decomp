@@ -55,6 +55,7 @@ Checks that pass on `main` (run them all before declaring a unit done):
 - `tools/nmcheck.py --all`: every `#if NONMATCHING` body compiles with MWCC.
 - `tools/nmverify.py --all`: every equivalent function makes the same calls and touches the same `lbl_*` globals as the original (expected differences carry `// nmverify:` notes). 0 flagged.
 - `tools/litcheck.py --all`: every function (matched or equivalent) loads the same float/string constant values as the original (`report.json` does **not** check these; 17 wrong constants were found this way, 15 in "100%" functions). 0 flagged.
+- `tools/jtcheck.py --all`: every switch jump table (matched: entry by entry; equivalent: case count and which cases share a target) is the original's (`report.json` does **not** compare table contents: 3 "100%" menus functions had swapped case labels). 0 flagged.
 - `tools/protocheck.py`: clang over every unit (as the port builds it, `-DNONMATCHING=1`) compares each declaration with its definition. Game code has 0 ABI mismatches; what remains is SDK/MSL/MusyX (replaced by aurora) and same-ABI integer-width differences.
 
 Known gaps for the port:

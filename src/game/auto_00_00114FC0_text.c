@@ -495,6 +495,19 @@ void fn_3_115C24(void) {
 void fn_3_1160B8(void) {
 }
 
+#if !NONMATCHING
+// Switch jump tables of fn_3_1160BC; mwcc emits them itself once the function matches.
+void* jumptable_3_data_22580[27] = {
+    (u8*)fn_3_1160BC + 0x160, (u8*)fn_3_1160BC + 0x284, (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x494,
+    (u8*)fn_3_1160BC + 0x40, (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x78, (u8*)fn_3_1160BC + 0xE0,
+    (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8,
+    (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x55C,
+    (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8,
+    (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x5C8,
+    (u8*)fn_3_1160BC + 0x5C8, (u8*)fn_3_1160BC + 0x464, (u8*)fn_3_1160BC + 0x48,
+};
+#endif
+
 // fn_3_1160BC, size:0x5E0
 // Wall Ball state dispatcher.
 // NONMATCHING 97%: inlines the same-file state handlers; differences are those of fn_3_115540 (inlined)

@@ -99,9 +99,8 @@ u8 lbl_2_data_2FE7C[8] = {5, 6, 9, 11, 7, 8, 10, 12};
 s32 lbl_2_data_2FE84[10] = {1, 1, 5, 5, 5, 5, 5, 5, 2, 5};
 s32 lbl_2_data_2FEAC[10] = {2, 0xB, 4, 7, 0xA, 2, 8, 0xB, 0x26, 0};
 f32 lbl_2_data_2FED4[3] = {0.0f, 0.0f, 0.0f};
-// lbl_2_data_2FEE0 (Vec, zero) follows, then the jump tables of fn_2_8D270 and fn_2_8DFB0:
-// they stay in the auto split until those functions match.
-extern Vec lbl_2_data_2FEE0;
+Vec lbl_2_data_2FEE0 = {0.0f, 0.0f, 0.0f};
+// The jump tables of fn_2_8D270, fn_2_8DFB0 and fn_2_8EA80 follow (defined next to them while NONMATCHING).
 
 static f32 lbl_2_bss_B2B8;
 typedef struct {
@@ -641,6 +640,15 @@ extern void fn_2_4E824(void);
 extern void fn_2_48DB4(void);
 extern void fn_2_93C64(void);
 
+#if !NONMATCHING
+// Switch jump tables of fn_2_8DFB0; mwcc emits them itself once the function matches.
+void* jumptable_2_data_2FFAC[11] = {
+    (u8*)fn_2_8DFB0 + 0x44, (u8*)fn_2_8DFB0 + 0x78, (u8*)fn_2_8DFB0 + 0xCC, (u8*)fn_2_8DFB0 + 0x4B4,
+    (u8*)fn_2_8DFB0 + 0x4B4, (u8*)fn_2_8DFB0 + 0xEC, (u8*)fn_2_8DFB0 + 0x22C, (u8*)fn_2_8DFB0 + 0x44C,
+    (u8*)fn_2_8DFB0 + 0x458, (u8*)fn_2_8DFB0 + 0x478, (u8*)fn_2_8DFB0 + 0x484,
+};
+#endif
+
 // NONMATCHING 98%: the inlined fn_2_8B2C0 has the same i/off copy and r3/r4 swap as fn_2_8B2C0
 #if NONMATCHING
 // .text:0x8DFB0 size:0x4C8
@@ -728,6 +736,24 @@ extern const f32 lbl_2_rodata_FB8;
         fn_800B2BA8((slot)->actor, (j), NULL, 0); \
         ((MenuModel*)(slot)->actor)->joints[(u16)(j)]->_136 = 1; \
     }
+
+#if !NONMATCHING
+// Switch jump tables of fn_2_8D270; mwcc emits them itself once the function matches.
+void* jumptable_2_data_2FEEC[48] = {
+    (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x678, (u8*)fn_2_8D270 + 0x738,
+    (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x688, (u8*)fn_2_8D270 + 0x738,
+    (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x688, (u8*)fn_2_8D270 + 0x738,
+    (u8*)fn_2_8D270 + 0x6B8, (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x71C, (u8*)fn_2_8D270 + 0x738,
+    (u8*)fn_2_8D270 + 0x72C, (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x70C, (u8*)fn_2_8D270 + 0x6A8,
+    (u8*)fn_2_8D270 + 0x6D8, (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x738,
+    (u8*)fn_2_8D270 + 0x6C8, (u8*)fn_2_8D270 + 0x6C8, (u8*)fn_2_8D270 + 0x6C8, (u8*)fn_2_8D270 + 0x738,
+    (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x738,
+    (u8*)fn_2_8D270 + 0x738, (u8*)fn_2_8D270 + 0x698, (u8*)fn_2_8D270 + 0x698, (u8*)fn_2_8D270 + 0x698,
+    (u8*)fn_2_8D270 + 0x698, (u8*)fn_2_8D270 + 0x71C, (u8*)fn_2_8D270 + 0x6E8, (u8*)fn_2_8D270 + 0x738,
+    (u8*)fn_2_8D270 + 0x70C, (u8*)fn_2_8D270 + 0x700, (u8*)fn_2_8D270 + 0x6B8, (u8*)fn_2_8D270 + 0x6D8,
+    (u8*)fn_2_8D270 + 0x72C, (u8*)fn_2_8D270 + 0x72C, (u8*)fn_2_8D270 + 0x72C, (u8*)fn_2_8D270 + 0x72C,
+};
+#endif
 
 // NONMATCHING 94%: register allocation (slot r28/r29), joint ids compared as s32 (addis), kind test via a flag
 #if NONMATCHING
@@ -1090,6 +1116,14 @@ void fn_2_8E8A4(void) {
         break;
     }
 }
+#endif
+
+#if !NONMATCHING
+// Switch jump tables of fn_2_8EA80; mwcc emits them itself once the function matches.
+void* jumptable_2_data_2FFD8[8] = {
+    (u8*)fn_2_8EA80 + 0x40, (u8*)fn_2_8EA80 + 0x88, (u8*)fn_2_8EA80 + 0xEC, (u8*)fn_2_8EA80 + 0x10C,
+    (u8*)fn_2_8EA80 + 0x168, (u8*)fn_2_8EA80 + 0x1B4, (u8*)fn_2_8EA80 + 0x250, (u8*)fn_2_8EA80 + 0x25C,
+};
 #endif
 
 // .text:0x0008EA80 size:0x2CC

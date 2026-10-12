@@ -14,7 +14,7 @@
 
 // Dust particles kicked up by a fielder's feet or by the ball landing (emitter type 0x1A).
 
-extern s32 lbl_3_data_2A408[]; // dust parameters; fixed point values are /100000
+s32 lbl_3_data_2A408[16] = {41, 120, 240, 40, 10, 80000, 10000, 15000, 10000, 300, 10, 60, 200, 55, 26, 0}; // dust parameters; fixed point values are /100000
 extern TexArchive* lbl_803CBD0C;
 extern DustFielder g_Fielders[9];
 extern u16 lbl_3_data_81DC[];               // first stadium sound id, per stadium

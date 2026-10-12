@@ -2944,6 +2944,23 @@ void fn_3_BF20C(void) {
     fn_8006C3F0(NULL);
 }
 
+#if !NONMATCHING
+// Switch jump table of fn_3_BF238; mwcc emits it itself once the function matches.
+void* jumptable_3_data_17198[44] = {
+    (u8*)fn_3_BF238 + 0x80, (u8*)fn_3_BF238 + 0x94, (u8*)fn_3_BF238 + 0xA8, (u8*)fn_3_BF238 + 0xC0,
+    (u8*)fn_3_BF238 + 0x140, (u8*)fn_3_BF238 + 0x140, (u8*)fn_3_BF238 + 0x2A8, (u8*)fn_3_BF238 + 0x2A8,
+    (u8*)fn_3_BF238 + 0x80, (u8*)fn_3_BF238 + 0x94, (u8*)fn_3_BF238 + 0xA8, (u8*)fn_3_BF238 + 0xC0,
+    (u8*)fn_3_BF238 + 0x17C, (u8*)fn_3_BF238 + 0x17C, (u8*)fn_3_BF238 + 0x17C, (u8*)fn_3_BF238 + 0x2EC,
+    (u8*)fn_3_BF238 + 0x2EC, (u8*)fn_3_BF238 + 0x2EC, (u8*)fn_3_BF238 + 0x80, (u8*)fn_3_BF238 + 0x94,
+    (u8*)fn_3_BF238 + 0xA8, (u8*)fn_3_BF238 + 0xC0, (u8*)fn_3_BF238 + 0x1B8, (u8*)fn_3_BF238 + 0x330,
+    (u8*)fn_3_BF238 + 0x80, (u8*)fn_3_BF238 + 0x94, (u8*)fn_3_BF238 + 0xA8, (u8*)fn_3_BF238 + 0xC0,
+    (u8*)fn_3_BF238 + 0x1F4, (u8*)fn_3_BF238 + 0x374, (u8*)fn_3_BF238 + 0x80, (u8*)fn_3_BF238 + 0x94,
+    (u8*)fn_3_BF238 + 0xA8, (u8*)fn_3_BF238 + 0xC0, (u8*)fn_3_BF238 + 0x230, (u8*)fn_3_BF238 + 0x3B8,
+    (u8*)fn_3_BF238 + 0x80, (u8*)fn_3_BF238 + 0x94, (u8*)fn_3_BF238 + 0xA8, (u8*)fn_3_BF238 + 0xC0,
+    (u8*)fn_3_BF238 + 0x26C, (u8*)fn_3_BF238 + 0x26C, (u8*)fn_3_BF238 + 0x3FC, (u8*)fn_3_BF238 + 0x3FC,
+};
+#endif
+
 // .text:0x000BF238 size:0x488 mapped:0x806FE2CC
 // NONMATCHING 80%: original recomputes &shapes[i-K] from the bss symbol in every case (no strength reduction) and uses one fewer saved reg
 #if NONMATCHING

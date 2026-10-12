@@ -85,8 +85,12 @@ extern const f32 lbl_3_rodata_3A44;
 
 extern Vec lbl_3_data_26E00[];
 extern const Vec lbl_3_rodata_3908;
-extern EffectData266A8 lbl_3_data_266A8;
-extern EffectData26894 lbl_3_data_26894;
+extern f32 lbl_3_data_266A8[];
+// lbl_3_data_266A8 and the tables after it, read through one pooled view (the original does the same).
+#define EFFECT266A8 ((EffectData266A8*)lbl_3_data_266A8)
+extern s32* lbl_3_data_268E4[]; // spark parameter sets, then (from [6]) per-character V3I offsets
+extern u32 lbl_3_data_26B84[];
+extern f32 lbl_3_data_26B94[];
 extern Vec lbl_3_data_26BB4;
 extern f64 __fabs(f64);
 extern f32 __fabsf(f32);
@@ -3864,7 +3868,7 @@ void fn_3_156D04(u32 n, f32 x, f32 y, f32 z) {
     f32 size;
     f32 h;
     s32 i;
-    colors = lbl_3_data_26894.colors;
+    colors = lbl_3_data_26B84;
     ci = EFFECT_MG_OBJS[n].colorIdx;
     k = lbl_3_rodata_392C / fn_80052768_getCamera(0)->zoom;
     fn_800B24D4(0xD);
@@ -3895,7 +3899,7 @@ void fn_3_156D04(u32 n, f32 x, f32 y, f32 z) {
         case 0:
         case 4:
         case 7:
-            PSVECScale(&oldPos, scale * (lbl_3_data_26894.trailScale[0] + ((f32)i * (lbl_3_data_26894.trailScale[1] - lbl_3_data_26894.trailScale[0])) / lbl_3_rodata_3A30), &trail);
+            PSVECScale(&oldPos, scale * (lbl_3_data_26B94[0] + ((f32)i * (lbl_3_data_26B94[1] - lbl_3_data_26B94[0])) / lbl_3_rodata_3A30), &trail);
             PSVECAdd(&newPos, &trail, &trail);
             if (i >= 4) {
                 size = (f32)(7 - i) * lbl_3_rodata_39F0 + lbl_3_rodata_392C;
@@ -3978,7 +3982,7 @@ void fn_3_1573AC(struct CharActor* o) {
     ParticleParams5** t;
     s16* q;
     s32 i;
-    e = lbl_3_data_26894.offsets;
+    e = ((V3I*)&lbl_3_data_268E4[6]);
     pos.x = (f32)e[o->kind].x / lbl_3_rodata_3930;
     pos.y = (f32)e[o->kind].y / lbl_3_rodata_3930;
     pos.z = (f32)e[o->kind].z / lbl_3_rodata_3930;
@@ -3989,12 +3993,12 @@ void fn_3_1573AC(struct CharActor* o) {
     dir.y = dir.x = lbl_3_rodata_3934[0];
     dir.z = lbl_3_rodata_392C;
     PSMTXMultVec(m, &dir, &dir);
-    t = lbl_3_data_26894.sparks;
+    t = ((ParticleParams5**)lbl_3_data_268E4);
     t[0]->tex = t[1]->tex = t[2]->tex = lbl_3_common_bss_32724.textures[2];
-    q = lbl_3_data_266A8.sparkTex[0];
+    q = EFFECT266A8->sparkTex[0];
     q += o->index * 2;
     t[0]->texIndex = t[1]->texIndex = q[1];
-    fn_80030D88(&pos, &dir, lbl_3_data_26894.sparks[0], 0x29);
+    fn_80030D88(&pos, &dir, ((ParticleParams5**)lbl_3_data_268E4)[0], 0x29);
     fn_80030D88(&pos, &dir, t[1], 0x29);
     fn_80030D88(&pos, &dir, t[2], 0x29);
 }
@@ -4038,7 +4042,7 @@ void fn_3_15767C(void) {
     Vec pos;
     Vec dir;
     Vec diff;
-    EffectData266A8* d = &lbl_3_data_266A8;
+    EffectData266A8* d = EFFECT266A8;
     EffectMgObj* f;
     Vec* tgt;
     u32 i;
@@ -4162,8 +4166,8 @@ u32 fn_3_157AC4(Emitter* o) {
     w = lbl_3_rodata_3A44 * r;
     p->sizeY = w;
     p->sizeX = w;
-    p->pos.x = g_Minigame._1AE0 + dir.x + p->sizeX * lbl_3_data_266A8.scale[0];
-    p->pos.y = g_Minigame._1AE4 + dir.y + p->sizeY * lbl_3_data_266A8.scale[1];
+    p->pos.x = g_Minigame._1AE0 + dir.x + p->sizeX * EFFECT266A8->scale[0];
+    p->pos.y = g_Minigame._1AE4 + dir.y + p->sizeY * EFFECT266A8->scale[1];
     p->pos.z = g_Minigame._1AE8 + dir.z;
     fn_8003403C(p->sizeX, p->sizeY);
     fn_80033CC8(o->particles, lbl_3_common_bss_32724.textures[0]);
@@ -4185,3 +4189,113 @@ u32 fn_3_157AC4(Emitter* o) {
 #endif
 
 #pragma dont_inline off
+
+// .data of this file (0x266A8-0x26F00). The code reaches most of it through one pooled base
+// (lbl_3_data_266A8 + offset), so the objects must stay in this order.
+// .data 0x000266A8..0x00026F00
+f32 lbl_3_data_266A8[3] = {0.45f, -0.4f, 0.0f};
+s32 lbl_3_data_266B4[80] = {
+    21, 2, 240000, 0, 0, 4, 2, 120000,
+    90000, 0, 155, 500000, 1000000, -500000, 500000, -256,
+    0, -28000, 1, 0, 7, 4, 78000, 60000,
+    50000, 12, 6, 109000, 101000, 0, 60, 4500000,
+    9500000, -1000000, 4500000, -256, 0, 0, 0, 0,
+    18, 0, 90000, 120000, 10000, 20, 10, 103000,
+    105999, 0, 60, 10000000, 18000000, 1000000, -1000000, 0x3c3c3c00,
+    0, 0, 0, 0, 20, 8, 0, 250000,
+    50000, 550000, 0, 0, 12, 13, 14, 15,
+    16, 17, 18, 19, 720906, 983054, 1114128, 851980,
+}; // particle parameters (x100000 fixed point), reached from lbl_3_data_266A8
+s32 lbl_3_data_267F4[20] = {
+    0, 10, 3, 100000, 30000, 10000, 12, 8,
+    110000, 50000, 0, 60, 4500000, 20000000, 0, 2000000,
+    -256, 0, 75000, 0,
+}; // particle parameters (x100000 fixed point)
+s32 lbl_3_data_26844[20] = {
+    0, 10, 5, 18000, 20000, 60000, 12, 6,
+    109000, 101000, 0, 60, 4500000, 9400000, -1000000, 4500000,
+    -256, 0, 75000, 0,
+}; // particle parameters (x100000 fixed point)
+s32 lbl_3_data_26894[20] = {
+    0, 18, 1, 60000, 10000, 50000, 30, 8,
+    104000, 106000, 0, 90, 12800000, 10000000, 1000000, 6000000,
+    0x3c3c3c00, 0, 75000, 0,
+}; // particle parameters (x100000 fixed point)
+// Parameter sets by effect id (code reaches it as lbl_3_data_266A8 + 0x23C).
+s32* lbl_3_data_268E4[168] = {lbl_3_data_267F4, lbl_3_data_26844, lbl_3_data_26894};
+u32 lbl_3_data_26B84[4] = {0xFF0000FF, 0x0000FFFF, 0xFFFF00FF, 0x00FF00FF}; // RGBA colours (lbl_3_data_266A8 + 0x4DC)
+f32 lbl_3_data_26B94[2] = {-0.4f, 6.0f}; // trail scale range (lbl_3_data_266A8[0x13B..0x13C])
+u32 lbl_3_data_26B9C[4] = {
+    0x00000000, 0x00010000, 0x00010001, 0x00000001,
+};
+f32 lbl_3_data_26BAC = -0.2f;
+f32 lbl_3_data_26BB0 = 3.0f;
+Vec lbl_3_data_26BB4 = {0.087f, -0.757f, 0.001f};
+s32 lbl_3_data_26BC0[7] = {
+    3, 32, 0, 35000, 0, 255, 32,
+};
+s32 lbl_3_data_26BDC[4] = {
+    16, 0, 255, 28,
+};
+s32 lbl_3_data_26BEC[4] = {
+    0, 150000, 0, 16,
+};
+s32 lbl_3_data_26BFC[4] = {
+    0, 15000, 0, 32,
+};
+s32 lbl_3_data_26C0C[4] = {
+    100000, 100000, 10000, 64,
+};
+f32 lbl_3_data_26C1C[8] = {
+    -0.75f, 0.699999988f, 0.75f, 0.699999988f, -0.75f, -0.699999988f, 0.75f, -0.699999988f,
+};
+s32 lbl_3_data_26C3C[22] = {
+    2, 32, 0, 50000, 0, 255, 32, 15,
+    9, 150, 40000, 70000, 30000, 80000, 4400, 50000,
+    12000, 15000, 0, 104719, 60, 29,
+};
+s32 lbl_3_data_26C94[9] = {
+    2, 90, 200000, 100000, 0, 0, 255, 36,
+    30,
+};
+u8 lbl_3_data_26CB8[24] = {4, 5, 6, 7, 8, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 28, 29, 30, 31, 32, 33, 34, 35, 0};
+s32 lbl_3_data_26CD0[12] = {
+    2, 6, 40, 100000, 50000, 0, 255, 127,
+    0, 40000, 440, 31,
+};
+s32 lbl_3_data_26D00[20] = {6, 5, 645, 5, 0, 600000, 800000, 0, 255, 0, 2, 0, 200000, 300000, 0, 255, 0, 20, 20, 32};
+Vec lbl_3_data_26D50[1] = {
+    {3.70000005f, -9.30000019f, 0.0f},
+};
+s32 lbl_3_data_26D5C[11] = {
+    7, 1, 8, 5, 0, 1000000, 1200000, 0,
+    255, 0, 33,
+};
+s32 lbl_3_data_26D88[15] = {
+    8, 5, 30, 5, 0, 250000, 400000, 255,
+    255, 255, 0, 80, 0, 100000, 34,
+};
+s32 lbl_3_data_26DC4[15] = {
+    8, 16, 30, 15, 250000, 375000, 500000, 0,
+    0, 0, 255, 127, 0, 100000, 34,
+};
+Vec lbl_3_data_26E00[3] = {
+    {2.03500009f, -5.71799994f, 1.01400006f}, {1.79299998f, -4.52299976f, 0.913999975f}, {1.28999996f, -4.11899996f, 0.814999998f},
+};
+s32 lbl_3_data_26E24[7] = {
+    3, 16, 100, 0, 30000, 0, 255,
+};
+s32 lbl_3_data_26E40[15] = {
+    8, 6, 60, 30000, 5, 0, 100000, 40000,
+    50000, 0, 220, 0, 30000, 15000, 36,
+};
+s32 lbl_3_data_26E7C[8] = {
+    100, 5000, 1200000, 15000, 15000, 0, 60, 37,
+};
+s32 lbl_3_data_26E9C[25] = {
+    6, 30, 4, 5, 0, 250000, 350000, 0,
+    255, 0, 5, 20, 7, 2, 0, 250000,
+    350000, 0, 120, 0, 0, 4259909, 5046345, 4128768,
+    0,
+};
+

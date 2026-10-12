@@ -83,13 +83,13 @@ void fn_800A7DB0(void) {
 }
 
 // .text:0x800A7E00 size:0x110
-// NONMATCHING 98.0%: int->float magic constant lives in unsplit .sdata2 (reloc name differs); lis order of &GXNtsc480Int vs &lbl_803C7420 swapped
-#if NONMATCHING
 void fn_800A7E00(void) {
+    GXBool filterOn;
     GXRenderModeObj* rmode = &lbl_803C7420.renderModeCopy;
+
     GXAdjustForOverscan(&GXNtsc480Int, rmode, 0, 16);
-    lbl_803C7420.renderMode = rmode;
-    VIConfigure(rmode);
+    lbl_803C7420.renderMode = &lbl_803C7420.renderModeCopy;
+    VIConfigure(&lbl_803C7420.renderModeCopy);
     VIFlush();
     VIWaitForRetrace();
     VIWaitForRetrace();
@@ -98,10 +98,10 @@ void fn_800A7E00(void) {
     GXSetDispCopyDst(lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->xfbHeight);
     GXSetDispCopyYScale((f32)lbl_803C7420.renderMode->xfbHeight / (f32)lbl_803C7420.renderMode->efbHeight);
     GXSetScissor(0, 0, lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->efbHeight);
-    GXSetCopyFilter(lbl_803C7420.renderMode->aa, lbl_803C7420.renderMode->sample_pattern, GX_TRUE,
+    filterOn = GX_TRUE;
+    GXSetCopyFilter(lbl_803C7420.renderMode->aa, lbl_803C7420.renderMode->sample_pattern, filterOn,
                     lbl_803C7420.renderMode->vfilter);
 }
-#endif
 
 // .text:0x800A7F10 size:0x1D8
 void fn_800A7F10(BOOL reset) {
@@ -140,11 +140,10 @@ extern char lbl_800E77C8[];
 extern char lbl_800E77D4[];
 
 // .text:0x800A80E8 size:0x3DC
-// NONMATCHING 98.1%: int->float magic constant and 0.0f/1.0f live in unsplit .sdata2 (reloc names differ); xfb address computation scheduled slightly differently
-#if NONMATCHING
 void initRenderMode(GXRenderModeObj* rmode, u32 fifoSize, u32 overscan) {
     OSThread* thread = &lbl_803C7420.drawThread;
     u8* arenaLo;
+    int xfbSize;
     u8* arenaHi;
     u8* fifoBase;
     u8* heapLo;
@@ -181,9 +180,9 @@ void initRenderMode(GXRenderModeObj* rmode, u32 fifoSize, u32 overscan) {
 
     arenaLo = OSGetArenaLo();
     arenaHi = OSGetArenaHi();
+    xfbSize = (u16)((lbl_803C7420.renderMode->fbWidth + 15) & ~15) * lbl_803C7420.renderMode->xfbHeight;
     lbl_803C7420.xfb = (void*)OSRoundUp32B(arenaLo);
-    fifoBase = (u8*)OSRoundUp32B((u8*)lbl_803C7420.xfb + (u16)((lbl_803C7420.renderMode->fbWidth + 15) & ~15) *
-                                                            lbl_803C7420.renderMode->xfbHeight * 2);
+    fifoBase = (u8*)OSRoundUp32B((u8*)lbl_803C7420.xfb + xfbSize * 2);
     lbl_803C7420.fifoBase = fifoBase;
     lbl_803C7420.fifo = GXInit(fifoBase, fifoSize);
     heapLo = fifoBase + fifoSize;
@@ -221,7 +220,6 @@ void initRenderMode(GXRenderModeObj* rmode, u32 fifoSize, u32 overscan) {
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     VISetBlack(FALSE);
 }
-#endif
 
 // .text:0x800A84C4 size:0x54
 void fn_800A84C4(u32 retraceCount) {
@@ -1350,6 +1348,7 @@ void fn_800A9E34(u8 chan, u8 mode, u64 serial) {
 
 // .text:0x800A9ECC size:0x480
 // NONMATCHING 84%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// jtcheck: steps 0-3 share one arm (the CardMountSteps helper switches on them itself)
 // nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800A9ECC(void) {
@@ -1479,6 +1478,7 @@ void fn_800AA34C(u8 chan, u8 mode, char* fileName, u64 serial, u8 setSerial) {
 
 // .text:0x800AA44C size:0x4E4
 // NONMATCHING 80%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// jtcheck: all steps 0-8 present; with 0-3 sharing the CardMountSteps arm mwcc picks compares, not a table
 // nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AA44C(void) {
@@ -1587,6 +1587,7 @@ void fn_800AA930(CardRequest* req, u64 serial) {
 
 // .text:0x800AAA70 size:0x474
 // NONMATCHING 76%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// jtcheck: steps 0-3 share one arm (the CardMountSteps helper switches on them itself)
 // nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AAA70(void) {
@@ -1675,6 +1676,7 @@ void fn_800AAEE4(CardRequest* req, u64 serial) {
 
 // .text:0x800AAFEC size:0x488
 // NONMATCHING 78%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// jtcheck: steps 0-3 share one arm (the CardMountSteps helper switches on them itself)
 // nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AAFEC(void) {
@@ -1753,6 +1755,7 @@ void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial) {
 
 // .text:0x800AB534 size:0x5E0
 // NONMATCHING 84%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// jtcheck: steps 0-3 share one arm (the CardMountSteps helper switches on them itself)
 // nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AB534(void) {

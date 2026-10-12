@@ -148,6 +148,7 @@ KinokoNode lbl_3_data_2A320[2] = {
     { 0, fn_3_169984 },
     { 0, fn_3_169984 },
 };
+s8 lbl_3_data_2A330 = -1; // ribbon sway direction (+1/-1)
 typedef struct {
     void* p[8];
     f32 v[3];

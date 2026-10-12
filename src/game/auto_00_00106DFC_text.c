@@ -1,15 +1,27 @@
 #include "game/auto_00_00106DFC_text.h"
-#define MINIGAME_CHECK_AI_INPUT_DEFINED
+// UnknownHomes_Game.h gives the typed globals; its guessed prototype of this unit's
+// minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased disagrees, so hide it.
+#define minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased UHG_minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased
 #include "game/UnknownHomes_Game.h"
+#undef minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased
 #include "static/GameSettings.h"
-#include "game/auto_00_001658F0_text.h"
-#include "game/auto_00_00097144_text.h"
-#include "main/file_80008E00.h"
-#include "main/file_8001FE00.h"
-#include "main/file_8004C5F8.h"
-#include "main/file_800639BC.h"
-#include "main/file_80011640.h"
-#include "main/file_80069BDC.h"
+#include "game/auto_00_000AC9F8_text.h" // PauseMenuState lbl_3_common_bss_34C90
+#include "main/file_80069BDC.h"         // StatInput, gChallengeState
+#include "main/file_800639BC.h"         // CharSelectLayout lbl_803616CC, CharSelectState lbl_8034E9A0
+#include "main/file_80011640.h"         // CharMgr lbl_8036E548
+#include "main/file_8001FE00.h"         // SceneFade lbl_8037169C
+#include "main/file_80008E00.h"         // lbl_80366158
+#include "main/file_8004C5F8.h"         // RosterSelect lbl_803C6028, ConfirmDialog lbl_803C5F74
+#include "game/auto_00_001658F0_text.h" // StarChanceState
+
+extern StarChanceState lbl_3_common_bss_37400;
+extern ARAMLoaderView lbl_803C6CF8;
+extern HudFlagsView lbl_3_common_bss_32724;
+extern RandSeedView lbl_3_data_228;
+
+// Character id -> its stats in the character-select roster ([id / 9][id % 9]).
+#define CHAR_STATS(id) (&lbl_8034E9A0.roster[0][0] + (id))
+extern GameScores g_Scores;
 
 // .data 0x21268..0x222A8: this TU's tables, many of them read by the minigame units
 // (rep_31F0 .. rep_37A8) as globals. Element types follow their readers.
@@ -170,16 +182,13 @@ extern void fn_3_10952C(void);
 extern void fn_3_5B368(void);
 extern s32 fn_3_5B220(s32);
 extern void fn_3_10EFAC(void);
-extern u8 lbl_803C6CF8[];
 extern u8 lbl_3_data_20FDC[];
-extern u8 lbl_3_data_228[];
 extern u8 lbl_3_data_18910[];
 extern u8 lbl_800E86F0[];
 extern void fn_3_10BE7C(void);
 extern void fn_80062A74(void);
 extern void fn_80062A94(void);
 extern void fn_3_10B27C(void);
-extern void fn_8006C398(StatInput* in);
 extern void fn_3_1079C8(u8*, s32);
 extern u8 lbl_800E86F0[];
 extern void* _OSAllocFromHeap(s32, s32);
@@ -199,7 +208,6 @@ extern void* memcpy(void*, const void*, unsigned long);
 extern void fn_3_9DC18(void*, s32, s32);
 extern void manageStadiumLoading(void);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
-extern s32 fn_3_107D34(u8*, u8*);
 extern void fn_3_9E078(s32*, s32, s32);
 extern void changeScene(s32, s32);
 extern void fn_3_1128E8(void);
@@ -237,14 +245,14 @@ void fn_3_10F550(s8 a, s16 b) {
 
 // fn_3_106DFC, size:0x54
 void fn_3_106DFC(void) {
-    g_Camera.views[0]._0990 = _OSAllocFromHeap(4, 0x8000);
-    g_Camera.views[1]._0990 = _OSAllocFromHeap(4, 0x8000);
+    g_Camera._AB0 = _OSAllocFromHeap(4, 0x8000);
+    g_Camera._146C = _OSAllocFromHeap(4, 0x8000);
 }
 
 // fn_3_106E50, size:0x60
 s32 fn_3_106E50(void) {
-    if ((s32)lbl_803C6CF8[0x715] == 1) {
-        g_Camera.views[0]._0094 = ARAMTransfer(lbl_3_data_20FDC, 0, 0, 0);
+    if ((s32)lbl_803C6CF8._715 == 1) {
+        g_Camera._1B4 = ARAMTransfer(lbl_3_data_20FDC, 0, 0, 0);
         return 1;
     }
     return 0;
@@ -263,14 +271,14 @@ s32 fn_3_107988(u32 v) {
 }
 
 // fn_3_109D88, size:0x58
-u8* fn_3_109D88(void) {
+RankEnt* fn_3_109D88(void) {
     if (g_Minigame._1A3C != 0) {
-        return (u8*)lbl_803616CC.tail;
+        return (RankEnt*)lbl_803616CC.tail;
     }
     if (g_Minigame.GameMode_MiniGame != 0) {
-        return (u8*)lbl_803616CC.groups[g_Minigame.GameMode_MiniGame - 1];
+        return (RankEnt*)lbl_803616CC.groups[g_Minigame.GameMode_MiniGame - 1];
     }
-    return (u8*)&lbl_803616CC;
+    return (RankEnt*)lbl_803616CC.head;
 }
 
 // fn_3_107D70, size:0x44
@@ -341,26 +349,23 @@ u8 fn_3_107CD0(void) {
         i++;
         p++;
     } while (i < g_Minigame.miniGameNumberOfParticipants);
-    fn_800246D4((s32 (*)(void*, void*))fn_3_107D34, arr, arr, 1, g_Minigame.miniGameNumberOfParticipants);
+    fn_800246D4(fn_3_107D34, arr, arr, 1, g_Minigame.miniGameNumberOfParticipants);
     return arr[0];
 }
 
 // fn_3_1078F8, size:0x90
 void fn_3_1078F8(void) {
     u32 i;
-    u8* p;
-    memset(&g_Minigame._1E04, 0, sizeof(MiniGameStruct) - OFFSET_OF(MiniGameStruct, _1E04));
+    memset(&g_Minigame._1E04, 0, 0x28);
     g_Minigame._1A3D = 0;
     g_Minigame._1A3F = 0;
     lbl_8036E548._307E = 0;
-    p = (u8*)&g_Minigame; // byte cursor, as the original steps it
     i = 0;
     do {
-        p[OFFSET_OF(MiniGameStruct, _1E1C)] = i + 1;
+        g_Minigame._1E1C[i] = i + 1;
         i++;
-        p++;
     } while (i < 6);
-    fn_3_9DC18(&g_Minigame._1E1C[0], 6, 0);
+    fn_3_9DC18(g_Minigame._1E1C, 6, 0);
     fn_3_5A6D4(0x28);
 }
 
@@ -405,12 +410,12 @@ void fn_3_10AE18(void) {
 void fn_3_10768C(void) {
     switch (g_GameLogic._125) {
     case 0:
-        g_Minigame.GameMode_MiniGame = g_Minigame._1E1C[(g_Minigame._1E2A++)];
+        g_Minigame.GameMode_MiniGame = g_Minigame._1E1C[g_Minigame._1E2A++];
         changeScene(1, 6);
         g_GameLogic._125 = 1;
         break;
     case 1:
-        if (((HudTask*)g_Minigame._1E04)->_1A != 0) {
+        if (((MinigameTask*)g_Minigame._1E04)->_1A != 0) {
             changeScene(3, 6);
             g_GameLogic._125 = 2;
         }
@@ -430,35 +435,35 @@ void fn_3_10768C(void) {
 }
 
 // fn_3_107B9C, size:0x34
-s32 fn_3_107B9C(u8* a, u8* b) {
-    if ((&g_Minigame._1E26[0])[*b] != (&g_Minigame._1E26[0])[*a]) {
-        return (&g_Minigame._1E26[0])[*b] - (&g_Minigame._1E26[0])[*a];
+s32 fn_3_107B9C(void* a, void* b) {
+    if (g_Minigame._1E26[*(u8*)b] != g_Minigame._1E26[*(u8*)a]) {
+        return g_Minigame._1E26[*(u8*)b] - g_Minigame._1E26[*(u8*)a];
     }
-    return *a - *b;
+    return *(u8*)a - *(u8*)b;
 }
 
 // fn_3_107BD0, size:0x34
-s32 fn_3_107BD0(u8* a, u8* b) {
-    if ((&g_Minigame._1E22[0])[*b] != (&g_Minigame._1E22[0])[*a]) {
-        return (&g_Minigame._1E22[0])[*b] - (&g_Minigame._1E22[0])[*a];
+s32 fn_3_107BD0(void* a, void* b) {
+    if (g_Minigame._1E22[*(u8*)b] != g_Minigame._1E22[*(u8*)a]) {
+        return g_Minigame._1E22[*(u8*)b] - g_Minigame._1E22[*(u8*)a];
     }
-    return *a - *b;
+    return *(u8*)a - *(u8*)b;
 }
 
 // fn_3_107C04, size:0x3C
-s32 fn_3_107C04(u8* a, u8* b) {
-    if (g_Minigame.miniGameCurrentPoints[(*b)] != g_Minigame.miniGameCurrentPoints[(*a)]) {
-        return g_Minigame.miniGameCurrentPoints[(*b)] - g_Minigame.miniGameCurrentPoints[(*a)];
+s32 fn_3_107C04(void* a, void* b) {
+    if (g_Minigame.miniGameCurrentPoints[*(u8*)b] != g_Minigame.miniGameCurrentPoints[*(u8*)a]) {
+        return g_Minigame.miniGameCurrentPoints[*(u8*)b] - g_Minigame.miniGameCurrentPoints[*(u8*)a];
     }
-    return *a - *b;
+    return *(u8*)a - *(u8*)b;
 }
 
 // fn_3_107D34, size:0x3C
-s32 fn_3_107D34(u8* a, u8* b) {
-    if (g_Minigame.minigamePoints_current_Latest[*b].current != g_Minigame.minigamePoints_current_Latest[*a].current) {
-        return g_Minigame.minigamePoints_current_Latest[*b].current - g_Minigame.minigamePoints_current_Latest[*a].current;
+s32 fn_3_107D34(void* a, void* b) {
+    if (g_Minigame.minigamePoints_current_Latest[*(u8*)b].current != g_Minigame.minigamePoints_current_Latest[*(u8*)a].current) {
+        return g_Minigame.minigamePoints_current_Latest[*(u8*)b].current - g_Minigame.minigamePoints_current_Latest[*(u8*)a].current;
     }
-    return *a - *b;
+    return *(u8*)a - *(u8*)b;
 }
 
 // fn_3_10F5BC, size:0xC8
@@ -471,7 +476,7 @@ void fn_3_10F5BC(void) {
     }
     g_Minigame._1A2C = -1;
     t = lbl_3_data_18910[g_Minigame.GameMode_MiniGame];
-    lbl_3_data_228[0x10] = 0;
+    lbl_3_data_228._10 = 0;
     g_d_GameSettings.StadiumID = t;
     g_d_GameSettings.miniGameStadiumIndicator = 0;
     if (g_d_GameSettings.StadiumID == 0 || g_d_GameSettings.StadiumID == 4 || g_d_GameSettings.StadiumID == 1 || g_d_GameSettings.StadiumID == 3) {
@@ -485,8 +490,8 @@ void fn_3_107784(void) {
     switch (g_GameLogic._125) {
     case 0:
         g_GameLogic._125 = g_GameLogic._125 + 1;
-        g_Minigame.battingHandedness[7] = 0;
-        if (g_Minigame.battingHandedness[5] == 0) {
+        g_Minigame._1A1E = 0;
+        if (g_Minigame._1A1C == 0) {
             fn_800B0A5C_insertQueue((void*)fn_80062A94, 1);
         }
         break;
@@ -497,9 +502,9 @@ void fn_3_107784(void) {
         break;
     case 2:
         fn_3_10B27C();
-        if (g_Minigame.battingHandedness[6] == 2) {
+        if (g_Minigame._1A1D == 2) {
             g_GameLogic._125 = 5;
-        } else if (g_Minigame.battingHandedness[6] != 0) {
+        } else if (g_Minigame._1A1D != 0) {
             g_GameLogic._125 = g_GameLogic._125 + 1;
         }
         break;
@@ -511,7 +516,7 @@ void fn_3_107784(void) {
         break;
     case 4:
         fn_80062A74();
-        g_Minigame.battingHandedness[5] = 0;
+        g_Minigame._1A1C = 0;
         fn_3_5A6D4(0x29);
         break;
     case 5:
@@ -553,7 +558,7 @@ void fn_3_10C58C(void) {
             if (g_Minigame.minigameControlStruct[0].battingHandedness[g_Minigame.miniGameNumberOfParticipants] == 0) {
                 g_Minigame._1907++;
             }
-            memcpy(r, &lbl_8034E9A0.roster[0][g_Minigame._19E8[i]._0], 0xA0);
+            memcpy(r, CHAR_STATS(g_Minigame._19E8[i]._0), 0xA0);
             if (g_Minigame.minigameControlStruct[0]._08[i] != 0) {
                 r->stats.SlapContactSize += lbl_800E86F0[0];
                 r->stats.ChargeContactSize += lbl_800E86F0[1];
@@ -632,7 +637,7 @@ void fn_3_10F1D4(void) {
         }
         if (lbl_8037169C._13 != 0) {
             fn_80062A74();
-            g_Minigame.battingHandedness[5] = 0;
+            g_Minigame._1A1C = 0;
             g_GameLogic._125 = g_GameLogic._125 + 1;
         }
         break;
@@ -708,7 +713,7 @@ void fn_3_10C7A4(void) {
 // fn_3_10F564, size:0x58
 s32 fn_3_10F564(void) {
     if (g_Minigame._1A2C == -1) {
-        if (lbl_3_data_228[0x10] != 0) {
+        if (lbl_3_data_228._10 != 0) {
             g_Minigame._1A2C = lbl_3_data_18910[g_Minigame.GameMode_MiniGame];
             return 0;
         }
@@ -768,7 +773,7 @@ void fn_3_10A01C(void) {
 // fn_3_10C450, size:0x13C
 void fn_3_10C450(s32 a, s32 b) {
     CharacterStats* r = &inMemRoster[0][a];
-    memcpy(r, &lbl_8034E9A0.roster[0][b], 0xA0);
+    memcpy(r, CHAR_STATS(b), 0xA0);
     if (g_Minigame.minigameControlStruct[0]._08[a] != 0) {
         r->stats.SlapContactSize += lbl_800E86F0[0];
         r->stats.ChargeContactSize += lbl_800E86F0[1];
@@ -811,7 +816,7 @@ void fn_3_10754C(StatInput* dst) {
             k++;
         } while (k < g_Minigame.miniGameNumberOfParticipants);
         {
-        CharacterStats* r = inMemRoster[0]; // indexed across both teams
+        CharacterStats* r = inMemRoster[0];
         dst->_13 = g_Minigame._1E22[g_Minigame._1908];
         dst->_14[0] = r[g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame._1908]].stats.CharID;
         }
@@ -864,8 +869,8 @@ void fn_3_1070A4(void) {
         }
         break;
     case 8:
-        lbl_3_common_bss_34C90.menu = 0;
         lbl_3_common_bss_34C90.state = 0;
+        lbl_3_common_bss_34C90.subState = 0;
         if (g_Minigame._19E7 == 1) {
             fn_3_5A6D4(0x24);
         } else {
@@ -892,15 +897,15 @@ s32 fn_3_108854(void) {
 found:
     g_Minigame.pauseInd = 1;
     lbl_3_common_bss_34C90.team = g_Minigame.minigameControlStruct[0].characterIndex[i];
-    lbl_3_common_bss_34C90._00A = 0;
+    lbl_3_common_bss_34C90._0A = 0;
     if (g_d_GameSettings.exhibitionMatchInd == 0) {
-        lbl_3_common_bss_34C90.layout = 0x10;
+        lbl_3_common_bss_34C90.menuType = 0x10;
     } else if (g_Minigame._1A3C != 0) {
-        lbl_3_common_bss_34C90.layout = 0xD;
+        lbl_3_common_bss_34C90.menuType = 0xD;
     } else {
-        lbl_3_common_bss_34C90.layout = 9;
+        lbl_3_common_bss_34C90.menuType = 9;
     }
-    lbl_3_common_bss_34C90.state = 0;
+    lbl_3_common_bss_34C90.subState = 0;
     lbl_3_common_bss_34C90.cursor = 0;
     return 1;
 }
@@ -919,7 +924,7 @@ void fn_3_1079C8(u8* out, s32 mode) {
     switch (mode) {
     case 0:
     default:
-        fn_800246D4((s32 (*)(void*, void*))fn_3_107C04, order, order, 1, g_Minigame.miniGameNumberOfParticipants);
+        fn_800246D4(fn_3_107C04, order, order, 1, g_Minigame.miniGameNumberOfParticipants);
         i = 0;
         do {
             vals[i] = g_Minigame.miniGameCurrentPoints[i];
@@ -927,7 +932,7 @@ void fn_3_1079C8(u8* out, s32 mode) {
         } while (i < g_Minigame.miniGameNumberOfParticipants);
         break;
     case 1:
-        fn_800246D4((s32 (*)(void*, void*))fn_3_107BD0, order, order, 1, g_Minigame.miniGameNumberOfParticipants);
+        fn_800246D4(fn_3_107BD0, order, order, 1, g_Minigame.miniGameNumberOfParticipants);
         i = 0;
         do {
             vals[i] = g_Minigame._1E22[i];
@@ -935,7 +940,7 @@ void fn_3_1079C8(u8* out, s32 mode) {
         } while (i < g_Minigame.miniGameNumberOfParticipants);
         break;
     case 2:
-        fn_800246D4((s32 (*)(void*, void*))fn_3_107B9C, order, order, 1, g_Minigame.miniGameNumberOfParticipants);
+        fn_800246D4(fn_3_107B9C, order, order, 1, g_Minigame.miniGameNumberOfParticipants);
         i = 0;
         do {
             vals[i] = g_Minigame._1E26[i];
@@ -956,14 +961,14 @@ void fn_3_1079C8(u8* out, s32 mode) {
 }
 
 // fn_3_109CE8, size:0xA0
-static inline u8* fn_3_109D88_inl(void) {
+static inline RankEnt* fn_3_109D88_inl(void) {
     if (g_Minigame._1A3C != 0) {
-        return (u8*)lbl_803616CC.tail;
+        return (RankEnt*)lbl_803616CC.tail;
     }
     if (g_Minigame.GameMode_MiniGame != 0) {
-        return (u8*)lbl_803616CC.groups[g_Minigame.GameMode_MiniGame - 1];
+        return (RankEnt*)lbl_803616CC.groups[g_Minigame.GameMode_MiniGame - 1];
     }
-    return (u8*)&lbl_803616CC;
+    return (RankEnt*)lbl_803616CC.head;
 }
 
 #pragma opt_unroll_loops off
@@ -972,7 +977,7 @@ u32 fn_3_109CE8(RankEnt* p) {
     s32 v;
     u32 i;
     if (g_Minigame._1907 == 1) {
-        e = (RankEnt*)fn_3_109D88_inl();
+        e = fn_3_109D88_inl();
         v = p->score;
         i = 0;
         do {
@@ -993,14 +998,14 @@ void fn_3_1089E8(void) {
     s32 r;
     s32 k;
     n = 5;
-    row = lbl_3_common_bss_34C90.layout - 10;
+    row = lbl_3_common_bss_34C90.menuType - 10;
     if (g_Minigame._1A3C != 0) {
         if (g_Minigame._1E2A >= 6) {
             n = 4;
         } else {
             n = 3;
         }
-    } else if (lbl_3_common_bss_34C90.layout == 0xC) {
+    } else if (lbl_3_common_bss_34C90.menuType == 0xC) {
         n = 4;
     }
     r = fn_3_6C938(1, 0x100);
@@ -1008,33 +1013,33 @@ void fn_3_1089E8(void) {
         if (g_Minigame._1A3C != 0) {
             if (g_Minigame._1E2A >= 6) {
                 if (lbl_3_common_bss_34C90.cursor == 3) {
-                    lbl_3_common_bss_34C90.state = 8;
+                    lbl_3_common_bss_34C90.subState = 8;
                 } else if (lbl_3_common_bss_34C90.cursor == 1) {
-                    lbl_3_common_bss_34C90.state = 6;
+                    lbl_3_common_bss_34C90.subState = 6;
                 } else {
-                    lbl_3_common_bss_34C90.state = 6;
+                    lbl_3_common_bss_34C90.subState = 6;
                 }
             } else {
                 k = (u8)lbl_3_common_bss_34C90.cursor;
                 if (k == 2) {
-                    lbl_3_common_bss_34C90.state = 8;
+                    lbl_3_common_bss_34C90.subState = 8;
                 } else {
-                    lbl_3_common_bss_34C90.state = 6;
+                    lbl_3_common_bss_34C90.subState = 6;
                 }
             }
         } else {
             switch ((lbl_3_data_188FC + row * 5)[lbl_3_common_bss_34C90.cursor]) {
             case 4:
-                lbl_3_common_bss_34C90.state = 8;
+                lbl_3_common_bss_34C90.subState = 8;
                 break;
             default:
-                lbl_3_common_bss_34C90.state = 6;
+                lbl_3_common_bss_34C90.subState = 6;
                 break;
             }
         }
         lbl_3_common_bss_34C90.team = r - 1;
         sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-        if (lbl_3_common_bss_34C90.state == 8) {
+        if (lbl_3_common_bss_34C90.subState == 8) {
             fn_3_5B408();
         }
     } else if (fn_3_6C938(2, 8) != 0) {
@@ -1072,28 +1077,28 @@ void fn_3_108230(void) {
     }
     if (c->newButtonInput & 0x1000) {
         sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-        lbl_3_common_bss_34C90.state = 4;
+        lbl_3_common_bss_34C90.subState = 4;
     } else if (c->newButtonInput & 0x100) {
         sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
         switch ((lbl_3_data_188E8 + row * 6)[lbl_3_common_bss_34C90.cursor]) {
         case 0:
-            lbl_3_common_bss_34C90.state = 4;
+            lbl_3_common_bss_34C90.subState = 4;
             break;
         case 1:
-            lbl_3_common_bss_34C90.state = 0xC;
+            lbl_3_common_bss_34C90.subState = 0xC;
             break;
         case 3:
-            lbl_3_common_bss_34C90.state = 0xA;
+            lbl_3_common_bss_34C90.subState = 0xA;
             break;
         case 2:
-            lbl_3_common_bss_34C90.state = 0xB;
+            lbl_3_common_bss_34C90.subState = 0xB;
             break;
         case 4:
-            lbl_3_common_bss_34C90.state = 6;
+            lbl_3_common_bss_34C90.subState = 6;
             break;
         case 5:
             fn_3_5B408();
-            lbl_3_common_bss_34C90.state = 8;
+            lbl_3_common_bss_34C90.subState = 8;
             break;
         }
     } else if (c->newButtonInput & 0x200) {
@@ -1101,7 +1106,7 @@ void fn_3_108230(void) {
         if (lbl_3_common_bss_34C90.cursor != 0) {
             lbl_3_common_bss_34C90.cursor = 0;
         } else {
-            lbl_3_common_bss_34C90.state = 4;
+            lbl_3_common_bss_34C90.subState = 4;
         }
     } else if (c->_08 & 8) {
         if (lbl_3_common_bss_34C90.cursor == 0) {
@@ -1138,7 +1143,7 @@ void fn_3_109254(void) {
         }
         break;
     case 1:
-        if (((HudTask*)g_Minigame._1E04)->timer != 0) {
+        if (((MinigameTask*)g_Minigame._1E04)->_18 != 0) {
             g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0x1E;
             g_GameLogic._125 = 2;
         }
@@ -1150,7 +1155,7 @@ void fn_3_109254(void) {
                 g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
                 g_GameLogic._125 = 3;
             } else if (c->newButtonInput & 0x1100) {
-                ((HudTask*)g_Minigame._1E04)->_1A = 1;
+                ((MinigameTask*)g_Minigame._1E04)->_1A = 1;
                 g_GameLogic._125 = 4;
             }
         }
@@ -1198,8 +1203,8 @@ void fn_3_109254(void) {
         }
         break;
     case 10:
-        lbl_3_common_bss_34C90.menu = 0;
         lbl_3_common_bss_34C90.state = 0;
+        lbl_3_common_bss_34C90.subState = 0;
         fn_3_5A6D4(0x22);
         break;
     }
@@ -1208,7 +1213,6 @@ void fn_3_109254(void) {
 // fn_3_10AEF0, size:0x310
 void fn_3_10AEF0(void) {
     s32 i;
-    u8* m;
     switch (g_GameLogic._125) {
     case 0:
         fn_800203E0(7, 0);
@@ -1301,9 +1305,9 @@ void fn_3_107E80(void) {
     s32 k;
     switch (lbl_3_common_bss_34C90._1D4) {
     case 0:
-        if (lbl_3_common_bss_34C90.state == 0xB || g_d_GameSettings.GameModeSelected == 6) {
-            g_Minigame.battingHandedness[7] = 1;
-            g_Minigame.battingHandedness[8] = 0;
+        if (lbl_3_common_bss_34C90.subState == 0xB || g_d_GameSettings.GameModeSelected == 6) {
+            g_Minigame._1A1E = 1;
+            g_Minigame._1A1F = 0;
             g_Minigame._1A20 = 0;
             g_Minigame._1A22 = 0;
             if (g_Minigame.multiPlayerInd != 0) {
@@ -1323,12 +1327,12 @@ void fn_3_107E80(void) {
                 }
             }
         }
-        lbl_3_common_bss_34C90.itemsState = 1;
-        lbl_3_common_bss_34C90._012 = 0;
+        lbl_3_common_bss_34C90._1D9 = 1;
+        lbl_3_common_bss_34C90.subFrames = 0;
         lbl_3_common_bss_34C90._1D4 = 1;
         break;
     case 1:
-        if (lbl_3_common_bss_34C90.itemsState == 3) {
+        if (lbl_3_common_bss_34C90._1D9 == 3) {
             lbl_3_common_bss_34C90._1D4 = 2;
         }
         break;
@@ -1336,7 +1340,7 @@ void fn_3_107E80(void) {
         lbl_3_common_bss_34C90._1D4 = 3;
         break;
     case 3:
-        if (lbl_3_common_bss_34C90._012 > 0x14) {
+        if (lbl_3_common_bss_34C90.subFrames > 0x14) {
             lbl_3_common_bss_34C90._1D4 = 4;
         }
         break;
@@ -1344,35 +1348,35 @@ void fn_3_107E80(void) {
         if (lbl_3_common_bss_32724._C4 == 0) {
             if (c->newButtonInput & 0x200) {
                 sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
-                lbl_3_common_bss_34C90._012 = 0;
+                lbl_3_common_bss_34C90.subFrames = 0;
                 lbl_3_common_bss_34C90._1D4 = 5;
-            } else if (lbl_3_common_bss_34C90.state == 0xB || (g_d_GameSettings.GameModeSelected == 6 && g_GameLogic.gameStatus == 0xB)) {
+            } else if (lbl_3_common_bss_34C90.subState == 0xB || (g_d_GameSettings.GameModeSelected == 6 && g_GameLogic.gameStatus == 0xB)) {
                 if (c->_08 & 2) {
-                    if (g_Minigame.battingHandedness[7] == g_Minigame._1A21) {
-                        g_Minigame.battingHandedness[7] = 1;
+                    if (g_Minigame._1A1E == g_Minigame._1A21) {
+                        g_Minigame._1A1E = 1;
                     } else {
-                        g_Minigame.battingHandedness[7]++;
+                        g_Minigame._1A1E++;
                     }
                     g_Minigame._1A22 = 0;
-                    g_Minigame.battingHandedness[8] = 0x14;
+                    g_Minigame._1A1F = 0x14;
                     sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
                 } else if (c->_08 & 1) {
-                    if (g_Minigame.battingHandedness[7] == 1) {
-                        g_Minigame.battingHandedness[7] = g_Minigame._1A21;
+                    if (g_Minigame._1A1E == 1) {
+                        g_Minigame._1A1E = g_Minigame._1A21;
                     } else {
-                        g_Minigame.battingHandedness[7]--;
+                        g_Minigame._1A1E--;
                     }
                     g_Minigame._1A22 = 1;
-                    g_Minigame.battingHandedness[8] = 0x14;
+                    g_Minigame._1A1F = 0x14;
                     sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
                 }
             }
         }
         break;
     case 5:
-        if (lbl_3_common_bss_34C90._012 > 0x14) {
-            lbl_3_common_bss_34C90._00C = 0;
-            lbl_3_common_bss_34C90.state = 1;
+        if (lbl_3_common_bss_34C90.subFrames > 0x14) {
+            lbl_3_common_bss_34C90.frames = 0;
+            lbl_3_common_bss_34C90.subState = 1;
         }
         break;
     }
@@ -1396,13 +1400,13 @@ void fn_3_1104D4(void) {
     i = 0;
     do {
         port = mg->minigameControlStruct[0].characterIndex[i];
-        if (port >= 0 && port < 4 && i == g_Minigame.rosterID && mg->minigameControlStruct[0].battingHandedness[i] != 0) {
+        if (port >= 0 && port < 4 && i == (s8)g_Minigame.rosterID && mg->minigameControlStruct[0].battingHandedness[i] != 0) {
             pad = &g_Minigame._1D7C[port];
             g_Minigame._1DBC[port] = 1;
-            memset(pad, 0, sizeof(InputStruct));
+            memset(pad, 0, 0x10);
             switch (g_Pitcher.pitcherActionState) {
             case 2:
-                if ((u8)mg->bB_cpuSwingStep == 0) {
+                if (mg->bB_cpuSwingStep == 0) {
                     fn_3_110634();
                     mg->bB_cpuSwingStep = 1;
                 }
@@ -1458,7 +1462,7 @@ void fn_3_10F3D8(void) {
     default:
         fn_800189E4();
         fn_800B0A5C_insertQueue(fn_80062A94, 1);
-        g_Minigame.battingHandedness[5] = 1;
+        g_Minigame._1A1C = 1;
         fn_3_5A6D4(g_Minigame._19DF);
         break;
     }
@@ -1510,7 +1514,6 @@ void fn_3_106ED4(void) {
 extern void possiblyTransitionBlackScreen(void);
 extern void fn_3_5BAC(void);
 extern void fn_3_1658F0(void);
-extern StarChanceState lbl_3_common_bss_37400;
 
 // NONMATCHING 99%: post-loop g_Minigame/lbl_3_common_bss_32724 address loads scheduled in swapped order, r6/r7 swap
 #if NONMATCHING
@@ -1547,7 +1550,7 @@ void fn_3_10FBE4(void) {
     g_Minigame._1A38 = 0;
     g_Minigame._1A39 = 0;
     g_Minigame._1A46[0] = 0;
-    g_Minigame.battingHandedness[5] = 0;
+    g_Minigame._1A1C = 0;
     for (i = 0; i < 4; i++) {
         g_Minigame._19DA[i] = -1;
         g_Minigame._19E8[i]._0 = -1;
@@ -1562,7 +1565,7 @@ void fn_3_10FBE4(void) {
         g_Minigame.minigameControlStruct[0]._08[i] = 0;
     }
     lbl_3_common_bss_32724._B9 = 0;
-    g_Minigame.battingHandedness[4] = 0;
+    g_Minigame._1A1B = 0;
     if (g_d_GameSettings.exhibitionMatchInd == 0) {
         g_Minigame._190A = 1;
         port = g_d_GameSettings._35;
@@ -1577,7 +1580,6 @@ void fn_3_10FBE4(void) {
     }
 }
 #endif
-extern s16 fn_8006C13C(StatInput* in);
 extern s16 lbl_80109410[8];
 
 // NONMATCHING 93%: original hoists g_Minigame+0x18CC / inMemRoster+0x24 into saved regs shared with the inlined fn_3_10754C
@@ -1589,7 +1591,7 @@ void fn_3_109DE0(RankEnt* out) {
     memset(out, 0, sizeof(RankEnt));
     if (g_Minigame._1907 == 1) {
         {
-        CharacterStats* r = inMemRoster[0]; // indexed across both teams
+        CharacterStats* r = inMemRoster[0];
         out->charId = r[g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame._1908]].stats.CharID;
         }
         if (g_Minigame._1A3C != 0) {
@@ -1804,8 +1806,8 @@ void fn_3_10722C(void) {
             lbl_3_common_bss_34C58._31 = 0;
             fn_3_5A6D4(0x27);
         } else {
-            lbl_3_common_bss_34C90.menu = 0;
             lbl_3_common_bss_34C90.state = 0;
+            lbl_3_common_bss_34C90.subState = 0;
             fn_3_5A6D4(0x22);
         }
         break;
@@ -1827,47 +1829,47 @@ static inline void satInc16(s16* p) {
 // fn_3_1084B4, size:0x3A0
 void fn_3_1084B4(void) {
     lbl_80366158._28 = 1;
-    satInc16(&lbl_3_common_bss_34C90._00A);
-    satInc16(&lbl_3_common_bss_34C90._00C);
-    satInc16(&lbl_3_common_bss_34C90._012);
-    switch (lbl_3_common_bss_34C90.state) {
+    satInc16(&lbl_3_common_bss_34C90._0A);
+    satInc16(&lbl_3_common_bss_34C90.frames);
+    satInc16(&lbl_3_common_bss_34C90.subFrames);
+    switch (lbl_3_common_bss_34C90.subState) {
     case 0:
-        lbl_3_common_bss_34C90._00C = 0;
-        lbl_3_common_bss_34C90.state = 1;
+        lbl_3_common_bss_34C90.frames = 0;
+        lbl_3_common_bss_34C90.subState = 1;
         break;
     case 1:
-        lbl_3_common_bss_34C90.state = 3;
+        lbl_3_common_bss_34C90.subState = 3;
         break;
     case 2:
-        if (lbl_3_common_bss_34C90._00C > 0x14) {
-            lbl_3_common_bss_34C90.state = 3;
+        if (lbl_3_common_bss_34C90.frames > 0x14) {
+            lbl_3_common_bss_34C90.subState = 3;
         }
         break;
     case 3:
         fn_3_108230();
-        lbl_3_common_bss_34C90._00C = 0;
-        lbl_3_common_bss_34C90._012 = 0;
+        lbl_3_common_bss_34C90.frames = 0;
+        lbl_3_common_bss_34C90.subFrames = 0;
         lbl_3_common_bss_34C90._1D4 = 0;
         break;
     case 4:
-        lbl_3_common_bss_34C90.itemsState = 1;
-        lbl_3_common_bss_34C90.state = 5;
+        lbl_3_common_bss_34C90._1D9 = 1;
+        lbl_3_common_bss_34C90.subState = 5;
         break;
     case 5:
-        if (lbl_3_common_bss_34C90.itemsState == 3) {
+        if (lbl_3_common_bss_34C90._1D9 == 3) {
             g_Minigame.pauseInd = 0;
         }
         break;
     case 6:
         changeScene(3, 6);
         if (lbl_8037169C._13 != 0) {
-            lbl_3_common_bss_34C90.state = 7;
+            lbl_3_common_bss_34C90.subState = 7;
         }
         break;
     case 7:
         lbl_8036E548._307A = 0;
         g_Minigame._1A40 = 1;
-        lbl_3_common_bss_34C90.itemsState = 2;
+        lbl_3_common_bss_34C90._1D9 = 2;
         g_Minigame.pauseInd = 0;
         fn_3_6AB30();
         fn_3_11CF84();
@@ -1878,10 +1880,10 @@ void fn_3_1084B4(void) {
         switch (fn_3_5B380(g_Controls[lbl_3_common_bss_34C90.team].newButtonInput)) {
         case 1:
             g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
-            lbl_3_common_bss_34C90.state = 9;
+            lbl_3_common_bss_34C90.subState = 9;
             break;
         case 2:
-            lbl_3_common_bss_34C90.state = 3;
+            lbl_3_common_bss_34C90.subState = 3;
             break;
         }
         break;
@@ -1895,7 +1897,7 @@ void fn_3_1084B4(void) {
         }
         if (lbl_8037169C._13 != 0) {
             g_Minigame._1A40 = 1;
-            lbl_3_common_bss_34C90.itemsState = 2;
+            lbl_3_common_bss_34C90._1D9 = 2;
             g_Minigame.pauseInd = 0;
             g_d_GameSettings._13 = 1;
             fn_3_11CF84();
@@ -1912,7 +1914,7 @@ void fn_3_1084B4(void) {
     case 12:
         changeScene(3, 6);
         if (lbl_8037169C._13 != 0) {
-            lbl_3_common_bss_34C90.state = 0xD;
+            lbl_3_common_bss_34C90.subState = 0xD;
         }
         break;
     case 13:
@@ -1921,7 +1923,7 @@ void fn_3_1084B4(void) {
         lbl_8036E548._307A = 0;
         fn_3_6AB30();
         g_Minigame._1A40 = 1;
-        lbl_3_common_bss_34C90.itemsState = 2;
+        lbl_3_common_bss_34C90._1D9 = 2;
         g_Minigame.pauseInd = 0;
         fn_3_5A6D4(4);
         break;
@@ -1960,7 +1962,7 @@ void fn_3_10C81C(void) {
         for (i = 0; i < count; i++) {
             ents[i].port = -1;
             if (g_Minigame._1A0C != i) {
-                a = (u8)g_Minigame._19E8[i]._0;
+                a = g_Minigame._19E8[i]._0;
                 if (a != -1 && (a != g_Minigame._19E8[i]._2 || (s8)g_Minigame._19E8[i]._4 != g_Minigame.battingHandedness[i])) {
                     g_Minigame._19E8[i]._7 = 0;
                     if ((u16)g_Minigame._19D2[i] >= 0x14 || g_Minigame._19DE == 4) {
@@ -2010,8 +2012,8 @@ void fn_3_10C81C(void) {
         if (g_d_GameSettings.GameModeSelected == 2) {
             index = 9;
         }
-        if (g_Minigame.battingHandedness[4] == 0) {
-            g_Minigame.battingHandedness[4] = 1;
+        if (g_Minigame._1A1B == 0) {
+            g_Minigame._1A1B = 1;
             fn_80011B64(index);
         }
         if (g_Minigame._19E8[cur]._3 >= 0) {
@@ -2027,12 +2029,12 @@ void fn_3_10C81C(void) {
             g_Minigame._1A0C = -1;
             g_Minigame._1A0F[0] = -1;
             g_Minigame._1A13[cur] = 0;
-            g_Minigame.battingHandedness[4] = 0;
+            g_Minigame._1A1B = 0;
             fn_3_E1370(3);
             continue;
         }
         if (g_Minigame._19E8[cur]._3 < 0) {
-            g_Minigame._19E8[cur]._3 = (u8)g_Minigame._19E8[cur]._0;
+            g_Minigame._19E8[cur]._3 = g_Minigame._19E8[cur]._0;
         }
         g_Minigame._19E8[cur]._2 = -1;
         g_Minigame._1A0C = cur;
@@ -2072,12 +2074,12 @@ void fn_3_10B8D0(void) {
                 fn_3_908E8();
             }
         }
-        g_Minigame.battingHandedness[5] = 0;
+        g_Minigame._1A1C = 0;
         g_Minigame._1A41 = 0;
         g_Minigame.multiPlayerInd = 0;
         g_Minigame._19AA = 0;
         g_Minigame._1908 = -1;
-        g_Minigame.battingHandedness[6] = 0;
+        g_Minigame._1A1D = 0;
         g_Minigame._1A23 = 0;
         g_Minigame._1A24[0] = 2;
         g_Minigame._1A46[0] = 0;
@@ -2138,7 +2140,7 @@ void fn_3_10B8D0(void) {
     case 5:
         g_Minigame._1A2C = -1;
         t = lbl_3_data_18910[g_Minigame.GameMode_MiniGame];
-        lbl_3_data_228[0x10] = 0;
+        lbl_3_data_228._10 = 0;
         g_d_GameSettings.StadiumID = t;
         g_d_GameSettings.miniGameStadiumIndicator = 0;
         if (g_d_GameSettings.StadiumID == 0 || g_d_GameSettings.StadiumID == 4 || g_d_GameSettings.StadiumID == 1 || g_d_GameSettings.StadiumID == 3) {
@@ -2158,9 +2160,9 @@ void fn_3_10B8D0(void) {
         }
         break;
     case 8:
-        if (g_Minigame.battingHandedness[6] != 0) {
+        if (g_Minigame._1A1D != 0) {
             changeScene(3, 6);
-            if (g_Minigame.battingHandedness[6] == 2) {
+            if (g_Minigame._1A1D == 2) {
                 g_GameLogic._125 = 10;
             } else {
                 g_GameLogic._125 = 9;
@@ -2188,7 +2190,7 @@ void fn_3_10B8D0(void) {
         fn_3_10B200();
         break;
     }
-    if (g_GameLogic._125 >= 2 && g_Minigame.battingHandedness[6] == 0) {
+    if (g_GameLogic._125 >= 2 && g_Minigame._1A1D == 0) {
         fn_3_10B27C();
     }
 }
@@ -2196,13 +2198,9 @@ void fn_3_10B8D0(void) {
 extern u8 lbl_800E854C[12];
 extern u8 lbl_3_data_609C[][6];
 
-// NONMATCHING 99%: assignment loop zero-inits k with li instead of copying i (one mr)
-#if NONMATCHING
-// fn_3_10BE7C, size:0x5D4
 void fn_3_10BE7C(void) {
     s32 m;
     s32 n;
-    s32 row;
     s32 k;
     s32 j;
     s32 pool[12];
@@ -2235,19 +2233,19 @@ void fn_3_10BE7C(void) {
         n = 6;
         if (g_d_GameSettings.exhibitionMatchInd == 0) {
             if (mode == 2) {
-                row = g_Minigame.soloMinigameDifficulty;
+                k = g_Minigame.soloMinigameDifficulty;
             } else if (mode == 4) {
-                row = g_Minigame.soloMinigameDifficulty + 3;
+                k = g_Minigame.soloMinigameDifficulty + 3;
             } else if (mode == 5) {
-                row = g_Minigame.soloMinigameDifficulty + 6;
+                k = g_Minigame.soloMinigameDifficulty + 6;
             } else if (mode == 6) {
-                row = g_Minigame.soloMinigameDifficulty + 9;
+                k = g_Minigame.soloMinigameDifficulty + 9;
             } else {
-                row = 0;
+                k = 0;
             }
             n = 0;
             for (i = 0; i < 6; i++) {
-                pool[i] = lbl_3_data_609C[row][i];
+                pool[i] = lbl_3_data_609C[k][i];
                 if (pool[i] != 0xFF) {
                     n++;
                 }
@@ -2255,26 +2253,26 @@ void fn_3_10BE7C(void) {
         } else {
             if (mode == 2) {
                 if (g_Minigame.soloMinigameDifficulty == 3) {
-                    row = -1;
+                    k = -1;
                 } else {
-                    row = g_Minigame.soloMinigameDifficulty + 1;
+                    k = g_Minigame.soloMinigameDifficulty + 1;
                 }
             } else if (mode == 4) {
-                row = g_Minigame.soloMinigameDifficulty + 5;
+                k = g_Minigame.soloMinigameDifficulty + 5;
             } else if (mode == 5) {
-                row = g_Minigame.soloMinigameDifficulty + 9;
+                k = g_Minigame.soloMinigameDifficulty + 9;
             } else if (mode == 6) {
-                row = g_Minigame.soloMinigameDifficulty + 0xD;
+                k = g_Minigame.soloMinigameDifficulty + 0xD;
             } else {
-                row = 0;
+                k = 0;
             }
-            if (row < 0) {
+            if (k < 0) {
                 for (i = 0; i < 6; i++) {
                     pool[i] = -1;
                 }
             } else {
                 for (i = 0; i < 6; i++) {
-                    pool[i] = lbl_3_data_212A4[row][i];
+                    pool[i] = lbl_3_data_212A4[k][i];
                 }
             }
         }
@@ -2286,7 +2284,6 @@ void fn_3_10BE7C(void) {
     for (; i < 4; i++) {
         if (g_Minigame._19DA[i] != 0 && (s8)g_Minigame._19E8[i]._1 == 0) {
             for (m = k; k < 6; k++, m++) {
-                // skip characters already taken by a human slot
                 for (j = 0; j < 4; j++) {
                     if (pool[m] == taken[j] && pool[m] >= 0) {
                         break;
@@ -2298,12 +2295,11 @@ void fn_3_10BE7C(void) {
             }
             g_Minigame._19E8[i]._0 = pool[m];
             g_Minigame._19D2[i] = 0x14;
-            g_Minigame.battingHandedness[i] = lbl_8034E9A0.roster[0][pool[m]].stats.FieldingArm * 2 + lbl_8034E9A0.roster[0][pool[m]].stats.BattingStance;
+            g_Minigame.battingHandedness[i] = CHAR_STATS(pool[m])->stats.FieldingArm * 2 + CHAR_STATS(pool[m])->stats.BattingStance;
             k++;
         }
     }
 }
-#endif
 
 extern u8 lbl_3_data_18920[][5];
 
@@ -2315,48 +2311,48 @@ void fn_3_108C54(void) {
     s32 j;
     CharacterStats* src;
 
-    satInc16(&lbl_3_common_bss_34C90._00A);
-    satInc16(&lbl_3_common_bss_34C90._00C);
-    satInc16(&lbl_3_common_bss_34C90._012);
-    switch (lbl_3_common_bss_34C90.state) {
+    satInc16(&lbl_3_common_bss_34C90._0A);
+    satInc16(&lbl_3_common_bss_34C90.frames);
+    satInc16(&lbl_3_common_bss_34C90.subFrames);
+    switch (lbl_3_common_bss_34C90.subState) {
     case 0:
         if (g_Minigame.multiPlayerInd != 0 || g_d_GameSettings._14[g_Minigame.GameMode_MiniGame - 1] == 0) {
-            lbl_3_common_bss_34C90.layout = 0xC;
+            lbl_3_common_bss_34C90.menuType = 0xC;
         } else if (g_Minigame._1A44 != 0) {
-            lbl_3_common_bss_34C90.layout = 0xB;
+            lbl_3_common_bss_34C90.menuType = 0xB;
         } else {
-            lbl_3_common_bss_34C90.layout = 0xA;
+            lbl_3_common_bss_34C90.menuType = 0xA;
         }
         if (g_Minigame._1A3C != 0) {
             if (g_Minigame._1E2A >= 6) {
-                lbl_3_common_bss_34C90.layout = 0xF;
+                lbl_3_common_bss_34C90.menuType = 0xF;
             } else {
-                lbl_3_common_bss_34C90.layout = 0xE;
+                lbl_3_common_bss_34C90.menuType = 0xE;
             }
         }
-        lbl_3_common_bss_34C90._00A = 0;
-        lbl_3_common_bss_34C90._00C = 0;
+        lbl_3_common_bss_34C90._0A = 0;
+        lbl_3_common_bss_34C90.frames = 0;
         lbl_3_common_bss_34C90.cursor = 0;
-        lbl_3_common_bss_34C90.state = 1;
+        lbl_3_common_bss_34C90.subState = 1;
         break;
     case 1:
-        lbl_3_common_bss_34C90._00C = 0;
-        lbl_3_common_bss_34C90.state = 2;
+        lbl_3_common_bss_34C90.frames = 0;
+        lbl_3_common_bss_34C90.subState = 2;
         break;
     case 2:
-        if (lbl_3_common_bss_34C90._00C >= 0x14) {
-            lbl_3_common_bss_34C90.state = 3;
+        if (lbl_3_common_bss_34C90.frames >= 0x14) {
+            lbl_3_common_bss_34C90.subState = 3;
         }
         break;
     case 3:
         fn_3_1089E8();
-        lbl_3_common_bss_34C90._00C = 0;
-        lbl_3_common_bss_34C90._012 = 0;
+        lbl_3_common_bss_34C90.frames = 0;
+        lbl_3_common_bss_34C90.subFrames = 0;
         break;
     case 6:
         changeScene(3, 6);
         if (lbl_8037169C._13 != 0) {
-            lbl_3_common_bss_34C90.state = 7;
+            lbl_3_common_bss_34C90.subState = 7;
         }
         break;
     case 7:
@@ -2364,7 +2360,7 @@ void fn_3_108C54(void) {
             if (g_Minigame._1E2A >= 6) {
                 if (lbl_3_common_bss_34C90.cursor == 0) {
                     g_Minigame._1A38 = 1;
-                    memset(&g_Minigame._1E04, 0, sizeof(MiniGameStruct) - OFFSET_OF(MiniGameStruct, _1E04));
+                    memset(&g_Minigame._1E04, 0, 0x28);
                     i = 0;
                     g_Minigame._1A3D = 0;
                     g_Minigame._1A3F = 0;
@@ -2373,7 +2369,7 @@ void fn_3_108C54(void) {
                         g_Minigame._1E1C[i] = i + 1;
                         i++;
                     } while (i < 6);
-                    fn_3_9DC18(&g_Minigame._1E1C[0], 6, 0);
+                    fn_3_9DC18(g_Minigame._1E1C, 6, 0);
                     fn_3_5A6D4(0x28);
                     fn_3_5A6D4(0x29);
                 } else if (lbl_3_common_bss_34C90.cursor == 1) {
@@ -2391,7 +2387,7 @@ void fn_3_108C54(void) {
                 fn_3_5A6D4(0x1D);
             }
         } else {
-            switch ((lbl_3_data_188FC + lbl_3_common_bss_34C90.layout * 5 - 50)[lbl_3_common_bss_34C90.cursor]) {
+            switch ((lbl_3_data_188FC + lbl_3_common_bss_34C90.menuType * 5 - 50)[lbl_3_common_bss_34C90.cursor]) {
             case 0:
                 g_Minigame._1A38 = 1;
                 fn_3_5A6D4(4);
@@ -2426,7 +2422,7 @@ void fn_3_108C54(void) {
                     if (g_Minigame.miniGameNumberOfParticipants == 1) {
                         g_Minigame.minigameControlStruct[0].characterIndex[j] = -1;
                     } else {
-                        src = &lbl_8034E9A0.roster[0][(g_Minigame._19E8[g_Minigame.minigameControlStruct[0].characterIndex[j]]._0)];
+                        src = CHAR_STATS(g_Minigame._19E8[g_Minigame.minigameControlStruct[0].characterIndex[j]]._0);
                         memcpy(&inMemRoster[0][g_Minigame.minigameControlStruct[0].characterIndex[j]], src, 0xA0);
                         g_Minigame.battingHandedness[j] = src->stats.FieldingArm * 2 + src->stats.BattingStance;
                         g_Minigame.minigameControlStruct[0].charID[j] = inMemRoster[0][g_Minigame.minigameControlStruct[0].characterIndex[j]].stats.CharID;
@@ -2439,16 +2435,16 @@ void fn_3_108C54(void) {
         fn_3_15F998();
         fn_3_147DFC();
         lbl_8036E548._307A = 0;
-        lbl_3_common_bss_34C90.itemsState = 2;
+        lbl_3_common_bss_34C90._1D9 = 2;
         break;
     case 8:
         switch (fn_3_5B380(g_Controls[lbl_3_common_bss_34C90.team].newButtonInput)) {
         case 1:
             g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
-            lbl_3_common_bss_34C90.state = 9;
+            lbl_3_common_bss_34C90.subState = 9;
             break;
         case 2:
-            lbl_3_common_bss_34C90.state = 3;
+            lbl_3_common_bss_34C90.subState = 3;
             break;
         }
         break;
@@ -2458,7 +2454,7 @@ void fn_3_108C54(void) {
         }
         if (lbl_8037169C._13 != 0) {
             g_Minigame._1A40 = 1;
-            lbl_3_common_bss_34C90.itemsState = 2;
+            lbl_3_common_bss_34C90._1D9 = 2;
             fn_3_15F998();
             fn_3_147DFC();
             fn_3_11CF84();
@@ -2477,8 +2473,8 @@ void fn_3_10B27C(void) {
     s32 k;
 
     if (g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
-        g_Minigame.battingHandedness[7] = 0;
-        g_Minigame.battingHandedness[8] = 0;
+        g_Minigame._1A1E = 0;
+        g_Minigame._1A1F = 0;
         g_Minigame._1A20 = 0;
         g_Minigame._1A22 = 0;
         if (g_Minigame.multiPlayerInd != 0) {
@@ -2501,30 +2497,30 @@ void fn_3_10B27C(void) {
     if (lbl_8037169C.done == 0) {
         return;
     }
-    if (g_Minigame.battingHandedness[8] != 0) {
-        g_Minigame.battingHandedness[8]--;
+    if (g_Minigame._1A1F != 0) {
+        g_Minigame._1A1F--;
         return;
     }
-    if (g_Minigame.battingHandedness[7] == 0) {
+    if (g_Minigame._1A1E == 0) {
         if (fn_3_6C938(1, 0x200) != 0) {
             if (g_Minigame._1A3C == 0 || g_GameLogic.gameStatus == 0x28) {
-                g_Minigame.battingHandedness[6] = 2;
+                g_Minigame._1A1D = 2;
                 sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
             }
         } else if ((g_GameLogic._125 >= 8 || g_GameLogic.gameStatus == 0x28) && fn_3_6C938(1, 0x100) != 0) {
             if (g_d_GameSettings.GameModeSelected == 6) {
                 if (g_Minigame._1A23 == 0) {
-                    g_Minigame.battingHandedness[6] = 1;
+                    g_Minigame._1A1D = 1;
                     sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
                 }
             } else {
-                g_Minigame.battingHandedness[6] = 1;
+                g_Minigame._1A1D = 1;
                 sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
             }
         } else if (fn_3_6C938(2, 0x20) != 0) {
-            g_Minigame.battingHandedness[7] = 1;
+            g_Minigame._1A1E = 1;
             g_Minigame._1A22 = 0;
-            g_Minigame.battingHandedness[8] = 0x1E;
+            g_Minigame._1A1F = 0x1E;
             sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
         } else if (g_d_GameSettings.GameModeSelected == 6 && g_d_GameSettings.exhibitionMatchInd != 0) {
             if (fn_3_6C938(2, 8) != 0 && g_Minigame._1A23 == 1) {
@@ -2553,31 +2549,31 @@ void fn_3_10B27C(void) {
         }
     } else {
         if ((g_GameLogic._125 >= 8 || g_GameLogic.gameStatus == 0x28) && fn_3_6C938(0, 0x100) != 0) {
-            g_Minigame.battingHandedness[6] = 1;
+            g_Minigame._1A1D = 1;
             sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
         } else if (fn_3_6C938(2, 0x220) != 0) {
-            g_Minigame.battingHandedness[7] = 0;
+            g_Minigame._1A1E = 0;
             g_Minigame._1A22 = 0;
-            g_Minigame.battingHandedness[8] = 0x1E;
+            g_Minigame._1A1F = 0x1E;
             sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
         } else if (g_Minigame._1A21 > 1) {
             if (fn_3_6C938(2, 2) != 0) {
-                if (g_Minigame.battingHandedness[7] == g_Minigame._1A21) {
-                    g_Minigame.battingHandedness[7] = 1;
+                if (g_Minigame._1A1E == g_Minigame._1A21) {
+                    g_Minigame._1A1E = 1;
                 } else {
-                    g_Minigame.battingHandedness[7]++;
+                    g_Minigame._1A1E++;
                 }
                 g_Minigame._1A22 = 0;
-                g_Minigame.battingHandedness[8] = 0x14;
+                g_Minigame._1A1F = 0x14;
                 sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
             } else if (fn_3_6C938(2, 1) != 0) {
-                if (g_Minigame.battingHandedness[7] == 1) {
-                    g_Minigame.battingHandedness[7] = g_Minigame._1A21;
+                if (g_Minigame._1A1E == 1) {
+                    g_Minigame._1A1E = g_Minigame._1A21;
                 } else {
-                    g_Minigame.battingHandedness[7]--;
+                    g_Minigame._1A1E--;
                 }
                 g_Minigame._1A22 = 1;
-                g_Minigame.battingHandedness[8] = 0x14;
+                g_Minigame._1A1F = 0x14;
                 sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
             }
         }
@@ -2658,12 +2654,13 @@ void fn_3_10FDC8(void) {
     case 41:
         switch (g_GameLogic._125) {
         case 0:
-            g_Minigame.GameMode_MiniGame = g_Minigame._1E1C[(g_Minigame._1E2A++)];
+            g_Minigame.GameMode_MiniGame = g_Minigame._1E1C[g_Minigame._1E2A++];
             changeScene(1, 6);
             g_GameLogic._125 = 1;
             break;
         case 1:
-            if (((HudTask*)g_Minigame._1E04)->_1A != 0) {
+            // TODO type: pointer field at g_Minigame+0x1E04
+            if (((MinigameTask*)g_Minigame._1E04)->_1A != 0) {
                 changeScene(3, 6);
                 g_GameLogic._125 = 2;
             }
@@ -2735,7 +2732,7 @@ void fn_3_10952C(void) {
     rank = fn_3_109CE8(&score);
     g_Minigame._1E03 = rank;
     if (rank < 5) {
-        tbl = (RankEnt*)fn_3_109D88_inl();
+        tbl = fn_3_109D88_inl();
         for (i = 4; i > rank; i--) {
             memcpy(&tbl[i], &tbl[i - 1], sizeof(RankEnt));
         }
@@ -2745,7 +2742,7 @@ void fn_3_10952C(void) {
     if (g_Minigame._1A3C != 0) {
         fn_3_10754C(&cur);
         chara = lbl_800E8558[cur._14[0]]._2;
-        best = (StatInput*)(&lbl_803616CC.stats[chara]);
+        best = &lbl_803616CC.stats[chara];
         bestTotal = fn_8006C13C(best);
         if (fn_8006C13C(&cur) > bestTotal) {
             fn_3_10754C(best);
@@ -2802,7 +2799,7 @@ void fn_3_10E60C(void) {
         if (g_Minigame._190A != 0) {
             fn_80050FE8(1, 1, 1, 1, 1, 0);
             for (i = 0; i < 0x36; i++) {
-                if ((s32)gChallengeState.trackers[i]._31 != 1) {
+                if ((s32)starMissionCompletionTracker[i]._31 != 1) {
                     fn_8004FDA0(i);
                 }
             }
@@ -2839,7 +2836,7 @@ void fn_3_10E60C(void) {
         g_Minigame._19DE = 0;
         g_Minigame._19E2 = 0;
         g_Minigame._19E3 = 0;
-        if (g_Minigame.battingHandedness[5] == 0) {
+        if (g_Minigame._1A1C == 0) {
             fn_800B0A5C_insertQueue(fn_80062A94, 1);
         }
         changeScene(1, 6);
@@ -2851,8 +2848,8 @@ void fn_3_10E60C(void) {
                 if (g_Minigame._19DA[i] == 0) {
                     g_Minigame._19E8[i]._0 = fn_80050760(i, 0, 0, 0, 0);
                     g_Minigame._19E8[i]._6 = 0;
-                    g_Minigame.battingHandedness[i] = lbl_8034E9A0.roster[0][g_Minigame._19E8[i]._0].stats.FieldingArm * 2 +
-                                             lbl_8034E9A0.roster[0][g_Minigame._19E8[i]._0].stats.BattingStance;
+                    g_Minigame.battingHandedness[i] = CHAR_STATS(g_Minigame._19E8[i]._0)->stats.FieldingArm * 2 +
+                                             CHAR_STATS(g_Minigame._19E8[i]._0)->stats.BattingStance;
                     g_Minigame.minigameControlStruct[0]._08[i] = 0;
                 }
             }
@@ -2923,7 +2920,7 @@ void fn_3_10E60C(void) {
                 changeScene(3, 6);
                 if (g_Minigame._1A3C == 0) {
                     lbl_803C6714[6] = 6;
-                    g_Minigame.battingHandedness[5] = 0;
+                    g_Minigame._1A1C = 0;
                 }
             }
         }
@@ -2935,9 +2932,9 @@ void fn_3_10E60C(void) {
         fn_3_60768();
         buildMinigamePlayersInline();
         lbl_8036E548._307A = 0;
-        g_Minigame.battingHandedness[6] = 0;
+        g_Minigame._1A1D = 0;
         if (g_Minigame._1A3C != 0) {
-            memset(&g_Minigame._1E04, 0, sizeof(MiniGameStruct) - OFFSET_OF(MiniGameStruct, _1E04));
+            memset(&g_Minigame._1E04, 0, 0x28);
             i = 0;
             g_Minigame._1A3D = 0;
             g_Minigame._1A3F = 0;
@@ -2946,7 +2943,7 @@ void fn_3_10E60C(void) {
                 g_Minigame._1E1C[i] = i + 1;
                 i++;
             } while ((u32)i < 6);
-            fn_3_9DC18(&g_Minigame._1E1C[0], 6, 0);
+            fn_3_9DC18(g_Minigame._1E1C, 6, 0);
             fn_3_5A6D4(0x28);
         } else {
             fn_3_5A6D4(0x21);
@@ -3138,7 +3135,7 @@ void fn_3_10A0A0(void) {
         break;
     case 8:
         if (g_d_GameSettings.GameModeSelected == 6) {
-            lbl_3_common_bss_34C90.state = 0;
+            lbl_3_common_bss_34C90.subState = 0;
             if (g_Minigame._1908 >= 0) {
                 fn_3_5A6D4(0x24);
             } else {
@@ -3147,8 +3144,8 @@ void fn_3_10A0A0(void) {
         } else if (g_Minigame.multiPlayerInd == 0 && g_Minigame._1A3C == 0 && g_Minigame.soloMinigameDifficulty == 3) {
             fn_3_5A6D4(0x24);
         } else {
-            lbl_3_common_bss_34C90.menu = 0;
             lbl_3_common_bss_34C90.state = 0;
+            lbl_3_common_bss_34C90.subState = 0;
             if (g_Minigame._1A3C != 0) {
                 fn_3_5A6D4(0x26);
             } else {
@@ -3188,7 +3185,7 @@ void fn_3_10A0A0(void) {
 extern s32 fn_8004FD64(s32 player);
 extern s32 fn_8004FDE8(s32 p, s32 q);
 extern u32 fn_800628D4(s32 kind);
-extern u8 lbl_80361B20[]; // UnlockFlags (menus/auto_00_00013BA4_text.h): per character, unlocked
+extern u8 lbl_80361B20[];  // TODO type: save-data flags block (main/file_8004C5F8.h)
 
 
 static inline void satIncU16(u16* p) {
@@ -3200,7 +3197,7 @@ static inline void satIncU16(u16* p) {
 }
 
 static inline u8 charSkinCount(s8 c) {
-    return lbl_8034E9A0.roster[0][c].stats.FieldingArm * 2 + lbl_8034E9A0.roster[0][c].stats.BattingStance;
+    return CHAR_STATS(c)->stats.FieldingArm * 2 + CHAR_STATS(c)->stats.BattingStance;
 }
 
 // Clears the character picked by slot k (unlocking it in the roster) if it was taken.
@@ -3282,7 +3279,7 @@ void fn_3_10CC20(void) {
             if (g_Minigame._19DA[i] != 0) {
                 continue;
             }
-            satIncU16((u16*)(&g_Minigame._19D2[i]));
+            satIncU16((u16*)&g_Minigame._19D2[i]);
             if (slotChar[i] == -3) {
                 // newly joined: put the cursor on a default character
                 g_Minigame._19E8[i]._0 = fn_80050760(i, 0, 0, 0, 0);
@@ -3344,7 +3341,7 @@ void fn_3_10CC20(void) {
                     }
                 } else {
                 browse:
-                    old = (u8)g_Minigame._19E8[i]._0;
+                    old = g_Minigame._19E8[i]._0;
                     r = fn_80050760(i, pad->buttonInput, pad->newButtonInput, pad->_08, 0);
                     if (r >= 0) {
                         g_Minigame._19E8[i]._0 = r;
@@ -3488,7 +3485,7 @@ void fn_3_10CC20(void) {
                 for (i = 0; i < 4; i++) {
                     slotChar[i] = -1;
                     if ((s8)g_Minigame._19E8[i]._1 != 0) {
-                        c = (u8)g_Minigame._19E8[i]._0;
+                        c = g_Minigame._19E8[i]._0;
                         for (k = 0; k < 12; k++) {
                             if (c == lbl_800E854C[k]) {
                                 used[k] = 1;
@@ -3524,7 +3521,7 @@ void fn_3_10CC20(void) {
                 if ((s32)(u8)g_Minigame._19DA[i] != 1 || (s32)g_Minigame._19E8[i]._1 == 1) {
                     continue;
                 }
-                satIncU16((u16*)(&g_Minigame._19D2[i]));
+                satIncU16((u16*)&g_Minigame._19D2[i]);
                 if ((pad->newButtonInput & 0x100) && g_Minigame._19E8[i]._0 >= 0 &&
                     g_Minigame._19E8[i]._6 == 0) {
                     if (lbl_803C6028._7F[i] < 0 &&
@@ -3539,7 +3536,7 @@ void fn_3_10CC20(void) {
                         fn_800628D4(g_Minigame._19E8[i]._0);
                     }
                 } else {
-                    old = (u8)g_Minigame._19E8[i]._0;
+                    old = g_Minigame._19E8[i]._0;
                     r = fn_80050760(i, pad->buttonInput, pad->newButtonInput, pad->_08, 0);
                     if (r >= 0) {
                         g_Minigame._19E8[i]._0 = r;
@@ -3664,7 +3661,7 @@ void fn_3_10CC20(void) {
     } else if (s == 5) {
         for (i = 0; i < 4; i++) {
             if (g_Minigame._19DA[i] >= 0 && (s8)g_Minigame._19E8[i]._1 != 0) {
-                satIncU16((u16*)(&g_Minigame._19D2[i]));
+                satIncU16((u16*)&g_Minigame._19D2[i]);
             }
         }
         if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 0x1E) {

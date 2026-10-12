@@ -185,15 +185,13 @@ void fn_3_D8CD0(void) {
     }
 }
 
-// NONMATCHING 98%: second count loop: original does `li r3,0; mr r6,r3` (we get two li) and loads the count later
 // .text:0x000D9868 size:0x1C8 mapped:0x807188FC
-#if NONMATCHING
 void fn_3_D9868(void) {
-    u8 players[4][2]; // [i][0] player, [i][1] flag
+    u8 players[4][2];
     u32 count;
     u32 i;
-    u32 k;
     u32 n;
+    s8* order;
 
     fn_3_1079C8(&players[0][0], 0);
     count = 0;
@@ -206,11 +204,11 @@ void fn_3_D9868(void) {
     switch (g_Minigame._192D) {
     case 0:
         i = 0;
-        k = 1;
+        n = 1;
         g_Minigame.playerOrder[0] = g_Minigame.rosterID;
         do {
             if (i != g_Minigame.rosterID) {
-                g_Minigame.playerOrder[k++] = i;
+                g_Minigame.playerOrder[n++] = i;
             }
         } while (++i < g_Minigame.miniGameNumberOfParticipants);
         break;
@@ -222,8 +220,9 @@ void fn_3_D9868(void) {
         break;
     case 4:
     case 5:
+        order = g_Minigame.playerOrder;
         g_Minigame.playerOrder[0] = g_Minigame.rosterID;
-        if (count == 1 && players[0][0] == g_Minigame.playerOrder[0]) {
+        if ((count == 1) && (players[0][0] == order[0])) {
             n = 0;
             i = n;
             do {
@@ -235,12 +234,11 @@ void fn_3_D9868(void) {
         } else {
             do {
                 g_Minigame.playerOrder[1] = players[random_fn_3_9EE24(count)][0];
-            } while (g_Minigame.playerOrder[1] == g_Minigame.playerOrder[0]);
+            } while (order[1] == order[0]);
         }
         break;
     }
 }
-#endif
 
 // NONMATCHING 92%: the original reaches lbl_3_data_189AC/189C4 through one pooled base (lbl_3_data_188E8), which
 // shifts register allocation

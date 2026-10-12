@@ -309,7 +309,7 @@ void fn_3_FBDAC(int scene) {
     p->_0008 = 0;
     p->_0014 = 0;
     lbl_3_common_bss_DE94._0000->_092C = scene;
-    lbl_3_common_bss_DE94._0000->_0000 = lbl_3_data_20E0C[scene];
+    lbl_3_common_bss_DE94._0000->_0000 = (s32)lbl_3_data_20E0C[scene]; // TODO type: _0000 holds a script pointer
     lbl_3_common_bss_DE94._0000->_09AE = 1;
     lbl_3_common_bss_DE94._0000->_0118 = 0;
     lbl_3_common_bss_DE94._0000->_0944 = 0;

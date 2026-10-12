@@ -252,7 +252,8 @@ static inline void fn_3_1CE90_setView(lbl_3_data_A40_s* p) {
 
 // NONMATCHING 98.4%: the three fn_3_1850C calls are tail-merged into one here, and f28-f30 are allocated differently in the inlined view setup
 #if NONMATCHING
-#define CAMERA_VIEW(cam, i) (&(cam)->views[i])
+// TODO type: inMemCamera holds 4 views of 0x9BC bytes from 0x120 (lbl_3_common_bss_DE94_s2).
+#define CAMERA_VIEW(cam, i) ((lbl_3_common_bss_DE94_s2*)((u8*)(cam) + 0x120 + (i) * 0x9BC))
 
 void fn_3_1CE90(void) {
     camera_803c639c_s* view;
@@ -1964,7 +1965,7 @@ void fn_3_15F74(void) {
 
 // .text:0x00015F38 size:0x3C mapped:0x80654FCC
 void fn_3_15F38(void) {
-    if (g_pCamera->views[0]._09B8 == 1) {
+    if (g_pCamera->_AD8 == 1) {
         fn_3_FBE24();
     }
     fn_3_FD670();
@@ -1978,63 +1979,63 @@ void fn_3_15F18(void) {
 // .text:0x00015D90 size:0x188 mapped:0x80654E24
 void fn_3_15D90(void) {
     int i;
-    g_pCamera->views[0]._09A8 = 0;
-    g_pCamera->views[0]._0954 = 0;
-    g_pCamera->views[0]._0956 = 0;
-    g_pCamera->views[0]._0958 = 0;
-    g_pCamera->views[0]._095A = 0;
-    g_pCamera->views[0]._095C = 0;
-    g_pCamera->views[0]._095E = 0;
-    g_pCamera->views[0]._0960 = 0;
-    g_pCamera->views[0]._0962 = 0;
+    g_pCamera->_AC8 = 0;
+    g_pCamera->_A74 = 0;
+    g_pCamera->_A76 = 0;
+    g_pCamera->_A78 = 0;
+    g_pCamera->_A7A = 0;
+    g_pCamera->_A7C = 0;
+    g_pCamera->_A7E = 0;
+    g_pCamera->_A80 = 0;
+    g_pCamera->_A82 = 0;
     for (i = 0; i < 4; i++) {
-        g_pCamera->views[0]._0964[i] = 0;
+        g_pCamera->_A84[i] = 0;
     }
-    g_pCamera->views[0]._0986 = -1;
-    g_pCamera->views[0]._0930 = -1;
-    g_pCamera->views[0]._0995 = 0;
-    g_pCamera->views[0]._0996 = 0;
-    g_pCamera->views[0]._0997 = 0;
-    g_pCamera->views[0]._0998 = 0;
-    g_pCamera->views[0]._09A6 = 0;
-    g_pCamera->views[0]._0999 = 0;
-    g_pCamera->views[0]._099A = 0;
-    g_pCamera->views[0]._09A4 = 0;
-    g_pCamera->views[0]._09AA = 0;
+    g_pCamera->_AA6 = -1;
+    g_pCamera->_A50 = -1;
+    g_pCamera->_AB5 = 0;
+    g_pCamera->_AB6 = 0;
+    g_pCamera->_AB7 = 0;
+    g_pCamera->_AB8 = 0;
+    g_pCamera->_AC6 = 0;
+    g_pCamera->_AB9 = 0;
+    g_pCamera->_ABA = 0;
+    g_pCamera->_AC4 = 0;
+    g_pCamera->_ACA = 0;
 
     for (i = 0; i < 4; i++) {
-        g_pCamera->views[0]._099B[i] = 0;
-        g_pCamera->views[0]._096C[i] = 0;
-        g_pCamera->views[0]._09A0[i] = 0;
+        g_pCamera->_ABB[i] = 0;
+        g_pCamera->_A8C[i] = 0;
+        g_pCamera->_AC0[i] = 0;
     }
 
-    g_pCamera->views[0]._097E = -1;
-    g_pCamera->views[0]._0980 = -1;
-    g_pCamera->views[0]._0982 = -1;
+    g_pCamera->_A9E = -1;
+    g_pCamera->_AA0 = -1;
+    g_pCamera->_AA2 = -1;
 
-    g_pCamera->views[0]._09B8 = 0;
-    g_pCamera->views[0]._0974 = 0;
-    g_pCamera->views[0]._099F = 0;
-    g_pCamera->views[0]._0976 = 0;
-    g_pCamera->views[0]._0978 = 0;
-    g_pCamera->views[0]._097C = 0;
-    g_pCamera->views[0]._0984 = 0;
-    g_pCamera->views[0]._097A = -1;
+    g_pCamera->_AD8 = 0;
+    g_pCamera->_A94 = 0;
+    g_pCamera->_ABF = 0;
+    g_pCamera->_A96 = 0;
+    g_pCamera->_A98 = 0;
+    g_pCamera->_A9C = 0;
+    g_pCamera->_AA4 = 0;
+    g_pCamera->_A9A = -1;
 }
 
 // .text:0x00015D7C size:0x14 mapped:0x80654E10
 void fn_3_15D7C(u8 b) {
-    g_pCamera->views[0]._09A5 = b;
+    g_pCamera->_AC5 = b;
 }
 
 // .text:0x00015D64 size:0x18 mapped:0x80654DF8
 void fn_3_15D64(void) {
-    g_pCamera->views[0]._09B8 = 1;
+    g_pCamera->_AD8 = 1;
 }
 
 // .text:0x00015D28 size:0x3C mapped:0x80654DBC
 void fn_3_15D28(void) {
-    if (g_pCamera->views[0]._09B8 == 1) {
+    if (g_pCamera->_AD8 == 1) {
         fn_3_FBE24();
     }
     fn_3_FD670();
@@ -2075,9 +2076,9 @@ void fn_3_15524(void) {
 void fn_3_154C4(int arg) {
     if (g_Pitcher.windupCountdownUntilBallReleased == 1) {
         if (arg == 0) {
-            g_pCamera->views[0]._0994 = 1;
+            g_pCamera->_AB4 = 1;
         } else if (g_Stats.replayInd == 0) {
-            g_pCamera->views[0]._0954 = g_Stats.playFrameCounter;
+            g_pCamera->_A74 = g_Stats.playFrameCounter;
         }
     }
 }
@@ -2086,9 +2087,9 @@ void fn_3_154C4(int arg) {
 void fn_3_15458(int arg) {
     if (g_Batter.swingInd != 0 && g_Batter.framesSinceStartOfSwing == 1) {
         if (arg == 0) {
-            g_pCamera->views[0]._0995 = 1;
+            g_pCamera->_AB5 = 1;
         } else if (g_Stats.replayInd == 0) {
-            g_pCamera->views[0]._0956 = g_Stats.playFrameCounter;
+            g_pCamera->_A76 = g_Stats.playFrameCounter;
         }
     }
 }
@@ -2097,9 +2098,9 @@ void fn_3_15458(int arg) {
 void fn_3_153F0(int arg) {
     if (g_Batter.swingInd != 0 && g_Batter.contactMadeInd == 1) {
         if (arg == 0) {
-            g_pCamera->views[0]._0996 = 1;
-        } else if (g_pCamera->views[0]._0958 == 0) {
-            g_pCamera->views[0]._0958 = g_Stats.playFrameCounter;
+            g_pCamera->_AB6 = 1;
+        } else if (g_pCamera->_A78 == 0) {
+            g_pCamera->_A78 = g_Stats.playFrameCounter;
         }
     }
 }
@@ -2107,13 +2108,13 @@ void fn_3_153F0(int arg) {
 // .text:0x0001537C size:0x74 mapped:0x80654410
 void fn_3_1537C(int arg) {
     if (g_Batter.hitTrajectory != HIT_TRAJECTORY_0) {
-        g_pCamera->views[0]._095C++;
+        g_pCamera->_A7C++;
     }
-    if (g_pCamera->views[0]._095C > 40){        
+    if (g_pCamera->_A7C > 40){        
         if (arg == 0) {
-            g_pCamera->views[0]._0997 = 1;
-        } else if (g_pCamera->views[0]._095A == 0) {
-            g_pCamera->views[0]._095A = g_Stats.playFrameCounter;
+            g_pCamera->_AB7 = 1;
+        } else if (g_pCamera->_A7A == 0) {
+            g_pCamera->_A7A = g_Stats.playFrameCounter;
         }
     }
 }
@@ -2121,15 +2122,15 @@ void fn_3_1537C(int arg) {
 // .text:0x000152E8 size:0x94 mapped:0x8065437C
 void fn_3_152E8(int arg) {
     if (g_Ball.deadBallReason != 0) {
-        g_pCamera->views[0]._0998 = 1;
-        g_pCamera->views[0]._09A6 = g_Ball.deadBallReason;
+        g_pCamera->_AB8 = 1;
+        g_pCamera->_AC6 = g_Ball.deadBallReason;
     }
     if (g_Ball.deadBallReason == 1){        
         if (arg == 0) {
-            g_pCamera->views[0]._0998 = 1;
-            g_pCamera->views[0]._09A6 = g_Ball.deadBallReason;
-        } else if (g_pCamera->views[0]._095E == 0) {
-            g_pCamera->views[0]._095E = g_Stats.playFrameCounter;
+            g_pCamera->_AB8 = 1;
+            g_pCamera->_AC6 = g_Ball.deadBallReason;
+        } else if (g_pCamera->_A7E == 0) {
+            g_pCamera->_A7E = g_Stats.playFrameCounter;
         }
     }
 }
@@ -2138,10 +2139,10 @@ void fn_3_152E8(int arg) {
 void fn_3_1527C(int arg) {
     if (g_Ball.ballState == BALL_STATE_HELD) {        
         if (arg == 0) {
-            g_pCamera->views[0]._0999 = 1;
-        } else if (g_pCamera->views[0]._0960 == 0) {
-            g_pCamera->views[0]._097A = g_Ball.fielderWBallIndex;
-            g_pCamera->views[0]._0960 = g_Stats.playFrameCounter;
+            g_pCamera->_AB9 = 1;
+        } else if (g_pCamera->_A80 == 0) {
+            g_pCamera->_A9A = g_Ball.fielderWBallIndex;
+            g_pCamera->_A80 = g_Stats.playFrameCounter;
         }
     }
 }
@@ -2150,9 +2151,9 @@ void fn_3_1527C(int arg) {
 void fn_3_15220(int arg) {
     if (g_FieldingLogic._13F != 0) {
         if (arg == 0) {
-            g_pCamera->views[0]._099A = 1;
-        } else if (g_pCamera->views[0]._0962 == 0) {
-            g_pCamera->views[0]._0962 = g_Stats.playFrameCounter;
+            g_pCamera->_ABA = 1;
+        } else if (g_pCamera->_A82 == 0) {
+            g_pCamera->_A82 = g_Stats.playFrameCounter;
         }
     }
 }
@@ -2170,9 +2171,9 @@ void fn_3_15144(int arg) {
         if (g_Runners[i].groundVelocity[0] > 0.0f &&
             (int)g_Runners[i].fractionalBasesRan > (int)g_Runners[i].fractionalBasesRan_stored) {
             if (!arg) {
-                g_pCamera->views[0]._099B[i] = 1;
-            } else if (g_pCamera->views[0]._099B[i] == 0) {
-                g_pCamera->views[0]._0964[i] = g_Stats.playFrameCounter;
+                g_pCamera->_ABB[i] = 1;
+            } else if (g_pCamera->_ABB[i] == 0) {
+                g_pCamera->_A84[i] = g_Stats.playFrameCounter;
             }
         }
     }
@@ -2183,7 +2184,7 @@ void fn_3_150C0(void) {
     int i;
     for (i = 0; i < ARRAY_SIZE(g_Runners); i++) {
         if (g_Runners[i].baseStandingOn == 3) {
-            g_pCamera->views[0]._096C[i] = g_Stats.playFrameCounter;
+            g_pCamera->_A8C[i] = g_Stats.playFrameCounter;
         }
     }
 }
@@ -2192,18 +2193,18 @@ void fn_3_150C0(void) {
 void fn_3_15004(void) {
     int i;
     for (i = 0; i < ARRAY_SIZE(g_Runners); i++) {
-        if (g_Runners[i].runnerOnFieldOrOutOrScored == 3 && g_pCamera->views[0]._09A0[i] == 0) {
-            g_pCamera->views[0]._099F = i;
-            g_pCamera->views[0]._09A0[i] = 1;
-            g_pCamera->views[0]._0974 = g_Stats.playFrameCounter;
+        if (g_Runners[i].runnerOnFieldOrOutOrScored == 3 && g_pCamera->_AC0[i] == 0) {
+            g_pCamera->_ABF = i;
+            g_pCamera->_AC0[i] = 1;
+            g_pCamera->_A94 = g_Stats.playFrameCounter;
         }
     }
 }
 
 // .text:0x00014FC8 size:0x3C mapped:0x8065405C
 void fn_3_14FC8(void) {
-    if (lbl_3_common_bss_32A94._4 == 0xe && g_pCamera->views[0]._0976 == 0) {
-        g_pCamera->views[0]._0976 = g_Stats.playFrameCounter;
+    if (lbl_3_common_bss_32A94._4 == 0xe && g_pCamera->_A96 == 0) {
+        g_pCamera->_A96 = g_Stats.playFrameCounter;
     }
 }
 
@@ -2212,39 +2213,39 @@ void fn_3_14F68(void) {
     if (g_FieldingLogic._133 != 2) {
         return;
     }
-    if (g_pCamera->views[0]._09A4 != 0) {
+    if (g_pCamera->_AC4 != 0) {
         return;
     }
-    g_pCamera->views[0]._09A4 = g_FieldingLogic._114;
-    g_pCamera->views[0]._097A = g_Ball.fielderWBallIndex;
-    g_pCamera->views[0]._0978 = g_Stats.playFrameCounter;
+    g_pCamera->_AC4 = g_FieldingLogic._114;
+    g_pCamera->_A9A = g_Ball.fielderWBallIndex;
+    g_pCamera->_A98 = g_Stats.playFrameCounter;
 }
 
 // .text:0x00014F24 size:0x44 mapped:0x80653FB8
 void fn_3_14F24(void) {
-    if (lbl_3_common_bss_32A94._2 >= 36 && lbl_3_common_bss_32A94._2 <= 38 && g_pCamera->views[0]._097C == 0) {
-        g_pCamera->views[0]._097C = g_Stats.playFrameCounter;
+    if (lbl_3_common_bss_32A94._2 >= 36 && lbl_3_common_bss_32A94._2 <= 38 && g_pCamera->_A9C == 0) {
+        g_pCamera->_A9C = g_Stats.playFrameCounter;
     }
 }
 
 // .text:0x00014EE8 size:0x3C mapped:0x80653F7C
 void fn_3_14EE8(void) {
-    if (g_Batter.contactMadeInd == 1 && g_pCamera->views[0]._0986 == -1) {
-        g_pCamera->views[0]._0986 = g_Ball.Hit_HorizontalAngle;
+    if (g_Batter.contactMadeInd == 1 && g_pCamera->_AA6 == -1) {
+        g_pCamera->_AA6 = g_Ball.Hit_HorizontalAngle;
     }
 }
 
 // .text:0x00014EC0 size:0x28 mapped:0x80653F54
 void fn_3_14EC0(void) {
-    if (g_pCamera->views[0]._0930 == -1) {
-        g_pCamera->views[0]._0930 = g_Strikes.storedOuts;
+    if (g_pCamera->_A50 == -1) {
+        g_pCamera->_A50 = g_Strikes.storedOuts;
     }
 }
 
 // .text:0x00014E84 size:0x3C mapped:0x80653F18
 void fn_3_14E84(void) {
-    if (g_FieldingLogic._133 == 2 && g_pCamera->views[0]._0984 == 0) {
-        g_pCamera->views[0]._0984 = g_Stats.playFrameCounter;
+    if (g_FieldingLogic._133 == 2 && g_pCamera->_AA4 == 0) {
+        g_pCamera->_AA4 = g_Stats.playFrameCounter;
     }
 }
 
