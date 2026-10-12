@@ -303,8 +303,6 @@ void fn_2_940(void) {
     }
 }
 
-// NONMATCHING 90%: switch compiles to a compare tree instead of the original jump table (empty cases 2-6/8 do not help)
-#if NONMATCHING
 // fn_2_978, size:0x9C
 void fn_2_978(void) {
     u8 mode = lbl_80366158._1D;
@@ -317,6 +315,8 @@ void fn_2_978(void) {
     case 1:
         fn_2_11A0(0xE);
         break;
+    case 3: // one empty case makes mwcc pick the jump table (more empty labels do not)
+        break;
     case 7:
         fn_2_11A0(1);
         break;
@@ -326,7 +326,6 @@ void fn_2_978(void) {
     }
     lbl_80366158._1D = 1;
 }
-#endif
 
 // fn_2_A14, size:0x5C
 void fn_2_A14(void) {
