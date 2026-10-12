@@ -11,7 +11,7 @@
 
 extern u8 lbl_800EFBA4[];
 extern GameScores g_Scores;
-extern u8 lbl_3_common_bss_32724[]; // GameHudFlags (game/auto_00_00097144_text.h)
+#include "game/auto_00_00097144_text.h" // GameHudFlags lbl_3_common_bss_32724
 
 extern void setInMemBatterConstants(s32);
 extern void fn_3_F1DC(void);
@@ -789,7 +789,7 @@ void fn_3_131540(void) {
                 fn_3_1312D4();
             }
             fn_3_14CA00();
-            lbl_3_common_bss_32724[0xB7] = 1; // TODO type: GameHudFlags._B7
+            lbl_3_common_bss_32724._B7 = 1;
         }
         break;
     }
@@ -872,7 +872,7 @@ void fn_3_131EC4(void) {
         }
         break;
     default:
-        lbl_3_common_bss_32724[0xB6] = 1; // TODO type: GameHudFlags._B6
+        lbl_3_common_bss_32724._B6 = 1;
         fn_3_5A6D4(0);
         break;
     }

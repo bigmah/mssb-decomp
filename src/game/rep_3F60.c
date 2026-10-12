@@ -81,7 +81,8 @@ void fn_3_168414(EffectNode* node) {
         states[i]->keyIdx = 0;
         states[i]->speed = node->frame;
         fn_80024DB0(states[i]);
-        // TODO type: ShapeModel is a view of the GameActor that obj->actor points to.
+        // TODO type: ShapeModel (main/file_80024D2C.h) is a byte-padded 32-bit view of GameActor (pal at 0x10,
+        // skHeader at 0x7C); fn_80024FA4/fn_80025C58 should take GameActor** in main, which fixes all callers.
         fn_80024FA4((ShapeModel**)&obj->actor, shapes[i], states[i], -1);
     }
     obj->actor->tickFlag = 1;
@@ -209,7 +210,7 @@ void fn_3_168A6C(EffectNode* node) {
     state->keyIdx = 0;
     state->speed = node->frame;
     fn_80024DB0(state);
-    // TODO type: ShapeModel is a view of the GameActor that obj->actor points to.
+    // TODO type: ShapeModel view of GameActor, see fn_3_168414 above.
     fn_80024FA4((ShapeModel**)&obj->actor, shape, state, -1);
     obj->actor->tickFlag = 1;
     ACTSetAnimation(obj->actor, obj->animBank, NULL, obj->seqNum, 0.0f, obj->speed);

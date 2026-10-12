@@ -601,8 +601,8 @@ static void SetCamAnim(s16 anim) {
 s32 fn_3_FDB30(void) {
     SceneTask* task = lbl_803CC1B8;
     ReplayCamView* d = CAMV;
-    u8 starIdx = ((u8*)starMissionCompletionTracker)[0x441C];  /* TODO type: past the end of the declared array */
-    u8 starKind = ((u8*)starMissionCompletionTracker)[0x4415]; /* TODO type */
+    u8 starIdx = gChallengeState._441C;
+    u8 starKind = gChallengeState._4415;
     s32* p;
 
     g_pCamera->views[0]._0952 += 1;
@@ -2350,7 +2350,7 @@ u32 fn_3_105C28(ReplayAnim* p, u32 key) {
 void fn_3_105C84(ReplayAnim* p) {
     u32* a;
     s16 i;
-    a = (u32*)&p->frameTbl; /* TODO type: 32-bit file offsets */
+    a = (u32*)&p->frameTbl; /* TODO port: frameTbl/tracks[] hold 32-bit file offsets relocated in place; needs the port's relocation layer */
     *a += (u32)p;
     for (i = 0; i < p->numTracks; i++) {
         a[i + 1] += (u32)p;
