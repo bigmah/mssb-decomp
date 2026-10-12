@@ -7,7 +7,11 @@ Sections:
 	.bss        type:bss align:8
 
 menus/rep_0010.c:
-	.rodata     start:0x00000010 end:0x00000060
+	.text       start:0x00000000 end:0x00000A70
+	.rodata     start:0x00000000 end:0x00000060
+	.data       start:0x00000000 end:0x00000128
+	.bss        start:0x00000000 end:0x00000018
+	.bss        start:0x0000B644 end:0x0000FC68 align:4 common
 
 menus/rep_0060.c:
 	.rodata     start:0x00000060 end:0x000000B0
@@ -20,10 +24,6 @@ menus/rep_0100.c:
 
 menus/rep_0150.c:
 	.rodata     start:0x00000150 end:0x000001A0
-
-auto_00_00000000_text:
-	.text       start:0x00000000 end:0x00000A70
-	.bss        start:0x0000B644 end:0x0000FC68 align:4 common
 
 menus/rep_01A0.c:
 	.text       start:0x00000A70 end:0x00000D08

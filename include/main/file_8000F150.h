@@ -150,12 +150,5 @@ void fn_800111B4(MsgTable* table);
 struct GameActor** fn_800111D8(struct CharActor* actor);
 struct CharActor* fn_800111FC(struct CharActor* actor, s32 second);
 void fn_80011358(s32 index, s32 kind);
-void fn_80011468(void);
-
-struct CharActor* fn_80011570(void); // actor being drawn (lbl_803CBC18)
-
-void fn_800115C8(s8 index);
-
-void fn_80011604(s8 index, DOTevHook value);
 
 #endif

@@ -1,12 +1,13 @@
 #include "game/rep_1F58.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1F58
+#include "header_rep_inline.h"
 #include "Dolphin/mtx.h"
 
 extern u8 lbl_3_common_bss_35154[];
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 // .bss (laid out last-defined-first)
-u8 lbl_3_bss_9D40[0x40];
-u8 lbl_3_bss_9D20[0x20];
+static u8 lbl_3_bss_9D40[0x40];
+static u8 lbl_3_bss_9D20[0x20];
 extern u8* lbl_803CC1B8;
 extern u8 lbl_8036E548[];
 extern u8 lbl_803CBBC0;

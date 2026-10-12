@@ -1,5 +1,6 @@
 #include "game/sta_c2.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_sta_c2
+#include "header_rep_inline.h"
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
 #include "Dolphin/vec.h"
@@ -29,34 +30,34 @@ extern f32 lbl_3_rodata_26AC;
 extern f32 lbl_3_rodata_26B0;
 extern f32 lbl_3_rodata_26B8;
 // .bss (laid out last-defined-first)
-void* lbl_3_bss_ADD0[0xC];
-u8 lbl_3_bss_A8D0[0x500];
-u8 lbl_3_bss_A8A8[0x28];
-u8* lbl_3_bss_A8A4;
-u8 lbl_3_bss_A898[0xC];
-Vec lbl_3_bss_A820[0xA];
-u8 lbl_3_bss_A81C;
-u8 lbl_3_bss_A034[0x7E8];
-f32 lbl_3_bss_A030;
-u8 lbl_3_bss_A02D;
-u8 lbl_3_bss_A02C;
-u8 lbl_3_bss_A02B;
-u8 lbl_3_bss_A02A;
+static void* lbl_3_bss_ADD0[0xC];
+static u8 lbl_3_bss_A8D0[0x500];
+static u8 lbl_3_bss_A8A8[0x28];
+static u8* lbl_3_bss_A8A4;
+static u8 lbl_3_bss_A898[0xC];
+static Vec lbl_3_bss_A820[0xA];
+static u8 lbl_3_bss_A81C;
+static u8 lbl_3_bss_A034[0x7E8];
+static f32 lbl_3_bss_A030;
+static u8 lbl_3_bss_A02D;
+static u8 lbl_3_bss_A02C;
+static u8 lbl_3_bss_A02B;
+static u8 lbl_3_bss_A02A;
 static u8 lbl_3_bss_A029; // unused (alignment gap in the original)
 static u8 lbl_3_bss_A028; // unused (alignment gap in the original)
-u8 lbl_3_bss_A027;
-u8 lbl_3_bss_A026;
-u8 lbl_3_bss_A025;
-u8 lbl_3_bss_A024;
-u8 lbl_3_bss_A023;
-u8 lbl_3_bss_A022;
+static u8 lbl_3_bss_A027;
+static u8 lbl_3_bss_A026;
+static u8 lbl_3_bss_A025;
+static u8 lbl_3_bss_A024;
+static u8 lbl_3_bss_A023;
+static u8 lbl_3_bss_A022;
 static u8 lbl_3_bss_A021; // unused (alignment gap in the original)
-u8 lbl_3_bss_A020;
-u8* lbl_3_bss_A01C;
+static u8 lbl_3_bss_A020;
+static u8* lbl_3_bss_A01C;
 static u8 lbl_3_bss_A01B; // unused (alignment gap in the original)
 static u8 lbl_3_bss_A01A; // unused (alignment gap in the original)
 static u8 lbl_3_bss_A019; // unused (alignment gap in the original)
-u8 lbl_3_bss_A018[0x1];
+static u8 lbl_3_bss_A018[0x1];
 typedef struct { f32 f0, f4, f8, f0C[6], f24[3], f30[3]; s32 n3C; } CC438Ent;
 extern void fn_3_8B890(s32);
 extern s32 lbl_3_data_182C4;
@@ -470,6 +471,138 @@ void fn_3_CC1D4(void) {
     }
 }
 
+// .text:0x000CCC24 size:0xD34 mapped:0x8070BCB8
+// One static prop of this stadium (lbl_3_data_185D0, type 0xD ends the list).
+typedef struct C2Prop {
+    /*0x00*/ Vec pos;
+    /*0x0C*/ u8 type;
+    /*0x0D*/ u8 _0D[3];
+    /*0x10*/ Vec scale;
+    /*0x1C*/ f32 rotY; // degrees
+} C2Prop; // size 0x20
+// .text:0x000D5E80 size:0x240 mapped:0x80714F14
+typedef struct { f32 x, y, z; u8 fC; u8 padD; u8 fE; u8 padF; u8 pad[0xC]; } D5E80Ent;
+// .data 0x000182C0..0x000188E8
+s32 lbl_3_data_182C0 = -1;
+s32 lbl_3_data_182C4 = -1;
+T52 lbl_3_data_182C8[3] = {
+    {
+        55.0f,
+        0.0f,
+        40.0f,
+        9.21942e-41f,
+        0.0f,
+        180.0f,
+        0.0f,
+        0.0f,
+        180.0f,
+        0.0f,
+        {67, 32, 0, 0, 66, 240, 0, 0, 1, 0, 0, 0},
+    },
+    {
+        -55.0f,
+        0.0f,
+        40.0f,
+        9.2553e-41f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        {67, 145, 0, 0, 66, 200, 0, 0, 0, 0, 0, 0},
+    },
+    {0.0f, 0.0f, 0.0f, 3.9443045e-31f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+};
+T34 lbl_3_data_18364[6] = {
+    {
+        28.5f,
+        7.0f,
+        37.5f,
+        3.791084e-37f,
+        30.0f,
+        {63, 128, 0, 0, 63, 128, 0, 0, 63, 128, 0, 0},
+        -60.0f,
+        45.0f,
+        60.0f,
+        10.0f,
+        4.0f,
+    },
+    {
+        -28.5f,
+        7.0f,
+        37.5f,
+        3.7913137e-37f,
+        330.0f,
+        {63, 128, 0, 0, 63, 128, 0, 0, 63, 128, 0, 0},
+        -60.0f,
+        -10.0f,
+        60.0f,
+        -45.0f,
+        4.0f,
+    },
+    {0.0f, 0.0f, 0.0f, 3.9443045e-31f, 0.0f, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+};
+D5E80Ent lbl_3_data_1849C[11] = {
+    {0.0f, -5.0f, 40.0f, 6, 1, 1, 0, {65, 32, 0, 0, 0, 0, 0, 0, 67, 180, 0, 0}},
+    {20.0f, -5.0f, 40.0f, 6, 1, 2, 0, {65, 32, 0, 0, 0, 0, 0, 0, 67, 180, 0, 0}},
+    {-20.0f, -5.0f, 40.0f, 6, 1, 3, 0, {65, 32, 0, 0, 0, 0, 0, 0, 67, 180, 0, 0}},
+    {0.0f, 0.0f, 0.0f, 13, 0, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, 0, 0, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, 0, 0, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, 0, 0, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, 0, 0, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, 0, 0, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, 0, 0, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, 0, 0, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+};
+C2Prop lbl_3_data_185D0[11] = {
+    {{37.4f, 0.0f, 8.0f}, 7, {1, 1, 0}, {1.0f, 1.0f, 1.0f}, -35.0f},
+    {{22.5f, 0.0f, -7.3f}, 7, {1, 1, 0}, {1.0f, 1.0f, 1.0f}, -25.0f},
+    {{-22.5f, 0.0f, -7.3f}, 7, {1, 1, 0}, {1.0f, 1.0f, 1.0f}, 20.0f},
+    {{-37.4f, 0.0f, 8.0f}, 7, {1, 1, 0}, {1.0f, 1.0f, 1.0f}, 0.0f},
+    {{-43.34f, -3.6f, 87.797f}, 7, {1, 1, 0}, {1.0f, 0.85f, 1.0f}, -25.0f},
+    {{-32.055f, -3.6f, 101.771f}, 7, {1, 1, 0}, {1.0f, 0.8f, 1.0f}, -15.0f},
+    {{31.884f, -3.6f, 101.246f}, 7, {1, 1, 0}, {1.0f, 0.8f, 1.0f}, 20.0f},
+    {{43.626f, -3.6f, 87.915f}, 7, {1, 1, 0}, {1.0f, 0.88f, 1.0f}, 25.0f},
+    {{0.0f, 0.0f, 0.0f}, 13, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, 0.0f},
+    {{0.0f, 0.0f, 0.0f}, 0, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, 0.0f},
+    {{0.0f, 0.0f, 0.0f}, 0, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, 0.0f},
+};
+T16 lbl_3_data_18730[27] = {
+    {0.0f, 0.15f, 60.0f, 3.88207e-34f},
+    {20.0f, 0.15f, 60.0f, 3.8821876e-34f},
+    {-20.0f, 0.15f, 60.0f, 3.882305e-34f},
+    {0.0f, 0.0f, 0.0f, 3.9443045e-31f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 2.484525e-32f},
+    {0.0f, 0.0f, 0.0f, 3.9443045e-31f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 10.0f, 9.21942e-41f},
+    {0.0f, -90.0f, 0.0f, 30.0f},
+    {-120.0f, 0.0f, 0.0f, 360.0f},
+    {0.0f, 2.3878675e-38f, 9.551468e-38f, 1.5282349e-36f},
+    {9.846496e-38f, 4.1236383e-34f, 4.0935457e-34f, 0.0f},
+};
+f32 lbl_3_data_188E0 = 0.1f; // NOTE: type size 0x4 != symbol size 0x8
+
 // .text:0x000CC354 size:0xE4 mapped:0x8070B3E8
 void fn_3_CC354(f32* p) {
     f32* q;
@@ -624,15 +757,6 @@ void fn_3_CC81C(void) {
 }
 #endif
 
-// .text:0x000CCC24 size:0xD34 mapped:0x8070BCB8
-// One static prop of this stadium (lbl_3_data_185D0, type 0xD ends the list).
-typedef struct C2Prop {
-    /*0x00*/ Vec pos;
-    /*0x0C*/ u8 type;
-    /*0x0D*/ u8 _0D[3];
-    /*0x10*/ Vec scale;
-    /*0x1C*/ f32 rotY; // degrees
-} C2Prop; // size 0x20
 
 extern C2Prop lbl_3_data_185D0[];
 extern u8 lbl_3_data_10D3C[];
@@ -3512,8 +3636,6 @@ void fn_3_D5C8C(s32* a) {
     }
 }
 
-// .text:0x000D5E80 size:0x240 mapped:0x80714F14
-typedef struct { f32 x, y, z; u8 fC; u8 padD; u8 fE; u8 padF; u8 pad[0xC]; } D5E80Ent;
 extern D5E80Ent lbl_3_data_1849C[];
 extern const f32 lbl_3_rodata_2664;
 void fn_3_D5E80(s32* a) {
@@ -4251,3 +4373,4 @@ void fn_3_D67CC(void** files) {
 }
 #endif
 #pragma dont_inline off
+

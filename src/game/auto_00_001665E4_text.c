@@ -31,3 +31,9 @@ s32 fn_3_1665E4(void) {
     return 0;
 }
 
+
+// .data 0x284E8..0x28508: ARAM load instructions of the trail file ([1] is the one loaded).
+AssetLoadInstructions lbl_3_data_284E8[2] = {
+    {0, {15512}, {0x8F21000}, 15512},
+    {1035, {0x4000EBBC}, {0x8F25000}, 38256},
+};

@@ -1,5 +1,6 @@
 #include "game/rep_3AE8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3AE8
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "Dolphin/stl.h"
 #include "main/file_800263FC.h"
@@ -190,4 +191,3 @@ void fn_3_15C024(VecXYZ* pos, VecXYZ* vel, VecXYZ* add, int flag) {
         }
     }
 }
-

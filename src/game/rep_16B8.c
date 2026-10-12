@@ -1,5 +1,6 @@
 #include "game/rep_16B8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_16B8
+#include "header_rep_inline.h"
 #include "main/menu_globals.h"
 
 extern u8 lbl_3_data_F390[];

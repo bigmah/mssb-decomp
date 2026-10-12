@@ -1,3 +1,4 @@
 #include "game/rep_CC8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_CC8
+#include "header_rep_inline.h"
 

@@ -1,5 +1,6 @@
 #include "game/rep_31F0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_31F0
+#include "header_rep_inline.h"
 
 #include "musyx/musyx.h"
 #include "Dolphin/mtx.h"
@@ -150,8 +151,6 @@ extern camera_803c639c_s* fn_80052768_getCamera(int index);
 extern u8 lbl_3_data_213E0[4];
 extern f32 lbl_3_data_21438[];
 
-// NONMATCHING 99.8%: f1/f2/f3 picks around the fdivs in the re-aim branch
-#if NONMATCHING
 // g_Minigame +0x1AA0: last 10 hit results per roster slot
 typedef struct { u8 pad[0x1AA0]; u8 hist[4][10]; } MgHist_31F0;
 
@@ -217,9 +216,9 @@ void fn_3_110AD4(void) {
         angB += *(s16*)(g_Minigame + 0x18A4);
         getComponentsFromSAng(angA, &v.x, &v.z);
         getComponentsFromSAng(angB, &cosB, &v.y);
-        v.y = v.y / cosB;
         v.x *= lbl_3_data_21438[3];
         v.z *= lbl_3_data_21438[3];
+        v.y = v.y / cosB;
         v.y = v.y * -lbl_3_data_21438[3];
         if (g_Pitcher[0x164] != 0) {
             fn_3_BC6D8(&v, &fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(0, 3), 1);
@@ -243,7 +242,6 @@ void fn_3_110AD4(void) {
         startBombTimer_31F0();
     }
 }
-#endif
 
 extern u8 g_d_GameSettings[];
 extern u8 lbl_3_common_bss_37400[];

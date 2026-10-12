@@ -1,5 +1,6 @@
 #include "game/sta_c6.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_sta_c6
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/auto_00_000D8A10_text.h"
 #include "Dolphin/stl.h"
@@ -1310,3 +1311,4 @@ void fn_3_E8B24(void** files) {
     fn_3_E7B20(files, idx);
     lbl_3_bss_AE88[0] = 0;
 }
+

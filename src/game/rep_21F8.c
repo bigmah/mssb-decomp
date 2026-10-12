@@ -1,5 +1,6 @@
 #include "game/rep_21F8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_21F8
+#include "header_rep_inline.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/GX/GXPixel.h"
 

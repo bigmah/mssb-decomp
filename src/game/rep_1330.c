@@ -1,5 +1,6 @@
 #include "game/rep_1330.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1330
+#include "header_rep_inline.h"
 #include "Dolphin/stl.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
@@ -13,7 +14,7 @@ extern void fn_8001B224(void);
 extern void fn_3_B908C(void);
 extern void fn_3_21C7C(s32, s32);
 // .bss (laid out last-defined-first)
-u32 lbl_3_bss_1748[0x6];
+static u32 lbl_3_bss_1748[0x6];
 extern void fn_3_FBD70(void);
 extern void fn_3_FBD58(void);
 extern void fn_3_1CBCC(void);
