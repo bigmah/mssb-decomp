@@ -192,34 +192,38 @@ void fn_3_EA340(void) {
 #endif
 
 // .text:0x000ED0F4 size:0x150 mapped:0x8072C188
-// NONMATCHING 97%: scheduling of the sprite/table address computations
-#if NONMATCHING
 void fn_3_ED0F4(void) {
-    EaTask* task = EA_TASK;
     u32 stadium;
+    EaTask* task = (EaTask *) lbl_803CC1B8;
     u8 vol;
+    u16 new_var2;
+    EaSlot* new_var3;
     s32 voice;
+    u8* new_var;
 
     fn_80034E20(task, lbl_3_data_8F64);
-    EA_SPRITE(task, 1)->anim = lbl_3_data_8FC4[EA_MG._1921 - 1];
+    new_var3 = (EaSlot *) lbl_80371C30;
+    new_var3[(new_var2 = task->baseIdx) + 1].obj->anim = lbl_3_data_8FC4[(*((EaMinigame *) g_Minigame))._1921 - 1];
     stadium = g_d_GameSettings.StadiumID;
     if (g_d_GameSettings.GameModeSelected == 6) {
-        vol = lbl_3_data_84B8[0x38];
+        new_var = lbl_3_data_84B8;
+        vol = new_var[0x38];
     } else {
-        vol = lbl_3_data_8404[stadium * 0x1E + 0x38];
+        vol = lbl_3_data_8404[(stadium * 0x1E) + 0x38];
+    }
+    if (new_var) {
     }
     voice = sndFXStartEx(lbl_3_data_81DC[stadium] + 0x1C, vol, 0x3F, 0);
     if (g_d_GameSettings.GameModeSelected == 6) {
         vol = lbl_3_data_84B8[0x39];
     } else {
-        vol = lbl_3_data_8404[stadium * 0x1E + 0x39];
+        vol = lbl_3_data_8404[(stadium * 0x1E) + 0x39];
     }
     sndFXCtrl(voice, 0x5B, vol);
     task->param = 0;
-    EA_MG._19CD = 1;
-    EA_TASK->func = fn_3_ED058;
+    (*((EaMinigame *) g_Minigame))._19CD = 1;
+    ((EaTask *) lbl_803CC1B8)->func = fn_3_ED058;
 }
-#endif
 
 // The game data around lbl_3_data_19770 is addressed from that symbol as a pool
 // base; these are the tables at lbl_3_data_19830 + 0xE0/0x140/0x148/0x150.
