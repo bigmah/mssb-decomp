@@ -13,7 +13,6 @@ extern void fn_3_6A250(void);
 
 #define MGB ((u8*)&g_Minigame)
 extern f32 lbl_3_data_18DD4[];
-extern f32 lbl_3_rodata_1088;
 
 // g_Fielders entry (size 0x268), only the fields used here.
 typedef struct {
