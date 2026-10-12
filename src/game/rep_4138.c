@@ -1,5 +1,6 @@
 #include "game/rep_4138.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_4138
+#include "header_rep_inline.h"
 #include "Dolphin/stl.h"
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
@@ -41,6 +42,8 @@ static ScoreDrawNode lbl_3_data_2A498[2] = {
     { NULL, fn_3_16DFC4 },
 };
 
+// fn_3_16D810 constants. As one-element arrays they stay real objects: where fn_3_16D810 is
+// inlined into fn_3_16DB6C the original loads them through addi+lfs 0, which literals do not give.
 static const GXColor lbl_3_rodata_4188[1] = { { 0xFF, 0xFF, 0xFF, 0xFF } };
 static const f32 lbl_3_rodata_418C[1] = { 50.0f };
 static const f32 lbl_3_rodata_4190[1] = { 0.001953125f };
@@ -143,7 +146,6 @@ void fn_3_16DFC4(void) {
     } while (i < 6U);
 }
 
-#pragma pool_data off
 // .text:0x0016DB6C size:0x458 mapped:0x807ACC00
 // Draws two-digit counter i (0-5, see fn_3_16E1A0) of the scoreboard overlay.
 void fn_3_16DB6C(u8 i) {
@@ -195,8 +197,6 @@ void fn_3_16DB6C(u8 i) {
 }
 
 
-#pragma pool_data reset
-
 // .text:0x0016D9B0 size:0x1BC mapped:0x807ACA44
 void fn_3_16D9B0(void) {
     GXSetZMode(1, 3, 0);
@@ -224,7 +224,6 @@ void fn_3_16D9B0(void) {
     fn_80033B58(lbl_3_bss_D6E4, lbl_3_bss_D6E8, 0, 0);
 }
 
-#pragma pool_data off
 // .text:0x0016D810 size:0x1A0 mapped:0x807AC8A4
 // Draws digit n as a quad at (x, y).
 void fn_3_16D810(s32 n, f32 x, f32 y) {
@@ -239,4 +238,3 @@ void fn_3_16D810(s32 n, f32 x, f32 y) {
         GXTexCoord2f32(u + lbl_3_data_2A478[i * 2], lbl_3_data_2A478[i * 2 + 1]);
     }
 }
-#pragma pool_data reset
