@@ -107,6 +107,7 @@ menus/rep_0A08.c:
 auto_00_0004B1AC_text:
 	.text       start:0x0004B1AC end:0x00054BB0
 	.data       start:0x00013460 end:0x0001F3F0
+	.bss        start:0x000055E8 end:0x00009E10
 
 menus/rep_0A58.c:
 	.text       start:0x00054BB0 end:0x0005597C
