@@ -380,7 +380,7 @@ void fn_3_3BE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 
     f32 bottom = y1;
     GXColor white = {0xFF, 0xFF, 0xFF, 0xFF};
 
-    GXInitTexObj(&tex, img->data, img->width, img->height, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
+    GXInitTexObj(&tex, PTR32_GET(u8, img->data), img->width, img->height, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
     GXInitTexObjLOD(&tex, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
@@ -440,7 +440,7 @@ void fn_3_3EE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 
     f32 bottom = y1;
     GXColor white = {0xFF, 0xFF, 0xFF, 0xFF};
 
-    GXInitTexObj(&tex, img->data, img->width, img->height, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
+    GXInitTexObj(&tex, PTR32_GET(u8, img->data), img->width, img->height, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
     GXInitTexObjLOD(&tex, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
@@ -810,7 +810,7 @@ void fn_3_5518(void) {
     GXSetTexCopyDst(512, 480, GX_CTF_R4, GX_FALSE);
     fn_3_4A38(g_d_GameSettings.StadiumID);
     GXDrawDone();
-    GXCopyTex(images[idx].data, GX_TRUE);
+    GXCopyTex(PTR32_GET(u8, images[idx].data), GX_TRUE);
     GXPixModeSync();
 }
 #endif
@@ -995,7 +995,7 @@ void fn_3_5C68(StadiumAnimNode* obj) {
             }
             if (cnt != 0) {
                 TexImage* tex = (TexImage*)p->p4;
-                DCStoreRange(tex->data, tex->width * tex->height);
+                DCStoreRange(PTR32_GET(u8, tex->data), tex->width * tex->height);
             }
         }
     }

@@ -13,8 +13,8 @@ typedef struct ChallengeTestMenu {
 } ChallengeTestMenu;
 
 typedef struct {
-    void* image;
-    void* palette;
+    PTR32(void) image;
+    PTR32(void) palette;
     u16 height;
     u16 width;
     u8 wrapS;
