@@ -1138,10 +1138,10 @@ void fn_2_48DB4(void) {
     GXColor c2;
     GXColor c3;
 
-    LITAlloc(&lbl_8036E548.lights[0]);
-    LITAlloc(&lbl_8036E548.lights[1]);
-    LITAlloc(&lbl_8036E548.lights[2]);
-    LITAlloc(&lbl_8036E548.lights[3]);
+    LITAlloc((struct Light**)&lbl_8036E548.lights[0]);
+    LITAlloc((struct Light**)&lbl_8036E548.lights[1]);
+    LITAlloc((struct Light**)&lbl_8036E548.lights[2]);
+    LITAlloc((struct Light**)&lbl_8036E548.lights[3]);
 
     LITInitAttn(lbl_8036E548.lights[0], lbl_2_rodata_960, lbl_2_rodata_94C, lbl_2_rodata_94C, lbl_2_rodata_960, lbl_2_rodata_94C, lbl_2_rodata_94C);
     LITInitPos(lbl_8036E548.lights[0], lbl_2_rodata_974, lbl_2_rodata_978, lbl_2_rodata_97C);
