@@ -813,6 +813,16 @@ void fn_800A9520(void) {
     u16 prev;
 
     lbl_80110080.readMask = PADRead(status);
+#ifdef TARGET_PC
+    {
+        // Scripted presses (MSSB_INPUT="frame:BUTTON,..."), see port/src/input.cpp.
+        extern void port_pad_apply_script(PADStatus* status);
+        port_pad_apply_script(status);
+        if (status[0].err == PAD_ERR_NONE) {
+            lbl_80110080.readMask |= PAD_CHAN0_BIT;
+        }
+    }
+#endif
     PADClamp(status);
     st = status;
     pad = lbl_803C77B8;
