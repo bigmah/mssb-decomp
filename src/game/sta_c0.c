@@ -53,12 +53,12 @@ static u32 lbl_3_bss_9F38;      // never used
 
 extern StaC0ObjList lbl_3_common_bss_350E4;
 extern StaC0Part lbl_3_data_17B98[11];
-extern u8 lbl_3_data_17CF8[]; // TODO type: file name table for fn_3_B9D68
+extern u8 lbl_3_data_17CF8[16]; // stadium file ids for fn_3_B9D68 (9 used)
 extern u16 lbl_3_data_81DC[]; // per stadium: crowd sound id base
-extern u8 lbl_3_data_10F7C[];
-extern u8 lbl_3_data_10F84[];
-extern u8 lbl_3_data_10F88[];
-extern u8 lbl_3_data_11008[];
+extern u8 lbl_3_data_10F7C[8];    // byte tables defined in rep_1D58.c
+extern u8 lbl_3_data_10F84[4];
+extern u8 lbl_3_data_10F88[0x80];
+extern u8 lbl_3_data_11008[0x40];
 extern u8 lbl_3_data_11048[32][3];
 extern u8 lbl_3_data_11108[16][3];
 extern Vec lbl_3_rodata_22D8;

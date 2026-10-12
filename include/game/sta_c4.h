@@ -5,6 +5,8 @@
 #include "main/file_800263FC.h"
 #include "main/file_80063028.h"
 #include "main/file_800BD8C4.h"
+#include "game/rep_D0.h" // CollisionStruct
+#include "game/sta_ext_list.h" // StaExtList
 
 // One 0xE8-byte entry of lbl_3_common_bss_350E4.objs (stadium object of this stadium).
 typedef struct StaObj {
@@ -13,7 +15,7 @@ typedef struct StaObj {
     /*0x74*/ ActorObject* actorObj;
     /*0x78*/ void* shadow; // passed to fn_3_B8464
     /*0x7C*/ void (*update)(struct StaObj* o);
-    /*0x80*/ void (*onHit)(s32 idx, s32 b, u8* c);
+    /*0x80*/ void (*onHit)(s32 idx, s32 b, CollisionStruct* c); // c: where the ball hit
     /*0x84*/ void (*preDraw)(struct StaObj* o);
     /*0x88*/ u8 _88[4];
     /*0x8C*/ void* anim; // ShapeAnimPlayer* (lbl_3_bss_B578) for the shape-animated object
@@ -57,17 +59,7 @@ typedef struct StaHazeNode {
     /* 0x68 */ u8 _68[4];
 } StaHazeNode; // size: 0x6C
 
-// List hanging off lbl_3_common_bss_350E4 (+0x08 / +0x0C), set up by fn_3_FA58C.
-typedef struct StaExtList {
-    /*0x00*/ void* p0;      // stadium file + 0x60 / + 0xA0
-    /*0x04*/ void* p4;      // stadium file + 0x40 / + 0x80
-    /*0x08*/ void* p8;      // lbl_3_data_10F88 / lbl_3_data_11008
-    /*0x0C*/ void* pC;      // lbl_3_data_10F7C / lbl_3_data_10F84
-    /*0x10*/ u8* entries;   // count entries of 3 bytes
-    /*0x14*/ u16 count;
-    /*0x16*/ u16 nChoices;  // range of the random third byte
-    /*0x18*/ u16 n18;
-} StaExtList; // size: 0x1C
+// StaExtList (lbl_3_common_bss_350E4 + 0x08 / + 0x0C): game/sta_ext_list.h.
 
 // lbl_3_common_bss_350E4 + 0x10, set up by fn_3_FA58C.
 typedef struct StaExt10 {
@@ -115,12 +107,12 @@ void fn_3_F9088(Vec* pos, s32 idx);
 void fn_3_F9164(StaObj* o);
 void fn_3_F92FC(void);
 void fn_3_F934C(void);
-void fn_3_F963C(s32 idx, u8* v);
-void fn_3_F976C(s32 idx, s32 b, u8* c);
+void fn_3_F963C(s32 idx, CollisionStruct* v);
+void fn_3_F976C(s32 idx, s32 b, CollisionStruct* c);
 void fn_3_F99F0(s32 idx);
-void fn_3_F9B9C(s32 idx, s32 b, u8* c);
+void fn_3_F9B9C(s32 idx, s32 b, CollisionStruct* c);
 void fn_3_F9D94(StaObj* o);
-void fn_3_F9E78(s32 idx, s32 b, u8* c);
+void fn_3_F9E78(s32 idx, s32 b, CollisionStruct* c);
 void fn_3_FA3C0(void);
 void fn_3_FA58C(void** files);
 void fn_3_FB3D8(StaHazeNode* node);

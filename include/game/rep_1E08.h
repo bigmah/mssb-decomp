@@ -4,6 +4,16 @@
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
 
+// Lens-flare element (16 bytes); a list ends with size == 0.
+typedef struct BD434E {
+    /* 0x0 */ f32 x;     // distance along the flare axis
+    /* 0x4 */ f32 y;     // alpha slope (types 2/3)
+    /* 0x8 */ f32 z;     // size
+    /* 0xC */ s16 tex;   // index into the texture table
+    /* 0xE */ u8 type;   // 0/1 spinning quad, 2 square, 3 rotated starburst, 4+ sun
+    /* 0xF */ u8 occl;   // drawn even when occluded; also the fn_800B21A8 mode
+} BD434E;
+
 typedef struct { f32 x, y; } V2f;
 
 // Ring-burst effect instance (one per frame buffer, filled by fn_3_BDCA4, drawn by fn_3_BD8FC).

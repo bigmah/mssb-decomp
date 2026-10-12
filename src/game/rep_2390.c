@@ -5,9 +5,9 @@
 #include "Dolphin/mtx.h"
 #include "main/file_800263FC.h"
 #include "main/file_80011640.h"
+#include "main/file_80008E00.h" // lbl_80366158
 
-extern u8 lbl_3_common_bss_35154[];
-extern u8 lbl_80366158[];
+extern Rep2390Bss35154 lbl_3_common_bss_35154;
 extern u16 lbl_3_data_6660[];
 
 // .data lbl_3_data_17DC0..18268: separate statics reached through one pooled base.
@@ -51,9 +51,9 @@ void fn_3_CB3AC(void) {
     s32 i;
     u16 anim;
     if (PSVECMag(&lbl_3_data_1824C) && q != 0) {
-        lbl_3_data_17DC0[11].tex = *(TexArchive**)(lbl_3_common_bss_35154 + 4);
-        lbl_3_data_17DC0[10].tex = *(TexArchive**)(lbl_3_common_bss_35154 + 4);
-        lbl_3_data_17DC0[9].tex = *(TexArchive**)(lbl_3_common_bss_35154 + 4);
+        lbl_3_data_17DC0[11].tex = lbl_3_common_bss_35154.tex;
+        lbl_3_data_17DC0[10].tex = lbl_3_common_bss_35154.tex;
+        lbl_3_data_17DC0[9].tex = lbl_3_common_bss_35154.tex;
         lbl_3_data_17DC0[9].texIndex = 0x15;
         lbl_3_data_17DC0[10].texIndex = 7;
         p10 = &lbl_3_data_17DC0[10];
@@ -77,7 +77,7 @@ void fn_3_CB3AC(void) {
         }
         getAnimRelatedCoordinates(0, anim, &sp8);
         PSVECAdd(&sp8, &lbl_3_data_18258, &sp8);
-        if (lbl_80366158[0x28] == 0) {
+        if (lbl_80366158._28 == 0) {
             fn_80030D88(&sp8, &lbl_3_data_1824C, p10, 5);
             fn_80030D88(&sp8, &lbl_3_data_1824C, p11, 5);
             fn_80030470(&sp8, &lbl_3_data_1824C, &lbl_3_data_1824C, p9, 5);
@@ -95,45 +95,45 @@ void fn_3_CB538(s32 mode) {
     Vec* p30;
     s32 j;
     s32 k;
-    u8* e;
-    u8* r28;
-    u32 v;
-    u8* f;
+    ParticleParams5* e;
+    ParticleParams5* r28;
+    TexArchive* v;
+    ParticleParams8x8* f;
     if (g_GameLogic.bOD_framesInLiveBallScene >= 0) {
         k = 2;
     } else {
         k = g_Ball.framesSinceHit > 0;
     }
-    p30 = (Vec*)(lbl_3_common_bss_35154 + 0x44C);
-    p31 = (Vec*)(lbl_3_common_bss_35154 + 0x440);
+    p30 = &lbl_3_common_bss_35154.ballPos[1];
+    p31 = &lbl_3_common_bss_35154.ballPos[0];
     PSVECSubtract(p30, p31, &d);
     if (PSVECMag(&d)) {
-        e = (u8*)lbl_3_data_17DC0 + k * 0xF0;
-        v = *(u32*)(lbl_3_common_bss_35154 + 4);
-        *(u32*)(e + 0xA0) = v;
-        *(u32*)(e + 0x50) = v;
-        f = (u8*)lbl_3_data_18180 + k * 0x44;
-        *(u32*)f = v;
-        *(u32*)e = v;
+        e = &lbl_3_data_17DC0[k * 3];
+        v = lbl_3_common_bss_35154.tex;
+        e[2].tex = v;
+        e[1].tex = v;
+        f = &lbl_3_data_18180[k];
+        f->p.tex = v;
+        e[0].tex = v;
         if (mode == 2) {
-            *(u32*)(e + 4) = 0x1B;
-            *(u32*)(e + 0x54) = 0x1C;
+            e[0].texIndex = 0x1B;
+            e[1].texIndex = 0x1C;
         } else {
-            *(u32*)(e + 4) = 0x15;
-            *(u32*)(e + 0x54) = 7;
+            e[0].texIndex = 0x15;
+            e[1].texIndex = 7;
         }
-        fn_8002F5F4(p31, &d, (ParticleParams8*)f);
-        if (lbl_80366158[0x28] == 0) {
-            r28 = e + 0x50;
+        fn_8002F5F4(p31, &d, &f->p);
+        if (lbl_80366158._28 == 0) {
+            r28 = e + 1;
             j = 1;
             do {
-                fn_80030D88(p31, &d, (ParticleParams5*)r28, 5);
+                fn_80030D88(p31, &d, r28, 5);
                 j++;
-                r28 += 0x50;
+                r28++;
             } while (j < 3);
             PSVECNormalize(&d, &d);
             PSVECSubtract(p31, p30, &bv);
-            fn_80030470(p31, &d, &bv, (ParticleParams5*)e, 5);
+            fn_80030470(p31, &d, &bv, e, 5);
         }
     }
 }

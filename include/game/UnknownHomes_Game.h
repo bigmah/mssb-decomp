@@ -652,7 +652,9 @@ typedef struct _InMemFielderType {
     /*0x196*/ s16 _196;
     /*0x198*/ u8 _198[0x1A0 - 0x198];
     /*0x1A0*/ s16 _1A0;
-    /*0x1A2*/ u8 _1A2[0x1AA - 0x1A2];
+    /*0x1A2*/ u8 _1A2[0x1A4 - 0x1A2];
+    /*0x1A4*/ s16 _1A4;
+    /*0x1A6*/ u8 _1A6[0x1AA - 0x1A6];
     /*0x1AA*/ s16 _1AA;
     /*0x1AC*/ s16 _1AC;
     /*0x1AE*/ u8 _1AE[0x1B4 - 0x1AE];
@@ -678,7 +680,7 @@ typedef struct _InMemFielderType {
     /*0x1D0*/ u8 speedStat;
     /*0x1D1*/ u8 _1D1;
     /*0x1D2*/ u8 _1D2;
-    /*0x1D3*/ u8 _1D3[0x1D7 - 0x1D3];
+    /*0x1D3*/ u8 _1D3[0x1D7 - 0x1D3]; // [0]: lbl_3_data_3C40 state index (fn_3_5985C)
     /*0x1D7*/ u8 _1D7;
     /*0x1D8*/ u8 _1D8[0x1DF - 0x1D8];
     /*0x1DF*/ u8 throwing;
@@ -700,13 +702,19 @@ typedef struct _InMemFielderType {
     /*0x1F6*/ u8 _1F6;
     /*0x1F7*/ s8 _1F7;
     /*0x1F8*/ u8 _1F8;
-    /*0x1F9*/ u8 _1F9[0x200 - 0x1F9];
+    /*0x1F9*/ u8 _1F9[0x1FC - 0x1F9];
+    /*0x1FC*/ u8 _1FC; // nonzero: keep the model facing as is (fn_3_6AF9C)
+    /*0x1FD*/ u8 _1FD;
+    /*0x1FE*/ u8 _1FE;
+    /*0x1FF*/ u8 _1FF;
     /*0x200*/ u8 _200;
     /*0x201*/ u8 _201[0x203 - 0x201];
     /*0x203*/ u8 _203;
     /*0x204*/ u8 _204;
     /*0x205*/ u8 _205;
-    /*0x206*/ u8 _206[0x20D - 0x206];
+    /*0x206*/ u8 _206[0x20A - 0x206];
+    /*0x20A*/ u8 _20A; // nonzero: model keeps its animation rotation (fn_3_6B144)
+    /*0x20B*/ u8 _20B[0x20D - 0x20B];
     /*0x20D*/ u8 minigamePlayer; // roster slot in minigames
     /*0x20E*/ u8 _20E;
     /*0x20F*/ u8 _20F;
@@ -821,7 +829,8 @@ typedef struct GameBss32234 {
     /*0x0*/ u8 _00;
     /*0x1*/ u8 _01;
     /*0x2*/ u8 result[4]; // per player: reaction (0, 1, 2)
-} GameBss32234; // size: 0x6
+    /*0x6*/ u8 _06[2];
+} GameBss32234; // size: 0x8 (the replay snapshot copies the first 6 bytes)
 
 extern InMemPitcherType g_Pitcher;
 extern InMemBallType g_Ball;
@@ -2521,7 +2530,10 @@ typedef struct _MiniGameStruct {
     /*0x1DD1*/ u8 bB_cpuSwingPlanned;
     /*0x1DD2*/ s8 bB_cpuPreferLow;    // sort order for the CPU's target choice (fn_3_12E084)
     /*0x1DD3*/ u8 _1DD3[0x1DF4 - 0x1DD3];
-    /*0x1DF4*/ s16 _1DF4[7]; // cleared before HUD updates (fn_3_12C514)
+    union {
+        /*0x1DF4*/ s16 _1DF4[7]; // cleared before HUD updates (fn_3_12C514)
+        /*0x1DF4*/ u8 hudFlags[14]; // per-byte HUD requests (rep_31F0: [3], [4])
+    };
     /*0x1E02*/ u8 _1E02;
     /*0x1E03*/ u8 _1E03;
     /*0x1E04*/ void* _1E04; // minigame task (fn_800B0A5C_insertQueue result)
@@ -3172,6 +3184,7 @@ typedef struct GameScores {
 
 typedef struct {
     lbl_3_common_bss_DE94_s2* _0000;
+    u8 _0004[0x2AF4 - 0x4];
 } lbl_3_common_bss_DE94_s; // size: 0x2AF4
 
 extern lbl_3_common_bss_DE94_s lbl_3_common_bss_DE94;

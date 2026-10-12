@@ -150,6 +150,9 @@ static u32 AnyBusy(RepTask* q) {
 }
 
 // .data 0x000226E0..0x0002650C
+// TODO type: one pooled blob in the original (SpaniDesc lists at +0x20, +0x448, +0x1484, +0x14E4,
+// +0x1544; u16 anim tables at +0x428, +0x1188, +0x1198, +0x11A8; digit table at +0x420). Typing it
+// means splitting it into separate objects, which the matched code (one base register) doesn't allow.
 u8 lbl_3_data_226E0[4532] = {
     1, 64, 0, 0, 0, 0, 0, 0, 0, 245, 1, 139, 0, 0, 0, 0,
     0, 160, 1, 64, 1, 224, 0, 0, 0, 95, 0, 245, 1, 139, 2, 33,
@@ -964,13 +967,13 @@ void fn_3_11F02C(void) {
             ros++;
             n = q->baseIdx + i;
             i++;
-            (*(RepObj**)((u8*)lbl_80371C30 + (n + 0x11) * sizeof(RepSlot)))->frame = d << 16;
+            lbl_80371C30[n + 0x11].obj->frame = d << 16;
         } while (i < 4);
         i = 0;
         do {
             n = q->baseIdx + i;
             i++;
-            o = *(RepObj**)((u8*)lbl_80371C30 + (n + 0x25) * sizeof(RepSlot));
+            o = lbl_80371C30[n + 0x25].obj;
             o->flags &= ~2;
         } while (i < 4);
         q->state = 1;
@@ -1325,7 +1328,7 @@ void fn_3_12026C(void) {
             REP_OBJ(q, j + 8)->mode = 0;
             n = q->baseIdx + j;
             j += 4;
-            (*(RepObj**)((u8*)lbl_80371C30 + (n + 8) * sizeof(RepSlot)))->frame = 0;
+            lbl_80371C30[n + 8].obj->frame = 0;
         } while (i < 4);
         if (g_GameLogic.gameStatus == 1 && (g_Pitcher.pitcherActionState == 4 || g_Minigame.ballStoppedBreakingWallsInd != 0) && g_Minigame.wallBall_hitBowserWall != 0 &&
             (g_Minigame.multiPlayerInd != 0 || g_Minigame._1A3C != 0 || g_Minigame.soloMinigameDifficulty != 3)) {
@@ -1664,7 +1667,7 @@ void fn_3_121304(void) {
         do {
             n = q->baseIdx + i;
             i++;
-            o = *(RepObj**)((u8*)lbl_80371C30 + (n + 0x2D) * sizeof(RepSlot));
+            o = lbl_80371C30[n + 0x2D].obj;
             o->flags &= ~2;
         } while (i < 4);
         q->state = 1;
@@ -1697,10 +1700,10 @@ void fn_3_121304(void) {
                     q->u24.flag[p] = 0;
                     REP_OBJ(q, i + 0x19)->frame = 0;
                     REP_OBJ(q, i + 0x19)->mode = 1;
-                    (*(RepObj**)((u8*)lbl_80371C30 + (q->baseIdx + i * 4 + 0x1D) * sizeof(RepSlot)))->frame = 0;
-                    (*(RepObj**)((u8*)lbl_80371C30 + (q->baseIdx + i * 4 + 0x1E) * sizeof(RepSlot)))->frame = 0;
-                    (*(RepObj**)((u8*)lbl_80371C30 + (q->baseIdx + i * 4 + 0x1F) * sizeof(RepSlot)))->frame = 0;
-                    (*(RepObj**)((u8*)lbl_80371C30 + (q->baseIdx + i * 4 + 0x20) * sizeof(RepSlot)))->frame = 0;
+                    lbl_80371C30[q->baseIdx + i * 4 + 0x1D].obj->frame = 0;
+                    lbl_80371C30[q->baseIdx + i * 4 + 0x1E].obj->frame = 0;
+                    lbl_80371C30[q->baseIdx + i * 4 + 0x1F].obj->frame = 0;
+                    lbl_80371C30[q->baseIdx + i * 4 + 0x20].obj->frame = 0;
                 }
             }
             v = *sc;
@@ -3565,7 +3568,7 @@ void fn_3_127B68(void) {
     s16 diff;
     s16 step;
     if (q->state >= 6) {
-        g_Minigame._1E04 = NULL; // TODO type: g_Minigame minigame task pointer
+        g_Minigame._1E04 = NULL; // the minigame task (this one) is gone
         fn_80034CEC(q);
         REMOVE_QUEUE_NOARG();
         return;
@@ -3793,8 +3796,8 @@ void fn_3_128B90(void) {
     u16* tb = (u16*)lbl_3_data_B140;
     u32 i = g_Minigame.GameMode_MiniGame;
     u16 v = tb[i * 2];
-    *(u16*)(((u8*)lbl_3_data_B0E0) + 2) = v;
-    *(u16*)(((u8*)lbl_3_data_B0E0) + 0x22) = tb[i * 2 + 1];
+    lbl_3_data_B0E0[0].animId = v;
+    lbl_3_data_B0E0[1].animId = tb[i * 2 + 1];
     fn_80034E20(q, lbl_3_data_B0E0);
     q->state = 1;
     REP_TASK->func = (void (*)(void))fn_3_128A38;

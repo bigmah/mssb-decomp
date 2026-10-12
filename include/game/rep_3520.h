@@ -81,7 +81,9 @@ typedef struct Mg3520 {
         Vec b;
     } spokes[4];
     /*0x1D48*/ f32 _1D48;
-    /*0x1D4C*/ u8 _1D4C[0x1D5A - 0x1D4C];
+    /*0x1D4C*/ u8 _1D4C[0x1D54 - 0x1D4C];
+    /*0x1D54*/ u16 coinCount; // coins thrown so far (MiniGameStruct._1D54)
+    /*0x1D56*/ u8 _1D56[0x1D5A - 0x1D56];
     /*0x1D5A*/ s16 stunTimer[4];
     /*0x1D62*/ s16 _1D62;
     /*0x1D64*/ s16 spokeAng[4];

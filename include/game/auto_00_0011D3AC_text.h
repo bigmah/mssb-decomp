@@ -20,6 +20,13 @@ typedef struct MinigameAssets {
     /*0xD8*/ u8 loadState;
 } MinigameAssets;
 
+// lbl_3_common_bss_34C90 (GamePauseState, game/auto_00_00097144_text.h, whose lbl_3_common_bss_32724
+// declaration clashes with MinigameAssets): only the field used here.
+typedef struct MinigamePauseView {
+    /*0x000*/ u8 _000[0x1D2];
+    /*0x1D2*/ u8 state; // GamePauseState.state
+} MinigamePauseView;
+
 // One actor's relocated data in lbl_8036E548 (CharMgr).
 typedef struct MinigameActorData {
     /*0x0*/ void* layout;

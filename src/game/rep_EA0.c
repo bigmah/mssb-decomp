@@ -87,8 +87,6 @@ extern TrailFielder g_Fielders[9];
 
 #define TRAIL_TASK ((TrailTask*)lbl_803CC1B8)
 
-// Ball/shadow model scales by trail type, stored right after charSizeMultipliers in main.dol.
-#define TRAIL_SCALES ((f32(*)[3])charSizeMultipliers[NUM_CHOOSABLE_CHARACTERS]) // TODO type
 
 // .text:0x0006750C size:0xAC mapped:0x806A65A0
 void fn_3_6750C(TexArchive* archive) {
@@ -902,8 +900,7 @@ void fn_3_695F8(s32 flag) {
 
 // Updates the ball model, its trail and the shadows each frame.
 // .text:0x000697CC size:0x994 mapped:0x806A8860
-// NONMATCHING 97%: register allocation; the original reads the scale table through a
-// charSizeMultipliers+0x1B0 symbol (lfsx)
+// NONMATCHING 97%: register allocation; the original reads the scale table lbl_800E84B0 with lfsx
 #if NONMATCHING
 void fn_3_697CC(void) {
     CharTrail* trail;
@@ -1084,7 +1081,7 @@ void fn_3_697CC(void) {
         scale = lbl_803CB740[scaleIdx];
         fn_8001D148(lbl_3_data_6820[lbl_3_common_bss_32724.trailType], scale, scale, scale);
     } else {
-        scale = TRAIL_SCALES[lbl_3_common_bss_32724.trailType][scaleIdx];
+        scale = lbl_800E84B0[lbl_3_common_bss_32724.trailType][scaleIdx];
         fn_8001D148(lbl_3_data_6820[lbl_3_common_bss_32724.trailType], scale, scale, scale);
     }
     if (extra != NULL) {
@@ -1099,7 +1096,7 @@ void fn_3_697CC(void) {
             row = 4;
             break;
         }
-        scale = TRAIL_SCALES[row][scaleIdx];
+        scale = lbl_800E84B0[row][scaleIdx];
         fn_8001D148(extraIdx, scale, scale, scale);
         extra->_26 = trail->_26;
     }

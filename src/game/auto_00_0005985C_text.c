@@ -5,6 +5,14 @@
 #include "main/file_8004207C.h"
 #include "main/file_80069BDC.h"
 #include "main/file_8004C5F8.h"
+#include "game/running_logic.h"         // g_RunningLogic
+#include "game/auto_00_000AC9F8_text.h" // PauseMenuState
+#include "game/auto_00_000249E8_text.h" // SceneWork
+#include "game/auto_00_001658F0_text.h" // StarChanceState
+#include "game/rep_3CE0.h"              // FadeState
+#include "game/rep_1C0.h"               // RandSeedView
+#include "game/auto_00_0009C578_text.h" // GameLineScore
+#include "game/rep_AC8.h"               // FielderStateEntry
 
 extern s32 fn_80022B68(void);
 // From main/file_80021308.h (not includable here: its sound prototypes clash
@@ -29,7 +37,7 @@ typedef struct {
 extern ARAMLoaderView lbl_803C6CF8;
 extern DiskFileEntry lbl_3_data_3D60;
 extern DiskFileEntry lbl_3_data_3D70;
-extern u8 lbl_3_data_3D80[0x430];
+extern DiskFileEntry lbl_3_data_3D80[0x43];
 extern void fn_800216F8(u8 group, s32 (*callback)(u8* state));
 extern s32 fn_3_91064(u8* state);
 extern s32 fn_3_90798(u8* state);
@@ -47,7 +55,7 @@ extern s32 fn_3_90764(u8* state);
 extern void fn_8001A25C(void);
 extern s32 fn_3_BF878(void);
 extern s32 fn_3_11D6A0(void);
-extern u8 lbl_3_common_bss_35154[];
+extern FadeState lbl_3_common_bss_35154;
 extern s32 fn_3_910AC(u8* state);
 extern s32 fn_3_90F48(u8* state);
 extern s32 fn_800698F8(s32 charId);
@@ -86,8 +94,7 @@ extern s32 fn_80014D4C(s32 id);
 extern s32 fn_80014E50(s32 id);
 extern s32 fn_3_6B5D8(void);
 extern void fn_3_8C104(s32 v);
-extern s8 lbl_80353A90[0x108];
-extern u8 lbl_3_data_6130[0x3E0];
+extern DiskFileEntry lbl_3_data_6130[0x3E];
 extern void fn_3_164A74(void);
 extern void fn_3_7BC20(void);
 extern s16 lbl_3_data_6074[4]; // AI difficulty per challenge difficulty
@@ -100,8 +107,8 @@ typedef struct {
 } BJStartSituation; // size: 0x8
 extern BJStartSituation lbl_3_data_5FF4[2][4][2];
 extern u8 lbl_8010B600[5][3]; // per challenge difficulty: innings, alt innings, mercy margin
-extern u8* lbl_3_common_bss_1323C;
-extern u8 lbl_3_common_bss_134C4[];
+extern SceneWork* lbl_3_common_bss_1323C;
+extern SceneWork lbl_3_common_bss_134C4;
 extern u8 lbl_3_data_60F0; // star chance percentage
 
 // View of lbl_800EF808 (SoundManager in main/file_80021308.h).
@@ -196,16 +203,15 @@ extern void fn_3_664FC(void);
 extern void fn_3_BBF94(void);
 extern void fn_3_B93CC(void);
 extern void fn_8003BF54(s32, s32, s32, s32, s32, s32, s32, s32, u8);
-extern u8 lbl_3_common_bss_34C90[];
 extern void fn_3_6C13C(void);
 extern void fn_3_16598C(void);
-extern u8 g_RunningLogic[];
 extern void fn_800A7568(void);
 extern void starMissionRelated2(void);
-extern u8 lbl_3_common_bss_37400[];
+extern StarChanceState lbl_3_common_bss_37400;
+extern InMemFielderType g_Fielders[9];
+extern Unk32724 lbl_3_common_bss_32724;
 
-extern u8 g_Fielders[];
-extern u8 lbl_3_data_3C40[];
+extern FielderStateEntry lbl_3_data_3C40[];
 
 extern void fn_80017D28(void* allocation);
 
@@ -235,7 +241,6 @@ extern void fn_3_8A1D8(void);
 extern void fn_3_6C108(void);
 extern void fn_3_6B870(void);
 extern s32 fn_3_6BA64(void);
-extern u8 lbl_3_common_bss_32724[];
 extern u8 lbl_803CBC3C[];
 extern void fn_3_6D4A0(void);
 extern void fn_3_5A87C(void);
@@ -295,14 +300,7 @@ extern void fn_3_1663AC(void);
 extern void fn_3_1CE90(void);
 extern void fn_3_8DA80(void);
 
-typedef struct {
-    /*0x00*/ s32 simulatedFrames; // frames the game logic actually ran
-    /*0x04*/ s32 totalFrames;
-    /*0x08*/ s32 randomInt1; // copy of g_Ball.StaticRandomInt1
-    /*0x0C*/ s32 randomInt2; // copy of g_Ball.StaticRandomInt2
-    /*0x10*/ u8 _10;
-} FrameCounters; // size: 0x14
-extern FrameCounters lbl_3_data_228;
+extern RandSeedView lbl_3_data_228;
 
 typedef struct {
     /*0x00*/ s16 resultCoins[3]; // indexed by result: 0 win, 1 tie, 2 loss
@@ -420,7 +418,7 @@ void fn_3_5AE0C(void) {
 void fn_3_5CD24(void) {
     GameControlsStruct* game = &g_GameLogic;
     if (game->_125 == 0) {
-        lbl_3_common_bss_32724[0x9A] = 0;
+        lbl_3_common_bss_32724._9A = 0;
         fn_3_8A1D8();
         fn_3_6C108();
         fn_3_6B870();
@@ -517,20 +515,20 @@ s32 fn_3_5DCE0(void) {
 // fn_3_5985C, size:0x74
 void fn_3_5985C(s32 arg0, s32 arg1) {
     s32 v;
-    u8* fielder = g_Fielders + arg0 * 0x268;
+    InMemFielderType* fielder = &g_Fielders[arg0];
     if (arg0 == -1) {
         return;
     }
-    fielder[0x1D3] = arg1;
-    v = *(s32*)(lbl_3_data_3C40 + arg1 * 8);
+    fielder->_1D3[0] = arg1;
+    v = lbl_3_data_3C40[arg1].anim;
     if (v >= 0) {
         g_FieldingLogic._0F8[arg0] = v;
     }
-    fielder[0x1D5] = 0;
-    fielder[0x1D6] = 0;
-    *(s16*)(fielder + 0x1A4) = 0;
-    *(s16*)(fielder + 0x1AC) = 0;
-    fielder[0x1FF] = 0;
+    fielder->_1D3[2] = 0;
+    fielder->_1D3[3] = 0;
+    fielder->_1A4 = 0;
+    fielder->_1AC = 0;
+    fielder->_1FF = 0;
     if (arg1 == 0x18) {
         g_FieldingLogic._0BC = arg0;
     }
@@ -634,12 +632,12 @@ void fn_3_5A6A0(s32 a, s32 b, s32 c, s32 d) {
 
 // fn_3_5CFD0, size:0xC4
 void fn_3_5CFD0(void) {
-    u8* t = (u8*)starMissionCompletionTracker;
-    s32 a = t[0x441C];
-    s32 b = t[0x441E];
+    ChallengeState* t = &gChallengeState;
+    s32 a = t->_441C;
+    s32 b = t->_441E;
     if (g_d_GameSettings.exhibitionMatchInd == 0 && g_Scores.winningTeam <= 1 &&
-        (g_Scores.winningTeam ^ (g_GameLogic._000 == *(s16*)(lbl_3_common_bss_37400 + 0x40))) != 0) {
-        if ((t[0x4422] >= 4 && b == 5) || (t[0x4422] >= 5 && *(s8*)(t + 0x44EF) == 1 && a == 5)) {
+        (g_Scores.winningTeam ^ (g_GameLogic._000 == lbl_3_common_bss_37400.humanPlayer)) != 0) {
+        if ((t->_4422 >= 4 && b == 5) || (t->_4422 >= 5 && t->_44EF == 1 && a == 5)) {
             g_GameLogic.playOverFadeOutStarted = 0;
         }
         starMissionRelated2();
@@ -675,7 +673,7 @@ void fn_3_5C418(void) {
         }
         if (lbl_8037169C._13 != 0 && inScene != 0) {
             if ((s32)lbl_803C6CF8._715 == 1) {
-                lbl_3_common_bss_32724[0x96] = 1;
+                lbl_3_common_bss_32724.hudOff = 1;
                 g_GameLogic.framesOfExitingToMenu = 1;
                 return;
             }
@@ -695,9 +693,9 @@ void fn_3_5D3FC(void) {
     u8 finalInning;
     g_GameLogic._135 = 0;
     g_GameLogic._136 = 0;
-    g_RunningLogic[0x11] = 0;
-    g_RunningLogic[0x13] = 0;
-    *(s16*)(g_RunningLogic + 2) = 0;
+    g_RunningLogic._11 = 0;
+    g_RunningLogic._13 = 0;
+    g_RunningLogic.occupiedBases = 0;
     inning = g_Scores.inning;
     finalInning = g_Scores.finalInning;
     if (inning > finalInning) {
@@ -720,7 +718,7 @@ void fn_3_5D3FC(void) {
     g_Scores.inningStage = stage;
     g_Scores._C1 = 0;
     g_Scores._C6 = 0;
-    lbl_3_common_bss_37400[0x48] = 0;
+    lbl_3_common_bss_37400.state = 0;
     fn_3_6C13C();
     if (gs->exhibitionMatchInd == 0) {
         fn_3_16598C();
@@ -821,10 +819,10 @@ void fn_3_59918(s32 x, s32 unused) {
         return;
     }
     if (gs == 6 && x == 5) {
-        if (lbl_3_common_bss_32724[0xD3] != 0) {
+        if (lbl_3_common_bss_32724._D3 != 0) {
             return;
         }
-        lbl_3_common_bss_32724[0xD3] = 1;
+        lbl_3_common_bss_32724._D3 = 1;
     }
     if (g_GameLogic.playOver != 0) {
         return;
@@ -861,7 +859,7 @@ void fn_3_5A6FC(void) {
             g_d_GameSettings.home_AwaySetting ^= 1;
         }
         fn_3_BF1AC();
-        lbl_3_common_bss_32724[0x96] = 1;
+        lbl_3_common_bss_32724.hudOff = 1;
         if (g_d_GameSettings.minigamesEnabled != 0) {
             fn_3_90CB0();
             if (g_d_GameSettings.GameModeSelected != 6) {
@@ -943,7 +941,7 @@ void fn_3_5EFEC(void) {
         }
     } else {
         fn_3_AFB64();
-        if (lbl_3_common_bss_34C90[0x1D5] != 0) {
+        if (lbl_3_common_bss_34C90.active != 0) {
             fn_3_AFA64();
             return;
         }
@@ -979,9 +977,9 @@ void fn_3_5F7A8(void) {
     u8 finalInning;
     g_GameLogic._135 = 0;
     g_GameLogic._136 = 0;
-    g_RunningLogic[0x11] = 0;
-    g_RunningLogic[0x13] = 0;
-    *(s16*)(g_RunningLogic + 2) = 0;
+    g_RunningLogic._11 = 0;
+    g_RunningLogic._13 = 0;
+    g_RunningLogic.occupiedBases = 0;
     inning = g_Scores.inning;
     finalInning = g_Scores.finalInning;
     if (inning > finalInning) {
@@ -1004,7 +1002,7 @@ void fn_3_5F7A8(void) {
     g_Scores.inningStage = stage;
     g_Scores._C1 = 0;
     g_Scores._C6 = 0;
-    lbl_3_common_bss_37400[0x48] = 0;
+    lbl_3_common_bss_37400.state = 0;
     fn_3_6C13C();
     if (gs->exhibitionMatchInd == 0) {
         fn_3_16598C();
@@ -1073,7 +1071,7 @@ void fn_3_5B0C4(void) {
         }
     }
     if (lbl_80366158._28 == 0) {
-        lbl_3_data_228.simulatedFrames += 1;
+        lbl_3_data_228.counter += 1;
         fn_3_5ACA0();
     }
 skip:
@@ -1177,8 +1175,8 @@ void fn_3_5CDB4(void) {
     case 0:
         changeScene(1, 6);
         g_GameLogic.scoreBook_teamDisplayed = 0;
-        lbl_3_common_bss_32724[0x9B] = 0;
-        lbl_3_common_bss_32724[0x9A] = 0;
+        lbl_3_common_bss_32724._9B = 0;
+        lbl_3_common_bss_32724._9A = 0;
         game->_125 = 1;
         break;
     case 1:
@@ -1301,7 +1299,7 @@ void fn_3_5AE9C(void) {
     lbl_8036E548.slots6C = NULL;
     lbl_8036E548._307C = 0;
     lbl_8036E548._307D = 0;
-    lbl_3_common_bss_32724[0xA4] = 0;
+    lbl_3_common_bss_32724._A4[0] = 0;
     g_d_GameSettings._55 = 0;
     g_d_GameSettings.challengeMinigame_baseCoinsEarned = 0;
     g_d_GameSettings.bJMatchRelated = 0;
@@ -1325,7 +1323,7 @@ void fn_3_5AE9C(void) {
     sndVolume(0x7F, 0xA, 0xFF);
     if (g_d_GameSettings.GameModeSelected == 6 || g_d_GameSettings.GameModeSelected == 7) {
         lbl_8036E548._2D7D = 0;
-        lbl_3_common_bss_32724[0xD7] = 0;
+        lbl_3_common_bss_32724._D7 = 0;
         lbl_803CC1B8->func = fn_3_59F40;
     } else if (g_d_GameSettings.GameModeSelected == 2) {
         lbl_803CC1B8->func = fn_3_59C2C;
@@ -1352,7 +1350,7 @@ void fn_3_5DA9C(void) {
     g_Scores._C1 = g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0] - g_Scores._A0;
     g_Pitcher._15D = 0;
     if (g_d_GameSettings.GameModeSelected == 4 &&
-        (lbl_3_data_228.simulatedFrames >= 0x2A30U || unkSimulationRelatedStruct._08 != 0)) {
+        (lbl_3_data_228.counter >= 0x2A30U || unkSimulationRelatedStruct._08 != 0)) {
         g_GameLogic.framesOfExitingToMenu = 1;
     } else if (g_GameLogic.EventTriggers_EndOfGame != 0) {
         if (g_Stats.replayInd == 0) { // inlined fn_3_5D9F8
@@ -1435,8 +1433,8 @@ void fn_3_5F154(void) {
     g_FieldingLogic._128 = 0;
     g_FieldingLogic._129 = 0;
     g_FieldingLogic._0E4 = 0;
-    g_RunningLogic[0x13] = 0;
-    lbl_3_common_bss_34C90[0x1D5] = 0;
+    g_RunningLogic._13 = 0;
+    lbl_3_common_bss_34C90.active = 0;
     g_Practice._1B0 = 0;
     if (g_GameLogic.pre_PostMiniGameInd != 0) {
         g_GameLogic.minigameLastTurnSuccessInd = 1;
@@ -1469,29 +1467,29 @@ void fn_3_5F154(void) {
 // fn_3_5BA2C, size:0x314
 void fn_3_5BA2C(void) {
     InputStruct* input = &g_Controls[lbl_80366158._27];
-    if (lbl_3_common_bss_34C90[0x1D8] == 0) {
+    if (lbl_3_common_bss_34C90.openedByBattingTeam == 0) {
         if (input->newButtonInput & 0x100) {
-            if ((s8)lbl_3_common_bss_34C90[0x1DA] == 0) {
+            if (lbl_3_common_bss_34C90.cursor == 0) {
                 g_GameLogic._125 = 9;
                 sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
             } else {
-                lbl_3_common_bss_32724[0xCE] = 1;
+                lbl_3_common_bss_32724._CE = 1;
                 g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
                 g_GameLogic._125 = 8;
                 sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
             }
         } else if (input->newButtonInput & 2) {
-            if ((s8)lbl_3_common_bss_34C90[0x1DA] == 0) {
-                lbl_3_common_bss_34C90[0x1DA] = 1;
+            if (lbl_3_common_bss_34C90.cursor == 0) {
+                lbl_3_common_bss_34C90.cursor = 1;
                 sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
             }
         } else if (input->newButtonInput & 1) {
-            if ((s32)lbl_3_common_bss_34C90[0x1DA] == 1) {
-                lbl_3_common_bss_34C90[0x1DA] = 0;
+            if ((s32)(u8)lbl_3_common_bss_34C90.cursor == 1) {
+                lbl_3_common_bss_34C90.cursor = 0;
                 sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
             }
         }
-    } else if (lbl_3_common_bss_32724[0xD2] == 0) {
+    } else if (lbl_3_common_bss_32724._D2 == 0) {
         if (input->newButtonInput & 0x200) {
             g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
             g_GameLogic._125 = 8;
@@ -1564,17 +1562,17 @@ void fn_3_59C2C(void) {
         }
         break;
     case 6:
-        if (fn_80035838(lbl_3_data_3D80, 2) != 0) {
+        if (fn_80035838(&lbl_3_data_3D80[0], 2) != 0) {
             unkSimulationRelatedStruct._04++;
         }
         break;
     case 7:
-        if (fn_80035838(lbl_3_data_3D80 + 0xE0, 0xB) != 0) {
+        if (fn_80035838(&lbl_3_data_3D80[0xE], 0xB) != 0) {
             unkSimulationRelatedStruct._04++;
         }
         break;
     case 8:
-        if (fn_80035838(lbl_3_data_3D80 + 0x1D0, 9) != 0) {
+        if (fn_80035838(&lbl_3_data_3D80[0x1D], 9) != 0) {
             unkSimulationRelatedStruct._04++;
         }
         break;
@@ -1649,7 +1647,7 @@ void fn_3_59F40(void) {
     switch (unkSimulationRelatedStruct._04) {
     case 0:
         task->_10 = 0;
-        lbl_3_common_bss_32724[0xD8] = 0;
+        lbl_3_common_bss_32724.loadStep = 0;
         unkSimulationRelatedStruct._04++;
         break;
     case 1:
@@ -1693,7 +1691,7 @@ void fn_3_59F40(void) {
         }
         break;
     case 8:
-        if (lbl_3_common_bss_35154[0x3B0] == 0) {
+        if (lbl_3_common_bss_35154._3B0 == 0) {
             unkSimulationRelatedStruct._04++;
         }
         break;
@@ -1713,7 +1711,7 @@ void fn_3_59F40(void) {
         }
         break;
     case 12:
-        lbl_80366B18.tables[6] = (MsgTable*)ARAMTransfer(lbl_3_data_3D80 + 0x400, 0, 1, 0);
+        lbl_80366B18.tables[6] = (MsgTable*)ARAMTransfer(&lbl_3_data_3D80[0x40], 0, 1, 0);
         unkSimulationRelatedStruct._04++;
         break;
     case 13:
@@ -1723,12 +1721,12 @@ void fn_3_59F40(void) {
         }
         break;
     case 14:
-        if (fn_80035838(lbl_3_data_3D80, 2) != 0) {
+        if (fn_80035838(&lbl_3_data_3D80[0], 2) != 0) {
             unkSimulationRelatedStruct._04++;
         }
         break;
     case 15:
-        if (fn_80035838(lbl_3_data_3D80 + 0x30, 3) != 0) {
+        if (fn_80035838(&lbl_3_data_3D80[0x3], 3) != 0) {
             if (g_d_GameSettings.GameModeSelected == 6) {
                 unkSimulationRelatedStruct._04 = 16;
             } else {
@@ -1737,12 +1735,12 @@ void fn_3_59F40(void) {
         }
         break;
     case 16:
-        if (fn_80035838(lbl_3_data_3D80 + 0x40, 0xE) != 0) {
+        if (fn_80035838(&lbl_3_data_3D80[0x4], 0xE) != 0) {
             unkSimulationRelatedStruct._04++;
         }
         break;
     case 17:
-        if (fn_80035838(lbl_3_data_3D80 + 0x50, 0x14) != 0) {
+        if (fn_80035838(&lbl_3_data_3D80[0x5], 0x14) != 0) {
             unkSimulationRelatedStruct._04++;
         }
         break;
@@ -1774,10 +1772,10 @@ void fn_3_5A28C(void) {
         lbl_8037169C.lastPick = calledWhenStartingMatch();
         unkSimulationRelatedStruct._04++;
     case 1:
-        lbl_3_common_bss_32724[0xA4] = 0;
+        lbl_3_common_bss_32724._A4[0] = 0;
         if (fn_80020218() != 0) {
             if (fn_80020278(lbl_8037169C.lastPick) != 0) {
-                lbl_3_common_bss_32724[0xA4] = 1;
+                lbl_3_common_bss_32724._A4[0] = 1;
                 unkSimulationRelatedStruct._04++;
             }
         } else {
@@ -1835,17 +1833,17 @@ void fn_3_5A28C(void) {
         }
         break;
     case 10:
-        if (fn_80035838(lbl_3_data_3D80, 2) != 0) {
+        if (fn_80035838(&lbl_3_data_3D80[0], 2) != 0) {
             unkSimulationRelatedStruct._04++;
         }
         break;
     case 11:
-        if (fn_80035838(lbl_3_data_3D80 + (g_GameLogic.logo[0].ID / 4 + 0x11) * 16, 0xF) != 0) {
+        if (fn_80035838(&lbl_3_data_3D80[g_GameLogic.logo[0].ID / 4 + 0x11], 0xF) != 0) {
             unkSimulationRelatedStruct._04++;
         }
         break;
     case 12:
-        if (fn_80035838(lbl_3_data_3D80 + (g_GameLogic.logo[1].ID / 4 + 0x11) * 16, 0x10) != 0) {
+        if (fn_80035838(&lbl_3_data_3D80[g_GameLogic.logo[1].ID / 4 + 0x11], 0x10) != 0) {
             unkSimulationRelatedStruct._04++;
         }
         break;
@@ -1883,7 +1881,7 @@ void fn_3_5F3FC(void) {
     GameControlsStruct* game = &g_GameLogic;
     switch (game->_125) {
     case 0:
-        lbl_3_common_bss_32724[0x9A] = 0;
+        lbl_3_common_bss_32724._9A = 0;
         game->scoutFlag_VsScreenInd = 0;
         game->playBatterWalkupAnimation = 1;
         fn_3_F578();
@@ -1949,12 +1947,12 @@ void fn_3_5F3FC(void) {
         fn_3_5A6D4(0x16);
         fn_3_1DC30();
         g_GameLogic.IsStarChance = 0;
-        lbl_3_common_bss_32724[0xAC] = 0;
-        if (lbl_800E8754._04 != 0 && (g_d_GameSettings.exhibitionMatchInd != 0 || lbl_3_common_bss_37400[0x46] == 0) &&
-            (g_GameLogic.TeamStars[0] < 5 || g_GameLogic.TeamStars[1] < 5) && !(*(s16*)(g_RunningLogic + 2) & 0xFFF0) &&
+        lbl_3_common_bss_32724._AC = 0;
+        if (lbl_800E8754._04 != 0 && (g_d_GameSettings.exhibitionMatchInd != 0 || lbl_3_common_bss_37400.type == 0) &&
+            (g_GameLogic.TeamStars[0] < 5 || g_GameLogic.TeamStars[1] < 5) && !(g_RunningLogic.occupiedBases & 0xFFF0) &&
             random_fn_3_9EE24(100) < lbl_3_data_60F0) {
             g_GameLogic.IsStarChance = 1;
-            lbl_3_common_bss_32724[0xAC] = 1;
+            lbl_3_common_bss_32724._AC = 1;
         }
         break;
     }
@@ -2021,8 +2019,8 @@ void fn_3_5D094(s32 checkType) {
         s32 a = t->_441C;
         s32 b = t->_441E;
         if (g_d_GameSettings.exhibitionMatchInd == 0 && g_Scores.winningTeam <= 1 &&
-            (g_Scores.winningTeam ^ (g_GameLogic._000 == *(s16*)(lbl_3_common_bss_37400 + 0x40))) != 0) {
-            if ((t->_4422 >= 4 && b == 5) || (t->_4422 >= 5 && *(s8*)((u8*)t + 0x44EF) == 1 && a == 5)) {
+            (g_Scores.winningTeam ^ (g_GameLogic._000 == lbl_3_common_bss_37400.humanPlayer)) != 0) {
+            if ((t->_4422 >= 4 && b == 5) || (t->_4422 >= 5 && t->_44EF == 1 && a == 5)) {
                 g_GameLogic.playOverFadeOutStarted = 0;
             }
             starMissionRelated2();
@@ -2065,9 +2063,9 @@ void fn_3_5DF54(void) {
         handled = r;
     }
     fn_3_77914();
-    if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400[0x47] != 0) {
-        lbl_3_common_bss_37400[0x46] = 0;
-        lbl_3_common_bss_37400[0x47] = 0;
+    if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400._47 != 0) {
+        lbl_3_common_bss_37400.type = 0;
+        lbl_3_common_bss_37400._47 = 0;
     }
     if (g_GameLogic.EventTriggers_EndOfGame != 0) {
         fn_3_5A6D4(8);
@@ -2156,9 +2154,9 @@ void fn_3_5D5E8(void) {
             u8 finalInning;
             g_GameLogic._135 = 0;
             g_GameLogic._136 = 0;
-            g_RunningLogic[0x11] = 0;
-            g_RunningLogic[0x13] = 0;
-            *(s16*)(g_RunningLogic + 2) = 0;
+            g_RunningLogic._11 = 0;
+            g_RunningLogic._13 = 0;
+            g_RunningLogic.occupiedBases = 0;
             inning = g_Scores.inning;
             finalInning = g_Scores.finalInning;
             if (inning > finalInning) {
@@ -2181,14 +2179,14 @@ void fn_3_5D5E8(void) {
             g_Scores.inningStage = stage;
             g_Scores._C1 = 0;
             g_Scores._C6 = 0;
-            lbl_3_common_bss_37400[0x48] = 0;
+            lbl_3_common_bss_37400.state = 0;
             fn_3_6C13C();
             if (gs->exhibitionMatchInd == 0) {
                 fn_3_16598C();
             }
         }
-        lbl_3_common_bss_32724[0x9B] = 0;
-        lbl_3_common_bss_32724[0x9C] = 0;
+        lbl_3_common_bss_32724._9B = 0;
+        lbl_3_common_bss_32724._9C[0] = 0;
         lbl_803CBC3C[3] = 0;
         lbl_8036E548._3087 = 0;
         game->_125 = 1;
@@ -2244,7 +2242,7 @@ void fn_3_5A87C(void) {
     u8 home;
     s32 away;
     lbl_80366158._28 = 0;
-    lbl_3_data_228.simulatedFrames = 0;
+    lbl_3_data_228.counter = 0;
     lbl_3_data_228.totalFrames = 0;
     unkSimulationRelatedStruct._00 = g_d_GameSettings.FrameCountWhileNotAtMainMenu;
     unkSimulationRelatedStruct._05 = 0;
@@ -2268,7 +2266,7 @@ void fn_3_5A87C(void) {
     g_GameLogic.playOverFadeOutStarted = -1;
     g_GameLogic.PauseSimulationFrameCount = 0;
     g_Practice.practiceLevel = 0;
-    lbl_3_common_bss_1323C = lbl_3_common_bss_134C4;
+    lbl_3_common_bss_1323C = &lbl_3_common_bss_134C4;
     g_GameLogic.secondaryGameMode = 0;
     if (g_d_GameSettings.GameModeSelected == 2) {
         g_GameLogic.secondaryGameMode = 0x12;
@@ -2305,7 +2303,7 @@ void fn_3_5A87C(void) {
     } else if (g_d_GameSettings._10 == 0) {
         g_GameLogic._13E[1] = 1;
         g_GameLogic._140[away] = 1;
-        *(s16*)(lbl_3_common_bss_37400 + 0x40) = 0;
+        lbl_3_common_bss_37400.humanPlayer = 0;
         g_GameLogic.batterHandedness[g_GameLogic._000 ^ 1] = 1;
         g_GameLogic.teamAIInd[g_GameLogic._000 ^ 1] = 1;
         g_GameLogic.autoFielding[g_GameLogic._000 ^ 1] = 1;
@@ -2314,7 +2312,7 @@ void fn_3_5A87C(void) {
     } else if (g_d_GameSettings._10 == 3) {
         g_GameLogic._13E[0] = 1;
         g_GameLogic._140[home] = 1;
-        *(s16*)(lbl_3_common_bss_37400 + 0x40) = 1;
+        lbl_3_common_bss_37400.humanPlayer = 1;
         g_GameLogic.batterHandedness[g_GameLogic._000] = 1;
         g_GameLogic.teamAIInd[g_GameLogic._000] = 1;
         g_GameLogic.autoFielding[g_GameLogic._000] = 1;
@@ -2423,8 +2421,7 @@ void fn_3_5B5A0(void) {
             ((void (*)(void))fn_3_8A1D8)(); // called without its argument in the original
             g_d_GameSettings.home_AwaySetting ^= 1;
         } else {
-            // TODO type: CharSelWork has s8 _46E0[2][4] here, read as an s32
-            if (*(s32*)lbl_8034E9A0._46E0[1] == 9 || gChallengeState._16C2 == 0x2A) {
+            if (lbl_8034E9A0._46E4 == 9 || gChallengeState._16C2 == 0x2A) {
                 g_Scores.finalInning = lbl_8010B600[g_d_GameSettings.challengeDifficulty][1];
             } else {
                 g_Scores.finalInning = lbl_8010B600[g_d_GameSettings.challengeDifficulty][0];
@@ -2495,9 +2492,9 @@ void fn_3_5F930(void) {
             u8 finalInning;
             g_GameLogic._135 = 0;
             g_GameLogic._136 = 0;
-            g_RunningLogic[0x11] = 0;
-            g_RunningLogic[0x13] = 0;
-            *(s16*)(g_RunningLogic + 2) = 0;
+            g_RunningLogic._11 = 0;
+            g_RunningLogic._13 = 0;
+            g_RunningLogic.occupiedBases = 0;
             inning = g_Scores.inning;
             finalInning = g_Scores.finalInning;
             if (inning > finalInning) {
@@ -2520,7 +2517,7 @@ void fn_3_5F930(void) {
             g_Scores.inningStage = stage;
             g_Scores._C1 = 0;
             g_Scores._C6 = 0;
-            lbl_3_common_bss_37400[0x48] = 0;
+            lbl_3_common_bss_37400.state = 0;
             fn_3_6C13C();
             if (gs->exhibitionMatchInd == 0) {
                 fn_3_16598C();
@@ -2548,8 +2545,8 @@ void fn_3_5F930(void) {
         g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
         game->_125 = 1;
         changeScene(0xD, 6);
-        lbl_3_common_bss_32724[0x9A] = 0;
-        lbl_3_common_bss_32724[0x9C] = 0;
+        lbl_3_common_bss_32724._9A = 0;
+        lbl_3_common_bss_32724._9C[0] = 0;
         lbl_803CBC3C[2] = 0;
         lbl_803CBC3C[3] = 0;
         lbl_8036E548.state = 0;
@@ -2561,7 +2558,7 @@ void fn_3_5F930(void) {
             game->_125 = 2;
             game->FrameCountOfCurrentAtBat_Copy = 0;
             lbl_8036E548.state = 0;
-            if (lbl_3_common_bss_32724[0xA4] != 0) {
+            if (lbl_3_common_bss_32724._A4[0] != 0) {
                 fn_8002024C();
             }
         }
@@ -2616,7 +2613,7 @@ void fn_3_5F930(void) {
         }
         break;
     case 10:
-        lbl_3_common_bss_1323C[0x25C] = 1;
+        lbl_3_common_bss_1323C->_25C = 1;
         fn_3_FBD70();
         fn_3_5A6D4(0x16);
         break;
@@ -2690,8 +2687,8 @@ void fn_3_5C74C(s32 force) {
         }
     }
     if (g_Ball.deadBallReason == 1) {
-        g_Scores.runs[g_Scores.bottomHalf][g_Scores.inning] = g_Scores._9E + g_RunningLogic[0x12];
-        g_Scores._C2 = g_RunningLogic[0x12];
+        g_Scores.runs[g_Scores.bottomHalf][g_Scores.inning] = g_Scores._9E + g_RunningLogic._12;
+        g_Scores._C2 = g_RunningLogic._12;
     } else {
         g_Scores.runs[g_Scores.bottomHalf][g_Scores.inning] += g_Scores._9C;
         g_Scores._C2 += g_Scores._9C;
@@ -2717,7 +2714,7 @@ void fn_3_5C74C(s32 force) {
     fn_3_79EF4();
     g_Scores._9C = 0;
     if (g_Pitcher.strikeOutOrWalk != 2 && g_Pitcher.strikeOutOrWalk != 3 && g_Ball.deadBallReason != 1) {
-        lbl_3_common_bss_32724[0x99] = 1;
+        lbl_3_common_bss_32724._99 = 1;
     }
     if (g_Stats.replayInd == 0 && g_Pitcher.strikeOutOrWalk != 2 && g_Pitcher.strikeOutOrWalk != 3) {
         playSoundEffect(0x198);
@@ -2757,7 +2754,7 @@ void fn_3_6011C(void) {
             }
             if (lbl_8037169C._13 != 0 && inScene != 0) {
                 if ((s32)lbl_803C6CF8._715 == 1) {
-                    lbl_3_common_bss_32724[0x96] = 1;
+                    lbl_3_common_bss_32724.hudOff = 1;
                     g_GameLogic.framesOfExitingToMenu = 1;
                 } else if (unkSimulationRelatedStruct._09 == 0) {
                     fn_800A7568();
@@ -2834,7 +2831,7 @@ void fn_3_6011C(void) {
         g_Scores._C1 = g_Scores.runs[g_GameLogic.homeTeamBattingInd_fieldingTeam][0] - g_Scores._A0;
         g_Pitcher._15D = 0;
         if (g_d_GameSettings.GameModeSelected == 4 &&
-            (lbl_3_data_228.simulatedFrames >= 0x2A30U || unkSimulationRelatedStruct._08 != 0)) {
+            (lbl_3_data_228.counter >= 0x2A30U || unkSimulationRelatedStruct._08 != 0)) {
             g_GameLogic.framesOfExitingToMenu = 1;
         } else if (g_GameLogic.EventTriggers_EndOfGame != 0) {
             if (g_Stats.replayInd == 0) { // inlined fn_3_5D9F8
@@ -2873,7 +2870,7 @@ void fn_3_6011C(void) {
         { // inlined fn_3_5CD24
         GameControlsStruct* game = &g_GameLogic;
         if (game->_125 == 0) {
-            lbl_3_common_bss_32724[0x9A] = 0;
+            lbl_3_common_bss_32724._9A = 0;
             fn_3_8A1D8();
             fn_3_6C108();
             fn_3_6B870();
@@ -2918,11 +2915,11 @@ void fn_3_6011C(void) {
         if (g_d_GameSettings.GameModeSelected == 4 && unkSimulationRelatedStruct._08 != 0) {
             return;
         }
-        if (lbl_3_common_bss_34C90[0x1D5] != 0) {
+        if (lbl_3_common_bss_34C90.active != 0) {
             return;
         }
         {
-            s16* pending = (s16*)(lbl_3_common_bss_32724 + 0x9E); // TODO type
+            s16* pending = lbl_3_common_bss_32724.pending;
             if (pending[0] >= 0) {
                 if (fn_80014F40(pending[0]) != 0) {
                     pending[0] = -1;
@@ -2956,7 +2953,7 @@ void* jumptable_3_data_6510[12] = {
 void fn_3_5BD40(void) {
     InputStruct* input = &g_Controls[lbl_80366158._27];
     if (g_GameLogic._125 >= 3) {
-        s16* timer = (s16*)(lbl_3_common_bss_34C90 + 0x12); // TODO type
+        s16* timer = &lbl_3_common_bss_34C90.subFrames;
         if (*timer < 0x7FFE) {
             *timer += 1;
         } else {
@@ -2965,10 +2962,10 @@ void fn_3_5BD40(void) {
     }
     switch (g_GameLogic._125) {
     case 0:
-        lbl_3_common_bss_34C90[0x1DA] = 0;
-        lbl_3_common_bss_34C90[0x1DB] = 0;
-        lbl_3_common_bss_34C90[0x1D8] = 0;
-        *(s16*)(lbl_3_common_bss_34C90 + 0x12) = 0;
+        lbl_3_common_bss_34C90.cursor = 0;
+        lbl_3_common_bss_34C90._1DB[0] = 0;
+        lbl_3_common_bss_34C90.openedByBattingTeam = 0;
+        lbl_3_common_bss_34C90.subFrames = 0;
         g_GameLogic.scoreBook_teamDisplayed = 0;
         g_GameLogic.scoreBook_batter_pitcherStatsDisplayed = 0;
         g_GameLogic.scoreBook_scrollIndex = 0;
@@ -3001,9 +2998,9 @@ void fn_3_5BD40(void) {
         g_GameLogic._125 = 1;
         break;
     case 1:
-        if (fn_80035838(lbl_3_data_6130 + 0x10, 0xC) != 0) {
-            lbl_3_common_bss_32724[0x9A] = 0;
-            lbl_3_common_bss_32724[0xD1] = 1;
+        if (fn_80035838(&lbl_3_data_6130[1], 0xC) != 0) {
+            lbl_3_common_bss_32724._9A = 0;
+            lbl_3_common_bss_32724._D1 = 1;
             g_GameLogic._125 = 2;
         }
         break;
@@ -3036,10 +3033,10 @@ void fn_3_5BD40(void) {
     case 5:
         if (g_GameLogic.FrameCountOfCurrentAtBat_Copy == 1) {
             fn_8004CC4C(7, 0, 0, 0, 0x8B);
-            if (lbl_80353A90[0x101] >= 0) {
-                fn_8004CA48(inMemRoster[0][lbl_80353A90[0x101]].stats.CharID, 0, 0, 0);
-            } else if (lbl_80353A90[0x102] >= 0) {
-                fn_8004CA48(inMemRoster[0][lbl_80353A90[0x102]].stats.CharID, 0, 0, 0);
+            if ((s8)lbl_80353A90._101[0] >= 0) {
+                fn_8004CA48(inMemRoster[0][(s8)lbl_80353A90._101[0]].stats.CharID, 0, 0, 0);
+            } else if ((s8)lbl_80353A90._101[1] >= 0) {
+                fn_8004CA48(inMemRoster[0][(s8)lbl_80353A90._101[1]].stats.CharID, 0, 0, 0);
             }
         }
         if (g_GameLogic.FrameCountOfCurrentAtBat_Copy >= 20 && (input->newButtonInput & 0x100)) {
@@ -3088,8 +3085,8 @@ void fn_3_5BD40(void) {
         break;
     case 8:
         if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 45) {
-            *(s16*)(lbl_3_common_bss_34C90 + 0x12) = 0;
-            lbl_3_common_bss_34C90[0x1D8] ^= 1;
+            lbl_3_common_bss_34C90.subFrames = 0;
+            lbl_3_common_bss_34C90.openedByBattingTeam ^= 1;
             g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
             g_GameLogic._125 = 7;
         }
@@ -3117,7 +3114,7 @@ void fn_3_5BD40(void) {
         if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > 10) {
             fn_3_8C07C();
             g_GameLogic._125 = 11;
-            lbl_3_common_bss_32724[0xCD] = 1;
+            lbl_3_common_bss_32724._CD = 1;
         }
         break;
     case 11:
@@ -3142,13 +3139,13 @@ void fn_3_5E2C4(void) {
     s16 limit = 120;
     s32 i;
     s32 endFrame;
-    s16* replayTimer = (s16*)(lbl_3_common_bss_37400 + 0x42); // TODO type
+    s16* replayTimer = &lbl_3_common_bss_37400._42;
     if (g_FieldingLogic._107 == 0 && g_Ball.AtBat_ContactResult == 0 && g_Ball.deadBallReason == 0) {
         g_FieldingLogic._0AE = 0;
         return;
     }
-    if (g_FieldingLogic._128 != 0 && lbl_3_common_bss_32724[0xB1] == 0) {
-        if (g_Strikes.outs < 3 && *(s16*)g_RunningLogic != 0) {
+    if (g_FieldingLogic._128 != 0 && lbl_3_common_bss_32724._B1 == 0) {
+        if (g_Strikes.outs < 3 && g_RunningLogic._00 != 0) {
             g_FieldingLogic._0AE = 0;
         }
         g_FieldingLogic._128 = 0;
@@ -3253,7 +3250,7 @@ void fn_3_5E2C4(void) {
     if (g_Ball.deadBallReason == 1 && g_Ball.matchFramesAndBallAngle.ballOverWallFrames == 180 && g_Stats.replayInd == 0) {
         fn_3_7CE90();
     }
-    if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400[0x46] != 0 && g_Stats.replayInd == 0 &&
+    if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400.type != 0 && g_Stats.replayInd == 0 &&
         g_GameLogic.playOver != 0 && g_Ball.deadBallReason != 1) {
         *replayTimer -= 1;
         if (g_FieldingLogic._0AE >= limit || *replayTimer <= 5) {
@@ -3262,7 +3259,7 @@ void fn_3_5E2C4(void) {
         if (*replayTimer == 5 && g_Ball.deadBallReason != 1) {
             g_GameLogic.walkOffWinInd = 1;
             changeScene(3, 6);
-            if (lbl_3_common_bss_37400[0x47] != 0) {
+            if (lbl_3_common_bss_37400._47 != 0) {
                 fn_3_90328(6);
             }
         }
@@ -3270,14 +3267,14 @@ void fn_3_5E2C4(void) {
             fn_3_5DF54();
         }
         if (g_Ball.deadBallReason != 1 && g_Stats._39 != 0 && *replayTimer == 30) {
-            lbl_3_common_bss_32724[0xB1] = 1;
+            lbl_3_common_bss_32724._B1 = 1;
         }
     } else if (g_FieldingLogic._0AE >= limit) {
         if (g_Stats.replayInd == 0) {
             fn_3_7CE90();
         }
         fn_3_5DF54();
-    } else if (g_FieldingLogic._0AE == limit - 6 && g_Stats.replayInd == 0 && lbl_3_common_bss_32724[0xB1] == 0 &&
+    } else if (g_FieldingLogic._0AE == limit - 6 && g_Stats.replayInd == 0 && lbl_3_common_bss_32724._B1 == 0 &&
                g_Ball.deadBallReason != 1) {
         g_GameLogic.walkOffWinInd = 1;
         changeScene(3, 6);
@@ -3322,17 +3319,17 @@ void fn_3_5E2C4(void) {
                 }
             }
         }
-        if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400[0x46] != 0 && g_Stats.replayInd == 0 &&
+        if (g_d_GameSettings.exhibitionMatchInd == 0 && lbl_3_common_bss_37400.type != 0 && g_Stats.replayInd == 0 &&
             g_GameLogic.playOver != 0) {
             fn_3_164A74();
             if (g_Ball.deadBallReason != 1) {
                 *replayTimer = 120;
             }
-            if (lbl_3_common_bss_37400[0x48] == 0) {
+            if (lbl_3_common_bss_37400.state == 0) {
                 if (g_FieldingLogic._107 == 0) {
-                    lbl_3_common_bss_32724[0xB4] = 1;
-                } else if (g_Strikes.outs >= 3 || lbl_3_common_bss_37400[0x47] != 0) {
-                    lbl_3_common_bss_32724[0xB4] = 1;
+                    lbl_3_common_bss_32724._B4 = 1;
+                } else if (g_Strikes.outs >= 3 || lbl_3_common_bss_37400._47 != 0) {
+                    lbl_3_common_bss_32724._B4 = 1;
                 } else {
                     *replayTimer = 8;
                 }
@@ -3343,9 +3340,9 @@ void fn_3_5E2C4(void) {
             }
         }
         g_Stats._3B = 1;
-    } else if (g_FieldingLogic._0AE - 1 == endFrame && lbl_3_common_bss_37400[0x47] == 0 && g_Ball.deadBallReason != 1 &&
+    } else if (g_FieldingLogic._0AE - 1 == endFrame && lbl_3_common_bss_37400._47 == 0 && g_Ball.deadBallReason != 1 &&
                g_Stats._39 != 0) {
-        lbl_3_common_bss_32724[0xB1] = 1;
+        lbl_3_common_bss_32724._B1 = 1;
     }
     g_GameLogic.framePlayEnd = limit;
     g_GameLogic.CountdownUntilFade = limit - g_FieldingLogic._0AE;
@@ -3359,74 +3356,74 @@ void fn_3_5E2C4(void) {
 // .data 0x00003D60..0x000065F0
 DiskFileEntry lbl_3_data_3D60 = {1035, 0x400098A0, 0x773D800, 15496};
 DiskFileEntry lbl_3_data_3D70 = {1035, 0x40000970, 0x7741800, 872};
-u8 lbl_3_data_3D80[0x430] = {
-    0, 0, 4, 11, 64, 19, 118, 76, 26, 99, 80, 0, 0, 7, 219, 72,
-    0, 0, 4, 11, 64, 3, 227, 220, 26, 107, 48, 0, 0, 2, 20, 32,
-    0, 0, 4, 11, 64, 2, 236, 16, 26, 109, 72, 0, 0, 1, 49, 8,
-    0, 0, 4, 11, 64, 14, 114, 192, 26, 110, 128, 0, 0, 6, 7, 104,
-    0, 0, 4, 11, 64, 4, 148, 4, 26, 116, 136, 0, 0, 2, 14, 52,
-    0, 0, 4, 11, 64, 7, 106, 224, 24, 237, 112, 0, 0, 3, 107, 200,
-    0, 0, 4, 11, 64, 16, 253, 112, 26, 118, 152, 0, 0, 5, 226, 132,
-    0, 0, 4, 11, 64, 13, 183, 56, 26, 124, 128, 0, 0, 4, 154, 180,
-    0, 0, 4, 11, 64, 14, 152, 100, 26, 129, 32, 0, 0, 5, 157, 192,
-    0, 0, 4, 11, 64, 11, 119, 24, 26, 134, 192, 0, 0, 5, 2, 136,
-    0, 0, 4, 11, 64, 13, 135, 252, 26, 139, 200, 0, 0, 4, 123, 196,
-    0, 0, 4, 11, 64, 13, 100, 60, 26, 144, 72, 0, 0, 4, 227, 172,
-    0, 0, 4, 11, 64, 13, 92, 124, 26, 149, 48, 0, 0, 4, 141, 156,
-    0, 0, 4, 11, 64, 11, 118, 124, 26, 153, 192, 0, 0, 4, 117, 24,
-    0, 0, 4, 11, 64, 4, 65, 248, 26, 158, 56, 0, 0, 1, 170, 132,
-    0, 0, 4, 11, 64, 16, 101, 104, 26, 159, 232, 0, 0, 6, 140, 16,
-    0, 0, 4, 11, 64, 16, 229, 160, 14, 151, 168, 0, 0, 9, 188, 172,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 161, 104, 0, 0, 0, 214, 196,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 162, 64, 0, 0, 0, 201, 68,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 163, 16, 0, 0, 0, 231, 0,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 163, 248, 0, 0, 0, 214, 76,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 164, 208, 0, 0, 0, 201, 0,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 165, 160, 0, 0, 0, 207, 252,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 166, 112, 0, 0, 0, 215, 32,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 167, 72, 0, 0, 0, 214, 204,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 168, 32, 0, 0, 0, 210, 28,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 168, 248, 0, 0, 0, 208, 188,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 169, 208, 0, 0, 0, 181, 68,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 170, 136, 0, 0, 0, 196, 248,
-    0, 0, 4, 11, 64, 10, 223, 252, 24, 174, 232, 0, 0, 4, 186, 176,
-    0, 0, 4, 11, 64, 55, 207, 92, 24, 179, 168, 0, 0, 32, 138, 240,
-    0, 0, 4, 11, 64, 0, 168, 32, 24, 237, 56, 0, 0, 0, 55, 88,
-    0, 0, 4, 11, 64, 17, 236, 36, 24, 240, 224, 0, 0, 13, 136, 24,
-    0, 0, 4, 11, 64, 1, 147, 232, 25, 27, 136, 0, 0, 0, 137, 216,
-    0, 0, 4, 11, 64, 6, 200, 80, 6, 201, 96, 0, 0, 2, 200, 132,
-    0, 0, 4, 11, 64, 5, 177, 120, 6, 204, 48, 0, 0, 3, 85, 92,
-    0, 0, 4, 11, 64, 30, 177, 116, 24, 212, 56, 0, 0, 15, 178, 32,
-    0, 0, 4, 11, 64, 1, 237, 96, 26, 166, 120, 0, 0, 0, 207, 240,
-    0, 0, 4, 11, 64, 0, 191, 48, 26, 167, 72, 0, 0, 0, 38, 224,
-    0, 0, 4, 11, 64, 0, 52, 152, 26, 167, 112, 0, 0, 0, 14, 40,
-    0, 0, 4, 11, 64, 0, 189, 224, 26, 167, 128, 0, 0, 0, 36, 244,
-    0, 0, 4, 11, 64, 0, 96, 136, 26, 167, 168, 0, 0, 0, 18, 144,
-    0, 0, 4, 11, 64, 0, 73, 240, 26, 167, 192, 0, 0, 0, 24, 244,
-    0, 0, 4, 11, 64, 0, 94, 204, 26, 167, 224, 0, 0, 0, 29, 56,
-    0, 0, 4, 11, 64, 0, 38, 112, 26, 168, 0, 0, 0, 0, 11, 232,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 168, 16, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 170, 152, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 173, 32, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 175, 168, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 178, 48, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 180, 184, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 183, 64, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 185, 200, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 188, 80, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 190, 216, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 193, 96, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 195, 232, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 198, 112, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 200, 248, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 203, 128, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 206, 8, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 208, 144, 0, 0, 2, 130, 64,
-    0, 0, 4, 11, 64, 0, 22, 64, 8, 235, 72, 0, 0, 0, 12, 56,
-    0, 0, 4, 11, 64, 11, 45, 0, 8, 235, 88, 0, 0, 6, 169, 72,
-    0, 0, 0, 0, 0, 0, 6, 134, 8, 242, 8, 0, 0, 0, 6, 136,
-    0, 0, 0, 0, 0, 0, 60, 152, 8, 242, 16, 0, 0, 0, 60, 152,
-    0, 0, 4, 11, 64, 0, 235, 188, 8, 242, 80, 0, 0, 0, 149, 112,
+DiskFileEntry lbl_3_data_3D80[67] = {
+    {0x40B, 0x4013764C, 0x1A635000, 0x7DB48},
+    {0x40B, 0x4003E3DC, 0x1A6B3000, 0x21420},
+    {0x40B, 0x4002EC10, 0x1A6D4800, 0x13108},
+    {0x40B, 0x400E72C0, 0x1A6E8000, 0x60768},
+    {0x40B, 0x40049404, 0x1A748800, 0x20E34},
+    {0x40B, 0x40076AE0, 0x18ED7000, 0x36BC8},
+    {0x40B, 0x4010FD70, 0x1A769800, 0x5E284},
+    {0x40B, 0x400DB738, 0x1A7C8000, 0x49AB4},
+    {0x40B, 0x400E9864, 0x1A812000, 0x59DC0},
+    {0x40B, 0x400B7718, 0x1A86C000, 0x50288},
+    {0x40B, 0x400D87FC, 0x1A8BC800, 0x47BC4},
+    {0x40B, 0x400D643C, 0x1A904800, 0x4E3AC},
+    {0x40B, 0x400D5C7C, 0x1A953000, 0x48D9C},
+    {0x40B, 0x400B767C, 0x1A99C000, 0x47518},
+    {0x40B, 0x400441F8, 0x1A9E3800, 0x1AA84},
+    {0x40B, 0x40106568, 0x1A9FE800, 0x68C10},
+    {0x40B, 0x4010E5A0, 0x0E97A800, 0x9BCAC},
+    {0x40B, 0x40016980, 0x0EA16800, 0xD6C4},
+    {0x40B, 0x40016980, 0x0EA24000, 0xC944},
+    {0x40B, 0x40016980, 0x0EA31000, 0xE700},
+    {0x40B, 0x40016980, 0x0EA3F800, 0xD64C},
+    {0x40B, 0x40016980, 0x0EA4D000, 0xC900},
+    {0x40B, 0x40016980, 0x0EA5A000, 0xCFFC},
+    {0x40B, 0x40016980, 0x0EA67000, 0xD720},
+    {0x40B, 0x40016980, 0x0EA74800, 0xD6CC},
+    {0x40B, 0x40016980, 0x0EA82000, 0xD21C},
+    {0x40B, 0x40016980, 0x0EA8F800, 0xD0BC},
+    {0x40B, 0x40016980, 0x0EA9D000, 0xB544},
+    {0x40B, 0x40016980, 0x0EAA8800, 0xC4F8},
+    {0x40B, 0x400ADFFC, 0x18AEE800, 0x4BAB0},
+    {0x40B, 0x4037CF5C, 0x18B3A800, 0x208AF0},
+    {0x40B, 0x4000A820, 0x18ED3800, 0x3758},
+    {0x40B, 0x4011EC24, 0x18F0E000, 0xD8818},
+    {0x40B, 0x400193E8, 0x191B8800, 0x89D8},
+    {0x40B, 0x4006C850, 0x06C96000, 0x2C884},
+    {0x40B, 0x4005B178, 0x06CC3000, 0x3555C},
+    {0x40B, 0x401EB174, 0x18D43800, 0xFB220},
+    {0x40B, 0x4001ED60, 0x1AA67800, 0xCFF0},
+    {0x40B, 0x4000BF30, 0x1AA74800, 0x26E0},
+    {0x40B, 0x40003498, 0x1AA77000, 0xE28},
+    {0x40B, 0x4000BDE0, 0x1AA78000, 0x24F4},
+    {0x40B, 0x40006088, 0x1AA7A800, 0x1290},
+    {0x40B, 0x400049F0, 0x1AA7C000, 0x18F4},
+    {0x40B, 0x40005ECC, 0x1AA7E000, 0x1D38},
+    {0x40B, 0x40002670, 0x1AA80000, 0xBE8},
+    {0x0, 0x00028240, 0x1AA81000, 0x28240},
+    {0x0, 0x00028240, 0x1AAA9800, 0x28240},
+    {0x0, 0x00028240, 0x1AAD2000, 0x28240},
+    {0x0, 0x00028240, 0x1AAFA800, 0x28240},
+    {0x0, 0x00028240, 0x1AB23000, 0x28240},
+    {0x0, 0x00028240, 0x1AB4B800, 0x28240},
+    {0x0, 0x00028240, 0x1AB74000, 0x28240},
+    {0x0, 0x00028240, 0x1AB9C800, 0x28240},
+    {0x0, 0x00028240, 0x1ABC5000, 0x28240},
+    {0x0, 0x00028240, 0x1ABED800, 0x28240},
+    {0x0, 0x00028240, 0x1AC16000, 0x28240},
+    {0x0, 0x00028240, 0x1AC3E800, 0x28240},
+    {0x0, 0x00028240, 0x1AC67000, 0x28240},
+    {0x0, 0x00028240, 0x1AC8F800, 0x28240},
+    {0x0, 0x00028240, 0x1ACB8000, 0x28240},
+    {0x0, 0x00028240, 0x1ACE0800, 0x28240},
+    {0x0, 0x00028240, 0x1AD09000, 0x28240},
+    {0x40B, 0x40001640, 0x08EB4800, 0xC38},
+    {0x40B, 0x400B2D00, 0x08EB5800, 0x6A948},
+    {0x0, 0x00000686, 0x08F20800, 0x688},
+    {0x0, 0x00003C98, 0x08F21000, 0x3C98},
+    {0x40B, 0x4000EBBC, 0x08F25000, 0x9570},
 };
 u8 lbl_3_data_428C[4] = {0}; // alignment padding (unused)
 f32 lbl_3_data_4290[28] = {
@@ -3545,7 +3542,7 @@ u8 lbl_3_data_48F8[8] = {15, 15, 20, 25, 30, 0, 0, 0};
 u8 lbl_3_data_4900[8] = {6, 12, 10, 0, 0, 7, 0, 0};
 u8 lbl_3_data_4908[4] = {20, 20}; // bad-chemistry miss chance range (u8[2]), padded to 4
 f32 lbl_3_data_490C[6] = {1.0f, 5.0f, 0.15f, 1.2f, 5.0f, 0.2f};
-u8 lbl_3_data_4924[12] = {0, 45, 0, 6, 0, 25, 0, 60, 0, 6, 0, 25};
+s16 lbl_3_data_4924[6] = {45, 6, 25, 60, 6, 25};
 f32 lbl_3_data_4930[43] = {
     12.0f, 7.0f, 8.0f, 5.0f, 7.0f, 2.5f, 2.5f, 2.0f, 2.5f, 6.5f, 1.0f, 0.007f, 0.8f, 0.15f, 0.95f,
     5.0f, 0.15f, 0.15f, 0.007f, 0.2f, 0.2f, 0.1f, -0.05f, 0.95f, -0.02f, 0.1f, 0.0015f, 0.5f, 4.0f,
@@ -4395,68 +4392,68 @@ u8 lbl_3_data_60F8[12] = {5, 10, 10, 5, 5, 5, 3, 3, 1, 1, 0, 0};
 u8 lbl_3_data_6104[8] = {0, 1, 4, 3, 2, 5, 0, 0};
 f32 lbl_3_data_610C[6] = {0.1f, 0.4f, 0.7f, 0.2f, 0.5f, 1.0f};
 f32 lbl_3_data_6124[3] = {0.75f, 0.5f, 0.0f};
-u8 lbl_3_data_6130[0x3E0] = {
-    0, 0, 4, 11, 64, 19, 118, 76, 26, 99, 80, 0, 0, 7, 219, 72,
-    0, 0, 4, 11, 64, 3, 227, 220, 26, 107, 48, 0, 0, 2, 20, 32,
-    0, 0, 4, 11, 64, 2, 236, 16, 26, 109, 72, 0, 0, 1, 49, 8,
-    0, 0, 4, 11, 64, 14, 114, 192, 26, 110, 128, 0, 0, 6, 7, 104,
-    0, 0, 4, 11, 64, 4, 148, 4, 26, 116, 136, 0, 0, 2, 14, 52,
-    0, 0, 4, 11, 64, 7, 106, 224, 24, 237, 112, 0, 0, 3, 107, 200,
-    0, 0, 4, 11, 64, 16, 253, 112, 26, 118, 152, 0, 0, 5, 226, 132,
-    0, 0, 4, 11, 64, 13, 183, 56, 26, 124, 128, 0, 0, 4, 154, 180,
-    0, 0, 4, 11, 64, 14, 152, 100, 26, 129, 32, 0, 0, 5, 157, 192,
-    0, 0, 4, 11, 64, 11, 119, 24, 26, 134, 192, 0, 0, 5, 2, 136,
-    0, 0, 4, 11, 64, 13, 135, 252, 26, 139, 200, 0, 0, 4, 123, 196,
-    0, 0, 4, 11, 64, 13, 100, 60, 26, 144, 72, 0, 0, 4, 227, 172,
-    0, 0, 4, 11, 64, 13, 92, 124, 26, 149, 48, 0, 0, 4, 141, 156,
-    0, 0, 4, 11, 64, 11, 118, 124, 26, 153, 192, 0, 0, 4, 117, 24,
-    0, 0, 4, 11, 64, 4, 65, 248, 26, 158, 56, 0, 0, 1, 170, 132,
-    0, 0, 4, 11, 64, 16, 101, 104, 26, 159, 232, 0, 0, 6, 140, 16,
-    0, 0, 4, 11, 64, 16, 229, 160, 14, 151, 168, 0, 0, 9, 188, 172,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 161, 104, 0, 0, 0, 214, 196,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 162, 64, 0, 0, 0, 201, 68,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 163, 16, 0, 0, 0, 231, 0,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 163, 248, 0, 0, 0, 214, 76,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 164, 208, 0, 0, 0, 201, 0,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 165, 160, 0, 0, 0, 207, 252,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 166, 112, 0, 0, 0, 215, 32,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 167, 72, 0, 0, 0, 214, 204,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 168, 32, 0, 0, 0, 210, 28,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 168, 248, 0, 0, 0, 208, 188,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 169, 208, 0, 0, 0, 181, 68,
-    0, 0, 4, 11, 64, 1, 105, 128, 14, 170, 136, 0, 0, 0, 196, 248,
-    0, 0, 4, 11, 64, 10, 223, 252, 24, 174, 232, 0, 0, 4, 186, 176,
-    0, 0, 4, 11, 64, 55, 207, 92, 24, 179, 168, 0, 0, 32, 138, 240,
-    0, 0, 4, 11, 64, 0, 168, 32, 24, 237, 56, 0, 0, 0, 55, 88,
-    0, 0, 4, 11, 64, 17, 236, 36, 24, 240, 224, 0, 0, 13, 136, 24,
-    0, 0, 4, 11, 64, 1, 147, 232, 25, 27, 136, 0, 0, 0, 137, 216,
-    0, 0, 4, 11, 64, 6, 200, 80, 6, 201, 96, 0, 0, 2, 200, 132,
-    0, 0, 4, 11, 64, 5, 177, 120, 6, 204, 48, 0, 0, 3, 85, 92,
-    0, 0, 4, 11, 64, 30, 177, 116, 24, 212, 56, 0, 0, 15, 178, 32,
-    0, 0, 4, 11, 64, 1, 237, 96, 26, 166, 120, 0, 0, 0, 207, 240,
-    0, 0, 4, 11, 64, 0, 191, 48, 26, 167, 72, 0, 0, 0, 38, 224,
-    0, 0, 4, 11, 64, 0, 52, 152, 26, 167, 112, 0, 0, 0, 14, 40,
-    0, 0, 4, 11, 64, 0, 189, 224, 26, 167, 128, 0, 0, 0, 36, 244,
-    0, 0, 4, 11, 64, 0, 96, 136, 26, 167, 168, 0, 0, 0, 18, 144,
-    0, 0, 4, 11, 64, 0, 73, 240, 26, 167, 192, 0, 0, 0, 24, 244,
-    0, 0, 4, 11, 64, 0, 94, 204, 26, 167, 224, 0, 0, 0, 29, 56,
-    0, 0, 4, 11, 64, 0, 38, 112, 26, 168, 0, 0, 0, 0, 11, 232,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 168, 16, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 170, 152, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 173, 32, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 175, 168, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 178, 48, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 180, 184, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 183, 64, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 185, 200, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 188, 80, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 190, 216, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 193, 96, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 195, 232, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 198, 112, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 200, 248, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 203, 128, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 206, 8, 0, 0, 2, 130, 64,
-    0, 0, 0, 0, 0, 2, 130, 64, 26, 208, 144, 0, 0, 2, 130, 64,
+DiskFileEntry lbl_3_data_6130[62] = {
+    {0x40B, 0x4013764C, 0x1A635000, 0x7DB48},
+    {0x40B, 0x4003E3DC, 0x1A6B3000, 0x21420},
+    {0x40B, 0x4002EC10, 0x1A6D4800, 0x13108},
+    {0x40B, 0x400E72C0, 0x1A6E8000, 0x60768},
+    {0x40B, 0x40049404, 0x1A748800, 0x20E34},
+    {0x40B, 0x40076AE0, 0x18ED7000, 0x36BC8},
+    {0x40B, 0x4010FD70, 0x1A769800, 0x5E284},
+    {0x40B, 0x400DB738, 0x1A7C8000, 0x49AB4},
+    {0x40B, 0x400E9864, 0x1A812000, 0x59DC0},
+    {0x40B, 0x400B7718, 0x1A86C000, 0x50288},
+    {0x40B, 0x400D87FC, 0x1A8BC800, 0x47BC4},
+    {0x40B, 0x400D643C, 0x1A904800, 0x4E3AC},
+    {0x40B, 0x400D5C7C, 0x1A953000, 0x48D9C},
+    {0x40B, 0x400B767C, 0x1A99C000, 0x47518},
+    {0x40B, 0x400441F8, 0x1A9E3800, 0x1AA84},
+    {0x40B, 0x40106568, 0x1A9FE800, 0x68C10},
+    {0x40B, 0x4010E5A0, 0x0E97A800, 0x9BCAC},
+    {0x40B, 0x40016980, 0x0EA16800, 0xD6C4},
+    {0x40B, 0x40016980, 0x0EA24000, 0xC944},
+    {0x40B, 0x40016980, 0x0EA31000, 0xE700},
+    {0x40B, 0x40016980, 0x0EA3F800, 0xD64C},
+    {0x40B, 0x40016980, 0x0EA4D000, 0xC900},
+    {0x40B, 0x40016980, 0x0EA5A000, 0xCFFC},
+    {0x40B, 0x40016980, 0x0EA67000, 0xD720},
+    {0x40B, 0x40016980, 0x0EA74800, 0xD6CC},
+    {0x40B, 0x40016980, 0x0EA82000, 0xD21C},
+    {0x40B, 0x40016980, 0x0EA8F800, 0xD0BC},
+    {0x40B, 0x40016980, 0x0EA9D000, 0xB544},
+    {0x40B, 0x40016980, 0x0EAA8800, 0xC4F8},
+    {0x40B, 0x400ADFFC, 0x18AEE800, 0x4BAB0},
+    {0x40B, 0x4037CF5C, 0x18B3A800, 0x208AF0},
+    {0x40B, 0x4000A820, 0x18ED3800, 0x3758},
+    {0x40B, 0x4011EC24, 0x18F0E000, 0xD8818},
+    {0x40B, 0x400193E8, 0x191B8800, 0x89D8},
+    {0x40B, 0x4006C850, 0x06C96000, 0x2C884},
+    {0x40B, 0x4005B178, 0x06CC3000, 0x3555C},
+    {0x40B, 0x401EB174, 0x18D43800, 0xFB220},
+    {0x40B, 0x4001ED60, 0x1AA67800, 0xCFF0},
+    {0x40B, 0x4000BF30, 0x1AA74800, 0x26E0},
+    {0x40B, 0x40003498, 0x1AA77000, 0xE28},
+    {0x40B, 0x4000BDE0, 0x1AA78000, 0x24F4},
+    {0x40B, 0x40006088, 0x1AA7A800, 0x1290},
+    {0x40B, 0x400049F0, 0x1AA7C000, 0x18F4},
+    {0x40B, 0x40005ECC, 0x1AA7E000, 0x1D38},
+    {0x40B, 0x40002670, 0x1AA80000, 0xBE8},
+    {0x0, 0x00028240, 0x1AA81000, 0x28240},
+    {0x0, 0x00028240, 0x1AAA9800, 0x28240},
+    {0x0, 0x00028240, 0x1AAD2000, 0x28240},
+    {0x0, 0x00028240, 0x1AAFA800, 0x28240},
+    {0x0, 0x00028240, 0x1AB23000, 0x28240},
+    {0x0, 0x00028240, 0x1AB4B800, 0x28240},
+    {0x0, 0x00028240, 0x1AB74000, 0x28240},
+    {0x0, 0x00028240, 0x1AB9C800, 0x28240},
+    {0x0, 0x00028240, 0x1ABC5000, 0x28240},
+    {0x0, 0x00028240, 0x1ABED800, 0x28240},
+    {0x0, 0x00028240, 0x1AC16000, 0x28240},
+    {0x0, 0x00028240, 0x1AC3E800, 0x28240},
+    {0x0, 0x00028240, 0x1AC67000, 0x28240},
+    {0x0, 0x00028240, 0x1AC8F800, 0x28240},
+    {0x0, 0x00028240, 0x1ACB8000, 0x28240},
+    {0x0, 0x00028240, 0x1ACE0800, 0x28240},
+    {0x0, 0x00028240, 0x1AD09000, 0x28240},
 };
 

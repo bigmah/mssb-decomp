@@ -11,8 +11,6 @@ extern u8 g_Minigame[];
 // OFFSET_OF(MiniGameStruct, bODCharacterHRStreakTracker), spelled as a literal: the matched code indexes
 // the byte array from it and only folds a plain constant (no pointer fields precede it).
 #define MG31_HR_STREAK 0x1ACC
-// HUD flag bytes overlaid on MiniGameStruct._1DF4[]; fn_3_110AD4 only matches with the byte-array form.
-#define MG31_HUD_FLAGS 0x1DF4 // TODO port: OFFSET_OF(MiniGameStruct, _1DF4) differs on 64-bit (f32* at 0x1D4C)
 #define MG31_HIT_HISTORY 0x1AA0 // OFFSET_OF(MiniGameStruct, bODHitHistory)
 #define REP_HEADER_FN repHeader_31F0
 #include "header_rep_inline.h"
@@ -193,14 +191,14 @@ void fn_3_110AD4(void) {
             fn_3_BC6D8(&v, &fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(8, 12), 1);
         }
         mg->bODRelated3 = 1;
-        g_Minigame[MG31_HUD_FLAGS + 3] = 1;
+        MG31->hudFlags[3] = 1;
         MG31->_18A0 = 1;
         MG31->_18A6 = RandomInt_Game_Range(lbl_3_data_213E0[0], lbl_3_data_213E0[1]);
         if (g_Pitcher.starPitchInd != 0) {
             MG31->bODControllerInputAllowedInd = 0;
         } else if (MG31->bODCharacterHRStreakTracker[mg->rosterID * 2] <= 1 || MG31->bOD_KingBombInd != 0) {
             MG31->bODControllerInputAllowedInd = 1;
-            g_Minigame[MG31_HUD_FLAGS + 4] = 1;
+            MG31->hudFlags[4] = 1;
         } else {
             MG31->bODControllerInputAllowedInd = 0;
         }
@@ -235,12 +233,12 @@ void fn_3_110AD4(void) {
         if (g_Pitcher.starPitchInd != 0) {
             if (*(u16*)&MG31->_18A0 >= 10) {
                 mg->bODControllerInputAllowedInd = 1;
-                g_Minigame[MG31_HUD_FLAGS + 4] = 1;
+                MG31->hudFlags[4] = 1;
             }
         } else if (*(u16*)&MG31->_18A0 >= MG31->bODCharacterHRStreakTracker[MG31->rosterID * 2] ||
                    *(u16*)&MG31->_18A0 >= lbl_3_data_21448[7]) {
             mg->bODControllerInputAllowedInd = 1;
-            g_Minigame[MG31_HUD_FLAGS + 4] = 1;
+            MG31->hudFlags[4] = 1;
         }
         startBombTimer_31F0();
     }

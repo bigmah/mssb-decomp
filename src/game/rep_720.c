@@ -252,9 +252,6 @@ static inline void fn_3_1CE90_setView(lbl_3_data_A40_s* p) {
 
 // NONMATCHING 98.4%: the three fn_3_1850C calls are tail-merged into one here, and f28-f30 are allocated differently in the inlined view setup
 #if NONMATCHING
-// TODO type: inMemCamera holds 4 views of 0x9BC bytes from 0x120 (lbl_3_common_bss_DE94_s2).
-#define CAMERA_VIEW(cam, i) ((lbl_3_common_bss_DE94_s2*)((u8*)(cam) + 0x120 + (i) * 0x9BC))
-
 void fn_3_1CE90(void) {
     camera_803c639c_s* view;
     u8 n;
@@ -290,7 +287,7 @@ restart:
     }
     while ((n = g_pCamera->_28A8) != 0) {
         g_pCamera->_28A8 -= (n != 0);
-        lbl_3_common_bss_DE94._0000 = CAMERA_VIEW(g_pCamera, g_pCamera->_28A8);
+        lbl_3_common_bss_DE94._0000 = &g_pCamera->views[g_pCamera->_28A8];
         if (lbl_3_common_bss_DE94._0000->_09AB != 0) {
             fn_3_FD670();
             if (g_pCamera->_28A9 == 1) {
@@ -1123,7 +1120,7 @@ void fn_3_19770(void) {
 }
 
 // .text:0x000195BC size:0x1B4 mapped:0x80658650
-// NONMATCHING 97.9%: pointer-induction form (f32* b/sp, b[j*3+15]); only diff is an extra `addi r0; mr r7,r0` for the g_Ball pointer
+// NONMATCHING 97.9%: pointer-induction form (f32* b/sp, b[j*3]); only diff is an extra `addi r0; mr r7,r0` for the g_Ball pointer
 #if NONMATCHING
 void fn_3_195BC(void) {
     inMemCamera* cam;
@@ -1134,14 +1131,14 @@ void fn_3_195BC(void) {
     f32* sp;
     cam = g_pCamera;
     sp8.x = sp8.y = sp8.z = 0.f;
-    b = (f32*)&g_Ball; // TODO type: b[15 + j * 3 + i] is g_Ball.pastCoordinates[j] component i
+    b = &g_Ball.pastCoordinates[0].x; // b[j * 3] is g_Ball.pastCoordinates[j] component i
     sp = &sp8.x;
     for (i = 0; i < 3; i++, b++, sp++) {
         for (j = 0; j < 10; j++) {
-            if (i == 1 && b[j * 3 + 15] < 1.f) {
+            if (i == 1 && b[j * 3] < 1.f) {
                 *sp += 1.f;
             } else {
-                *sp += b[j * 3 + 15];
+                *sp += b[j * 3];
             }
         }
         *sp *= (1.f / 10);

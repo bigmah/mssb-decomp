@@ -21,7 +21,13 @@ typedef void (*SwingFxFunc)(struct CharActor* model, s32 animID, u32 colorIdx, f
 typedef struct CharSelWork {
     /*0x0000*/ CharacterStats chars[113]; // base stats, 9 per team slot
     /*0x46A0*/ u8 _46A0[0x46E0 - 0x46A0];
-    /*0x46E0*/ s8 _46E0[2][4];
+    union {
+        /*0x46E0*/ s8 _46E0[2][4];
+        struct {
+            /*0x46E0*/ s32 _46E0w;
+            /*0x46E4*/ s32 _46E4; // a character id (lbl_800E8558 index); 9: none
+        };
+    };
     /*0x46E8*/ u8 _46E8[0x46F8 - 0x46E8];
     /*0x46F8*/ s8 teamPort[2]; // controller port per team
     /*0x46FA*/ u8 _46FA[0x4704 - 0x46FA];

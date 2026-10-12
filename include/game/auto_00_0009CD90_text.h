@@ -9,7 +9,8 @@
 extern InMemFielderType g_Fielders[9];
 
 extern GameScores g_Scores;
-extern u8 lbl_80361B20[54];
+#include "main/unlock_flags.h"
+extern UnlockFlags lbl_80361B20;
 
 void fn_3_9CD90(void);
 void fn_3_9CE78(void);

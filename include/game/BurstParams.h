@@ -6,7 +6,10 @@
 // Parameter block of fn_8002C2D0 (particle burst; values are fixed point, 1/100000; prm[11] is an RGBA colour).
 // _00 is filled in at run time.
 typedef struct BurstParams {
-    /* 0x00 */ u32 _00;
+    union {
+        /* 0x00 */ u32 _00;
+        /* 0x00 */ void* file; // effect file (lbl_3_common_bss_35154 + 4)
+    };
     /* 0x04 */ s32 prm[15];
 } BurstParams; // size 0x40
 

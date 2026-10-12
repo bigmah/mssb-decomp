@@ -21,6 +21,7 @@ typedef struct SceneTask {
     /*0x12*/ u16 priority;
     /*0x14*/ union {
         ResHandle* res;
+        void* data; // file being loaded (ARAMTransfer result)
         struct {
             u16 objIdx;   // first object in lbl_80371C30
             u16 objCount; // number of objects

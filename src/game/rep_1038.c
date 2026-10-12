@@ -3,6 +3,8 @@
 #include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "game/auto_00_000249E8_text.h" // SceneWork, Unk32724
+#include "main/file_80011640.h" // CharMgr
 
 extern void fn_3_690FC(void);
 extern void fn_3_6AEE0(void);
@@ -17,17 +19,16 @@ extern void fn_3_6B674(void);
 extern void fn_3_6AB58(void);
 extern void fn_3_15A9F4(void);
 extern void fn_3_973EC(void);
-extern u8* lbl_3_common_bss_1323C[];
-extern u8 g_Fielders[];
-extern u8 lbl_8036E548[];
+extern SceneWork* lbl_3_common_bss_1323C;
+extern InMemFielderType g_Fielders[9];
 
 extern f32 lbl_3_data_18DD4[];
 
-extern u8 lbl_3_common_bss_32724[];
+extern Unk32724 lbl_3_common_bss_32724;
 
 extern void fn_3_B93C8(s32);
 
-extern u8 g_Scores[];
+extern GameScores g_Scores;
 
 extern void fn_3_6916C(void);
 extern void fn_3_674E0(void);
@@ -35,22 +36,22 @@ extern void fn_3_97800(void);
 
 // .text:0x0006C1D8 size:0x238 mapped:0x806AB26C
 void fn_3_6C1D8(void) {
-    u8 mode = ((u8*)&g_GameLogic)[0x11E];
+    u8 mode = g_GameLogic.gameStatus;
     if (mode != 4) {
-        u8 gm = ((u8*)&g_d_GameSettings)[7];
-        if (gm == 2 && ((u8*)&g_GameLogic)[0x121] == 0xA && ((u8*)&g_Practice)[0x198] == 6) {
+        u8 gm = g_d_GameSettings.GameModeSelected;
+        if (gm == 2 && g_GameLogic.secondaryGameMode == 0xA && g_Practice.practiceType_1 == 6) {
             fn_3_6C000();
-        } else if (mode != 5 && lbl_8036E548[0x307A] != 0) {
-            if (lbl_3_common_bss_1323C[0][0x25C] != 0) {
+        } else if (mode != 5 && lbl_8036E548._307A != 0) {
+            if (lbl_3_common_bss_1323C->_25C != 0) {
                 fn_3_6BEA4();
-            } else if ((((u8)(mode - 0xB) <= 1) || ((u8*)&g_GameLogic)[0x121] == 0xA || ((u8*)&g_GameLogic)[0x121] == 0x12
-                        || (gm == 2 && ((u8*)&g_Practice)[0x196] == 0))
+            } else if ((((u8)(mode - 0xB) <= 1) || g_GameLogic.secondaryGameMode == 0xA || g_GameLogic.secondaryGameMode == 0x12
+                        || (gm == 2 && g_Practice.tutorialState == 0))
                        && (gm != 6 || mode != 0xB)) {
                 fn_3_690FC();
                 fn_3_6AEE0();
                 fn_3_6C454();
                 fn_3_6C410();
-                ((u8*)&g_UnkSound_32718)[7] = 0;
+                g_UnkSound_32718._07 = 0;
             } else {
                 fn_3_697CC();
                 fn_3_685F0();
@@ -61,7 +62,7 @@ void fn_3_6C1D8(void) {
                 fn_3_6AB58();
             }
         }
-        if (((u8*)&g_d_GameSettings)[7] == 2) {
+        if (g_d_GameSettings.GameModeSelected == 2) {
             fn_3_15A9F4();
         } else {
             fn_3_973EC();
@@ -71,65 +72,65 @@ void fn_3_6C1D8(void) {
 
 // .text:0x0006C150 size:0x88 mapped:0x806AB1E4
 void fn_3_6C150(void) {
-    *(s16*)(lbl_3_common_bss_32724 + 0x9E) = -1;
-    *(s16*)(lbl_3_common_bss_32724 + 0xA0) = -1;
-    *(s16*)(lbl_3_common_bss_32724 + 0xA2) = -1;
+    lbl_3_common_bss_32724._9E = -1;
+    lbl_3_common_bss_32724._A0 = -1;
+    lbl_3_common_bss_32724._A2 = -1;
     fn_3_6916C();
     fn_3_674E0();
     fn_3_97800();
-    if (((u8*)&g_d_GameSettings)[0x11] != 0) {
-        lbl_8036E548[0x307E] = 0;
+    if (g_d_GameSettings.minigamesEnabled != 0) {
+        lbl_8036E548._307E = 0;
         return;
     }
-    if (((u8*)&g_d_GameSettings)[7] != 2) {
-        lbl_8036E548[0x307A] = 1;
-        lbl_8036E548[0x307E] = 1;
+    if (g_d_GameSettings.GameModeSelected != 2) {
+        lbl_8036E548._307A = 1;
+        lbl_8036E548._307E = 1;
     }
 }
 
 // .text:0x0006C13C size:0x14 mapped:0x806AB1D0
 void fn_3_6C13C(void) {
-    g_Scores[0xC3] = 0;
+    g_Scores._C3[0] = 0;
 }
 
 // .text:0x0006C108 size:0x34 mapped:0x806AB19C
 void fn_3_6C108(void) {
     fn_3_B93C8(1);
-    lbl_3_common_bss_32724[0xAE] = 0;
+    lbl_3_common_bss_32724._AE = 0;
 }
 
 // .text:0x0006C0E0 size:0x28 mapped:0x806AB174
 void fn_3_6C0E0(void) {
-    *(s16*)(lbl_3_common_bss_32724 + 0x90) = -1;
-    *(s16*)(lbl_3_common_bss_32724 + 0x92) = 0;
-    lbl_3_common_bss_32724[0xA9] = 0;
-    lbl_3_common_bss_32724[0xD3] = 0;
-    lbl_3_common_bss_32724[0xB5] = 0;
+    lbl_3_common_bss_32724._90 = -1;
+    lbl_3_common_bss_32724._92 = 0;
+    lbl_3_common_bss_32724._A9 = 0;
+    lbl_3_common_bss_32724._D3 = 0;
+    lbl_3_common_bss_32724._B5 = 0;
 }
 
 // .text:0x0006C000 size:0xE0 mapped:0x806AB094
 void fn_3_6C000(void) {
     int i;
-    u8* p;
-    u8* q;
-    *(s16*)(lbl_8036E548 + 0x2D68) = -1;
+    CharActor* p;
+    CharActor* q;
+    lbl_8036E548._2D68 = -1;
     for (i = 0; i < 13; i++) {
-        p = ((u8**)lbl_8036E548)[i + 0xB14];
+        p = lbl_8036E548.active[i];
         if (p != NULL) {
-            p[0x25D] = 0;
+            p->mode[0] = 0;
         }
     }
-    if (((u8*)&g_Practice)[0x195] != 6 && ((u8*)&g_Practice)[0x195] > 1 && (q = *(u8**)(lbl_8036E548 + 0x2C74)) != NULL
-        && ((u8*)&g_Minigame)[0x1A13] == 0 && *(s8*)((u8*)&g_Minigame + 0x19EA) >= 0 && *(s8*)((u8*)&g_Minigame + 0x19EF) != 0
-        && *(s8*)((u8*)&g_Minigame + 0x19DA) >= 0) {
+    if (g_Practice.practiceState != 6 && g_Practice.practiceState > 1 && (q = lbl_8036E548.active[9]) != NULL
+        && g_Minigame._1A13[0] == 0 && g_Minigame._19E8[0]._2 >= 0 && g_Minigame._19E8[0]._7 != 0
+        && g_Minigame._19DA[0] >= 0) {
         f32* d = lbl_3_data_18DD4;
-        q[0x25D] = 1;
-        *(f32*)(q + 0x34) = d[0];
-        *(f32*)(q + 0x38) = -d[1];
-        *(f32*)(q + 0x3C) = d[2];
-        *(f32*)(q + 0x40) = 0.0f;
-        *(f32*)(q + 0x44) = 0.0f;
-        *(f32*)(q + 0x48) = 0.0f;
+        q->mode[0] = 1;
+        q->pos.x = d[0];
+        q->pos.y = -d[1];
+        q->pos.z = d[2];
+        q->rot.x = 0.0f;
+        q->rot.y = 0.0f;
+        q->rot.z = 0.0f;
     }
 }
 
@@ -139,35 +140,35 @@ void fn_3_6BEA4(void) {
     fn_3_690FC();
     fn_3_6AEE0();
     fn_3_6C454();
-    ((u8*)&g_UnkSound_32718)[7] = 0;
+    g_UnkSound_32718._07 = 0;
     for (i = 0; i < 13; i++) {
-        u8* o = lbl_3_common_bss_1323C[0];
-        u8* p;
-        if (*(s16*)(o + 0x240 + i * 2) >= 0) {
-            p = ((u8**)lbl_8036E548)[0xB14 + i];
+        SceneWork* o = lbl_3_common_bss_1323C;
+        CharActor* p;
+        if (o->actorSetup[i] >= 0) {
+            p = lbl_8036E548.active[i];
             if (p != NULL) {
-                p[0x25D] = o[0x261 + i];
+                p->mode[0] = o->animSet[i];
                 if (i <= 8) {
-                    u8* f = (u8*)g_Fielders + i * 0x268;
-                    lbl_3_common_bss_1323C[0][0x26E + i] = 0;
-                    if (*(s16*)(f + 0x178) != -1) {
-                        *(f32*)(p + 0x34) = *(f32*)(f + 0);
-                        *(f32*)(p + 0x38) = *(f32*)(f + 4);
-                        *(f32*)(p + 0x3C) = *(f32*)(f + 8);
-                        *(f32*)(p + 0x44) = *(f32*)(f + 0x48);
+                    InMemFielderType* f = &g_Fielders[i];
+                    lbl_3_common_bss_1323C->posSet[i] = 0;
+                    if (f->rosterID != -1) {
+                        p->pos.x = f->pos.x;
+                        p->pos.y = f->pos.y;
+                        p->pos.z = f->pos.z;
+                        p->rot.y = f->facing;
                     }
                 } else if (i <= 12) {
-                    u8* r = (u8*)g_Runners + (i - 9) * 0x154;
-                    lbl_3_common_bss_1323C[0][0x26E + i] = 0;
-                    if (*(s16*)(r + 0xE0) != -1) {
-                        *(f32*)(p + 0x34) = *(f32*)(r + 0);
-                        *(f32*)(p + 0x38) = *(f32*)(r + 4);
-                        *(f32*)(p + 0x3C) = *(f32*)(r + 8);
-                        *(f32*)(p + 0x44) = *(f32*)(r + 0x30);
+                    InMemRunnerType* r = &g_Runners[i - 9];
+                    lbl_3_common_bss_1323C->posSet[i] = 0;
+                    if (r->rosterID != -1) {
+                        p->pos.x = r->position.x;
+                        p->pos.y = r->position.y;
+                        p->pos.z = r->position.z;
+                        p->rot.y = r->runningAngle;
                     }
                 }
-                *(f32*)(p + 0x40) = 0.0f;
-                *(f32*)(p + 0x48) = 0.0f;
+                p->rot.x = 0.0f;
+                p->rot.z = 0.0f;
             }
         }
     }
