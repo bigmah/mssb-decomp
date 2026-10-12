@@ -209,12 +209,6 @@ void fn_2_6AB3C(s32 index, const Vec* position, f32 heading) {
 }
 extern MenuData* lbl_2_bss_1A824C[];
 
-typedef struct {
-    s16 clip;
-    s16 end;
-    u8 mode;
-    u8 padding;
-} MenuAnimation;
 
 extern MenuAnimation lbl_2_data_3C84[];
 extern void fn_2_8CD58(s32, s16, u8, u8, s16, u8, u8);

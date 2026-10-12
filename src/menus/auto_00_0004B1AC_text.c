@@ -2883,15 +2883,6 @@ typedef struct {
 } MCharStats;
 
 extern MCharStats inMemRoster[2][9];
-// lbl_803C6724: TeamSelect (main/file_800639BC.h, which can't be included here: its
-// game/UnknownHomes_Game.h adds math.h literals to .rodata).
-typedef struct MenuTeamSelect {
-    /*0x00*/ u8 _00[2];
-    /*0x02*/ s8 picks[2][9]; // roster index per pick
-    /*0x14*/ u8 pos[2][9];   // field position per pick
-    /*0x26*/ u8 rating[2][9];
-    /*0x38*/ u8 _38[0x5C - 0x38];
-} MenuTeamSelect;
 extern MenuTeamSelect lbl_803C6724;
 extern MenuOrderEntry lbl_80354720[2][9]; // batting order
 extern void fn_800678CC(s32);

@@ -379,6 +379,26 @@ typedef struct MenuCtx {
     /*0x44FE*/ u8 _44FE[8]; // indexed
 } MenuCtx; // size: 0x4508
 
+// lbl_803C6724: team selection (TeamSelect in main/file_800639BC.h, which can't be
+// included next to the menus' headers: its game/UnknownHomes_Game.h adds math.h
+// literals to .rodata). The [2][9] arrays are per team, per batting slot.
+typedef struct MenuTeamSelect {
+    /*0x00*/ u8 _00[2];
+    /*0x02*/ s8 picks[2][9]; // character id per pick
+    /*0x14*/ u8 pos[2][9];   // field position per pick
+    /*0x26*/ u8 rating[2][9];
+    /*0x38*/ u8 _38[2][9];
+    /*0x4A*/ u8 _4A[2][9];
+} MenuTeamSelect; // size: 0x5C
+
+// Layout animation settings (lbl_2_data_3C84[10]).
+typedef struct MenuAnimation {
+    /*0x0*/ s16 clip;
+    /*0x2*/ s16 end;
+    /*0x4*/ u8 mode;
+    /*0x5*/ u8 padding;
+} MenuAnimation; // size: 0x6
+
 // 0x14-byte camera/object spot records (lbl_2_data_3198[42], lbl_2_data_369C).
 typedef struct MenuSpot {
     /*0x00*/ Vec position;
