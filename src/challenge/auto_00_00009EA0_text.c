@@ -15,7 +15,6 @@ typedef struct ChSoundManager {
 } ChSoundManager;
 
 extern ChSoundManager lbl_800EF808;
-extern AssetLoadInstructions lbl_1_data_196C[]; // challenge sound groups
 
 extern void fn_80021954(struct SoundGroupData** data);
 extern void fn_80021980(struct SoundGroupData* data);

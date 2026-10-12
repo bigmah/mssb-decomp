@@ -4,6 +4,11 @@
 #include "mssbTypes.h"
 #include "challenge/rep_0010.h"
 #include "musyx/musyx.h"
+#include "challenge/ch_data.h"
+
+// Sound groups of the challenge mode, loaded by fn_1_9F04 (auto_00_00009EA0_text.c,
+// which is part of the same source file).
+extern ChFileEntry lbl_1_data_196C[50];
 
 // 3D sound test (fn_1_A95C): one listener and one emitter.
 typedef struct ChSound3DTest {
