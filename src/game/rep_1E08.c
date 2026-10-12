@@ -2386,7 +2386,7 @@ void fn_3_BF070(void) {
     s32 i;
     fn_8003A85C(s_BF070a[g_d_GameSettings.StadiumID]);
     fn_8003A848(s_BF070b[g_d_GameSettings.StadiumID][0], s_BF070b[g_d_GameSettings.StadiumID][1], s_BF070b[g_d_GameSettings.StadiumID][2]);
-    w = ((u8**)lbl_3_common_bss_35154._08)[6];
+    w = STADIUM_FILE(lbl_3_common_bss_35154._08, 6);
     lbl_3_common_bss_35154._3B1 = 1;
     for (i = 0; i < 13; i++) {
         CharActor* o = lbl_8036E548.active[i];
@@ -2481,25 +2481,34 @@ void fn_3_BF238(void) {
     lbl_3_common_bss_35154.actors = ActorObjectInitTable(7);
     for (i = 0; i < 0x2C; i++) {
         tbl = lbl_3_common_bss_35154.assets;
+#ifdef TARGET_PC
+        // The file holds big-endian u32 offsets: entries become PTR32s.
+        if (((u32*)tbl)[i] == 0) {
+            continue;
+        }
+        swap32_inplace(&((u32*)tbl)[i]);
+        PTR32_SET(((u32*)tbl)[i], (u8*)tbl + ((u32*)tbl)[i]);
+#else
         if (tbl[i] == NULL) {
             continue;
         }
-        tbl[i] = (u8*)tbl + (uintptr_t)tbl[i]; // TODO(port): the file holds 32-bit offsets but assets[] is a pointer table (8 bytes per entry on PC)
+        tbl[i] = (u8*)tbl + (uintptr_t)tbl[i];
+#endif
         switch (i) {
         case 0: case 8: case 18: case 24: case 30: case 36:
-            tex = lbl_3_common_bss_35154.assets[i];
+            tex = STADIUM_FILE(lbl_3_common_bss_35154.assets, i);
             convertTextureHeader(tex);
             break;
         case 1: case 9: case 19: case 25: case 31: case 37:
-            lay = lbl_3_common_bss_35154.assets[i];
+            lay = STADIUM_FILE(lbl_3_common_bss_35154.assets, i);
             LoadActorLayout(lay);
             break;
         case 2: case 10: case 20: case 26: case 32: case 38:
-            geo = lbl_3_common_bss_35154.assets[i];
+            geo = STADIUM_FILE(lbl_3_common_bss_35154.assets, i);
             convertGeometryAndSknHeader(geo, NULL);
             break;
         case 3: case 11: case 21: case 27: case 33: case 39:
-            anm = lbl_3_common_bss_35154.assets[i];
+            anm = STADIUM_FILE(lbl_3_common_bss_35154.assets, i);
             ANIMGet(anm);
             fn_800BD190((struct GQRValueGroups*)geo, tex);
             haveActLayoutPointToGeoHeader(lay, geo);
@@ -2509,40 +2518,40 @@ void fn_3_BF238(void) {
             k++;
             break;
         case 4: case 5:
-            fn_3_BF238_shape(i - 4, lbl_3_common_bss_35154.assets[i], &lbl_3_common_bss_35154.actors->objects[0]);
+            fn_3_BF238_shape(i - 4, STADIUM_FILE(lbl_3_common_bss_35154.assets, i), &lbl_3_common_bss_35154.actors->objects[0]);
             break;
         case 12: case 13: case 14:
-            fn_3_BF238_shape(i - 10, lbl_3_common_bss_35154.assets[i], &lbl_3_common_bss_35154.actors->objects[1]);
+            fn_3_BF238_shape(i - 10, STADIUM_FILE(lbl_3_common_bss_35154.assets, i), &lbl_3_common_bss_35154.actors->objects[1]);
             break;
         case 22:
-            fn_3_BF238_shape(i - 17, lbl_3_common_bss_35154.assets[i], &lbl_3_common_bss_35154.actors->objects[2]);
+            fn_3_BF238_shape(i - 17, STADIUM_FILE(lbl_3_common_bss_35154.assets, i), &lbl_3_common_bss_35154.actors->objects[2]);
             break;
         case 28:
-            fn_3_BF238_shape(i - 22, lbl_3_common_bss_35154.assets[i], &lbl_3_common_bss_35154.actors->objects[3]);
+            fn_3_BF238_shape(i - 22, STADIUM_FILE(lbl_3_common_bss_35154.assets, i), &lbl_3_common_bss_35154.actors->objects[3]);
             break;
         case 34:
-            fn_3_BF238_shape(i - 27, lbl_3_common_bss_35154.assets[i], &lbl_3_common_bss_35154.actors->objects[4]);
+            fn_3_BF238_shape(i - 27, STADIUM_FILE(lbl_3_common_bss_35154.assets, i), &lbl_3_common_bss_35154.actors->objects[4]);
             break;
         case 40: case 41:
-            fn_3_BF238_shape(i - 32, lbl_3_common_bss_35154.assets[i], &lbl_3_common_bss_35154.actors->objects[5]);
+            fn_3_BF238_shape(i - 32, STADIUM_FILE(lbl_3_common_bss_35154.assets, i), &lbl_3_common_bss_35154.actors->objects[5]);
             break;
         case 6: case 7:
-            fn_3_BF238_anim(i - 6, lbl_3_common_bss_35154.assets[i]);
+            fn_3_BF238_anim(i - 6, STADIUM_FILE(lbl_3_common_bss_35154.assets, i));
             break;
         case 15: case 16: case 17:
-            fn_3_BF238_anim(i - 13, lbl_3_common_bss_35154.assets[i]);
+            fn_3_BF238_anim(i - 13, STADIUM_FILE(lbl_3_common_bss_35154.assets, i));
             break;
         case 23:
-            fn_3_BF238_anim(i - 18, lbl_3_common_bss_35154.assets[i]);
+            fn_3_BF238_anim(i - 18, STADIUM_FILE(lbl_3_common_bss_35154.assets, i));
             break;
         case 29:
-            fn_3_BF238_anim(i - 23, lbl_3_common_bss_35154.assets[i]);
+            fn_3_BF238_anim(i - 23, STADIUM_FILE(lbl_3_common_bss_35154.assets, i));
             break;
         case 35:
-            fn_3_BF238_anim(i - 28, lbl_3_common_bss_35154.assets[i]);
+            fn_3_BF238_anim(i - 28, STADIUM_FILE(lbl_3_common_bss_35154.assets, i));
             break;
         case 42: case 43:
-            fn_3_BF238_anim(i - 34, lbl_3_common_bss_35154.assets[i]);
+            fn_3_BF238_anim(i - 34, STADIUM_FILE(lbl_3_common_bss_35154.assets, i));
             break;
         }
     }
@@ -2566,15 +2575,15 @@ void fn_3_BF6C0(void) {
     if (lbl_803C6CF8.idle == 1) {
         fn_3_B9D68(s_BF070e, 6, lbl_3_common_bss_35154._08, buf);
         c = &lbl_3_common_bss_35154;
-        lbl_3_common_bss_35154.archive = ((void**)c->_08)[0];
-        fn_8004B1B8(((void**)c->_08)[0]);
-        fn_80035750(((void**)c->_08)[1], ((void**)c->_08)[2], 4);
+        lbl_3_common_bss_35154.archive = STADIUM_FILE(c->_08, 0);
+        fn_8004B1B8(STADIUM_FILE(c->_08, 0));
+        fn_80035750(STADIUM_FILE(c->_08, 1), STADIUM_FILE(c->_08, 2), 4);
         t = ActorObjectInitTable(1);
         lbl_8036E548._0070 = t;
-        fn_800BDC88(t, 0, 0, ((ActorLayout**)c->_08)[buf[4]], 0, 0);
+        fn_800BDC88(t, 0, 0, STADIUM_FILE(c->_08, buf[4]), 0, 0);
         fn_8003A85C(s_BF070a[g_d_GameSettings.StadiumID]);
         fn_8003A848(s_BF070b[g_d_GameSettings.StadiumID][0], s_BF070b[g_d_GameSettings.StadiumID][1], s_BF070b[g_d_GameSettings.StadiumID][2]);
-        w = ((void**)c->_08)[6];
+        w = STADIUM_FILE(c->_08, 6);
         lbl_3_common_bss_35154._3B1 = 1;
         for (i = 0; i < 13; i++) {
             CharActor* o = lbl_8036E548.active[i];
