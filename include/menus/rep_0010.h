@@ -1,7 +1,13 @@
-#ifndef __AUTO_00_00000000_TEXT_MENUS_H__
-#define __AUTO_00_00000000_TEXT_MENUS_H__
+#ifndef __REP_0010_MENUS_H__
+#define __REP_0010_MENUS_H__
 
 #include "mssbTypes.h"
+
+// Layer entry passed to fn_800A7D4C: a draw callback for layer 0.
+typedef struct {
+    s32 unk0;
+    void (*callback)(void);
+} MenuLayerCallback;
 
 void fn_2_0(void);
 void fn_2_3C(void);
