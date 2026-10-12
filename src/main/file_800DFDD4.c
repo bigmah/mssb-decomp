@@ -411,23 +411,25 @@ void fn_800E10B4(HVQState* state) {
 #endif
 
 // .text:0x800E11C8 size:0x3A4
-// NONMATCHING 51%: copy loops unrolled/allocated differently
+// NONMATCHING 99%: the original copies widthInBlocks into a second register before the
+// width clamp (addi r4,r7,0); everything else matches with copy propagation off
+#pragma opt_propagation off
 #if NONMATCHING
 void fn_800E11C8(HVQState* state, s32 nestX, s32 nestY) {
-    u16 stride = state->planes[0].blocksPerRow;
-    u16 width = state->planes[0].widthInBlocks;
-    u16 nestWidth = state->nestWidth;
-    u16 height = state->planes[0].heightInBlocks;
-    HVQBlock* src = state->planes[0].payload + nestX + nestY * stride;
-    u16 copyW;
+    s32 stride = state->planes[0].blocksPerRow;
+    s32 width = state->planes[0].widthInBlocks;
+    s32 nestWidth = state->nestWidth;
+    s32 height = state->planes[0].heightInBlocks;
+    HVQBlock* src = state->planes[0].payload + (nestX + nestY * stride);
+    s32 copyW;
     s32 mirrorW;
     s32 zeroW;
-    u16 copyH;
+    s32 copyH;
     s32 mirrorH;
     s32 zeroH;
     u8* dst;
     u8* srcRow;
-    u16 y;
+    s32 y;
     s32 n;
 
     if (width < nestWidth) {
@@ -458,9 +460,8 @@ void fn_800E11C8(HVQState* state, s32 nestX, s32 nestY) {
     dst = state->nest;
     for (y = copyH; y > 0; y--) {
         HVQBlock* blk = src;
-        u16 x;
 
-        for (x = copyW; x > 0; x--) {
+        for (n = copyW; n > 0; n--) {
             *dst++ = (blk->value >> 4) & 0xF;
             blk++;
         }
@@ -475,24 +476,23 @@ void fn_800E11C8(HVQState* state, s32 nestX, s32 nestY) {
     }
 
     srcRow = dst - state->nestWidth;
-    for (n = mirrorH; n > 0; n--) {
+    for (y = mirrorH; y > 0; y--) {
         u8* p = srcRow;
-        u16 x;
 
-        for (x = state->nestWidth; x > 0; x--) {
+        for (n = state->nestWidth; n > 0; n--) {
             *dst++ = *p++;
         }
         srcRow -= state->nestWidth;
     }
-    for (n = zeroH; n > 0; n--) {
-        u16 x;
-
-        for (x = state->nestWidth; x > 0; x--) {
+    for (y = zeroH; y > 0; y--) {
+        for (n = state->nestWidth; n > 0; n--) {
             *dst++ = 0;
         }
     }
 }
 #endif
+
+#pragma opt_propagation reset
 
 // .text:0x800E156C size:0x19C
 // NONMATCHING 94%: register allocation/scheduling of the setup terms. MWCC 1.2.5 only emits the
