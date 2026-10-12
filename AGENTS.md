@@ -40,6 +40,7 @@ python3 tools/fnstart.py fn_3_147C00                           # asm summary + m
 #   ...edit src/game/rep_3880.c: replace the stub with the m2c draft, clean it up...
 python3 tools/fndiff.py fn_3_147C00                            # MATCH, or diagnosis + first hunks (--full for all)
 python3 tools/fnvariants.py fn_3_147C00 a.c b.c --also caller1 # score several candidate versions
+python3 tools/gendata.py src/main/file_80037054.c lbl_800F79B8 # C initialiser for a data object (--module game|menus|challenge for RELs, --unit for a whole unit)
 ```
 
 - `src/main/file_<ADDR>.c` holds `main.dol`'s game code: the engine that all three RELs call. It's the default place to work, because names and types found there spread to every caller.
