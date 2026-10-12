@@ -15,10 +15,63 @@ void LITInitPos(Light* light, f32 x, f32 y, f32 z);
 void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 #include <math.h>
 
+// .data of this file (0xF888-0xFB3C); the order matters, the functions address it from one base.
+// The two switch jump tables of fn_1_1B7DC (0xFB3C-0xFB98) are left in an auto unit while it is NONMATCHING.
+// Asset table entries (lbl_1_data_F968): load instructions passed to ARAMTransfer. A debug build
+// stored a file path in the first word instead (fn_1_1B7DC still compares it against test paths).
+typedef struct ChallengeAssetEntry {
+    union {
+        u32 compression;
+        const char* path;
+    } kind;
+    u32 sizeInfo; // top 4 bits: flags, rest: size
+    u32 diskLocation;
+    u32 compressedSize;
+} ChallengeAssetEntry;
+// Minimal draw-list links (cf. DrawNode in main/file_80069BDC.h), one per frame buffer.
+typedef struct ChallengeDrawLink {
+    u32 link; // set by fn_800A7D4C
+    void (*draw)(void);
+} ChallengeDrawLink;
+static char lbl_1_data_F888[7][0x20] = { // debug view-mode labels (unreferenced)
+    "CAMERA", "MODEL", "OFF", "ON", "MIX", "BONE_ONLY", "MODEL_ONLY",
+};
+static ChallengeAssetEntry lbl_1_data_F968[24] = {
+    {{0x0000040B}, 0x40021A48, 0x0E67B800, 0x00018844},
+    {{0x0000040B}, 0x4001C1FC, 0x0E694800, 0x00016E90},
+    {{0x0000040B}, 0x4001E21C, 0x0E6AB800, 0x000146D0},
+    {{0x0000040B}, 0x4001ED7C, 0x0E6C0000, 0x00011D04},
+    {{0x0000040B}, 0x40011A3C, 0x0E6D2000, 0x0000A890},
+    {{0x0000040B}, 0x4001F938, 0x0E6DD000, 0x000158FC},
+    {{0x0000040B}, 0x4001A89C, 0x0E6F3000, 0x0001275C},
+    {{0x0000040B}, 0x4001C1FC, 0x0E705800, 0x00016E90},
+    {{0x0000040B}, 0x400347F8, 0x0E71C800, 0x0001432C},
+    {{0x0000040B}, 0x4002511C, 0x0E731000, 0x0001304C},
+    {{0x0000040B}, 0x4001A9C4, 0x0E744800, 0x000160C0},
+    {{0x0000040B}, 0x400253B4, 0x0E75B000, 0x0001CEB0},
+    {{0x0000040B}, 0x40016040, 0x0E778000, 0x0000DCBC},
+    {{0x0000040B}, 0x4001B060, 0x0E786000, 0x0001235C},
+    {{0x0000040B}, 0x4002573C, 0x0E798800, 0x0001D2B0},
+    {{0x0000040B}, 0x40021FCC, 0x0E7B6000, 0x00016FBC},
+    {{0x0000040B}, 0x4000FEAC, 0x0E7CD000, 0x0000B05C},
+    {{0x0000040B}, 0x400B0ADC, 0x0E7D8800, 0x00052EB0},
+    {{0x0000040B}, 0x400B0A88, 0x0E82B800, 0x00052E98},
+    {{0x0000040B}, 0x400B0ABC, 0x0E87E800, 0x00052EAC},
+    {{0x0000040B}, 0x400B0D7C, 0x0E8D1800, 0x00052F34},
+    {{0x0000040B}, 0x400AA97C, 0x0E924800, 0x00050DF4},
+    {{0x0000040B}, 0x4000289C, 0x0E975800, 0x00001C28},
+    {{0x0000040B}, 0x40006588, 0x0E977800, 0x00002F60},
+};
+static ChallengeDrawLink lbl_1_data_FAE8[2] = {{0, fn_1_1ADA4}, {0, NULL}}; // grid
+static ChallengeDrawLink lbl_1_data_FAF8[2] = {{0, fn_1_1A774}, {0, NULL}}; // bones
+static GXColor lbl_1_data_FB08 = {255, 255, 255, 255}; // fog colour
+static Vec lbl_1_data_FB0C = {0.0f, 1.0f, 0.0f};
+static Vec lbl_1_data_FB18 = {0.0f, 0.0f, 0.0f};
+static ChallengeConfettiConfig lbl_1_data_FB24 = {50, 2000, 1200000, 100000, 100000, 60};
+
 extern u8 lbl_80366158[];
 extern ChallengeRosterQueue* lbl_803CC1B8;
 extern u8 lbl_1_bss_69FC[];
-extern ChallengeConfettiConfig lbl_1_data_FB24;
 extern const f32 lbl_1_rodata_7578;
 extern const f32 lbl_1_rodata_757C;
 extern const f32 lbl_1_rodata_7520;
@@ -64,7 +117,6 @@ static inline void initViewerLights(MtxPtr view) {
     }
 }
 
-extern Vec lbl_1_data_FB18;
 extern const f32 lbl_1_rodata_75CC;
 extern const f32 lbl_1_rodata_75D0;
 
@@ -135,7 +187,6 @@ extern const f32 lbl_1_rodata_75B0;
 extern const f32 lbl_1_rodata_75B4;
 
 void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target);
-extern Vec lbl_1_data_FB0C;
 extern const Vec lbl_1_rodata_74F4;
 extern const f32 lbl_1_rodata_75E0;
 extern const f32 lbl_1_rodata_75E4;
@@ -241,12 +292,6 @@ extern u8 lbl_1_bss_69F5; // 0 = normal actor rendering, else flat-colour debug 
 extern const f32 lbl_1_rodata_772C;
 void fn_800BD8C4(ChallengeDrawCollection* table, MtxPtr camera);
 
-// Asset table entries (lbl_1_data_F968): load instructions passed to ARAMTransfer.
-typedef struct ChallengeAssetEntry {
-    const char* path;
-    u8 pad04[0xC];
-} ChallengeAssetEntry;
-extern ChallengeAssetEntry lbl_1_data_F968[];
 extern u8 lbl_1_bss_6A94[]; // 1 = actor uses a test model
 extern const char lbl_1_rodata_7610[]; // "test/obj/skin/mario/model11.dat"
 extern const char lbl_1_rodata_7630[]; // "test/obj/skin/test01/model11.dat"
@@ -272,17 +317,9 @@ void fn_800BD548(ChallengeDrawNode* entry, u8 numArgs, ...);
 void fn_800B2C08(ChallengeDrawActor* actor, u16 bone);
 
 extern const GXColor lbl_1_rodata_74F0; // black
-extern GXColor lbl_1_data_FB08; // fog colour
 extern u8 lbl_80366158[];
 
 extern u8 lbl_803CBBC0; // current frame buffer (0/1)
-// Minimal draw-list links (cf. DrawNode in main/file_80069BDC.h), one per frame buffer.
-typedef struct ChallengeDrawLink {
-    u32 link; // set by fn_800A7D4C
-    void (*draw)(void);
-} ChallengeDrawLink;
-extern ChallengeDrawLink lbl_1_data_FAE8[2]; // fn_1_1ADA4 (grid)
-extern ChallengeDrawLink lbl_1_data_FAF8[2]; // fn_1_1A774 (bones)
 extern void fn_800A7D4C(s32 layer, void* node);
 
 // .text:0x0001D514 size:0x7C
@@ -414,7 +451,7 @@ void fn_1_1CBE4(u8* object) {
         break;
     case 2:
         idx = task->actorIndex;
-        path = lbl_1_data_F968[idx].path;
+        path = lbl_1_data_F968[idx].kind.path;
         if (path == lbl_1_rodata_7610 || path == lbl_1_rodata_7630 || path == lbl_1_rodata_7654 ||
             path == lbl_1_rodata_7678 || path == lbl_1_rodata_769C || path == lbl_1_rodata_76C0 ||
             path == lbl_1_rodata_76E4 || path == lbl_1_rodata_7708) {
