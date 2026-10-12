@@ -554,7 +554,7 @@ void CTRLBuildInverseMatrix(Control *control, Mtx m) {
 // Blending copies whole controls, so it goes through this full-size view.
 typedef struct ControlFull {
     Control ctrl;
-    u32 unk3C[2]; // TODO type
+    u32 unk3C[2]; // game-specific extra words; only ever copied with the control
 } ControlFull;
 
 // Set by fn_800B313C before blending: also blend scale and the scale quaternion.

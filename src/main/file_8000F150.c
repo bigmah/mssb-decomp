@@ -204,7 +204,7 @@ void fn_8000F534(LayoutObj* obj, s32 visible) {
     lbl_80366B18.entries[owner->entry].state = 2;
     animId = obj->_64;
     anim = &lbl_803C4BE0[obj->_66].anim;
-    fn_8000CEF0(*anim, animId, 0, owner->_06, (u32*)&info); // TODO type: out is a LayoutInfo (SpaniKey)
+    fn_8000CEF0(*anim, animId, 0, owner->_06, (u32*)&info); // fills the key's u32 parameter words
     x = info.x;
     y = info.y;
     if (obj->flags & 8) {
