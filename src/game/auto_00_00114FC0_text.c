@@ -31,7 +31,8 @@ extern void fn_3_10F550(s32, s32);
 extern void Set_803cb848(s32);
 extern void* memset(void*, s32, u32);
 extern u8 lbl_3_common_bss_32234[];
-extern u8 lbl_3_common_bss_37400[];
+#include "game/rep_36D8.h" // RepBss37400View lbl_3_common_bss_37400
+extern RepBss37400View lbl_3_common_bss_37400;
 extern WallBallCoinPhysics lbl_3_data_21634;
 extern f32 lbl_3_data_219B8[];      // [14]: coin floor height
 extern s16 lbl_3_data_21654[];      // [10]: bonus points per hit
@@ -195,7 +196,7 @@ void fn_3_115108(void) {
             points = -half;
         }
     }
-    if (g_d_GameSettings.exhibitionMatchInd == 0 && g_Minigame.minigamePlayerSelectedOrder == *(s16*)(lbl_3_common_bss_37400 + 0x40)) { // TODO type
+    if (g_d_GameSettings.exhibitionMatchInd == 0 && g_Minigame.minigamePlayerSelectedOrder == lbl_3_common_bss_37400.humanPlayer) {
         fn_3_1608F0(1, points, g_Minigame.wallBall_hitNoteBlock);
     }
 
@@ -557,9 +558,9 @@ void fn_3_11669C(void) {
 void fn_3_1166CC(void) {
     u32 i;
     for (i = 0; i < 40; i++) {
-        u8* p = ((u8*)lbl_8036E548.trail2) + i * 0x28;
-        p[0x26] = 0;
-        *(s32*)p = 0;
+        CharTrail* p = &lbl_8036E548.trail2[i];
+        p->_26 = 0;
+        p->draw = NULL;
     }
 }
 
