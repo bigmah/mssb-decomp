@@ -2,6 +2,10 @@
 #define __CHALLENGE_REP_0250_H__
 
 #include "mssbTypes.h"
+#include "challenge/ch_data.h"
+
+// Loaded by fn_1_8770 (auto_00_000085A8_text.c, same source file as this unit).
+extern ChFileEntry lbl_1_data_B70;
 
 void fn_1_96D0(void);
 

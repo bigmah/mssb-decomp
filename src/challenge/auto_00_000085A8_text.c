@@ -1,11 +1,11 @@
 #include "challenge/auto_00_000085A8_text.h"
 #include "challenge/auto_00_00004DD8_text.h"
 #include "challenge/rep_0010.h"
+#include "challenge/rep_0250.h"
 #include "static/UnknownHomes_Static.h"
 
 extern void fn_80035CA4(s32 id);
 extern void fn_1_9AB0(void);
-extern u8 lbl_1_data_B70[]; // TODO type: ARAM data for fn_80035838
 
 typedef struct ChAnimObj {
     /*0x00*/ u8 _00[0x5C];
@@ -85,7 +85,7 @@ void fn_1_8A90(void) {
 void fn_1_88D0(void) {
     switch (lbl_1_common_bss_47674.loadStep) {
     case 0:
-        if (fn_80035838(lbl_1_data_B70, 6) != 0) {
+        if (fn_80035838(&lbl_1_data_B70, 6) != 0) {
             lbl_1_common_bss_47674.request = 0;
             lbl_1_common_bss_47674.prev = 3;
             lbl_1_common_bss_47674.loadStep++;
