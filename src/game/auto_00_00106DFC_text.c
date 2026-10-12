@@ -237,14 +237,14 @@ void fn_3_10F550(s8 a, s16 b) {
 
 // fn_3_106DFC, size:0x54
 void fn_3_106DFC(void) {
-    g_Camera._AB0 = _OSAllocFromHeap(4, 0x8000);
-    g_Camera._146C = _OSAllocFromHeap(4, 0x8000);
+    g_Camera.views[0]._0990 = _OSAllocFromHeap(4, 0x8000);
+    g_Camera.views[1]._0990 = _OSAllocFromHeap(4, 0x8000);
 }
 
 // fn_3_106E50, size:0x60
 s32 fn_3_106E50(void) {
     if ((s32)lbl_803C6CF8[0x715] == 1) {
-        g_Camera._1B4 = ARAMTransfer(lbl_3_data_20FDC, 0, 0, 0);
+        g_Camera.views[0]._0094 = ARAMTransfer(lbl_3_data_20FDC, 0, 0, 0);
         return 1;
     }
     return 0;

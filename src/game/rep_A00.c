@@ -288,13 +288,13 @@ void fn_3_21C90(void) {
         lbl_803C5090.b = 0xFF;
         lbl_803C5090.alpha = p->alpha;
         p->frame = p->frame + 1;
-        if (g_pCamera->_AAC <= p->frame) {
-            g_pCamera->_AA8 = 0;
+        if (g_pCamera->views[0]._098C <= p->frame) {
+            g_pCamera->views[0]._0988 = 0;
             REMOVE_QUEUE_NOARG();
             lbl_3_bss_A0 = 0;
             return;
         }
-        p->alpha = 0xFF - (p->frame * 0xFF) / g_pCamera->_AAC;
+        p->alpha = 0xFF - (p->frame * 0xFF) / g_pCamera->views[0]._098C;
         return;
     case 2:
     default:
@@ -331,8 +331,8 @@ void fn_3_21DE4(void) {
         lbl_803C5090.b = 0xFF;
         lbl_803C5090.alpha = 0xFF;
         p->frame = p->frame + 1;
-        if (g_pCamera->_AAE <= p->frame) {
-            g_pCamera->_AAA = 0;
+        if (g_pCamera->views[0]._098E <= p->frame) {
+            g_pCamera->views[0]._098A = 0;
             REMOVE_QUEUE_NOARG();
             lbl_3_bss_9C = 0;
         }
@@ -908,8 +908,8 @@ void fn_3_23890(void) {
     switch (gl->_125) {
     case 0:
         if ((s32)lbl_803C6CF8.idle == 1) {
-            g_pCamera->_AAA = 1;
-            g_pCamera->_AAE = 2;
+            g_pCamera->views[0]._098A = 1;
+            g_pCamera->views[0]._098E = 2;
             fn_800B0A5C_insertQueue(fn_3_21DE4, 6);
             gl->_125 = 1;
         }
@@ -1047,8 +1047,8 @@ void fn_3_240F8(void) {
     switch (gl->_125) {
     case 0:
         if ((s32)lbl_803C6CF8.idle == 1) {
-            g_pCamera->_AAA = 1;
-            g_pCamera->_AAE = 2;
+            g_pCamera->views[0]._098A = 1;
+            g_pCamera->views[0]._098E = 2;
             fn_800B0A5C_insertQueue(fn_3_21DE4, 6);
             gl->_125 = 1;
         }

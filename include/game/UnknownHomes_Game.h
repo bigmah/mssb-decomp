@@ -2739,6 +2739,82 @@ typedef struct {
     u32 _10;
 } trajOptions_s;
 
+// One of the four camera views in inMemCamera (0x9BC bytes at +0x120);
+// lbl_3_common_bss_DE94._0000 points at the active one.
+typedef struct {
+    /* 0x0000 */ s32* _0000; // script cursor, from lbl_3_data_20E0C[_092C]
+    /* 0x0004 */ u8 _0004[4];
+    /* 0x0008 */ s32 _0008;
+    /* 0x000C */ u8 _000C[8];
+    /* 0x0014 */ s32 _0014;
+    /* 0x0018 */ s32 _0018;
+    /* 0x001C */ u8 _001C[0x94 - 0x1c];
+    /* 0x0094 */ void* _0094; // ARAMTransfer result (view 0)
+    /* 0x0098 */ u8 _0098[0xa0 - 0x98];
+    /* 0x00A0 */ f32 _00A0;
+    /* 0x00A4 */ u8 _00A4[0x118 - 0xa4];
+    /* 0x0118 */ s32 _0118;
+    /* 0x011C */ u8 _011C[0x92c - 0x11c];
+    /* 0x092C */ s32 _092C; // scene index
+    /* 0x0930 */ s32 _0930;
+    /* 0x0934 */ u8 _0934[0x944 - 0x934];
+    /* 0x0944 */ s16 _0944;
+    /* 0x0946 */ u8 _0946[0x954 - 0x946];
+    /* 0x0954 */ s16 _0954;
+    /* 0x0956 */ s16 _0956;
+    /* 0x0958 */ s16 _0958;
+    /* 0x095A */ s16 _095A;
+    /* 0x095C */ s16 _095C;
+    /* 0x095E */ s16 _095E;
+    /* 0x0960 */ s16 _0960;
+    /* 0x0962 */ s16 _0962;
+    /* 0x0964 */ s16 _0964[4];
+    /* 0x096C */ s16 _096C[4];
+    /* 0x0974 */ s16 _0974;
+    /* 0x0976 */ s16 _0976;
+    /* 0x0978 */ s16 _0978;
+    /* 0x097A */ s16 _097A;
+    /* 0x097C */ s16 _097C;
+    /* 0x097E */ s16 _097E;
+    /* 0x0980 */ s16 _0980;
+    /* 0x0982 */ s16 _0982;
+    /* 0x0984 */ s16 _0984;
+    /* 0x0986 */ s16 _0986;
+    /* 0x0988 */ u16 _0988; // fade-out active (fn_3_21C90)
+    /* 0x098A */ u16 _098A; // fade-in active (fn_3_21DE4)
+    /* 0x098C */ u16 _098C; // fade-out length in frames
+    /* 0x098E */ u16 _098E; // fade-in length in frames
+    /* 0x0990 */ void* _0990; // heap buffer (0x8000 bytes)
+    /* 0x0994 */ u8 _0994;
+    /* 0x0995 */ u8 _0995;
+    /* 0x0996 */ u8 _0996;
+    /* 0x0997 */ u8 _0997;
+    /* 0x0998 */ u8 _0998;
+    /* 0x0999 */ u8 _0999;
+    /* 0x099A */ u8 _099A;
+    /* 0x099B */ u8 _099B[4];
+    /* 0x099F */ u8 _099F;
+    /* 0x09A0 */ u8 _09A0[4];
+    /* 0x09A4 */ u8 _09A4;
+    /* 0x09A5 */ u8 _09A5;
+    /* 0x09A6 */ u8 _09A6;
+    /* 0x09A7 */ u8 _09A7;
+    /* 0x09A8 */ u8 _09A8;
+    /* 0x09A9 */ u8 _09A9;
+    /* 0x09AA */ u8 _09AA;
+    /* 0x09AB */ u8 _09AB;
+    /* 0x09AC */ u8 _09AC;
+    /* 0x09AD */ u8 _09AD;
+    /* 0x09AE */ u8 _09AE;
+    /* 0x09AF */ u8 _09AF;
+    /* 0x09B0 */ u8 _09B0;
+    /* 0x09B1 */ u8 _09B1[5];
+    /* 0x09B6 */ u8 _09B6;
+    /* 0x09B7 */ u8 _09B7;
+    /* 0x09B8 */ u8 _09B8;
+    /* 0x09B9 */ u8 _09B9[0x9bc - 0x9b9];
+} lbl_3_common_bss_DE94_s2; // size: 0x9BC
+
 typedef struct {
     /* 0x000 */ s16 _0000;
     /* 0x002 */ u16 _0002;
@@ -2773,58 +2849,8 @@ typedef struct {
     /* 0x118 */ s16 _118;
     /* 0x11A */ s16 _11A;
     /* 0x11C */ u8 _11C;
-    artificial_padding(0x11C, 0x1b4, u8);
-    /* 0x1B4 */ void* _1B4; // ARAMTransfer result
-    artificial_padding(0x1b4, 0xa50, void*);
-    /* 0xA50 */ int _A50;
-    artificial_padding(0xa50, 0xa74, int);
-    /* 0xA74 */ s16 _A74;
-    /* 0xA76 */ s16 _A76;
-    /* 0xA78 */ s16 _A78;
-    /* 0xA7A */ s16 _A7A;
-    /* 0xA7C */ s16 _A7C;
-    /* 0xA7E */ s16 _A7E;
-    /* 0xA80 */ s16 _A80;
-    /* 0xA82 */ s16 _A82;
-    /* 0xA84 */ s16 _A84[4];
-    /* 0xA8C */ s16 _A8C[4];
-    /* 0xA94 */ s16 _A94;
-    /* 0xA96 */ s16 _A96;
-    /* 0xA98 */ s16 _A98;
-    /* 0xA9A */ s16 _A9A;
-    /* 0xA9C */ s16 _A9C;
-    /* 0xA9E */ s16 _A9E;
-    /* 0xAA0 */ s16 _AA0;
-    /* 0xAA2 */ s16 _AA2;
-    /* 0xAA4 */ s16 _AA4;
-    /* 0xAA6 */ s16 _AA6;
-    /* 0xAA8 */ u16 _AA8; // fade-out active (fn_3_21C90)
-    /* 0xAAA */ u16 _AAA; // fade-in active (fn_3_21DE4)
-    /* 0xAAC */ u16 _AAC; // fade-out length in frames
-    /* 0xAAE */ u16 _AAE; // fade-in length in frames
-    /* 0xAB0 */ void* _AB0; // heap buffer (0x8000 bytes)
-    /* 0xAB5 */ u8 _AB4;
-    /* 0xAB5 */ u8 _AB5;
-    /* 0xAB6 */ u8 _AB6;
-    /* 0xAB7 */ u8 _AB7;
-    /* 0xAB8 */ u8 _AB8;
-    /* 0xAB9 */ u8 _AB9;
-    /* 0xABA */ u8 _ABA;
-    /* 0xABB */ u8 _ABB[4];
-    /* 0xABF */ u8 _ABF;
-    /* 0xAC0 */ u8 _AC0[4];
-    /* 0xAC4 */ u8 _AC4;
-    /* 0xAC5 */ u8 _AC5;
-    /* 0xAC6 */ u8 _AC6;
-    artificial_padding(0xac6, 0xac8, u8);
-    /* 0xAC8 */ u8 _AC8;
-    /* 0xAC8 */ u8 _AC9;
-    /* 0xAC8 */ u8 _ACA;
-    artificial_padding(0xaca, 0xad8, u8);
-    /* 0xAD8 */ u8 _AD8;
-    artificial_padding(0xad8, 0x146c, u8);
-    /* 0x146C */ void* _146C; // heap buffer (0x8000 bytes)
-    artificial_padding(0x146c, 0x2810, void*);
+    artificial_padding(0x11C, 0x120, u8);
+    /* 0x0120 */ lbl_3_common_bss_DE94_s2 views[4];
     /* 0x2810 */ s16 _2810;
     /* 0x2812 */ s16 _2812;
     /* 0x2814 */ s16 _2814;
@@ -3167,31 +3193,6 @@ typedef struct GameScores {
     /* 0xC7 */ u8 _C7;
 } GameScores; // size: 0xC8
 
-typedef struct {
-    /* 0x0000 */ s32 _0000; // from lbl_3_data_20E0C[_092C]
-    /* 0x0004 */ u8 _0004[4];
-    /* 0x0008 */ s32 _0008;
-    /* 0x000C */ u8 _000C[8];
-    /* 0x0014 */ s32 _0014;
-    /* 0x0018 */ s32 _0018;
-    /* 0x001C */ u8 _001C[0xa0 - 0x1c];
-    /* 0x00A0 */ f32 _00A0;
-    /* 0x00A4 */ u8 _00A4[0x118 - 0xa4];
-    /* 0x0118 */ s32 _0118;
-    /* 0x011C */ u8 _011C[0x92c - 0x11c];
-    /* 0x092C */ s32 _092C; // scene index
-    /* 0x0930 */ u8 _0930[0x944 - 0x930];
-    /* 0x0944 */ s16 _0944;
-    /* 0x0946 */ u8 _0946[0x9ab - 0x946];
-    /* 0x09AB */ u8 _09AB;
-    /* 0x09AC */ u8 _09AC;
-    /* 0x09AD */ u8 _09AD;
-    /* 0x09AE */ u8 _09AE;
-    /* 0x09AF */ u8 _09AF;
-    /* 0x09B0 */ u8 _09B0;
-    /* 0x09B1 */ u8 _09B1[5];
-    /* 0x09B6 */ u8 _09B6;
-} lbl_3_common_bss_DE94_s2;
 
 typedef struct {
     lbl_3_common_bss_DE94_s2* _0000;

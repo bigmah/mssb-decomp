@@ -924,7 +924,7 @@ void fn_3_7BC20(void) {
                 alt = kind;
                 kind = 1;
             }
-            if (g_pCamera->_AC6 == 3) {
+            if (g_pCamera->views[0]._09A6 == 3) {
                 alt = kind;
                 kind = 1;
             }
@@ -945,9 +945,9 @@ void fn_3_7BC20(void) {
             kind = 0;
         }
     } else {
-        if (g_pCamera->_A50 >= 2) {
+        if (g_pCamera->views[0]._0930 >= 2) {
             if (g_GameLogic.EventTriggers_EndOfGame != 0) {
-                t = g_pCamera->_A98;
+                t = g_pCamera->views[0]._0978;
                 if (t > 0 && (lbl_3_common_bss_32A94._2 == 0x12 || lbl_3_common_bss_32A94._2 == 0x13 ||
                               lbl_3_common_bss_32A94._2 == 0x1A)) {
                     kind = 7;
@@ -966,7 +966,7 @@ void fn_3_7BC20(void) {
                     n++;
                 }
                 if (g_Scores._A6 <= 4 && n == 3) {
-                    t = g_pCamera->_A98;
+                    t = g_pCamera->views[0]._0978;
                     if (t > 0 && (lbl_3_common_bss_32A94._2 == 0x12 || lbl_3_common_bss_32A94._2 == 0x13 ||
                                   lbl_3_common_bss_32A94._2 == 0x1A)) {
                         kind = 7;
@@ -982,7 +982,7 @@ void fn_3_7BC20(void) {
                     n++;
                 }
                 if (g_Scores._A6 <= n && n > 0) {
-                    t = g_pCamera->_A98;
+                    t = g_pCamera->views[0]._0978;
                     if (t > 0 && (lbl_3_common_bss_32A94._2 == 0x12 || lbl_3_common_bss_32A94._2 == 0x13 ||
                                   lbl_3_common_bss_32A94._2 == 0x1A)) {
                         kind = 7;
@@ -992,7 +992,7 @@ void fn_3_7BC20(void) {
                 }
             }
         }
-        if (lbl_3_common_bss_32A94._2 >= 0x24 && lbl_3_common_bss_32A94._2 <= 0x26 && g_pCamera->_A50 == 2) {
+        if (lbl_3_common_bss_32A94._2 >= 0x24 && lbl_3_common_bss_32A94._2 <= 0x26 && g_pCamera->views[0]._0930 == 2) {
             if (g_GameLogic.EventTriggers_EndOfGame != 0) {
                 kind = 6;
             } else {
