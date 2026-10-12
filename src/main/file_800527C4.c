@@ -56,7 +56,7 @@ extern struct SpaniDesc lbl_801000A8[];
 extern struct SpaniDesc lbl_801041C8[];
 extern struct SpaniDesc lbl_800FF540[];
 extern u8 lbl_802E4BB0[16];
-extern ChallengeMission lbl_8010A768[20][10];
+extern ChallengeMission lbl_8010A768[32][10];
 extern s16 lbl_8010B3E8[];
 extern s32 determineIfMissionDescriptionIsShown(s16 charID);
 extern s32 challengeRelated(s16 team);

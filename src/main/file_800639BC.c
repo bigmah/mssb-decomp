@@ -1418,7 +1418,7 @@ s32 fn_800698F8(s32 charId) {
 }
 
 // .text:0x80069A68 size:0x30
-void fn_80069A68(void) {
+void fn_80069A68(SoundGroupRequest* req, SoundGroupData* data) {
     fn_80021518(0x35, lbl_800EF808.groups[47]);
 }
 
