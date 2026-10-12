@@ -54,6 +54,10 @@ typedef u32 unknown;
 
 typedef char* Ptr;
 
+// Pointer-sized integers (the host <stdint.h> provides them on PC).
+typedef s32 intptr_t;
+typedef u32 uintptr_t;
+
 #ifndef __cplusplus
 typedef u16 wchar_t;
 #endif
