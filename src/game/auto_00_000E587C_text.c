@@ -2,7 +2,7 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 
-extern u8 lbl_3_data_196B4[]; // 7 hit flags (see sta_c6.c)
+extern u8 lbl_3_data_196B4[8]; // hit flags of the 7 targets (sta_c6.c)
 
 // Returns the index of the only set flag, or -1 if zero or several are set.
 

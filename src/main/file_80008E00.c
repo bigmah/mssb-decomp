@@ -110,20 +110,90 @@ typedef struct {
 extern MainTask* lbl_803CC1B8;
 
 
-typedef struct {
-    /*0x000*/ DiskFileEntry dll[3];
-    /*0x030*/ DiskFileEntry boot[3];
-    /*0x060*/ DiskFileEntry files[62];
-} FileTable; // size: 0x440
-extern FileTable lbl_800E8AA8;
 
 // Path descriptor passed to ConvertPathToEntryNum.
 typedef struct {
     /*0x00*/ char* path;
     /*0x04*/ u32 _04[3];
 } FilePath;
-extern FilePath lbl_800E8EE8; // "aaaa.dat"
-extern FilePath lbl_800E8EF8; // "ZZZZ.dat"
+// .data 0x800E8AA8..0x800E8F44: defined before the code (fn_800097A0's jump table follows it);
+// the three file tables are separate objects reached through one pooled base.
+DiskFileEntry lbl_800E8AA8[3] = {
+    {1035, {0x401027E4}, {2048}, 0x5A818},
+    {1035, {0x402220F8}, {0x5B800}, 0xF4450},
+    {1035, {0x4005912C}, {0x150000}, 0x271C0},
+}; // dlls
+DiskFileEntry lbl_800E8AD8[3] = {
+    {1294, {0x4003E1A0}, {0x8E77000}, 0x143EC},
+    {0, {46550}, {0x8E8B800}, 46552},
+    {0, {4064}, {0x8E97000}, 4064},
+}; // boot archives
+DiskFileEntry lbl_800E8B08[62] = {
+    {1035, {0x4013764C}, {0x1A635000}, 0x7DB48},
+    {1035, {0x4003E3DC}, {0x1A6B3000}, 0x21420},
+    {1035, {0x4002EC10}, {0x1A6D4800}, 0x13108},
+    {1035, {0x400E72C0}, {0x1A6E8000}, 0x60768},
+    {1035, {0x40049404}, {0x1A748800}, 0x20E34},
+    {1035, {0x40076AE0}, {0x18ED7000}, 0x36BC8},
+    {1035, {0x4010FD70}, {0x1A769800}, 0x5E284},
+    {1035, {0x400DB738}, {0x1A7C8000}, 0x49AB4},
+    {1035, {0x400E9864}, {0x1A812000}, 0x59DC0},
+    {1035, {0x400B7718}, {0x1A86C000}, 0x50288},
+    {1035, {0x400D87FC}, {0x1A8BC800}, 0x47BC4},
+    {1035, {0x400D643C}, {0x1A904800}, 0x4E3AC},
+    {1035, {0x400D5C7C}, {0x1A953000}, 0x48D9C},
+    {1035, {0x400B767C}, {0x1A99C000}, 0x47518},
+    {1035, {0x400441F8}, {0x1A9E3800}, 0x1AA84},
+    {1035, {0x40106568}, {0x1A9FE800}, 0x68C10},
+    {1035, {0x4010E5A0}, {0xE97A800}, 0x9BCAC},
+    {1035, {0x40016980}, {0xEA16800}, 54980},
+    {1035, {0x40016980}, {0xEA24000}, 51524},
+    {1035, {0x40016980}, {0xEA31000}, 59136},
+    {1035, {0x40016980}, {0xEA3F800}, 54860},
+    {1035, {0x40016980}, {0xEA4D000}, 51456},
+    {1035, {0x40016980}, {0xEA5A000}, 53244},
+    {1035, {0x40016980}, {0xEA67000}, 55072},
+    {1035, {0x40016980}, {0xEA74800}, 54988},
+    {1035, {0x40016980}, {0xEA82000}, 53788},
+    {1035, {0x40016980}, {0xEA8F800}, 53436},
+    {1035, {0x40016980}, {0xEA9D000}, 46404},
+    {1035, {0x40016980}, {0xEAA8800}, 50424},
+    {1035, {0x400ADFFC}, {0x18AEE800}, 0x4BAB0},
+    {1035, {0x4037CF5C}, {0x18B3A800}, 0x208AF0},
+    {1035, {0x4000A820}, {0x18ED3800}, 14168},
+    {1035, {0x4011EC24}, {0x18F0E000}, 0xD8818},
+    {1035, {0x400193E8}, {0x191B8800}, 35288},
+    {1035, {0x4006C850}, {0x6C96000}, 0x2C884},
+    {1035, {0x4005B178}, {0x6CC3000}, 0x3555C},
+    {1035, {0x401EB174}, {0x18D43800}, 0xFB220},
+    {1035, {0x4001ED60}, {0x1AA67800}, 53232},
+    {1035, {0x4000BF30}, {0x1AA74800}, 9952},
+    {1035, {0x40003498}, {0x1AA77000}, 3624},
+    {1035, {0x4000BDE0}, {0x1AA78000}, 9460},
+    {1035, {0x40006088}, {0x1AA7A800}, 4752},
+    {1035, {0x400049F0}, {0x1AA7C000}, 6388},
+    {1035, {0x40005ECC}, {0x1AA7E000}, 7480},
+    {1035, {0x40002670}, {0x1AA80000}, 3048},
+    {0, {0x28240}, {0x1AA81000}, 0x28240},
+    {0, {0x28240}, {0x1AAA9800}, 0x28240},
+    {0, {0x28240}, {0x1AAD2000}, 0x28240},
+    {0, {0x28240}, {0x1AAFA800}, 0x28240},
+    {0, {0x28240}, {0x1AB23000}, 0x28240},
+    {0, {0x28240}, {0x1AB4B800}, 0x28240},
+    {0, {0x28240}, {0x1AB74000}, 0x28240},
+    {0, {0x28240}, {0x1AB9C800}, 0x28240},
+    {0, {0x28240}, {0x1ABC5000}, 0x28240},
+    {0, {0x28240}, {0x1ABED800}, 0x28240},
+    {0, {0x28240}, {0x1AC16000}, 0x28240},
+    {0, {0x28240}, {0x1AC3E800}, 0x28240},
+    {0, {0x28240}, {0x1AC67000}, 0x28240},
+    {0, {0x28240}, {0x1AC8F800}, 0x28240},
+    {0, {0x28240}, {0x1ACB8000}, 0x28240},
+    {0, {0x28240}, {0x1ACE0800}, 0x28240},
+    {0, {0x28240}, {0x1AD09000}, 0x28240},
+}; // game files
+FilePath lbl_800E8EE8 = {"aaaa.dat", {0, 0, 0}};
+FilePath lbl_800E8EF8 = {"ZZZZ.dat", {0, 0, 0}};
 
 
 
@@ -414,17 +484,16 @@ void PrepFilesToBeLoaded(void) {
     lbl_80366158._1D = 1;
 }
 
-// NONMATCHING 95.1%: the original addresses lbl_800E8AA8 and the tables after it through one pooled
-// base register (they are data of this unit, not split yet); fn_80009144 is not inlined (pragma)
+// NONMATCHING 99%: `module`/`file` get r30/r31 in the paths where the pooled base and lbl_80366158
+// are dead (the original keeps both alive and uses r28); fn_80009144 is not inlined (pragma)
 // .text:0x800097A0 size:0x6F4
 #if NONMATCHING
 #pragma dont_inline on
 void fn_800097A0(void) {
+    BOOL progressive;
     MainTask* task;
     OSModuleHeader* module;
     DiskFileEntry* file;
-    BOOL progressive;
-    FileTable* table = &lbl_800E8AA8;
 
     lbl_80366158._26 = 0;
     lbl_80366158._25 = 0;
@@ -435,19 +504,19 @@ void fn_800097A0(void) {
         fn_800AD054(lbl_80366158.arenaStart, lbl_80366158.arenaEnd);
         fn_80021308();
         lbl_803C6CF8.entryNum = lbl_803CBBD0;
-        lbl_80366B18.fontArchive = ARAMTransfer(table->boot, 0, 0, 0);
+        lbl_80366B18.fontArchive = ARAMTransfer(lbl_800E8AD8, 0, 0, 0);
         task->state = 1;
         break;
     case 1:
         if ((s32)(u8)lbl_803C6CF8.idle == 1) {
-            lbl_80366B18.iconArchive = ARAMTransfer(&table->boot[2], 0, 1, 0);
+            lbl_80366B18.iconArchive = ARAMTransfer(&lbl_800E8AD8[2], 0, 1, 0);
             task->state = 2;
         }
         break;
     case 2:
         if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             fn_80011000();
-            lbl_80366B18.tables[0] = ARAMTransfer(&table->boot[1], 0, 1, 0);
+            lbl_80366B18.tables[0] = ARAMTransfer(&lbl_800E8AD8[1], 0, 1, 0);
             task->state = 3;
         }
         break;
@@ -464,13 +533,13 @@ void fn_800097A0(void) {
         }
         break;
     case 5:
-        if (fn_80035838(&table->files[0x25], 0)) {
+        if (fn_80035838(&lbl_800E8B08[0x25], 0)) {
             fn_800B0C80(fn_80021064);
             task->state = 6;
         }
         break;
     case 6:
-        if (fn_80035838(&table->files[0xF], 1)) {
+        if (fn_80035838(&lbl_800E8B08[0xF], 1)) {
             fn_800216F8(0, fn_8002158C);
             task->_10 = 0;
             task->state = 7;
@@ -513,8 +582,8 @@ void fn_800097A0(void) {
         g_d_GameSettings._06 = 1;
         fn_800AD038(lbl_80366158.arenaStart);
         lbl_803C6CF8.entryNum = lbl_803CBBD4;
-        task->module = (OSModuleHeader*)ARAMTransfer(&table->dll[0], 0, 0, 0);
-        task->moduleSize = table->dll[0].sizeFlags & 0x0FFFFFFF;
+        task->module = (OSModuleHeader*)ARAMTransfer(&lbl_800E8AA8[0], 0, 0, 0);
+        task->moduleSize = lbl_800E8AA8[0].sizeFlags & 0x0FFFFFFF;
         OSReport(lbl_800E6588, 0, task->module);
         task->state = 9;
         break;
@@ -550,7 +619,7 @@ void fn_800097A0(void) {
         g_d_GameSettings._06 = 2;
         fn_800AD038(lbl_80366158.arenaStart);
         lbl_803C6CF8.entryNum = lbl_803CBBD4;
-        file = &table->dll[1];
+        file = &lbl_800E8AA8[1];
         task->module = (OSModuleHeader*)ARAMTransfer(file, 0, 0, 0);
         task->moduleSize = file->sizeFlags & 0x0FFFFFFF;
         OSReport(lbl_800E6588, 1, task->module);
@@ -661,85 +730,6 @@ QuadCallback fn_8000A094(QuadCallback value) {
 
 // ---- Data (initialisers generated from the original DOL) ----
 
-// .data 0x800E8AA8..0x800E8F44
-FileTable lbl_800E8AA8 = {
-    {
-        {1035, {0x401027E4}, {2048}, 0x5A818},
-        {1035, {0x402220F8}, {0x5B800}, 0xF4450},
-        {1035, {0x4005912C}, {0x150000}, 0x271C0},
-    },
-    {
-        {1294, {0x4003E1A0}, {0x8E77000}, 0x143EC},
-        {0, {46550}, {0x8E8B800}, 46552},
-        {0, {4064}, {0x8E97000}, 4064},
-    },
-    {
-        {1035, {0x4013764C}, {0x1A635000}, 0x7DB48},
-        {1035, {0x4003E3DC}, {0x1A6B3000}, 0x21420},
-        {1035, {0x4002EC10}, {0x1A6D4800}, 0x13108},
-        {1035, {0x400E72C0}, {0x1A6E8000}, 0x60768},
-        {1035, {0x40049404}, {0x1A748800}, 0x20E34},
-        {1035, {0x40076AE0}, {0x18ED7000}, 0x36BC8},
-        {1035, {0x4010FD70}, {0x1A769800}, 0x5E284},
-        {1035, {0x400DB738}, {0x1A7C8000}, 0x49AB4},
-        {1035, {0x400E9864}, {0x1A812000}, 0x59DC0},
-        {1035, {0x400B7718}, {0x1A86C000}, 0x50288},
-        {1035, {0x400D87FC}, {0x1A8BC800}, 0x47BC4},
-        {1035, {0x400D643C}, {0x1A904800}, 0x4E3AC},
-        {1035, {0x400D5C7C}, {0x1A953000}, 0x48D9C},
-        {1035, {0x400B767C}, {0x1A99C000}, 0x47518},
-        {1035, {0x400441F8}, {0x1A9E3800}, 0x1AA84},
-        {1035, {0x40106568}, {0x1A9FE800}, 0x68C10},
-        {1035, {0x4010E5A0}, {0xE97A800}, 0x9BCAC},
-        {1035, {0x40016980}, {0xEA16800}, 54980},
-        {1035, {0x40016980}, {0xEA24000}, 51524},
-        {1035, {0x40016980}, {0xEA31000}, 59136},
-        {1035, {0x40016980}, {0xEA3F800}, 54860},
-        {1035, {0x40016980}, {0xEA4D000}, 51456},
-        {1035, {0x40016980}, {0xEA5A000}, 53244},
-        {1035, {0x40016980}, {0xEA67000}, 55072},
-        {1035, {0x40016980}, {0xEA74800}, 54988},
-        {1035, {0x40016980}, {0xEA82000}, 53788},
-        {1035, {0x40016980}, {0xEA8F800}, 53436},
-        {1035, {0x40016980}, {0xEA9D000}, 46404},
-        {1035, {0x40016980}, {0xEAA8800}, 50424},
-        {1035, {0x400ADFFC}, {0x18AEE800}, 0x4BAB0},
-        {1035, {0x4037CF5C}, {0x18B3A800}, 0x208AF0},
-        {1035, {0x4000A820}, {0x18ED3800}, 14168},
-        {1035, {0x4011EC24}, {0x18F0E000}, 0xD8818},
-        {1035, {0x400193E8}, {0x191B8800}, 35288},
-        {1035, {0x4006C850}, {0x6C96000}, 0x2C884},
-        {1035, {0x4005B178}, {0x6CC3000}, 0x3555C},
-        {1035, {0x401EB174}, {0x18D43800}, 0xFB220},
-        {1035, {0x4001ED60}, {0x1AA67800}, 53232},
-        {1035, {0x4000BF30}, {0x1AA74800}, 9952},
-        {1035, {0x40003498}, {0x1AA77000}, 3624},
-        {1035, {0x4000BDE0}, {0x1AA78000}, 9460},
-        {1035, {0x40006088}, {0x1AA7A800}, 4752},
-        {1035, {0x400049F0}, {0x1AA7C000}, 6388},
-        {1035, {0x40005ECC}, {0x1AA7E000}, 7480},
-        {1035, {0x40002670}, {0x1AA80000}, 3048},
-        {0, {0x28240}, {0x1AA81000}, 0x28240},
-        {0, {0x28240}, {0x1AAA9800}, 0x28240},
-        {0, {0x28240}, {0x1AAD2000}, 0x28240},
-        {0, {0x28240}, {0x1AAFA800}, 0x28240},
-        {0, {0x28240}, {0x1AB23000}, 0x28240},
-        {0, {0x28240}, {0x1AB4B800}, 0x28240},
-        {0, {0x28240}, {0x1AB74000}, 0x28240},
-        {0, {0x28240}, {0x1AB9C800}, 0x28240},
-        {0, {0x28240}, {0x1ABC5000}, 0x28240},
-        {0, {0x28240}, {0x1ABED800}, 0x28240},
-        {0, {0x28240}, {0x1AC16000}, 0x28240},
-        {0, {0x28240}, {0x1AC3E800}, 0x28240},
-        {0, {0x28240}, {0x1AC67000}, 0x28240},
-        {0, {0x28240}, {0x1AC8F800}, 0x28240},
-        {0, {0x28240}, {0x1ACB8000}, 0x28240},
-        {0, {0x28240}, {0x1ACE0800}, 0x28240},
-        {0, {0x28240}, {0x1AD09000}, 0x28240},
-    },
-};
-FilePath lbl_800E8EE8 = {"aaaa.dat", {0, 0, 0}};
-FilePath lbl_800E8EF8 = {"ZZZZ.dat", {0, 0, 0}};
 
 // .bss 0x801181A0..0x80118220 (MWCC lays these out in reverse definition order)
 u8 lbl_801181A0[2][0x40];

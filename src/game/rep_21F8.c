@@ -9,41 +9,127 @@ extern f32 fn_3_BFDA4(void*, s32, f32, s32, u8, u8*);
 typedef struct {
     f32 f[12];
 } M12;
-typedef struct {
-    u8 pad0[4];
-    void* p4;
-    u8 pad8[0xC];
-    f32 f14;
-} E21F8;
 extern const M12 lbl_3_rodata_2248;
 extern f32 lbl_3_rodata_2278;
 extern f32 lbl_3_rodata_227C;
 extern f32 lbl_3_rodata_2280;
 // .bss (laid out last-defined-first)
 static u8 lbl_3_bss_9F35[0x3]; // unused (alignment gap in the original)
-static u8 lbl_3_bss_9F34;
-static u8 lbl_3_bss_9F20[0x14];
-typedef struct {
-    u8 pad0[0x26C];
-    E21F8 ents[2];
-    u8 pad2[0x2E8 - 0x26C - 0x30];
-    u8 flag;
-    u8 pad3[3];
-    f32 tab[4];
-} G21F8;
-extern G21F8 lbl_3_data_17898;
+u8 lbl_3_bss_9F34;
+u8 lbl_3_bss_9F20[0x14];
+// .data lbl_3_data_17898..17B98: the stadium-intro logo effect. Separate initialized statics
+// that the code reaches through one pooled base (CW keeps .data in definition order).
+// Keyframe of an effect curve, read by fn_3_BFDA4 (same layout as BFDA4Key in rep_1E08.c).
+typedef struct FxCurveKey {
+    f32 v;
+    f32 t;
+    u16 mode : 4;
+    u16 time : 12;
+    u8 a;
+    u8 b;
+} FxCurveKey;
+// Effect description: 8 curves (scale x/y, ..., rotation Y/Z, alpha), see fn_3_C9590.
+typedef struct FxCurveSet {
+    /*0x00*/ f32 _00[4];
+    /*0x10*/ u32 _10;
+    /*0x14*/ FxCurveKey* curves[8];
+    /*0x34*/ u8 counts[8];
+    /*0x3C*/ u8 cur[8]; // current key of each curve
+} FxCurveSet;
+typedef struct E21F8 {
+    /*0x00*/ FxCurveSet* set;
+    /*0x04*/ void* tex;
+    /*0x08*/ s32 _08;
+    /*0x0C*/ s32 _0C;
+    /*0x10*/ f32 _10;
+    /*0x14*/ f32 time;
+} E21F8;
+static FxCurveKey lbl_3_data_17898[2] = {
+    {1.0f, 0.5f, 1, 0, 1, 1},
+    {2.0f, 0.0f, 0, 14, 0, 0},
+};
+static FxCurveKey lbl_3_data_178B0[8] = {
+    {1.0f, 1.0f, 1, 0, 1, 1},
+    {2.0f, 1.8f, 1, 2, 0, 1},
+    {0.2f, 0.0f, 0, 14, 0, 0},
+    {1.0f, 0.5f, 1, 0, 1, 1},
+    {2.0f, 0.0f, 0, 16, 0, 0},
+    {1.0f, 1.0f, 1, 0, 1, 1},
+    {2.0f, 1.8f, 1, 2, 0, 1},
+    {0.2f, 0.0f, 0, 16, 0, 0},
+};
+static FxCurveKey lbl_3_data_17910[4] = {
+    {0.0f, 2.0f, 1, 0, 0, 1},
+    {-2.0f, 0.0f, 0, 10, 0, 0},
+    {0.0f, 2.0f, 1, 0, 0, 1},
+    {-2.0f, 0.0f, 0, 12, 0, 0},
+};
+static FxCurveKey lbl_3_data_17940[16] = {
+    {0.31415927f, 0.0f, 0, 0, 0, 0},
+    {1.8849558f, 0.0f, 0, 0, 0, 0},
+    {3.4557521f, 0.0f, 0, 0, 0, 0},
+    {5.0265484f, 0.0f, 0, 0, 0, 0},
+    {1.2566371f, 0.0f, 0, 0, 0, 0},
+    {2.8274336f, 0.0f, 0, 0, 0, 0},
+    {4.3982296f, 0.0f, 0, 0, 0, 0},
+    {5.969026f, 0.0f, 0, 0, 0, 0},
+    {0.9424779f, 0.0f, 0, 0, 0, 0},
+    {2.5132742f, 0.0f, 0, 0, 0, 0},
+    {4.0840707f, 0.0f, 0, 0, 0, 0},
+    {5.654867f, 0.0f, 0, 0, 0, 0},
+    {1.5707964f, 0.0f, 0, 0, 0, 0},
+    {3.1415927f, 0.0f, 0, 0, 0, 0},
+    {4.712389f, 0.0f, 0, 0, 0, 0},
+    {6.2831855f, 0.0f, 0, 0, 0, 0},
+};
+static FxCurveKey lbl_3_data_17A00[7] = {
+    {0.62831855f, 0.0f, 0, 0, 0, 0},
+    {0.5654867f, 0.0f, 0, 0, 0, 0},
+    {-0.5654867f, 0.0f, 0, 0, 0, 0},
+    {-0.62831855f, 0.0f, 0, 0, 0, 0},
+    {1.0f, 0.0f, 0, 0, 0, 0},
+    {1.0f, 1.0f, 1, 10, 0, 1},
+    {0.0f, 0.0f, 0, 14, 0, 0},
+};
+static FxCurveKey lbl_3_data_17A54[9] = {
+    {1.0f, 0.0f, 0, 0, 0, 0},
+    {1.0f, 1.0f, 1, 12, 0, 1},
+    {0.0f, 0.0f, 0, 16, 0, 0},
+    {1.0f, 0.2f, 1, 0, 0, 1},
+    {0.4f, 0.0f, 0, 16, 0, 0},
+    {3.0f, 2.0f, 1, 0, 0, 1},
+    {5.0f, 0.0f, 0, 16, 0, 0},
+    {1.0f, 1.0f, 1, 0, 0, 1},
+    {0.0f, 0.0f, 0, 16, 0, 0},
+};
+static FxCurveSet lbl_3_data_17AC0 = {
+    {-1.0f, -0.5f, 1.0f, 1.0f},
+    0,
+    {lbl_3_data_17898, lbl_3_data_178B0, lbl_3_data_17910, NULL, NULL, lbl_3_data_17A00, lbl_3_data_17940, lbl_3_data_17A54},
+    {2, 3, 2, 0, 0, 1, 1, 3},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+};
+static E21F8 lbl_3_data_17B04[5] = {
+    {&lbl_3_data_17AC0, NULL, 0x11, 1, 16.0f, 0.0f},
+    {&lbl_3_data_17AC0, NULL, 0x11, 1, 16.0f, 0.0f},
+    {&lbl_3_data_17AC0, NULL, 0x12, 1, 16.0f, 0.0f},
+    {&lbl_3_data_17AC0, NULL, 0x12, 1, 16.0f, 0.0f},
+    {NULL, NULL, 0, 0, 0.0f, 0.0f},
+};
+u32 lbl_3_data_17B7C = 0xFF;
+static u8 lbl_3_data_17B80 = 1;       // depth test on while drawing
+static f32 lbl_3_data_17B84[4] = {4.0f, 2.0f, 1.0f, 0.9f}; // scale per logo
+f32 lbl_3_data_17B94 = 0.0f;
 extern u8 lbl_3_common_bss_35154[];
 extern void fn_80034120(Mtx);
 extern void fn_3_BF8F8(void*, Mtx, void*, void*);
 extern void fn_3_C9590(u8*, s32, f32*, f32);
 
 // .text:0x000C937C size:0x214 mapped:0x80708410
-// ~92%: orig keeps (data_17898+0x26C)/(+0x2EC) as separate addi before the index add; we fold the offset into the final add/lfs. Also first base regs/r28 copy loop order differ.
 int fn_3_C937C(void) {
-    G21F8* d = &lbl_3_data_17898;
-    E21F8* e;
     u8* b = lbl_3_bss_9F20;
     Mtx sm;
+    s32 i;
     M12 id = lbl_3_rodata_2248;
     Mtx a;
     f32 sc;
@@ -62,18 +148,18 @@ int fn_3_C937C(void) {
     }
     fn_80034120(a);
     PSMTXConcat(a, (f32(*)[4])&id, a);
-    sc = d->tab[b[0]];
+    sc = lbl_3_data_17B84[b[0]];
     PSMTXScale(sm, sc, sc, sc);
     PSMTXConcat(a, sm, a);
-    e = &d->ents[b[0]];
-    e->f14 = *(f32*)(b + 0x10);
-    e->p4 = lbl_3_common_bss_35154 + 4;
-    if (d->flag != 0) {
+    i = b[0];
+    lbl_3_data_17B04[i].time = *(f32*)(b + 0x10);
+    lbl_3_data_17B04[i].tex = lbl_3_common_bss_35154 + 4;
+    if (lbl_3_data_17B80 != 0) {
         GXSetZMode(1, 7, 1);
     }
     GXSetBlendMode(1, 4, 6, 0);
-    fn_3_BF8F8(&d->ents[b[0]], a, b + 4, fn_3_C9590);
-    if (d->flag != 0) {
+    fn_3_BF8F8(&lbl_3_data_17B04[b[0]], a, b + 4, fn_3_C9590);
+    if (lbl_3_data_17B80 != 0) {
         GXSetZMode(1, 3, 1);
     }
     GXSetBlendMode(1, 4, 5, 0);

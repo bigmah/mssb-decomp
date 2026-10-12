@@ -40,12 +40,16 @@ extern void fn_3_8B890(s32);
 extern void fn_3_8BA60(s32 handle, f32* pos, f32* vel);
 extern s32 fn_3_8BBC4(s32 id, f32* pos, f32* vel, s32 kind);
 
-// lbl_3_bss_9F38.._9FDC are separate statics in the original, addressed through one
-// pooled base; the ones also used through their own symbol are declared on their own.
-extern StaC0Work lbl_3_bss_9F38;
-extern u32 lbl_3_bss_9F3C;    // water scroll frame counter
-extern u8* lbl_3_bss_9F48;    // water indirect texture (I8, 128 x 64)
-extern GXTexObj lbl_3_bss_9F4C;
+// .bss lbl_3_bss_9F38..9FDC: separate statics that the code reaches through one pooled
+// base. CW lays .bss statics out in reverse declaration order.
+static ShapeAnimPlayer sAnim;   // lbl_3_bss_9F70
+static u8 sCrowdPaused;         // lbl_3_bss_9F6C: crowd sound paused (pitching cutscene)
+static GXTexObj sWaterTexObj;   // lbl_3_bss_9F4C
+static u8* sWaterTex;           // lbl_3_bss_9F48: water indirect texture (I8, 128 x 64)
+static s32 sCrowdSound1;        // lbl_3_bss_9F44
+static s32 sCrowdSound0;        // lbl_3_bss_9F40
+static u32 sWaterFrame;         // lbl_3_bss_9F3C: water scroll frame counter
+static u32 lbl_3_bss_9F38;      // never used
 
 extern StaC0ObjList lbl_3_common_bss_350E4;
 extern StaC0Part lbl_3_data_17B98[11];
@@ -58,6 +62,7 @@ extern u8 lbl_3_data_11008[];
 extern u8 lbl_3_data_11048[32][3];
 extern u8 lbl_3_data_11108[16][3];
 extern Vec lbl_3_rodata_22D8;
+extern const f32 lbl_3_rodata_22E8; // 0.5f
 extern char lbl_3_rodata_22EC[]; // "sta_c0.c"
 extern char lbl_3_rodata_22F8[]; // "error\n"
 
@@ -79,28 +84,27 @@ u8 lbl_3_data_17CF8[16] = {1, 2, 4, 4, 4, 4, 2, 8, 9, 0, 0, 0, 0, 0, 0, 0};
 // .text:0x000C9744 size:0x134
 // Crowd sound.
 void fn_3_C9744(void) {
-    StaC0Work* s = &lbl_3_bss_9F38;
     GameInitVariables* gs = &g_d_GameSettings;
     if (gs->GameModeSelected != GAME_TYPE_PRACTICE && g_GameLogic.gameStatus != 0x21) {
         if (g_GameLogic.gameStatus == 0xB) {
-            if (s->flag == 0) {
-                fn_3_8B890(s->h0);
+            if (sCrowdPaused == 0) {
+                fn_3_8B890(sCrowdSound0);
                 if (gs->GameModeSelected != GAME_TYPE_MINIGAMES) {
-                    fn_3_8B890(s->h1);
+                    fn_3_8B890(sCrowdSound1);
                 }
-                s->flag = 1;
+                sCrowdPaused = 1;
             }
         } else {
-            if (s->flag != 0) {
-                s->h0 = fn_3_8BBC4(lbl_3_data_81DC[gs->StadiumID] + 1, NULL, NULL, 1);
+            if (sCrowdPaused != 0) {
+                sCrowdSound0 = fn_3_8BBC4(lbl_3_data_81DC[gs->StadiumID] + 1, NULL, NULL, 1);
                 if (gs->GameModeSelected != GAME_TYPE_MINIGAMES) {
-                    s->h1 = fn_3_B7FC8(lbl_3_data_81DC[gs->StadiumID], 0);
+                    sCrowdSound1 = fn_3_B7FC8(lbl_3_data_81DC[gs->StadiumID], 0);
                 }
-                s->flag = 0;
+                sCrowdPaused = 0;
             } else {
-                fn_3_8BA60(s->h0, NULL, NULL);
+                fn_3_8BA60(sCrowdSound0, NULL, NULL);
                 if (gs->GameModeSelected != GAME_TYPE_MINIGAMES) {
-                    fn_3_8BA60(s->h1, NULL, NULL);
+                    fn_3_8BA60(sCrowdSound1, NULL, NULL);
                 }
             }
         }
@@ -185,7 +189,7 @@ void fn_3_C9A60(StaC0Obj* o) {
 void fn_3_C9AC8(StaC0Obj* o) {
     fn_3_B9510(0);
     fn_3_B9510(1);
-    GXLoadTexObj(&lbl_3_bss_9F4C, 7);
+    GXLoadTexObj(&sWaterTexObj, 7);
     GXSetIndTexOrder(0, 0, 7);
     GXSetNumIndStages(1);
     GXSetIndTexCoordScale(0, 0, 0);
@@ -204,25 +208,25 @@ void fn_3_C9B5C(StaC0Obj* o) {
         return;
     }
     o->visible = 1;
-    if (lbl_3_bss_9F3C < 3) {
-        lbl_3_bss_9F3C++;
+    if (sWaterFrame < 3) {
+        sWaterFrame++;
         return;
     }
     for (y = 0; y < 0x80; y++) {
         for (x = 0; x < 0x40; x++) {
             if (x == 0) {
-                prev = (s8)lbl_3_bss_9F48[fn_800247E4(y, 0x3F, 0x80, 2)];
+                prev = (s8)sWaterTex[fn_800247E4(y, 0x3F, 0x80, 2)];
             }
             {
                 s32 off = fn_800247E4(y, x, 0x80, 2);
-                s32 t = (s8)lbl_3_bss_9F48[off];
-                lbl_3_bss_9F48[off] = prev;
+                s32 t = (s8)sWaterTex[off];
+                sWaterTex[off] = prev;
                 prev = t;
             }
         }
     }
-    lbl_3_bss_9F3C = 0;
-    DCFlushRange(lbl_3_bss_9F48, 0x4000);
+    sWaterFrame = 0;
+    DCFlushRange(sWaterTex, 0x4000);
 }
 
 // Water: create the random indirect texture.
@@ -239,23 +243,23 @@ void fn_3_C9C94(void) {
     m[4] = 0.0f;
     m[5] = 0.0f;
     GXSetIndTexMtx(GX_ITM_0, (f32(*)[3])m, 2);
-    lbl_3_bss_9F48 = fn_3_B9534(0x80, 0x40, &lbl_3_bss_9F4C);
-    if (lbl_3_bss_9F48 == NULL) {
+    sWaterTex = fn_3_B9534(0x80, 0x40, &sWaterTexObj);
+    if (sWaterTex == NULL) {
         OSPanic(lbl_3_rodata_22EC, 0x29F, lbl_3_rodata_22F8);
     }
     for (y = 0; y < 0x40; y++) {
         for (x = 0; x < 0x80; x++) {
             off = fn_800247E4(x, y, 0x80, 2);
-            lbl_3_bss_9F48[off] = (u8)((s32)rand() % 4) + 0x7E;
+            sWaterTex[off] = (u8)((s32)rand() % 4) + 0x7E;
         }
     }
 }
 
 // Sets up the stadium objects. files: the stadium's file table.
 // .text:0x000C9DB4 size:0xE00 mapped:0x80708E48
-// NONMATCHING 92%: register allocation and the inlined fn_3_C9C94 reaching lbl_3_bss_9F48/9F4C through
-// the pooled lbl_3_bss_9F38 base (expected nmverify difference); same calls, stores and control flow
-#pragma pool_data off // each float constant is its own .rodata symbol in the original
+// NONMATCHING 95%: the original keeps a second copy of `o` in r4 (used for the first stores of each
+// object block) and doesn't fold the k * 0x90 start of the part-model loop; the rest is register
+// allocation. Same calls, stores and control flow.
 #if NONMATCHING
 void fn_3_C9DB4(void** files) {
     StaC0ObjList* list = &lbl_3_common_bss_350E4;
@@ -278,7 +282,7 @@ void fn_3_C9DB4(void** files) {
     done = 0;
     list->draw = fn_3_B939C;
     list->update = fn_3_C9744;
-    lbl_3_bss_9F38.flag = 1;
+    sCrowdPaused = 1;
     idx = _OSAllocFromHeap(4, 0x24);
     lbl_3_common_bss_350E4.fileIdx = idx;
     fn_3_B9D68(lbl_3_data_17CF8, 9, files, idx);
@@ -321,9 +325,9 @@ void fn_3_C9DB4(void** files) {
     if (files[idx[7]] != NULL) {
         fn_80025DDC(files[idx[7]]);
         fn_80025C58(files[idx[7]], (ShapeModel**)&lbl_8036E548.slots6C->objects[0]);
-        lbl_3_bss_9F38.anim.set = files[idx[8]];
-        fn_80025FFC(files[idx[7]], &lbl_3_bss_9F38.anim);
-        fn_80025EEC(&lbl_3_bss_9F38.anim, 0, 0);
+        sAnim.set = files[idx[8]];
+        fn_80025FFC(files[idx[7]], &sAnim);
+        fn_80025EEC(&sAnim, 0, 0);
     }
 
     // 20 objects, followed by the panel sequences and light data outside practice
@@ -393,7 +397,7 @@ void fn_3_C9DB4(void** files) {
     o[1].bit5 = 1;
     o[1]._92 = 0xFF;
     o[1].preDraw = fn_3_C9AC8;
-    o[1].shapeAnim = &lbl_3_bss_9F38.anim;
+    o[1].shapeAnim = &sAnim;
     o[1]._94 = 0;
     o[1]._96 = -1;
     o[1]._98 = 1;
@@ -548,27 +552,51 @@ void fn_3_C9DB4(void** files) {
     }
 
     // clear the unused objects
-    for (j = n; j < lbl_3_common_bss_350E4.count; j++, o++) {
-        o->kind = 0;
-        o->_A2 = 0;
-        o->actorObj = NULL;
-        o->shadow = NULL;
-        o->update = NULL;
-        o->onHit = NULL;
-        o->visible = 0;
-        o->hasShadow = 0;
-        o->bit5 = 0;
-        o->ctrl.base.type = 0;
-        CTRLSetTranslation(&o->ctrl.base, 0.0f, 0.0f, 0.0f);
-        CTRLSetRotation(&o->ctrl.base, 0.0f, 0.0f, 0.0f);
-        o->_92 = 0;
-        o->shapeAnim = NULL;
-        o->_94 = 0;
-        o->_96 = -1;
+    if (lbl_3_common_bss_350E4.count > n) {
+        for (j = n; j < lbl_3_common_bss_350E4.count; j++, o++) {
+            o->kind = 0;
+            o->_A2 = 0;
+            o->actorObj = NULL;
+            o->shadow = NULL;
+            o->update = NULL;
+            o->onHit = NULL;
+            o->visible = 0;
+            o->hasShadow = 0;
+            o->bit5 = 0;
+            o->ctrl.base.type = 0;
+            CTRLSetTranslation(&o->ctrl.base, 0.0f, 0.0f, 0.0f);
+            CTRLSetRotation(&o->ctrl.base, 0.0f, 0.0f, 0.0f);
+            o->_92 = 0;
+            o->shapeAnim = NULL;
+            o->_94 = 0;
+            o->_96 = -1;
+        }
     }
 
     lbl_3_common_bss_350E4._48 = 0;
-    fn_3_C9C94();
+    {
+        // fn_3_C9C94, written out (an inlined call doesn't get the pooled .bss base)
+        f32 m[6];
+        s32 off;
+        u32 y;
+        u32 x;
+        m[0] = lbl_3_rodata_22E8;
+        m[1] = 0.0f;
+        m[2] = 0.0f;
+        m[3] = 0.0f;
+        m[4] = 0.0f;
+        m[5] = 0.0f;
+        GXSetIndTexMtx(GX_ITM_0, (f32(*)[3])m, 2);
+        sWaterTex = fn_3_B9534(0x80, 0x40, &sWaterTexObj);
+        if (sWaterTex == NULL) {
+            OSPanic(lbl_3_rodata_22EC, 0x29F, lbl_3_rodata_22F8);
+        }
+        for (y = 0; y < 0x40; y++) {
+            for (x = 0; x < 0x80; x++) {
+                off = fn_800247E4(x, y, 0x80, 2);
+                sWaterTex[off] = (u8)((s32)rand() % 4) + 0x7E;
+            }
+        }
+    }
 }
 #endif
-#pragma pool_data reset
