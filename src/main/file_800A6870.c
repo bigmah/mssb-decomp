@@ -293,7 +293,7 @@ void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAd
     lbl_803C6CF8.bytesRead = 0;
     lbl_803C6CF8.chunkSize = 0;
     lbl_803C6CF8.diskOffset = instr->diskLocation;
-    lbl_803C6CF8.sizeInfo = ((u32*)instr)[1]; // TODO type: whole flags/size word
+    lbl_803C6CF8.sizeInfo = instr->sizeFlags; // whole flags/size word
     gDataDecompressorValues.compressedFlag = instr->compressionFlag;
     lbl_803C6CF8.instr = instr;
     lbl_803C6CF8.mode = mode;

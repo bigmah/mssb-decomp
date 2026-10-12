@@ -2198,13 +2198,9 @@ void fn_3_10B8D0(void) {
 extern u8 lbl_800E854C[12];
 extern u8 lbl_3_data_609C[][6];
 
-// NONMATCHING 99%: assignment loop zero-inits k with li instead of copying i (one mr)
-#if NONMATCHING
-// fn_3_10BE7C, size:0x5D4
 void fn_3_10BE7C(void) {
     s32 m;
     s32 n;
-    s32 row;
     s32 k;
     s32 j;
     s32 pool[12];
@@ -2237,19 +2233,19 @@ void fn_3_10BE7C(void) {
         n = 6;
         if (g_d_GameSettings.exhibitionMatchInd == 0) {
             if (mode == 2) {
-                row = g_Minigame.soloMinigameDifficulty;
+                k = g_Minigame.soloMinigameDifficulty;
             } else if (mode == 4) {
-                row = g_Minigame.soloMinigameDifficulty + 3;
+                k = g_Minigame.soloMinigameDifficulty + 3;
             } else if (mode == 5) {
-                row = g_Minigame.soloMinigameDifficulty + 6;
+                k = g_Minigame.soloMinigameDifficulty + 6;
             } else if (mode == 6) {
-                row = g_Minigame.soloMinigameDifficulty + 9;
+                k = g_Minigame.soloMinigameDifficulty + 9;
             } else {
-                row = 0;
+                k = 0;
             }
             n = 0;
             for (i = 0; i < 6; i++) {
-                pool[i] = lbl_3_data_609C[row][i];
+                pool[i] = lbl_3_data_609C[k][i];
                 if (pool[i] != 0xFF) {
                     n++;
                 }
@@ -2257,26 +2253,26 @@ void fn_3_10BE7C(void) {
         } else {
             if (mode == 2) {
                 if (g_Minigame.soloMinigameDifficulty == 3) {
-                    row = -1;
+                    k = -1;
                 } else {
-                    row = g_Minigame.soloMinigameDifficulty + 1;
+                    k = g_Minigame.soloMinigameDifficulty + 1;
                 }
             } else if (mode == 4) {
-                row = g_Minigame.soloMinigameDifficulty + 5;
+                k = g_Minigame.soloMinigameDifficulty + 5;
             } else if (mode == 5) {
-                row = g_Minigame.soloMinigameDifficulty + 9;
+                k = g_Minigame.soloMinigameDifficulty + 9;
             } else if (mode == 6) {
-                row = g_Minigame.soloMinigameDifficulty + 0xD;
+                k = g_Minigame.soloMinigameDifficulty + 0xD;
             } else {
-                row = 0;
+                k = 0;
             }
-            if (row < 0) {
+            if (k < 0) {
                 for (i = 0; i < 6; i++) {
                     pool[i] = -1;
                 }
             } else {
                 for (i = 0; i < 6; i++) {
-                    pool[i] = lbl_3_data_212A4[row][i];
+                    pool[i] = lbl_3_data_212A4[k][i];
                 }
             }
         }
@@ -2288,7 +2284,6 @@ void fn_3_10BE7C(void) {
     for (; i < 4; i++) {
         if (g_Minigame._19DA[i] != 0 && (s8)g_Minigame._19E8[i]._1 == 0) {
             for (m = k; k < 6; k++, m++) {
-                // skip characters already taken by a human slot
                 for (j = 0; j < 4; j++) {
                     if (pool[m] == taken[j] && pool[m] >= 0) {
                         break;
@@ -2305,7 +2300,6 @@ void fn_3_10BE7C(void) {
         }
     }
 }
-#endif
 
 extern u8 lbl_3_data_18920[][5];
 

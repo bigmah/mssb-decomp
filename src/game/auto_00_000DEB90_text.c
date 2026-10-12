@@ -593,6 +593,22 @@ static inline void fn_3_DF6D4_inline(void) {
     fn_3_5A6D4(0x1B);
 }
 
+#if !NONMATCHING
+// Switch jump tables of fn_3_DFBAC; mwcc emits them itself once the function matches.
+void* jumptable_3_data_18CFC[38] = {
+    (u8*)fn_3_DFBAC + 0x290, (u8*)fn_3_DFBAC + 0x298, (u8*)fn_3_DFBAC + 0x5D4, (u8*)fn_3_DFBAC + 0x5DC,
+    (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x5E4, (u8*)fn_3_DFBAC + 0x5EC, (u8*)fn_3_DFBAC + 0x5F4,
+    (u8*)fn_3_DFBAC + 0x5FC, (u8*)fn_3_DFBAC + 0x718, (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x730,
+    (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x738, (u8*)fn_3_DFBAC + 0x720, (u8*)fn_3_DFBAC + 0x7A4,
+    (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x7A4,
+    (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x7A4,
+    (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0xB0,
+    (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x14C, (u8*)fn_3_DFBAC + 0x154, (u8*)fn_3_DFBAC + 0x7A4,
+    (u8*)fn_3_DFBAC + 0x7A4, (u8*)fn_3_DFBAC + 0x15C, (u8*)fn_3_DFBAC + 0x164, (u8*)fn_3_DFBAC + 0x7A4,
+    (u8*)fn_3_DFBAC + 0x728, (u8*)fn_3_DFBAC + 0x16C,
+};
+#endif
+
 // NONMATCHING 99.8%: the pause loop's index and g_Minigame cursor registers are swapped, and the
 // fielder's rosterID (s8 here) is read as a u8 in the original
 // .text:0x000DFBAC size:0xABC mapped:0x8071EC40

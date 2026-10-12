@@ -60,8 +60,6 @@ extern ARQRequest lbl_803C7994[2]; // MRAM -> ARAM
 extern MovAramRing lbl_803C79D4;
 extern MovMramRing lbl_803C7A00;
 extern MovSync lbl_803C7420;
-// TODO: static in Unknown/File_0x800a6304.c; first word is the free ARAM byte count.
-extern u32 data_803C6780[];
 
 extern u16 lbl_801101C0[128]; // volume table
 extern YuvTable lbl_801102C0;
@@ -1313,7 +1311,7 @@ void fn_800B05E4(s32 aramSize, u32 mramSize) {
     lbl_803CC1A8 = 0;
     memset(aram, 0, sizeof(MovAramRing));
     if (aramSize == -1) {
-        aram->size = (lbl_803CC1AC < data_803C6780[0]) ? lbl_803CC1AC : data_803C6780[0];
+        aram->size = (lbl_803CC1AC < data_803C6780.tempValue) ? lbl_803CC1AC : data_803C6780.tempValue;
     } else {
         aram->size = (lbl_803CC1AC < (u32)aramSize) ? lbl_803CC1AC : (u32)aramSize;
     }
@@ -1667,3 +1665,18 @@ u8 lbl_803CC17C;
 u32 lbl_803CC178;
 u8* lbl_803CC174;
 
+// ---- Data ----
+
+// .data 0x801112E0: the two alternating frame-draw callbacks queued by file_800A7C08
+// (DrawCallbackNode in main/file_800A7C08.h: a link word, then the function).
+typedef struct MovDrawNode {
+    /*0x0*/ u32 link;
+    /*0x4*/ void (*func)(void);
+} MovDrawNode;
+MovDrawNode lbl_801112E0[2] = {
+    {0, fn_800ADD70},
+    {0, fn_800ADD70},
+};
+
+// .sdata 0x803CBB08: frame converters, indexed by the movie's pixel format.
+void (*lbl_803CBB08[2])(u8* src, u8* dst, s32 width, s32 height) = {YUV2RGB_, YUV2RGB};

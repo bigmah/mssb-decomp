@@ -80,11 +80,19 @@ typedef struct LayoutSlot {
 extern LayoutSlot lbl_80371C30[];
 
 // Also the queue item that lbl_803CC1B8 points at.
+// Same header as SceneTask (main/scene_task.h), so the two can be cast to each other on any ABI.
 typedef struct LayoutGroup {
     /*0x00*/ void (*callback)(void);
-    /*0x04*/ u8 _04[0x10];
-    /*0x14*/ u16 start;
-    /*0x16*/ u16 count;
+    /*0x04*/ struct SceneTask* _04[3]; // prev, next, parent
+    /*0x10*/ s16 _10;
+    /*0x12*/ u16 _12;
+    /*0x14*/ union {
+        void* _14; // SceneTask.u14
+        struct {
+            u16 start; // first object in lbl_80371C30
+            u16 count;
+        };
+    };
     /*0x18*/ u16 timer;
     /*0x1A*/ u16 _1A;
     /*0x1C*/ u16 textIndex;

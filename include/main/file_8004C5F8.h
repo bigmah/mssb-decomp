@@ -6,6 +6,7 @@
 #include "static/Camera.h"
 #include "static/Pad.h"
 #include "main/file_8004B284.h"
+#include "main/menu_globals.h" // CharTableEntry
 struct CharActor;
 struct ActorObject;
 
@@ -78,20 +79,15 @@ typedef struct RosterSelect {
 
 extern RosterSelect lbl_803C6028;
 
-// lbl_800E8558 entries (one per character).
-typedef struct CharTableEntry {
-    /*0x0*/ u8 _0;
-    /*0x1*/ u8 id;
-    /*0x2*/ u8 _2[2];
-    /*0x4*/ u8 _4; // selectable
-    /*0x5*/ u8 _5;
-} CharTableEntry; // size: 0x6
 
 
 
 // Queue task created by fn_80052634.
 typedef struct MeterTask {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ struct SceneTask* _04[3]; // prev, next, parent (SceneTask header)
+    /*0x10*/ s16 _10;
+    /*0x12*/ u16 _12;
     /*0x14*/ struct ActorObject* anim;
     /*0x18*/ struct CharActor* actor;
     /*0x1C*/ u8 kind;
@@ -175,7 +171,7 @@ void fn_80052188(void);
 
 s32 fn_8005268C(void);
 
-void* fn_80052734(s32 index);
+camera_803c639c_s* fn_80052734(s32 index); // the 2D/sprite cameras, lbl_803C639C[2 + index]
 
 camera_803c639c_s* fn_80052768_getCamera(int index);
 

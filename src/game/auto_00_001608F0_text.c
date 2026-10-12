@@ -9,6 +9,14 @@ extern StarMission lbl_80109AE8[][10];    // star missions, per mission row
 // Signed view of a mission status: -1 COMPLETED_CONDITIONALLY, -2 COMPLETED_SAVED.
 #define MISSION_STATUS(t, i) (*(s8*)&(t)->inGameMissionTracker[i].starMissionStatus)
 
+#if !NONMATCHING
+// Switch jump tables of fn_3_1608F0; mwcc emits them itself once the function matches.
+void* jumptable_3_data_28418[8] = {
+    (u8*)fn_3_1608F0 + 0x58, (u8*)fn_3_1608F0 + 0x1B8, (u8*)fn_3_1608F0 + 0x2A0, (u8*)fn_3_1608F0 + 0x37C,
+    (u8*)fn_3_1608F0 + 0x75C, (u8*)fn_3_1608F0 + 0x458, (u8*)fn_3_1608F0 + 0x534, (u8*)fn_3_1608F0 + 0x600,
+};
+#endif
+
 // .text:0x001608F0 size:0x788 mapped:0x8079F984
 // NONMATCHING 99.8%: g_Minigame/lbl_800E8558 base registers swapped in the prologue, and the final
 // store is `li 0xFF` instead of `li -1` (the original's status field is signed there).

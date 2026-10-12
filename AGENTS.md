@@ -89,6 +89,18 @@ Common fixes are in `docs/patterns/<topic>.md`, one per line. **Grep them for yo
 grep -i 'fcmpu' docs/patterns/*.md        # or: dont_inline, extsb, lwzx, unroll, switch, r27 ...
 ```
 
+Let the CPU search before you do (both tools only ever commit verified matches):
+
+```sh
+python3 tools/permute.py fn_3_147C00 --budget 120         # random source rewrites until fndiff says MATCH
+python3 tools/permute.py fn_3_147C00 --promote            # ...and if it matches: apply, full-build check, commit
+python3 tools/nmpromote.py src/game/rep_3880.c --promote  # NONMATCHING functions that already match unwrapped
+```
+
+- `permute.py` first tries its own rewrites (swap/move statements, reorder declarations, split/merge initializers, inline single-use temps, `!x`/`x == 0`/`!=` flips, operand swaps, `x += y`, for/while, if/else swap), then runs [decomp-permuter](https://github.com/simonlindholm/decomp-permuter) (installed into `build/decomp-permuter` on first use) on the MWCC-preprocessed unit. Both run on all cores within `--budget` seconds; `--backend text|permuter` picks one. A match lands in `build/permute/<fn>.c` (text) or `build/permute/<fn>/output-0-*/source.c` (permuter, macros expanded); the best near-miss in `build/permute/<fn>.best.c` is often a good hint even without a match. Permuter passes that change types or add masks are disabled, so a match is portable C, but tidy it before committing by hand.
+- `nmpromote.py` compiles each `#if NONMATCHING` function as if unwrapped and compares it fndiff-style; with `--promote` it unwraps each match, requires 100% in report.json with no regression and a clean litcheck, and commits `match <fn>`. Run it after changing shared types or headers: other functions may start matching.
+- `python3 tools/permute.py --all --min-pct 97 --budget 60 --promote` sweeps every NONMATCHING function whose comment claims ≥97%.
+
 If you've spent ~30–45 minutes on a function and it still doesn't match, commit it as **equivalent** (see above), with the match % and what's wrong in the `// NONMATCHING` comment, and move on. Add any new pattern you discover as one line to the closest `docs/patterns/` file: `- **Symptom (fn_name):** fix.`
 
 ## Don'ts

@@ -15,8 +15,8 @@ void LITInitPos(Light* light, f32 x, f32 y, f32 z);
 void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 #include <math.h>
 
-// .data of this file (0xF888-0xFB3C); the order matters, the functions address it from one base.
-// The two switch jump tables of fn_1_1B7DC (0xFB3C-0xFB98) are left in an auto unit while it is NONMATCHING.
+// .data of this file (0xF888-0xFB94); the order matters, the functions address it from one base.
+// The two switch jump tables of fn_1_1B7DC (0xFB3C-0xFB94) are defined next to it while it is NONMATCHING.
 // Asset table entries (lbl_1_data_F968): load instructions passed to ARAMTransfer. A debug build
 // stored a file path in the first word instead (fn_1_1B7DC still compares it against test paths).
 typedef struct ChallengeAssetEntry {
@@ -591,6 +591,20 @@ void fn_1_1C3CC(u8* object) {
         fn_1_1A3B4();
     }
 }
+#endif
+
+#if !NONMATCHING
+// Switch jump tables of fn_1_1B7DC; mwcc emits them itself once the function matches.
+void* jumptable_1_data_FB3C[11] = {
+    (u8*)fn_1_1B7DC + 0x6B8, (u8*)fn_1_1B7DC + 0x6DC, (u8*)fn_1_1B7DC + 0x700, (u8*)fn_1_1B7DC + 0x724,
+    (u8*)fn_1_1B7DC + 0x748, (u8*)fn_1_1B7DC + 0x854, (u8*)fn_1_1B7DC + 0x7D0, (u8*)fn_1_1B7DC + 0x7E4,
+    (u8*)fn_1_1B7DC + 0x800, (u8*)fn_1_1B7DC + 0x81C, (u8*)fn_1_1B7DC + 0x838,
+};
+void* jumptable_1_data_FB68[11] = {
+    (u8*)fn_1_1B7DC + 0x1A4, (u8*)fn_1_1B7DC + 0x1C8, (u8*)fn_1_1B7DC + 0x1EC, (u8*)fn_1_1B7DC + 0x210,
+    (u8*)fn_1_1B7DC + 0x234, (u8*)fn_1_1B7DC + 0x340, (u8*)fn_1_1B7DC + 0x2BC, (u8*)fn_1_1B7DC + 0x2D0,
+    (u8*)fn_1_1B7DC + 0x2EC, (u8*)fn_1_1B7DC + 0x308, (u8*)fn_1_1B7DC + 0x324,
+};
 #endif
 
 // .text:0x0001B7DC size:0xBF0

@@ -10,14 +10,7 @@
 // dvdsys.c: streams files from disc (optionally LZSS-compressed, see File_0x800a64e0.c)
 // into RAM, ARAM, or a ring buffer, using a monitor thread and a read thread.
 
-// Transfer modes (ARAMLoader.mode / ARAMTransfer's mode argument).
-#define DVDSYS_MODE_DISC_LZ_TO_RAM  0 // disc -> RAM, decompressed
-#define DVDSYS_MODE_DISC_TO_RAM     1 // disc -> RAM
-#define DVDSYS_MODE_DISC_TO_ARAM    2 // disc -> ARAM (dest is an ARAM address)
-#define DVDSYS_MODE_ARAM_LZ_TO_RAM  3 // ARAM -> RAM, decompressed
-#define DVDSYS_MODE_ARAM_TO_RAM     4 // ARAM -> RAM
-
-#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8, DVDSYS_STATE_*
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8, DVDSYS_MODE_*, DVDSYS_STATE_*
 
 u32 fn_800A6870(u8 enable, u32 limit);
 void fn_800A6890(u32 request);

@@ -14,6 +14,122 @@ Sections:
 	.sdata2     type:rodata align:4
 	.sbss2      type:bss align:32
 
+main/common/lbl_803297E0.c: order:1
+	.bss        start:0x803297E0 end:0x80366158 align:4 common
+
+main/common/lbl_80366158.c: order:2
+	.bss        start:0x80366158 end:0x80366188 align:4 common
+
+main/common/lbl_80366188.c: order:3
+	.bss        start:0x80366188 end:0x80366218 align:4 common
+
+main/common/lbl_80366218.c: order:4
+	.bss        start:0x80366218 end:0x80367318 align:4 common
+
+main/common/lbl_80367318.c: order:5
+	.bss        start:0x80367318 end:0x8037169C align:4 common
+
+main/common/lbl_8037169C.c: order:6
+	.bss        start:0x8037169C end:0x803716B8 align:4 common
+
+main/common/lbl_803716B8.c: order:7
+	.bss        start:0x803716B8 end:0x80371C30 align:4 common
+
+main/common/lbl_80371C30.c: order:8
+	.bss        start:0x80371C30 end:0x803C5090 align:4 common
+
+main/common/lbl_803C5090.c: order:9
+	.bss        start:0x803C5090 end:0x803C50B0 align:4 common
+
+main/common/lbl_803C50B0.c: order:10
+	.bss        start:0x803C50B0 end:0x803C50E8 align:4 common
+
+main/common/lbl_803C50E8.c: order:11
+	.bss        start:0x803C50E8 end:0x803C5144 align:4 common
+
+main/common/lbl_803C5144.c: order:12
+	.bss        start:0x803C5144 end:0x803C5EA4 align:4 common
+
+main/common/lbl_803C5EA4.c: order:13
+	.bss        start:0x803C5EA4 end:0x803C5EE0 align:4 common
+
+main/common/lbl_803C5EE0.c: order:14
+	.bss        start:0x803C5EE0 end:0x803C5EF8 align:4 common
+
+main/common/lbl_803C5EF8.c: order:15
+	.bss        start:0x803C5EF8 end:0x803C5F04 align:4 common
+
+main/common/lbl_803C5F04.c: order:16
+	.bss        start:0x803C5F04 end:0x803C5F74 align:4 common
+
+main/common/lbl_803C5F74.c: order:17
+	.bss        start:0x803C5F74 end:0x803C6028 align:4 common
+
+main/common/lbl_803C6028.c: order:18
+	.bss        start:0x803C6028 end:0x803C60BC align:4 common
+
+main/common/lbl_803C60BC.c: order:19
+	.bss        start:0x803C60BC end:0x803C639C align:4 common
+
+main/common/lbl_803C639C.c: order:20
+	.bss        start:0x803C639C end:0x803C663C align:4 common
+
+main/common/lbl_803C663C.c: order:21
+	.bss        start:0x803C663C end:0x803C6714 align:4 common
+
+main/common/lbl_803C6714.c: order:22
+	.bss        start:0x803C6714 end:0x803C6724 align:4 common
+
+main/common/lbl_803C6724.c: order:23
+	.bss        start:0x803C6724 end:0x803C6780 align:4 common
+
+main/common/data_803C6780.c: order:24
+	.bss        start:0x803C6780 end:0x803C6990 align:4 common
+
+main/common/gDataDecompressorValues.c: order:25
+	.bss        start:0x803C6990 end:0x803C6CF8 align:4 common
+
+main/common/lbl_803C6CF8.c: order:26
+	.bss        start:0x803C6CF8 end:0x803C7420 align:4 common
+
+main/common/lbl_803C7420.c: order:27
+	.bss        start:0x803C7420 end:0x803C77B8 align:4 common
+
+main/common/lbl_803C77B8.c: order:28
+	.bss        start:0x803C77B8 end:0x803C7838 align:4 common
+
+main/common/lbl_803C7838.c: order:29
+	.bss        start:0x803C7838 end:0x803C7898 align:4 common
+
+main/common/lbl_803C7898.c: order:30
+	.bss        start:0x803C7898 end:0x803C78A4 align:4 common
+
+main/common/lbl_803C78A4.c: order:31
+	.bss        start:0x803C78A4 end:0x803C78C4 align:4 common
+
+main/common/lbl_803C78C4.c: order:32
+	.bss        start:0x803C78C4 end:0x803C7A24 align:4 common
+
+main/common/lbl_803C7A24.c: order:33
+	.bss        start:0x803C7A24 end:0x803C8A24 align:4 common
+
+main/common/lbl_803C8A24.c: order:34
+	.bss        start:0x803C8A24 end:0x803CB1FC align:4 common
+
+main/common/sFrustums.c: order:35
+	.bss        start:0x803CB1FC end:0x803CB49C align:4 common
+
+main/common/lbl_803CB49C.c: order:36
+	.bss        start:0x803CB49C end:0x803CB6FC align:4 common
+
+main/common/lbl_803CB6FC.c: order:37
+	.bss        start:0x803CB6FC end:0x803CB734 align:4 common
+
+main/data_800E8300.c:
+	.rodata     start:0x800E63A0 end:0x800E6550
+	.data       start:0x800E8300 end:0x800E8AA8
+	.sdata      start:0x803CB740 end:0x803CB760
+
 main/file_80008E00.c:
 	extab       start:0x80005600 end:0x80005640
 	extabindex  start:0x80006C60 end:0x80006CC0
@@ -44,7 +160,7 @@ main/file_8000F150.c:
 	extabindex  start:0x80006DA4 end:0x80006E40
 	.text       start:0x8000F150 end:0x80011468
 	.data       start:0x800E8F60 end:0x800EE800
-	.sdata      start:0x803CB760 end:0x803CB790
+	.sdata      start:0x803CB760 end:0x803CB790 align:32
 	.sbss       start:0x803CBBE8 end:0x803CBBF0
 	.sdata2     start:0x803CC490 end:0x803CC4B8
 
@@ -86,6 +202,7 @@ main/file_80022DAC.c:
 	extabindex  start:0x800073EC end:0x80007470
 	.text       start:0x80022DAC end:0x80024184
 	.rodata     start:0x800E6698 end:0x800E6720
+	.data       start:0x800F7478 end:0x800F76E0
 	.bss        start:0x8017EB40 end:0x8017EC00
 	.sbss       start:0x803CBC58 end:0x803CBC68
 	.sdata2     start:0x803CC560 end:0x803CC580
@@ -207,7 +324,7 @@ main/file_8004C9FC.c:
 	extabindex  start:0x80007D58 end:0x80007E60
 	.text       start:0x8004C9FC end:0x800527C4
 	.data       start:0x800FCA60 end:0x800FEB30
-	.sdata      start:0x803CB870 end:0x803CB880
+	.sdata      start:0x803CB870 end:0x803CB888
 	.sdata2     start:0x803CC860 end:0x803CC870
 
 main/file_800527C4.c:
@@ -242,7 +359,7 @@ main/file_80069BDC.c:
 	extab       start:0x80006518 end:0x800065D8
 	extabindex  start:0x80008304 end:0x80008424
 	.text       start:0x80069BDC end:0x8006D024
-	.data       start:0x80109250 end:0x8010B600
+	.data       start:0x80109250 end:0x8010B610
 	.sdata      start:0x803CB8D8 end:0x803CB8F8
 	.sbss       start:0x803CBD34 end:0x803CBD40
 	.sdata2     start:0x803CC8F8 end:0x803CC940
@@ -832,6 +949,9 @@ Dolphin/MSL_C/MSL_Common/rand.c:
 	.text       start:0x8009D864 end:0x8009D884
 	.sdata      start:0x803CBA80 end:0x803CBA88
 
+Dolphin/MSL_C/MSL_Common/float.c:
+	.sdata      start:0x803CBA88 end:0x803CBA90
+
 Dolphin/MSL_C/MSL_Common/string.c:
 	.text       start:0x8009D884 end:0x8009DA0C
 
@@ -993,6 +1113,7 @@ Unknown/File_0x800a64e0.c:
 	extab       start:0x800065E0 end:0x80006608
 	extabindex  start:0x80008430 end:0x8000846C
 	.text       start:0x800A64E0 end:0x800A6870
+	.bss        start:0x802E9F80 end:0x802EAF80
 
 main/file_800A6870.c:
 	extab       start:0x80006608 end:0x80006698
@@ -1019,9 +1140,9 @@ main/file_800ADC40.c:
 	extabindex  start:0x800087D8 end:0x800088BC
 	.text       start:0x800ADC40 end:0x800B0724
 	.rodata     start:0x800E7B50 end:0x800E7CB0
-	.data       start:0x801101C0 end:0x801112E0
+	.data       start:0x801101C0 end:0x801112F0
 	.bss        start:0x802F93A0 end:0x802FE8A0
-	.sdata      start:0x803CBAE0 end:0x803CBB08
+	.sdata      start:0x803CBAE0 end:0x803CBB10
 	.sbss       start:0x803CC174 end:0x803CC1B0
 	.sdata2     start:0x803CCEE8 end:0x803CCF08
 
@@ -1068,8 +1189,9 @@ C3/control/control.c:
 	extab       start:0x80006A90 end:0x80006AE0
 	extabindex  start:0x80008B38 end:0x80008BB0
 	.text       start:0x800B7D3C end:0x800B993C
-	.data       start:0x801116A0 end:0x80111700
-	.sdata2     start:0x803CCFD8 end:0x803CCFF8
+	.data       start:0x80111670 end:0x80111700
+	.sbss       start:0x803CC1E8 end:0x803CC1F0
+	.sdata2     start:0x803CCFC0 end:0x803CCFF8
 
 main/file_800B993C.c:
 	.text       start:0x800B993C end:0x800B9974
@@ -1104,6 +1226,7 @@ main/file_800BDEA0.c:
 	extabindex  start:0x80008D24 end:0x80008DCC
 	.text       start:0x800BDEA0 end:0x800C0A8C
 	.rodata     start:0x800E8030 end:0x800E8060
+	.bss        start:0x803009F8 end:0x80300A48
 	.sdata      start:0x803CBB68 end:0x803CBB70
 	.sdata2     start:0x803CD068 end:0x803CD0E0
 
@@ -1204,8 +1327,10 @@ Musyx/snd_midictrl.c:
 
 Musyx/snd_service.c:
 	.text       start:0x800DC44C end:0x800DC720
+	.rodata     start:0x800E81A8 end:0x800E81D8
 	.data       start:0x801150F0 end:0x80115900
 	.sdata      start:0x803CBB70 end:0x803CBB78
+	.sdata2     start:0x803CD268 end:0x803CD270
 
 Musyx/hardware.c:
 	.text       start:0x800DC720 end:0x800DD7A0
@@ -1214,6 +1339,10 @@ Musyx/hardware.c:
 	.sdata      start:0x803CBB78 end:0x803CBB88
 	.sbss       start:0x803CC3A0 end:0x803CC3A8
 	.sdata2     start:0x803CD270 end:0x803CD298
+
+Musyx/dsp_import.c:
+	.data       start:0x80115900 end:0x801177C0
+	.sdata      start:0x803CBB88 end:0x803CBB8A
 
 Musyx/hw_aramdma.c:
 	.text       start:0x800DD7A0 end:0x800DE2A0

@@ -2518,7 +2518,7 @@ typedef struct {
 
 extern lbl_3_common_bss_32718_struct g_UnkSound_32718;
 
-extern struct {
+extern struct StarPowerCosts {
     /* 0x0 */ u8 moonShotCost;
     /* 0x1 */ u8 captainStarCost;
     /* 0x2 */ u8 nonCaptain_CaptainStarCost;
@@ -2711,16 +2711,15 @@ typedef struct {
     /* 0xAC8 */ u8 _ACA;
     artificial_padding(0xaca, 0xad8, u8);
     /* 0xAD8 */ u8 _AD8;
-    artificial_padding(0xad8, 0x2810, u8);
+    artificial_padding(0xad8, 0x146c, u8);
+    /* 0x146C */ void* _146C; // 0x8000-byte heap buffer (fn_3_106DFC)
+    artificial_padding(0x146c, 0x2810, void*);
     };
     struct {
         u8 _11C_[4];
         /* 0x120 */ lbl_3_common_bss_DE94_s2 views[4]; // replay camera views (game/replay_camera.h)
     };
     };
-    artificial_padding(0xad8, 0x146c, u8);
-    /* 0x146C */ void* _146C; // 0x8000-byte heap buffer (fn_3_106DFC)
-    artificial_padding(0x146c, 0x2810, void*);
     /* 0x2810 */ s16 _2810;
     /* 0x2812 */ s16 _2812;
     /* 0x2814 */ s16 _2814;
