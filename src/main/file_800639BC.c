@@ -1588,8 +1588,6 @@ void fn_80069B08(void) {
 }
 
 // .text:0x80069B68 size:0x74
-// NONMATCHING 97%: the original called fn_80035838 without its u8 return prototype (cmpwi, no clrlwi.)
-#if NONMATCHING
 BOOL fn_80069B68(void) {
     if (fn_80035838(&lbl_801092E8, 0x16) != 0) {
         lbl_803CBD30 = fn_800B0A5C_insertQueue(fn_80069B08, lbl_803CC1B8->priority);
@@ -1599,7 +1597,6 @@ BOOL fn_80069B68(void) {
     }
     return FALSE;
 }
-#endif
 
 // ---- Data (initialisers generated from the original DOL) ----
 
