@@ -6,6 +6,7 @@
 void fn_3_161588(s32 event, s32 rosterIdx);
 void fn_3_162080(void);
 void fn_3_16230C(s32 result, u8 rbi);
+void fn_3_162D54(void);
 void fn_3_1637EC(void);
 s32 fn_3_163948(void);
 s32 fn_3_163A7C(s32 r);

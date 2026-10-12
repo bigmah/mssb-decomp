@@ -94,8 +94,17 @@ typedef struct ScoutFlagTable {
 #define gChallengeState (*(ChallengeState*)starMissionCompletionTracker)
 
 typedef struct ChallengeTeamInfo {
-    /*0x0*/ u8 _0[2];
-    /*0x2*/ u8 _2;
+    union {
+        /*0x0*/ u8 _0[2];
+        struct {
+            /*0x0*/ u8 _00;
+            /*0x1*/ u8 trk; // starMissionCompletionTracker index
+        };
+    };
+    union {
+        /*0x2*/ u8 _2;
+        /*0x2*/ u8 row; // lbl_80109AE8 mission row
+    };
     /*0x3*/ u8 hasMissions;
     /*0x4*/ u8 _4[2];
 } ChallengeTeamInfo; // size: 0x6
