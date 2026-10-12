@@ -116,11 +116,28 @@ static s32 chemRank(u8 team, s32 id, s32 rank) {
 }
 #endif
 
+// Copy of fn_80064430 (defined below); the original inlines it into fn_800639BC.
+static inline void spawnFootDust(Vec* pos, u8 count, f32 scale2, f32 scale) {
+    EffectDesc desc;
+
+    memcpy(&desc, &lbl_80108D48, sizeof(EffectDesc));
+    desc.id = lbl_803CBD0C;
+    desc.size[0] *= scale;
+    desc.size[1] *= scale;
+    desc.size[2] *= scale;
+    desc.size[3] *= scale;
+    desc.size[4] *= scale;
+    desc.size[5] *= scale;
+    desc._38 *= scale;
+    desc._54[0] *= scale2;
+    desc._54[1] *= scale2;
+    desc._54[2] *= scale2;
+    fn_8002B7F8(pos, (ParticleParamsE *)&desc, count); // TODO type
+}
+
 // .text:0x800639BC size:0x988
 // Foot dust: spawns dust effects at a character's feet (0x23: left, 0x1F: right).
-// NONMATCHING 56%: the original has the four fn_80064430 calls inlined (fn_80064430 is
-// defined later in the file); control flow and register use otherwise line up
-// nmverify: fn_80064430 inlined on one side (calls match once expanded)
+// NONMATCHING 91%: register allocation, and the kind-table loops use lbzu walkers in the original
 #if NONMATCHING
 s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
     CharActor* actor = lbl_8036E548.active[idx];
@@ -163,12 +180,12 @@ s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
             pos.x = pos.y = pos.z = 0.0f;
             if (fn_8001B728(idx, 0x23, &pos) != 0) {
                 pos.y = 0.0f;
-                fn_80064430(&pos, 0, scale2, 0.0f);
+                spawnFootDust(&pos, 0, scale2, 0.0f);
             }
             pos.x = pos.y = pos.z = 0.0f;
             if (fn_8001B728(idx, 0x1F, &pos) != 0) {
                 pos.y = 0.0f;
-                fn_80064430(&pos, 0, scale2, 0.0f);
+                spawnFootDust(&pos, 0, scale2, 0.0f);
             }
             result = 1;
             fx->unk18++;
@@ -195,7 +212,7 @@ s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
             if (fn_8001B728(idx, 0x23, &pos) != 0) {
                 if (pos.y >= -height && fx->a.y < -height) {
                     pos.y = 0.0f;
-                    fn_80064430(&pos, 1, scale2, scale);
+                    spawnFootDust(&pos, 1, scale2, scale);
                     result = 3;
                 }
                 fx->a = pos;
@@ -204,7 +221,7 @@ s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
             if (fn_8001B728(idx, 0x1F, &pos) != 0) {
                 if (pos.y >= -height && fx->b.y < -height) {
                     pos.y = 0.0f;
-                    fn_80064430(&pos, 1, scale2, scale);
+                    spawnFootDust(&pos, 1, scale2, scale);
                     result = 3;
                 }
                 fx->b = pos;
@@ -215,14 +232,14 @@ s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
             if ((fx->unk1C & 4) && !(actor->_276 & 4)) {
                 fn_8001B728(idx, 0x23, &pos);
                 pos.y = 0.0f;
-                fn_80064430(&pos, 1, scale2, scale);
+                spawnFootDust(&pos, 1, scale2, scale);
                 result = 3;
             }
             pos.x = pos.y = pos.z = 0.0f;
             if ((fx->unk1C & 2) && !(actor->_276 & 2)) {
                 fn_8001B728(idx, 0x1F, &pos);
                 pos.y = 0.0f;
-                fn_80064430(&pos, 1, scale2, scale);
+                spawnFootDust(&pos, 1, scale2, scale);
                 result = 3;
             }
             fx->unk1C = actor->_276;
