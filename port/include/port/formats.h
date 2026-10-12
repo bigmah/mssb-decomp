@@ -26,6 +26,9 @@ void port_swap_anim_bank(void* bank);
 // vertex and flush indices.
 void port_swap_skin(void* skin, uint32_t compSize);
 
+// 2D keyframe animation (Anim/SpaniAnim): port/src/formats_spani.c.
+void port_swap_spani_anim(void* anim);
+
 // Texture archive (TexArchive): u16 count, u16 pad, then count 0x20-byte
 // images {u32 data, u32 tlut, u16 height, u16 width, u8 wrapS, wrapT, minFilter,
 // magFilter, f32 lodBias, u8 x4, u16 tlutEntries, u8 tlutFormat, u8 pad,

@@ -358,6 +358,9 @@ void fn_2_8B2C0(void) {
     s32* t;
     lbl_2_bss_340140->objectCount = i = 0;
     t = lbl_2_bss_340140->resFile;
+#ifdef TARGET_PC
+    port_swap_offset_table(t, 12); // 4 x (layout, geometry, textures)
+#endif
     lbl_2_bss_340140->res[0].layout = (u8*)t + t[0];
     lbl_2_bss_340140->res[0].geo = (u8*)t + t[1];
     lbl_2_bss_340140->res[0].tex = (u8*)t + t[2];
@@ -652,6 +655,9 @@ void fn_2_8C910(void) {
     s32* file;
     lbl_2_bss_340140->objectCount = 0;
     file = lbl_2_bss_340140->resFile;
+#ifdef TARGET_PC
+    port_swap_offset_table(file, 19 * 3 + 12); // 19 model sets, 12 animation banks
+#endif
     for (i = 0; i < 19; i++) {
         lbl_2_bss_340140->res[i].layout = (u8*)file + file[i * 3];
         lbl_2_bss_340140->res[i].geo = (u8*)file + file[i * 3 + 1];

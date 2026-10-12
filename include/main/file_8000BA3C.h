@@ -44,13 +44,26 @@ typedef TexArchive SpriteBank;
 
 // Generic sprite element header.
 typedef struct SpriteElem {
+#ifdef TARGET_PC // little-endian bitfields fill from bit 0: same bits, reverse order
+    /* 0x00 */ u8 type : 4;
+    /* 0x00 */ u8 unk0_b0 : 4;
+#else
     /* 0x00 */ u8 unk0_b0 : 4;
     /* 0x00 */ u8 type : 4;
+#endif
+#ifdef TARGET_PC // little-endian bitfields fill from bit 0: same bits, reverse order
+    /* 0x01 */ u8 unk1_b4 : 4;
+    /* 0x01 */ u8 perCorner : 1; // per-corner vertex colors
+    /* 0x01 */ u8 unk1_b2 : 1;
+    /* 0x01 */ u8 flipY : 1;
+    /* 0x01 */ u8 flipX : 1;
+#else
     /* 0x01 */ u8 flipX : 1;
     /* 0x01 */ u8 flipY : 1;
     /* 0x01 */ u8 unk1_b2 : 1;
     /* 0x01 */ u8 perCorner : 1; // per-corner vertex colors
     /* 0x01 */ u8 unk1_b4 : 4;
+#endif
     /* 0x02 */ u16 texIdx;
 } SpriteElem;
 
@@ -58,10 +71,17 @@ typedef struct SpriteElem {
 typedef struct SpriteRectElem {
     /* 0x00 */ u8 pad0[6];
     /* 0x06 */ u16 texIdx;
+#ifdef TARGET_PC // little-endian bitfields fill from bit 0: same bits, reverse order
+    /* 0x08 */ u8 unk8_b4 : 5;
+    /* 0x08 */ u8 perCorner : 1; // per-corner vertex colors
+    /* 0x08 */ u8 flipY : 1;
+    /* 0x08 */ u8 flipX : 1;
+#else
     /* 0x08 */ u8 flipX : 1;
     /* 0x08 */ u8 flipY : 1;
     /* 0x08 */ u8 perCorner : 1; // per-corner vertex colors
     /* 0x08 */ u8 unk8_b4 : 5;
+#endif
 } SpriteRectElem;
 
 // Filled circle element.
@@ -70,8 +90,13 @@ typedef struct CircleElem {
     /* 0x18 */ s16 unk18;
     /* 0x1A */ s16 z;
     /* 0x1C */ u8 pad1C[0xD];
+#ifdef TARGET_PC // little-endian bitfields fill from bit 0: same bits, reverse order
+    /* 0x29 */ u8 unk29_b1 : 7;
+    /* 0x29 */ u8 hidden : 1;
+#else
     /* 0x29 */ u8 hidden : 1;
     /* 0x29 */ u8 unk29_b1 : 7;
+#endif
 } CircleElem;
 
 // Circle element (screen-space variant).
@@ -80,8 +105,13 @@ typedef struct Circle2DElem {
     /* 0x14 */ s16 x;
     /* 0x16 */ s16 y;
     /* 0x18 */ u8 pad18[0xD];
+#ifdef TARGET_PC // little-endian bitfields fill from bit 0: same bits, reverse order
+    /* 0x25 */ u8 unk25_b1 : 7;
+    /* 0x25 */ u8 hidden : 1;
+#else
     /* 0x25 */ u8 hidden : 1;
     /* 0x25 */ u8 unk25_b1 : 7;
+#endif
 } Circle2DElem;
 
 // Keyframe animation data.
@@ -109,8 +139,8 @@ typedef struct AnimBlock {
 typedef struct AnimTrack {
     /* 0x00 */ u32 count; // bit 31: flag, low 31 bits: number of blocks (including loops)
     /* 0x04 */ u32 unk4;
-    /* 0x08 */ u16* loops;
-    /* 0x0C */ AnimBlock* blocks[1];
+    /* 0x08 */ PTR32(u16) loops;
+    /* 0x0C */ PTR32(AnimBlock) blocks[1];
 } AnimTrack;
 
 // Loop marker in a track's loop table (count at +0, markers from +4).
@@ -141,21 +171,35 @@ typedef struct AnimFrame {
 typedef struct AnimTrackTable {
     /* 0x00 */ s32 count; // tracks
     /* 0x04 */ u8 pad4[4];
-    /* 0x08 */ AnimTrack* tracks[1];
+    /* 0x08 */ PTR32(AnimTrack) tracks[1];
 } AnimTrackTable;
 
 typedef struct Anim {
     /* 0x00 */ u8 pad0[5];
     /* 0x05 */ u8 paramCount; // words per decoded frame
     /* 0x06 */ u16 unk6; // 0: old format (fn_8000D164)
-    /* 0x08 */ AnimTrackTable* table;
-    /* 0x0C */ void* unkC; // passed to fn_8000AF1C
+    /* 0x08 */ PTR32(AnimTrackTable) table;
+    /* 0x0C */ PTR32(void) unkC; // passed to fn_8000AF1C
 } Anim;
 
 // Old-format (anim->unk6 == 0) keyframe: an uncompressed sprite element.
 typedef struct AnimKeyV0 {
+#ifdef TARGET_PC // little-endian bitfields fill from bit 0: same bits, reverse order
+    /* 0x00 */ u8 kind : 4;  // 1, 2: quad, 3: circle, 4: sprite, 5: nested track
+    /* 0x00 */ u8 blend : 4; // 0..2: blend mode 1..3
+#else
     /* 0x00 */ u8 blend : 4; // 0..2: blend mode 1..3
     /* 0x00 */ u8 kind : 4;  // 1, 2: quad, 3: circle, 4: sprite, 5: nested track
+#endif
+#ifdef TARGET_PC // little-endian bitfields fill from bit 0: same bits, reverse order
+    /* 0x01 */ u8 unk1_b6 : 2;
+    /* 0x01 */ u8 useCallback : 1;
+    /* 0x01 */ u8 curved : 1;
+    /* 0x01 */ u8 perCorner : 1;
+    /* 0x01 */ u8 linked : 1; // continues the previous key's segment
+    /* 0x01 */ u8 flipY : 1;
+    /* 0x01 */ u8 flipX : 1;
+#else
     /* 0x01 */ u8 flipX : 1;
     /* 0x01 */ u8 flipY : 1;
     /* 0x01 */ u8 linked : 1; // continues the previous key's segment
@@ -163,6 +207,7 @@ typedef struct AnimKeyV0 {
     /* 0x01 */ u8 curved : 1;
     /* 0x01 */ u8 useCallback : 1;
     /* 0x01 */ u8 unk1_b6 : 2;
+#endif
     /* 0x02 */ u16 subTrack; // nested track, or texture index for sprites
     /* 0x04 */ u8 pad4[8];
     /* 0x0C */ u16 time;

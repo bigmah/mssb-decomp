@@ -34,13 +34,13 @@ typedef struct SpaniTrack {
 typedef struct SpaniSeq {
     /*0x0*/ u32 trackCount; // bit 31 is a flag
     /*0x4*/ u32 unk4;
-    /*0x8*/ SpaniTrack* tracks[1]; // trackCount entries
+    /*0x8*/ PTR32(SpaniTrack) tracks[1]; // trackCount entries (tracks[0]: loop table)
 } SpaniSeq;
 
 typedef struct SpaniSeqList {
     /*0x0*/ u32 count;
     /*0x4*/ u32 unk4;
-    /*0x8*/ SpaniSeq* seqs[1]; // count entries
+    /*0x8*/ PTR32(SpaniSeq) seqs[1]; // count entries
 } SpaniSeqList;
 
 typedef struct SpaniAnim {
@@ -49,8 +49,8 @@ typedef struct SpaniAnim {
     /*0x4*/ u8 unk4;
     /*0x5*/ u8 unk5;
     /*0x6*/ u16 unk6;
-    /*0x8*/ SpaniSeqList* seqList;
-    /*0xC*/ void* unkC;
+    /*0x8*/ PTR32(SpaniSeqList) seqList;
+    /*0xC*/ PTR32(void) unkC;
 } SpaniAnim;
 
 // A loaded texture + animation bank (0x3C bytes).
