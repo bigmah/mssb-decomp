@@ -56,7 +56,7 @@ typedef struct MDisplayObj {
     /* 0x16 */ u8 visibility;
     /* 0x17 */ u8 pad17;
     /* 0x18 */ Mtx worldMatrix;
-    /* 0x48 */ u32 unk48;
+    /* 0x48 */ void* unk48; // DODisplayObj.tevCallback
     /* 0x4C */ void* shaderFunc;
     /* 0x50 */ void* shaderData;
     /* 0x54 */ GXColor colors[6];
