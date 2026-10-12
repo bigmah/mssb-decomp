@@ -90,6 +90,7 @@ void fn_2_1018(u16 ch) {
 
 // fn_2_10AC, size:0x50
 void fn_2_10AC(u8* data) {
+    // TODO port: relocates the file's two leading 32-bit offsets into pointers in place
     *(u32*)data = *(u32*)data + (u32)data;
     *(u32*)(data + 4) = *(u32*)(data + 4) + (u32)data;
     lbl_2_bss_D974[0] = -1;
