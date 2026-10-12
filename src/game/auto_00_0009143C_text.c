@@ -26,3 +26,4 @@ void fn_3_9143C(void) {
         lbl_3_common_bss_32724[0x98] = 2;
     }
 }
+

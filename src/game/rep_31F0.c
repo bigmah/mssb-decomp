@@ -855,7 +855,10 @@ typedef struct {
 void* fn_80052734(s32 index);
 void fn_8003414C(Mtx view);
 
+// .bss (laid out last-defined-first)
+static u8 lbl_3_bss_B69A[0x1E]; // unused
 static u8 lbl_3_bss_B699;
+static u8 lbl_3_bss_B698[0x1]; // unused
 extern const f32 lbl_3_rodata_326C; // 200.0f
 extern const f32 lbl_3_rodata_3274; // 250.0f
 extern const f32 lbl_3_rodata_3278; // 100.0f

@@ -995,8 +995,11 @@ void fn_800B27DC(Mtx44 m, s32 type) {
 #endif
 
 // .text:0x800B2854 size:0x274
-// NONMATCHING 40%: the original recomputes bufSize/2 after the memcpy and keeps the projection column
-// computation inside the loop; ours CSEs/hoists both, which shifts every register
+// NONMATCHING 80%: the original recomputes bufSize/2 after the memcpy and keeps the projection column
+// computation inside the loop (reproduced with the two pragmas below); left: the proj offset induction
+// variable starts from i*0x1C instead of 0, and register allocation
+#pragma opt_propagation off
+#pragma opt_loop_invariants off
 #if NONMATCHING
 // Initialises the sprite system: numLayers layers drawing into buf, split into two
 // display-list buffers of bufSize/2 (one is filled while the other is drawn). Each layer
@@ -1063,6 +1066,9 @@ void fn_800B2854(u8* buf, s32 bufSize, Mtx44 proj, s32 projType, s32 numLayers, 
     lbl_803CC1D8[0] = NULL;
 }
 #endif
+
+#pragma opt_propagation reset
+#pragma opt_loop_invariants reset
 
 // .text:0x800B2AC8 size:0x84
 // For every bone whose flags have bit 3 or 4 set, passes the skinning state's

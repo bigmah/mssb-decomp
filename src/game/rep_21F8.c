@@ -18,7 +18,10 @@ extern const M12 lbl_3_rodata_2248;
 extern f32 lbl_3_rodata_2278;
 extern f32 lbl_3_rodata_227C;
 extern f32 lbl_3_rodata_2280;
-extern u8 lbl_3_bss_9F20[];
+// .bss (laid out last-defined-first)
+static u8 lbl_3_bss_9F35[0x3]; // unused (alignment gap in the original)
+u8 lbl_3_bss_9F34;
+u8 lbl_3_bss_9F20[0x14];
 typedef struct {
     u8 pad0[0x26C];
     E21F8 ents[2];
@@ -110,7 +113,6 @@ void fn_3_C9590(u8* o, s32 k, f32* m, f32 t) {
     fn_3_BFDA4(*(void**)(o + 0x30), o[0x3B], t, k, o[0x43], o + 0x43);
 }
 
-extern u8 lbl_3_bss_9F34;
 
 // .text:0x000C9734 size:0x10
 void fn_3_C9734(void) {

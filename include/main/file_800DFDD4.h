@@ -159,7 +159,7 @@ void fn_800E2B8C(HVQState* state, HVQMCPlane* mc, u8* dst, u8* ref0, u8* ref1);
 void fn_800E2C18(u8* dst, s32 dstStride, u8* src, s32 srcStride, s32 halfX, s32 halfY);
 void fn_800E32E8(HVQState* state, HVQMCPlane* mc, s32 mvX, s32 mvY);
 void fn_800E33AC(HVQState* state, HVQMCPlane* mc, s32 flag, s32 proc);
-void fn_800E3860(HVQState* state, u8* dst, u8* src, u16 stride, u8 type, u8* nest, u16 nestStride, s32 planeIdx,
+void fn_800E3860(HVQState* state, u8* dst, u8* src, s32 stride, u8 type, u8* nest, s32 nestStride, s32 planeIdx,
                  s32 halfX, s32 halfY);
 void fn_800E3E3C(HVQState* state, HVQMCPlane* mc, s32 mvX, s32 mvY);
 void fn_800E40E4(HVQState* state, HVQMCPlane* mc);

@@ -194,7 +194,8 @@ void fn_800ADD70(void) {
 
 #define YUV_CLAMP(t, y, c) (((y) + (c))[0xA00]) // y: table base + luma offset; 0xA00 = clamp
 
-// NONMATCHING 50%: compiler folds the 0xA00 clamp offset into the chroma terms (lbzx) instead of lbz 0xa00(y+c); u8 chroma index masks; NULL checks use cmplw against r0
+// NONMATCHING 58%: the compiler folds the 0xA00 clamp offset into the shared chroma terms (lbzx) where the
+// original adds y+c and loads lbz 0xa00(r); NULL checks use cmplw against r0 in the original
 #if NONMATCHING
 // .text:0x800ADF60 size:0x338
 // Converts a planar YUV 4:2:0 image to GX RGBA8 tiles.
@@ -209,8 +210,10 @@ void YUV2RGB(u8* src, u8* dst, s32 width, s32 height) {
     u8 row;
     s32 x;
     s32 vR, g, uB;
-    u8* ya;
-    u8* yb;
+    s32 ya;
+    s32 yb;
+    u8 cu;
+    u8 cv;
 
     if (src == NULL) {
         OSReport(lbl_800E7B50);
@@ -227,33 +230,38 @@ void YUV2RGB(u8* src, u8* dst, s32 width, s32 height) {
     v = u + (width >> 1) * (height >> 1);
     do {
         tileRow = dst;
-        for (row = 0; row <= 4; row += 4) {
+        row = 0;
+        do {
             dst = tileRow;
             do {
                 out = (u32*)(dst + row * 4);
-                vR = t->vR[v[0]];
-                g = t->vG[v[0]] + t->uG[u[0]];
-                uB = t->uB[u[0]];
-                ya = (u8*)t + t->y[y0[0]];
-                yb = (u8*)t + t->y[y0[1]];
-                out[0] = (YUV_CLAMP(t, ya, vR) << 16) | 0xFF00FF00 | YUV_CLAMP(t, yb, vR);
-                out[8] = (YUV_CLAMP(t, ya, g) << 24) | (YUV_CLAMP(t, ya, uB) << 16) | (YUV_CLAMP(t, yb, g) << 8) | YUV_CLAMP(t, yb, uB);
-                ya = (u8*)t + t->y[y1[0]];
-                yb = (u8*)t + t->y[y1[1]];
-                out[2] = (YUV_CLAMP(t, ya, vR) << 16) | 0xFF00FF00 | YUV_CLAMP(t, yb, vR);
-                out[10] = (YUV_CLAMP(t, ya, g) << 24) | (YUV_CLAMP(t, ya, uB) << 16) | (YUV_CLAMP(t, yb, g) << 8) | YUV_CLAMP(t, yb, uB);
+                cv = v[0];
+                cu = u[0];
+                vR = t->vR[cv];
+                g = t->vG[cv] + t->uG[cu];
+                uB = t->uB[cu];
+                ya = t->y[y0[0]];
+                yb = t->y[y0[1]];
+                out[0] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
+                out[8] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
+                ya = t->y[y1[0]];
+                yb = t->y[y1[1]];
+                out[2] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
+                out[10] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
 
-                vR = t->vR[v[1]];
-                g = t->vG[v[1]] + t->uG[u[1]];
-                uB = t->uB[u[1]];
-                ya = (u8*)t + t->y[y0[2]];
-                yb = (u8*)t + t->y[y0[3]];
-                out[1] = (YUV_CLAMP(t, ya, vR) << 16) | 0xFF00FF00 | YUV_CLAMP(t, yb, vR);
-                out[9] = (YUV_CLAMP(t, ya, g) << 24) | (YUV_CLAMP(t, ya, uB) << 16) | (YUV_CLAMP(t, yb, g) << 8) | YUV_CLAMP(t, yb, uB);
-                ya = (u8*)t + t->y[y1[2]];
-                yb = (u8*)t + t->y[y1[3]];
-                out[3] = (YUV_CLAMP(t, ya, vR) << 16) | 0xFF00FF00 | YUV_CLAMP(t, yb, vR);
-                out[11] = (YUV_CLAMP(t, ya, g) << 24) | (YUV_CLAMP(t, ya, uB) << 16) | (YUV_CLAMP(t, yb, g) << 8) | YUV_CLAMP(t, yb, uB);
+                cv = v[1];
+                cu = u[1];
+                vR = t->vR[cv];
+                g = t->vG[cv] + t->uG[cu];
+                uB = t->uB[cu];
+                ya = t->y[y0[2]];
+                yb = t->y[y0[3]];
+                out[1] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
+                out[9] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
+                ya = t->y[y1[2]];
+                yb = t->y[y1[3]];
+                out[3] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
+                out[11] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
 
                 v += 2;
                 u += 2;
@@ -268,7 +276,8 @@ void YUV2RGB(u8* src, u8* dst, s32 width, s32 height) {
             y0 = y1;
             x = width;
             y1 += width;
-        }
+            row += 4;
+        } while (row <= 4);
     } while ((height -= 4) > 0);
     PPCSync();
 }

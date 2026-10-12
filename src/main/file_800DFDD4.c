@@ -425,23 +425,25 @@ void fn_800E10B4(HVQState* state) {
 #endif
 
 // .text:0x800E11C8 size:0x3A4
-// NONMATCHING 51%: copy loops unrolled/allocated differently
+// NONMATCHING 99%: the original copies widthInBlocks into a second register before the
+// width clamp (addi r4,r7,0); everything else matches with copy propagation off
+#pragma opt_propagation off
 #if NONMATCHING
 void fn_800E11C8(HVQState* state, s32 nestX, s32 nestY) {
-    u16 stride = state->planes[0].blocksPerRow;
-    u16 width = state->planes[0].widthInBlocks;
-    u16 nestWidth = state->nestWidth;
-    u16 height = state->planes[0].heightInBlocks;
-    HVQBlock* src = state->planes[0].payload + nestX + nestY * stride;
-    u16 copyW;
+    s32 stride = state->planes[0].blocksPerRow;
+    s32 width = state->planes[0].widthInBlocks;
+    s32 nestWidth = state->nestWidth;
+    s32 height = state->planes[0].heightInBlocks;
+    HVQBlock* src = state->planes[0].payload + (nestX + nestY * stride);
+    s32 copyW;
     s32 mirrorW;
     s32 zeroW;
-    u16 copyH;
+    s32 copyH;
     s32 mirrorH;
     s32 zeroH;
     u8* dst;
     u8* srcRow;
-    u16 y;
+    s32 y;
     s32 n;
 
     if (width < nestWidth) {
@@ -472,9 +474,8 @@ void fn_800E11C8(HVQState* state, s32 nestX, s32 nestY) {
     dst = state->nest;
     for (y = copyH; y > 0; y--) {
         HVQBlock* blk = src;
-        u16 x;
 
-        for (x = copyW; x > 0; x--) {
+        for (n = copyW; n > 0; n--) {
             *dst++ = (blk->value >> 4) & 0xF;
             blk++;
         }
@@ -489,77 +490,68 @@ void fn_800E11C8(HVQState* state, s32 nestX, s32 nestY) {
     }
 
     srcRow = dst - state->nestWidth;
-    for (n = mirrorH; n > 0; n--) {
+    for (y = mirrorH; y > 0; y--) {
         u8* p = srcRow;
-        u16 x;
 
-        for (x = state->nestWidth; x > 0; x--) {
+        for (n = state->nestWidth; n > 0; n--) {
             *dst++ = *p++;
         }
         srcRow -= state->nestWidth;
     }
-    for (n = zeroH; n > 0; n--) {
-        u16 x;
-
-        for (x = state->nestWidth; x > 0; x--) {
+    for (y = zeroH; y > 0; y--) {
+        for (n = state->nestWidth; n > 0; n--) {
             *dst++ = 0;
         }
     }
 }
 #endif
 
+#pragma opt_propagation reset
+
 // .text:0x800E156C size:0x19C
-// NONMATCHING 31%: clip lookups compile to add+lbz instead of lbzx; register allocation
+// NONMATCHING 94%: register allocation/scheduling of the setup terms. MWCC 1.2.5 only emits the
+// original's lbzx clip lookups with copy propagation off (otherwise add+lbz).
+#pragma opt_propagation off
 #if NONMATCHING
 void fn_800E156C(u8* dst, s32 stride, u8 dc, u8 top, u8 bottom, u8 left, u8 right) {
-    s32 dc2 = dc * 2;
+    u8* clip = lbl_80328DA0;
+    s32 base = ((dc + 0x80) << 3) + 4;
     s32 tb = top - bottom;
     s32 lr = left - right;
-    s32 base = ((dc + 0x80) << 3) + 4;
-    s32 tl = top + left - dc2;
-    s32 tr = top + right - dc2;
+    s32 bmL = bottom - left;
     s32 sum = tb + lr;
-    s32 diff = tb - lr;
-    s32 baseSum = base + sum;
+    s32 dc2 = dc * 2;
+    s32 bl = left + bottom - dc2;
+    s32 tr = top + right - dc2;
+    s32 bs = base + sum;
     s32 br = bottom + right - dc2;
-    s32 tmL = top - left;
-    s32 tmR = top - right;
-    s32 baseDiff;
-    s32 bl;
-    s32 baseNDiff;
-    s32 bmL;
-    s32 bmR;
-    s32 baseNSum;
-    u8* clip;
+    s32 tl = top + left - dc2;
+    s32 diff = tb - lr;
+    s32 bd = base + diff;
 
-    clip = lbl_80328DA0;
-    dst[0] = clip[(tl + baseSum) >> 3];
-    baseDiff = base + diff;
-    dst[1] = clip[(tmL + baseSum) >> 3];
-    bl = left + bottom - dc2;
-    dst[2] = clip[(tmR + baseDiff) >> 3];
-    baseNDiff = base - diff;
-    bmL = bottom - left;
-    dst[3] = clip[(tr + baseDiff) >> 3];
+    dst[0] = clip[(bs + tl) >> 3];
+    dst[1] = clip[((top - left) + bs) >> 3];
+    dst[2] = clip[((top - right) + bd) >> 3];
+    dst[3] = clip[(tr + bd) >> 3];
     dst += stride;
-    dst[0] = clip[(baseSum - tmL) >> 3];
+    dst[0] = clip[(bs - (top - left)) >> 3];
     dst[1] = clip[(base - br) >> 3];
-    bmR = bottom - right;
     dst[2] = clip[(base - bl) >> 3];
-    baseNSum = base - sum;
-    dst[3] = clip[(baseDiff - tmR) >> 3];
+    dst[3] = clip[(bd - (top - right)) >> 3];
     dst += stride;
-    dst[0] = clip[(baseNDiff - bmL) >> 3];
+    dst[0] = clip[((base - diff) - bmL) >> 3];
     dst[1] = clip[(base - tr) >> 3];
     dst[2] = clip[(base - tl) >> 3];
-    dst[3] = clip[(baseNSum - bmR) >> 3];
+    dst[3] = clip[((base - sum) - (bottom - right)) >> 3];
     dst += stride;
-    dst[0] = clip[(bl + baseNDiff) >> 3];
-    dst[1] = clip[(bmL + baseNDiff) >> 3];
-    dst[2] = clip[(bmR + baseNSum) >> 3];
-    dst[3] = clip[(br + baseNSum) >> 3];
+    dst[0] = clip[((base - diff) + bl) >> 3];
+    dst[1] = clip[(bmL + (base - diff)) >> 3];
+    dst[2] = clip[((bottom - right) + (base - sum)) >> 3];
+    dst[3] = clip[((base - sum) + br) >> 3];
 }
 #endif
+
+#pragma opt_propagation reset
 
 // .text:0x800E1708 size:0x4AC
 // NONMATCHING 85%: row pointer arithmetic order and register allocation
@@ -918,36 +910,60 @@ s32 fn_800E2310(HVQState* state, s32* block, u8 count, u8* src, s32 srcStride, s
 }
 
 // .text:0x800E2580 size:0x318
-// NONMATCHING 69%: original unrolls the raw copy and clip loops differently
+// NONMATCHING 98%: in the raw-pixel branch the original walks rows 1-3 with a copy of dst (r5)
 #if NONMATCHING
 void fn_800E2580(HVQState* state, u8* dst, s32 stride, u8 value, u8 type, s32 planeIdx) {
+    u8* clip = lbl_80328DA0;
     s32 block[16];
     s32 shift;
     s32 bias;
-    s32 i;
 
     if (type == 6) {
         // raw 4x4 pixels
         HVQBitBuf* fixvl = &state->fixvl[planeIdx];
 
-        for (i = 0; i < 4; i++) {
-            dst[0] = *fixvl->ptr++;
-            dst[1] = *fixvl->ptr++;
-            dst[2] = *fixvl->ptr++;
-            dst[3] = *fixvl->ptr++;
-            dst += stride;
-        }
+        dst[0] = *fixvl->ptr++;
+        dst[1] = *fixvl->ptr++;
+        dst[2] = *fixvl->ptr++;
+        dst[3] = *fixvl->ptr++;
+        dst += stride;
+        dst[0] = *fixvl->ptr++;
+        dst[1] = *fixvl->ptr++;
+        dst[2] = *fixvl->ptr++;
+        dst[3] = *fixvl->ptr++;
+        dst += stride;
+        dst[0] = *fixvl->ptr++;
+        dst[1] = *fixvl->ptr++;
+        dst[2] = *fixvl->ptr++;
+        dst[3] = *fixvl->ptr++;
+        dst += stride;
+        dst[0] = *fixvl->ptr++;
+        dst[1] = *fixvl->ptr++;
+        dst[2] = *fixvl->ptr++;
+        dst[3] = *fixvl->ptr++;
         return;
     }
     shift = state->basisShift;
     bias = ((value + 0x80) << shift) - fn_800E20A0(state, block, type, state->nest, state->nestWidth, planeIdx);
-    for (i = 0; i < 4; i++) {
-        dst[0] = lbl_80328DA0[(block[i * 4 + 0] + bias) >> shift];
-        dst[1] = lbl_80328DA0[(block[i * 4 + 1] + bias) >> shift];
-        dst[2] = lbl_80328DA0[(block[i * 4 + 2] + bias) >> shift];
-        dst[3] = lbl_80328DA0[(block[i * 4 + 3] + bias) >> shift];
-        dst += stride;
-    }
+    dst[0] = clip[(block[0] + bias) >> shift];
+    dst[1] = clip[(block[1] + bias) >> shift];
+    dst[2] = clip[(block[2] + bias) >> shift];
+    dst[3] = clip[(block[3] + bias) >> shift];
+    dst += stride;
+    dst[0] = clip[(block[4] + bias) >> shift];
+    dst[1] = clip[(block[5] + bias) >> shift];
+    dst[2] = clip[(block[6] + bias) >> shift];
+    dst[3] = clip[(block[7] + bias) >> shift];
+    dst += stride;
+    dst[0] = clip[(block[8] + bias) >> shift];
+    dst[1] = clip[(block[9] + bias) >> shift];
+    dst[2] = clip[(block[10] + bias) >> shift];
+    dst[3] = clip[(block[11] + bias) >> shift];
+    dst += stride;
+    dst[0] = clip[(block[12] + bias) >> shift];
+    dst[1] = clip[(block[13] + bias) >> shift];
+    dst[2] = clip[(block[14] + bias) >> shift];
+    dst[3] = clip[(block[15] + bias) >> shift];
 }
 #endif
 
@@ -1281,13 +1297,16 @@ void fn_800E33AC(HVQState* state, HVQMCPlane* mc, s32 flag, s32 proc) {
 #endif
 
 // .text:0x800E3860 size:0x5DC
-// NONMATCHING 53%: original fully unrolls the min/max and output loops
+// NONMATCHING 88%: the original reads mcdivTable through the clip-table base (both are statics of this TU),
+// strength-reduces block[i + k] in the output loop differently, and register allocation
 #if NONMATCHING
-void fn_800E3860(HVQState* state, u8* dst, u8* src, u16 stride, u8 type, u8* nest, u16 nestStride, s32 planeIdx,
+void fn_800E3860(HVQState* state, u8* dst, u8* src, s32 stride, u8 type, u8* nest, s32 nestStride, s32 planeIdx,
                  s32 halfX, s32 halfY) {
+    u8* clip = lbl_80328DA0;
     s32 block[16];
     u8 pred[16];
     s32 diff[16];
+    s32 unused[2]; // stack layout only
     s32 avg;
     s32 mean;
     s32 min;
@@ -1303,17 +1322,98 @@ void fn_800E3860(HVQState* state, u8* dst, u8* src, u16 stride, u8 type, u8* nes
 
     avg = fn_800E2310(state, block, type - 1, nest, nestStride, planeIdx);
     fn_800E2C18(pred, 4, src, stride, halfX, halfY);
-    mean = (pred[0] + pred[1] + pred[2] + pred[3] + pred[4] + pred[5] + pred[6] + pred[7] + pred[8] + pred[9] +
-            pred[10] + pred[11] + pred[12] + pred[13] + pred[14] + pred[15] + 8) >> 4;
+    mean = (pred[0] + (pred[1] + pred[2] + pred[3] + pred[4] + pred[5] + pred[6] + pred[7] + pred[8] + pred[9] +
+            pred[10] + pred[11] + pred[12] + pred[13] + pred[14] + pred[15] + 8)) >> 4;
     min = max = diff[0] = pred[0] - mean;
-    for (i = 1; i < 16; i++) {
-        diff[i] = pred[i] - mean;
-        if (diff[i] < min) {
-            min = diff[i];
-        }
-        if (diff[i] > max) {
-            max = diff[i];
-        }
+    if ((diff[1] = pred[1] - mean) < min) {
+        min = diff[1];
+    }
+    if (diff[1] > max) {
+        max = diff[1];
+    }
+    if ((diff[2] = pred[2] - mean) < min) {
+        min = diff[2];
+    }
+    if (diff[2] > max) {
+        max = diff[2];
+    }
+    if ((diff[3] = pred[3] - mean) < min) {
+        min = diff[3];
+    }
+    if (diff[3] > max) {
+        max = diff[3];
+    }
+    if ((diff[4] = pred[4] - mean) < min) {
+        min = diff[4];
+    }
+    if (diff[4] > max) {
+        max = diff[4];
+    }
+    if ((diff[5] = pred[5] - mean) < min) {
+        min = diff[5];
+    }
+    if (diff[5] > max) {
+        max = diff[5];
+    }
+    if ((diff[6] = pred[6] - mean) < min) {
+        min = diff[6];
+    }
+    if (diff[6] > max) {
+        max = diff[6];
+    }
+    if ((diff[7] = pred[7] - mean) < min) {
+        min = diff[7];
+    }
+    if (diff[7] > max) {
+        max = diff[7];
+    }
+    if ((diff[8] = pred[8] - mean) < min) {
+        min = diff[8];
+    }
+    if (diff[8] > max) {
+        max = diff[8];
+    }
+    if ((diff[9] = pred[9] - mean) < min) {
+        min = diff[9];
+    }
+    if (diff[9] > max) {
+        max = diff[9];
+    }
+    if ((diff[10] = pred[10] - mean) < min) {
+        min = diff[10];
+    }
+    if (diff[10] > max) {
+        max = diff[10];
+    }
+    if ((diff[11] = pred[11] - mean) < min) {
+        min = diff[11];
+    }
+    if (diff[11] > max) {
+        max = diff[11];
+    }
+    if ((diff[12] = pred[12] - mean) < min) {
+        min = diff[12];
+    }
+    if (diff[12] > max) {
+        max = diff[12];
+    }
+    if ((diff[13] = pred[13] - mean) < min) {
+        min = diff[13];
+    }
+    if (diff[13] > max) {
+        max = diff[13];
+    }
+    if ((diff[14] = pred[14] - mean) < min) {
+        min = diff[14];
+    }
+    if (diff[14] > max) {
+        max = diff[14];
+    }
+    if ((diff[15] = pred[15] - mean) < min) {
+        min = diff[15];
+    }
+    if (diff[15] > max) {
+        max = diff[15];
     }
 
     shift = state->basisShift;
@@ -1340,13 +1440,13 @@ void fn_800E3860(HVQState* state, u8* dst, u8* src, u16 stride, u8 type, u8* nes
     scale = lbl_80328FA0.mcdivTable[max - min] * (sum >> state->dcShift);
 
     for (i = 0; i < 16; i++) {
-        block[i] = bias + scale * diff[i] + block[i];
+        block[i] = bias + (scale * diff[i] + block[i]);
     }
     for (i = 0; i < 4; i++) {
-        dst[0] = lbl_80328DA0[pred[i * 4 + 0] + (block[i * 4 + 0] >> shift) + 0x80];
-        dst[1] = lbl_80328DA0[pred[i * 4 + 1] + (block[i * 4 + 1] >> shift) + 0x80];
-        dst[2] = lbl_80328DA0[pred[i * 4 + 2] + (block[i * 4 + 2] >> shift) + 0x80];
-        dst[3] = lbl_80328DA0[pred[i * 4 + 3] + (block[i * 4 + 3] >> shift) + 0x80];
+        dst[0] = clip[pred[i * 4 + 0] + (block[i * 4 + 0] >> shift) + 0x80];
+        dst[1] = clip[pred[i * 4 + 1] + (block[i * 4 + 1] >> shift) + 0x80];
+        dst[2] = clip[pred[i * 4 + 2] + (block[i * 4 + 2] >> shift) + 0x80];
+        dst[3] = clip[pred[i * 4 + 3] + (block[i * 4 + 3] >> shift) + 0x80];
         dst += stride;
     }
 }

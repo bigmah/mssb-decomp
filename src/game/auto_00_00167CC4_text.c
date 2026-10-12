@@ -35,101 +35,8 @@ static inline void spawnSparkle(SparkleTask* task) {
     fn_80026998(&prm);
 }
 
-// .text:0x00167CC4 size:0x88 mapped:0x807A6D58
-void fn_3_167CC4(void) {
-    void* q;
-
-    // removeQueue ignores its argument; the original passes whatever is in r3.
-    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
-        fn_800B0A14_removeQueue(q);
-        return;
-    }
-    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
-        fn_800B0A14_removeQueue(&g_GameLogic);
-        return;
-    }
-    if (g_Ball.ballState == 2) {
-        fn_3_16699C();
-        return;
-    }
-    fn_800B0A14_removeQueue(&g_Ball);
-}
-
-// .text:0x00167D4C size:0x1C8 mapped:0x807A6DE0
-void fn_3_167D4C(void) {
-    SparkleTask* task = lbl_803CC1B8;
-    void* q;
-    s16 anim;
-
-    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
-        fn_800B0A14_removeQueue(q);
-        return;
-    }
-    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
-        fn_800B0A14_removeQueue(&g_GameLogic);
-        return;
-    }
-    anim = task->actor->anim[0];
-    if (anim == 0x1B || anim == 0x1A) {
-        spawnSparkle(task);
-        task->done = TRUE;
-        return;
-    }
-    if (task->done) {
-        fn_800B0A14_removeQueue(task->actor);
-    }
-}
-
-// .text:0x00167F14 size:0x1C0 mapped:0x807A6FA8
-void fn_3_167F14(void) {
-    SparkleTask* task = lbl_803CC1B8;
-    void* q;
-
-    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
-        fn_800B0A14_removeQueue(q);
-        return;
-    }
-    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
-        fn_800B0A14_removeQueue(&g_GameLogic);
-        return;
-    }
-    if (task->actor->anim[0] == 0x26) {
-        spawnSparkle(task);
-        task->done = TRUE;
-        return;
-    }
-    if (task->done) {
-        fn_800B0A14_removeQueue(task->actor);
-    }
-}
-
-// .text:0x001680D4 size:0x1D8 mapped:0x807A7168
-void fn_3_1680D4(void) {
-    SparkleTask* task = lbl_803CC1B8;
-    void* q;
-    s16 anim;
-
-    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
-        fn_800B0A14_removeQueue(q);
-        return;
-    }
-    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
-        fn_800B0A14_removeQueue(&g_GameLogic);
-        return;
-    }
-    anim = task->actor->anim[0];
-    if (anim == 0x26 || (u16)(anim - 0x28) <= 3 || anim == 0x2C) {
-        spawnSparkle(task);
-        task->done = TRUE;
-        return;
-    }
-    if (task->done) {
-        fn_800B0A14_removeQueue((void*)anim);
-    }
-}
-
-// .text:0x001682AC size:0x168 mapped:0x807A7340
 // Starts the sparkle task for an actor; kind picks which animation(s) trigger it.
+// .text:0x001682AC size:0x168 mapped:0x807A7340
 void fn_3_1682AC(CharActor* actor, s8 kind) {
     SparkleTask* task = NULL;
 
@@ -175,3 +82,97 @@ void fn_3_1682AC(CharActor* actor, s8 kind) {
         task->done = FALSE;
     }
 }
+
+// .text:0x001680D4 size:0x1D8 mapped:0x807A7168
+void fn_3_1680D4(void) {
+    SparkleTask* task = lbl_803CC1B8;
+    void* q;
+    s16 anim;
+
+    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
+        fn_800B0A14_removeQueue(q);
+        return;
+    }
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+        fn_800B0A14_removeQueue(&g_GameLogic);
+        return;
+    }
+    anim = task->actor->anim[0];
+    if (anim == 0x26 || (u16)(anim - 0x28) <= 3 || anim == 0x2C) {
+        spawnSparkle(task);
+        task->done = TRUE;
+        return;
+    }
+    if (task->done) {
+        fn_800B0A14_removeQueue((void*)anim);
+    }
+}
+
+// .text:0x00167F14 size:0x1C0 mapped:0x807A6FA8
+void fn_3_167F14(void) {
+    SparkleTask* task = lbl_803CC1B8;
+    void* q;
+
+    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
+        fn_800B0A14_removeQueue(q);
+        return;
+    }
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+        fn_800B0A14_removeQueue(&g_GameLogic);
+        return;
+    }
+    if (task->actor->anim[0] == 0x26) {
+        spawnSparkle(task);
+        task->done = TRUE;
+        return;
+    }
+    if (task->done) {
+        fn_800B0A14_removeQueue(task->actor);
+    }
+}
+
+// .text:0x00167D4C size:0x1C8 mapped:0x807A6DE0
+void fn_3_167D4C(void) {
+    SparkleTask* task = lbl_803CC1B8;
+    void* q;
+    s16 anim;
+
+    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
+        fn_800B0A14_removeQueue(q);
+        return;
+    }
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+        fn_800B0A14_removeQueue(&g_GameLogic);
+        return;
+    }
+    anim = task->actor->anim[0];
+    if (anim == 0x1B || anim == 0x1A) {
+        spawnSparkle(task);
+        task->done = TRUE;
+        return;
+    }
+    if (task->done) {
+        fn_800B0A14_removeQueue(task->actor);
+    }
+}
+
+// .text:0x00167CC4 size:0x88 mapped:0x807A6D58
+void fn_3_167CC4(void) {
+    void* q;
+
+    // removeQueue ignores its argument; the original passes whatever is in r3.
+    if ((q = &g_d_GameSettings, g_d_GameSettings._55 != 0) || (q = &lbl_3_common_bss_35154, lbl_3_common_bss_35154._479 != 0)) {
+        fn_800B0A14_removeQueue(q);
+        return;
+    }
+    if (g_GameLogic.gameStatus != GAME_STATUS_LIVE_BALL) {
+        fn_800B0A14_removeQueue(&g_GameLogic);
+        return;
+    }
+    if (g_Ball.ballState == 2) {
+        fn_3_16699C();
+        return;
+    }
+    fn_800B0A14_removeQueue(&g_Ball);
+}
+

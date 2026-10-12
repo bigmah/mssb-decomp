@@ -2,16 +2,8 @@
 #define __AUTO_00_0004B1AC_TEXT_MENUS_H__
 
 #include "mssbTypes.h"
+#include "menus/menu_asset.h" // InitEntry
 
-typedef struct {
-    s32 w0;
-    s16 f4;
-    s16 f6;
-    s16 f8;
-    s16 fA;
-    s16 fC;
-    s16 fE;
-} InitEntry;
 
 void fn_2_4C314(void);
 
@@ -166,5 +158,6 @@ void fn_2_52690(void);
 void fn_2_4B2D0(void);
 
 s16 fn_2_4EB9C(void);
+void fn_2_53408(void);
 
 #endif

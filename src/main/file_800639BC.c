@@ -74,7 +74,7 @@ extern void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32
 
 // Field-by-field copy of a character's stats (inlined by the original).
 #if NONMATCHING
-static void copyCharacterStats(CharacterStats* dst, CharacterStats* src) {
+static inline void copyCharacterStats(CharacterStats* dst, CharacterStats* src) {
     s32 i;
 
     memcpy(&dst->stats, &src->stats, 0x1E);
@@ -104,7 +104,7 @@ static void copyCharacterStats(CharacterStats* dst, CharacterStats* src) {
 
 // Index of id in the team's chemistry order; keeps rank if it is not there
 // (the original leaves the register unchanged).
-static s32 chemRank(u8 team, s32 id, s32 rank) {
+static inline s32 chemRank(u8 team, s32 id, s32 rank) {
     s32 k;
 
     for (k = 0; k < 0x36; k++) {
@@ -116,11 +116,28 @@ static s32 chemRank(u8 team, s32 id, s32 rank) {
 }
 #endif
 
+// Copy of fn_80064430 (defined below); the original inlines it into fn_800639BC.
+static inline void spawnFootDust(Vec* pos, u8 count, f32 scale2, f32 scale) {
+    EffectDesc desc;
+
+    memcpy(&desc, &lbl_80108D48, sizeof(EffectDesc));
+    desc.id = lbl_803CBD0C;
+    desc.size[0] *= scale;
+    desc.size[1] *= scale;
+    desc.size[2] *= scale;
+    desc.size[3] *= scale;
+    desc.size[4] *= scale;
+    desc.size[5] *= scale;
+    desc._38 *= scale;
+    desc._54[0] *= scale2;
+    desc._54[1] *= scale2;
+    desc._54[2] *= scale2;
+    fn_8002B7F8(pos, (ParticleParamsE *)&desc, count); // TODO type
+}
+
 // .text:0x800639BC size:0x988
 // Foot dust: spawns dust effects at a character's feet (0x23: left, 0x1F: right).
-// NONMATCHING 56%: the original has the four fn_80064430 calls inlined (fn_80064430 is
-// defined later in the file); control flow and register use otherwise line up
-// nmverify: fn_80064430 inlined on one side (calls match once expanded)
+// NONMATCHING 91%: register allocation, and the kind-table loops use lbzu walkers in the original
 #if NONMATCHING
 s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
     CharActor* actor = lbl_8036E548.active[idx];
@@ -163,12 +180,12 @@ s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
             pos.x = pos.y = pos.z = 0.0f;
             if (fn_8001B728(idx, 0x23, &pos) != 0) {
                 pos.y = 0.0f;
-                fn_80064430(&pos, 0, scale2, 0.0f);
+                spawnFootDust(&pos, 0, scale2, 0.0f);
             }
             pos.x = pos.y = pos.z = 0.0f;
             if (fn_8001B728(idx, 0x1F, &pos) != 0) {
                 pos.y = 0.0f;
-                fn_80064430(&pos, 0, scale2, 0.0f);
+                spawnFootDust(&pos, 0, scale2, 0.0f);
             }
             result = 1;
             fx->unk18++;
@@ -195,7 +212,7 @@ s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
             if (fn_8001B728(idx, 0x23, &pos) != 0) {
                 if (pos.y >= -height && fx->a.y < -height) {
                     pos.y = 0.0f;
-                    fn_80064430(&pos, 1, scale2, scale);
+                    spawnFootDust(&pos, 1, scale2, scale);
                     result = 3;
                 }
                 fx->a = pos;
@@ -204,7 +221,7 @@ s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
             if (fn_8001B728(idx, 0x1F, &pos) != 0) {
                 if (pos.y >= -height && fx->b.y < -height) {
                     pos.y = 0.0f;
-                    fn_80064430(&pos, 1, scale2, scale);
+                    spawnFootDust(&pos, 1, scale2, scale);
                     result = 3;
                 }
                 fx->b = pos;
@@ -215,14 +232,14 @@ s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
             if ((fx->unk1C & 4) && !(actor->_276 & 4)) {
                 fn_8001B728(idx, 0x23, &pos);
                 pos.y = 0.0f;
-                fn_80064430(&pos, 1, scale2, scale);
+                spawnFootDust(&pos, 1, scale2, scale);
                 result = 3;
             }
             pos.x = pos.y = pos.z = 0.0f;
             if ((fx->unk1C & 2) && !(actor->_276 & 2)) {
                 fn_8001B728(idx, 0x1F, &pos);
                 pos.y = 0.0f;
-                fn_80064430(&pos, 1, scale2, scale);
+                spawnFootDust(&pos, 1, scale2, scale);
                 result = 3;
             }
             fx->unk1C = actor->_276;
@@ -404,13 +421,14 @@ void fn_800649BC(void) {
 }
 
 // .text:0x80064A04 size:0x13E8
-// NONMATCHING 39%: the original inlines placeSlotByClass and chemRank at every call site
-// (the logic was checked against the asm block by block)
+// NONMATCHING 77%: placeSlotByClass and chemRank are inlined as in the original; the pick/captain
+// scan loops are unrolled differently (the original reloads picks[team][i] in the inner loop)
+// and more registers are saved (logic checked against the asm block by block)
 #if NONMATCHING
 // Gives character c's slot (in picks[team]) the first free field position its
 // class prefers, or a random free one. checkFree: in the random case, only take
 // a slot that has no position yet.
-static void placeSlotByClass(u8 team, s8* slotPos, s8 c, BOOL checkFree) {
+static inline void placeSlotByClass(u8 team, s8* slotPos, s8 c, BOOL checkFree) {
     u8* pref = lbl_80109054[1][lbl_8034E9A0.roster[c / 9][c % 9].stats.CharacterClass];
     s32 p;
     s32 k;
@@ -453,11 +471,10 @@ static void placeSlotByClass(u8 team, s8* slotPos, s8 c, BOOL checkFree) {
 // Assigns a field position to each of a team's picks (lbl_803C6724.pos): the
 // captain pitches (0), then the captain-type characters and the others in
 // chemistry order take the first free position preferred by their class.
-// nmverify: placeSlotByClass inlined on one side (calls match once expanded)
 void unsure_FillRosterPositions(u8 team) {
-    s8 others[9];
-    s8 captains[9];
     s8 slotPos[9];
+    s8 captains[9];
+    s8 others[9];
     u8 nc;
     u8 no;
     u8 isCaptain;
@@ -564,10 +581,10 @@ void unsure_FillRosterPositions(u8 team) {
 #endif
 
 // .text:0x80065DEC size:0x10C0
-// NONMATCHING 77%: the original inlines placeByClass, chemRank, copyCharacterStats and
-// fn_80066EAC; logic and calls otherwise line up
+// NONMATCHING 86%: placeByClass, chemRank, copyCharacterStats and fn_80066EAC are inlined as in the
+// original; register allocation and loop layout differ
 #if NONMATCHING
-static void placeByClass(s8* field, s8 c) {
+static inline void placeByClass(s8* field, s8 c) {
     u8* pref = lbl_80109054[0][lbl_8034E9A0.roster[c / 9][c % 9].stats.CharacterClass];
     s32 p;
     u8 r;
@@ -585,11 +602,45 @@ static void placeByClass(s8* field, s8 c) {
 }
 
 
+// Copy of fn_80066EAC (defined below); the original inlines it here and into fn_80068838.
+static inline void fn_80066EAC_inline(u8 team) {
+    // The sort pass compares against buf[9] as well (one past the 9 ids); the
+    // original buffer is 9 bytes there, so that byte is uninitialised.
+    s8 buf[10];
+    s32 i;
+    s32 j;
+    s32 k;
+    s16 id;
+    u8 chem;
+    s8 t;
+
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            id = inMemRoster[team][j].stats.CharID;
+            chem = ((u8*)&inMemRoster[team][i])[id + 0x3B]; // chemistry[id]
+            if (chem < 90 || chem == 100) {
+                buf[j] = -1;
+            } else {
+                buf[j] = id;
+            }
+        }
+        for (j = 0; j < 9; j++) {
+            for (k = 0; k < 10; k++) {
+                if (buf[j] > buf[k]) {
+                    t = buf[j];
+                    buf[j] = buf[k];
+                    buf[k] = t;
+                }
+            }
+        }
+        memcpy(lbl_8034E9A0.chemPartners[team][i], buf, 9);
+    }
+}
+
 // Assigns field positions to a team's 9 players: the captain first, then the
 // captain-type characters and then the others in chemistry order, each at the
 // first free position preferred by its class. Then copies the players' stats
 // into inMemRoster in field-position order.
-// nmverify: fn_80066EAC inlined on one side (calls match once expanded)
 void characterSelectScreen(u8 team) {
     s16 charIds[9];
     s8 field[9];
@@ -696,7 +747,7 @@ void characterSelectScreen(u8 team) {
     for (i = 0; i < 9; i++) {
         c = field[i];
         copyCharacterStats(&inMemRoster[team][i], &lbl_8034E9A0.roster[c / 9][c % 9]);
-        fn_80066EAC(team);
+        fn_80066EAC_inline(team);
         lbl_80354720[team][i][0] = i;
         lbl_80354720[team][i][1] = i;
         for (k = 0; k < 9; k++) {
@@ -794,22 +845,25 @@ void fn_800671FC(void) {
 }
 
 // .text:0x80067264 size:0x360
-// NONMATCHING 66%: loop unrolling/scheduling of the class-count loops differs
+// NONMATCHING 73%: the original unrolls the class loop 3x without a zero-trip guard (a for loop
+// here gets the guard, a do-while is not unrolled); otherwise the same operations
 #if NONMATCHING
 u8 fn_80067264(s32 team, s32 captain) {
     s32 counts[4];
     s32 classes[2][9];
     s32 i;
-    u8 cls; // uninitialised if the captain is not in lbl_80108ED0 (as in the original)
+    s32 cls; // uninitialised if the captain is not in lbl_80108ED0 (as in the original)
 
     counts[0] = 0;
     counts[1] = 0;
     counts[2] = 0;
     counts[3] = 0;
-    for (i = 0; i < 9; i++) {
+    i = 0;
+    do {
         classes[team][i] = 0;
         classes[team][i] = lbl_8034E9A0.roster[lbl_803C6724.picks[team][i] / 9][lbl_803C6724.picks[team][i] % 9].stats.CharacterClass;
-    }
+        i++;
+    } while (i < 9);
     for (i = 0; i < 12; i++) {
         if (captain == lbl_80108ED0[i]) {
             cls = lbl_8010902C[i];
@@ -1201,11 +1255,97 @@ void fn_8006877C(u8 track) {
 
 // .text:0x80068838 size:0xF78
 
-// NONMATCHING 69%: large function written as equivalent C; the original inlines copyCharacterStats,
-// fn_80067B40, fn_80066EAC, fn_80069854, fn_8006496C and fn_800678CC, and addresses
-// lbl_80108EC4/lbl_80108EDC relative to lbl_80108DB8
-// nmverify: fn_80067C48 fn_80069854 inlined on one side (calls match once expanded)
+// NONMATCHING 90%: copyCharacterStats, fn_80067B40, fn_80066EAC, fn_80069854, fn_8006496C and
+// fn_800678CC are inlined (static inline copies below) as in the original; left: the original addresses
+// lbl_80108EC4/lbl_80108EDC relative to lbl_80108DB8, and register allocation
 #if NONMATCHING
+// Copies of helpers that the original inlines into fn_80068838.
+static inline BOOL fn_80067B40_inline(s32 unused, u8 charId, u8 flag) {
+    s32 row;
+    s32 i;
+    s16* group;
+
+    if (charId == -1) {
+        return FALSE;
+    }
+    for (row = 0; row < 9; row++) {
+        for (i = 0; i < 5; i++) {
+            if (charId == lbl_80108EDC.groups[row][i]) {
+                group = lbl_80108EDC.groups[row];
+                for (i = 0; i < 5; i++) {
+                    if (group[i] != -1 && flag != 2) {
+                        lbl_8034E9A0.charFlag[group[i]] = flag;
+                    }
+                }
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+static inline void fn_80069854_inline(void) {
+    s32 team;
+    s32 i;
+
+    for (team = 0; team < 2; team++) {
+        for (i = 0; i < 9; i++) {
+            if (lbl_8034E9A0.captain[team] == inMemRoster[team][i].stats.CharID) {
+                lbl_8034E9A0.captainSlot[team] = i;
+            }
+        }
+    }
+}
+
+static inline void fn_8006496C_inline(void) {
+    CharSelectState* cs = &lbl_8034E9A0;
+
+    g_d_GameSettings.PlayerPorts[0] = cs->ports[0];
+    if (g_d_GameSettings._10 == 0) {
+        if (cs->ports[0] == 0) {
+            g_d_GameSettings.PlayerPorts[1] = 5;
+        } else {
+            g_d_GameSettings.PlayerPorts[1] = 4;
+        }
+    } else {
+        g_d_GameSettings.PlayerPorts[1] = cs->ports[1];
+    }
+}
+
+static inline void fn_800678CC_inline(s32 team) {
+    s8 idx = -1;
+    s32 captain;
+    s32 i;
+    u8 variant;
+
+    if (g_d_GameSettings.GameModeSelected == 5) {
+        if (team == 0) {
+            captain = lbl_8034E9A0.captain[team] = gChallengeState._441D;
+        } else {
+            captain = lbl_8034E9A0.captain[team] = (s8)gChallengeState._441F;
+        }
+    } else {
+        captain = lbl_8034E9A0.captain[team];
+    }
+    for (i = 0; i < 12; i++) {
+        if (captain == lbl_80108ED0[i]) {
+            idx = i;
+            break;
+        }
+    }
+    variant = fn_800675C4(team, captain);
+    if (variant == 0) {
+        variant = fn_80067264(team, captain);
+        if (variant != 0) {
+            lbl_8034E9A0.captainVariant[team] = idx * 4 + (variant - 1);
+        } else {
+            lbl_8034E9A0.captainVariant[team] = (idx + 1) * 4 - 1;
+        }
+    } else {
+        lbl_8034E9A0.captainVariant[team] = idx * 4 + (variant - 1);
+    }
+}
+
 // Challenge mode: sets up both teams' rosters (team 0 from the save, team 1 from
 // preset 11 with random recruited characters).
 void fn_80068838(void) {
@@ -1228,7 +1368,7 @@ void fn_80068838(void) {
     // Collect the recruited characters (one per model group).
     for (i = 0; i < 0x36; i++) {
         if (gChallengeState.trackers[i]._31 == 2) {
-            if (fn_80067B40(0, i, 1)) {
+            if (fn_80067B40_inline(0, i, 1)) {
                 for (row = 0; row < 9; row++) {
                     if (i == lbl_80108EDC.groups[row][0]) {
                         break;
@@ -1319,12 +1459,12 @@ void fn_80068838(void) {
         fn_80067C48(0);
         fn_80067C48(1);
     }
-    fn_80066EAC(0);
-    fn_80069854();
-    fn_8006496C();
-    fn_80069854();
-    fn_800678CC(0);
-    fn_800678CC(1);
+    fn_80066EAC_inline(0);
+    fn_80069854_inline();
+    fn_8006496C_inline();
+    fn_80069854_inline();
+    fn_800678CC_inline(0);
+    fn_800678CC_inline(1);
 }
 #endif
 

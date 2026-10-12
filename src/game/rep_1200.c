@@ -1058,7 +1058,9 @@ void fn_3_72CA8(void) {
 #endif
 
 // .text:0x0007310C size:0x49C mapped:0x806B21A0
-static u32 lbl_3_bss_172C[7]; // sound voice IDs
+// .bss (laid out last-defined-first)
+static u32 lbl_3_bss_172C[7];
+static u8 lbl_3_bss_1728[0x4]; // unused
 extern VecXYZ lbl_3_data_21380;
 extern u8 lbl_3_data_5F44[]; // TypeOfPitch per star pitch, indexed by specialPitchTypeCode - 4
 extern void sndFXKeyOff(u32 vid);
