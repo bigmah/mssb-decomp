@@ -1548,8 +1548,6 @@ void fn_3_14D318(u8* a) {
     *(f32*)(a + 8) = *(f32*)(a + 8) + (rand() % 100 - 50) / 100.0;
 }
 
-#pragma dont_inline off
-// .text:0x0014D44C size:0x288 mapped:0x8078C4E0
 // fn_3_14D44C body for fn_3_14D710, which inlines it twice (CW will not auto-inline the real one)
 static inline void Inl14D44C(u8* a, u8 kind) {
     u8* p = *(u8**)(a + 0xC);
@@ -1591,6 +1589,8 @@ static inline void Inl14D44C(u8* a, u8 kind) {
     } while (p != NULL && n < 0x2B);
 }
 
+#pragma dont_inline off
+// .text:0x0014D44C size:0x288 mapped:0x8078C4E0
 void fn_3_14D44C(u8* a, u32 kind0) {
     u8 kind = kind0;
     u8* p = *(u8**)(a + 0xC);
@@ -2870,10 +2870,6 @@ void fn_3_1534C0(u8* o) {
     *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BEC + 8) / lbl_3_rodata_3930;
 }
 
-// NONMATCHING 93%: the original inlines 1534C0/1531A4/152794 (one per case); CW won't auto-inline the last two, and making the
-// standalone functions call shared helpers changes their stack layout, so these are static-inline copies of the three bodies.
-// The rest is the original reaching 26BEC/26BFC/26C0C through the pooled lbl_3_data_266A8 base
-// .text:0x001536A8 size:0x7E4 mapped:0x8079273C
 #if NONMATCHING
 static inline void Inl1534C0(u8* o) {
     Mtx m;
@@ -2914,7 +2910,9 @@ static inline void Inl1534C0(u8* o) {
     *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
     *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BEC + 8) / lbl_3_rodata_3930;
 }
+#endif
 
+#if NONMATCHING
 static inline void Inl1531A4(u8* o) {
     Mtx m;
     Vec up;
@@ -2957,7 +2955,9 @@ static inline void Inl1531A4(u8* o) {
     *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
     *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BFC + 8) / lbl_3_rodata_3930;
 }
+#endif
 
+#if NONMATCHING
 static inline void Inl152794(u8* o) {
     Mtx m;
     Vec up;
@@ -3000,7 +3000,13 @@ static inline void Inl152794(u8* o) {
     *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
     *(f32*)(o + 0x14) = -((f32)*(s32*)(lbl_3_data_26C0C + 8) / lbl_3_rodata_3930);
 }
+#endif
 
+// NONMATCHING 93%: the original inlines 1534C0/1531A4/152794 (one per case); CW won't auto-inline the last two, and making the
+// standalone functions call shared helpers changes their stack layout, so these are static-inline copies of the three bodies.
+// The rest is the original reaching 26BEC/26BFC/26C0C through the pooled lbl_3_data_266A8 base
+// .text:0x001536A8 size:0x7E4 mapped:0x8079273C
+#if NONMATCHING
 void fn_3_1536A8(u8* obj, u8 mode) {
     switch (mode) {
     case 1:

@@ -1588,9 +1588,6 @@ normal:
 }
 #endif
 
-// .text:0x000A4A10 size:0x540 mapped:0x806E3AA4
-// NONMATCHING 95%: fn_3_A53DC (with fn_3_A6ABC) inlined through a static-inline copy of its body; register allocation and
-// a few scheduling differences remain
 #if NONMATCHING
 static inline void InlA53DC(s32 i) {
     InMemRunnerType* r = &g_Runners[i];
@@ -1633,7 +1630,12 @@ static inline void InlA53DC(s32 i) {
         lbl_3_bss_1848[i] = f->_192 + n + lbl_3_data_1C40 - r->framesToNextBase;
     }
 }
+#endif
 
+// .text:0x000A4A10 size:0x540 mapped:0x806E3AA4
+// NONMATCHING 95%: fn_3_A53DC (with fn_3_A6ABC) inlined through a static-inline copy of its body; register allocation and
+// a few scheduling differences remain
+#if NONMATCHING
 void fn_3_A4A10(void) {
     s32 i;
     InMemRunnerType* r;
@@ -2224,6 +2226,25 @@ s32 fn_3_A6ABC(f32 x, f32 z) {
     return n;
 }
 
+static inline void InlA6D48(void) {
+    s32 i;
+    lbl_3_bss_1824 = 0;
+    lbl_3_bss_1808[0] = -1;
+    lbl_3_bss_1808[1] = -1;
+    lbl_3_bss_1808[2] = -1;
+    lbl_3_bss_1808[3] = -1;
+    for (i = 3; i >= 0; i--) {
+        InMemRunnerType* r = &g_Runners[i];
+        if (r->runnerOnFieldOrOutOrScored == 1) {
+            s32 b = r->currentBase;
+            lbl_3_bss_1824 |= 1 << ((s32)r->fractionalBasesRan * 4);
+            if (lbl_3_bss_1808[b] < 0 || g_Runners[lbl_3_bss_1808[b]].baseStandingOn >= 0) {
+                lbl_3_bss_1808[b] = i;
+            }
+        }
+    }
+}
+
 // .text:0x000A6D48 size:0x150 mapped:0x806E5DDC
 void fn_3_A6D48(void) {
     s32 i;
@@ -2776,8 +2797,7 @@ void fn_3_A8074(s32 idx) {
     g_FieldingLogic._0DE = res;
 }
 
-// .text:0x000A8338 size:0x140 mapped:0x806E73CC
-void fn_3_A8338(s32 idx) {
+static inline void InlA8338(s32 idx) {
     g_FieldingLogic_s* fl;
     s16 sel;
     RepFielder* fp;
@@ -2809,6 +2829,11 @@ void fn_3_A8338(s32 idx) {
         }
     }
     fn_3_A3CC0();
+}
+
+// .text:0x000A8338 size:0x140 mapped:0x806E73CC
+void fn_3_A8338(s32 idx) {
+    InlA8338(idx);
 }
 
 // .text:0x000A8478 size:0x150 mapped:0x806E750C
@@ -2858,10 +2883,7 @@ tail:
 }
 #endif
 
-// .text:0x000A85C8 size:0x40C mapped:0x806E765C
-// NONMATCHING 92.5%: float register allocation in the inlined fn_3_A6ABC body differs
 #if NONMATCHING
-#pragma dont_inline off
 // fn_3_A89D4 inlines this whole body; CW needs a raised inline limit for that
 #pragma inline_max_size(600)
 static inline void InlA85C8(f32 dist) {
@@ -2899,7 +2921,12 @@ static inline void InlA85C8(f32 dist) {
         }
     }
 }
+#endif
 
+// .text:0x000A85C8 size:0x40C mapped:0x806E765C
+// NONMATCHING 92.5%: float register allocation in the inlined fn_3_A6ABC body differs
+#if NONMATCHING
+#pragma dont_inline off
 void fn_3_A85C8(f32 dist) {
     InlA85C8(dist);
 }
@@ -3213,8 +3240,7 @@ void fn_3_A9984(int fi) {
     f->pos.z = f->pos.z + f->velZ;
 }
 
-// .text:0x000A9C74 size:0xAC mapped:0x806E8D08
-void fn_3_A9C74(int i) {
+static inline void InlA9C74(int i) {
     RepFielder* f = &g_Fielders[i];
     int r = checkFieldingStat(g_GameLogic.teamFielding, f->rosterID, 5);
     if (f->_1F8 >= 3) {
@@ -3227,10 +3253,18 @@ void fn_3_A9C74(int i) {
     }
 }
 
+// .text:0x000A9C74 size:0xAC mapped:0x806E8D08
+void fn_3_A9C74(int i) {
+    InlA9C74(i);
+}
+
 // .text:0x000A9D20 size:0xD1C mapped:0x806E8DB4
 // Per-frame update for fielder fi while the play is live.
-// NONMATCHING 61%: the original inlines fn_3_A6D48, fn_3_A8338, fn_3_AABF8, fn_3_AAA3C and fn_3_A9C74; here they are called. Control flow matches
+// NONMATCHING 96%: fn_3_A6D48, fn_3_A8338, fn_3_AABF8, fn_3_AAA3C and fn_3_A9C74 inlined via their Inl* static-inline bodies; register allocation differs
 #if NONMATCHING
+static inline int InlAABF8(void);
+static inline void InlAAA3C(int idx);
+#pragma inline_max_size(600)
 void fn_3_A9D20(s32 fi) {
     s32 handled;
     RepFielder* f;
@@ -3327,7 +3361,7 @@ void fn_3_A9D20(s32 fi) {
         f->throwing = 0;
         return;
     }
-    fn_3_A6D48();
+    InlA6D48();
     if (g_FieldingLogic._0C4 < 0) {
         // no throw chosen yet
         if (f->_1C6 != 0) {
@@ -3335,7 +3369,7 @@ void fn_3_A9D20(s32 fi) {
         } else if (g_FieldingLogic._116 == 0) {
             fn_3_A76B4();
             if (g_FieldingLogic._0CC >= 0) {
-                fn_3_A8338(fi);
+                InlA8338(fi);
             } else {
                 g_FieldingLogic._0E2 = -1;
             }
@@ -3365,7 +3399,7 @@ void fn_3_A9D20(s32 fi) {
                 g_FieldingLogic._0C4 = -1;
             }
         } else if (g_FieldingLogic._0C4 == 5) {
-            if (fn_3_AABF8()) {
+            if (InlAABF8()) {
                 f->throwTarget.x = lbl_3_data_4444[8];
                 f->throwTarget.y = lbl_3_rodata_193C;
                 g_Ball.throwDestination.x = f->throwTarget.x;
@@ -3377,13 +3411,13 @@ void fn_3_A9D20(s32 fi) {
             }
         }
         g_FieldingLogic._119 = 0;
-        fn_3_AAA3C(fi);
+        InlAAA3C(fi);
         if (g_FieldingLogic._0C4 >= 0) {
             g_FieldingLogic._0CC = -1;
             fn_3_A89D4();
             fn_3_79040();
         }
-        fn_3_A9C74(fi);
+        InlA9C74(fi);
         goto check;
     }
     if (f->_215 != 0) {
@@ -3448,6 +3482,46 @@ after:
 }
 #endif
 
+static inline void InlAAA3C(int idx) {
+    RepFielder* f = &g_Fielders[idx];
+    s16 ce = g_FieldingLogic._0CE;
+    s16 c4;
+    if (ce < 0) {
+        return;
+    }
+    c4 = g_FieldingLogic._0C4;
+    if (c4 < 0 || c4 > 3) {
+        return;
+    }
+    if (f->distToBase[c4] > lbl_3_rodata_19F0 && g_FieldingLogic._0DC < 0) {
+        return;
+    }
+    if (c4 == ce) {
+        if (g_FieldingLogic._0E0 >= 0 && g_FieldingLogic._0E0 <= 3) {
+            if (g_FieldingLogic._0DC == g_Runners[g_FieldingLogic._0E0].nextBase || g_FieldingLogic._0DC == g_Runners[g_FieldingLogic._0E0].currentBase) {
+                g_FieldingLogic._119 = 1;
+            }
+        }
+    }
+    if (g_FieldingLogic._0CE == 9) {
+        if (g_FieldingLogic._0E0 >= 0 && g_FieldingLogic._0E0 <= 3) {
+            InMemRunnerType* r = &g_Runners[g_FieldingLogic._0E0];
+            if (r->runnerOnFieldOrOutOrScored == 1 && g_FieldingLogic._0C4 == r->baseRunningTowards) {
+                g_FieldingLogic._119 = 1;
+            }
+        }
+    }
+    if (g_FieldingLogic._119 != 0) {
+        if (g_FieldingLogic._0C4 >= 0 && g_FieldingLogic._0C4 <= 3) {
+            s32 o = g_FieldingLogic._0C4;
+            f32 a = game_atan2(lbl_3_data_4444[o*2] - f->pos.x, lbl_3_data_4444[o*2+1] - f->pos.z);
+            if (fn_3_9FC1C(a, f->facing) > 0x40) {
+                g_FieldingLogic._119 = 0;
+            }
+        }
+    }
+}
+
 // .text:0x000AAA3C size:0x1BC mapped:0x806E9AD0
 void fn_3_AAA3C(int idx) {
     RepFielder* f = &g_Fielders[idx];
@@ -3489,8 +3563,7 @@ void fn_3_AAA3C(int idx) {
     }
 }
 
-// .text:0x000AABF8 size:0x8C mapped:0x806E9C8C
-int fn_3_AABF8(void) {
+static inline int InlAABF8(void) {
     s16 idx = g_FieldingLogic._0D8;
     if (idx == -1) {
         return 0;
@@ -3504,8 +3577,11 @@ int fn_3_AABF8(void) {
     return !(g_Fielders[g_Ball.fielderWBallIndex]._0B8 < lbl_3_rodata_19F0);
 }
 
-// .text:0x000AAC84 size:0x36C mapped:0x806E9D18
-// NONMATCHING 88%: receiver position loads use lfsx/lfsu in the original, register allocation differs; fn_3_A6ABC is inlined (body in InlAAC84, shared with fn_3_ABDD0)
+// .text:0x000AABF8 size:0x8C mapped:0x806E9C8C
+int fn_3_AABF8(void) {
+    return InlAABF8();
+}
+
 #if NONMATCHING
 // fn_3_ABDD0 inlines this whole body; CW needs a raised inline limit for that
 #pragma inline_max_size(600)
@@ -3568,7 +3644,11 @@ static inline void InlAAC84(f32* x, f32* z) {
     }
     g_Ball.fielderBeingThrownTo = idx;
 }
+#endif
 
+// .text:0x000AAC84 size:0x36C mapped:0x806E9D18
+// NONMATCHING 88%: receiver position loads use lfsx/lfsu in the original, register allocation differs; fn_3_A6ABC is inlined (body in InlAAC84, shared with fn_3_ABDD0)
+#if NONMATCHING
 void fn_3_AAC84(f32* x, f32* z) {
     InlAAC84(x, z);
 }
