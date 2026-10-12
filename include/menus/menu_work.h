@@ -643,6 +643,22 @@ typedef struct MenuData {
     /*0x1978FB*/ u8 _1978FB;
 } MenuData; // size: 0x1978FC (lbl_2_bss_1A8250)
 
+// Menu selection variables (lbl_2_bss_F410, 0x58 bytes).
+typedef struct MenuSelVars {
+    /*0x00*/ s32 _00;
+    /*0x04*/ s32 _04;
+    /*0x08*/ s32 _08;
+    /*0x0C*/ s32 _0C;
+    /*0x10*/ s32 charSel[8];   // per player: selected character
+    /*0x30*/ s32 rosterSel[2]; // per team: selected roster entry
+    /*0x38*/ s32 _38[3];
+    /*0x44*/ s32 _44;
+    /*0x48*/ s32 _48;
+    /*0x4C*/ s32 _4C;
+    /*0x50*/ s32 slot;         // highlighted save slot
+    /*0x54*/ u32 _54;
+} MenuSelVars; // size: 0x58
+
 // Team/captain select screen state (lbl_2_bss_100B8; the debug options menu reuses
 // it, see DebugMenuState in menus/auto_00_00013BA4_text.h).
 typedef struct CaptainSelMenu {
