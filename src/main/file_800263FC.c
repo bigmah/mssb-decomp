@@ -231,31 +231,11 @@ static inline void LoadParticleTex(TexArchive* arc, s32 idx, GXTexWrapMode wrapS
     GXLoadTexObj(&texObj, GX_TEXMAP1);
 }
 
-static inline void DrawParticleQuad(Particle* p, TexArchive* arc) {
-    GXTexObj texObj;
-    GXTlutObj tlutObj;
-    TexImage* img;
-    s32 tex = p->texIndex;
-    Vec* corner;
+static inline void DrawParticleQuad(Particle* p, TexArchive* arc, Vec* corner) {
     s32 i;
 
-    if (arc == NULL) {
-        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-    } else {
-        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
-        img = &arc->entries[arc->entries[tex].index];
-        if (img->tlut != NULL) {
-            GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
-            GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
-            GXLoadTlut(&tlutObj, GX_TLUT0);
-        } else {
-            GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-        }
-        GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
-        GXLoadTexObj(&texObj, GX_TEXMAP1);
-    }
+    LoadParticleTex(arc, p->texIndex, GX_CLAMP, GX_CLAMP);
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    corner = lbl_80180010;
     for (i = 0; i < 4; i++) {
         GXPosition3f32(p->pos.x + corner[i].x, p->pos.y + corner[i].y, p->pos.z + corner[i].z);
         GXColor1u32(p->color.rgba);
@@ -263,31 +243,31 @@ static inline void DrawParticleQuad(Particle* p, TexArchive* arc) {
     }
 }
 
-static inline void QuadCorners(f32 width, f32 height) {
+static inline void QuadCorners(Vec* c, f32 width, f32 height) {
     s32 i;
-    f32 x1;
-    f32 x0;
-    f32 y0;
     f32 y1;
+    f32 x0;
+    f32 x1;
+    f32 y0;
 
     x1 = 0.5f * width;
     x0 = 0.5f * -width;
     y0 = 0.5f * -height;
     y1 = 0.5f * height;
-    lbl_80180010[0].z = 0.0f;
-    lbl_80180010[0].x = x0;
-    lbl_80180010[0].y = y0;
-    lbl_80180010[1].x = x1;
-    lbl_80180010[1].y = y0;
-    lbl_80180010[1].z = 0.0f;
-    lbl_80180010[2].x = x1;
-    lbl_80180010[2].y = y1;
-    lbl_80180010[2].z = 0.0f;
-    lbl_80180010[3].x = x0;
-    lbl_80180010[3].y = y1;
-    lbl_80180010[3].z = 0.0f;
+    c[0].z = 0.0f;
+    c[0].x = x0;
+    c[0].y = y0;
+    c[1].x = x1;
+    c[1].y = y0;
+    c[1].z = 0.0f;
+    c[2].x = x1;
+    c[2].y = y1;
+    c[2].z = 0.0f;
+    c[3].x = x0;
+    c[3].y = y1;
+    c[3].z = 0.0f;
     for (i = 0; i < 4; i++) {
-        PSMTXMultVec(lbl_8017FF78[0], &lbl_80180010[i], &lbl_80180010[i]);
+        PSMTXMultVec(lbl_8017FF78[0], &c[i], &c[i]);
     }
 }
 
@@ -424,8 +404,8 @@ s32 fn_800263FC(Emitter* e) {
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
     do {
         if (p->life != 0) {
-            QuadCorners(p->sizeX, p->sizeY);
-            DrawParticleQuad(p, e->tex);
+            QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
+            DrawParticleQuad(p, e->tex, lbl_80180010);
             p->sizeX = p->sizeX + p->dSize;
             p->sizeY = p->sizeX;
             a = p->color.c.a + p->dAlpha;
@@ -1424,15 +1404,15 @@ void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
 }
 
 // .text:0x8002A85C size:0x40C
-// NONMATCHING 67%: register allocation; the original inlines the corner setup and quad draw with different scheduling
+// NONMATCHING 99%: float register allocation of the inlined corner setup
 #if NONMATCHING
 u8 fn_8002A85C(Emitter* e, Particle* p) {
     s32 a;
 
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
-    QuadCorners(p->sizeX, p->sizeY);
-    DrawParticleQuad(p, e->tex);
+    QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
+    DrawParticleQuad(p, e->tex, lbl_80180010);
     a = p->color.c.a;
     if (p->u.tEsub.life0 - p->life < p->u.tEsub.phase1) {
         p->sizeX = p->sizeX + p->u.tEsub.dSizeX1;
@@ -2210,7 +2190,7 @@ void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm) {
 #endif
 
 // .text:0x8002E3DC size:0x44C
-// NONMATCHING 72%: register allocation only (same instructions)
+// NONMATCHING 99%: register allocation only (same instructions)
 #if NONMATCHING
 s32 fn_8002E3DC(Emitter* e) {
     s32 alive = 0;
@@ -2227,8 +2207,8 @@ s32 fn_8002E3DC(Emitter* e) {
             p->sizeY = size;
             p->sizeX = size;
         }
-        QuadCorners(p->sizeX, p->sizeY);
-        DrawParticleQuad(p, e->tex);
+        QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
+        DrawParticleQuad(p, e->tex, lbl_80180010);
         alive += (p->life > 0);
         p = p->next;
     } while (p != NULL);
@@ -2237,11 +2217,11 @@ s32 fn_8002E3DC(Emitter* e) {
 #endif
 
 // .text:0x8002E828 size:0x478
-// NONMATCHING 72%: register allocation only (same instructions)
+// NONMATCHING 99%: float register allocation of the inlined corner setup
 #if NONMATCHING
 s32 fn_8002E828(Emitter* e) {
-    s32 alive = 0;
     Particle* p = e->particles;
+    s32 alive = 0;
     f32 size;
 
     GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
@@ -2256,8 +2236,8 @@ s32 fn_8002E828(Emitter* e) {
         size = p->u.t6.unk10 + ((p->u.t6.unk14 - p->u.t6.unk10) * (f32)(p->u.t6.unk1C - p->life)) / (f32)p->u.t6.unk1C;
         p->sizeY = size;
         p->sizeX = size;
-        QuadCorners(p->sizeX, p->sizeY);
-        DrawParticleQuad(p, e->tex);
+        QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
+        DrawParticleQuad(p, e->tex, lbl_80180010);
         alive += (p->life > 0);
         p = p->next;
     } while (p != NULL);
@@ -2482,27 +2462,24 @@ void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm) {
 #endif
 
 // .text:0x8002F9FC size:0x3BC
-// NONMATCHING 84%: register allocation only
-#if NONMATCHING
 s32 fn_8002F9FC(Emitter* e) {
     Particle* p = e->particles;
 
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     do {
-        QuadCorners(p->sizeX, p->sizeY);
+        QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
         // uvOrder selects the blend: nonzero subtracts, zero adds
         if (p->uvOrder != 0) {
             GXSetBlendMode(GX_BM_SUBTRACT, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
         } else {
             GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
         }
-        DrawParticleQuad(p, e->tex);
+        DrawParticleQuad(p, e->tex, lbl_80180010);
         p = p->next;
     } while (p != NULL);
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
     return 1;
 }
-#endif
 
 // .text:0x8002FDB8 size:0x6B8
 // NONMATCHING 78%: float register allocation and scheduling
@@ -2749,7 +2726,7 @@ void fn_80030D88(Vec* pos, Vec* dir, ParticleParams5* prm, u8 type) {
 #endif
 
 // .text:0x80031034 size:0x790
-// NONMATCHING 89%: the original inlines the corner/draw helpers with the file-static bss base (lbl_8017EC00 + offset)
+// NONMATCHING 89%: the original addresses the corners/billboard matrix off the file-static bss base (lbl_8017EC00 + offset)
 #if NONMATCHING
 s32 fn_80031034(Emitter* e) {
     Vec a;
@@ -2845,7 +2822,7 @@ s32 fn_80031034(Emitter* e) {
         for (i = 0; i < 4; i++) {
             PSMTXMultVec(lbl_8017FF78[0], &lbl_80180010[i], &lbl_80180010[i]);
         }
-        DrawParticleQuad(p, e->tex);
+        DrawParticleQuad(p, e->tex, lbl_80180010);
         if (alpha < 0) {
             p->life = 0;
         } else if (lbl_80366158._28 == 0) {
@@ -2963,7 +2940,7 @@ void fn_80031CA4(Vec* pos, ParticleParams5* prm) {
 #endif
 
 // .text:0x80031F34 size:0x104
-// NONMATCHING 93%: the original keeps n and the count copy in separate saved regs
+// NONMATCHING 92%: the original keeps n and the count copy in separate saved regs
 #if NONMATCHING
 Particle* fn_80031F34(Particle* list, s32 n) {
     return ZSortParticles(list, n);
@@ -3104,7 +3081,7 @@ void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
 }
 
 // .text:0x800328E0 size:0x7EC
-// NONMATCHING 87%: the original addresses the corners/billboard matrix off the file-static bss base (lbl_8017EC00 + offset); register allocation
+// NONMATCHING 88%: the original addresses the corners/billboard matrix off the file-static bss base (lbl_8017EC00 + offset); register allocation
 #if NONMATCHING
 s32 fn_800328E0(Emitter* e) {
     Mtx rotM;
@@ -3128,7 +3105,7 @@ s32 fn_800328E0(Emitter* e) {
     Particle* p = e->particles;
 
     ref = lbl_800E6784;
-    QuadCorners(p->sizeX, p->sizeY);
+    QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
     memcpy(&dir, &e->u.t1.dir, sizeof(Vec));
     angle = acos(PSVECDotProduct(&ref, &dir));
     PSVECCrossProduct(&ref, &dir, &axis);
@@ -3178,7 +3155,7 @@ s32 fn_800328E0(Emitter* e) {
                     p->life = 0;
                 }
             }
-            DrawParticleQuad(p, e->tex);
+            DrawParticleQuad(p, e->tex, lbl_80180010);
             count++;
         } else if (e->u.t1.spawnLeft != 0) {
             spread = lbl_803CB7FC;
