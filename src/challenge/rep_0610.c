@@ -6,13 +6,12 @@
 
 // .bss of this file, laid out in reverse definition order. The functions reach
 // most of it through one pooled base (lbl_1_bss_3070).
-static u8 lbl_1_bss_6940[0xB0];      // per player: 0x48-byte records
+static ChPlayerBss lbl_1_bss_6940;  // player record and its parts slot
 static u8 lbl_1_bss_68FC[0x44];      // [0x40 + player]: character
-static u8 lbl_1_bss_68F8[0x4];       // unused
-static u8 lbl_1_bss_67E0[0x118];
+static ChViewer lbl_1_bss_67E0;     // also covers 0x68F8
 static void* lbl_1_bss_67B8[0xA];
 static u8 lbl_1_bss_62B8[0x500];     // unused
-static u8 lbl_1_bss_60EC[0x5C * 5];
+static ShapeAnimPlayer lbl_1_bss_60EC[5]; // shape (facial) animation players
 static u8* lbl_1_bss_60E8;
 static u8* lbl_1_bss_60E4;
 static u8* lbl_1_bss_60E0;
@@ -110,7 +109,12 @@ extern const f32 lbl_1_rodata_73D8[];
 extern const f32 lbl_1_rodata_73DC[];
 extern const f32 lbl_1_rodata_73E0[];
 
-extern u8 lbl_8036E548[];
+#include "main/file_80011640.h" // CharMgr lbl_8036E548
+#include "C3/anim.h"
+// lbl_8036E548 shifted by `i` actors, so that ->actors[0] is actors[i]: the original indexes
+// "mgr + i * sizeof(CharActor)" and adds the field offset afterwards.
+#define CHARMGR_AT(i) ((CharMgr*)((CharActor*)&lbl_8036E548 + (i)))
+#include "C3/light.h"
 typedef struct { void* data; u32 pad4; u32 pad8; } ChallengeEntry;
 
 extern void LITXForm(void* light, void* matrix);
@@ -261,7 +265,6 @@ typedef struct {
 } ChallengeModelEntry;
 
 
-extern void fn_80011640(void*, void*);
 extern void fn_80052968(void);
 
 
@@ -394,13 +397,9 @@ struct ActorSlot;
 struct DOListEntry;
 extern void fn_80023B04(s32 count);
 extern void fn_8002399C(struct ActorSlot* slot, u16 index, s16 id, void* layout, void* anim, void* arg5);
-extern void fn_80025DDC(void* shape);
 extern void fn_80025C58(struct ShapeData* shape, struct ShapeModel** model);
-extern void fn_80025FFC(void* shape, void* player);
-extern void fn_80025EEC(void* player, s32 table, s32 entry);
 extern void fn_800BD548(struct DOListEntry* entry, u8 numArgs, ...);
 extern void fn_800B2C08(struct GameActor* actor, u16 bone);
-extern void fn_8001FC4C(void* player);
 struct CharActor;
 extern s32 fn_80063010(struct CharActor* player, struct ActorObject* obj); // main/file_800527C4.h
 extern s32 fn_8004B7B4(struct CharActor* model, struct ActorObject* obj); // main/file_8004B284.h
@@ -4594,7 +4593,13 @@ u8 lbl_1_data_F2F4[480] = { // 0x50-byte records: name at +0x00, ...
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
-static u8* lbl_1_data_F4D4[2] = {NULL, lbl_1_data_F2F4}; // [0] is used as an s16 record counter
+// Animation scripts: lbl_1_data_F2F4 holds 0x50-byte records (name, then 8 steps at +0x10).
+typedef struct ChScriptTable {
+    /*0x0*/ s16 count;   // records before the empty one (counted by fn_1_E8D4)
+    /*0x2*/ s16 current; // record being edited (fn_1_E098)
+    /*0x4*/ u8* records;
+} ChScriptTable;
+static ChScriptTable lbl_1_data_F4D4 = {0, 0, lbl_1_data_F2F4};
 const char* lbl_1_data_F4DC[3] = {
     lbl_1_rodata_7350, lbl_1_rodata_7354, lbl_1_rodata_7358,
 };
@@ -4619,14 +4624,14 @@ void fn_1_17D90(void) {
     s32 n;
     u8* src;
     u8* dst;
-    u8* base;
+    CharMgr* base;
     fn_800AD038(lbl_80366158[2]);
     *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
     *(void (**)(void))(lbl_803CC1B8[0]) = fn_1_17B5C;
-    src = lbl_1_data_F4D4[1] + 0x40;
+    src = lbl_1_data_F4D4.records + 0x40;
     n = 8;
     dst = (u8*)lbl_1_bss_3218 + 0x40;
-    base = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C;
+    base = CHARMGR_AT(lbl_1_bss_5F73);
     while ((src -= 8, dst -= 8, n-- != 0)) {
         if ((s8)src[0x10] != 0) {
             u8* table;
@@ -4634,7 +4639,7 @@ void fn_1_17D90(void) {
             s16 b;
             s16 c;
             *(s16*)dst = a;
-            table = *(u8**)(base + a * 4 + 0xC14);
+            table = base->actors[0].banks.b[a];
             b = *(s16*)(src + 0x14);
             *(s16*)(dst + 2) = b;
             *(s16*)(dst + 6) = (s8)src[0x11];
@@ -4654,8 +4659,8 @@ void fn_1_17D90(void) {
             *(s16*)(dst + 4) = 0;
         }
     }
-    while ((s8)lbl_1_data_F4D4[1][*(s16*)lbl_1_data_F4D4 * 0x50] != 0) {
-        *(s16*)lbl_1_data_F4D4 += 1;
+    while ((s8)lbl_1_data_F4D4.records[lbl_1_data_F4D4.count * 0x50] != 0) {
+        lbl_1_data_F4D4.count += 1;
     }
 }
 
@@ -4664,7 +4669,7 @@ void fn_1_17D90(void) {
 #if NONMATCHING
 void fn_1_17B5C(void) {
     s32 i;
-    u8* entry;
+    ChPlayer* entry;
 
     lbl_1_bss_5F62 = -1;
     lbl_1_bss_5F60 = 4;
@@ -4675,10 +4680,10 @@ void fn_1_17B5C(void) {
         if (lbl_1_data_2390[i] != 0) break;
     }
     lbl_1_bss_68FC[0x40] = 0;
-    entry = lbl_1_bss_6940;
-    entry[0x44] = i;
-    entry[0x45] = 0;
-    entry[0x46] = 0;
+    entry = lbl_1_bss_6940.player;
+    entry->group = i;
+    entry->seq = 0;
+    entry->variant = 0;
     lbl_1_bss_5F5C = 0;
     *(void (**)(u8*))lbl_803CC1B8[0] = fn_1_176EC;
     fn_80052D70();
@@ -4689,31 +4694,31 @@ void fn_1_17B5C(void) {
 // NONMATCHING ~95%: register-only diffs (r4/r5, f4/f5 swapped around the 1/512 constant and row pointer)
 #if NONMATCHING
 void fn_1_179CC(void) {
-    u8* row;
+    CharActor* row;
     f32 x;
     f32 y;
     f32 z;
     switch (lbl_1_bss_5F72) {
     case 0:
-        fn_1_121D4(lbl_1_bss_67E0);
+        fn_1_121D4(&lbl_1_bss_67E0.cam);
         break;
     case 1:
-        row = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04;
-        x = *(f32*)(row + 0x34);
-        y = *(f32*)(row + 0x38);
-        z = *(f32*)(row + 0x3C);
-        x += (f32)((s8*)&lbl_803C77B8)[0x10] / 768.0f;
-        z += (f32)((s8*)&lbl_803C77B8)[0x11] / 768.0f;
-        y += (f32)((u8*)&lbl_803C77B8)[0x15] / 768.0f;
-        y -= (f32)((u8*)&lbl_803C77B8)[0x14] / 768.0f;
-        lbl_1_data_AD0C[1] -= 0.001953125f * (f32)((s8*)&lbl_803C77B8)[0x12];
-        lbl_1_data_AD0C[0] -= 0.001953125f * (f32)((s8*)&lbl_803C77B8)[0x13];
-        *(f32*)(row + 0x34) = x;
-        *(f32*)(row + 0x38) = y;
-        *(f32*)(row + 0x3C) = z;
-        *(f32*)(row + 0x40) = lbl_1_data_AD0C[0];
-        *(f32*)(row + 0x44) = lbl_1_data_AD0C[1];
-        *(f32*)(row + 0x48) = lbl_1_data_AD0C[2];
+        row = &lbl_8036E548.actors[lbl_1_bss_5F73];
+        x = row->pos.x;
+        y = row->pos.y;
+        z = row->pos.z;
+        x += (f32)lbl_803C77B8.stickX / 768.0f;
+        z += (f32)lbl_803C77B8.stickY / 768.0f;
+        y += (f32)lbl_803C77B8.triggerR / 768.0f;
+        y -= (f32)lbl_803C77B8.triggerL / 768.0f;
+        lbl_1_data_AD0C[1] -= 0.001953125f * (f32)lbl_803C77B8.substickX;
+        lbl_1_data_AD0C[0] -= 0.001953125f * (f32)lbl_803C77B8.substickY;
+        row->pos.x = x;
+        row->pos.y = y;
+        row->pos.z = z;
+        row->rot.x = lbl_1_data_AD0C[0];
+        row->rot.y = lbl_1_data_AD0C[1];
+        row->rot.z = lbl_1_data_AD0C[2];
         break;
     }
 }
@@ -4746,7 +4751,7 @@ void fn_1_1770C(u8* object) {
         lbl_1_bss_5F5C = 2;
     }
     fn_1_179CC();
-    PSMTXCopy((f32(*)[4])lbl_1_bss_67E0, (f32(*)[4])(lbl_1_bss_68FC + 0x10));
+    PSMTXCopy(lbl_1_bss_67E0.cam.view, (f32(*)[4])(lbl_1_bss_68FC + 0x10));
     fn_1_129D0();
     PSMTXCopy((f32(*)[4])(lbl_1_bss_68FC + 0x10), lbl_1_data_AAC4[lbl_803CBBC0[0]].m);
     fn_800A7D4C(7, &lbl_1_data_AAC4[lbl_803CBBC0[0]]);
@@ -4781,18 +4786,18 @@ void fn_1_176EC(u8* object) {
 static inline void loadAnimBank(u8* queue, s32 group, s16 next) {
     if (lbl_1_data_2390[lbl_1_bss_5F73 * 7 + group] != 0) {
         u8 character = lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73];
-        *(void**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC14 + group * 4) =
+        lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[group] =
             (void*)ARAMTransfer(&lbl_1_data_2398[*(s32*)(lbl_1_bss_3070 + 4) + (character * 0x13 + 2 + group)], 0, 0, 0);
         *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
     } else {
-        *(void**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC14 + group * 4) = NULL;
+        lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[group] = NULL;
         *(s16*)(queue + 0x10) = next;
     }
 }
 
 // The odd states: register the transferred bank once the transfer is done.
 static inline void getAnimBank(s32 group) {
-    ANIMGet(*(struct ANIMBank**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC14 + group * 4));
+    ANIMGet(lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[group]);
     *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
 }
 
@@ -4810,7 +4815,7 @@ void fn_1_16978(void) {
     u8* state = lbl_1_bss_3070;
     u8* queue = lbl_803CC1B8[0];
     s16 step = *(s16*)(queue + 0x10);
-    u8* row;
+    CharActor* row;
     s32 i;
 
     switch (step) {
@@ -4838,8 +4843,8 @@ void fn_1_16978(void) {
         break;
     case 4: {
         u8 character = lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73];
-        u8 variant = lbl_1_bss_6940[lbl_1_bss_5F73 * 0x48 + 0x46];
-        *(void**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC0C) =
+        u8 variant = lbl_1_bss_6940.player[lbl_1_bss_5F73].variant;
+        lbl_8036E548.actors[lbl_1_bss_5F73].files =
             (void*)ARAMTransfer(&lbl_1_data_2398[*(s32*)(lbl_1_bss_3070 + 4) + character * 0x13 + variant], 0, 0, 0);
         *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
         break;
@@ -4900,31 +4905,31 @@ void fn_1_16978(void) {
     case 18:
         if (lbl_1_data_2390[lbl_1_bss_5F73 * 7 + 6] != 0) {
             u8 character = lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73];
-            *(void**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC2C) =
+            lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[6] =
                 (void*)ARAMTransfer(&lbl_1_data_2398[*(s32*)(lbl_1_bss_3070 + 4) + (character * 0x13 + 8)], 0, 0, 0);
             *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
         } else {
-            *(void**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC2C) = NULL;
+            lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[6] = NULL;
             *(s16*)(queue + 0x10) += 1;
         }
         break;
     case 19:
         if (CH_ARAM_DONE()) {
             if (lbl_1_data_2390[lbl_1_bss_5F73 * 7 + 6] != 0) {
-                ANIMGet(*(struct ANIMBank**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC2C));
+                ANIMGet(lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[6]);
             }
             *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
         }
         break;
     case 20:
-        row = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C;
-        if (lbl_1_bss_3070[0] == 0 || *(u32*)(*(u8**)(row + 0xC0C) + 0x10) == 0) {
+        row = &lbl_8036E548.actors[lbl_1_bss_5F73];
+        if (lbl_1_bss_3070[0] == 0 || row->files[4] == NULL) {
             *(s16*)(queue + 0x10) = 22;
             break;
         }
-        *(u8**)(row + 0xC30) = lbl_1_bss_6940 + 0x48 + lbl_1_bss_5F73 * 0x64;
+        row->part = &lbl_1_bss_6940.part[lbl_1_bss_5F73];
         if (lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73] == 0) {
-            **(void***)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC30) = (void*)ARAMTransfer(lbl_1_data_A3F8, 0, 0, 0);
+            lbl_8036E548.actors[lbl_1_bss_5F73].part->files = ARAMTransfer(lbl_1_data_A3F8, 0, 0, 0);
             *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
         } else {
             lbl_1_bss_3070[0] = 0;
@@ -4953,16 +4958,17 @@ void fn_1_16978(void) {
         }
         break;
     case 24:
-        *(void**)(lbl_8036E548 + 0x2C84) = (void*)ARAMTransfer(lbl_1_data_A3D8, 0, 0, 0);
+        lbl_8036E548.stadiumFiles = (void*)ARAMTransfer(lbl_1_data_A3D8, 0, 0, 0);
         *(s16*)(lbl_803CC1B8[0] + 0x10) += 1;
         break;
     case 26: {
         u32* offsets;
         fn_1_D7A4(0);
         // Relocate the 80 offsets at the start of the loaded file into pointers.
-        offsets = *(u32**)(lbl_8036E548 + 0x2C84);
+        offsets = (u32*)lbl_8036E548.stadiumFiles;
         for (i = 0; i < 0x50; i++) {
-            (*(u8***)(lbl_8036E548 + 0x2C84))[i] = (u8*)offsets + offsets[i];
+            // TODO port: 32-bit file offsets become pointers in place
+            ((u8**)lbl_8036E548.stadiumFiles)[i] = (u8*)offsets + offsets[i];
         }
         *(s16*)(lbl_803CC1B8[0] + 0x10) = 27;
         break;
@@ -5038,7 +5044,7 @@ void fn_1_168C8(void) {
     } else {
         lbl_1_bss_3084 = 0;
         *(s16*)(queue + 0x10) = 0;
-        if (*(u32*)(*(u8**)(lbl_8036E548 + 0xC0C) + 0x10) != 0) {
+        if (lbl_8036E548.actors[0].files[4] != NULL) {
             *(void (**)(u8*))lbl_803CC1B8[0] = fn_1_1770C;
         } else {
             *(void (**)(u8*))lbl_803CC1B8[0] = fn_1_1770C;
@@ -5050,11 +5056,11 @@ void fn_1_168C8(void) {
 void fn_1_165E0(void) {
     s16 delta;
     u16 buttons;
-    u8* light;
+    Light* light;
 
-    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    buttons = lbl_803C77B8._04;
     delta = 0;
-    light = ((u8**)(lbl_8036E548 + 0xAC))[(s8)*(u8*)&lbl_1_bss_5F70];
+    light = lbl_8036E548.lights[(s8)*(u8*)&lbl_1_bss_5F70];
     if (buttons & 1) {
         delta = -1;
     } else if (buttons & 2) {
@@ -5086,40 +5092,40 @@ void fn_1_165E0(void) {
         break;
     }
     case 1:
-        light[0x70] += delta;
-        if (light[0x70] > 0xFF) {
-            light[0x70] = 0;
+        light->color.r += delta;
+        if (light->color.r > 0xFF) {
+            light->color.r = 0;
         }
         break;
     case 2:
-        light[0x71] += delta;
-        if (light[0x71] > 0xFF) {
-            light[0x71] = 0;
+        light->color.g += delta;
+        if (light->color.g > 0xFF) {
+            light->color.g = 0;
         }
         break;
     case 3:
-        light[0x72] += delta;
-        if (light[0x72] > 0xFF) {
-            light[0x72] = 0;
+        light->color.b += delta;
+        if (light->color.b > 0xFF) {
+            light->color.b = 0;
         }
         break;
     case 4:
-        *(f32*)(light + 0x40) += delta;
+        light->position.x += delta;
         break;
     case 5:
-        *(f32*)(light + 0x44) += delta;
+        light->position.y += delta;
         break;
     case 6:
-        *(f32*)(light + 0x48) += delta;
+        light->position.z += delta;
         break;
     case 7:
-        *(f32*)(light + 0x58) += delta;
+        light->direction.x += delta;
         break;
     case 8:
-        *(f32*)(light + 0x5C) += delta;
+        light->direction.y += delta;
         break;
     case 9:
-        *(f32*)(light + 0x60) += delta;
+        light->direction.z += delta;
         break;
     }
 }
@@ -5127,56 +5133,60 @@ void fn_1_165E0(void) {
 // .text:0x16590 size:0x50
 void* fn_1_16590(void) {
     u32 scene = lbl_1_bss_5F73;
-    u8* base = lbl_8036E548;
-    u8* table;
-    u8* row;
-    base += scene * 0x27C;
-    row = base; row += lbl_1_bss_6940[scene * 0x48 + 0x44] * 4; table = *(u8**)(row + 0xC14);
-    table = *(u8**)(table + 4);
-    return ((ChallengeEntry*)table)[lbl_1_bss_6940[scene * 0x48 + 0x45]].data;
+    CharActor* base = (CharActor*)&lbl_8036E548; // stepped by actors, see CHARMGR_AT
+    ANIMBank* table;
+    void** bank;
+    base += scene;
+    // banks.b[group], stepped the way the original does: (base + group) then the field offset
+    bank = (void**)base;
+    bank += lbl_1_bss_6940.player[scene].group;
+    table = ((CharMgr*)bank)->actors[0].banks.b[0];
+    return table->animSequences[lbl_1_bss_6940.player[scene].seq].sequenceName;
 }
 
 // .text:0x00016558 size:0x38
 void* fn_1_16558(s32 group, s32 index) {
-    u8* base = lbl_8036E548;
-    u8* table;
-    u8* row;
-    base += lbl_1_bss_5F73 * 0x27C;
-    row = base; row += group * 4; table = *(u8**)(row + 0xC14);
-    table = *(u8**)(table + 4);
-    return ((ChallengeEntry*)table)[index].data;
+    CharActor* base = (CharActor*)&lbl_8036E548; // stepped by actors, see CHARMGR_AT
+    ANIMBank* table;
+    void** bank;
+    base += lbl_1_bss_5F73;
+    // banks.b[group], stepped the way the original does: (base + group) then the field offset
+    bank = (void**)base;
+    bank += group;
+    table = ((CharMgr*)bank)->actors[0].banks.b[0];
+    return table->animSequences[index].sequenceName;
 }
 
 // .text:0x1644C size:0x10C
 void fn_1_1644C(void) {
-    u32 entry;
+    CharActor* entry;
     s32 i;
     u8** p;
-    entry = *(u32*)(lbl_8036E548 + lbl_1_bss_5F73 * 4 + 0x2C50);
+    entry = lbl_8036E548.active[lbl_1_bss_5F73];
     lbl_1_bss_5F69 = lbl_1_bss_5F69 ^ 1;
-    if (entry != 0) {
-        u8* slot = *(u8**)(lbl_8036E548 + 0x60) + lbl_1_bss_5F73 * 0x90 + 0x34;
+    if (entry != NULL) {
+        ActorObject* slot = &lbl_8036E548.slots->objects[lbl_1_bss_5F73];
         if (lbl_1_bss_5F69 == 0) {
-            *(u32*)(slot + 0x68) = 0;
+            slot->boneRemap = NULL;
         } else {
-            *(u32*)(slot + 0x68) = entry + 0x72;
+            slot->boneRemap = entry->mirror;
         }
-        fn_1_ECF8(lbl_1_bss_5F73, (lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48)[0x44], lbl_1_bss_5F69);
+        fn_1_ECF8(lbl_1_bss_5F73, lbl_1_bss_6940.player[lbl_1_bss_5F73].group, lbl_1_bss_5F69);
         p = (u8**)lbl_1_bss_67B8;
         for (i = 0; i < 4; i++) {
-            if (p[i] != NULL) ((ChallengeFlagBits*)(p[i] + 0x11))->mode = 3;
+            if (p[i] != NULL) ((ShapeAnimState*)p[i])->dirtyB = 3;
         }
     }
 }
 
 // .text:0x00016400 size:0x4C
 void fn_1_16400(s8 arg) {
-    u8* base = lbl_8036E548;
-    u8* row;
+    CharActor* base = (CharActor*)&lbl_8036E548; // stepped by actors, see CHARMGR_AT
+    GameActor* row;
     u32 mod;
-    base += lbl_1_bss_5F73 * 0x27C;
-    row = *(u8**)(base + 0xC08);
-    mod = *(u16*)(row + 0x6);
+    base += lbl_1_bss_5F73;
+    row = ((CharMgr*)base)->actors[0]._004;
+    mod = row->totalBones;
     lbl_1_bss_5F6C = (lbl_1_bss_5F6C + mod + arg) % mod;
 }
 
@@ -5188,15 +5198,15 @@ void fn_1_163FC(void) {
 void fn_1_1620C(void) {
     s32 i = 0;
     do {
-        u8* row = lbl_8036E548 + i * 0x27C;
-        *(f32*)(row + 0xC38) = 0.0f;
-        *(f32*)(row + 0xC3C) = 0.0f;
-        *(f32*)(row + 0xC40) = lbl_1_rodata_73F8;
-        *(f32*)(row + 0xC44) = 0.0f;
-        *(f32*)(row + 0xC48) = 0.0f;
-        *(f32*)(row + 0xC4C) = 0.0f;
-        CTRLSetTranslation((Control*)(*(u8**)(lbl_8036E548 + 0x60) + i * 0x90 + 0x44), 0.0f, 0.0f, 0.0f);
-        CTRLSetRotation((Control*)(*(u8**)(lbl_8036E548 + 0x60) + i * 0x90 + 0x44), 0.0f, 0.0f, 0.0f);
+        CharActor* row = &lbl_8036E548.actors[i];
+        row->pos.x = 0.0f;
+        row->pos.y = 0.0f;
+        row->pos.z = lbl_1_rodata_73F8;
+        row->rot.x = 0.0f;
+        row->rot.y = 0.0f;
+        row->rot.z = 0.0f;
+        CTRLSetTranslation(&lbl_8036E548.slots->objects[i].worldControl.base, 0.0f, 0.0f, 0.0f);
+        CTRLSetRotation(&lbl_8036E548.slots->objects[i].worldControl.base, 0.0f, 0.0f, 0.0f);
         i++;
     } while (i < 1);
     fn_1_1347C();
@@ -5213,7 +5223,7 @@ void fn_1_161D0(void) {
 void fn_1_160F8(s32 direction) {
     f32 step = lbl_1_rodata_7430;
     f32 value;
-    if (*(u16*)&lbl_803C77B8 & 0x400) {
+    if (lbl_803C77B8._00 & 0x400) {
         step *= lbl_1_rodata_73F8;
     }
     step *= (f32)direction;
@@ -5238,7 +5248,7 @@ s32 fn_1_160D8(s8 a, s8 b) {
 
 // .text:0x15CE0 size:0x3F8
 void fn_1_15CE0(void) {
-    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 buttons = lbl_803C77B8._04;
 
     if (buttons & 8) {
         if (--lbl_1_bss_307C < 0) {
@@ -5258,7 +5268,7 @@ void fn_1_15CE0(void) {
         case 1:
             break;
         case 2:
-            lbl_1_bss_67E0[0x118] ^= 1;
+            lbl_1_bss_67E0.lightOn ^= 1;
             break;
         case 3:
             lbl_1_data_1F1A ^= 1;
@@ -5284,7 +5294,7 @@ void fn_1_15CE0(void) {
         case 1:
             break;
         case 2:
-            lbl_1_bss_67E0[0x118] ^= 1;
+            lbl_1_bss_67E0.lightOn ^= 1;
             break;
         case 3:
             lbl_1_data_1F1A ^= 1;
@@ -5316,8 +5326,8 @@ void fn_1_15CE0(void) {
 // NONMATCHING ~80%: jump-table cases written as helpers; the original inlines fn_1_CC24
 #if NONMATCHING
 static inline void fn_1_15760_group(s32 direction) {
-    u8* entry = lbl_1_bss_6940; // player 0
-    u8 old = entry[0x44];
+    ChPlayer* entry = lbl_1_bss_6940.player; // player 0
+    u8 old = entry->group;
     u8 group = old;
     do {
         if (direction < 0) {
@@ -5329,15 +5339,15 @@ static inline void fn_1_15760_group(s32 direction) {
             }
         }
     } while (lbl_1_data_2390[group] == 0);
-    entry[0x44] = group;
+    entry->group = group;
     if (old != group) {
         lbl_1_bss_5F5C = 1;
-        entry[0x45] = 0;
+        entry->seq = 0;
     }
 }
 
 void fn_1_15760(void) {
-    u8* entry = lbl_1_bss_6940;
+    ChPlayer* entry = lbl_1_bss_6940.player;
     u16 buttons;
     u8 old;
     u16 count;
@@ -5347,7 +5357,7 @@ void fn_1_15760(void) {
     if (lbl_1_bss_5F5C != 0) {
         return;
     }
-    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    buttons = lbl_803C77B8._04;
     if (buttons & 8) {
         if (--lbl_1_bss_307C < 0) {
             lbl_1_bss_307C = 7;
@@ -5362,14 +5372,14 @@ void fn_1_15760(void) {
             fn_1_15760_group(-1);
             break;
         case 1:
-            count = *(u16*)(*(u8**)(lbl_8036E548 + entry[0x44] * 4 + 0xC14) + 0xA);
-            old = entry[0x45];
+            count = ((ANIMBank*)lbl_8036E548.actors[0].banks.b[entry->group])->numSequences;
+            old = entry->seq;
             if (old != 0) {
-                entry[0x45] = old - 1;
+                entry->seq = old - 1;
             } else {
-                entry[0x45] = count - 1;
+                entry->seq = count - 1;
             }
-            if (old != entry[0x45]) {
+            if (old != entry->seq) {
                 lbl_1_bss_5F5C = 1;
             }
             break;
@@ -5394,7 +5404,7 @@ void fn_1_15760(void) {
         case 6:
             lbl_1_bss_5F68 ^= 1;
             if (lbl_1_bss_5F68 != 0) {
-                ActorObjectTable* table = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
+                ActorObjectTable* table = lbl_8036E548.slots;
                 table->objects[0].time = 0.0f;
                 table->objects[0].setTime = 1;
             }
@@ -5406,13 +5416,13 @@ void fn_1_15760(void) {
             fn_1_15760_group(1);
             break;
         case 1:
-            count = *(u16*)(*(u8**)(lbl_8036E548 + entry[0x44] * 4 + 0xC14) + 0xA);
-            old = entry[0x45];
-            entry[0x45] = old + 1;
+            count = ((ANIMBank*)lbl_8036E548.actors[0].banks.b[entry->group])->numSequences;
+            old = entry->seq;
+            entry->seq = old + 1;
             if (count == (u8)(old + 1)) {
-                entry[0x45] = 0;
+                entry->seq = 0;
             }
-            if (old != entry[0x45]) {
+            if (old != entry->seq) {
                 lbl_1_bss_5F5C = 1;
             }
             break;
@@ -5433,7 +5443,7 @@ void fn_1_15760(void) {
         case 6:
             lbl_1_bss_5F68 ^= 1;
             if (lbl_1_bss_5F68 != 0) {
-                ActorObjectTable* table = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
+                ActorObjectTable* table = lbl_8036E548.slots;
                 table->objects[0].time = 0.0f;
                 table->objects[0].setTime = 1;
                 for (i = 0; i < 5; i++) {
@@ -5487,8 +5497,8 @@ void fn_1_1540C(void) {
         lbl_1_bss_3088 = selected - 0x13;
     }
     top = lbl_1_bss_3088;
-    fn_1_C2DC(**(void***)((*(ChallengeModelEntry**)(lbl_8036E548 + 0x60))[lbl_1_bss_5F73].actor + 0x18), buffer, 0, 0x13, 4, &selected, &top, &count);
-    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    fn_1_C2DC(lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor->boneArray[0], buffer, 0, 0x13, 4, &selected, &top, &count);
+    buttons = lbl_803C77B8._04;
     if (buttons & 8) {
         if (--lbl_1_bss_307C < 0) {
             lbl_1_bss_307C = 5;
@@ -5545,18 +5555,18 @@ void fn_1_1540C(void) {
         lbl_1_bss_307C = 0;
         lbl_1_bss_5F71 = 1;
     }
-    id = *(u16*)(lbl_8036E548 + 0xDAE);
+    id = lbl_8036E548.actors[0].jointIdx[0x24];
     if (id != 0xFFFF) {
         if (lbl_1_data_AC90 >= 0) {
             u8* actor = (*(ChallengeModelEntry**)&lbl_1_bss_60E0)[lbl_1_data_AC90].actor;
             s32 i;
             for (i = 0; i < *(u16*)(actor + 6); i++) {
                 if (*(u32*)((*(u8***)(actor + 0x18))[i] + 0x14) != 0) {
-                    fn_800B2BA8(*(void**)(*(u8**)(lbl_8036E548 + 0x60) + 0x34), id, (struct GameActor *)actor, i); // TODO type
+                    fn_800B2BA8(lbl_8036E548.slots->objects[0].actor, id, (struct GameActor *)actor, i); // TODO type
                 }
             }
         } else {
-            fn_800B2BA8(*(void**)(*(u8**)(lbl_8036E548 + 0x60) + 0x34), id, NULL, 0);
+            fn_800B2BA8(lbl_8036E548.slots->objects[0].actor, id, NULL, 0);
         }
     }
 }
@@ -5634,7 +5644,7 @@ void fn_1_151F8(void) {
 
 // .text:0x00015170 size:0x88
 void fn_1_15170(void) {
-    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 buttons = lbl_803C77B8._04;
     if (buttons & 0x200) {
         fn_1_148CC();
     } else if (buttons & 0x100) {
@@ -5644,7 +5654,7 @@ void fn_1_15170(void) {
 
 // .text:0x14FB8 size:0x1B8
 void fn_1_14FB8(void) {
-    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 buttons = lbl_803C77B8._04;
     u8* q = lbl_803CC1B8[0];
 
     if (buttons & 8) {
@@ -5700,9 +5710,9 @@ void fn_1_14FB8(void) {
 #if NONMATCHING
 void fn_1_1496C(u8* object) {
     u8* queue = lbl_803CC1B8[0];
-    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 buttons = lbl_803C77B8._04;
     s32 i;
-    u8* row;
+    CharActor* row;
 
     lbl_1_bss_5F73 = 0;
     if (buttons & 1) {
@@ -5721,7 +5731,7 @@ void fn_1_1496C(u8* object) {
         }
     } else if (lbl_803C77B8._02 & 0x400) {
         for (lbl_1_bss_5F73 = 0; lbl_1_bss_5F73 < 1; lbl_1_bss_5F73++) {
-            lbl_1_bss_6940[lbl_1_bss_5F73 * 0x48 + 0x46] ^= 1;
+            lbl_1_bss_6940.player[lbl_1_bss_5F73].variant ^= 1;
         }
     } else if (lbl_803C77B8._02 & 0x800) {
         *(s32*)(lbl_1_bss_3070 + 4) = 0x402 - *(s32*)(lbl_1_bss_3070 + 4);
@@ -5731,13 +5741,13 @@ void fn_1_1496C(u8* object) {
         lbl_1_bss_3070[0] = 0;
     }
     if (lbl_803C77B8._02 & 0x100) {
-        row = lbl_8036E548 + 0xC04;
-        memset(row, 0, 0x204C);
+        row = lbl_8036E548.actors;
+        memset(row, 0, sizeof(lbl_8036E548.actors));
         for (i = 0; i < 13; i++) {
-            ((u8**)(lbl_8036E548 + 0x2C50))[i] = row;
+            lbl_8036E548.active[i] = row;
         }
-        (*(u8**)(lbl_8036E548 + 0x2C50))[0x255] = 0;
-        (*(u8**)(lbl_8036E548 + 0x2C50))[0x254] = 0;
+        lbl_8036E548.active[0]->modelIndex = 0;
+        lbl_8036E548.active[0]->index = 0;
         fn_1_1347C();
         fn_1_131E4();
         queue[0x20] = 0;
@@ -5747,7 +5757,7 @@ void fn_1_1496C(u8* object) {
         lbl_1_bss_5F68 = 0;
         lbl_1_bss_5F64 = 0.0f;
     } else if (lbl_803C77B8._02 & 0x200) {
-        memset(lbl_8036E548, 0, 0x3154);
+        memset(&lbl_8036E548, 0, sizeof(lbl_8036E548));
         lbl_1_bss_3070[0] = 0;
         fn_800AD038(lbl_80366158[2]);
         *(s16*)(*(u8**)(lbl_803CC1B8[0] + 0xC) + 0x10) = 1;
@@ -5771,8 +5781,8 @@ void fn_1_148CC(void) {
 
 // .text:0x00014888 size:0x44
 void fn_1_14888(u8* object) {
-    if (lbl_1_bss_67E0[0x118]) {
-        fn_800B9AA8((struct Light *)(lbl_1_bss_67E0 + 0x30)); // TODO type
+    if (lbl_1_bss_67E0.lightOn) {
+        fn_800B9AA8(&lbl_1_bss_67E0.cam.light);
     } else {
         fn_800B9AA8(*(void**)(object + 0x70));
     }
@@ -5836,7 +5846,7 @@ done:
 void fn_1_135C0(void) {
     ActorObjectTable* main;
     ActorObjectTable* extra;
-    u8* row = lbl_8036E548 + 0xC04;
+    CharActor* row = lbl_8036E548.actors;
     u32* header;
     u32* files;
     void* textures;
@@ -5844,23 +5854,23 @@ void fn_1_135C0(void) {
     void* geometry;
     void* skin;
     void* table;
-    u8* entry;
+    ChPlayer* entry;
     ActorObject* object;
-    u8* players = lbl_1_bss_60EC; // 5 shape-animation players, 0x5C bytes each
+    ShapeAnimPlayer* players = lbl_1_bss_60EC;
     u16 count;
     s32 i;
     s32 k;
 
     fn_80023B04(13);
-    *(ActorObjectTable**)(lbl_8036E548 + 0x60) = ActorObjectInitTable(1);
+    lbl_8036E548.slots = ActorObjectInitTable(1);
     lbl_1_bss_5F7C[1] = ActorObjectInitTable(1);
     lbl_1_bss_5F7C[0] = ActorObjectInitTable(5);
     memset(&lbl_1_bss_5F7C[3], 0, 0x118);
-    lbl_8036E548[0xE56] = lbl_1_bss_68FC[0x40];
+    lbl_8036E548.actors[0].kind = lbl_1_bss_68FC[0x40];
 
     for (i = 0; i < 1; i++) {
         // Relocate the player file header (5 offsets).
-        header = *(u32**)(lbl_8036E548 + 0xC0C);
+        header = (u32*)lbl_8036E548.actors[0].files;
         for (k = 0; k < 5; k++) {
             if (header[k] != 0) {
                 header[k] += (u32)header; // TODO type: 32-bit file offsets
@@ -5872,7 +5882,7 @@ void fn_1_135C0(void) {
                 ((u32*)lbl_1_bss_60A0)[k] += (u32)lbl_1_bss_60A0; // TODO type: 32-bit file offsets
             }
         }
-        header = *(u32**)(lbl_8036E548 + 0xC0C);
+        header = (u32*)lbl_8036E548.actors[0].files;
         textures = (void*)header[0];
         layout = (struct ActorLayout*)header[1];
         geometry = (void*)header[2];
@@ -5904,27 +5914,27 @@ void fn_1_135C0(void) {
 
     // Make sure the selected animation group/index exist.
     for (i = 0; i < 1; i++) {
-        entry = lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48;
-        if (*(void**)(lbl_8036E548 + 0xC14 + entry[0x44] * 4) == NULL) {
-            entry[0x44] = 0;
-            while (entry[0x44] < 7 && *(void**)(lbl_8036E548 + 0xC14 + entry[0x44] * 4) == NULL) {
-                entry[0x44]++;
+        entry = &lbl_1_bss_6940.player[lbl_1_bss_5F73];
+        if (lbl_8036E548.actors[0].banks.b[entry->group] == NULL) {
+            entry->group = 0;
+            while (entry->group < 7 && lbl_8036E548.actors[0].banks.b[entry->group] == NULL) {
+                entry->group++;
             }
         }
-        entry = lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48;
-        table = *(void**)(lbl_8036E548 + 0xC14 + entry[0x44] * 4);
-        if (entry[0x45] >= *(u16*)((u8*)table + 0xA)) {
-            entry[0x45] = 0;
+        entry = &lbl_1_bss_6940.player[lbl_1_bss_5F73];
+        table = lbl_8036E548.actors[0].banks.b[entry->group];
+        if (entry->seq >= *(u16*)((u8*)table + 0xA)) {
+            entry->seq = 0;
         }
     }
-    main = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
+    main = lbl_8036E548.slots;
     fn_8002399C((struct ActorSlot*)&main->objects[0].actor, 0, 0, layout, table, skin);
 
-    entry = lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48;
-    table = *(void**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + entry[0x44] * 4 + 0xC14);
-    object = &(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[lbl_1_bss_5F73];
+    entry = &lbl_1_bss_6940.player[lbl_1_bss_5F73];
+    table = lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[entry->group];
+    object = &lbl_8036E548.slots->objects[lbl_1_bss_5F73];
     object->animBank = table;
-    object->seqNum = entry[0x45];
+    object->seqNum = entry->seq;
     object->time = 0.0f;
     object->setAnimation = 1;
     object->setTime = table != NULL;
@@ -5932,91 +5942,91 @@ void fn_1_135C0(void) {
     object->speed = 0.0f;
 
     // Shape (facial) animation players.
-    lbl_1_bss_67B8[5] = (void*)(*(u32**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC0C))[4];
-    if (lbl_1_bss_67B8[5] != NULL && (lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48)[0x46] == 0) {
+    lbl_1_bss_67B8[5] = (void*)(lbl_8036E548.actors[lbl_1_bss_5F73].files)[4];
+    if (lbl_1_bss_67B8[5] != NULL && lbl_1_bss_6940.player[lbl_1_bss_5F73].variant == 0) {
         fn_80025DDC(lbl_1_bss_67B8[5]);
-        fn_80025C58(lbl_1_bss_67B8[5], (struct ShapeModel**)&(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[0].actor);
+        fn_80025C58(lbl_1_bss_67B8[5], (struct ShapeModel**)&lbl_8036E548.slots->objects[0].actor);
         if (lbl_1_data_A978[lbl_1_bss_68FC[0x40]] >= 0) {
             for (k = 0; k < 4; k++) {
                 lbl_1_bss_67B8[6 + k] = (void*)((u32*)lbl_1_bss_60A0)[8 + k];
                 fn_80025DDC(lbl_1_bss_67B8[6 + k]);
                 fn_80025C58(lbl_1_bss_67B8[6 + k], (struct ShapeModel**)&((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[k].actor);
                 if (k + 1 == 4) {
-                    *(u32*)(players + (k + 1) * 0x5C) = ((u32*)lbl_1_bss_60A0)[15];
+                    players[k + 1].set = ((ShapeAnimSet**)lbl_1_bss_60A0)[15];
                 } else {
-                    *(u32*)(players + (k + 1) * 0x5C) = ((u32*)lbl_1_bss_60A0)[13 + k];
-                    fn_80025FFC(lbl_1_bss_67B8[6 + k], players + (k + 1) * 0x5C);
-                    fn_80025EEC(players + (k + 1) * 0x5C, 0, 0);
+                    players[k + 1].set = ((ShapeAnimSet**)lbl_1_bss_60A0)[13 + k];
+                    fn_80025FFC(lbl_1_bss_67B8[6 + k], &players[k + 1]);
+                    fn_80025EEC(&players[k + 1], 0, 0);
                 }
-                lbl_1_bss_67B8[1 + k] = players + (k + 1) * 0x5C + 0xC;
+                lbl_1_bss_67B8[1 + k] = &players[k + 1].state;
             }
-            fn_1_D300(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04);
+            fn_1_D300(&lbl_8036E548.actors[lbl_1_bss_5F73]);
         }
         if (lbl_1_bss_3070[0] != 0) {
-            *(u32*)players = ((u32*)lbl_1_bss_60A0)[12];
+            players->set = ((ShapeAnimSet**)lbl_1_bss_60A0)[12];
             fn_80025FFC(lbl_1_bss_67B8[5], players);
             fn_80025EEC(players, 0, 0);
-            lbl_1_bss_67B8[0] = players + 0xC;
+            lbl_1_bss_67B8[0] = &players->state;
         }
     } else {
         lbl_1_bss_67B8[0] = NULL;
     }
 
     // Bone id -> bone index map.
-    main = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
-    count = *(u16*)((u8*)main->objects[0].actor + 6); // TODO type: GameActor bone count / table
-    memset(lbl_8036E548 + 0xD66, 0xFF, 0xF0);
+    main = lbl_8036E548.slots;
+    count = main->objects[0].actor->totalBones;
+    memset(lbl_8036E548.actors[0].jointIdx, 0xFF, sizeof(lbl_8036E548.actors[0].jointIdx));
     for (i = 0; i < count; i++) {
-        u16 id = *(u16*)(*(u8***)((u8*)(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[0].actor + 0x18))[i];
+        u16 id = lbl_8036E548.slots->objects[0].actor->boneArray[i]->boneID;
         if (id != 0xFFFF) {
-            ((u16*)(lbl_8036E548 + 0xD66))[id] = i;
+            lbl_8036E548.actors[0].jointIdx[id] = i;
         }
     }
-    fn_800BD548((struct DOListEntry*)&main->objects[0].actor, 3, *(void**)(lbl_8036E548 + 0xAC),
-                *(void**)(lbl_8036E548 + 0xB0), *(void**)(lbl_8036E548 + 0xB4), *(void**)(lbl_8036E548 + 0xB8));
-    *(f32*)(lbl_8036E548 + 0xC40) = 0.0f;
-    *(f32*)(lbl_8036E548 + 0xC3C) = 0.0f;
-    *(f32*)(lbl_8036E548 + 0xC38) = 0.0f;
-    *(f32*)(lbl_8036E548 + 0xC4C) = 0.0f;
-    *(f32*)(lbl_8036E548 + 0xC48) = 0.0f;
-    *(f32*)(lbl_8036E548 + 0xC44) = 0.0f;
-    main = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
+    fn_800BD548((struct DOListEntry*)&main->objects[0].actor, 3, lbl_8036E548.lights[0],
+                lbl_8036E548.lights[1], lbl_8036E548.lights[2], lbl_8036E548.lights[3]);
+    lbl_8036E548.actors[0].pos.z = 0.0f;
+    lbl_8036E548.actors[0].pos.y = 0.0f;
+    lbl_8036E548.actors[0].pos.x = 0.0f;
+    lbl_8036E548.actors[0].rot.z = 0.0f;
+    lbl_8036E548.actors[0].rot.y = 0.0f;
+    lbl_8036E548.actors[0].rot.x = 0.0f;
+    main = lbl_8036E548.slots;
     CTRLSetTranslation(&main->objects[0].worldControl.base, 0.0f, 0.0f, 0.0f);
-    CTRLSetRotation(&(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[0].worldControl.base, 0.0f, 0.0f, 0.0f);
-    main = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
+    CTRLSetRotation(&lbl_8036E548.slots->objects[0].worldControl.base, 0.0f, 0.0f, 0.0f);
+    main = lbl_8036E548.slots;
     main->objects[0].unk54 = lbl_1_rodata_73C0[0];
     main->objects[0].setSpeed = 1;
-    fn_1_135C0_bone(main->objects[0].actor, *(u16*)(row + 0x168));
-    fn_1_135C0_bone(main->objects[0].actor, *(u16*)(row + 0x166));
-    fn_1_135C0_bone(main->objects[0].actor, *(u16*)(row + 0x164));
-    if (*(u16*)(row + 0x1AA) != 0xFFFF) {
-        fn_800B2BA8(main->objects[0].actor, *(u16*)(row + 0x1AA), NULL, 0);
+    fn_1_135C0_bone(main->objects[0].actor, row->jointIdx[3]);
+    fn_1_135C0_bone(main->objects[0].actor, row->jointIdx[2]);
+    fn_1_135C0_bone(main->objects[0].actor, row->jointIdx[1]);
+    if (row->jointIdx[0x24] != 0xFFFF) {
+        fn_800B2BA8(main->objects[0].actor, row->jointIdx[0x24], NULL, 0);
     }
-    fn_1_135C0_bone(main->objects[0].actor, *(u16*)(row + 0x1BE));
-    fn_800B2C08((struct GameActor*)(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[0].actor, 4);
-    fn_8001FC4C(*(void**)(lbl_8036E548 + 0x2C50));
+    fn_1_135C0_bone(main->objects[0].actor, row->jointIdx[0x2e]);
+    fn_800B2C08(lbl_8036E548.slots->objects[0].actor, 4);
+    fn_8001FC4C(lbl_8036E548.active[0]);
 
-    main = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
-    *(GameActor**)(row + 0x4) = main->objects[0].actor;
-    *(f32*)(row + 0x34) = 0.0f;
-    *(f32*)(row + 0x38) = 0.0f;
-    *(f32*)(row + 0x3C) = lbl_1_rodata_73F8;
-    *(f32*)(row + 0x4C) = lbl_1_rodata_73C0[0];
-    row[0x25D] = 1;
-    row[0x252] = lbl_1_bss_68FC[0x40];
-    row[0x25C] = 1;
-    row[0x277] = 0xFF;
+    main = lbl_8036E548.slots;
+    row->_004 = main->objects[0].actor;
+    row->pos.x = 0.0f;
+    row->pos.y = 0.0f;
+    row->pos.z = lbl_1_rodata_73F8;
+    row->_04C = lbl_1_rodata_73C0[0];
+    row->mode[0] = 1;
+    row->kind = lbl_1_bss_68FC[0x40];
+    row->_25C = 1;
+    row->_277 = 0xFF;
     main->objects[0].callback = (ActorObjectCallback)fn_1_14888; // TODO type: callback receives the object
     if (lbl_1_bss_60A4[lbl_1_bss_68FC[0x40]] != 0) {
-        fn_800B2B74((struct GameActor*)(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[0].actor, *(u16*)(row + 0x188));
-        fn_800B2B74((struct GameActor*)(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[0].actor, *(u16*)(row + 0x194));
+        fn_800B2B74(lbl_8036E548.slots->objects[0].actor, row->jointIdx[0x13]);
+        fn_800B2B74(lbl_8036E548.slots->objects[0].actor, row->jointIdx[0x19]);
         fn_1_ECF8(lbl_1_bss_5F73, 0, 0);
-        fn_800B2B74((struct GameActor*)(*(ActorObjectTable**)(lbl_8036E548 + 0x60))->objects[0].actor, *(u16*)(row + 0x1AA));
+        fn_800B2B74(lbl_8036E548.slots->objects[0].actor, row->jointIdx[0x24]);
     }
 
     // Mode-specific controller.
-    main = *(ActorObjectTable**)(lbl_8036E548 + 0x60);
-    switch ((s8)row[0x252]) {
+    main = lbl_8036E548.slots;
+    switch ((s8)row->kind) {
     case 33:
     case 34:
     case 35:
@@ -6024,42 +6034,42 @@ void fn_1_135C0(void) {
         fn_80063010((struct CharActor*)row, &main->objects[0]); // TODO type: row is a CharActor
         break;
     case 2:
-        fn_800638B4((struct CharActor*)row, &main->objects[(s8)row[0x255]]); // TODO type: row is a CharActor
+        fn_800638B4((struct CharActor*)row, &main->objects[(s8)row->modelIndex]); // TODO type: row is a CharActor
         lbl_1_bss_60E8 = NULL; // the callback returns 0
         break;
     case 19:
-        fn_8004B7B4((struct CharActor*)row, &main->objects[(s8)row[0x255]]); // TODO type: row is a CharActor
+        fn_8004B7B4((struct CharActor*)row, &main->objects[(s8)row->modelIndex]); // TODO type: row is a CharActor
         lbl_1_bss_60E8 = NULL; // the callback returns 0
         break;
     case 20:
     case 43:
-        fn_800637BC((struct CharActor*)row, &main->objects[(s8)row[0x255]]); // TODO type: row is a CharActor
+        fn_800637BC((struct CharActor*)row, &main->objects[(s8)row->modelIndex]); // TODO type: row is a CharActor
         lbl_1_bss_60E8 = NULL; // the callback returns 0
         break;
     case 38:
-        main->objects[(s8)row[0x255]].actor->tickFlag = 1;
+        main->objects[(s8)row->modelIndex].actor->tickFlag = 1;
         fn_1_D13C();
-        fn_1_D300(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04);
+        fn_1_D300(&lbl_8036E548.actors[lbl_1_bss_5F73]);
         break;
     case 41:
-        fn_800637D4((struct CharActor*)row, &main->objects[(s8)row[0x255]]); // TODO type: row is a CharActor
+        fn_800637D4((struct CharActor*)row, &main->objects[(s8)row->modelIndex]); // TODO type: row is a CharActor
         lbl_1_bss_60E8 = NULL; // the callback returns 0
         // fallthrough
     case 18:
     case 40:
         fn_1_D13C();
-        fn_1_D300(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04);
+        fn_1_D300(&lbl_8036E548.actors[lbl_1_bss_5F73]);
         break;
     case 14:
     case 37:
-        lbl_1_bss_60E8 = fn_80052634(row, &main->objects[(s8)row[0x255]].actor);
+        lbl_1_bss_60E8 = fn_80052634(row, &main->objects[(s8)row->modelIndex].actor);
         break;
     case 16:
     case 44:
     case 45:
     case 46:
     case 47:
-        fn_80062ED4(row, &main->objects[(s8)row[0x255]].actor);
+        fn_80062ED4(row, &main->objects[(s8)row->modelIndex].actor);
         lbl_1_bss_60E8 = NULL; // fn_80062ED4 returns 0
         break;
     default:
@@ -6072,22 +6082,22 @@ void fn_1_135C0(void) {
 // .text:0x1347C size:0x144
 void fn_1_1347C(void) {
     Mtx44 projection;
-    *(f32*)(lbl_1_bss_67E0 + 0x108) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0x10C) = lbl_1_rodata_7480;
-    *(f32*)(lbl_1_bss_67E0 + 0x110) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0xFC) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0x100) = lbl_1_rodata_7394;
-    *(f32*)(lbl_1_bss_67E0 + 0x104) = lbl_1_rodata_73F8;
+    lbl_1_bss_67E0.cam.eye.x = lbl_1_rodata_7394;
+    lbl_1_bss_67E0.cam.eye.y = lbl_1_rodata_7480;
+    lbl_1_bss_67E0.cam.eye.z = lbl_1_rodata_7394;
+    lbl_1_bss_67E0.cam.target.x = lbl_1_rodata_7394;
+    lbl_1_bss_67E0.cam.target.y = lbl_1_rodata_7394;
+    lbl_1_bss_67E0.cam.target.z = lbl_1_rodata_73F8;
     C_MTXFrustum(projection, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
                  lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
                  lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
     GXSetProjection(projection, GX_PERSPECTIVE);
     fn_800B806C(0, lbl_1_rodata_7484, lbl_1_rodata_7488, lbl_1_rodata_748C, lbl_1_rodata_7490,
                 lbl_1_rodata_7494, lbl_1_rodata_7498, lbl_1_rodata_749C);
-    *(s32*)(lbl_1_bss_67E0 + 0x114) = 0;
-    *(f32*)(lbl_1_bss_67E0 + 0xF8) = lbl_1_rodata_7394;
-    *(s16*)(lbl_1_bss_67E0 + 0xF0) = 0;
-    *(s16*)(lbl_1_bss_67E0 + 0xF2) = 0;
+    lbl_1_bss_67E0.cam.mode = 0;
+    lbl_1_bss_67E0.cam.dist = lbl_1_rodata_7394;
+    lbl_1_bss_67E0.cam.pitch = 0;
+    lbl_1_bss_67E0.cam.yaw = 0;
 }
 
 // .text:0x131E4 size:0x298
@@ -6098,13 +6108,13 @@ void fn_1_131E4(void) {
     void** light2;
     void** light3;
 
-    light0 = (void**)(lbl_8036E548 + 0xAC);
+    light0 = &lbl_8036E548.lights[0];
     LITAlloc(light0);
-    light1 = (void**)(lbl_8036E548 + 0xB0);
+    light1 = &lbl_8036E548.lights[1];
     LITAlloc(light1);
-    light2 = (void**)(lbl_8036E548 + 0xB4);
+    light2 = &lbl_8036E548.lights[2];
     LITAlloc(light2);
-    light3 = (void**)(lbl_8036E548 + 0xB8);
+    light3 = &lbl_8036E548.lights[3];
     LITAlloc(light3);
 
     LITInitAttn(*light0, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
@@ -6138,7 +6148,7 @@ void fn_1_12F8C(void* tableArg, void* matrixArg) {
     Mtx transform;
     ActorObject* object;
     GameActor* actor;
-    u8* row;
+    CharActor* row;
     u8* bone;
     u16 i;
 
@@ -6163,7 +6173,7 @@ void fn_1_12F8C(void* tableArg, void* matrixArg) {
         if (object->animateBones) {
             fn_800BDA24(object);
             if (lbl_1_bss_3081 != 0) {
-                fn_1_1073C(lbl_8036E548 + i * 0x27C + 0xC04);
+                fn_1_1073C(&lbl_8036E548.actors[i]);
             }
             if (lbl_1_bss_308C != 0) {
                 lbl_1_bss_308C = 0;
@@ -6174,8 +6184,8 @@ void fn_1_12F8C(void* tableArg, void* matrixArg) {
                 }
             }
         }
-        row = lbl_8036E548 + i * 0x27C;
-        PSMTXTrans(transform, *(f32*)(row + 0xC38), *(f32*)(row + 0xC3C), *(f32*)(row + 0xC40));
+        row = &lbl_8036E548.actors[i];
+        PSMTXTrans(transform, row->pos.x, row->pos.y, row->pos.z);
         PSMTXConcat((f32(*)[4])matrixArg, transform, transform);
         actor = object->actor;
         actor->flags = (actor->flags & 0xFC) | fn_800B3C04(0, actor, transform);
@@ -6190,7 +6200,7 @@ void fn_1_12F8C(void* tableArg, void* matrixArg) {
 
 // .text:0x00012F18 size:0x74
 void fn_1_12F18(u8* object) {
-    fn_1_12820(*(void**)(lbl_8036E548 + 0x60), object + 8);
+    fn_1_12820(lbl_8036E548.slots, object + 8);
     if (lbl_1_data_A978[lbl_1_bss_68FC[0x40]] >= 0) {
         fn_800BD670(lbl_1_bss_5F7C[0], (MtxPtr)(object + 8));
     }
@@ -6203,49 +6213,49 @@ void fn_1_12F18(u8* object) {
 // nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_129D0(void) {
-    u8* row;
-    u8* table;
+    CharActor* row;
+    ActorObjectTable* table;
     ActorObjectTable* challengeTable;
     f32 speed;
     s32 k;
 
     fn_1_D4BC();
     fn_1_11C98();
-    row = lbl_8036E548 + 0xC04;
-    table = *(u8**)(lbl_8036E548 + 0x60);
-    CTRLSetTranslation((Control*)(table + 0x44), 0.0f, 0.0f, 0.0f);
-    CTRLSetRotation((Control*)(table + 0x44), lbl_1_rodata_7460 * *(f32*)(row + 0x40),
-                    lbl_1_rodata_7460 * *(f32*)(row + 0x44), lbl_1_rodata_7460 * *(f32*)(row + 0x48));
+    row = lbl_8036E548.actors;
+    table = lbl_8036E548.slots;
+    CTRLSetTranslation(&table->objects[0].worldControl.base, 0.0f, 0.0f, 0.0f);
+    CTRLSetRotation(&table->objects[0].worldControl.base, lbl_1_rodata_7460 * row->rot.x,
+                    lbl_1_rodata_7460 * row->rot.y, lbl_1_rodata_7460 * row->rot.z);
     if (lbl_1_bss_5F68 == 0) {
         speed = lbl_1_data_ABA4;
     } else {
         speed = lbl_1_bss_5F64;
     }
-    ((ActorObjectTable*)table)->objects[0].unk54 = speed;
-    ((ActorObjectTable*)table)->objects[0].setSpeed = 1;
+    table->objects[0].unk54 = speed;
+    table->objects[0].setSpeed = 1;
     if (lbl_1_bss_67B8[0] != NULL) {
-        *(f32*)((u8*)lbl_1_bss_67B8[0] + 0x4) = speed; // ShapeAnimState.speed
+        ((ShapeAnimState*)lbl_1_bss_67B8[0])->speed = speed;
     }
     if (speed != 0.0f && lbl_1_bss_3215 != 0) {
-        u8* actor = (u8*)((ActorObjectTable*)table)->objects[0].actor;
-        u16 count = *(u16*)(actor + 6); // TODO type: GameActor bone count / table
+        GameActor* actor = table->objects[0].actor;
+        u16 count = actor->totalBones;
         s32 i;
         f32 frame;
-        u8* entry;
+        ChPlayer* entry;
 
         for (i = 0; i < count; i++) {
-            u8* anim = *(u8**)((*(u8***)(actor + 0x18))[i] + 0xE8);
-            if (anim != NULL && *(void**)(anim + 0xC) != NULL) {
+            struct ANIMPipe* anim = actor->boneArray[i]->animPipe;
+            if (anim != NULL && anim->currentTrack != NULL) {
                 break;
             }
         }
         if (i < count) {
-            frame = **(f32**)((*(u8***)(actor + 0x18))[i] + 0xE8);
+            frame = actor->boneArray[i]->animPipe->time;
         } else {
             frame = 0.0f;
         }
-        entry = lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48;
-        fn_1_D590(row, lbl_1_data_A938[entry[0x44]] + entry[0x45], frame);
+        entry = &lbl_1_bss_6940.player[lbl_1_bss_5F73];
+        fn_1_D590(row, lbl_1_data_A938[entry->group] + entry->seq, frame);
     }
     lbl_1_bss_5F64 = 0.0f;
     if (lbl_1_bss_5F5C == 0) {
@@ -6256,12 +6266,12 @@ void fn_1_129D0(void) {
             if (lbl_1_bss_67B8[5 + k] == NULL || lbl_1_bss_67B8[k] == NULL) {
                 continue;
             }
-            *(f32*)((u8*)lbl_1_bss_67B8[k] + 0x4) = speed; // ShapeAnimState.speed
+            ((ShapeAnimState*)lbl_1_bss_67B8[k])->speed = speed;
             if (fn_80024DB0(lbl_1_bss_67B8[k]) != 0 && lbl_1_bss_67B8[k] != NULL) {
-                ((ChallengeFlagBits*)((u8*)lbl_1_bss_67B8[k] + 0x11))->mode = 3; // ShapeAnimState.dirtyB
+                ((ShapeAnimState*)lbl_1_bss_67B8[k])->dirtyB = 3;
             }
             if (k == 0) {
-                model = (struct ShapeModel**)&((ActorObjectTable*)*(u8**)(lbl_8036E548 + 0x60))->objects[0].actor;
+                model = (struct ShapeModel**)&lbl_8036E548.slots->objects[0].actor;
             } else if (k == 3) {
                 model = (struct ShapeModel**)&challengeTable->objects[3].actor;
             } else {
@@ -6277,7 +6287,7 @@ void fn_1_129D0(void) {
             fn_80024FA4(model, shape, lbl_1_bss_67B8[k], -1);
         }
         if (lbl_1_bss_67B8[0] != NULL) {
-            memcpy(*(u8**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC30) + 0x10, lbl_1_bss_67B8[0], 0x20);
+            memcpy(&lbl_8036E548.actors[lbl_1_bss_5F73].part->player.state, lbl_1_bss_67B8[0], 0x20);
         }
     }
     PSMTXCopy((f32(*)[4])(lbl_1_bss_68FC + 0x10), lbl_1_data_AC9C[lbl_803CBBC0[0]].m);
@@ -6286,16 +6296,16 @@ void fn_1_129D0(void) {
         // TODO type: fn_800BD8C4's second parameter is the view matrix
         fn_800BD8C4(lbl_1_bss_5F7C[0], (MtxPtr)(lbl_1_bss_68FC + 0x10));
     }
-    table = *(u8**)(lbl_8036E548 + 0x60);
-    ((ActorObjectTable*)table)->objects[0].animateBones = 1;
-    fn_1_12F8C(*(u8**)(lbl_8036E548 + 0x60), lbl_1_bss_68FC + 0x10);
-    ((ActorObjectTable*)*(u8**)(lbl_8036E548 + 0x60))->objects[0].animateBones = (lbl_1_bss_3080 == 0) & (lbl_1_bss_5F73 == 0);
-    if (lbl_8036E548[0x3083] != 0) {
-        u8 player = lbl_8036E548[0x3084];
-        fn_80038EC4((struct CharModelObj*)(lbl_8036E548 + player * 0x27C + 0xC04),
-                    (struct Model**)&((ActorObjectTable*)*(u8**)(lbl_8036E548 + 0x60))->objects[player].actor, 0);
+    table = lbl_8036E548.slots;
+    table->objects[0].animateBones = 1;
+    fn_1_12F8C(lbl_8036E548.slots, lbl_1_bss_68FC + 0x10);
+    lbl_8036E548.slots->objects[0].animateBones = (lbl_1_bss_3080 == 0) & (lbl_1_bss_5F73 == 0);
+    if (lbl_8036E548._3083[0] != 0) {
+        u8 player = lbl_8036E548._3083[1];
+        fn_80038EC4((struct CharModelObj*)(&lbl_8036E548.actors[player]),
+                    (struct Model**)&lbl_8036E548.slots->objects[player].actor, 0);
     }
-    fn_8003414C(lbl_1_bss_67E0);
+    fn_8003414C(&lbl_1_bss_67E0.cam);
 }
 #endif
 
@@ -6306,11 +6316,9 @@ void fn_1_12820(void* tableArg, void* matrixArg) {
     u16 i;
     ActorObject* object;
     f32 (*matrix)[4] = matrixArg;
-    u8* row;
+    CharActor* row;
     u8 lastAlpha = 0xFF;
     ActorObjectTable* table = tableArg;
-    u8* entry;
-    u8* data;
     u8 alpha;
     Mtx transform;
     Mtx44 projection;
@@ -6326,14 +6334,12 @@ void fn_1_12820(void* tableArg, void* matrixArg) {
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
     GXSetAlphaCompare(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
     for (i = 0; i < table->count; i++) {
-        entry = (u8*)table + i * 0x90;
-        object = (ActorObject*)(entry + 0x34);
-        row = lbl_8036E548 + i * 0x27C;
-        data = row + 0xC04;
+        object = &table->objects[i];
+        row = &lbl_8036E548.actors[i];
         if (object->actor == NULL) continue;
         object->actor->flags = 0xFF;
-        if (entry[0xA0] == 0) continue;
-        alpha = data[0x277];
+        if (object->animateBones == 0) continue;
+        alpha = row->_277;
         if (lastAlpha != alpha) {
             lastAlpha = alpha;
             if (0xFF - alpha != 0) {
@@ -6345,7 +6351,7 @@ void fn_1_12820(void* tableArg, void* matrixArg) {
                 fn_800BD2CC(0, color);
             }
         }
-        PSMTXTrans(transform, *(f32*)(row + 0xC38), *(f32*)(row + 0xC3C), *(f32*)(row + 0xC40));
+        PSMTXTrans(transform, row->pos.x, row->pos.y, row->pos.z);
         PSMTXConcat(matrix, transform, transform);
         fn_800BDA94(object, transform);
     }
@@ -6356,28 +6362,28 @@ void fn_1_12820(void* tableArg, void* matrixArg) {
 // NONMATCHING ~85%: same instructions, float/int load scheduling differs (49 diff lines)
 #if NONMATCHING
 void fn_1_126CC(void) {
-    u8* row = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04;
-    f32 x = *(f32*)(row + 0x34);
-    f32 y = *(f32*)(row + 0x38);
-    f32 z = *(f32*)(row + 0x3C);
-    x += (f32)((s8*)&lbl_803C77B8)[0x10] / 768.0f;
-    z += (f32)((s8*)&lbl_803C77B8)[0x11] / 768.0f;
-    y += (f32)((u8*)&lbl_803C77B8)[0x15] / 768.0f;
-    y -= (f32)((u8*)&lbl_803C77B8)[0x14] / 768.0f;
-    lbl_1_data_AD0C[1] -= 0.001953125f * (f32)((s8*)&lbl_803C77B8)[0x12];
-    lbl_1_data_AD0C[0] -= 0.001953125f * (f32)((s8*)&lbl_803C77B8)[0x13];
-    *(f32*)(row + 0x34) = x;
-    *(f32*)(row + 0x38) = y;
-    *(f32*)(row + 0x3C) = z;
-    *(f32*)(row + 0x40) = lbl_1_data_AD0C[0];
-    *(f32*)(row + 0x44) = lbl_1_data_AD0C[1];
-    *(f32*)(row + 0x48) = lbl_1_data_AD0C[2];
+    CharActor* row = &lbl_8036E548.actors[lbl_1_bss_5F73];
+    f32 x = row->pos.x;
+    f32 y = row->pos.y;
+    f32 z = row->pos.z;
+    x += (f32)lbl_803C77B8.stickX / 768.0f;
+    z += (f32)lbl_803C77B8.stickY / 768.0f;
+    y += (f32)lbl_803C77B8.triggerR / 768.0f;
+    y -= (f32)lbl_803C77B8.triggerL / 768.0f;
+    lbl_1_data_AD0C[1] -= 0.001953125f * (f32)lbl_803C77B8.substickX;
+    lbl_1_data_AD0C[0] -= 0.001953125f * (f32)lbl_803C77B8.substickY;
+    row->pos.x = x;
+    row->pos.y = y;
+    row->pos.z = z;
+    row->rot.x = lbl_1_data_AD0C[0];
+    row->rot.y = lbl_1_data_AD0C[1];
+    row->rot.z = lbl_1_data_AD0C[2];
 }
 #endif
 
 // .text:0x121D4 size:0x4F8
-void fn_1_121D4(u8* camera) {
-    switch (*(s32*)(camera + 0x114)) {
+void fn_1_121D4(ChViewCam* camera) {
+    switch (camera->mode) {
     case 0:
         fn_1_11F08(camera);
         break;
@@ -6385,14 +6391,14 @@ void fn_1_121D4(u8* camera) {
         fn_1_11D00(camera);
         break;
     }
-    fn_80011640(camera, camera);
-    PSVECSubtract((Vec*)(camera + 0x108), (Vec*)(camera + 0xFC), (Vec*)(camera + 0x88));
-    PSVECNormalize((Vec*)(camera + 0x88), (Vec*)(camera + 0x88));
+    fn_80011640(camera->view, camera->view);
+    PSVECSubtract(&camera->eye, &camera->target, &camera->light.direction);
+    PSVECNormalize(&camera->light.direction, &camera->light.direction);
     fn_80052968();
 }
 
 // .text:0x11F08 size:0x2CC
-void fn_1_11F08(u8* camera) {
+void fn_1_11F08(ChViewCam* camera) {
     Mtx rotX;
     Mtx rotY;
     Mtx rot;
@@ -6404,15 +6410,15 @@ void fn_1_11F08(u8* camera) {
 
     pos = lbl_1_rodata_7300;
     if (!(lbl_803C77B8._00 & 0x10)) {
-        *(u16*)(camera + 0xF0) -= ((s8*)&lbl_803C77B8)[0x13] * 4;
-        *(u16*)(camera + 0xF2) += ((s8*)&lbl_803C77B8)[0x12] * 4;
-        *(f32*)(camera + 0xF4) = (f32)((s8*)&lbl_803C77B8)[0x10] / lbl_1_rodata_7454;
-        *(f32*)(camera + 0xF8) = (f32)((s8*)&lbl_803C77B8)[0x11] * lbl_1_rodata_7448;
-        *(f32*)(camera + 0x10C) += (f32)((u8*)&lbl_803C77B8)[0x15] * lbl_1_rodata_744C;
-        *(f32*)(camera + 0x10C) -= (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_744C;
+        camera->pitch -= lbl_803C77B8.substickY * 4;
+        camera->yaw += lbl_803C77B8.substickX * 4;
+        camera->strafe = (f32)lbl_803C77B8.stickX / lbl_1_rodata_7454;
+        camera->dist = (f32)lbl_803C77B8.stickY * lbl_1_rodata_7448;
+        camera->eye.y += (f32)lbl_803C77B8.triggerR * lbl_1_rodata_744C;
+        camera->eye.y -= (f32)lbl_803C77B8.triggerL * lbl_1_rodata_744C;
     }
-    angle.x = *(u16*)(camera + 0xF0);
-    angle.y = *(u16*)(camera + 0xF2);
+    angle.x = camera->pitch;
+    angle.y = camera->yaw;
     angle.z = lbl_1_rodata_7394;
     PSVECScale(&angle, lbl_1_rodata_7450, &angle);
     PSMTXRotRad(rotX, 'X', angle.x);
@@ -6420,20 +6426,20 @@ void fn_1_11F08(u8* camera) {
     s = rotY[0][2];
     c = rotY[0][0];
     PSMTXConcat(rotY, rotX, rot);
-    PSMTXMultVec(rot, &pos, (Vec*)(camera + 0xFC));
-    *(f32*)(camera + 0x108) += *(f32*)(camera + 0xF8) * s - *(f32*)(camera + 0xF4) * c;
-    *(f32*)(camera + 0x110) += *(f32*)(camera + 0xF8) * c + *(f32*)(camera + 0xF4) * s;
-    *(f32*)(camera + 0xFC) += *(f32*)(camera + 0x108);
-    *(f32*)(camera + 0x100) += *(f32*)(camera + 0x10C);
-    *(f32*)(camera + 0x104) += *(f32*)(camera + 0x110);
-    makeLookAtMatrix((f32(*)[4])camera, (Vec*)(camera + 0x108), &lbl_1_data_AD18, (Vec*)(camera + 0xFC));
+    PSMTXMultVec(rot, &pos, &camera->target);
+    camera->eye.x += camera->dist * s - camera->strafe * c;
+    camera->eye.z += camera->dist * c + camera->strafe * s;
+    camera->target.x += camera->eye.x;
+    camera->target.y += camera->eye.y;
+    camera->target.z += camera->eye.z;
+    makeLookAtMatrix(camera->view, &camera->eye, &lbl_1_data_AD18, &camera->target);
     view = (u8*)fn_80052768_getCamera(0);
-    memcpy(view + 0x70, camera + 0x108, 0xC);
-    memcpy(view + 0x7C, camera + 0xFC, 0xC);
+    memcpy(view + 0x70, &camera->eye, 0xC);
+    memcpy(view + 0x7C, &camera->target, 0xC);
 }
 
 // .text:0x11D00 size:0x208
-void fn_1_11D00(u8* camera) {
+void fn_1_11D00(ChViewCam* camera) {
     Mtx rotX;
     Mtx rotY;
     Mtx rot;
@@ -6442,31 +6448,31 @@ void fn_1_11D00(u8* camera) {
 
     pos = lbl_1_rodata_730C;
     if (!(lbl_803C77B8._00 & 0x10)) {
-        *(u16*)(camera + 0xF0) -= ((s8*)&lbl_803C77B8)[0x13] * 4;
-        *(u16*)(camera + 0xF2) += ((s8*)&lbl_803C77B8)[0x12] * 4;
-        *(f32*)(camera + 0xF8) += (f32)((s8*)&lbl_803C77B8)[0x11] * lbl_1_rodata_7448;
-        *(f32*)(camera + 0x100) += (f32)((u8*)&lbl_803C77B8)[0x15] * lbl_1_rodata_744C;
-        *(f32*)(camera + 0x100) -= (f32)((u8*)&lbl_803C77B8)[0x14] * lbl_1_rodata_744C;
+        camera->pitch -= lbl_803C77B8.substickY * 4;
+        camera->yaw += lbl_803C77B8.substickX * 4;
+        camera->dist += (f32)lbl_803C77B8.stickY * lbl_1_rodata_7448;
+        camera->target.y += (f32)lbl_803C77B8.triggerR * lbl_1_rodata_744C;
+        camera->target.y -= (f32)lbl_803C77B8.triggerL * lbl_1_rodata_744C;
     }
-    angle.x = *(u16*)(camera + 0xF0);
-    angle.y = *(u16*)(camera + 0xF2);
+    angle.x = camera->pitch;
+    angle.y = camera->yaw;
     angle.z = lbl_1_rodata_7394;
     PSVECScale(&angle, lbl_1_rodata_7450, &angle);
     PSMTXRotRad(rotX, 'X', angle.x);
     PSMTXRotRad(rotY, 'Y', angle.y);
     PSMTXConcat(rotX, rotY, rot);
-    pos.z = -*(f32*)(camera + 0xF8);
+    pos.z = -camera->dist;
     PSMTXMultVec(rot, &pos, &pos);
-    PSVECAdd(&pos, (Vec*)(camera + 0xFC), (Vec*)(camera + 0x108));
+    PSVECAdd(&pos, &camera->target, &camera->eye);
     PSMTXMultVec(rot, &lbl_1_data_AD24, &pos);
-    makeLookAtMatrix((f32(*)[4])camera, (Vec*)(camera + 0x108), &pos, (Vec*)(camera + 0xFC));
+    makeLookAtMatrix(camera->view, &camera->eye, &pos, &camera->target);
 }
 
 // .text:0x00011C98 size:0x68
 void fn_1_11C98(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
-        LITXForm(*(void**)(lbl_8036E548 + i * 4 + 0xAC), lbl_1_bss_68FC + 0x10);
+        LITXForm(lbl_8036E548.lights[i], lbl_1_bss_68FC + 0x10);
     }
 }
 
@@ -6760,18 +6766,18 @@ void fn_1_10E2C(void* model, f32 (*view)[4], u32 colorX, u32 colorY, u32 colorZ)
 void fn_1_10CEC(u8* object) {
     u8 buffer[0x30];
     Mtx matrix;
-    u8* scene;
+    CharMgr* scene;
     s32 i;
     s32 k;
     u32 a;
     u32 b;
     u32 c;
     if (lbl_1_data_ABA8 == 0) {
-        u8* row = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C;
-        PSMTXTrans(matrix, *(f32*)(row + 0xC38), *(f32*)(row + 0xC3C), *(f32*)(row + 0xC40));
+        CharMgr* row = CHARMGR_AT(lbl_1_bss_5F73);
+        PSMTXTrans(matrix, row->actors[0].pos.x, row->actors[0].pos.y, row->actors[0].pos.z);
         PSMTXConcat((f32(*)[4])(object + 8), matrix, matrix);
-        scene = lbl_8036E548;
-        for (i = 0; k = lbl_1_bss_5F73 * 0x90, i < *(u16*)(*(u8**)(*(u8**)(scene + 0x60) + k + 0x34) + 6); i++) {
+        scene = &lbl_8036E548;
+        for (i = 0; k = lbl_1_bss_5F73, i < scene->slots->objects[k].actor->totalBones; i++) {
             if ((u32)i != lbl_1_bss_5F6C) {
                 a = 0x80008080;
                 b = 0x80800080;
@@ -6789,7 +6795,7 @@ void fn_1_10CEC(u8* object) {
                     c = -1;
                 }
             }
-            fn_800B2C88((struct GameActor *)*(u8**)(*(u8**)(scene + 0x60) + k + 0x34), (u16)i, (f32 (*)[4])buffer); // TODO type
+            fn_800B2C88(scene->slots->objects[k].actor, (u16)i, (f32 (*)[4])buffer); // TODO type: buffer
             fn_1_10E2C(buffer, matrix, a, b, c);
         }
     }
@@ -6832,7 +6838,7 @@ void fn_1_10AA4(u8* object, f32 value) {
     *(f32*)(object + 0x54) = value;
     object[0x5A] = 1;
     if (lbl_1_bss_67B8[0] != 0) {
-        *(f32*)((u8*)lbl_1_bss_67B8[0] + 4) = value;
+        ((ShapeAnimState*)lbl_1_bss_67B8[0])->speed = value;
     }
 }
 
@@ -6840,38 +6846,38 @@ void fn_1_10AA4(u8* object, f32 value) {
 // NONMATCHING ~75%: the original inlines fn_1_D300 (itself NONMATCHING), so this calls it
 #if NONMATCHING
 void fn_1_107B8(void) {
-    u8* entry = lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48;
-    u8* row = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C;
-    u8 group = entry[0x44];
+    ChPlayer* entry = &lbl_1_bss_6940.player[lbl_1_bss_5F73];
+    CharActor* row = &lbl_8036E548.actors[lbl_1_bss_5F73];
+    u8 group = entry->group;
     u8 index;
     void* table;
     ActorObject* object;
 
-    row[0xE7C] = group == 0;
+    row->_278 = group == 0;
     switch (group) {
     case 0:
-        row[0xE58] = 9;
+        row->index = 9;
         break;
     case 1:
-        row[0xE58] = 10;
+        row->index = 10;
         break;
     case 2:
-        row[0xE58] = 2;
+        row->index = 2;
         break;
     case 3:
-        row[0xE58] = 0;
+        row->index = 0;
         break;
     case 4:
-        row[0xE58] = 1;
+        row->index = 1;
         break;
     default:
-        row[0xE58] = 9;
+        row->index = 9;
         break;
     }
-    index = entry[0x45];
-    *(s16*)(row + 0xC66) = lbl_1_data_A938[group] + index;
+    index = entry->seq;
+    row->anim[0] = lbl_1_data_A938[group] + index;
     table = *(void**)(row + group * 4 + 0xC14);
-    object = (ActorObject*)(*(u8**)(lbl_8036E548 + 0x60) + lbl_1_bss_5F73 * 0x90 + 0x34);
+    object = &lbl_8036E548.slots->objects[lbl_1_bss_5F73];
     object->animBank = table;
     object->seqNum = index;
     object->time = 0.0f;
@@ -6879,26 +6885,26 @@ void fn_1_107B8(void) {
     object->setTime = table != NULL;
     object->setSpeed = table != NULL;
     object->speed = 0.0f;
-    fn_1_ECF8(lbl_1_bss_5F73, (lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48)[0x44], lbl_1_bss_5F69);
+    fn_1_ECF8(lbl_1_bss_5F73, lbl_1_bss_6940.player[lbl_1_bss_5F73].group, lbl_1_bss_5F69);
     lbl_1_bss_5F5C = 0;
-    fn_1_D300(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04);
+    fn_1_D300(&lbl_8036E548.actors[lbl_1_bss_5F73]);
     fn_800B0A14_removeQueue(NULL); // argument unused (stale r3 in the original)
 }
 #endif
 
 // .text:0x0001073C size:0x7C
-void fn_1_1073C(u8* object) {
+void fn_1_1073C(CharActor* object) {
     Vec displacement;
-    displacement.x = *(f32*)(lbl_1_bss_67E0 + 0x108) - *(f32*)(object + 0x34);
-    displacement.y = *(f32*)(lbl_1_bss_67E0 + 0x10C) - *(f32*)(object + 0x38);
-    displacement.z = *(f32*)(lbl_1_bss_67E0 + 0x110) - *(f32*)(object + 0x3C);
+    displacement.x = lbl_1_bss_67E0.cam.eye.x - object->pos.x;
+    displacement.y = lbl_1_bss_67E0.cam.eye.y - object->pos.y;
+    displacement.z = lbl_1_bss_67E0.cam.eye.z - object->pos.z;
     fn_80026134(0, &displacement);
     fn_80026130(0, lbl_1_data_ADC4, lbl_1_data_ADC0[0]);
 }
 
 // .text:0x000106C4 size:0x78
 void fn_1_106C4(void) {
-    s32 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    s32 buttons = lbl_803C77B8._04;
     if (buttons & 8) return;
     if (buttons & 4) return;
     if (buttons & 1) {
@@ -6964,7 +6970,7 @@ void fn_1_10458(void) {
         }
         return;
     }
-    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    buttons = lbl_803C77B8._04;
     if (buttons & 8) {
         if (lbl_1_bss_307C != 0) {
             lbl_1_bss_307C--;
@@ -7000,7 +7006,7 @@ void fn_1_10458(void) {
 #if NONMATCHING
 void fn_1_10044(void) {
     ChallengeEmitterParams* params = &lbl_1_data_ADF0;
-    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 buttons = lbl_803C77B8._04;
     s32 step;
     Mtx rotX;
     Mtx rotY;
@@ -7101,7 +7107,7 @@ void fn_1_10044(void) {
 #if NONMATCHING
 void fn_1_FB98(void) {
     ChallengeFxParams* params = &lbl_1_data_F084;
-    u16 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 buttons = lbl_803C77B8._04;
     s32 step;
 
     if (buttons & 8) {
@@ -7230,7 +7236,7 @@ void fn_1_F798(void* paramsArg, void* typesArg, s32 count) {
         l = 100000;
         m = 1000;
     }
-    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    buttons = lbl_803C77B8._04;
     if (buttons & 8) {
         if (lbl_1_bss_307C != 0) {
             lbl_1_bss_307C--;
@@ -7390,7 +7396,7 @@ void fn_1_F6E4(void) {
     u16 buttons;
     command = lbl_1_rodata_731C;
     fn_1_F798(parameters, lbl_1_data_F0A8, 12);
-    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    buttons = lbl_803C77B8._04;
     if (buttons & 0x100) {
         *parameters = *(s32*)(challenge + 0x28);
         fn_80031CA4((Vec*)&command, (u32*)parameters);
@@ -7404,11 +7410,11 @@ void fn_1_F6E4(void) {
 void fn_1_F50C(void) {
     Vec coordinates;
     u8* queue = lbl_803CC1B8[0];
-    u8* row = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04;
+    CharActor* row = &lbl_8036E548.actors[lbl_1_bss_5F73];
     if (row != NULL) {
-        *(f32*)(row + 0x34) = *(f32*)(queue + 0x14);
-        *(f32*)(row + 0x38) = *(f32*)(queue + 0x18);
-        *(f32*)(row + 0x3C) = *(f32*)(queue + 0x1C);
+        row->pos.x = *(f32*)(queue + 0x14);
+        row->pos.y = *(f32*)(queue + 0x18);
+        row->pos.z = *(f32*)(queue + 0x1C);
     }
     fn_80030D88((Vec*)(queue + 0x14), (Vec*)(queue + 0x20), lbl_1_data_F10C, 5);
     if (queue[0x3E] != 0) {
@@ -7476,7 +7482,7 @@ void fn_1_F37C(void) {
 
 // .text:0x0000F2F8 size:0x84
 void fn_1_F2F8(void) {
-    s32 buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    s32 buttons = lbl_803C77B8._04;
     if (buttons & 0x100) {
         lbl_80108B90 = *(u32*)&lbl_1_bss_3098;
         fn_800324EC(lbl_1_data_F17C[0], 0, -1, &lbl_80108B90);
@@ -7494,10 +7500,10 @@ void fn_1_F1D8(void* unused) {
     Vec coordinates;
     Vec direction;
     u8* queue = lbl_803CC1B8[0];
-    u8* object = ((u8**)(lbl_8036E548 + 0x2C50))[lbl_1_bss_5F73];
+    CharActor* object = lbl_8036E548.active[lbl_1_bss_5F73];
     getAnimRelatedCoordinates(0, *(s32*)(queue + 0x24), &coordinates);
     control.type = 0;
-    CTRLSetRotation(&control, *(f32*)(object + 0x40), *(f32*)(object + 0x44), *(f32*)(object + 0x48));
+    CTRLSetRotation(&control, object->rot.x, object->rot.y, object->rot.z);
     CTRLBuildMatrix(&control, matrix);
     direction.x = lbl_1_rodata_7394;
     direction.z = lbl_1_rodata_73BC;
@@ -7516,11 +7522,11 @@ void fn_1_F0D0(void) {
     u8* challenge = lbl_1_bss_3070;
     u16 buttons;
     fn_1_F798(lbl_1_data_F278[*(s32*)(challenge + 0x38)], lbl_1_data_F284, 16);
-    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    buttons = lbl_803C77B8._04;
     if (buttons & 0x1000) {
         *(s32*)(challenge + 0x38) = (*(s32*)(challenge + 0x38) + 1) % 3;
-    } else if (*(u16*)((u8*)&lbl_803C77B8) & 0x100) {
-        if (*(u16*)((u8*)&lbl_803C77B8 + 2) & 0x100) {
+    } else if (lbl_803C77B8._00 & 0x100) {
+        if (lbl_803C77B8._02 & 0x100) {
             u8* queue;
             s32 resource = *(s32*)(challenge + 0x28);
             *lbl_1_data_F278[2] = resource;
@@ -7542,7 +7548,7 @@ void fn_1_F040(void) {
     u8* challenge = lbl_1_bss_3070;
     u16 buttons;
     command = lbl_1_rodata_7344;
-    buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    buttons = lbl_803C77B8._04;
     if (buttons & 0x100) {
         lbl_1_data_F2A0[0] = *(s32*)(challenge + 0x28);
         fn_8002955C((Vec *)&command, 0, (struct ParticleParamsC *)lbl_1_data_F2A0); // TODO type
@@ -7562,7 +7568,7 @@ static inline void fn_1_ECF8_bind(u8 player, u16 id, s32 slot) {
     u16 i;
     for (i = 0; i < *(u16*)(actor + 6); i++) { // TODO type: GameActor bone count / table
         if (*(u32*)((*(u8***)(actor + 0x18))[i] + 0x14) != 0) {
-            fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)(*(u8**)(lbl_8036E548 + 0x60)))[player].actor, id, // TODO type
+            fn_800B2BA8(lbl_8036E548.slots->objects[player].actor, id,
                         table->objects[slot - 1].actor, i);
             break;
         }
@@ -7571,7 +7577,7 @@ static inline void fn_1_ECF8_bind(u8 player, u16 id, s32 slot) {
 
 // nmverify: lbl_1_bss_5F7C reached through a pooled base in original
 void fn_1_ECF8(u8 player, u8 group, u8 flag) {
-    u8* row;
+    CharActor* row;
     u16 idA;
     u16 idB;
     s32 first;
@@ -7580,9 +7586,9 @@ void fn_1_ECF8(u8 player, u8 group, u8 flag) {
     if (lbl_1_bss_60A4[(lbl_1_bss_68FC + player)[0x40]] == 0) {
         return;
     }
-    row = lbl_8036E548 + player * 0x27C;
-    idA = *(u16*)(row + 0xD8C);
-    idB = *(u16*)(row + 0xD98);
+    row = &lbl_8036E548.actors[player];
+    idA = row->jointIdx[0x13];
+    idB = row->jointIdx[0x19];
     switch (group) {
     case 0:
     case 1:
@@ -7603,7 +7609,7 @@ void fn_1_ECF8(u8 player, u8 group, u8 flag) {
     }
     fn_1_ECF8_bind(player, idA, first);
     fn_1_ECF8_bind(player, idB, second);
-    fn_1_D300(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04);
+    fn_1_D300(&lbl_8036E548.actors[lbl_1_bss_5F73]);
 }
 #endif
 
@@ -7612,26 +7618,26 @@ void fn_1_ECF8(u8 player, u8 group, u8 flag) {
 #if NONMATCHING
 void fn_1_EA20(void) {
     ActorObject* object;
-    u8* entry;
-    u8** table;
+    ChPlayer* entry;
+    ANIMBank** table;
     s32 i;
     s32 j;
     u16 buttons;
 
     switch (lbl_1_bss_30B0) {
     case 0:
-        object = (ActorObject*)(*(u8**)(lbl_8036E548 + 0x60) + lbl_1_bss_5F73 * 0x90 + 0x34);
+        object = &lbl_8036E548.slots->objects[lbl_1_bss_5F73];
         lbl_1_bss_5F68 = 1;
         lbl_1_bss_5F64 = 0.0f;
         object->time = 0.0f;
         object->setTime = 1;
         lbl_1_bss_30B0 = 1;
         lbl_1_bss_5F58 = 0;
-        entry = lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48;
-        table = (u8**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + entry[0x44] * 4 + 0xC14);
-        j = entry[0x45] * 0xC;
-        for (i = 0; i < *(u16*)(*(u8**)(*table + 4) + j + 8); i++) {
-            f32 frame = (*(f32**)(*(u8**)(*table + 4) + j + 4))[i * 4];
+        entry = &lbl_1_bss_6940.player[lbl_1_bss_5F73];
+        table = (ANIMBank**)&lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[entry->group];
+        j = entry->seq;
+        for (i = 0; i < (*table)->animSequences[j].totalTracks; i++) {
+            f32 frame = (*table)->animSequences[j].trackArray[i].animTime;
             if ((f32)lbl_1_bss_5F58 < frame) {
                 lbl_1_bss_5F58 = (s32)frame;
             }
@@ -7643,7 +7649,7 @@ void fn_1_EA20(void) {
             lbl_1_bss_5F71 = 1;
             break;
         }
-        buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+        buttons = lbl_803C77B8._04;
         if (buttons & 1) {
             if (--lbl_1_bss_30B4 < 0) {
                 lbl_1_bss_30B4 = lbl_1_bss_5F58 - 2;
@@ -7655,27 +7661,27 @@ void fn_1_EA20(void) {
         } else if (buttons & 0x100) {
             lbl_1_bss_5F68 = 0;
             fn_80039A4C();
-            lbl_8036E548[0x3084] = lbl_1_bss_5F73;
+            lbl_8036E548._3083[1] = lbl_1_bss_5F73;
             lbl_1_bss_30B0 = 2;
-            ((u8**)(lbl_8036E548 + 0x2C50))[lbl_1_bss_5F73] = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04;
+            lbl_8036E548.active[lbl_1_bss_5F73] = &lbl_8036E548.actors[lbl_1_bss_5F73];
         }
         break;
     default:
         if ((u32)(lbl_1_bss_30B0 - 2) == (u32)(lbl_1_bss_30B4 * 2)) {
-            lbl_8036E548[0x3083] = 1;
+            lbl_8036E548._3083[0] = 1;
         }
         lbl_1_bss_30B0++;
         if (lbl_803C77B8._02 & 0x200) {
             lbl_1_bss_30B0 = 0;
-            lbl_8036E548[0x3083] = 0;
+            lbl_8036E548._3083[0] = 0;
         } else if (lbl_803C77B8._02 & 0x100) {
-            object = (ActorObject*)(*(u8**)(lbl_8036E548 + 0x60) + lbl_1_bss_5F73 * 0x90 + 0x34);
+            object = &lbl_8036E548.slots->objects[lbl_1_bss_5F73];
             object->time = 0.0f;
             object->setTime = 1;
             fn_80039A4C();
-            lbl_8036E548[0x3084] = lbl_1_bss_5F73;
+            lbl_8036E548._3083[1] = lbl_1_bss_5F73;
             lbl_1_bss_30B0 = 2;
-            ((u8**)(lbl_8036E548 + 0x2C50))[lbl_1_bss_5F73] = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04;
+            lbl_8036E548.active[lbl_1_bss_5F73] = &lbl_8036E548.actors[lbl_1_bss_5F73];
         }
         break;
     }
@@ -7683,11 +7689,11 @@ void fn_1_EA20(void) {
 #endif
 
 // .text:0x0000E9F8 size:0x28
-void fn_1_E9F8(u8* object, s32 index, s32 count) {
+void fn_1_E9F8(GameActor* object, s32 index, s32 count) {
     s32 i;
     for (i = 0; i < count; i++) {
         index++;
-        if (index == *(u16*)(object + 6)) index = 0;
+        if (index == object->totalBones) index = 0;
     }
 }
 
@@ -7696,11 +7702,11 @@ void fn_1_E8D4(void) {
     u8* src;
     s32 n;
     u8* dst;
-    u8* base;
-    src = lbl_1_data_F4D4[1] + 0x40;
+    CharMgr* base;
+    src = lbl_1_data_F4D4.records + 0x40;
     n = 8;
     dst = (u8*)lbl_1_bss_3218 + 0x40;
-    base = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C;
+    base = CHARMGR_AT(lbl_1_bss_5F73);
     while ((src -= 8, dst -= 8, n-- != 0)) {
         if ((s8)src[0x10] != 0) {
             u8* table;
@@ -7708,7 +7714,7 @@ void fn_1_E8D4(void) {
             s16 b;
             s16 c;
             *(s16*)dst = a;
-            table = *(u8**)(base + a * 4 + 0xC14);
+            table = base->actors[0].banks.b[a];
             b = *(s16*)(src + 0x14);
             *(s16*)(dst + 2) = b;
             *(s16*)(dst + 6) = (s8)src[0x11];
@@ -7728,8 +7734,8 @@ void fn_1_E8D4(void) {
             *(s16*)(dst + 4) = 0;
         }
     }
-    while ((s8)lbl_1_data_F4D4[1][*(s16*)lbl_1_data_F4D4 * 0x50] != 0) {
-        *(s16*)lbl_1_data_F4D4 += 1;
+    while ((s8)lbl_1_data_F4D4.records[lbl_1_data_F4D4.count * 0x50] != 0) {
+        lbl_1_data_F4D4.count += 1;
     }
 }
 
@@ -7740,7 +7746,7 @@ void fn_1_E8D4(void) {
 #if NONMATCHING
 void fn_1_E098(void) {
     ChallengeStep* step = (ChallengeStep*)lbl_1_bss_3218;
-    s16* scripts = (s16*)lbl_1_data_F4D4; // [0] count, [1] current
+    ChScriptTable* scripts = &lbl_1_data_F4D4;
     u16 buttons;
     s32 row;
     s32 col;
@@ -7749,20 +7755,20 @@ void fn_1_E098(void) {
         switch (row) {
         case 8:
             if (row == lbl_1_bss_30B6) {
-                s16 old = scripts[1];
-                buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+                s16 old = scripts->current;
+                buttons = lbl_803C77B8._04;
                 if (buttons & 1) {
-                    if (scripts[1] == 0) {
-                        scripts[1] = scripts[0];
+                    if (scripts->current == 0) {
+                        scripts->current = scripts->count;
                     }
-                    scripts[1]--;
+                    scripts->current--;
                 } else if (buttons & 2) {
-                    if (++scripts[1] == scripts[0]) {
-                        scripts[1] = 0;
+                    if (++scripts->current == scripts->count) {
+                        scripts->current = 0;
                     }
                 }
-                if (old != scripts[1]) {
-                    fn_1_D7A4(scripts[1]);
+                if (old != scripts->current) {
+                    fn_1_D7A4(scripts->current);
                 }
             }
             break;
@@ -7777,20 +7783,20 @@ void fn_1_E098(void) {
             if (row == lbl_1_bss_30B6 && (lbl_803C77B8._02 & 0x100)) {
                 u8* queue = lbl_803CC1B8[0];
                 ChallengeStep* steps = (ChallengeStep*)lbl_1_bss_3218;
-                u8* entry;
+                ChPlayer* entry;
                 ActorObject* object;
                 void* table;
                 s32 k;
 
                 *(void**)queue = (void*)fn_1_DE1C;
                 queue[0x15] = 0;
-                entry = lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48;
-                entry[0x44] = steps[(s8)queue[0x15]].group;
-                entry[0x45] = steps[(s8)queue[0x15]].index;
-                object = (ActorObject*)(*(u8**)(lbl_8036E548 + 0x60) + lbl_1_bss_5F73 * 0x90 + 0x34);
-                table = *(void**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + entry[0x44] * 4 + 0xC14);
+                entry = &lbl_1_bss_6940.player[lbl_1_bss_5F73];
+                entry->group = steps[(s8)queue[0x15]].group;
+                entry->seq = steps[(s8)queue[0x15]].index;
+                object = &lbl_8036E548.slots->objects[lbl_1_bss_5F73];
+                table = lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[entry->group];
                 object->animBank = table;
-                object->seqNum = entry[0x45];
+                object->seqNum = entry->seq;
                 object->time = 0.0f;
                 object->setAnimation = 1;
                 object->setTime = table != NULL;
@@ -7806,7 +7812,7 @@ void fn_1_E098(void) {
                         lbl_1_bss_67B8[k] = NULL;
                     }
                 }
-                fn_1_D300(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04);
+                fn_1_D300(&lbl_8036E548.actors[lbl_1_bss_5F73]);
             }
             break;
         default: {
@@ -7816,13 +7822,13 @@ void fn_1_E098(void) {
             u16 pad0;
 
             if (step->group >= 0) {
-                table = *(u8**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + step->group * 4 + 0xC14);
+                table = lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[step->group];
                 anim = *(u8**)(table + 4) + step->index * 0xC;
             } else {
                 table = NULL;
                 anim = NULL;
             }
-            buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+            buttons = lbl_803C77B8._04;
             pad0 = lbl_803C77B8._00;
             for (col = 0; col < 4; col++) {
                 if (row != lbl_1_bss_30B6 || col != lbl_1_bss_30B7) {
@@ -7886,7 +7892,7 @@ void fn_1_E098(void) {
         }
     }
     if (!(lbl_803C77B8._00 & 0x100)) {
-        buttons = *(u16*)((u8*)&lbl_803C77B8 + 4);
+        buttons = lbl_803C77B8._04;
         if (buttons & 8) {
             if (lbl_1_bss_30B6 == 0) {
                 lbl_1_bss_30B6 = 11;
@@ -7925,8 +7931,8 @@ void fn_1_DF14(void) {
     case 0:
         {
             s16* e = (s16*)lbl_1_bss_3218;
-            (lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48)[0x44] = *(s16*)(lbl_1_bss_3218 + idx * 8);
-            (lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48)[0x45] = e[idx * 4 + 1];
+            lbl_1_bss_6940.player[lbl_1_bss_5F73].group = *(s16*)(lbl_1_bss_3218 + idx * 8);
+            lbl_1_bss_6940.player[lbl_1_bss_5F73].seq = e[idx * 4 + 1];
         }
         fn_800B0A5C_insertQueue((void*)fn_1_107B8, 0xFF);
         lbl_1_bss_5F5C = 2;
@@ -7991,7 +7997,7 @@ void fn_1_DE1C(void) {
 void fn_1_D9B8(void) {
     ChallengeStep* steps = (ChallengeStep*)lbl_1_bss_3218;
     u8* queue = lbl_803CC1B8[0];
-    u8* actor = (u8*)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[lbl_1_bss_5F73].actor;
+    u8* actor = (u8*)lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor;
     u16 count = *(u16*)(actor + 6); // TODO type: GameActor bone count / table
     s32 i;
     s32 frame;
@@ -8011,7 +8017,7 @@ void fn_1_D9B8(void) {
     }
     target = steps[(s8)queue[0x15]].frame;
     if ((target < 0 && (lbl_803C77B8._02 & 0x100)) || (target >= 0 && frame >= target)) {
-        u8* entry;
+        ChPlayer* entry;
         ActorObject* object;
         void* table;
         f32 start;
@@ -8023,13 +8029,13 @@ void fn_1_D9B8(void) {
                 queue[0x15] = 0;
             }
         } while (steps[(s8)queue[0x15]].group < 0);
-        entry = lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48;
-        entry[0x44] = steps[(s8)queue[0x15]].group;
-        entry[0x45] = steps[(s8)queue[0x15]].index;
-        object = (ActorObject*)(*(u8**)(lbl_8036E548 + 0x60) + lbl_1_bss_5F73 * 0x90 + 0x34);
-        table = *(void**)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + entry[0x44] * 4 + 0xC14);
+        entry = &lbl_1_bss_6940.player[lbl_1_bss_5F73];
+        entry->group = steps[(s8)queue[0x15]].group;
+        entry->seq = steps[(s8)queue[0x15]].index;
+        object = &lbl_8036E548.slots->objects[lbl_1_bss_5F73];
+        table = lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[entry->group];
         object->animBank = table;
-        object->seqNum = entry[0x45];
+        object->seqNum = entry->seq;
         object->time = 0.0f;
         object->setAnimation = 1;
         object->setTime = table != NULL;
@@ -8052,9 +8058,9 @@ void fn_1_D9B8(void) {
                 lbl_1_bss_67B8[k] = NULL;
             }
         }
-        fn_1_D300(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04);
+        fn_1_D300(&lbl_8036E548.actors[lbl_1_bss_5F73]);
     }
-    if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 0x200) {
+    if (lbl_803C77B8._04 & 0x200) {
         *(void (**)(u8*))lbl_803CC1B8[0] = fn_1_1770C;
     }
     fn_1_D8A0();
@@ -8069,7 +8075,7 @@ void fn_1_D8A0(void) {
                  lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
     GXSetProjection(projection, GX_PERSPECTIVE);
     fn_1_179CC();
-    PSMTXCopy((f32(*)[4])lbl_1_bss_67E0, (f32(*)[4])(lbl_1_bss_68FC + 0x10));
+    PSMTXCopy(lbl_1_bss_67E0.cam.view, (f32(*)[4])(lbl_1_bss_68FC + 0x10));
     fn_800A7D4C(7, &lbl_1_data_AA54[lbl_803CBBC0[0]]);
     if (lbl_1_bss_3078 != 0) {
         fn_800A7D4C(7, &lbl_1_data_AB34[lbl_803CBBC0[0]]);
@@ -8082,11 +8088,11 @@ void fn_1_D8A0(void) {
 void fn_1_D7A4(s32 index) {
     u8* src;
     u8* dst;
-    u8* base;
+    CharMgr* base;
     s32 n;
-    src = lbl_1_data_F4D4[1] + index * 0x50 + 0x40;
+    src = lbl_1_data_F4D4.records + index * 0x50 + 0x40;
     dst = (u8*)lbl_1_bss_3218 + 0x40;
-    base = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C;
+    base = CHARMGR_AT(lbl_1_bss_5F73);
     n = 8;
     while ((src -= 8, dst -= 8, n-- != 0)) {
         if ((s8)src[0x10] != 0) {
@@ -8095,7 +8101,7 @@ void fn_1_D7A4(s32 index) {
             s16 b;
             s16 c;
             *(s16*)dst = a;
-            table = *(u8**)(base + a * 4 + 0xC14);
+            table = base->actors[0].banks.b[a];
             b = *(s16*)(src + 0x14);
             *(s16*)(dst + 2) = b;
             *(s16*)(dst + 6) = (s8)src[0x11];
@@ -8120,20 +8126,20 @@ void fn_1_D7A4(s32 index) {
 // .text:0xD71C size:0x88
 f32 fn_1_D71C(s32 index) {
     s32 current;
-    ChallengeRenderObject* objects;
+    ActorObjectTable* objects;
     s32 count;
-    ChallengeAnimationModel* model;
-    objects = *(ChallengeRenderObject**)(lbl_8036E548 + 0x60);
-    model = objects[index].model;
-    count = model->count;
+    GameActor* model;
+    objects = lbl_8036E548.slots;
+    model = objects->objects[index].actor;
+    count = model->totalBones;
     for (current = 0; current < count; current++) {
-        ChallengeAnimation* animation = model->nodes[current]->animation;
-        if (animation != NULL && animation->track != NULL) {
+        struct ANIMPipe* animation = model->boneArray[current]->animPipe;
+        if (animation != NULL && animation->currentTrack != NULL) {
             break;
         }
     }
     if (current < count) {
-        return model->nodes[current]->animation->position;
+        return model->boneArray[current]->animPipe->time;
     }
     return 0.0f;
 }
@@ -8196,35 +8202,35 @@ call:
 // .text:0xD4BC size:0xD4
 void fn_1_D4BC(void) {
     Vec coordinates;
-    u8* scene = lbl_8036E548;
-    u8* object = scene + 0xC04;
+    CharMgr* scene = &lbl_8036E548;
+    CharActor* object = scene->actors;
     if (object != NULL) {
-        object[0x276] = (s32)object[0x276] >> 1;
-        object[0x276] = (object[0x276] * 8) & 0xF8;
+        object->_276 = (s32)object->_276 >> 1;
+        object->_276 = (object->_276 * 8) & 0xF8;
         getAnimRelatedCoordinates(0, 0x1E, &coordinates);
-        if (*(f32*)(object + 0x38) - coordinates.y < lbl_1_rodata_73C8) {
-            object[0x276] |= 2;
+        if (object->pos.y - coordinates.y < lbl_1_rodata_73C8) {
+            object->_276 |= 2;
         }
         getAnimRelatedCoordinates(0, 0x22, &coordinates);
-        if (*(f32*)(object + 0x38) - coordinates.y < lbl_1_rodata_73C8) {
-            object[0x276] |= 4;
+        if (object->pos.y - coordinates.y < lbl_1_rodata_73C8) {
+            object->_276 |= 4;
         }
     }
-    object = *(u8**)(scene + 0x2C50);
-    object[0x276] |= 1;
+    object = scene->active[0];
+    object->_276 |= 1;
 }
 
 // .text:0xD300 size:0x1BC
 // NONMATCHING ~96%: switch tree lacks one dead branch; r6/r7 swap
 #if NONMATCHING
-void fn_1_D300(u8* row) {
+void fn_1_D300(CharActor* row) {
     u32 idx;
     s32 first;
-    u8** actors;
+    CharActor** actors;
     s32 second;
 
     idx = lbl_1_bss_5F73;
-    switch ((lbl_1_bss_6940 + idx * 0x48)[0x44]) {
+    switch (lbl_1_bss_6940.player[idx].group) {
     case 0:
     case 1:
         first = 1;
@@ -8240,17 +8246,17 @@ void fn_1_D300(u8* row) {
         }
         break;
     }
-    actors = (u8**)(lbl_8036E548 + 0x2C50);
-    *(u8**)(actors[idx] + 0x30) = lbl_8036E548 + idx * 0xD4 + 0x140;
-    memcpy(*(u8**)(actors[lbl_1_bss_5F73] + 0x30) + 0x4, lbl_1_bss_60EC + first * 0x5C, 0x5C);
-    memcpy(*(u8**)(actors[lbl_1_bss_5F73] + 0x30) + 0x68, lbl_1_bss_60EC + second * 0x5C, 0x5C);
-    (*(u8**)(actors[lbl_1_bss_5F73] + 0x30))[0x60] = lbl_1_bss_5F73;
-    (*(u8**)(actors[lbl_1_bss_5F73] + 0x30))[0xC4] = lbl_1_bss_5F73;
-    (*(u8**)(actors[lbl_1_bss_5F73] + 0x30))[0xCD] = row[0x25A];
-    (*(u8**)(actors[lbl_1_bss_5F73] + 0x30))[0xCE] = row[0x25B];
-    (*(u8**)(actors[lbl_1_bss_5F73] + 0x30))[0xCF] = lbl_1_bss_5F73;
-    (*(u8**)(actors[lbl_1_bss_5F73] + 0x30))[0xD0] = lbl_1_bss_5F73;
-    *(void**)actors[lbl_1_bss_5F73] = (*(ChallengeModelEntry**)(lbl_8036E548 + 0x60))[lbl_1_bss_5F73].actor;
+    actors = lbl_8036E548.active;
+    actors[idx]->parts = &lbl_8036E548.partsPool[idx];
+    memcpy(&actors[lbl_1_bss_5F73]->parts->part[0].player, &lbl_1_bss_60EC[first], 0x5C);
+    memcpy(&actors[lbl_1_bss_5F73]->parts->part[1].player, &lbl_1_bss_60EC[second], 0x5C);
+    actors[lbl_1_bss_5F73]->parts->part[0].slot = lbl_1_bss_5F73;
+    actors[lbl_1_bss_5F73]->parts->part[1].slot = lbl_1_bss_5F73;
+    actors[lbl_1_bss_5F73]->parts->_CD = row->_25A;
+    actors[lbl_1_bss_5F73]->parts->_CE = row->_25B;
+    actors[lbl_1_bss_5F73]->parts->_CF = lbl_1_bss_5F73;
+    actors[lbl_1_bss_5F73]->parts->_D0 = lbl_1_bss_5F73;
+    actors[lbl_1_bss_5F73]->model = lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor;
 }
 #endif
 
@@ -8263,7 +8269,7 @@ void fn_1_D2F0(void) {
 #if NONMATCHING
 void fn_1_D13C(void) {
     u16 bones[2];
-    u8* row = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xC04;
+    CharActor* row = &lbl_8036E548.actors[lbl_1_bss_5F73];
     s32 kind = 0; // uninitialized in the original (case 39 / default keep a stale register)
     s32 i;
     u16* bone;
@@ -8272,7 +8278,7 @@ void fn_1_D13C(void) {
 
     queue = fn_800B0A5C_insertQueue((void*)fn_1_CDC8, (u16)(*(u16*)(lbl_803CC1B8[0] + 0x12) + 1));
     lbl_1_bss_60E8 = queue;
-    *(s16*)(queue + 0x10) = (lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48)[0x44];
+    *(s16*)(queue + 0x10) = lbl_1_bss_6940.player[lbl_1_bss_5F73].group;
     switch ((lbl_1_bss_68FC + lbl_1_bss_5F73)[0x40]) {
     case 38:
         kind = 0;
@@ -8289,13 +8295,13 @@ void fn_1_D13C(void) {
     case 39:
         break;
     }
-    row[0x25A] = ((lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48)[0x44] < 2) == (lbl_1_bss_5F69 == 0);
-    ids = (u16*)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xD66);
+    row->_25A = (lbl_1_bss_6940.player[lbl_1_bss_5F73].group < 2) == (lbl_1_bss_5F69 == 0);
+    ids = lbl_8036E548.actors[lbl_1_bss_5F73].jointIdx;
     bone = bones;
-    bone[row[0x25A]] = ids[lbl_1_data_F4E8[kind][0]];
-    bone[row[0x25A] == 0] = ids[lbl_1_data_F4E8[kind][1]];
+    bone[row->_25A] = ids[lbl_1_data_F4E8[kind][0]];
+    bone[row->_25A == 0] = ids[lbl_1_data_F4E8[kind][1]];
     for (i = 0; i < 2; i++) {
-        fn_800B2B74(*(struct GameActor**)(*(u8**)(lbl_8036E548 + 0x60) + lbl_1_bss_5F73 * 0x90 + 0x34), *bone);
+        fn_800B2B74(lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor, *bone);
         bone++;
     }
 }
@@ -8309,7 +8315,7 @@ void fn_1_CDC8(void) {
     void* states[2];
     GameActor** tables[2];
     u16 bones[2];
-    u8* row;
+    CharActor* row;
     u16 idB;
     s32 kind;
     s32 both;
@@ -8323,10 +8329,10 @@ void fn_1_CDC8(void) {
         fn_800B0A14_removeQueue(NULL);
         return;
     }
-    row = lbl_8036E548 + lbl_1_bss_5F73 * 0x27C;
-    idB = *(u16*)(row + 0xD98);
-    fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[lbl_1_bss_5F73].actor, *(u16*)(row + 0xD8C), NULL, 0); // TODO type
-    fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[lbl_1_bss_5F73].actor, idB, NULL, 0); // TODO type
+    row = &lbl_8036E548.actors[lbl_1_bss_5F73];
+    idB = row->jointIdx[0x19];
+    fn_800B2BA8(lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor, row->jointIdx[0x13], NULL, 0);
+    fn_800B2BA8(lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor, idB, NULL, 0);
     switch ((lbl_1_bss_68FC + lbl_1_bss_5F73)[0x40]) {
     case 38:
         kind = 0;
@@ -8344,12 +8350,12 @@ void fn_1_CDC8(void) {
         kind = 0; // uninitialized in the original
         break;
     }
-    group = (lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48)[0x44];
-    (row + 0xC04)[0x25A] = ((lbl_1_bss_6940 + lbl_1_bss_5F73 * 0x48)[0x44] < 2) == (lbl_1_bss_5F69 == 0);
+    group = lbl_1_bss_6940.player[lbl_1_bss_5F73].group;
+    row->_25A = (lbl_1_bss_6940.player[lbl_1_bss_5F73].group < 2) == (lbl_1_bss_5F69 == 0);
     states[lbl_1_bss_5F69] = lbl_1_bss_67B8[2];
     states[lbl_1_bss_5F69 == 0] = lbl_1_bss_67B8[1];
     {
-        u16* ids = (u16*)(lbl_8036E548 + lbl_1_bss_5F73 * 0x27C + 0xD66);
+        u16* ids = lbl_8036E548.actors[lbl_1_bss_5F73].jointIdx;
         bones[0] = ids[lbl_1_data_F4E8[kind][1]];
         bones[1] = ids[lbl_1_data_F4E8[kind][0]];
     }
@@ -8376,14 +8382,14 @@ void fn_1_CDC8(void) {
         if (states[i] != NULL) {
             if (fn_80024D2C(states[i]) & 0x20000000) {
                 actor = *tables[i];
-                for (j = 0; j < *(u16*)((u8*)actor + 6); j++) { // TODO type: GameActor bone count / table
-                    if (*(u32*)((*(u8***)((u8*)actor + 0x18))[j] + 0x14) != 0) {
-                        fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[lbl_1_bss_5F73].actor, bones[i], actor, j); // TODO type
+                for (j = 0; j < actor->totalBones; j++) {
+                    if (actor->boneArray[j]->dispObj != NULL) {
+                        fn_800B2BA8(lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor, bones[i], actor, j);
                         break;
                     }
                 }
             } else {
-                fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[lbl_1_bss_5F73].actor, bones[i], NULL, 0); // TODO type
+                fn_800B2BA8(lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor, bones[i], NULL, 0);
             }
         }
         i++;
@@ -8395,9 +8401,9 @@ void fn_1_CDC8(void) {
             tables[0] = &((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[2].actor;
         }
         actor = *tables[0];
-        for (j = 0; j < *(u16*)((u8*)actor + 6); j++) {
-            if (*(u32*)((*(u8***)((u8*)(*tables[0]) + 0x18))[j] + 0x14) != 0) {
-                fn_800B2BA8((struct GameActor *)((ChallengeModelEntry*)*(u8**)(lbl_8036E548 + 0x60))[lbl_1_bss_5F73].actor, bones[i], actor, j); // TODO type
+        for (j = 0; j < actor->totalBones; j++) {
+            if ((*tables[0])->boneArray[j]->dispObj != NULL) {
+                fn_800B2BA8(lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor, bones[i], actor, j);
                 break;
             }
         }

@@ -2,6 +2,46 @@
 #define __CHALLENGE_REP_0610_H__
 
 #include "mssbTypes.h"
+#include "Dolphin/mtx.h"
+#include "Dolphin/gx.h"
+#include "C3/control.h"
+#include "C3/light.h"
+#include "main/file_80011640.h" // CharPart
+
+// Challenge viewer player record (lbl_1_bss_6940.player).
+typedef struct ChPlayer {
+    /*0x00*/ u8 _00[0x44];
+    /*0x44*/ u8 group;   // animation bank (CharActor.banks.b index)
+    /*0x45*/ u8 seq;     // sequence in that bank
+    /*0x46*/ u8 variant; // model variant
+    /*0x47*/ u8 _47;
+} ChPlayer; // size: 0x48
+
+// lbl_1_bss_6940: the player record and the parts data its CharActor.part points at.
+typedef struct ChPlayerBss {
+    /*0x00*/ ChPlayer player[1];
+    /*0x48*/ CharPart part[1]; // main/file_80011640.h
+    /*0xAC*/ u8 _AC[4];
+} ChPlayerBss; // size: 0xB0
+
+// Free/orbit debug camera of the challenge viewer (lbl_1_bss_67E0), driven by fn_1_121D4.
+typedef struct ChViewCam {
+    /*0x000*/ Mtx view;
+    /*0x030*/ Light light; // toggled by the debug menu
+    /*0x0F0*/ u16 pitch;
+    /*0x0F2*/ u16 yaw;
+    /*0x0F4*/ f32 strafe;
+    /*0x0F8*/ f32 dist;  // forward speed (mode 0) or orbit distance (mode 1)
+    /*0x0FC*/ Vec target;
+    /*0x108*/ Vec eye;
+    /*0x114*/ s32 mode;  // 0: free fly (fn_1_11F08), 1: orbit (fn_1_11D00)
+} ChViewCam; // size: 0x118
+
+typedef struct ChViewer {
+    /*0x000*/ ChViewCam cam;
+    /*0x118*/ u8 lightOn; // cam.light enabled
+    /*0x119*/ u8 _119[3];
+} ChViewer;
 
 void fn_1_163FC(void);
 
@@ -41,7 +81,7 @@ void fn_1_15170(void);
 
 void fn_1_14888(u8* object);
 
-void fn_1_E9F8(u8* object, s32 index, s32 count);
+void fn_1_E9F8(GameActor* object, s32 index, s32 count);
 
 void fn_1_10AA4(u8* object, f32 value);
 
@@ -51,7 +91,7 @@ void* fn_1_16558(s32 group, s32 index);
 
 void fn_1_17954(void);
 
-void fn_1_1073C(u8* object);
+void fn_1_1073C(CharActor* object);
 
 void fn_1_12F18(u8* object);
 
@@ -102,11 +142,11 @@ void fn_1_14710(u8* object);
 
 void fn_1_14FB8(void);
 
-void fn_1_11D00(u8* camera);
+void fn_1_11D00(ChViewCam* camera);
 
 void fn_1_131E4(void);
 
-void fn_1_11F08(u8* camera);
+void fn_1_11F08(ChViewCam* camera);
 
 void fn_1_165E0(void);
 
@@ -114,7 +154,7 @@ void fn_1_1540C(void);
 
 void fn_1_F798(void* paramsArg, void* typesArg, s32 count);
 
-void fn_1_121D4(u8* camera);
+void fn_1_121D4(ChViewCam* camera);
 
 void fn_1_15CE0(void);
 
@@ -126,7 +166,7 @@ void fn_1_12820(void* table, void* matrix);
 
 void fn_1_D13C(void);
 
-void fn_1_D300(u8* row);
+void fn_1_D300(CharActor* row);
 
 void fn_1_17B5C(void);
 
