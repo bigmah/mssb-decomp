@@ -190,6 +190,13 @@ typedef struct Emitter {
             /* 0x18 */ s32 index; // game.rel rep_3880 (fn_3_157AC4)
             /* 0x1C */ s32 count;
         } seq;
+        struct {
+            /* 0x18 */ s32 _18;
+            /* 0x1C */ u8 _1C[4];
+            /* 0x20 */ void* owner; // game: the stadium object the burst belongs to (sta_c2)
+            /* 0x24 */ u8 _24;
+            /* 0x25 */ u8 drawn;    // game: set once drawn this frame (sta_c2 fn_3_CDFA4)
+        } game;
         /* 0x18 */ f32 f[0x12]; // per-type parameters, see fn_80027918
         /* 0x18 */ u8 raw[0x48];
     } u;
