@@ -2115,8 +2115,6 @@ void fn_2_72A88(u8* o) {
 #endif
 
 // fn_2_7F8BC, size:0x240
-// NONMATCHING 99%: the loaded roster byte x lands in r4 instead of r11 (see docs/patterns/loops.md)
-#if NONMATCHING
 void fn_2_7F8BC(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
@@ -2132,7 +2130,7 @@ void fn_2_7F8BC(u8* o, s32 index) {
                 break;
             }
         }
-        x = (s8)(lbl_803C6724 + index * 9)[found + 2];
+        x = ((s8*)lbl_803C6724 + index * 9)[found + 2];
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->flags |= 2;
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->frame = 0;
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->state = 1;
@@ -2143,7 +2141,6 @@ void fn_2_7F8BC(u8* o, s32 index) {
         *e = 1;
     }
 }
-#endif
 
 // fn_2_808D8, size:0x284
 // NONMATCHING 85%: original hoists the five slot pointers (base+0x78..0x8B) into registers before the stores; frame/stack layout differs
