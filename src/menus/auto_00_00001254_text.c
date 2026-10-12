@@ -1553,33 +1553,34 @@ void fn_2_CA60(u8 slot, s32 team) {
 }
 #endif
 
-// NONMATCHING 97%: register-only diff inside the inlined fn_2_C324 (r12/r30/r31 rotated)
-#if NONMATCHING
-// fn_2_6884, size:0x270
 void fn_2_6884(void) {
+    u8 tmp2;
     s32 i;
+    u8* tmp;
     s32 k;
-    s8 g;
+
     for (i = 0; i < 9; i++) {
-        s16 id = *(s16*)(starMissionCompletionTracker + i * 6 + 0x40B8);
+        s16 id = *((s16*)(starMissionCompletionTracker + i * 6 + 0x40B8));
+        tmp2 = (u8)id;
         lbl_803C6724[i + 2] = id;
-        lbl_80354720[i * 4 + 1] = starMissionCompletionTracker[i * 6 + 0x40BA];
+        tmp = starMissionCompletionTracker;
+        lbl_80354720[i * 4 + 1] = tmp[i * 6 + 0x40BA];
         lbl_80354720[i * 4 + 0] = i;
         lbl_803C6724[i + 0x4A] = 1;
         lbl_80354720[i * 4 + 2] = i;
-        lbl_8034E9A0[(u8)id + 0x4757] = 1;
-        g = fn_2_C324((u8)id);
-        if (g != -1) {
+        lbl_8034E9A0[tmp2 + 0x4757] = 1;
+        k = fn_2_C324(tmp2);
+        if (k != (-1)) {
+            id = k;
             for (k = 0; k < 5; k++) {
-                s16 v = *(s16*)(lbl_80108EDC + g * 10 + k * 2);
-                if (v != -1) {
+                s16 v = *((s16*)(lbl_80108EDC + id * 10 + k * 2));
+                if (v != (-1)) {
                     lbl_8034E9A0[v + 0x4757] = 1;
                 }
             }
         }
     }
 }
-#endif
 
 // NONMATCHING 70%: retry loop shape (slot==0 test inside the loop in the original) and store addressing differ; inlines fn_2_C698
 // nmverify: fn_2_14F8 inlined on one side (calls match once expanded)
