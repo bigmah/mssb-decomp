@@ -28,7 +28,7 @@ extern SoundManager lbl_800EF808;
 extern SoundGroupRequest lbl_80108B84;
 extern u8 lbl_80108B18[0x24];
 extern u8 lbl_80108B3C[0x48];
-extern void* lbl_80108B90[0x14]; // ParticleParamsB template ([0] = tex)
+extern ParticleParamsB lbl_80108B90; // spawn template (.tex set before use)
 extern u16 lbl_80108BE0[8];
 extern s8 lbl_80108BF0[][0x36];
 extern u16 lbl_80108DF4[0x22];
@@ -4075,8 +4075,8 @@ void fn_80062A94(void) {
 // .text:0x80062BE4 size:0x40
 void fn_80062BE4(Vec* pos) {
     if (lbl_80366158._28 != 1) {
-        lbl_80108B90[0] = lbl_803CBD0C;
-        fn_80032064(pos, (ParticleParamsB *)lbl_80108B90); // TODO type
+        lbl_80108B90.tex = lbl_803CBD0C;
+        fn_80032064(pos, &lbl_80108B90);
     }
 }
 
@@ -4102,8 +4102,8 @@ static inline void PlayCharJointSound(CharActor* obj) {
         for (i = 0; lbl_80108BE0[i] != 0xFFFF && CharJointSound(obj, lbl_80108BE0[i]) == 0xFFFF; i++) {
         }
         if (lbl_80108BE0[i] != 0xFFFF) {
-            lbl_80108B90[0] = lbl_803CBD0C;
-            fn_800324EC(lbl_80108BE0[i], obj->index, -1, (ParticleParamsB *)lbl_80108B90); // TODO type
+            lbl_80108B90.tex = lbl_803CBD0C;
+            fn_800324EC(lbl_80108BE0[i], obj->index, -1, &lbl_80108B90);
         }
     }
 }
@@ -5547,27 +5547,9 @@ u8 lbl_80108B3C[0x48] = {
     127, 127, 127, 127, 127, 0, 0, 0,
 };
 SoundGroupRequest lbl_80108B84 = {37, fn_8006282C, NULL};
-void *lbl_80108B90[0x14] = {
-    NULL,
-    (void*)0x00000018 /* TODO */,
-    (void*)0x0000001E /* TODO */,
-    (void*)0x00000019 /* TODO */,
-    (void*)0x00000001 /* TODO */,
-    (void*)0x00000008 /* TODO */,
-    (void*)0x0000000A /* TODO */,
-    (void*)0x00000FA0 /* TODO */,
-    (void*)0x00001388 /* TODO */,
-    (void*)0x00002710 /* TODO */,
-    (void*)0x00002EE0 /* TODO */,
-    (void*)0x00007530 /* TODO */,
-    (void*)0x00009C40 /* TODO */,
-    (void*)0x0000C350 /* TODO */,
-    (void*)0x0000EA60 /* TODO */,
-    (void*)0x00000064 /* TODO */,
-    (void*)0x00000064 /* TODO */,
-    (void*)0x0000C350 /* TODO */,
-    (void*)0x0000C350 /* TODO */,
-    (void*)0xFFFFFFFF /* TODO */,
+ParticleParamsB lbl_80108B90 = {
+    NULL, 24, 30, 25, 1, 8, 10, 4000, 5000, 10000, 12000,
+    30000, 40000, 50000, 60000, 100, 100, 50000, 50000, 0xFFFFFFFF,
 };
 u16 lbl_80108BE0[8] = {7, 8, 4, 5, 6, 65535, 0, 0};
 s8 lbl_80108BF0[5][0x36] = {
