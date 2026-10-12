@@ -137,7 +137,11 @@ BOOL fn_8000A3EC(Mtx out, LayoutFrame* frame, LayoutKey* a, LayoutKey* b, f32* o
                 }
             }
             colorA += step;
+#ifdef TARGET_PC
+            *dst = read_be32(color); // RGBA bytes -> 0xRRGGBBAA, as on GameCube
+#else
             *dst = *(u32*)color;
+#endif
             colorB += step;
             dst++;
         }
@@ -307,10 +311,17 @@ BOOL fn_8000AF1C(Mtx out, LayoutFrame* frame, LayoutKey2* a, LayoutKey2* b, void
             color[1] = t * b->color[1] + u * a->color[1];
             color[2] = t * b->color[2] + u * a->color[2];
             color[3] = t * b->color[3] + u * a->color[3];
+#ifdef TARGET_PC
+            frame->colors[3] = frame->colors[2] = frame->colors[1] = frame->colors[0] = read_be32(color);
+        } else {
+            frame->colors[3] = frame->colors[2] = frame->colors[1] = frame->colors[0] = read_be32(a->color);
+        }
+#else
             frame->colors[3] = frame->colors[2] = frame->colors[1] = frame->colors[0] = *(u32*)color;
         } else {
             frame->colors[3] = frame->colors[2] = frame->colors[1] = frame->colors[0] = *(u32*)a->color;
         }
+#endif
     } else {
         for (i = 0; i < 4; i++) {
             colorsA = (u32*)((u8*)palette + (a->palette << 4)) + 1;
