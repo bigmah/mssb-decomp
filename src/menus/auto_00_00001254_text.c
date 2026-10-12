@@ -161,7 +161,7 @@ void fn_2_6138(void) {
 }
 
 // fn_2_35D0, size:0x54
-s32 fn_2_35D0(u8 index) {
+u8 fn_2_35D0(u8 index) {
     u8* flag = (u8*)((u32)lbl_2_bss_F468 + 0x45 + index); // TODO port: pointer math through u32 (needed to match)
     if (*flag != 0) {
         *flag = 0;
@@ -4451,32 +4451,35 @@ end:
 }
 #endif
 
-// NONMATCHING 60%: plain C; the original inlines fn_2_35D0/fn_2_52CC/fn_2_A040/fn_2_C698,
-// unrolls the slot searches and repeats the cursor-sound tail per branch.
+// NONMATCHING 88%: register allocation and scheduling; the inlined fn_2_35D0/fn_2_52CC/
+// fn_2_A040/fn_2_C698 bodies and the per-branch cursor sounds are laid out as in the original.
 #if NONMATCHING
+// Per-team views used by fn_2_3624 (written out at every use like the original, which
+// recomputes each address instead of keeping a team base pointer).
+#define CUR_POS ((s32*)lbl_2_bss_F468) // [team] cursor position, [team + 2] previous
+#define TEAM_FLAG(off) (lbl_2_bss_F468[(off) + team])
+#define TEAM_ROW(off) (lbl_803C6724[team * 9 + (off)])
+
 #define FN_2_3624_FIND_SLOT(row, value, out)              \
     do {                                                  \
         s32 j_;                                           \
+        s8 want_ = (value);                               \
         for (j_ = 0; j_ < 9; j_++) {                      \
-            if ((s8)(row)[j_ + 0x14] == (s8)(value)) {    \
+            if ((s8)(row)[j_ + 0x14] == want_) {          \
                 (out) = j_;                               \
                 break;                                    \
             }                                             \
         }                                                 \
     } while (0)
 
-// nmverify: sndFXStartEx cursor-sound tail repeated per branch in original
 // fn_2_3624, size:0x134C
 // nmverify:  inlined on one side (calls match once expanded)
 void fn_2_3624(u8 port) {
     u8 team = lbl_803C66B0[0x59 + port];
-    s32* state = (s32*)lbl_2_bss_F468;
-    u8* row = lbl_803C6724 + team * 9;
-    u8* f = lbl_2_bss_F468 + team;
     u16 btn[3];
     u16 repeat;
     u16 down;
-    s32 slot = 0;
+    s8 slot = 0;
     s32 i;
     s32 g;
     s32 k;
@@ -4488,162 +4491,167 @@ void fn_2_3624(u8 port) {
     btn[1] = down = *(u16*)(lbl_8034E9A0 + port * 6 + 0x472E);
     btn[2] = repeat = *(u16*)(lbl_8034E9A0 + port * 6 + 0x4730);
     if (repeat & 8) {
-        if (f[0x45] != 0) {
+        if (TEAM_FLAG(0x45) != 0) {
             return;
         }
-        if (state[team] == 9) {
-            state[team] = 2;
+        if (CUR_POS[team] == 9) {
+            CUR_POS[team] = 2;
             fn_800625A4(team, 0xE);
-        } else if (state[team] == 10) {
-            if (f[0x37] != 0) {
-                state[team] = 9;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if (CUR_POS[team] == 10) {
+            if (TEAM_FLAG(0x37) != 0) {
+                CUR_POS[team] = 9;
                 fn_800625A4(team, 0x18);
             } else {
-                state[team] = 2;
+                CUR_POS[team] = 2;
                 fn_800625A4(team, 0xE);
             }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else {
-            state[team + 2] = state[team];
-            switch (state[team]) {
-            case 0: state[team] = 5; break;
-            case 1: state[team] = 0; break;
-            case 2: state[team] = 8; break;
-            case 3: state[team] = 7; break;
-            case 4: state[team] = 6; break;
-            case 5: state[team] = 7; break;
-            case 6: state[team] = 4; break;
-            case 7: state[team] = 1; break;
+            CUR_POS[team + 2] = CUR_POS[team];
+            switch (CUR_POS[team]) {
+            case 0: CUR_POS[team] = 5; break;
+            case 1: CUR_POS[team] = 0; break;
+            case 2: CUR_POS[team] = 8; break;
+            case 3: CUR_POS[team] = 7; break;
+            case 4: CUR_POS[team] = 6; break;
+            case 5: CUR_POS[team] = 7; break;
+            case 6: CUR_POS[team] = 4; break;
+            case 7: CUR_POS[team] = 1; break;
             case 8:
-                if (f[0x37] != 0 && f[0x5F] == 0) {
-                    state[team] = 9;
+                if (TEAM_FLAG(0x37) != 0 && TEAM_FLAG(0x5F) == 0) {
+                    CUR_POS[team] = 9;
                 } else {
-                    state[team] = 2;
+                    CUR_POS[team] = 2;
                 }
                 break;
             }
-            if (state[team + 2] != state[team]) {
+            if (CUR_POS[team + 2] != CUR_POS[team]) {
                 fn_800625A4(team, 0xE);
             }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     } else if (repeat & 4) {
-        if (f[0x45] != 0) {
+        if (TEAM_FLAG(0x45) != 0) {
             return;
         }
-        if (state[team] == 9) {
-            state[team] = 8;
+        if (CUR_POS[team] == 9) {
+            CUR_POS[team] = 8;
             fn_800625A4(team, 0xE);
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else {
-            state[team + 2] = state[team];
-            switch (state[team]) {
-            case 0: state[team] = 1; break;
-            case 1: state[team] = 7; break;
+            CUR_POS[team + 2] = CUR_POS[team];
+            switch (CUR_POS[team]) {
+            case 0: CUR_POS[team] = 1; break;
+            case 1: CUR_POS[team] = 7; break;
             case 2:
-                if (f[0x37] != 0 && f[0x5F] == 0) {
-                    state[team] = 9;
+                if (TEAM_FLAG(0x37) != 0 && TEAM_FLAG(0x5F) == 0) {
+                    CUR_POS[team] = 9;
                 } else {
-                    state[team] = 8;
+                    CUR_POS[team] = 8;
                 }
                 break;
-            case 3: state[team] = 0; break;
-            case 4: state[team] = 6; break;
-            case 5: state[team] = 0; break;
-            case 6: state[team] = 4; break;
-            case 7: state[team] = 5; break;
-            case 8: state[team] = 2; break;
+            case 3: CUR_POS[team] = 0; break;
+            case 4: CUR_POS[team] = 6; break;
+            case 5: CUR_POS[team] = 0; break;
+            case 6: CUR_POS[team] = 4; break;
+            case 7: CUR_POS[team] = 5; break;
+            case 8: CUR_POS[team] = 2; break;
             }
-            if (state[team + 2] != state[team]) {
+            if (CUR_POS[team + 2] != CUR_POS[team]) {
                 fn_800625A4(team, 0xE);
             }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     } else if (repeat & 1) {
-        if (f[0x45] != 0) {
-            if (f[0x47] == 1) {
-                f[0x47] = 0;
-                f[0x49] = 0;
+        if (TEAM_FLAG(0x45) != 0) {
+            if (TEAM_FLAG(0x47) == 1) {
+                TEAM_FLAG(0x47) = 0;
+                TEAM_FLAG(0x49) = 0;
                 sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
             }
             return;
         }
-        if (state[team] == 9) {
-            state[team] = 0;
+        if (CUR_POS[team] == 9) {
+            CUR_POS[team] = 0;
             fn_800625A4(team, 0xE);
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else {
-            state[team + 2] = state[team];
-            switch (state[team]) {
-            case 0: state[team] = 4; break;
+            CUR_POS[team + 2] = CUR_POS[team];
+            switch (CUR_POS[team]) {
+            case 0: CUR_POS[team] = 4; break;
             case 1:
-                if (f[0x37] != 0 && f[0x5F] == 0) {
-                    state[team] = 9;
+                if (TEAM_FLAG(0x37) != 0 && TEAM_FLAG(0x5F) == 0) {
+                    CUR_POS[team] = 9;
                     break;
                 }
                 return;
-            case 2: state[team] = 3; break;
-            case 3: state[team] = 5; break;
-            case 4: state[team] = 2; break;
-            case 5: state[team] = 4; break;
-            case 6: state[team] = 8; break;
-            case 7: state[team] = 6; break;
-            case 8: state[team] = 7; break;
-            case 10: state[team] = 1; break;
+            case 2: CUR_POS[team] = 3; break;
+            case 3: CUR_POS[team] = 5; break;
+            case 4: CUR_POS[team] = 2; break;
+            case 5: CUR_POS[team] = 4; break;
+            case 6: CUR_POS[team] = 8; break;
+            case 7: CUR_POS[team] = 6; break;
+            case 8: CUR_POS[team] = 7; break;
+            case 10: CUR_POS[team] = 1; break;
             }
-            if (state[team + 2] != state[team]) {
+            if (CUR_POS[team + 2] != CUR_POS[team]) {
                 fn_800625A4(team, 0xE);
             }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     } else if (repeat & 2) {
-        if (f[0x45] != 0) {
-            if (f[0x47] == 0) {
-                f[0x47] = 1;
-                f[0x49] = 0;
+        if (TEAM_FLAG(0x45) != 0) {
+            if (TEAM_FLAG(0x47) == 0) {
+                TEAM_FLAG(0x47) = 1;
+                TEAM_FLAG(0x49) = 0;
                 sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
             }
             return;
         }
-        if (state[team] == 9) {
-            state[team] = 0;
+        if (CUR_POS[team] == 9) {
+            CUR_POS[team] = 0;
             fn_800625A4(team, 0xE);
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else {
-            state[team + 2] = state[team];
-            switch (state[team]) {
+            CUR_POS[team + 2] = CUR_POS[team];
+            switch (CUR_POS[team]) {
             case 0:
-                if (f[0x37] != 0 && f[0x5F] == 0) {
-                    state[team] = 9;
+                if (TEAM_FLAG(0x37) != 0 && TEAM_FLAG(0x5F) == 0) {
+                    CUR_POS[team] = 9;
                     fn_800625A4(team, 0x18);
                 } else {
-                    state[team] = 2;
+                    CUR_POS[team] = 2;
                     fn_800625A4(team, 0xE);
                 }
                 break;
             case 1:
-                if (f[0x37] != 0 && f[0x5F] == 0) {
-                    state[team] = 9;
+                if (TEAM_FLAG(0x37) != 0 && TEAM_FLAG(0x5F) == 0) {
+                    CUR_POS[team] = 9;
                     break;
                 }
                 return;
-            case 2: state[team] = 4; break;
-            case 3: state[team] = 2; break;
-            case 4: state[team] = 5; break;
-            case 5: state[team] = 3; break;
-            case 6: state[team] = 7; break;
-            case 7: state[team] = 8; break;
-            case 8: state[team] = 6; break;
+            case 2: CUR_POS[team] = 4; break;
+            case 3: CUR_POS[team] = 2; break;
+            case 4: CUR_POS[team] = 5; break;
+            case 5: CUR_POS[team] = 3; break;
+            case 6: CUR_POS[team] = 7; break;
+            case 7: CUR_POS[team] = 8; break;
+            case 8: CUR_POS[team] = 6; break;
             }
-            if (state[team + 2] != state[team]) {
+            if (CUR_POS[team + 2] != CUR_POS[team]) {
                 fn_800625A4(team, 0xE);
             }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     } else if (down & 0x100) {
         if (fn_2_35D0(team)) {
             return;
         }
-        if (state[team] == 9) {
-            f[0x59] = 0;
-            f[0x61] = -1;
-            f[0x65] = 1;
+        if (CUR_POS[team] == 9) {
+            TEAM_FLAG(0x59) = 0;
+            TEAM_FLAG(0x61) = -1;
+            TEAM_FLAG(0x65) = 1;
             if (g_d_GameSettings.GameModeSelected == 5) {
                 for (i = 0; i < 9; i++) {
                     s16 id = (s8)lbl_803C6724[i + 2];
@@ -4673,8 +4681,8 @@ void fn_2_3624(u8 port) {
                 }
             }
             fn_800625A4(team, 0x1B);
-        } else if (f[0x5F] == 0) {
-            f[0x61] = state[team];
+        } else if (TEAM_FLAG(0x5F) == 0) {
+            TEAM_FLAG(0x61) = CUR_POS[team];
             fn_800625A4(team, 0x1C);
         } else {
             s32 j1 = 0;
@@ -4682,17 +4690,17 @@ void fn_2_3624(u8 port) {
             s8 v1 = 0;
             s32 v2 = 0;
             for (i = 0; i < 9; i++) {
-                if ((s8)row[i + 0x14] == (s8)f[0x61]) {
+                if ((s8)TEAM_ROW(i + 0x14) == (s8)TEAM_FLAG(0x61)) {
                     j1 = i;
-                    v1 = f[0x61];
+                    v1 = TEAM_FLAG(0x61);
                 }
-                if ((s8)row[i + 0x14] == state[team]) {
+                if ((s8)TEAM_ROW(i + 0x14) == CUR_POS[team]) {
                     j2 = i;
-                    v2 = state[team];
+                    v2 = CUR_POS[team];
                 }
             }
-            row[j1 + 0x14] = v2;
-            row[j2 + 0x14] = v1;
+            TEAM_ROW(j1 + 0x14) = v2;
+            TEAM_ROW(j2 + 0x14) = v1;
             fn_800625A4(team, 0x1C);
         }
         sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
@@ -4700,7 +4708,7 @@ void fn_2_3624(u8 port) {
         if (fn_2_35D0(team)) {
             return;
         }
-        if (f[0x5F] != 0) {
+        if (TEAM_FLAG(0x5F) != 0) {
             fn_800625A4(team, 0x1D);
         }
         sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
@@ -4708,38 +4716,38 @@ void fn_2_3624(u8 port) {
         if (fn_2_35D0(team)) {
             return;
         }
-        if (f[0x5F] != 0) {
-            f[0x5F] = 0;
+        if (TEAM_FLAG(0x5F) != 0) {
+            TEAM_FLAG(0x5F) = 0;
         }
         fn_800625A4(team, 0x1B);
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
-        f[0x59] = 0;
+        TEAM_FLAG(0x59) = 0;
     } else if (down & 0x40) {
         s8 v;
         if (fn_2_35D0(team) || g_d_GameSettings.GameModeSelected == 5) {
             return;
         }
-        FN_2_3624_FIND_SLOT(row, state[team], slot);
-        v = row[slot + 2];
+        FN_2_3624_FIND_SLOT(lbl_803C6724 + team * 9, CUR_POS[team], slot);
+        v = TEAM_ROW(slot + 2);
         if (v == -1 || v == 0x36) {
             sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
             return;
         }
-        if (state[team] == 9) {
+        if (CUR_POS[team] == 9) {
             sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
             return;
         }
-        f[0x50] = 0;
+        TEAM_FLAG(0x50) = 0;
         for (g = 0; g < 9; g++) {
             for (k = 0; k < 5; k++) {
                 if (v == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
-                    f[0x50] = 1;
+                    TEAM_FLAG(0x50) = 1;
                     goto found;
                 }
             }
         }
     found:
-        if (f[0x50] != 0) {
+        if (TEAM_FLAG(0x50) != 0) {
             fn_2_A040(g, k, team, slot);
             fn_2_C698(slot, team);
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
@@ -4748,16 +4756,19 @@ void fn_2_3624(u8 port) {
         if (fn_2_35D0(team)) {
             return;
         }
-        FN_2_3624_FIND_SLOT(row, state[team], slot);
-        if (state[team] != 9) {
-            s8 v = row[slot + 2];
-            if (v != -1 && v != 0x36 && f[0x41] == 0) {
-                f[0x45] = 1;
-                f[0x4B] = 1;
-                f[0x47] = 0;
+        FN_2_3624_FIND_SLOT(lbl_803C6724 + team * 9, CUR_POS[team], slot);
+        if (CUR_POS[team] != 9) {
+            s8 v = TEAM_ROW(slot + 2);
+            if (v != -1 && v != 0x36 && TEAM_FLAG(0x41) == 0) {
+                TEAM_FLAG(0x45) = 1;
+                TEAM_FLAG(0x4B) = 1;
+                TEAM_FLAG(0x47) = 0;
                 sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
             }
         }
     }
 }
+#undef CUR_POS
+#undef TEAM_FLAG
+#undef TEAM_ROW
 #endif

@@ -107,7 +107,7 @@ typedef struct MenuPad {
 
 u32 fn_2_1258(const void* base, u32 offset, s32 size);
 
-s32 fn_2_35D0(u8 index);
+u8 fn_2_35D0(u8 index);
 
 void fn_2_6138(void);
 
