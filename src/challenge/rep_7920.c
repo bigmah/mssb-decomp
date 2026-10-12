@@ -5,8 +5,9 @@
 extern ChallengeResource lbl_1_common_bss_4C6F8[];
 extern ChallengeAnimation lbl_1_common_bss_4BC30[];
 static u8 lbl_1_data_108E0[2] = { 1, 1 }; // [0]: cleared by the first fn_1_26C2C
-u16 lbl_1_bss_47050;
+// .bss is laid out in reverse definition order.
 u16 lbl_1_bss_47052;
+u16 lbl_1_bss_47050;
 
 
 // .text:0x00026C2C size:0xFC
