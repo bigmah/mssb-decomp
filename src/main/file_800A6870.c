@@ -75,7 +75,7 @@ static inline void CancelTransfer(void) {
 
 static inline void PostAramRead(void) {
     ARQPostRequest(&lbl_803C6CF8.arqRequests[lbl_803C6CF8.arqIndex], DVDSYS_ARQ_OWNER, ARAM_DIR_ARAM_TO_MRAM, 0,
-                   lbl_803C6CF8.aramCur, (u32)lbl_803C6CF8.readPos, ALIGN32(lbl_803C6CF8.chunkSize), fn_800A68D4);
+                   lbl_803C6CF8.aramCur, (uintptr_t)lbl_803C6CF8.readPos, ALIGN32(lbl_803C6CF8.chunkSize), fn_800A68D4);
     lbl_803C6CF8.arqIndex = (lbl_803C6CF8.arqIndex + 1) % 4;
     lbl_803C6CF8.aramCur += ALIGN32(lbl_803C6CF8.chunkSize);
 }
@@ -84,9 +84,9 @@ static inline void ReadRingChunk(void) {
     s32 len;
 
     if (lbl_803C6CF8.writePos >= lbl_803C6CF8.readPos) {
-        len = lbl_803C6CF8.bufEnd - lbl_803C6CF8.writePos;
+        len = (s32)(lbl_803C6CF8.bufEnd - lbl_803C6CF8.writePos);
     } else {
-        len = lbl_803C6CF8.readPos - lbl_803C6CF8.writePos;
+        len = (s32)(lbl_803C6CF8.readPos - lbl_803C6CF8.writePos);
     }
     if (len > lbl_803C6CF8.remaining) {
         len = lbl_803C6CF8.remaining;
@@ -111,7 +111,7 @@ u32 fn_800A6870(u8 enable, u32 limit) {
 }
 
 // .text:0x800A6890 size:0x44
-void fn_800A6890(u32 request) {
+void fn_800A6890(uintptr_t request) {
     if (lbl_803C6CF8.remaining == 0) {
         lbl_803C6CF8.state = DVDSYS_STATE_DONE;
     } else {
@@ -120,7 +120,7 @@ void fn_800A6890(u32 request) {
 }
 
 // .text:0x800A68D4 size:0x2C
-void fn_800A68D4(u32 request) {
+void fn_800A68D4(uintptr_t request) {
     OSResumeThread(&lbl_803C6CF8.readThread);
 }
 
@@ -178,7 +178,7 @@ void* fn_800A6900(void* arg) {
         case DVDSYS_STATE_READING:
             if (lbl_803C6CF8.mode == DVDSYS_MODE_DISC_LZ_TO_RAM || lbl_803C6CF8.mode == DVDSYS_MODE_ARAM_LZ_TO_RAM) {
                 if (!gDataDecompressorValues.ShouldWriteDataFlag) {
-                    DCFlushRangeNoSync(lbl_803C6CF8.bufEnd, gDataDecompressorValues.CachedBytesToRead);
+                    DCFlushRangeNoSync(lbl_803C6CF8.bufEnd, (u32)gDataDecompressorValues.CachedBytesToRead);
                     if (lbl_803C6CF8.tempBuf != NULL) {
                         fn_800ACF14(lbl_803C6CF8.tempBuf);
                         lbl_803C6CF8.tempBuf = NULL;
@@ -336,8 +336,8 @@ void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAd
         SetReadParameters(instr, lbl_803C6CF8.tempBuf, lbl_803C6CF8.bufEnd, 1);
     } else if (lbl_803C6CF8.mode == DVDSYS_MODE_DISC_TO_ARAM) {
         OSInitSemaphore(&lbl_803C6CF8.aramSem, 3);
-        lbl_803C6CF8.aramStart = (u32)dest; // dest is an ARAM address in this mode
-        lbl_803C6CF8.aramCur = (u32)dest;
+        lbl_803C6CF8.aramStart = (u32)(uintptr_t)dest; // dest is an ARAM address in this mode
+        lbl_803C6CF8.aramCur = (u32)(uintptr_t)dest;
         lbl_803C6CF8.tempBuf = fn_800ACF34(0x20, 0x20000);
         dest = lbl_803C6CF8.tempBuf;
         lbl_803C6CF8.tempBufEnd = (u8*)lbl_803C6CF8.tempBuf + 0x20000;
@@ -467,7 +467,7 @@ void* fn_800A77A0(void* arg) {
         case DVDSYS_MODE_DISC_TO_ARAM:
             DCFlushRange(chunk, ALIGN32(lbl_803C6CF8.chunkSize));
             ARQPostRequest(&lbl_803C6CF8.arqRequests[lbl_803C6CF8.arqIndex], DVDSYS_ARQ_OWNER, ARAM_DIR_MRAM_TO_ARAM, 0,
-                           (u32)chunk, lbl_803C6CF8.aramCur, ALIGN32(lbl_803C6CF8.chunkSize), fn_800A6890);
+                           (uintptr_t)chunk, lbl_803C6CF8.aramCur, ALIGN32(lbl_803C6CF8.chunkSize), fn_800A6890);
             if (lbl_803C6CF8.readPos == lbl_803C6CF8.tempBufEnd) {
                 lbl_803C6CF8.readPos = lbl_803C6CF8.bufStart;
             }

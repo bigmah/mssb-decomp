@@ -13,8 +13,8 @@
 #include "main/aramloader.h" // ARAMLoader lbl_803C6CF8, DVDSYS_MODE_*, DVDSYS_STATE_*
 
 u32 fn_800A6870(u8 enable, u32 limit);
-void fn_800A6890(u32 request);
-void fn_800A68D4(u32 request);
+void fn_800A6890(uintptr_t request); // ARQCallback
+void fn_800A68D4(uintptr_t request); // ARQCallback
 void* fn_800A6900(void* arg);
 void fn_800A6C80(void);
 void fn_800A6D10(s32 consumed);
