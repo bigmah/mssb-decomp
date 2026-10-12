@@ -401,7 +401,9 @@ PERMUTER_WEIGHTS = {"perm_randomize_internal_type": 0, "perm_randomize_external_
                     "perm_alias_array": 0, "perm_xor_zero": 0, "perm_mult_zero": 0,
                     "perm_float_literal": 0, "perm_pad_var_decl": 0,
                     # reads an uninitialised variable (`if (x) {}`): undefined behaviour in the port
-                    "perm_var_cond_block": 0}
+                    "perm_var_cond_block": 0,
+                    # adds a helper function next to the target: only the target is spliced back
+                    "perm_inline": 0}
 
 
 def ensure_permuter():
