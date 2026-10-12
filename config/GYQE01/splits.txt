@@ -53,6 +53,7 @@ main/file_80011640.c:
 	extabindex  start:0x80006E40 end:0x80007218
 	.text       start:0x80011468 end:0x8001FE00
 	.rodata     start:0x800E6600 end:0x800E6698
+	.data       start:0x800EE800 end:0x800EEFD0
 	.bss        start:0x80118220 end:0x80118740
 	.sdata      start:0x803CB790 end:0x803CB7C8
 	.sbss       start:0x803CBBF0 end:0x803CBC40
