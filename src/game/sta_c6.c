@@ -849,15 +849,9 @@ void* fn_3_E751C(s32 idx, Mtx m) {
 }
 
 // .text:0x000E763C size:0x3F0 mapped:0x807266D0
-// NONMATCHING 99.1%: only the loop prologue: the original materialises group = 0 first (li r24) and
-// copies it into the numGroups-based inductions (mr r21/r22/r23, r24); ours does li r21 and a later li r24.
-#if NONMATCHING
-// Build the shadow draw groups: per group, the objects in it and their bounds.
-// Debug: holding pad bit 0x800 keeps only group 0 of the field panels.
 void fn_3_E763C(void) {
     GameControl c;
     Mtx m;
-    s32 size;
     s32 group;
     s32 j;
     s32 numGroups;
@@ -865,27 +859,24 @@ void fn_3_E763C(void) {
     StaC6Obj* o;
     StaC6List* list = &lbl_3_common_bss_350E4;
 
-    size = (list->count << 1) + (list->count << 2) + (list->count << 2) + list->count * 0x18;
+    group = (list->count << 1) + (list->count << 2) + (list->count << 2) + list->count * 0x18;
     if (list->groupBounds == NULL) {
-        Vec* b = _OSAllocFromHeap(4, size);
+        Vec* b = _OSAllocFromHeap(4, group);
         list->groupBounds = b;
         lbl_3_common_bss_350E4.groupCount = (u32*)(b + list->count * 2);
         lbl_3_common_bss_350E4.groupObjs = (s32*)(lbl_3_common_bss_350E4.groupCount + list->count);
         lbl_3_common_bss_350E4.groupStart = (u16*)(lbl_3_common_bss_350E4.groupObjs + list->count);
     }
-    memset(list->groupBounds, 0, size);
+    memset(list->groupBounds, 0, group);
     numGroups = 0;
-
-    // field panels
     for (group = 0; group < 10; group++) {
         off = (u16)(lbl_3_common_bss_350E4.groupStart[numGroups - 1] + lbl_3_common_bss_350E4.groupCount[numGroups - 1]);
         lbl_3_common_bss_350E4.groupStart[numGroups] = off;
         fn_3_B8574();
-        // TODO: j is read before it is set on the first pass (as in the original)
-        if ((lbl_803C77B8._00 & 0x800) && group != 0) {
+        if (lbl_803C77B8._00 & 0x800 && group != 0) {
             continue;
         }
-        if ((lbl_803C77B8._00 & 0x400) && j != 0) {
+        if (lbl_803C77B8._00 & 0x400 && j != 0) {
             continue;
         }
         for (j = 0; j < 15; j++) {
@@ -906,8 +897,6 @@ void fn_3_E763C(void) {
             numGroups++;
         }
     }
-
-    // wall panels (tested against the field panel spots' groups and objects, as in the original)
     for (group = 0; group < 10; group++) {
         off = (u16)(lbl_3_common_bss_350E4.groupStart[numGroups - 1] + lbl_3_common_bss_350E4.groupCount[numGroups - 1]);
         lbl_3_common_bss_350E4.groupStart[numGroups] = off;
@@ -932,7 +921,6 @@ void fn_3_E763C(void) {
         lbl_3_common_bss_350E4.numGroups = numGroups;
     }
 }
-#endif
 
 // .text:0x000E7A2C size:0xF4 mapped:0x80726AC0
 // Set the callbacks for the object's kind (also expanded inline in fn_3_E7B20).
