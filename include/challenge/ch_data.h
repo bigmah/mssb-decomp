@@ -39,4 +39,56 @@ typedef struct ChSpaniDesc {
 #define CH_SPANI(anim, tex) { 0, anim, 0.0f, 0.0f, -1, 1, 5, { 0, 0xFF }, tex, { 0, 0, 0 }, 0.0f, 0, 1, 0 }
 #define CH_SPANI_END { 3, 0, 0.0f, 0.0f, 0, 0, 0, { 0, 0 }, 0, { 0, 0, 0 }, 0.0f, 0, 0, 0 }
 
+struct TexArchive;
+
+// ParticleParams5 (main/file_800263FC.h): spawn parameters of the type-5
+// emitters (fn_80030D88, fn_80031CA4). Fixed point x100000.
+typedef struct ChParticleParams5 {
+    /* 0x00 */ struct TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 count;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ s32 unk24;
+    /* 0x28 */ s32 unk28;
+    /* 0x2C */ s32 unk2C;
+    /* 0x30 */ s32 unk30;
+    /* 0x34 */ s32 unk34;
+    /* 0x38 */ s32 unk38;
+    /* 0x3C */ s32 unk3C;
+    /* 0x40 */ u32 unk40;
+    /* 0x44 */ s32 unk44;
+    /* 0x48 */ s32 unk48;
+    /* 0x4C */ s32 unk4C;
+} ChParticleParams5; // size: 0x50
+
+// ParticleParamsC (main/file_800263FC.h): spawn parameters of fn_8002955C.
+typedef struct ChParticleParamsC {
+    /* 0x00 */ struct TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 unk8[(0x54 - 0x08) / 4];
+} ChParticleParamsC; // size: 0x54
+
+// ParticleParams (main/file_800263FC.h): trail spawn template (fn_8002F258).
+typedef struct ChParticleParams {
+    /* 0x00 */ struct TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 size;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 life;
+    /* 0x18 */ s32 unk18[(0x44 - 0x18) / 4];
+} ChParticleParams; // size: 0x44
+
+// ParticleParamsB (main/file_800263FC.h): spawn template of fn_800324EC.
+typedef struct ChParticleParamsB {
+    /* 0x00 */ struct TexArchive* tex;
+    /* 0x04 */ s32 texIndex;
+    /* 0x08 */ s32 unk8[(0x50 - 0x08) / 4];
+} ChParticleParamsB; // size: 0x50
+
 #endif
