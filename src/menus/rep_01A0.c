@@ -20,7 +20,7 @@
 #include "menus/auto_00_0004B1AC_text.h"
 #include "menus/auto_00_0001B1BC_text.h"
 #include "menus/auto_00_00071EC4_text.h"
-#include "menus/auto_00_0008E6A4_text.h"
+#include "menus/rep_0FD8.h"
 
 // Menu music sequences (used by fn_2_D88/fn_2_E84).
 SeqEnt lbl_2_data_128[2] = {

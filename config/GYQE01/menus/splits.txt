@@ -188,14 +188,11 @@ auto_00_0008782C_text:
 	.bss        start:0x0034009C end:0x00340140 align:4 common
 
 menus/rep_0F60.c:
-	.text       start:0x0008ACE0 end:0x0008E6A4
+	.text       start:0x0008ACE0 end:0x0008ED4C
 	.rodata     start:0x00000F60 end:0x00000FD8
 	.data       start:0x0002F990 end:0x0002FEE0
 	.bss        start:0x0000B2B8 end:0x0000B2C0
 	.bss        start:0x00340140 end:0x00340234 align:4 common
-
-auto_00_0008E6A4_text:
-	.text       start:0x0008E6A4 end:0x0008ED4C
 
 menus/rep_0FD8.c:
 	.text       start:0x0008ED4C end:0x0008F0F4

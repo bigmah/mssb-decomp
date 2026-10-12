@@ -7,7 +7,7 @@
 #include "math.h"
 #undef SQRT2_LINKAGE
 #include "game/UnknownHomes_Game.h"
-#include "menus/auto_00_0008E6A4_text.h"
+#include "menus/rep_0FD8.h"
 #include "main/file_800527C4.h"
 #include "menus/auto_00_00000D08_text.h"
 #include "static/UnknownHomes_Static.h"
