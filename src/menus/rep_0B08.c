@@ -1349,7 +1349,7 @@ void fn_2_6AE08(void) {
     i = 0;
     do {
         e = &lbl_2_bss_1A8248[0]->entries[i];
-        memset(e, 0, 0xD8);
+        memset(e, 0, sizeof(*e)); // 0xD8
         e->objectId = i;
         e->_84 = i;
         e->progress = lbl_2_rodata_B58;

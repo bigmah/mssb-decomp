@@ -665,7 +665,7 @@ void fn_2_90538(void) {
     s32 i;
     for (i = 0; i < 29; i++) {
         slot = &lbl_2_bss_1A8248[0]->objects[i];
-        memset(slot, 0, 0xBC);
+        memset(slot, 0, sizeof(*slot)); // 0xBC
         slot->_78 = i;
         slot->_7C = i;
         slot->_84 = lbl_2_rodata_1080;

@@ -345,9 +345,23 @@ def strip_source(text):
 
 
 # ------------------------------------------------------------------ main
+GAPS = {}  # (module, section, address) -> distance to the next symbol
+
+
+def compute_gaps(info):
+    by = collections.defaultdict(list)
+    for mod, sect, addr, size in info.values():
+        by[(mod, sect)].append(addr)
+    for (mod, sect), addrs in by.items():
+        addrs = sorted(set(addrs))
+        for a, b in zip(addrs, addrs[1:]):
+            GAPS[(mod, sect, a)] = b - a
+
+
 def main():
     und, defined = nm_scan()
     info = load_syms()
+    compute_gaps(info)
     for s_ in und:
         if s_ not in info and s_ not in EXCLUDE:
             enc = name_encoded(s_, info)
@@ -391,6 +405,10 @@ def main():
         if '/* TODO' in defn:
             report.append('- `%s` (%s %s 0x%X): pointer field holds a non-address value (see `/* TODO */`)' % (s, mod, sect, addr))
         if src is not None:
+            if sect in ('.bss', '.sbss', '.sbss2'):
+                # Uninitialised objects reach up to the next symbol: code may index past
+                # the declared size within that gap (e.g. lbl_2_bss_100B4[1]).
+                size = max(size, GAPS.get((mod, sect, addr), size))
             defn = rename(defn, s, mod, sect, addr, size, tsize)
         if src is None or (prim and not refers and len(lines) == sum(1 for l in lines if not l.startswith('extern'))):
             simple[mod].append((addr, '// %s %s 0x%X\n%s' % (mod, sect, addr, defn)))

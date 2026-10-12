@@ -804,7 +804,7 @@ s8 __gen_lbl_2_bss_A168 GEN_SYM(lbl_2_bss_A168);
 struct { s8 head; u8 rest[0xC]; } __gen_lbl_2_bss_A169 GEN_SYM(lbl_2_bss_A169); // symbol is 0x7 bytes
 
 // menus .bss 0x100B4
-u8 __gen_lbl_2_bss_100B4 GEN_SYM(lbl_2_bss_100B4);
+u8 __gen_lbl_2_bss_100B4[4] GEN_SYM(lbl_2_bss_100B4); // up to the next symbol: rep_0568 uses [1]
 
 // menus .bss 0x1034C
 u8 __gen_lbl_2_bss_1034C[1296] GEN_SYM(lbl_2_bss_1034C);
