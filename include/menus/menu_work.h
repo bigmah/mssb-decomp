@@ -643,6 +643,36 @@ typedef struct MenuData {
     /*0x1978FB*/ u8 _1978FB;
 } MenuData; // size: 0x1978FC (lbl_2_bss_1A8250)
 
+// Team/captain select screen state (lbl_2_bss_100B8; the debug options menu reuses
+// it, see DebugMenuState in menus/auto_00_00013BA4_text.h).
+typedef struct CaptainSelMenu {
+    /*0x00*/ s8 qHead;
+    /*0x01*/ s8 qTail;
+    /*0x02*/ u8 queue[10];
+    /*0x0C*/ u8 _0C[4];
+    /*0x10*/ u8 picked[2];   // per player: captain chosen
+    /*0x12*/ u8 _12[2];
+    /*0x14*/ u8 loadReq[2];  // per player: model load requested
+    /*0x16*/ u8 _16[0x18 - 0x16];
+    /*0x18*/ u8 _18;
+    /*0x19*/ u8 active;
+    /*0x1A*/ u8 busy;
+    /*0x1B*/ u8 _1B;
+    /*0x1C*/ u8 timer[2];    // per player: frames since the cursor settled
+    /*0x1E*/ u8 _1E[0x27 - 0x1E];
+    /*0x27*/ s8 _27[6]; // indexed by model slot
+    /*0x2D*/ u8 count;
+    /*0x2E*/ u8 _2E[0x32 - 0x2E];
+    /*0x32*/ u8 _32;
+    /*0x33*/ u8 _33[0x40 - 0x33];
+    /*0x40*/ u8 animState[2];
+    /*0x42*/ u8 loading[4];
+    /*0x46*/ u8 _46[4]; // indexed
+    /*0x4A*/ u8 debugCam;    // disabled debug camera
+    /*0x4B*/ u8 debugMenu;   // disabled debug menu
+    /*0x4C*/ u8 _4C[0x54 - 0x4C];
+} CaptainSelMenu; // size: 0x54
+
 // Scene flow state lbl_800E877C (SceneFlow in main/menu_globals.h, which this
 // extends; lbl_803CBBCC and lbl_2_bss_1A823C point at it). Only the fields used here.
 typedef struct MenuFlags {
