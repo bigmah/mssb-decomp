@@ -1,5 +1,7 @@
 #include "menus/rep_0DE0.h"
 #include "static/UnknownHomes_Static.h"
+#include "main/file_800A7C08.h" // DrawCallbackNode
+#include "menus/menu_asset.h"
 #include "Dolphin/gx.h"
 #include <string.h>
 #include "Dolphin/OS/OSCache.h"
@@ -69,12 +71,12 @@ f32 lbl_2_data_2E944[4][6] = {
     {1.25f, -11.83f, -0.7f, 1.25f, -10.83f, -0.66f},
     {1.32f, -11.88f, -0.69f, 1.32f, -10.88f, -0.65f},
 };
-u8 lbl_2_data_2E9A4[16] = {0x00, 0x00, 0x04, 0x0B, 0x40, 0x02, 0x04, 0xC0, 0x19, 0x1C, 0x18, 0x00, 0x00, 0x01, 0x3F, 0xCC}; // unreferenced
+MenuAsset lbl_2_data_2E9A4 = {0x0000040B, 0x400204C0, 0x191C1800, 0x00013FCC}; // unreferenced ARAM load instructions
 
 // Draw-list nodes for fn_2_86F40, one per frame buffer (lbl_803CBBC0).
-MenuDrawNode lbl_2_data_2E9B4[2] = {
-    {2, fn_2_86F40},
-    {2, fn_2_86F40},
+DrawCallbackNode lbl_2_data_2E9B4[2] = {
+    {{2}, fn_2_86F40},
+    {{2}, fn_2_86F40},
 };
 Vec lbl_2_data_2E9C4 = {0.0f, 0.0f, 0.0f};
 Vec lbl_2_data_2E9D0 = {0.0f, 0.0f, 0.0f};
@@ -89,7 +91,6 @@ static f32 lbl_2_bss_B2A0;
 static f32 lbl_2_bss_B29C;
 
 extern void fn_2_190DC(ActorObjectTable*, Mtx);
-extern void fn_800A7D4C(s32, void*);
 extern f32 fn_2_4A1E8(f32, f32);
 extern const f32 lbl_2_rodata_EAC;
 
