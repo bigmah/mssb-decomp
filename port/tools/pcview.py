@@ -131,26 +131,30 @@ def main():
             s = re.sub(r'/\*.*?\*/', '', line).split('//')[0].strip()
             if not s:
                 continue
+            fp = re.match(r'^(.+?)\(\s*\*\s*(\w+)\s*\)\s*(\(.*\))\s*;$', s)
+            if fp:  # function pointer: keep the declaration as written
+                fields.append(('', '', fp.group(2), None, s))
+                continue
             mm = re.match(r'^((?:const\s+|volatile\s+|struct\s+|unsigned\s+)*\w+(?:\s*\([^)]*\))?)\s*((?:\*\s*)*)(\w+)\s*((?:\[[^\]]*\])*)\s*;$', s)
             if not mm:
                 ok = False
                 print('  %s: cannot parse %r' % (T, s))
                 break
-            fields.append((mm.group(1), mm.group(2).replace(' ', ''), mm.group(3), mm.group(4)))
+            fields.append((mm.group(1), mm.group(2).replace(' ', ''), mm.group(3), mm.group(4), None))
         if not ok:
             continue
         members = []
-        for ty, stars, name, arr in fields:
-            if re.match(r'^(pad|_*unk|_[0-9A-Fa-f]+$)', name) and arr:
+        for ty, stars, name, arr, raw in fields:
+            if arr and re.match(r'^(pad|_*unk|_[0-9A-Fa-f]+$)', name):
                 continue  # padding
             if name not in exp:
-                if re.match(r'^(pad|_*unk|_[0-9A-Fa-f]+)', name) and arr:
+                if arr and re.match(r'^(pad|_*unk|_[0-9A-Fa-f]+)', name):
                     continue
                 print('  %s.%s: no GameCube offset' % (T, name))
                 ok = False
                 break
             o = exp[name]
-            decl = '%s %s%s%s;' % (ty, stars, name, arr)
+            decl = raw if raw else '%s %s%s%s;' % (ty, stars, name, arr)
             members.append('    struct { %s%s };' % ('u8 _at_%s[0x%X]; ' % (name, o) if o else '', decl))
         if not ok:
             continue
