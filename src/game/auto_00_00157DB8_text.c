@@ -369,6 +369,14 @@ void fn_3_15AE34(void) {
 }
 #endif
 
+#if !NONMATCHING
+// Switch jump tables of fn_3_15B494; mwcc emits them itself once the function matches.
+void* jumptable_3_data_26F2C[8] = {
+    (u8*)fn_3_15B494 + 0x38, (u8*)fn_3_15B494 + 0x84, (u8*)fn_3_15B494 + 0xA8, (u8*)fn_3_15B494 + 0xC0,
+    (u8*)fn_3_15B494 + 0x124, (u8*)fn_3_15B494 + 0x16C, (u8*)fn_3_15B494 + 0x16C, (u8*)fn_3_15B494 + 0x13C,
+};
+#endif
+
 // .text:0x0015B494 size:0x17C
 // NONMATCHING 95%: case 3 roster lookup address arithmetic scheduled differently (r4/r5 swap); rest only jumptable label
 #if NONMATCHING
