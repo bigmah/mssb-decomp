@@ -698,8 +698,8 @@ void fn_3_F99F0(s32 idx) {
     u32 h;
     u8 v;
     Vec* d;
-    // objs[idx].state, written as a byte offset for the original addressing (0xA2 == offsetof(StaObj, state))
-    switch (((u8*)lbl_3_common_bss_350E4.objs)[idx * sizeof(StaObj) + 0xA2]) {
+    // objs[idx].state, written as a byte offset for the original addressing
+    switch (((u8*)lbl_3_common_bss_350E4.objs)[idx * sizeof(StaObj) + OFFSET_OF(StaObj, state)]) {
         case 0:
             snd = 2;
             slot = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy;
@@ -989,19 +989,19 @@ void fn_3_FA58C(void** files) {
     }
 
     lbl_3_common_bss_350E4.n = 0x34;
-    size = (g_d_GameSettings.miniGameStadiumIndicator == 0 ? 0xEC : 0) + 0x34 * sizeof(StaObj);
+    size = (g_d_GameSettings.miniGameStadiumIndicator == 0 ? 2 * sizeof(StaExtList) + 32 * 3 + 16 * 3 + sizeof(StaExt10) : 0) + 0x34 * sizeof(StaObj);
     lbl_3_common_bss_350E4.objs = _OSAllocFromHeap(0x20, size);
     memset(lbl_3_common_bss_350E4.objs, 0, size);
     lbl_3_common_bss_350E4.objsBackup = _OSAllocFromHeap(0x20, size);
     memset(lbl_3_common_bss_350E4.objsBackup, 0, size);
     if (g_d_GameSettings.miniGameStadiumIndicator == 0) {
-        // the 0xEC extra bytes behind the backup objects: two lists, their entries and ext10
+        // the extra bytes behind the backup objects: two lists, their entries and ext10
         u8* extra = (u8*)&lbl_3_common_bss_350E4.objsBackup[0x34];
         lbl_3_common_bss_350E4.ext08 = (StaExtList*)extra;
-        lbl_3_common_bss_350E4.ext0C = (StaExtList*)(extra + 0x1C);
-        lbl_3_common_bss_350E4.ext08->entries = (u8*)lbl_3_common_bss_350E4.ext0C + 0x1C;
-        lbl_3_common_bss_350E4.ext0C->entries = lbl_3_common_bss_350E4.ext08->entries + 0x60;
-        lbl_3_common_bss_350E4.ext10 = (StaExt10*)(lbl_3_common_bss_350E4.ext0C->entries + 0x30);
+        lbl_3_common_bss_350E4.ext0C = (StaExtList*)(extra + sizeof(StaExtList));
+        lbl_3_common_bss_350E4.ext08->entries = (u8*)lbl_3_common_bss_350E4.ext0C + sizeof(StaExtList);
+        lbl_3_common_bss_350E4.ext0C->entries = lbl_3_common_bss_350E4.ext08->entries + 32 * 3;
+        lbl_3_common_bss_350E4.ext10 = (StaExt10*)(lbl_3_common_bss_350E4.ext0C->entries + 16 * 3);
     } else {
         lbl_3_common_bss_350E4.ext08 = NULL;
         lbl_3_common_bss_350E4.ext0C = NULL;
@@ -1139,8 +1139,8 @@ void fn_3_FA58C(void** files) {
         ext = lbl_3_common_bss_350E4.ext08;
         ext->pC = lbl_3_data_10F7C;
         ext->p8 = lbl_3_data_10F88;
-        ext->p0 = (u8*)g_UNK_StadiumDetails._00 + 0x60;
-        ext->p4 = (u8*)g_UNK_StadiumDetails._00 + 0x40;
+        ext->p0 = (StaC0Panel*)g_UNK_StadiumDetails._00 + 3;
+        ext->p4 = (StaC0Panel*)g_UNK_StadiumDetails._00 + 2;
         ext->count = 0x20;
         ext->n18 = 6;
         ext->nChoices = 5;
@@ -1162,8 +1162,8 @@ void fn_3_FA58C(void** files) {
         ext = lbl_3_common_bss_350E4.ext0C;
         ext->pC = lbl_3_data_10F84;
         ext->p8 = lbl_3_data_11008;
-        ext->p0 = (u8*)g_UNK_StadiumDetails._00 + 0xA0;
-        ext->p4 = (u8*)g_UNK_StadiumDetails._00 + 0x80;
+        ext->p0 = (StaC0Panel*)g_UNK_StadiumDetails._00 + 5;
+        ext->p4 = (StaC0Panel*)g_UNK_StadiumDetails._00 + 4;
         ext->count = 0x10;
         ext->n18 = 2;
         ext->nChoices = 8;
@@ -1249,7 +1249,7 @@ void fn_3_FB3D8(StaHazeNode* node) {
 
     fn_8003A144();
     scr = _OSAllocFromHeap(4, 0x20D0);
-    pts = (Vec*)((u8*)scr + 0xD20); // 400 screen positions (f32[2]), then 400 Vecs
+    pts = (Vec*)(scr + 420 * 2); // 420 screen positions (f32[2]), then 420 Vecs
     src = lbl_3_data_1BF6C;
     out = pts;
     for (i = 0; i < 21; i++, src++) {
