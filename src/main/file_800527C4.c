@@ -74,6 +74,8 @@ extern s16 translateStarSwing(u8 star);
 
 // Layout object number n of a task's sprite run.
 #define TASK_OBJ(task, n) (lbl_80371C30[(task)->u14.objIdx + (n)].obj)
+// Same object as TASK_OBJ(task, x + k), with the index summed as k + objIdx + x.
+#define TASK_OBJ_AT(task, x, k) (lbl_80371C30[(k) + (task)->u14.objIdx + (x)].obj)
 
 // Pause-menu object index: the in-game layout puts the same object 0x69 earlier.
 #define PAUSE_OBJ(n) (g_d_GameSettings._06 == 2 ? (n) - 0x69 : (n))
@@ -234,8 +236,6 @@ void possiblyTransitionBlackScreen(void) {
 }
 
 // .text:0x800531D0 size:0x640
-// NONMATCHING 97%: only add operand order (objIdx + n) and register swaps differ
-#if NONMATCHING
 void fn_800531D0(SceneTask* task) {
     s32 i;
     u32 len;
@@ -243,7 +243,7 @@ void fn_800531D0(SceneTask* task) {
     if (lbl_800FEF70[lbl_8034E978.menu].textStart != 0xFFFF) {
         if (lbl_8034E978.descState == 0) {
             for (i = 0; i < lbl_8034E978.textCount; i++) {
-                TASK_OBJ(task, i + 0x16)->flags |= 2;
+                TASK_OBJ_AT(task, i, 0x16)->flags |= 2;
             }
             TASK_OBJ(task, 9)->flags |= 2;
             if ((TASK_OBJ(task, 9)->_5C >> 16) == 15) {
@@ -278,22 +278,22 @@ void fn_800531D0(SceneTask* task) {
             }
         } else if (lbl_8034E978.descState == 2) {
             fn_8000FA9C(lbl_8034E978.text[lbl_8034E978.textCur]);
-            if ((TASK_OBJ(task, lbl_8034E978.textCur + 10)->_5C >> 16) > fn_8000FA9C(lbl_8034E978.text[lbl_8034E978.textCur])) {
+            if ((TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->_5C >> 16) > fn_8000FA9C(lbl_8034E978.text[lbl_8034E978.textCur])) {
                 lbl_8034E978.textDone[lbl_8034E978.textCur] = lbl_8034E978.textCur;
                 if (++lbl_8034E978.textCur == lbl_8034E978.textCount) {
                     lbl_8034E978.textCur = 0;
                 }
-                TASK_OBJ(task, lbl_8034E978.textCur + 10)->flags |= 2;
-                TASK_OBJ(task, lbl_8034E978.textCur + 10)->_5C = 0;
-                TASK_OBJ(task, lbl_8034E978.textCur + 10)->_68 = 1;
+                TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->flags |= 2;
+                TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->_5C = 0;
+                TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->_68 = 1;
             }
             for (i = 0; i < 10; i++) {
                 if (lbl_8034E978.textDone[i] != 0xFF) {
-                    LayoutObj* obj = TASK_OBJ(task, lbl_8034E978.textDone[i] + 10);
+                    LayoutObj* obj = TASK_OBJ_AT(task, lbl_8034E978.textDone[i], 10);
                     if ((obj->_5C >> 16) == 0x500) {
                         obj->_5C = 0;
-                        TASK_OBJ(task, lbl_8034E978.textDone[i] + 10)->_68 = 0;
-                        TASK_OBJ(task, lbl_8034E978.textDone[i] + 10)->flags &= ~2;
+                        TASK_OBJ_AT(task, lbl_8034E978.textDone[i], 10)->_68 = 0;
+                        TASK_OBJ_AT(task, lbl_8034E978.textDone[i], 10)->flags &= ~2;
                     }
                 }
             }
@@ -301,9 +301,9 @@ void fn_800531D0(SceneTask* task) {
         }
     } else if (lbl_8034E978.descState != 0) {
         for (i = 0; i < 10; i++) {
-            TASK_OBJ(task, i + 0x16)->flags &= ~2;
-            TASK_OBJ(task, i + 10)->_5C = 0;
-            TASK_OBJ(task, i + 10)->_68 = 0;
+            TASK_OBJ_AT(task, i, 0x16)->flags &= ~2;
+            TASK_OBJ_AT(task, i, 10)->_5C = 0;
+            TASK_OBJ_AT(task, i, 10)->_68 = 0;
         }
         TASK_OBJ(task, 9)->flags &= ~2;
         TASK_OBJ(task, 21)->_5C = 0;
@@ -311,7 +311,6 @@ void fn_800531D0(SceneTask* task) {
         lbl_8034E978.descState = 0;
     }
 }
-#endif
 
 // .text:0x80053810 size:0x7D8
 // The original inlines fn_80042D68/fn_80042DA8 (frame checks) here.
