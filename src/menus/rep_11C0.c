@@ -1,5 +1,6 @@
 // Translation unit 0x11C0: .text 0x94854..0x96D94 (formerly the auto_00_00094854_text split).
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_menus_11C0
+#include "header_rep_inline.h"
 #include "menus/auto_00_00094854_text.h"
 
 extern void fn_80034E20(void* object, void* data);

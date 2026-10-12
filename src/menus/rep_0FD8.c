@@ -1,6 +1,7 @@
 // Translation unit 0x0FD8: .text 0x8ED4C..0x8F0F4 (split off auto_00_0008E6A4_text;
 // fn_2_8EEC8 drives fn_2_8EDC4/fn_2_8ED4C). Functions in reverse address order (-inline deferred).
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_menus_0FD8
+#include "header_rep_inline.h"
 // math.h before UnknownHomes_Game.h keeps dolsqrtf2 static: its unused extern-inline
 // copy would emit _half/_three into this unit's .rodata.
 #include "math.h"

@@ -1,5 +1,6 @@
 #include "menus/rep_01A0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_menus_01A0
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 #include "main/file_80069BDC.h"

@@ -1,5 +1,6 @@
 #include "menus/rep_0730.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_menus_0730
+#include "header_rep_inline.h"
 
 #include <string.h>
 

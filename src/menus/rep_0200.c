@@ -1,5 +1,6 @@
 #include "menus/rep_0200.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_menus_0200
+#include "header_rep_inline.h"
 
 #include "Dolphin/os.h"
 
