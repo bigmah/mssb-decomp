@@ -368,15 +368,10 @@ u32 fn_800A88D0(void) {
 }
 
 // .text:0x800A88D8 size:0x1D8
-// NONMATCHING 99%: the early 'state == BUSY' return compiles to beq instead of the original's bne/b pair
-#if NONMATCHING
 void fn_800A88D8(u32 state) {
     StreamTrack* track;
 
-    if (lbl_803CC148 == state) {
-        return;
-    }
-    if (lbl_803CC148 == STREAM_STATE_BUSY) {
+    if (lbl_803CC148 == state || lbl_803CC148 == STREAM_STATE_BUSY) {
         return;
     }
     switch (state) {
@@ -427,7 +422,6 @@ void fn_800A88D8(u32 state) {
         break;
     }
 }
-#endif
 
 // fn_800A8AB0, size:0x8
 void fn_800A8AB0(u32 value) {
