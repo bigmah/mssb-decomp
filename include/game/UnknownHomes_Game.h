@@ -596,6 +596,126 @@ typedef struct _InMemPitcherType {
     /*0x176*/ u8 unused_pitcherIsFielder; // unsure
 } InMemPitcherType;                       // size: 0x178
 
+// One g_Fielders entry (9 of them, stride 0x268). Merged from the per-unit views.
+typedef struct _InMemFielderType {
+    /*0x000*/ VecXYZ pos;
+    /*0x00C*/ f32 height;
+    /*0x010*/ u8 _010[0x14 - 0x10];
+    /*0x014*/ VecXYZ dest; // destination
+    /*0x020*/ u8 _020[0x30 - 0x20];
+    /*0x030*/ f32 velX;
+    /*0x034*/ f32 velZ;
+    /*0x038*/ f32 _038; // previous velocity x?
+    /*0x03C*/ f32 _03C; // previous velocity z?
+    /*0x040*/ u8 _040[0x48 - 0x40];
+    /*0x048*/ f32 facing; // rotation about y
+    /*0x04C*/ u8 _04C[0x50 - 0x4C];
+    /*0x050*/ f32 speed;
+    /*0x054*/ u8 _054[0x58 - 0x54];
+    /*0x058*/ f32 maxSpeed;
+    /*0x05C*/ f32 velocityPerWeight; // maxSpeed / _1D1
+    /*0x060*/ u8 _060[0x68 - 0x60];
+    /*0x068*/ f32 distToDest;
+    /*0x06C*/ u8 _06C[0x70 - 0x6C];
+    /*0x070*/ f32 _070;
+    /*0x074*/ f32 _074;
+    /*0x078*/ u8 _078[0x07C - 0x078];
+    /*0x07C*/ f32 _07C;
+    /*0x080*/ u8 _080[0x084 - 0x080];
+    /*0x084*/ f32 distToFielder[9];
+    /*0x0A8*/ f32 distToBase[4];
+    /*0x0B8*/ f32 _0B8;
+    /*0x0BC*/ u8 _0BC[0xE8 - 0xBC];
+    /*0x0E8*/ f32 reach[9]; // per-character reach table scaled by the character size; [3] is the catch height
+    /*0x10C*/ VecXYZ throwTarget;
+    /*0x118*/ u8 _118[0x120 - 0x118];
+    /*0x120*/ f32 _120;
+    /*0x124*/ f32 _124;
+    /*0x128*/ u8 _128[0x16C - 0x128];
+    /*0x16C*/ f32 _16C;
+    /*0x170*/ u8 _170[0x174 - 0x170];
+    /*0x174*/ f32 _174;
+    /*0x178*/ s16 rosterID;
+    /*0x17A*/ s16 charID; // also the action id (lbl_3_data_7E34 index)
+    /*0x17C*/ s16 starMissionCharID;
+    /*0x17E*/ s16 framesToDest;
+    /*0x180*/ u8 _180[0x18C - 0x180];
+    /*0x18C*/ s16 coveringBase;
+    /*0x18E*/ u8 _18E[0x192 - 0x18E];
+    /*0x192*/ s16 _192;
+    /*0x194*/ s16 throwTimer;
+    /*0x196*/ s16 _196;
+    /*0x198*/ u8 _198[0x1A0 - 0x198];
+    /*0x1A0*/ s16 _1A0;
+    /*0x1A2*/ u8 _1A2[0x1AC - 0x1A2];
+    /*0x1AC*/ s16 _1AC;
+    /*0x1AE*/ u8 _1AE[0x1C2 - 0x1AE];
+    /*0x1C2*/ s16 _1C2; // angle
+    /*0x1C4*/ u8 aiLevel;
+    /*0x1C5*/ u8 _1C5;
+    /*0x1C6*/ u8 _1C6;
+    /*0x1C7*/ u8 handedness;
+    /*0x1C8*/ u8 characterClass;
+    /*0x1C9*/ u8 weight;
+    /*0x1CA*/ u8 catchType;     // 5 with magical catch, else the weight
+    /*0x1CB*/ u8 wallAbility;   // 1 wall splat, 2 wall jump, 3 clamber
+    /*0x1CC*/ u8 superJump;
+    /*0x1CD*/ u8 throwStrength; // from the throwing-arm stat
+    /*0x1CE*/ u8 throwingArm;
+    /*0x1CF*/ u8 _1CF;
+    /*0x1D0*/ u8 speedStat;
+    /*0x1D1*/ u8 _1D1;
+    /*0x1D2*/ u8 _1D2;
+    /*0x1D3*/ u8 _1D3[0x1D7 - 0x1D3];
+    /*0x1D7*/ u8 _1D7;
+    /*0x1D8*/ u8 _1D8[0x1DF - 0x1D8];
+    /*0x1DF*/ u8 throwing;
+    /*0x1E0*/ u8 _1E0;
+    /*0x1E1*/ u8 _1E1;
+    /*0x1E2*/ u8 _1E2;
+    /*0x1E3*/ u8 _1E3;
+    /*0x1E4*/ u8 _1E4;
+    /*0x1E5*/ u8 _1E5;
+    /*0x1E6*/ u8 _1E6;
+    /*0x1E7*/ u8 _1E7;
+    /*0x1E8*/ u8 _1E8[0x1EC - 0x1E8];
+    /*0x1EC*/ u8 _1EC;
+    /*0x1ED*/ u8 _1ED;
+    /*0x1EE*/ u8 _1EE;
+    /*0x1EF*/ u8 _1EF;
+    /*0x1F0*/ u8 _1F0[0x1F5 - 0x1F0];
+    /*0x1F5*/ s8 _1F5; // base
+    /*0x1F6*/ u8 _1F6;
+    /*0x1F7*/ s8 _1F7;
+    /*0x1F8*/ u8 _1F8;
+    /*0x1F9*/ u8 _1F9[0x200 - 0x1F9];
+    /*0x200*/ u8 _200;
+    /*0x201*/ u8 _201[0x203 - 0x201];
+    /*0x203*/ u8 _203;
+    /*0x204*/ u8 _204;
+    /*0x205*/ u8 _205;
+    /*0x206*/ u8 _206[0x20D - 0x206];
+    /*0x20D*/ u8 minigamePlayer; // roster slot in minigames
+    /*0x20E*/ u8 _20E;
+    /*0x20F*/ u8 _20F;
+    /*0x210*/ u8 knockback;
+    /*0x211*/ u8 _211;
+    /*0x212*/ u8 _212; // state
+    /*0x213*/ u8 _213; // runner index
+    /*0x214*/ u8 _214; // lbl_3_data_4860 index
+    /*0x215*/ u8 _215;
+    /*0x216*/ u8 _216[0x218 - 0x216];
+    /*0x218*/ u8 opponentIdx; // 0 for the captain, else 1..n
+    /*0x219*/ u8 _219[0x25A - 0x219];
+    /*0x25A*/ u8 _25A;
+    /*0x25B*/ u8 _25B[0x25E - 0x25B];
+    /*0x25E*/ u8 _25E;
+    /*0x25F*/ u8 _25F[0x262 - 0x25F];
+    /*0x262*/ u8 _262;
+    /*0x263*/ u8 _263;
+    /*0x264*/ u8 _264[0x268 - 0x264];
+} InMemFielderType; // size: 0x268
+
 extern InMemPitcherType g_Pitcher;
 extern InMemBallType g_Ball;
 extern InMemRunnerType g_Runners[4];
@@ -2535,7 +2655,7 @@ typedef struct {
     /* 0x3C */ f32 _3C;
     /* 0x40 */ s16 AIFrameToBeginPitch;
     /* 0x42 */ u16 _42;
-    /* 0x44 */ u16 _44;
+    /* 0x44 */ s16 _44;
     /* 0x46 */ u8 _46;
     /* 0x47 */ u8 _47;
     /* 0x48 */ u8 _48;

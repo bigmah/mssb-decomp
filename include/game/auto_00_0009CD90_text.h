@@ -8,33 +8,22 @@
 typedef struct GameRunningLogic {
     /*0x00*/ s16 _00; // play-event flags (0x10, 0x1000, ...)
     /*0x02*/ s16 occupiedBases; // one nibble per base (0x1, 0x10, 0x100, 0x1000)
-    /*0x04*/ u8 _04[0x10 - 0x4];
+    /*0x04*/ s16 _04; // one nibble per base
+    /*0x06*/ s16 _06[4]; // per runner
+    /*0x0E*/ s16 _0E;
     /*0x10*/ u8 _10;
     /*0x11*/ u8 _11;
     /*0x12*/ u8 _12;
     /*0x13*/ u8 _13;
     /*0x14*/ u8 _14;
     /*0x15*/ u8 _15; // runners on base
-    /*0x16*/ u8 _16[0x20 - 0x16];
+    /*0x16*/ u8 _16[0x1F - 0x16];
+    /*0x1F*/ u8 _1F;
 } GameRunningLogic; // size: 0x20
 
 extern GameRunningLogic g_RunningLogic;
 
-// g_Fielders entry (0x268 bytes); only the fields used here.
-typedef struct GameFielder {
-    /*0x000*/ f32 x; // position (fn_3_1EAA8)
-    /*0x004*/ u8 _004[0x178 - 0x4];
-    /*0x178*/ s16 rosterID;
-    /*0x17A*/ u8 _17A[0x18C - 0x17A];
-    /*0x18C*/ s16 _18C; // base the fielder is covering
-    /*0x18E*/ u8 _18E[0x1C4 - 0x18E];
-    /*0x1C4*/ u8 _1C4; // index into lbl_3_data_1C30 (fn_3_1DEB8)
-    /*0x1C5*/ u8 _1C5[0x1E0 - 0x1C5];
-    /*0x1E0*/ u8 _1E0;
-    /*0x1E1*/ u8 _1E1[0x268 - 0x1E1];
-} GameFielder; // size: 0x268
-
-extern GameFielder g_Fielders[9];
+extern InMemFielderType g_Fielders[9];
 
 extern GameScores g_Scores;
 extern u8 lbl_80361B20[54];

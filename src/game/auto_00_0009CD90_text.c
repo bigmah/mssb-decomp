@@ -309,7 +309,7 @@ void fn_3_9D6A4(void) {
                                 s16 base;
                                 lbl_3_common_bss_32A94.plays[i].fielder = g_Ball.fielderWBallIndex;
                                 lbl_3_common_bss_32A94.plays[i].outs = g_Strikes.outs - g_Strikes.storedOuts;
-                                base = g_Fielders[g_Ball.fielderWBallIndex]._18C;
+                                base = g_Fielders[g_Ball.fielderWBallIndex].coveringBase;
                                 if (base >= 0 && base <= 3) {
                                     switch (base) {
                                     case 0:
