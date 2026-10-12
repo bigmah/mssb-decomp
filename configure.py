@@ -676,7 +676,7 @@ config.libs = [
             Object(NonMatching, "main/file_8000BA3C.c"),
             Object(NonMatching, "main/file_8000F150.c"),
             Object(NonMatching, "main/file_80011640.c"),
-            Object(NonMatching, "main/file_8001FE00.c"),
+            Object(Matching, "main/file_8001FE00.c"),
             Object(NonMatching, "main/file_80021308.c"),
             Object(NonMatching, "main/file_80022DAC.c"),
             Object(NonMatching, "main/file_80024184.c"),
