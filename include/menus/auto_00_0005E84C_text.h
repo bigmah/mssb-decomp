@@ -18,7 +18,7 @@ extern MenuProgress* lbl_2_bss_1A8244;
 s16 fn_2_53BC8(void* item);
 
 extern s16 lbl_2_data_2E80[][3];
-extern u8 lbl_2_data_20BF0[];
+extern AssetLoadInstructions lbl_2_data_20BF0;
 extern s16 lbl_2_data_20C38[];
 extern s16 lbl_2_data_20C48[];
 extern s16 lbl_2_data_20C58[];

@@ -109,7 +109,7 @@ void fn_2_5ED3C(void) {
         }
         break;
     case 2:
-        if (fn_80035838(lbl_2_data_20BF0, 10) != 0) {
+        if (fn_80035838(&lbl_2_data_20BF0, 10) != 0) {
             task->step = 3;
         }
         break;
