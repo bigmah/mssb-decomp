@@ -97,13 +97,14 @@ auto_00_0001B1BC_text:
 menus/rep_0788.c:
 	.text       start:0x0001D440 end:0x00033E70
 	.rodata     start:0x00000788 end:0x000007F0
-	.data       start:0x00004C68 end:0x000107C8
+	.data       start:0x00004C68 end:0x00011F10
 
 menus/rep_07F0.c:
 	.rodata     start:0x000007F0 end:0x00000840
 
 auto_00_00033E70_text:
 	.text       start:0x00033E70 end:0x0003BD88
+	.data       start:0x00011F10 end:0x00012350
 	.bss        start:0x000015A0 end:0x000015B4
 
 menus/rep_0840.c:
