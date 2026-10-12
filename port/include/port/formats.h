@@ -12,6 +12,24 @@ extern "C" {
 // Message table: u16 count, u16 pad, u32 offsets[count], then u16 text.
 void port_swap_msg_table(void* table);
 
+// Geometry palette (charPipeline DODisplayData): header, descriptors, layouts
+// and their attribute headers; position/texcoord/normal arrays to native.
+void port_swap_geo_palette(void* palette);
+
+// Actor layout (C3 ActorLayout): header, bones and their orientation controls.
+void port_swap_actor_layout(void* layout);
+
+// Animation bank (C3 ANIMBank): sequences, tracks, key frames and their data.
+void port_swap_anim_bank(void* bank);
+
+// Skin (SKNHeader): lists, vertex data (compSize 4: f32 skins, 2: s16),
+// vertex and flush indices.
+void port_swap_skin(void* skin, uint32_t compSize);
+
+// Shape (morph target) data and shape animation sets (file_80024D2C.h).
+void port_swap_shape(void* shape);
+void port_swap_shape_anim_set(void* set);
+
 // 2D keyframe animation (Anim/SpaniAnim): port/src/formats_spani.c.
 void port_swap_spani_anim(void* anim);
 

@@ -165,7 +165,7 @@ void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack* animTrack, f32 time, KeyFram
     u16 i;
     u16 count;
 
-    keyFrames = animTrack->keyFrames;
+    keyFrames = PTR32_GET(KeyFrame, animTrack->keyFrames);
     start = (keyFrames[*frameIndex].time <= time) ? *frameIndex : 0;
     total = animTrack->totalFrames;
     i = start;
@@ -179,7 +179,7 @@ void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack* animTrack, f32 time, KeyFram
                         *currentFrame = frame;
                     }
                     if (nextFrame != NULL) {
-                        *nextFrame = &animTrack->keyFrames[i + 1];
+                        *nextFrame = &PTR32_GET(KeyFrame, animTrack->keyFrames)[i + 1];
                     }
                     *frameIndex = i;
                     return;
@@ -189,7 +189,7 @@ void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack* animTrack, f32 time, KeyFram
                     *currentFrame = frame;
                 }
                 if (nextFrame != NULL) {
-                    *nextFrame = animTrack->keyFrames;
+                    *nextFrame = PTR32_GET(KeyFrame, animTrack->keyFrames);
                 }
                 *frameIndex = i;
                 return;
@@ -204,8 +204,8 @@ struct ANIMAnimTrack* ANIMGetTrackFromSequence(ANIMSequences* animSeq, u16 animT
     u32 i;
 
     for (i = 0; i < animSeq->totalTracks; i++) {
-        if (animTrackID == animSeq->trackArray[i].trackID) {
-            return &animSeq->trackArray[i];
+        if (animTrackID == PTR32_GET(struct ANIMAnimTrack, animSeq->trackArray)[i].trackID) {
+            return &PTR32_GET(struct ANIMAnimTrack, animSeq->trackArray)[i];
         }
     }
     return NULL;
@@ -217,20 +217,51 @@ ANIMSequences* ANIMGetSequence(ANIMBank* animBank, char* sequenceName, u16 seqNu
 
     if (sequenceName != NULL) {
         for (i = 0; i < animBank->numSequences; i++) {
-            if (Strcmp(animBank->animSequences[i].sequenceName, sequenceName) == 0) {
-                return &animBank->animSequences[i];
+            if (Strcmp(PTR32_GET(char, PTR32_GET(ANIMSequences, animBank->animSequences)[i].sequenceName), sequenceName) == 0) {
+                return &PTR32_GET(ANIMSequences, animBank->animSequences)[i];
             }
         }
     } else if (animBank == NULL) {
         return NULL;
     }
-    return &animBank->animSequences[seqNum];
+    return &PTR32_GET(ANIMSequences, animBank->animSequences)[seqNum];
 }
 
 // .text:0x800B508C size:0xE0
 // Converts the bank's file offsets into pointers in place.
 // TODO(port): the bank is a big-endian disc image with 32-bit pointer fields;
 // on PC it needs a byte swap and conversion into native structs (Phase 3).
+#ifdef TARGET_PC
+// PC: swap the bank once (port/src/formats_geo.c), then relocate its 32-bit
+// offsets (PTR32 fields) against the bank.
+void ANIMGet(ANIMBank* animBank) {
+    ANIMSequences* seq;
+    struct ANIMAnimTrack* track;
+    KeyFrame* keyFrame;
+    u32 base = PTR_TO_U32(animBank);
+    u32 i;
+
+    port_swap_anim_bank(animBank);
+    if (animBank->userDataSize != 0 && animBank->userData != 0) {
+        animBank->userData += base;
+    }
+    seq = (ANIMSequences*)(animBank + 1);
+    track = (struct ANIMAnimTrack*)(seq + animBank->numSequences);
+    keyFrame = (KeyFrame*)(track + animBank->numTracks);
+    animBank->animSequences += base;
+    for (i = 0; i < animBank->numSequences; i++) {
+        seq[i].sequenceName += base;
+        seq[i].trackArray += base;
+    }
+    for (i = 0; i < animBank->numTracks; i++) {
+        track[i].keyFrames += base;
+    }
+    for (i = 0; i < animBank->numKeyFrames; i++) {
+        keyFrame[i].setting += base;
+        keyFrame[i].interpolation += base;
+    }
+}
+#else
 void ANIMGet(ANIMBank* animBank) {
     ANIMSequences* seq;
     struct ANIMAnimTrack* track;
@@ -257,3 +288,4 @@ void ANIMGet(ANIMBank* animBank) {
         keyFrame[i].interpolation = (char*)animBank + (uintptr_t)keyFrame[i].interpolation;
     }
 }
+#endif

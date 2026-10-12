@@ -803,7 +803,7 @@ void* jumptable_2_data_2FEEC[48] = {
 void fn_2_8D270(u8 index) {
     CharActor* actor = &lbl_2_bss_340140->actors[index];
     ActorObject* slot = (ActorObject*)fn_800111D8(actor);
-    void** files = actor->files;
+    PTR32(void)* files = actor->files;
     void* tex;
     void* layout;
     void* geo;
@@ -818,17 +818,24 @@ void fn_2_8D270(u8 index) {
 
     // The file starts with a NULL-terminated table of section offsets, relocated in place.
     for (i = 0; i < 15; i++) {
+#ifdef TARGET_PC
+        actor->files[i] = be32(actor->files[i]);
+#endif
         if (actor->files[i] == NULL) {
             break;
         }
-        actor->files[i] = (u8*)files + (uintptr_t)files[i]; // TODO(port): 32-bit file offsets read through void* (8 bytes on PC)
+#ifdef TARGET_PC
+        actor->files[i] += PTR_TO_U32(files);
+#else
+        actor->files[i] = (u8*)files + (uintptr_t)files[i];
+#endif
     }
-    tex = actor->files[0];
+    tex = PTR32_GET(void, actor->files[0]);
     convertTextureHeader(tex);
     if (actor->files[1] != NULL) {
-        layout = actor->files[1];
-        geo = actor->files[2];
-        skn = actor->files[3];
+        layout = PTR32_GET(void, actor->files[1]);
+        geo = PTR32_GET(void, actor->files[2]);
+        skn = PTR32_GET(void, actor->files[3]);
         LoadActorLayout(layout);
         convertGeometryAndSknHeader(geo, skn);
         haveActLayoutPointToGeoHeader(layout, geo);
@@ -836,7 +843,7 @@ void fn_2_8D270(u8 index) {
     } else {
         return;
     }
-    actor->banks.b[0] = actor->files[4];
+    actor->banks.b[0] = PTR32_GET(void, actor->files[4]);
     ANIMGet(actor->banks.b[0]);
     fn_8002399C((ActorSlot*)slot, actor->modelIndex, index, layout, actor->banks.b[0], skn);
 
@@ -909,8 +916,8 @@ void fn_2_8D270(u8 index) {
     fn_8001D180(index, partB, 1);
     actor->part = NULL;
     if (actor->files[13] != NULL && actor->files[14] != NULL) {
-        void* shape = actor->files[13];
-        ShapeAnimSet* set = actor->files[14];
+        void* shape = PTR32_GET(void, actor->files[13]);
+        ShapeAnimSet* set = PTR32_GET(ShapeAnimSet, actor->files[14]);
         fn_80025DDC(shape);
         fn_80014990(index, shape, set);
         fn_80025C58(shape, (ShapeModel**)&slot->actor);

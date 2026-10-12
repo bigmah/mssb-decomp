@@ -466,6 +466,16 @@ void fn_2_16F78(u8 index) {
 
     actor->modelIndex = index;
     // The file header holds offsets that are relocated in place.
+#ifdef TARGET_PC
+    // Up to 15 big-endian offsets, 0-terminated (PTR32 entries).
+    for (k = 0; k < 15; k++) {
+        actor->files[k] = be32(actor->files[k]);
+        if (actor->files[k] == 0) {
+            break;
+        }
+        actor->files[k] += PTR_TO_U32(actor->files);
+    }
+#else
     base = actor->files;
     offsets = (u32*)base;
     for (k = 0; k < 15; k++) {
@@ -474,16 +484,17 @@ void fn_2_16F78(u8 index) {
         }
         actor->files[k] = (u8*)base + offsets[k];
     }
-    tex = actor->files[0];
-    layout = actor->files[1];
-    geo = actor->files[2];
-    skn = actor->files[3];
+#endif
+    tex = PTR32_GET(void, actor->files[0]);
+    layout = PTR32_GET(void, actor->files[1]);
+    geo = PTR32_GET(void, actor->files[2]);
+    skn = PTR32_GET(void, actor->files[3]);
     convertTextureHeader(tex);
     LoadActorLayout(layout);
     convertGeometryAndSknHeader(geo, skn);
     haveActLayoutPointToGeoHeader(layout, geo);
     fn_800BD190(geo, tex);
-    bank = actor->files[4];
+    bank = PTR32_GET(void, actor->files[4]);
     actor->banks.b[5] = bank;
     ANIMGet(actor->banks.b[5]);
     slot = fn_800111D8(actor);
@@ -583,9 +594,9 @@ void fn_2_16F78(u8 index) {
     }
     fn_8001D180(index, animA, 1);
     fn_8001D180(index, animB, 1);
-    shape = actor->files[13];
+    shape = PTR32_GET(void, actor->files[13]);
     if (shape != NULL) {
-        set = actor->files[14];
+        set = PTR32_GET(ShapeAnimSet, actor->files[14]);
         if (set != NULL) {
             fn_80025DDC(shape);
             fn_80014990(index, shape, set);

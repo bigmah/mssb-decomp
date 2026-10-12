@@ -20,11 +20,19 @@ extern const f32 lbl_803CC560; // 0.0f
 extern const f32 lbl_803CC564; // 1.0f
 extern const f32 lbl_803CC568; // 3.1415925f
 extern const f32 lbl_803CC56C; // 2048.0f
+#ifdef TARGET_PC
+#include "main/file_80011640.h" // CharMgr lbl_8036E548
+#else
 extern u8 lbl_8036E548[]; // TODO type
+#endif
 
 // TODO: these belong in their own units' headers.
 void* _OSAllocFromHeap(u32 align, u32 size);
+#ifdef TARGET_PC
+#define ActorObjectInitTable(count) ((ActorSlotTable*)ActorObjectInitTable(count)) // ActorObjectTable* (file_800BD8C4.h)
+#else
 ActorSlotTable* ActorObjectInitTable(u16 count);
+#endif
 void fn_800B4724(MActor* actor, struct sHdr* skHeader); // GameActor* in main/file_800B2C44.h
 void fn_800A7E00(void);
 void OSReport(const char* msg, ...);
@@ -33,6 +41,18 @@ void OSSetProgressiveMode(u32 on);
 void* memset(void* dst, int c, size_t n);
 void* memcpy(void* dst, const void* src, size_t n);
 // ACTSort and DOSetWorldMatrix are declared in C3/ with the SDK's Actor/DODisplayObj layouts.
+
+// Sizes of the per-actor bump buffers. MDisplayObj and the actor/bone
+// structs hold pointers: bigger on PC.
+#ifdef TARGET_PC
+#define MDISPLAYOBJ_ALLOC ((sizeof(MDisplayObj) + 0x1F) & ~0x1F)
+#define ACTOR_BUFFER_SMALL (0x1BC0 * 2)
+#define ACTOR_BUFFER_LARGE (0x86A0 * 2)
+#else
+#define MDISPLAYOBJ_ALLOC 0x80
+#define ACTOR_BUFFER_SMALL 0x1BC0
+#define ACTOR_BUFFER_LARGE 0x86A0
+#endif
 
 // Bump allocator over a caller-supplied buffer.
 typedef struct BufferCursor {
@@ -56,8 +76,8 @@ static inline u8* loadDisplayObj(MDisplayObj** dispObj, DODisplayData* pal, u16 
         *dispObj = NULL;
         return buffer;
     }
-    layout = (MDisplayLayout*)pal->descriptorArray[id].layout;
-    *dispObj = (MDisplayObj*)allocBuffer(&cursor, 0x80);
+    layout = (MDisplayLayout*)PTR32_GET(DODisplayLayout, PTR32_GET(DODescriptor, pal->descriptorArray)[id].layout);
+    *dispObj = (MDisplayObj*)allocBuffer(&cursor, MDISPLAYOBJ_ALLOC);
     cursor.ptr = fn_80023078(*dispObj, layout, cursor.ptr);
     return cursor.ptr;
 }
@@ -76,7 +96,7 @@ u8* f_InitBone(MBone* parent, MBoneLayout* layout, MActor* actor, u16* boneIndex
         bone->drawingPriority = layout->drawingPriority;
         bone->orientationCtrl.ctrl.type = 0;
         if (layout->orientationCtrl != NULL) {
-            bone->orientationCtrl = *layout->orientationCtrl;
+            bone->orientationCtrl = *PTR32_GET(MControl, layout->orientationCtrl);
         }
         bone->dispObj = NULL;
         if (layout->geoFileID != 0xFFFF) {
@@ -120,9 +140,9 @@ u8* f_InitBone(MBone* parent, MBoneLayout* layout, MActor* actor, u16* boneIndex
         }
         (*boneIndex)++;
         if (layout->branch.Children != NULL) {
-            buffer = f_InitBone(bone, (MBoneLayout*)layout->branch.Children, actor, boneIndex, bones, buffer);
+            buffer = f_InitBone(bone, PTR32_GET(MBoneLayout, layout->branch.Children), actor, boneIndex, bones, buffer);
         }
-        layout = (MBoneLayout*)layout->branch.Next;
+        layout = PTR32_GET(MBoneLayout, layout->branch.Next);
     }
     return buffer;
 }
@@ -207,7 +227,7 @@ MActor* f_InitActorWithLayout(MActorLayout* layout, u8* buffer) {
     ptrArraySize = (layout->totalBones * sizeof(MBone*) + 0x1F) & ~0x1F;
     mtxArraySize = (layout->totalBones * sizeof(Mtx) + 0x1F) & ~0x1F;
     if (layout->skinFileID != 0xFFFF) {
-        buffer = loadDisplayObj(&skin, layout->pal, layout->skinFileID, buffer);
+        buffer = loadDisplayObj(&skin, PTR32_GET(DODisplayData, layout->pal), layout->skinFileID, buffer);
         skinMtxSize = orientationInvSize = (layout->totalBones * sizeof(Mtx) + 0x1F) & ~0x1F;
         if (skin->lightingData != NULL) {
             invTransposeSize = skinMtxSize;
@@ -229,7 +249,7 @@ MActor* f_InitActorWithLayout(MActorLayout* layout, u8* buffer) {
     DSInitList(&actor->drawPriorityList, NULL, (DSLinkPtr)OFFSET_OF(MBone, drawPriorityLink));
     actor->pal = NULL;
     if (layout->pal != NULL) {
-        actor->pal = layout->pal;
+        actor->pal = PTR32_GET(DODisplayData, layout->pal);
     }
     if (layout->skinFileID != 0xFFFF) {
         DOSetWorldMatrix((struct DODisplayObj*)actor->skinObject, identity);
@@ -238,11 +258,11 @@ MActor* f_InitActorWithLayout(MActorLayout* layout, u8* buffer) {
         // The skin's normals live right after its positions in a shared array.
         positionData = actor->skinObject->positionData;
         normalOffset = (s32)(actor->skinObject->lightingData->normalArray - positionData->positionArray);
-        desc = layout->pal->descriptorArray;
-        for (i = 0; i < layout->pal->numDescriptors; i++, desc++) {
-            char* positions;
-            if (desc->layout->positionData->compCount == 6) {
-                positions = desc->layout->positionData->positionArray;
+        desc = PTR32_GET(DODescriptor, PTR32_GET(DODisplayData, layout->pal)->descriptorArray);
+        for (i = 0; i < PTR32_GET(DODisplayData, layout->pal)->numDescriptors; i++, desc++) {
+            PTR32(char) positions;
+            if (PTR32_GET(PositionData, PTR32_GET(DODisplayLayout, desc->layout)->positionData)->compCount == 6) {
+                positions = PTR32_GET(PositionData, PTR32_GET(DODisplayLayout, desc->layout)->positionData)->positionArray;
                 positionData->positionArray = positions;
                 actor->skinObject->lightingData->normalArray = positions + normalOffset;
                 break;
@@ -261,7 +281,7 @@ MActor* f_InitActorWithLayout(MActorLayout* layout, u8* buffer) {
     }
     actor->unk1C = 0;
     if (layout->hierarchyRoot != NULL) {
-        f_InitBone(NULL, layout->hierarchyRoot, actor, &boneCount,
+        f_InitBone(NULL, PTR32_GET(MBoneLayout, layout->hierarchyRoot), actor, &boneCount,
                    (MBone*)((u8*)actor->forwardMtxArray + mtxArraySize + skinMtxSize + orientationInvSize + invTransposeSize),
                    buffer);
     }
@@ -372,12 +392,12 @@ ActorSlotTable* fn_80023AA4(void) {
     u32 i;
     u8** p;
 
-    lbl_8017EB40[0] = _OSAllocFromHeap(0x20, 0x1C * 0x1BC0);
+    lbl_8017EB40[0] = _OSAllocFromHeap(0x20, 0x1C * ACTOR_BUFFER_SMALL);
     p = &lbl_8017EB40[1];
     i = 1;
     do {
         i++;
-        *p = p[-1] + 0x1BC0;
+        *p = p[-1] + ACTOR_BUFFER_SMALL;
         p++;
     } while (i < 0x1C);
     return ActorObjectInitTable(0x1C);
@@ -388,21 +408,17 @@ void fn_80023B04(s32 count) {
     s32 i;
     u8** p;
 
-    lbl_8017EBB0[0] = _OSAllocFromHeap(0x20, count * 0x86A0);
+    lbl_8017EBB0[0] = _OSAllocFromHeap(0x20, count * ACTOR_BUFFER_LARGE);
     p = &lbl_8017EBB0[1];
     i = 1;
     do {
         i++;
-        *p = p[-1] + 0x86A0;
+        *p = p[-1] + ACTOR_BUFFER_LARGE;
         p++;
     } while (i < count);
-    lbl_803CBC5C = 0x86A0;
+    lbl_803CBC5C = ACTOR_BUFFER_LARGE;
 #ifdef TARGET_PC
-    {
-        // The head of CharMgr (main/file_80011640.h, which clashes with this file's declarations).
-        typedef struct { s32 _0000; void* _0004[2]; u32 _000C[21]; ActorSlotTable* slots; } CharMgrHead;
-        ((CharMgrHead*)lbl_8036E548)->slots = ActorObjectInitTable(0xD);
-    }
+    lbl_8036E548.slots = (ActorObjectTable*)ActorObjectInitTable(0xD);
 #else
     *(ActorSlotTable**)(lbl_8036E548 + 0x60) = ActorObjectInitTable(0xD); // TODO type
 #endif

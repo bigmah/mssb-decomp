@@ -68,7 +68,7 @@ typedef GameBone SKNBone; // skinMtx at 0xF0
 
 typedef struct SKN1List {
     /* 0x00 */ Mtx43 m;
-    /* 0x30 */ void* vertSrc;
+    /* 0x30 */ PTR32(void) vertSrc;
     /* 0x34 */ u32 vertDst;
     /* 0x38 */ u16 boneIndex;
     /* 0x3A */ u16 count;
@@ -79,8 +79,8 @@ typedef struct SKN1List {
 typedef struct SKN2List {
     /* 0x00 */ Mtx43 m0;
     /* 0x30 */ Mtx43 m1;
-    /* 0x60 */ void* vertSrc;
-    /* 0x64 */ void* weights;
+    /* 0x60 */ PTR32(void) vertSrc;
+    /* 0x64 */ PTR32(void) weights;
     /* 0x68 */ u32 vertDst;
     /* 0x6C */ u16 bone0Index;
     /* 0x6E */ u16 bone1Index;
@@ -91,10 +91,10 @@ typedef struct SKN2List {
 
 typedef struct SKNAccList {
     /* 0x00 */ Mtx43 m;
-    /* 0x30 */ void* vertSrc;
-    /* 0x34 */ void* vertIndices;
+    /* 0x30 */ PTR32(void) vertSrc;
+    /* 0x34 */ PTR32(void) vertIndices;
     /* 0x38 */ u32 vertDst;
-    /* 0x3C */ void* weights;
+    /* 0x3C */ PTR32(void) weights;
     /* 0x40 */ u16 boneIndex;
     /* 0x42 */ u16 count;
 } SKNAccList;
@@ -106,12 +106,12 @@ typedef struct sHdr {
     /* 0x04 */ u16 numSkAccList;
     /* 0x06 */ u8 posNrmShift;
     /* 0x07 */ u8 pad7;
-    /* 0x08 */ SKN1List* sk1ListArray;
-    /* 0x0C */ SKN2List* sk2ListArray;
-    /* 0x10 */ SKNAccList* skAccListArray;
+    /* 0x08 */ PTR32(SKN1List) sk1ListArray;
+    /* 0x0C */ PTR32(SKN2List) sk2ListArray;
+    /* 0x10 */ PTR32(SKNAccList) skAccListArray;
     /* 0x14 */ u32 skBzeroBase;
     /* 0x18 */ u32 skBzeroSize;
-    /* 0x1C */ u16* flushIndices;
+    /* 0x1C */ PTR32(u16) flushIndices;
     /* 0x20 */ u32 flushCount;
 } SKNHeader;
 

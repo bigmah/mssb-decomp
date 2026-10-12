@@ -361,8 +361,8 @@ static void menuStageApplyTexSet(s32 i, s32 model, s32 texSet) {
     for (j = 0; j < sStageBoneCount[model]; j++) {
         texIndex = sStageTexIndex[texSet];
         for (k = 0; k < sStageTexCount[model]; k++) {
-            lbl_2_bss_340140[0]->table->objects[i].actor->boneArray[j]->dispObj->textureData
-                ->texturePalette->tex[k].texIndex = j + *texIndex++;
+            PTR32_GET(DOTexBank, lbl_2_bss_340140[0]->table->objects[i].actor->boneArray[j]->dispObj->textureData
+                ->texturePalette)->tex[k].texIndex = j + *texIndex++;
         }
     }
 }

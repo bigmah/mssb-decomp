@@ -389,7 +389,7 @@ void fn_3_E5FEC(StaC6Obj* o) {
     void* dst;
 
     cd = BONE(o->subObj, 1)->dispObj->colorData;
-    dst = cd->colorArray;
+    dst = PTR32_GET(char, cd->colorArray);
     switch ((u8)((s32)cd->quantizeInfo >> 4)) {
     case 0:
         *(u16*)dst = ((u16)(o->color[0] >> 3) & 0x1F) << 11;
@@ -433,7 +433,7 @@ void fn_3_E5FEC(StaC6Obj* o) {
         BONE(o->subObj, 2)->dispObj = NULL;
     }
     cd = BONE(o->actorObj, 0)->dispObj->colorData;
-    dst = cd->colorArray;
+    dst = PTR32_GET(char, cd->colorArray);
     switch ((u8)((s32)cd->quantizeInfo >> 4)) {
     case 0:
         *(u16*)dst = ((u16)(o->bodyColor[0] >> 3) & 0x1F) << 11;
@@ -516,15 +516,15 @@ void fn_3_E6528(StaC6Obj* o) {
         if (sub != NULL) {                                               \
             disp = BONE(sub, 1)->dispObj;                                \
             tex = disp->textureData;                                     \
-            if (disp->displayData->displayStateList[2].id != 3) {        \
+            if (PTR32_GET(DisplayStateList, disp->displayData->displayStateList)[2].id != 3) { \
                 OSPanic(lbl_3_rodata_2BB0, 0x713, lbl_3_rodata_2BBC);    \
             }                                                            \
             if (o->kind == 2) {                                          \
-                tex->texturePalette->tex[4].texIndex = 1;                \
+                PTR32_GET(DOTexBank, tex->texturePalette)->tex[4].texIndex = 1; \
             } else if (o->kind == 10) {                                  \
-                tex->texturePalette->tex[4].texIndex = 0;                \
+                PTR32_GET(DOTexBank, tex->texturePalette)->tex[4].texIndex = 0; \
             } else {                                                     \
-                tex->texturePalette->tex[4].texIndex = 4;                \
+                PTR32_GET(DOTexBank, tex->texturePalette)->tex[4].texIndex = 4; \
             }                                                            \
         }                                                                \
     } while (0)

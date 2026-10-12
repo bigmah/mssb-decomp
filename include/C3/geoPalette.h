@@ -47,15 +47,15 @@ enum DOTextureSetting {
 typedef void * (*unkCB)(void *, struct DODisplayObj *, u32, void *, int, char *);
 
 typedef struct {
-    /* 0x00 */ PositionData *positionData;
-    /* 0x04 */ ColorData *colorData;
-    /* 0x08 */ TextureData *textureData;
-    /* 0x0C */ LightingData *lightingData;
-    /* 0x10 */ DisplayData *displayData;
+    /* 0x00 */ PTR32(PositionData) positionData;
+    /* 0x04 */ PTR32(ColorData) colorData;
+    /* 0x08 */ PTR32(TextureData) textureData;
+    /* 0x0C */ PTR32(LightingData) lightingData;
+    /* 0x10 */ PTR32(DisplayData) displayData;
     /* 0x14 */ u8 numTextureChannels;
     /* 0x15 */ u8 unk15;
     /* 0x16 */ u16 pad16;
-    /* 0x18 */ void *unk18;
+    /* 0x18 */ PTR32(void) unk18;
     /* 0x1C */ f32 bounds[6]; // copied into DODisplayObj.bounds
 } DODisplayLayout; // size 0x34 (MSSB layout)
 
@@ -81,22 +81,28 @@ struct DODisplayObj {
 
 typedef struct {
     union {
-        /* 0x00 */ DODisplayLayout *layout;
-        /* 0x00 */ struct DODisplayObj *dispObj; // after fn_800BCE38 builds the objects in place
+        /* 0x00 */ PTR32(DODisplayLayout) layout;
+        /* 0x00 */ PTR32(struct DODisplayObj) dispObj; // after fn_800BCE38 builds the objects in place
     };
-    /* 0x04 */ char *name;
+    /* 0x04 */ PTR32(char) name;
 } DODescriptor, *DODescriptorPtr;
 
 typedef struct DODisplayData {
     union {
         /* 0x00 */ u32 versionNumber;
-        /* 0x00 */ void *skinPositions; // set by convertGeometryAndSknHeader
+        /* 0x00 */ PTR32(void) skinPositions; // set by convertGeometryAndSknHeader
     };
     /* 0x04 */ u32 userDataSize;
-    /* 0x08 */ void *userData;
+    /* 0x08 */ PTR32(void) userData;
     /* 0x0C */ u32 numDescriptors;
-    /* 0x10 */ DODescriptorPtr descriptorArray;
+    /* 0x10 */ PTR32(DODescriptor) descriptorArray;
 } DODisplayData, *DODisplayDataPtr;
+
+#ifdef TARGET_PC
+// Whether the palette's descriptors hold display objects (fn_800BCE38)
+// rather than layouts (LoadGeoPalette); file_800B9974.c.
+BOOL GeoPaletteHasDispObjs(const void* pal);
+#endif
 
 // displayObject.c
 extern u32 HackTevState;

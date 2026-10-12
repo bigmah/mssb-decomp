@@ -6,7 +6,7 @@ typedef struct KeyFrame KeyFrame;
 
 struct ANIMAnimTrack {
     /* 0x00 */ f32 animTime;
-    /* 0x04 */ struct KeyFrame * keyFrames;
+    /* 0x04 */ PTR32(struct KeyFrame) keyFrames;
     /* 0x08 */ u16 totalFrames;
     /* 0x0A */ u16 trackID;
     /* 0x0C */ u8 quantizeInfo;
@@ -29,21 +29,21 @@ struct ANIMPipe {
 };
 
 typedef struct ANIMSequences {
-    /* 0x00 */ char *sequenceName;
-    /* 0x04 */ struct ANIMAnimTrack *trackArray;
+    /* 0x00 */ PTR32(char) sequenceName;
+    /* 0x04 */ PTR32(struct ANIMAnimTrack) trackArray;
     /* 0x08 */ u16 totalTracks;
     /* 0x0A */ u16 pad16;
 } ANIMSequences;
 
 typedef struct ANIMBank {
     /* 0x00 */ u32 versionNumber;
-    /* 0x04 */ ANIMSequences *animSequences;
+    /* 0x04 */ PTR32(ANIMSequences) animSequences;
     /* 0x08 */ u16 bankID;
     /* 0x0A */ u16 numSequences;
     /* 0x0C */ u16 numTracks;
     /* 0x0E */ u16 numKeyFrames;
     /* 0x10 */ u32 userDataSize;
-    /* 0x14 */ void * userData;
+    /* 0x14 */ PTR32(void) userData;
 } ANIMBank;
 
 // animBank.c

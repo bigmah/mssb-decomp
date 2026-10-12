@@ -14,24 +14,42 @@ typedef struct sBone sBone;
 typedef struct sHdr sHdr;
 typedef struct ANIMBank ANIMBank;
 
+// DSTree/DSBranch as stored in actor layout files: 32-bit pointer fields
+// (PTR32 on PC; the runtime DSTree/DSBranch hold real pointers).
+#ifdef TARGET_PC
+typedef struct DSTreeDisk {
+    u32 Offset;
+    PTR32(char) Root;
+} DSTreeDisk;
+typedef struct DSBranchDisk {
+    PTR32(char) Prev;
+    PTR32(char) Next;
+    PTR32(char) Parent;
+    PTR32(char) Children;
+} DSBranchDisk;
+#else
+typedef DSTree DSTreeDisk;
+typedef DSBranch DSBranchDisk;
+#endif
+
 typedef struct ActorLayout {
     /* 0x00 */ u32 versionNumber;
     /* 0x04 */ u16 actorID;
     /* 0x06 */ u16 totalBones;
-    /* 0x08 */ DSTree hierarchy;
+    /* 0x08 */ DSTreeDisk hierarchy;
     /* 0x10 */ union {
-        char * geoPaletteName;
-        DODisplayDataPtr geoPalette; // MSSB: set by haveActLayoutPointToGeoHeader
+        PTR32(char) geoPaletteName;
+        PTR32(struct DODisplayData) geoPalette; // MSSB: set by haveActLayoutPointToGeoHeader
     };
     /* 0x14 */ u16 skinFileID;
     /* 0x16 */ u16 pad16;
     /* 0x18 */ u32 userDataSize;
-    /* 0x1C */ char * userData;
+    /* 0x1C */ PTR32(char) userData;
 } ActorLayout;
 
 typedef struct ActorBone {
-    /* 0x00 */ Control * orientationCtrl;
-    /* 0x04 */ DSBranch branch;
+    /* 0x00 */ PTR32(Control) orientationCtrl;
+    /* 0x04 */ DSBranchDisk branch;
     /* 0x14 */ u16 geoFileID;
     /* 0x16 */ u16 boneID;
     /* 0x18 */ u8 inheritanceFlag;

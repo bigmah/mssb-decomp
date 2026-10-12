@@ -7,13 +7,16 @@
 // that are written straight into a model's GX vertex arrays.
 
 // One keyframe (4 bytes).
+// Bitfields of disc structs: MWCC allocates them from the most significant
+// bit, clang from the least: declared in reverse order on PC (the u16 is
+// swapped at load).
 typedef struct ShapeKey {
-#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+#ifdef TARGET_PC
     /*0x0*/ u16 frame : 12;
     /*0x0*/ u16 unk0_3 : 1;
-    /*0x0*/ u16 override : 1; // target index may be overridden by the caller
-    /*0x0*/ u16 hold : 1;     // don't blend toward the next key
-    /*0x0*/ u16 ease : 1;     // weight comes from `weight` instead of 0/1
+    /*0x0*/ u16 override : 1;
+    /*0x0*/ u16 hold : 1;
+    /*0x0*/ u16 ease : 1;
 #else
     /*0x0*/ u16 ease : 1;     // weight comes from `weight` instead of 0/1
     /*0x0*/ u16 hold : 1;     // don't blend toward the next key
@@ -67,15 +70,15 @@ typedef struct ShapeAnimState {
 // Asset header for fn_80025FFC (offsets relocated in place).
 typedef struct ShapeAnimSet {
     /*0x0*/ u32 seqCount;
-    /*0x4*/ ShapeSeqData** seqs;
-    /*0x8*/ s8** tables;
+    /*0x4*/ PTR32(PTR32(ShapeSeqData)) seqs;
+    /*0x8*/ PTR32(PTR32(s8)) tables;
     /*0xC*/ u32 tableCount;
 } ShapeAnimSet;
 
 typedef struct ShapeAnimPlayer {
     /*0x00*/ ShapeAnimSet* set;
-    /*0x04*/ ShapeSeqData** seqs;
-    /*0x08*/ s8** tableList;
+    /*0x04*/ PTR32(ShapeSeqData)* seqs; // the set's table
+    /*0x08*/ PTR32(s8)* tableList;
     /*0x0C*/ ShapeAnimState state;
     /*0x2C*/ void* model;
     /*0x30*/ s8* tables[10];
@@ -141,19 +144,19 @@ typedef struct ShapeModel {
 // Morph target: a vertex array of the model that gets written.
 typedef struct ShapeTarget {
     /*0x0*/ u16 idx;
-#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
-    /*0x2*/ u8 type : 7;  // 0: geo array, 1: pos, 2: clr, 3: nrm, 4+: tex
+#ifdef TARGET_PC
+    /*0x2*/ u8 type : 7;
     /*0x2*/ u8 useBuf1 : 1;
-    /*0x3*/ u8 fmtLo : 4; // component size
-    /*0x3*/ u8 fmtHi : 4; // components
+    /*0x3*/ u8 fmtLo : 4;
+    /*0x3*/ u8 fmtHi : 4;
 #else
     /*0x2*/ u8 useBuf1 : 1;
     /*0x2*/ u8 type : 7;  // 0: geo array, 1: pos, 2: clr, 3: nrm, 4+: tex
     /*0x3*/ u8 fmtHi : 4; // components
     /*0x3*/ u8 fmtLo : 4; // component size
 #endif
-    /*0x4*/ void** dataSlot;
-    /*0x8*/ void* buf[2];
+    /*0x4*/ PTR32(PTR32(void)) dataSlot; // the vertex array pointer field this target patches
+    /*0x8*/ PTR32(void) buf[2];
 } ShapeTarget;
 
 typedef struct ShapeRange {
@@ -165,7 +168,7 @@ typedef struct ShapeRange {
 typedef struct ShapeEntry {
     /*0x0*/ u8 unk0[4];
     /*0x4*/ u8 id;
-#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+#ifdef TARGET_PC
     /*0x5*/ u8 type : 7;
     /*0x5*/ u8 copyOnly : 1;
 #else
@@ -174,15 +177,15 @@ typedef struct ShapeEntry {
 #endif
     /*0x6*/ u8 compCount;
     /*0x7*/ u8 compSize;
-    /*0x8*/ ShapeRange* ranges;
-    /*0xC*/ u8* src[1]; // per morph target
+    /*0x8*/ PTR32(ShapeRange) ranges;
+    /*0xC*/ PTR32(u8) src[1]; // per morph target
 } ShapeEntry;
 
 typedef struct ShapeGroup {
     /*0x0*/ u16 srcCount;
     /*0x2*/ u16 entryCount;
     /*0x4*/ u32 entryStride;
-    /*0x8*/ ShapeEntry* entries;
+    /*0x8*/ PTR32(ShapeEntry) entries;
 } ShapeGroup;
 
 typedef struct ShapeData {
@@ -190,9 +193,9 @@ typedef struct ShapeData {
     /*0x02*/ u16 groupCount;
     /*0x04*/ u16 targetCount;
     /*0x06*/ u16 unk6;
-    /*0x08*/ ShapeGroup* groups;
-    /*0x0C*/ ShapeTarget* targets;
-    /*0x10*/ ShapeModel** owner;
+    /*0x08*/ PTR32(ShapeGroup) groups;
+    /*0x0C*/ PTR32(ShapeTarget) targets;
+    /*0x10*/ PTR32(ShapeModel*) owner;
 } ShapeData;
 
 u32 fn_80024D2C(ShapeAnimState* st);

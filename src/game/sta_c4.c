@@ -320,7 +320,7 @@ void fn_3_F8B34(StaObj* o) {
 // .text:0x000F8BA8 size:0x158 mapped:0x80737C3C
 void fn_3_F8BA8(StaObj* o) {
     // first display state of bone 0 (its setting holds the haze texture frame)
-    DisplayStateList* r = o->actorObj->actor->boneArray[0]->dispObj->displayData->displayStateList;
+    DisplayStateList* r = PTR32_GET(DisplayStateList, o->actorObj->actor->boneArray[0]->dispObj->displayData->displayStateList);
     s8 prev;
     u32 i, j;
     if (o->frame != 0 && o->frame % 3 == 0) {
@@ -766,7 +766,7 @@ void fn_3_F9B9C(s32 idx, s32 b, CollisionStruct* c) {
 void fn_3_F9D94(StaObj* o) {
     ActorObject* anim = o->actorObj;
     s32 i;
-    if (o->animTime >= ((ANIMBank*)anim->animBank)->animSequences->trackArray[anim->seqNum].animTime) {
+    if (o->animTime >= PTR32_GET(struct ANIMAnimTrack, PTR32_GET(ANIMSequences, ((ANIMBank*)anim->animBank)->animSequences)->trackArray)[anim->seqNum].animTime) {
         o->visible = 0;
         o->actorObj = NULL;
         o->shadow = NULL;

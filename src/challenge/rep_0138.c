@@ -564,7 +564,7 @@ void fn_1_73B8(ChallengeModel* model, u8 numLights, ...) {
     u16 geoID;
 
     file = (ChalLayoutFile*)model->layout;
-    pal = file->header.geoPalette;
+    pal = PTR32_GET(DODisplayData, file->header.geoPalette);
     if (lbl_1_data_8C8 == 1) {
         memset(lbl_1_bss_2E0, 0, sizeof(lbl_1_bss_2E0));
         lbl_1_data_8C8 = 0;
@@ -607,8 +607,8 @@ void fn_1_73B8(ChallengeModel* model, u8 numLights, ...) {
             GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
             break;
         }
-        obj = pal->descriptorArray[geoID].dispObj;
-        CTRLBuildMatrix(bone->orientationCtrl, obj->worldMatrix);
+        obj = PTR32_GET(struct DODisplayObj, PTR32_GET(DODescriptor, pal->descriptorArray)[geoID].dispObj);
+        CTRLBuildMatrix(PTR32_GET(Control, bone->orientationCtrl), obj->worldMatrix);
         PSMTXConcat(world, obj->worldMatrix, obj->worldMatrix);
         PSMTXConcat(camera, obj->worldMatrix, m);
         box[0].x = obj->bounds[1];
@@ -658,8 +658,8 @@ void fn_1_73B8(ChallengeModel* model, u8 numLights, ...) {
             if (geoID == 0xFFFF) {
                 continue;
             }
-            obj = pal->descriptorArray[geoID].dispObj;
-            CTRLBuildMatrix(bone->orientationCtrl, obj->worldMatrix);
+            obj = PTR32_GET(struct DODisplayObj, PTR32_GET(DODescriptor, pal->descriptorArray)[geoID].dispObj);
+            CTRLBuildMatrix(PTR32_GET(Control, bone->orientationCtrl), obj->worldMatrix);
             PSMTXConcat(world, obj->worldMatrix, obj->worldMatrix);
             PSMTXConcat(camera, obj->worldMatrix, m);
             box[0].x = obj->bounds[1];
@@ -1363,13 +1363,13 @@ void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
     GXLoadPosMtxImm(m, GX_PNMTX0);
     GXSetCurrentMtx(GX_PNMTX0);
     for (i = 0; i < obj->displayData->numStateEntries; i++) {
-        switch (obj->displayData->displayStateList[i].id) {
+        switch (PTR32_GET(DisplayStateList, obj->displayData->displayStateList)[i].id) {
         case 1:
         case 3:
             break;
         case 2:
             memset(attrType, 0, sizeof(attrType));
-            setting = obj->displayData->displayStateList[i].setting;
+            setting = PTR32_GET(DisplayStateList, obj->displayData->displayStateList)[i].setting;
             for (attr = GX_VA_POS, shift = 2; attr <= GX_VA_TEX7; attr++, shift += 2) {
                 type = (setting >> shift) & 3;
                 if (type != 0) {
@@ -1378,11 +1378,11 @@ void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
             }
             break;
         }
-        dl = (u8*)obj->displayData->displayStateList[i].primitiveList;
+        dl = (u8*)PTR32_GET(char, PTR32_GET(DisplayStateList, obj->displayData->displayStateList)[i].primitiveList);
         if (dl == NULL) {
             continue;
         }
-        for (offset = 0; offset < obj->displayData->displayStateList[i].listSize;) {
+        for (offset = 0; offset < PTR32_GET(DisplayStateList, obj->displayData->displayStateList)[i].listSize;) {
             handled = 0;
             switch (*dl) {
             case DL_NOP:
@@ -1485,7 +1485,7 @@ void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
                 scale = 1 << (quant & 0xF);
                 switch ((quant >> 4) & 0xF) {
                 case GX_S16:
-                    v = (s16*)obj->positionData->positionArray;
+                    v = (s16*)PTR32_GET(char, obj->positionData->positionArray);
                     v += comp * posIdx;
                     x = v[0] / scale;
                     y = v[1] / scale;
@@ -1501,7 +1501,7 @@ void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
                 scale = 1 << (quant & 0xF);
                 switch ((quant >> 4) & 0xF) {
                 case GX_S16:
-                    v = (s16*)obj->lightingData->normalArray;
+                    v = (s16*)PTR32_GET(char, obj->lightingData->normalArray);
                     v += comp * nrmIdx;
                     x += v[0] / scale;
                     y += v[1] / scale;

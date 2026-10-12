@@ -878,7 +878,7 @@ void fn_3_C3F70(StadObj1FD8* a) {
         e = t->boneArray[i];
         e = ((GameBone*)e)->dispObj;
         if (e != NULL) {
-            q = ((struct DODisplayObj*)e)->displayData->displayStateList;
+            q = PTR32_GET(DisplayStateList, ((struct DODisplayObj*)e)->displayData->displayStateList);
             for (j = 0; j < ((struct DODisplayObj*)e)->displayData->numStateEntries; j++) {
                 if (q->id == 1) {
                     q->setting = q->setting & ~0x1FFF;
@@ -900,7 +900,7 @@ void fn_3_C4068(StadObj1FD8* a) {
     p = ((GameBone**)p)[1];
     p = ((GameBone*)p)->dispObj;
     p = ((struct DODisplayObj*)p)->displayData;
-    p = ((DisplayData*)p)->displayStateList;
+    p = PTR32_GET(DisplayStateList, ((DisplayData*)p)->displayStateList);
     n = lbl_3_bss_9D84;
     t = ((DisplayStateList*)p)->setting & 0x1FFF;
     lbl_3_bss_9D84 = n + 1;
@@ -918,7 +918,7 @@ void fn_3_C4068(StadObj1FD8* a) {
 
 // .text:0x000C40EC size:0x60 mapped:0x80703180
 void fn_3_C40EC(StadObj1FD8* a) {
-    DisplayStateList* p = a->model->actor->boneArray[1]->dispObj->displayData->displayStateList;
+    DisplayStateList* p = PTR32_GET(DisplayStateList, a->model->actor->boneArray[1]->dispObj->displayData->displayStateList);
     if (a->type != 6) {
         p->setting = p->setting & ~0x1FFF;
         p->setting = p->setting | 0x19;
@@ -1737,7 +1737,7 @@ void fn_3_C71CC(s32* a, s32* b) {
 
 // .text:0x000C7444 size:0x58 mapped:0x807064D8
 void fn_3_C7444(StadObj1FD8* a) {
-    DisplayStateList* p = a->model->actor->boneArray[13]->dispObj->displayData->displayStateList;
+    DisplayStateList* p = PTR32_GET(DisplayStateList, a->model->actor->boneArray[13]->dispObj->displayData->displayStateList);
     switch ((s8)a->x.a.state) {
     case 0:
         p->setting = p->setting & ~0x1FFF;

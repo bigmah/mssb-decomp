@@ -282,7 +282,7 @@ void fn_3_CB8A8(C2ObjMain* p) {
 // .text:0x000CBA9C size:0x60 mapped:0x8070AB30
 void fn_3_CBA9C(C2ObjMain* p) {
     DisplayStateList* q;
-    q = p->actorObj->actor->boneArray[0]->dispObj->displayData->displayStateList;
+    q = PTR32_GET(DisplayStateList, p->actorObj->actor->boneArray[0]->dispObj->displayData->displayStateList);
     if (p->_CA == 0) {
         q[7].setting = q[7].setting & 0xFFFFE000;
         q[7].setting = q[7].setting | 3;
@@ -2211,7 +2211,7 @@ void fn_3_D196C(s32 idx) {
 // .text:0x000D1AC4 size:0x60 mapped:0x80710B58
 void fn_3_D1AC4(C2ObjMain* p) {
     DisplayStateList* q;
-    q = p->actorObj->actor->boneArray[0]->dispObj->displayData->displayStateList;
+    q = PTR32_GET(DisplayStateList, p->actorObj->actor->boneArray[0]->dispObj->displayData->displayStateList);
     if (p->_CA == 0) {
         q[7].setting = q[7].setting & 0xFFFFE000;
         q[7].setting = q[7].setting | 3;

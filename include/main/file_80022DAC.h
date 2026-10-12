@@ -61,8 +61,8 @@ typedef struct MDisplayObj {
 
 // Layout of one bone in an actor layout (SDK ActorBone with an MSSB control).
 typedef struct MBoneLayout {
-    /* 0x00 */ MControl* orientationCtrl;
-    /* 0x04 */ DSBranch branch; // Next sibling at 0x8, Children at 0x10
+    /* 0x00 */ PTR32(MControl) orientationCtrl;
+    /* 0x04 */ DSBranchDisk branch; // Next sibling at 0x8, Children at 0x10
     /* 0x14 */ u16 geoFileID;
     /* 0x16 */ u16 boneID;
     /* 0x18 */ u8 inheritanceFlag;
@@ -75,8 +75,8 @@ typedef struct MActorLayout {
     /* 0x04 */ u16 actorID;
     /* 0x06 */ u16 totalBones;
     /* 0x08 */ u32 hierarchyOffset;
-    /* 0x0C */ MBoneLayout* hierarchyRoot;
-    /* 0x10 */ DODisplayData* pal;
+    /* 0x0C */ PTR32(MBoneLayout) hierarchyRoot;
+    /* 0x10 */ PTR32(DODisplayData) pal;
     /* 0x14 */ u16 skinFileID; // 0xFFFF: no skin
     /* 0x16 */ u16 pad16;
 } MActorLayout;
