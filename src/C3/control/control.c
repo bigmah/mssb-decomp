@@ -158,6 +158,14 @@ void CTRLBuildMatrix(Control *control, Mtx m) {
     PSMTXCopy(e, m);
 }
 
+// .data 0x80111670 (before flipY/flipX). Box edges and faces by corner index (box corners in the same order as CTRLFrustum.corners).
+u8 sBoxEdges[12][2] = {
+    {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
+};
+u8 sBoxFaces[6][4] = {
+    {0, 3, 7, 4}, {2, 1, 5, 6}, {0, 1, 2, 3}, {7, 6, 5, 4}, {3, 2, 6, 7}, {0, 4, 5, 1},
+};
+
 static Mtx flipY = {{1, 0, 0, 0}, {0, -1, 0, 0}, {0, 0, 1, 0}};
 
 static Mtx flipX = {{-1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}};
@@ -550,7 +558,7 @@ typedef struct ControlFull {
 } ControlFull;
 
 // Set by fn_800B313C before blending: also blend scale and the scale quaternion.
-extern s32 lbl_803CC1E8;
+s32 lbl_803CC1E8;
 
 // Blends two controls: dst = from * (1 - t) + to * t. Rotations use slerp (quaternion) or
 // shortest-way lerp (Euler degrees). If the controls differ in kind, dst takes `to`.
@@ -639,14 +647,6 @@ void CTRL_GetQuatUnk(const Control *control, float *x, float *y, float *z, float
 
 // sFrustums (CTRLFrustum, C3/control.h) is a common global defined in src/main/common/sFrustums.c.
 
-// Box edges and faces by corner index (box corners in the same order as CTRLFrustum.corners).
-// TODO: these live just before control.c's .data in the DOL (0x80111670 / 0x80111688)
-u8 sBoxEdges[12][2] = {
-    {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
-};
-u8 sBoxFaces[6][4] = {
-    {0, 3, 7, 4}, {2, 1, 5, 6}, {0, 1, 2, 3}, {7, 6, 5, 4}, {3, 2, 6, 7}, {0, 4, 5, 1},
-};
 
 // NONMATCHING 99.0%: register allocation of the corner loop pointers, fcmpu operand order
 #if NONMATCHING

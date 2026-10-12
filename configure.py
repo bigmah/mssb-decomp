@@ -755,7 +755,8 @@ config.libs = [
             Object(NonMatching, "main/file_800B9974.c"),
             Object(Matching, "main/file_800BD3EC.c"),
             Object(Matching, "main/file_800BD8C4.c"),
-            Object(NonMatching, "main/file_800BDEA0.c"),
+            # Defines lbl_803009F8 (regular .bss, shared with file_800BD8C4), so not a common.
+            Object(NonMatching, "main/file_800BDEA0.c", extra_cflags=["-common off"]),
             Object(NonMatching, "main/file_800DFDD4.c", mw_version="GC/1.2.5", cflags=cflags_base),  # HVQM4 library
             Object(NonMatching, "Unknown/File_0x800a6304.c", extra_cflags=["-cpp_exceptions on"]),
             Object(NonMatching, "Unknown/File_0x800a64e0.c", extra_cflags=["-cpp_exceptions on"]),

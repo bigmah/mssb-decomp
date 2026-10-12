@@ -1104,6 +1104,7 @@ Unknown/File_0x800a64e0.c:
 	extab       start:0x800065E0 end:0x80006608
 	extabindex  start:0x80008430 end:0x8000846C
 	.text       start:0x800A64E0 end:0x800A6870
+	.bss        start:0x802E9F80 end:0x802EAF80
 
 main/file_800A6870.c:
 	extab       start:0x80006608 end:0x80006698
@@ -1179,8 +1180,9 @@ C3/control/control.c:
 	extab       start:0x80006A90 end:0x80006AE0
 	extabindex  start:0x80008B38 end:0x80008BB0
 	.text       start:0x800B7D3C end:0x800B993C
-	.data       start:0x801116A0 end:0x80111700
-	.sdata2     start:0x803CCFD8 end:0x803CCFF8
+	.data       start:0x80111670 end:0x80111700
+	.sbss       start:0x803CC1E8 end:0x803CC1F0
+	.sdata2     start:0x803CCFC0 end:0x803CCFF8
 
 main/file_800B993C.c:
 	.text       start:0x800B993C end:0x800B9974
@@ -1215,6 +1217,7 @@ main/file_800BDEA0.c:
 	extabindex  start:0x80008D24 end:0x80008DCC
 	.text       start:0x800BDEA0 end:0x800C0A8C
 	.rodata     start:0x800E8030 end:0x800E8060
+	.bss        start:0x803009F8 end:0x80300A48
 	.sdata      start:0x803CBB68 end:0x803CBB70
 	.sdata2     start:0x803CD068 end:0x803CD0E0
 
