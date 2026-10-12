@@ -64,6 +64,13 @@ void initSound(SoundConfig* config, u8* aiStack, u8* heapStart, u32 heapSize) {
     if (config == NULL) {
         config = &lbl_801112F0;
     }
+#ifdef TARGET_PC
+    // MusyX's structures are bigger on PC (pointers), and the DSP emulation
+    // needs heap memory (32-bit physical addresses): use a larger pool in the
+    // game heap instead of the static buffer.
+    heapSize *= 4;
+    heapStart = (u8*)port_heap_alloc(heapSize, 32);
+#endif
     heapEnd = heapStart + heapSize;
     lbl_803CBB10->cur = heapStart;
     lbl_803CBB10->end = heapEnd;
