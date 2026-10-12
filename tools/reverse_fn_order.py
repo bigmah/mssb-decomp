@@ -5,75 +5,124 @@ The RELs are built with `-inline deferred`, which makes mwcc emit a file's
 functions in reverse source order. To link a unit, its source must therefore
 list functions from the highest .text address to the lowest.
 
-A function block is the `// .text:0x...` comment, any comment / `#if
-NONMATCHING` lines directly above it, the definition and a closing `#endif`.
-Everything else (types, data, static inline helpers, pragmas) keeps its order
-and is placed before the reordered functions, so declarations still precede
-their uses.
+A function block is a top-level function definition (its address comes from
+the module's symbols.txt), the comment lines directly above it, and an
+enclosing `#if NONMATCHING` ... `#endif`. Everything else (types, data,
+static inline helpers, pragmas) keeps its order and is placed before the
+reordered functions, so declarations still precede their uses.
 
 Usage: python3 tools/reverse_fn_order.py src/challenge/rep_7BA0.c [--check]
 """
+import os
 import re
 import sys
 
-TEXT_RE = re.compile(r"^// \.text:0x([0-9A-Fa-f]+)")
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEF_RE = re.compile(r"^[A-Za-z_][\w\s\*]*?\b(\w+)\s*\(")
 
 
-def blocks_of(lines):
-    blocks = []  # (start, end_exclusive, addr)
-    i = 0
-    n = len(lines)
+def load_addrs(path):
+    rel = os.path.relpath(os.path.abspath(path), os.path.join(ROOT, "src"))
+    module = rel.split(os.sep)[0]
+    symfile = os.path.join(ROOT, "config", "GYQE01", module, "symbols.txt")
+    if not os.path.exists(symfile):
+        symfile = os.path.join(ROOT, "config", "GYQE01", "symbols.txt")
+    addrs = {}
+    for line in open(symfile):
+        m = re.match(r"(\S+) = \.text:0x([0-9A-Fa-f]+);", line)
+        if m:
+            addrs[m.group(1)] = int(m.group(2), 16)
+    return addrs
+
+
+def items_of(lines):
+    """Split into top-level items: (start, end, kind, name)."""
+    items = []
+    i, n = 0, len(lines)
     while i < n:
-        m = TEXT_RE.match(lines[i])
-        if not m:
-            i += 1
-            continue
-        start = i
-        while start > 0:
-            prev = lines[start - 1].strip()
-            if (prev.startswith("//") and not TEXT_RE.match(lines[start - 1])) or prev.startswith("#if NONMATCHING"):
-                if blocks and start - 1 < blocks[-1][1]:
-                    break
-                start -= 1
-            else:
-                break
-        j = i + 1
-        depth = 0
-        seen = False
-        header_inline = None
-        while j < n:
-            if depth == 0 and not seen and lines[j].strip() and not lines[j].lstrip().startswith(("//", "/*", "*", "#")):
-                header_inline = "inline" in lines[j].split("(")[0]
-            depth += lines[j].count("{") - lines[j].count("}")
-            if "{" in lines[j]:
-                seen = True
-            j += 1
-            if seen and depth == 0:
-                if header_inline:
-                    # A static inline helper sits between the marker and the
-                    # function: keep going to the function itself.
-                    seen = False
-                    header_inline = None
-                    continue
-                break
-        first_brace = next(k for k in range(i, j) if "{" in lines[k])
-        in_if = any(lines[k].strip().startswith("#if NONMATCHING") for k in range(start, first_brace))
-        if in_if:
-            while j < n and not lines[j].strip().startswith("#endif"):
+        line = lines[i]
+        s = line.strip()
+        if s.startswith("#if NONMATCHING"):
+            depth = 0
+            j = i
+            while j < n:
+                t = lines[j].strip()
+                if t.startswith("#if"):
+                    depth += 1
+                elif t.startswith("#endif"):
+                    depth -= 1
+                    if depth == 0:
+                        break
                 j += 1
-            j += 1
-        blocks.append((start, j, int(m.group(1), 16)))
-        i = j
-    return blocks
+            inner = items_of(lines[i + 1:j])
+            names = [it[3] for it in inner if it[2] == "fn"]
+            if len(names) > 1:
+                print(f"warning: one #if NONMATCHING block holds {names}", file=sys.stderr)
+            items.append((i, j + 1, "fn" if names else "other", names[0] if names else None))
+            i = j + 1
+            continue
+        m = DEF_RE.match(line)
+        if m and not s.startswith(("typedef", "extern", "struct", "union", "enum", "#", "return")):
+            # find the end of the header: '{' (definition) or ';' (declaration)
+            j = i
+            header = ""
+            while j < n:
+                header += lines[j]
+                if "{" in lines[j] or ";" in lines[j]:
+                    break
+                j += 1
+            if j < n and "{" in lines[j] and "=" not in header.split("{")[0]:
+                depth = 0
+                k = j
+                while k < n:
+                    depth += lines[k].count("{") - lines[k].count("}")
+                    k += 1
+                    if depth == 0:
+                        break
+                inline = "inline" in header.split("(")[0]
+                items.append((i, k, "inline" if inline else "fn", m.group(1)))
+                i = k
+                continue
+        items.append((i, i + 1, "other", None))
+        i += 1
+    return items
 
 
 def main():
     path = sys.argv[1]
     check = "--check" in sys.argv
+    addrs = load_addrs(path)
     lines = open(path).read().split("\n")
-    blocks = blocks_of(lines)
-    addrs = [b[2] for b in blocks]
-    if addrs == sorted(addrs, reverse=True):
+    items = items_of(lines)
+    blocks = []
+    for s, e, kind, name in items:
+        if kind != "fn":
+            continue
+        if name not in addrs:
+            sys.exit(f"{path}: no address for {name}")
+        # take the comment lines directly above the definition along
+        start = s
+        while start > 0:
+            prev = lines[start - 1].strip()
+            if prev.startswith(("//", "/*", "*", "#pragma")):
+                start -= 1
+            else:
+                break
+        # a #pragma right after the function (closing a pragma pair) belongs to it
+        end = e
+        k = e
+        while k < len(lines) and lines[k].strip() == "":
+            k += 1
+        has_pragma_above = any(lines[x].strip().startswith("#pragma") for x in range(start, s))
+        while has_pragma_above and k < len(lines) and lines[k].strip().startswith("#pragma"):
+            k += 1
+            end = k
+        blocks.append([start, end, addrs[name], name])
+    for a, b in zip(blocks, blocks[1:]):
+        if b[0] < a[1]:
+            b[0] = a[1]
+    addr_list = [b[2] for b in blocks]
+    if addr_list == sorted(addr_list, reverse=True):
         print(f"{path}: already in reverse order")
         return
     if check:
@@ -82,19 +131,20 @@ def main():
     first = blocks[0][0]
     last = blocks[-1][1]
     inblock = set()
-    for s, e, _ in blocks:
+    for s, e, _, _ in blocks:
         inblock.update(range(s, e))
     head = lines[:first]
     others = [lines[k] for k in range(first, last) if k not in inblock]
-    # Drop runs of blank lines left behind.
     cleaned = []
     for l in others:
         if l.strip() == "" and (not cleaned or cleaned[-1].strip() == ""):
             continue
         cleaned.append(l)
     body = []
-    for s, e, _ in sorted(blocks, key=lambda b: -b[2]):
+    for s, e, _, _ in sorted(blocks, key=lambda b: -b[2]):
         chunk = lines[s:e]
+        while chunk and chunk[-1].strip() == "":
+            chunk.pop()
         body.extend(chunk)
         body.append("")
     out = head + cleaned
@@ -105,8 +155,6 @@ def main():
     while tail and tail[0].strip() == "":
         tail.pop(0)
     out += tail
-    if out[-1] != "":
-        out.append("")
     open(path, "w").write("\n".join(out).rstrip("\n") + "\n")
     print(f"{path}: reordered {len(blocks)} functions")
 
