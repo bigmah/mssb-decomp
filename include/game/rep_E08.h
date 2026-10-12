@@ -5,8 +5,7 @@
 
 void fn_3_60768(void);
 void fn_3_60804(s32 a, s32 b);
-struct CharActor;
-void fn_3_60A98(s32 a, struct CharActor* o);
+void fn_3_60A98(s32 a, u8* o);
 s32 fn_3_60D80(s32 a);
 u32 fn_3_60E90(s32 a);
 u32 fn_3_61148(s32 i);

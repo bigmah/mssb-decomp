@@ -600,7 +600,7 @@ typedef struct _InMemPitcherType {
 typedef struct _InMemFielderType {
     /*0x000*/ VecXYZ pos;
     /*0x00C*/ f32 height;
-    /*0x010*/ f32 _010;
+    /*0x010*/ u8 _010[0x14 - 0x10];
     /*0x014*/ VecXYZ dest; // destination
     /*0x020*/ u8 _020[0x30 - 0x20];
     /*0x030*/ f32 velX;
@@ -625,10 +625,7 @@ typedef struct _InMemFielderType {
     /*0x084*/ f32 distToFielder[9];
     /*0x0A8*/ f32 distToBase[4];
     /*0x0B8*/ f32 _0B8;
-    /*0x0BC*/ u8 _0BC[0x0D4 - 0x0BC];
-    /*0x0D4*/ f32 _0D4;
-    /*0x0D8*/ f32 _0D8;
-    /*0x0DC*/ u8 _0DC[0x0E8 - 0x0DC];
+    /*0x0BC*/ u8 _0BC[0xE8 - 0xBC];
     /*0x0E8*/ f32 reach[9]; // per-character reach table scaled by the character size; [3] is the catch height
     /*0x10C*/ VecXYZ throwTarget;
     /*0x118*/ u8 _118[0x120 - 0x118];
@@ -650,16 +647,9 @@ typedef struct _InMemFielderType {
     /*0x196*/ s16 _196;
     /*0x198*/ u8 _198[0x1A0 - 0x198];
     /*0x1A0*/ s16 _1A0;
-    /*0x1A2*/ u8 _1A2[0x1AA - 0x1A2];
-    /*0x1AA*/ s16 _1AA;
+    /*0x1A2*/ u8 _1A2[0x1AC - 0x1A2];
     /*0x1AC*/ s16 _1AC;
-    /*0x1AE*/ u8 _1AE[0x1B4 - 0x1AE];
-    /*0x1B4*/ s16 _1B4;
-    /*0x1B6*/ u8 _1B6[0x1B8 - 0x1B6];
-    /*0x1B8*/ s16 _1B8;
-    /*0x1BA*/ u8 _1BA[0x1BE - 0x1BA];
-    /*0x1BE*/ s16 _1BE;
-    /*0x1C0*/ s16 _1C0;
+    /*0x1AE*/ u8 _1AE[0x1C2 - 0x1AE];
     /*0x1C2*/ s16 _1C2; // angle
     /*0x1C4*/ u8 aiLevel;
     /*0x1C5*/ u8 _1C5;
@@ -716,10 +706,7 @@ typedef struct _InMemFielderType {
     /*0x215*/ u8 _215;
     /*0x216*/ u8 _216[0x218 - 0x216];
     /*0x218*/ u8 opponentIdx; // 0 for the captain, else 1..n
-    /*0x219*/ u8 _219[0x248 - 0x219];
-    /*0x248*/ f32 _248;
-    /*0x24C*/ s16 _24C;
-    /*0x24E*/ u8 _24E[0x25A - 0x24E];
+    /*0x219*/ u8 _219[0x25A - 0x219];
     /*0x25A*/ u8 _25A;
     /*0x25B*/ u8 _25B[0x25E - 0x25B];
     /*0x25E*/ u8 _25E;
@@ -728,98 +715,6 @@ typedef struct _InMemFielderType {
     /*0x263*/ u8 _263;
     /*0x264*/ u8 _264[0x268 - 0x264];
 } InMemFielderType; // size: 0x268
-
-// g_UnkAnimation_31EAC entry: per-fielder animation state (stride 0x54).
-typedef struct FielderAnimState {
-    /*0x00*/ f32 _00;
-    /*0x04*/ u8 _04[0x10 - 0x4];
-    /*0x10*/ f32 _10;
-    /*0x14*/ f32 _14;
-    /*0x18*/ f32 _18;
-    /*0x1C*/ f32 _1C;
-    /*0x20*/ f32 _20;
-    /*0x24*/ f32 _24;
-    /*0x28*/ f32 rotY;
-    /*0x2C*/ Vec _2C; // joint position (getAnimRelatedCoordinates)
-    /*0x38*/ s16 _38;
-    /*0x3A*/ s16 _3A;
-    /*0x3C*/ s16 _3C;
-    /*0x3E*/ s16 _3E;
-    /*0x40*/ u8 _40;
-    /*0x41*/ u8 _41;
-    /*0x42*/ u8 _42;
-    /*0x43*/ u8 _43;
-    /*0x44*/ u8 _44;
-    /*0x45*/ u8 _45;
-    /*0x46*/ u8 _46;
-    /*0x47*/ u8 _47;
-    /*0x48*/ u8 _48;
-    /*0x49*/ u8 _49;
-    /*0x4A*/ s16 _4A;
-    /*0x4C*/ u8 _4C;
-    /*0x4D*/ u8 _4D;
-    /*0x4E*/ u8 _4E;
-    /*0x4F*/ u8 _4F;
-    /*0x50*/ u8 _50;
-    /*0x51*/ u8 _51;
-    /*0x52*/ u8 _52[0x54 - 0x52];
-} FielderAnimState; // size: 0x54
-
-// lbl_3_common_bss_321A0 entry: per-runner animation state (stride 0x20, 4 entries).
-typedef struct RunnerAnimState {
-    /*0x00*/ f32 _00;
-    /*0x04*/ u8 _04[0x10 - 0x4];
-    /*0x10*/ s16 _10;
-    /*0x12*/ u8 _12[0x16 - 0x12];
-    /*0x16*/ s16 _16;
-    /*0x18*/ u8 _18;
-    /*0x19*/ u8 _19;
-    /*0x1A*/ u8 _1A;
-    /*0x1B*/ u8 _1B;
-    /*0x1C*/ u8 _1C;
-    /*0x1D*/ u8 _1D;
-    /*0x1E*/ u8 _1E[0x20 - 0x1E];
-} RunnerAnimState; // size: 0x20
-
-// g_UnkThrowing_31ACC (0x14 bytes).
-typedef struct ThrowState {
-    /*0x00*/ f32 _00;
-    /*0x04*/ f32 _04;
-    /*0x08*/ f32 _08;
-    /*0x0C*/ s16 _0C;
-    /*0x0E*/ u8 _0E;
-    /*0x0F*/ u8 _0F;
-    /*0x10*/ u8 _10[0x14 - 0x10];
-} ThrowState; // size: 0x14
-
-// lbl_3_common_bss_32220 (batter idle/celebration animation state).
-typedef struct GameBss32220 {
-    /*0x0*/ s16 _00; // idle frames
-    /*0x2*/ s16 _02;
-    /*0x4*/ s16 _04;
-    /*0x6*/ s16 _06;
-    /*0x8*/ u8 _08;
-    /*0x9*/ u8 _09;
-    /*0xA*/ u8 state;
-    /*0xB*/ u8 _0B;
-    /*0xC*/ s8 _0C;
-    /*0xD*/ u8 _0D;
-    /*0xE*/ u8 _0E[0x10 - 0xE];
-} GameBss32220; // size: 0x10
-
-// lbl_3_common_bss_32230 (pitcher animation state).
-typedef struct GameBss32230 {
-    /*0x0*/ s16 _00;
-    /*0x2*/ u8 _02;
-    /*0x3*/ u8 _03;
-} GameBss32230; // size: 0x4
-
-// lbl_3_common_bss_32234 (end-of-minigame reactions).
-typedef struct GameBss32234 {
-    /*0x0*/ u8 _00;
-    /*0x1*/ u8 _01;
-    /*0x2*/ u8 result[4]; // per player: reaction (0, 1, 2)
-} GameBss32234; // size: 0x6
 
 extern InMemPitcherType g_Pitcher;
 extern InMemBallType g_Ball;
@@ -2526,7 +2421,8 @@ typedef struct _MiniGameStruct {
     /*0x1B31*/ u8 _1B31;
     /*0x1B32*/ u8 _1B32;
     /*0x1B33*/ u8 _1B33;
-    /*0x1B34*/ s16 _1B34[4]; // indexed by MiniGameControlStruct._24
+    /*0x1B34*/ s16 _1B34;
+    /*0x1B36*/ u8 _1B36[6];
     /*0x1B3C*/ s16 _1B3C;
     /*0x1B3E*/ u8 _1B3E[6];
     /*0x1B44*/ s16 _1B44;
@@ -2592,7 +2488,9 @@ typedef struct _MiniGameStruct {
     /*0x1C8A*/ u8 _1C8A[4];
     /*0x1C8E*/ u8 _1C8E[4];
     /*0x1C92*/ u8 _1C92[8];
-    /*0x1C9A*/ u8 _1C9A[4]; // per fielder (mode 5)
+    /*0x1C9A*/ u8 _1C9A;
+    /*0x1C9B*/ u8 _1C9B;
+    /*0x1C9C*/ s16 _1C9C;
     /*0x1C9E*/ u8 _1C9E;
     /*0x1C9F*/ u8 _1C9F;
     /*0x1CA0*/ u8 _1CA0[2];
