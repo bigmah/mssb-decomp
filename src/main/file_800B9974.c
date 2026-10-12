@@ -46,7 +46,9 @@ extern void* _OSAllocFromHeap(s32 align, s32 size);
 extern void fn_800ACFB0(void* ptr); // heap free
 
 // Geometry palette files store pointers as offsets from a base; turn one into a pointer (32-bit file format).
-#define GEO_RELOC(a, b) ((void*)((u32)(a) + (u32)(b)))
+// TODO(port): geometry palettes are big-endian disc data relocated in place
+// (32-bit pointer fields); on PC they need a byte swap and native structs.
+#define GEO_RELOC(a, b) ((void*)((uintptr_t)(a) + (uintptr_t)(b)))
 
 // .text:0x800B9974 size:0x50
 void SetFogNone(void) {

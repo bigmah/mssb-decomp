@@ -67,7 +67,7 @@ void initSound(SoundConfig* config, u8* aiStack, u8* heapStart, u32 heapSize) {
     heapEnd = heapStart + heapSize;
     lbl_803CBB10->cur = heapStart;
     lbl_803CBB10->end = heapEnd;
-    lbl_803CBB10->free = heapEnd - heapStart;
+    lbl_803CBB10->free = (u32)(heapEnd - heapStart);
     sndSetHooks(&hooks);
     if (sndInit(config->voices, config->music, config->sfx, config->studios, config->flags, config->aramSize) != 0) {
         OSPanic("sound.c", 0x116, "gYd_MusyXInit()::Failed to sndInit().");
@@ -93,7 +93,7 @@ void SndFree(void* ptr) {
         }
     }
     lbl_803CBB10->cur = prevCur;
-    lbl_803CBB10->free = lbl_803CBB10->end - lbl_803CBB10->cur;
+    lbl_803CBB10->free = (s32)(lbl_803CBB10->end - lbl_803CBB10->cur);
 }
 
 // .text:0x800B099C size:0x78
@@ -111,10 +111,10 @@ void* SndAlloc(u32 size) {
     // Round cur + header up to 32 bytes (only the low address bits matter).
     hdrEnd = cur + sizeof(SndBlockHdr);
     block = hdrEnd + (-(u32)(size_t)hdrEnd & 0x1F);
-    taken = block - cur;
+    taken = (u32)(block - cur);
     taken += size;
     newCur = block + size;
-    remaining = lbl_803CBB10->end - newCur;
+    remaining = (s32)(lbl_803CBB10->end - newCur);
     if (remaining < 0) {
         OSReport("sNp_SndAlloc:: no enough space:%d\n", remaining);
         while (TRUE) {
@@ -407,7 +407,7 @@ s32 AllocateSprite(s32 layer, s32 needed) {
         // Take free space from the end of a lower layer: shift the layers in between down.
         below -= (below > 0);
         avail = lbl_803CC1E4[below].length -
-                ((lbl_803CC1E4[below].pDisplayListData - lbl_803CC1E4[below].begin + 0x1F) & ~0x1F);
+                (((s32)(lbl_803CC1E4[below].pDisplayListData - lbl_803CC1E4[below].begin) + 0x1F) & ~0x1F);
         if (remaining <= avail) {
             avail = remaining;
         }
@@ -442,7 +442,7 @@ s32 AllocateSprite(s32 layer, s32 needed) {
         // Take free space from the end of a higher layer: shift the layers in between up.
         above += (above < last);
         avail = lbl_803CC1E4[above].length -
-                ((lbl_803CC1E4[above].pDisplayListData - lbl_803CC1E4[above].begin + 0x1F) & ~0x1F);
+                (((s32)(lbl_803CC1E4[above].pDisplayListData - lbl_803CC1E4[above].begin) + 0x1F) & ~0x1F);
         if (remaining <= avail) {
             avail = remaining;
         }
@@ -474,7 +474,7 @@ s32 AllocateSprite(s32 layer, s32 needed) {
     } while (remaining > 0 && (below != 0 || last - above != 0));
 
     if (flushStart < flushEnd) {
-        DCStoreRange(flushStart, flushEnd - flushStart);
+        DCStoreRange(flushStart, (u32)(flushEnd - flushStart));
     }
     if (remaining > 0) {
         return remaining;
@@ -721,7 +721,7 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, TexImage* tex, u16 width, u
     }
     {
         s32 size = count * sizeof(QuadVtx);
-        lbl_803CBB34->primOffset = lbl_803CC1C0->pDisplayListData - lbl_803CC1C0->begin;
+        lbl_803CBB34->primOffset = (s32)(lbl_803CC1C0->pDisplayListData - lbl_803CC1C0->begin);
         SpriteReserve(size + 3);
         *lbl_803CC1C0->pDisplayListData = prim;
         *(u16*)(lbl_803CC1C0->pDisplayListData + 1) = count;
@@ -884,7 +884,7 @@ void fn_800B2240(SpriteDrawCmd* cmd) {
     PSMTXIdentity(mtx);
     GXLoadPosMtxImm(mtx, GX_PNMTX0);
     GXSetCurrentMtx(GX_PNMTX0);
-    GXCallDisplayList(dl->begin, dl->pDisplayListData - dl->begin);
+    GXCallDisplayList(dl->begin, (u32)(dl->pDisplayListData - dl->begin));
 }
 
 // .text:0x800B24D4 size:0x48
@@ -920,7 +920,7 @@ void fn_800B251C(void) {
     i = 0;
     lbl_803CC1C0 = lbl_803CC1E4;
     while (i < lbl_803CBB30) {
-        len = lbl_803CC1C0->pDisplayListData - lbl_803CC1C0->begin;
+        len = (s32)(lbl_803CC1C0->pDisplayListData - lbl_803CC1C0->begin);
         if (len != 0) {
             while (len & 0x1F) {
                 len++;

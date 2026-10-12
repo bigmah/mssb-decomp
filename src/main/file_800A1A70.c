@@ -18,7 +18,7 @@ void GDInitGDLObj(GDLObj* dl, void* start, u32 length) {
 
 // .text:0x800A1A88 size:0xF8
 void GDPadCurr32(void) {
-    u32 n = (u32)__GDCurrentDL->ptr & 0x1F;
+    u32 n = (u32)((uintptr_t)__GDCurrentDL->ptr & 0x1F);
 
     if (n != 0) {
         for (; n < 32; n++) {

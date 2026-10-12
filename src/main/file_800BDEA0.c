@@ -439,7 +439,7 @@ void fn_800BEC30(u8 numCameras) {
     cur = (u8*)OSRoundUp32B(cur + numCameras * sizeof(void*));
     size = GXGetTexBufferSize(640, 480, GX_TF_I4, GX_FALSE, 0);
     lbl_803009F8.images[0] = (void*)OSRoundUp32B(cur);
-    cur = (u8*)OSRoundUp32B(size + (u32)lbl_803009F8.images[0]);
+    cur = (u8*)OSRoundUp32B(size + (uintptr_t)lbl_803009F8.images[0]);
     lbl_803009F8.texObjs = (GXTexObj*)OSRoundUp32B(cur);
     cur = (u8*)OSRoundUp32B((u8*)lbl_803009F8.texObjs + numCameras * sizeof(GXTexObj));
     lbl_803009F8.tlut = (GXTlutObj*)OSRoundUp32B(cur);
@@ -456,7 +456,7 @@ void fn_800BEC30(u8 numCameras) {
     fn_800AD054(end, arenaEnd);
     lbl_803C7420.arenaStart = end;
     lbl_803C7420.arenaEnd = arenaEnd;
-    lbl_803C7420.arenaSize = OSRoundUp32B(arenaEnd - end);
+    lbl_803C7420.arenaSize = (u32)OSRoundUp32B(arenaEnd - end);
     OSSetArenaLo(arenaEnd);
 
     for (i = 0; i < numCameras; i++) {
@@ -513,6 +513,8 @@ ShadowState* fn_800BF068(void) {
     return &lbl_803009F8;
 }
 
+// TODO(port): in-place relocation of big-endian disc data with 32-bit
+// pointer fields; needs a byte swap and native structs on PC (Phase 3).
 // .text:0x800BF074 size:0x130
 void SKNLoadFile(SKNHeader* hdr, void* skinPositions) {
     SKN1List* l1;
@@ -521,31 +523,31 @@ void SKNLoadFile(SKNHeader* hdr, void* skinPositions) {
     SKNAccList* la;
 
     if (hdr->sk1ListArray != NULL) {
-        hdr->sk1ListArray = (SKN1List*)((u8*)hdr->sk1ListArray + (u32)hdr);
+        hdr->sk1ListArray = (SKN1List*)((u8*)hdr->sk1ListArray + (uintptr_t)hdr);
     }
     if (hdr->sk2ListArray != NULL) {
-        hdr->sk2ListArray = (SKN2List*)((u8*)hdr->sk2ListArray + (u32)hdr);
+        hdr->sk2ListArray = (SKN2List*)((u8*)hdr->sk2ListArray + (uintptr_t)hdr);
     }
     if (hdr->skAccListArray != NULL) {
-        hdr->skAccListArray = (SKNAccList*)((u8*)hdr->skAccListArray + (u32)hdr);
+        hdr->skAccListArray = (SKNAccList*)((u8*)hdr->skAccListArray + (uintptr_t)hdr);
     }
     if (hdr->flushIndices != NULL) {
-        hdr->flushIndices = (u16*)((u8*)hdr->flushIndices + (u32)hdr);
+        hdr->flushIndices = (u16*)((u8*)hdr->flushIndices + (uintptr_t)hdr);
     }
     for (i = 0; i < hdr->numSk1List; i++) {
         l1 = &hdr->sk1ListArray[i];
-        l1->vertSrc = (u8*)l1->vertSrc + (u32)hdr;
+        l1->vertSrc = (u8*)l1->vertSrc + (uintptr_t)hdr;
     }
     for (i = 0; i < hdr->numSk2List; i++) {
         l2 = &hdr->sk2ListArray[i];
-        l2->vertSrc = (u8*)l2->vertSrc + (u32)hdr;
-        l2->weights = (u8*)l2->weights + (u32)hdr;
+        l2->vertSrc = (u8*)l2->vertSrc + (uintptr_t)hdr;
+        l2->weights = (u8*)l2->weights + (uintptr_t)hdr;
     }
     for (i = 0; i < hdr->numSkAccList; i++) {
         la = &hdr->skAccListArray[i];
-        la->vertSrc = (u8*)la->vertSrc + (u32)hdr;
-        la->weights = (u8*)la->weights + (u32)hdr;
-        la->vertIndices = (u8*)la->vertIndices + (u32)hdr;
+        la->vertSrc = (u8*)la->vertSrc + (uintptr_t)hdr;
+        la->weights = (u8*)la->weights + (uintptr_t)hdr;
+        la->vertIndices = (u8*)la->vertIndices + (uintptr_t)hdr;
     }
     SKNInit();
 }
@@ -1603,16 +1605,18 @@ L_800C06B0:
 }
 #endif
 
+// TODO(port): in-place relocation of big-endian disc data with 32-bit
+// pointer fields; needs a byte swap and native structs on PC (Phase 3).
 // .text:0x800C0770 size:0x4C
 void convertTextureHeader(TexArchive* hdr) {
     s32 i;
 
     for (i = 0; i < hdr->count; i++) {
         if (hdr->entries[i].data != NULL) {
-            hdr->entries[i].data = (u8*)hdr + (u32)hdr->entries[i].data;
+            hdr->entries[i].data = (u8*)hdr + (uintptr_t)hdr->entries[i].data;
         }
         if (hdr->entries[i].tlut != NULL) {
-            hdr->entries[i].tlut = (u8*)hdr + (u32)hdr->entries[i].tlut;
+            hdr->entries[i].tlut = (u8*)hdr + (uintptr_t)hdr->entries[i].tlut;
         }
         hdr->entries[i].index = i;
     }
