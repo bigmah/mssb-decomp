@@ -175,3 +175,7 @@ menus/rep_10C0.c:
 
 menus/rep_11C0.c:
 	.rodata     start:0x000011C0 end:0x00001210
+
+auto_00_00094854_text:
+	.text       start:0x00094854 end:0x00096D94
+	.data       start:0x00030D04 end:0x000312A4
