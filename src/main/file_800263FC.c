@@ -689,16 +689,15 @@ void fn_80027674(Vec* center, Vec* target, ParticleParamsAttract* prm, u8 type, 
 #endif
 
 // .text:0x80027918 size:0x50
-// NONMATCHING 99.7%: the store goes through r4 instead of the copied r3
-#if NONMATCHING
 void fn_80027918(u8 type, f32 v) {
     Emitter* e;
+    Emitter* prev;
     Emitter* f = NULL;
-    while (e = FindEmitter(f, type), f = e, e != NULL) {
+
+    while (e = FindEmitter(f, type), prev = (f = e), e != NULL) {
         f->u.f[1] = v;
     }
 }
-#endif
 
 // .text:0x80027968 size:0xBC4
 // NONMATCHING 88%: register allocation; the scratch arrays are addressed off the file-static bss base (lbl_8017EC00 + offset) in the original
