@@ -115,6 +115,14 @@ typedef struct {
 } MainTask;
 extern MainTask* lbl_803CC1B8;
 
+#ifdef TARGET_PC
+// REL modules are linked into the executable: no transfer, no OSLink. The
+// module table (port/src/modules.c) runs each module's prolog/epilog.
+OSModuleHeader* port_module_load(s32 dllIndex);
+void port_module_prolog(OSModuleHeader* module);
+void port_module_epilog(OSModuleHeader* module);
+#endif
+
 
 
 // Path descriptor passed to ConvertPathToEntryNum.
@@ -588,7 +596,11 @@ void fn_800097A0(void) {
         g_d_GameSettings._06 = 1;
         fn_800AD038(lbl_80366158.arenaStart);
         lbl_803C6CF8.entryNum = lbl_803CBBD4;
+#ifdef TARGET_PC
+        task->module = port_module_load(0);
+#else
         task->module = (OSModuleHeader*)ARAMTransfer(&lbl_800E8AA8[0], 0, 0, 0);
+#endif
         task->moduleSize = lbl_800E8AA8[0].sizeFlags & 0x0FFFFFFF;
         OSReport(lbl_800E6588, 0, task->module);
         task->state = 9;
@@ -597,11 +609,15 @@ void fn_800097A0(void) {
         if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             module = task->module;
             lbl_803C6CF8.entryNum = lbl_803CBBD0;
+#ifdef TARGET_PC
+            lbl_80366158.arenaAfterDll = lbl_803C7898.lo;
+            port_module_prolog(module);
+#else
             OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
             ICInvalidateRange(task->module, task->moduleSize);
             lbl_80366158.arenaAfterDll = lbl_803C7898.lo;
-            // TODO(port): REL prolog/epilog become a static module table (Phase 2).
-            ((void (*)(void))U32_TO_PTR(module->prolog))(); // relocated by OSLink
+            ((void (*)(void))module->prolog)(); // relocated by OSLink
+#endif
             task->_10 = 0;
             OSReport(lbl_800E65A0);
             task->state = 10;
@@ -613,8 +629,12 @@ void fn_800097A0(void) {
             resetAllDrawingStructs();
             fn_80009144();
             module = task->module;
-            ((void (*)(void))U32_TO_PTR(module->epilog))(); // TODO(port): see above
+#ifdef TARGET_PC
+            port_module_epilog(module);
+#else
+            ((void (*)(void))module->epilog)();
             OSUnlink(&module->info);
+#endif
             switch (task->_10) {
             case 1:
                 task->state = 11;
@@ -627,7 +647,11 @@ void fn_800097A0(void) {
         fn_800AD038(lbl_80366158.arenaStart);
         lbl_803C6CF8.entryNum = lbl_803CBBD4;
         file = &lbl_800E8AA8[1];
+#ifdef TARGET_PC
+        task->module = port_module_load(1);
+#else
         task->module = (OSModuleHeader*)ARAMTransfer(file, 0, 0, 0);
+#endif
         task->moduleSize = file->sizeFlags & 0x0FFFFFFF;
         OSReport(lbl_800E6588, 1, task->module);
         task->state = 12;
@@ -637,10 +661,15 @@ void fn_800097A0(void) {
         if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             module = task->module;
             lbl_803C6CF8.entryNum = lbl_803CBBD0;
+#ifdef TARGET_PC
+            lbl_80366158.arenaAfterDll = lbl_803C7898.lo;
+            port_module_prolog(module);
+#else
             OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
             ICInvalidateRange(task->module, task->moduleSize);
             lbl_80366158.arenaAfterDll = lbl_803C7898.lo;
-            ((void (*)(void))U32_TO_PTR(module->prolog))(); // TODO(port): see above
+            ((void (*)(void))module->prolog)(); // relocated by OSLink
+#endif
             task->_10 = 0;
             OSReport(lbl_800E65A0);
             task->state = 13;
@@ -660,8 +689,12 @@ void fn_800097A0(void) {
             resetAllDrawingStructs();
             fn_80009144();
             module = task->module;
-            ((void (*)(void))U32_TO_PTR(module->epilog))(); // TODO(port): see above
+#ifdef TARGET_PC
+            port_module_epilog(module);
+#else
+            ((void (*)(void))module->epilog)();
             OSUnlink(&module->info);
+#endif
             task->state = 8;
             g_d_GameSettings.miniGameStadiumIndicator = 0;
             if (g_d_GameSettings.GameModeSelected == 4) {

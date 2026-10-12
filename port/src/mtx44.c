@@ -131,3 +131,25 @@ void C_MTX44RotRad(f32 m[4][4], char axis, f32 rad)
         break;
     }
 }
+
+void PSMTX44MultVec(const f32 m[4][4], const Vec* src, Vec* dst)
+{
+    Vec v = *src;
+    f32 w = m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3];
+    dst->x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3];
+    dst->y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3];
+    dst->z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3];
+    if (w != 0.0f)
+    {
+        w = 1.0f / w;
+        dst->x *= w;
+        dst->y *= w;
+        dst->z *= w;
+    }
+}
+
+void PSMTX44MultVecArray(const f32 m[4][4], const Vec* src, Vec* dst, u32 count)
+{
+    for (u32 i = 0; i < count; i++)
+        PSMTX44MultVec(m, &src[i], &dst[i]);
+}

@@ -62,6 +62,7 @@ include(${CMAKE_SOURCE_DIR}/sources.cmake)
 # <dolphin/...> must win over the decomp's include/Dolphin/... for the SDK.
 # The decomp's own SDK headers forward to aurora's under TARGET_PC.
 set(MSSB_INCLUDES
+    ${CMAKE_SOURCE_DIR}/include_game
     ${CMAKE_SOURCE_DIR}/include
     ${AURORA_DIR}/include
     ${MSSB_ROOT}/include
@@ -110,12 +111,24 @@ target_compile_definitions(mssb_game PRIVATE ${MSSB_DEFS})
 target_compile_options(mssb_game PRIVATE ${MSSB_COMMON_FLAGS} ${MSSB_PORT_WARNINGS}
     -include ${CMAKE_SOURCE_DIR}/include/port/prelude.h)
 
-# PC-only code. The executable does not link yet (Phase 2): exclude it from
-# the default target so `ninja` builds and checks the game objects.
+# The game's main() becomes game_main(); port/src/main.cpp owns the entry point.
+set_source_files_properties(${MSSB_ROOT}/src/main/file_80008E00.c PROPERTIES COMPILE_DEFINITIONS main=game_main)
+
+# REL modules are linked in: give each module's _prolog/_epilog/_unresolved a
+# unique name (port/src/modules.c calls them).
+foreach (module menus game challenge)
+    set(module_sources ${MSSB_GAME_SOURCES})
+    list(FILTER module_sources INCLUDE REGEX "/src/${module}/")
+    set_property(SOURCE ${module_sources} APPEND PROPERTY COMPILE_DEFINITIONS
+        _prolog=${module}_prolog _epilog=${module}_epilog _unresolved=${module}_unresolved)
+endforeach ()
+
+# PC-only code (port/src) and the executable.
 file(GLOB_RECURSE PORT_SOURCES CONFIGURE_DEPENDS src/*.c src/*.cpp)
-add_executable(mssb EXCLUDE_FROM_ALL ${PORT_SOURCES} $<TARGET_OBJECTS:mssb_game>)
-target_include_directories(mssb PRIVATE ${MSSB_INCLUDES})
-target_compile_definitions(mssb PRIVATE ${MSSB_DEFS})
+add_executable(mssb ${PORT_SOURCES} $<TARGET_OBJECTS:mssb_game>)
+# port/src sees aurora and port/include, not the game's shadow headers.
+target_include_directories(mssb PRIVATE ${CMAKE_SOURCE_DIR}/include ${AURORA_DIR}/include)
+target_compile_definitions(mssb PRIVATE ${MSSB_DEFS} MSSB_REPO_DIR="${MSSB_ROOT}")
 target_compile_options(mssb PRIVATE ${MSSB_COMMON_FLAGS} -Wno-everything)
 if (MSSB_AURORA)
     target_link_libraries(mssb PRIVATE aurora::core aurora::gx aurora::vi aurora::pad

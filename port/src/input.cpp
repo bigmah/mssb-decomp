@@ -1,0 +1,121 @@
+// Default keyboard controls for port 1 when no bindings have been saved.
+#include <dolphin/pad.h>
+
+#include <SDL3/SDL_scancode.h>
+
+extern "C" void port_pad_init_defaults(void)
+{
+    u32 count = 0;
+    if (PADGetKeyButtonBindings(0, &count) != nullptr)
+        return; // user bindings were loaded
+
+    PADKeyButtonBinding buttons[PAD_BUTTON_COUNT] = {
+        {SDL_SCANCODE_X, PAD_BUTTON_A},       {SDL_SCANCODE_Z, PAD_BUTTON_B},
+        {SDL_SCANCODE_C, PAD_BUTTON_X},       {SDL_SCANCODE_V, PAD_BUTTON_Y},
+        {SDL_SCANCODE_RETURN, PAD_BUTTON_START}, {SDL_SCANCODE_LSHIFT, PAD_TRIGGER_Z},
+        {SDL_SCANCODE_Q, PAD_TRIGGER_L},      {SDL_SCANCODE_E, PAD_TRIGGER_R},
+        {SDL_SCANCODE_I, PAD_BUTTON_UP},      {SDL_SCANCODE_K, PAD_BUTTON_DOWN},
+        {SDL_SCANCODE_J, PAD_BUTTON_LEFT},    {SDL_SCANCODE_L, PAD_BUTTON_RIGHT},
+    };
+    PADKeyAxisBinding axes[PAD_AXIS_COUNT] = {
+        {SDL_SCANCODE_RIGHT, PAD_AXIS_LEFT_X_POS, 100}, {SDL_SCANCODE_LEFT, PAD_AXIS_LEFT_X_NEG, 100},
+        {SDL_SCANCODE_UP, PAD_AXIS_LEFT_Y_POS, 100},    {SDL_SCANCODE_DOWN, PAD_AXIS_LEFT_Y_NEG, 100},
+        {SDL_SCANCODE_D, PAD_AXIS_RIGHT_X_POS, 100},    {SDL_SCANCODE_A, PAD_AXIS_RIGHT_X_NEG, 100},
+        {SDL_SCANCODE_W, PAD_AXIS_RIGHT_Y_POS, 100},    {SDL_SCANCODE_S, PAD_AXIS_RIGHT_Y_NEG, 100},
+        {SDL_SCANCODE_1, PAD_AXIS_TRIGGER_L, 100},      {SDL_SCANCODE_3, PAD_AXIS_TRIGGER_R, 100},
+    };
+    PADSetKeyButtonBindings(0, buttons);
+    PADSetKeyAxisBindings(0, axes);
+    PADSetKeyboardActive(0, TRUE);
+}
+
+// Scripted input for testing without a person at the keyboard:
+// MSSB_INPUT="300:A,600:START,900:DOWN,950:SLEFT" holds each button (or
+// pushes the main stick: SLEFT/SRIGHT/SUP/SDOWN) on port 1 for a few frames,
+// starting at the given PADRead call (~frame) number.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <vector>
+
+namespace {
+struct ScriptedPress
+{
+    u32 frame;
+    u16 button;
+    s8 stickX;
+    s8 stickY;
+};
+
+u16 button_from_name(const char* n)
+{
+    static const struct
+    {
+        const char* name;
+        u16 mask;
+    } table[] = {
+        {"A", PAD_BUTTON_A},       {"B", PAD_BUTTON_B},       {"X", PAD_BUTTON_X},
+        {"Y", PAD_BUTTON_Y},       {"START", PAD_BUTTON_START}, {"Z", PAD_TRIGGER_Z},
+        {"L", PAD_TRIGGER_L},      {"R", PAD_TRIGGER_R},      {"UP", PAD_BUTTON_UP},
+        {"DOWN", PAD_BUTTON_DOWN}, {"LEFT", PAD_BUTTON_LEFT}, {"RIGHT", PAD_BUTTON_RIGHT},
+    };
+    for (const auto& e : table)
+        if (strcasecmp(n, e.name) == 0)
+            return e.mask;
+    return 0;
+}
+
+std::vector<ScriptedPress>& script()
+{
+    static std::vector<ScriptedPress> presses = [] {
+        std::vector<ScriptedPress> out;
+        const char* env = getenv("MSSB_INPUT");
+        if (env == nullptr)
+            return out;
+        char buf[1024];
+        strncpy(buf, env, sizeof(buf) - 1);
+        buf[sizeof(buf) - 1] = '\0';
+        for (char* tok = strtok(buf, ","); tok != nullptr; tok = strtok(nullptr, ","))
+        {
+            char* colon = strchr(tok, ':');
+            if (colon == nullptr)
+                continue;
+            *colon = '\0';
+            const char* name = colon + 1;
+            s8 sx = 0, sy = 0;
+            if (strcasecmp(name, "SLEFT") == 0)
+                sx = -100;
+            else if (strcasecmp(name, "SRIGHT") == 0)
+                sx = 100;
+            else if (strcasecmp(name, "SUP") == 0)
+                sy = 100;
+            else if (strcasecmp(name, "SDOWN") == 0)
+                sy = -100;
+            out.push_back({(u32)atoi(tok), button_from_name(name), sx, sy});
+        }
+        return out;
+    }();
+    return presses;
+}
+} // namespace
+
+extern "C" void port_pad_apply_script(PADStatus* status)
+{
+    static u32 frame = 0;
+    frame++;
+    for (const ScriptedPress& p : script())
+    {
+        if (frame >= p.frame && frame < p.frame + 6)
+        {
+            status[0].err = PAD_ERR_NONE;
+            status[0].button |= p.button;
+            if (p.stickX != 0)
+                status[0].stickX = p.stickX;
+            if (p.stickY != 0)
+                status[0].stickY = p.stickY;
+            static const bool s_debug = getenv("MSSB_DEBUG_INPUT") != nullptr;
+            if (s_debug && frame == p.frame)
+                fprintf(stderr, "[input] frame %u press 0x%x\n", frame, p.button);
+        }
+    }
+}
