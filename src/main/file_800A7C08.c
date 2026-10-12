@@ -2774,9 +2774,17 @@ void fn_800AD500(ThpPlayer* p, u8* work) {
     p->audioBuf = p->readBuf + OSRoundUp32B(p->readBufSize);
     memset(p->audioBuf, 0, audioSize);
     mcus = mcuX * mcuY;
+#ifdef TARGET_PC
+    p->_154 = p->chans[1].bufStart = p->chans[0].bufStart = p->audioBuf + OSRoundUp32B(p->audioBufSize);
+#else
     p->_154 = p->_E8 = p->_D0 = p->audioBuf + OSRoundUp32B(p->audioBufSize);
+#endif
     p->_158 = p->_160 = p->_154;
+#ifdef TARGET_PC
+    p->frames[0].data = p->_15C = p->chans[1].bufEnd = p->chans[0].bufEnd = p->_154 + audioSize;
+#else
     p->frames[0].data = p->_15C = p->_EC = p->_D4 = p->_154 + audioSize;
+#endif
     frameSize = (u32)OSRoundUp32B(pixels * (mcus + 2) / mcus);
     p->frames[1].data = p->frames[0].data + frameSize;
     p->frames[2].data = p->frames[1].data + frameSize;

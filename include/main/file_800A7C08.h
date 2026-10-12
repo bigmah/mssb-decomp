@@ -183,6 +183,26 @@ typedef struct CardSystem {
 #define CARD_STATUS_READY 0x11
 #define CARD_RESULT_BAD_SECTOR_SIZE -129
 
+typedef struct ThpMovie {
+    /*0x00*/ u8 _00[0xC];
+    /*0x0C*/ u32 _0C;
+} ThpMovie;
+
+// lbl_803C7A00 (MovMramRing in main/file_800ADC40.h): same field types.
+typedef struct ThpBufferInfo {
+    /*0x0*/ void* _0;
+    /*0x4*/ u32 _4;
+    /*0x8*/ void* buffer;
+    /*0xC*/ void* _C;
+} ThpBufferInfo;
+
+#ifdef TARGET_PC
+// One object with MovPlayer (file_800ADC40.h): same definition on PC.
+#include "main/file_800ADC40.h"
+typedef MovVideoCtx ThpVideoInfo;
+typedef MovFrame ThpFrame;
+typedef MovPlayer ThpPlayer;
+#else
 // Movie (THP) playback.
 typedef struct ThpVideoInfo {
     /*0x0*/ void* work;
@@ -200,18 +220,8 @@ typedef struct ThpFrame {
     /*0x9*/ u8 _9[3];
 } ThpFrame;
 
-typedef struct ThpMovie {
-    /*0x00*/ u8 _00[0xC];
-    /*0x0C*/ u32 _0C;
-} ThpMovie;
 
-// lbl_803C7A00 (MovMramRing in main/file_800ADC40.h): same field types.
-typedef struct ThpBufferInfo {
-    /*0x0*/ void* _0;
-    /*0x4*/ u32 _4;
-    /*0x8*/ void* buffer;
-    /*0xC*/ void* _C;
-} ThpBufferInfo;
+
 
 typedef struct ThpPlayer {
     /*0x000*/ u8 _000[0x24];
@@ -252,6 +262,7 @@ typedef struct ThpPlayer {
     /*0x1BA*/ u8 state;
     /*0x1BB*/ u8 _1BB;
 } ThpPlayer;
+#endif
 
 #define STREAM_NOTIFY(track, ev)                                                       \
     if ((track) != NULL && (track)->callback != NULL && ((track)->flags & (ev)) != 0) { \

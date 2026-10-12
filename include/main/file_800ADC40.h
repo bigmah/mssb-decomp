@@ -8,6 +8,94 @@
 
 // movie.c: HVQM4 movie player (stream thread, decode thread, AI DMA audio mix).
 
+#ifdef TARGET_PC
+// The movie player object is also seen as ThpPlayer (file_800A7C08.h). On PC
+// both views must agree, so this one definition carries both sets of names
+// (anonymous unions) and ThpPlayer/ThpFrame/ThpVideoInfo are typedefs of it.
+typedef struct MovFrame {
+    union { u8* buf; u8* data; };
+    union { u32 frame; u32 frameNo; };
+    union { u8 ready; u8 state; }; // ThpFrame: 1 = decoded, 2 = shown
+    u8 _9[3];
+} MovFrame;
+
+// Same layout as HVQAudioChan (file_800DFDD4.h); bufStart/bufEnd are
+// ThpPlayer's _D0/_D4 (channel 0) and _E8/_EC (channel 1).
+typedef struct MovAudioChan {
+    u8* _00;
+    u8* outPtr;
+    u8 _08[8];
+    u8* bufStart;
+    u8* bufEnd;
+} MovAudioChan;
+
+// Same layout as HVQM4SeqObj (file_800DFDD4.h).
+typedef struct MovVideoCtx {
+    union { void* work; void* _00; };
+    u16 width;
+    u16 height;
+    u8 mcuX; // hSamp
+    u8 mcuY; // vSamp
+    u8 _0A[0x16];
+} MovVideoCtx;
+
+typedef struct MovPlayer {
+    char magic[0x18];
+    u32 numBlocks;
+    u32 numFrames;
+    u32 _020;
+    union { u32 usecPerFrame; u32 frameTime; };
+    union { u8 _028[0xC]; struct { u32 readBufSize; u8 _02C[4]; u32 audioBufSize; }; };
+    u8 videoInfo[8];
+    u8 numChannels;
+    u8 _03D[3];
+    union { u32 sampleRate; u32 audioRate; };
+    u8 _044[0x1C];
+    u32 _060;
+    u32 _064;
+    u32 blockVideoFrames;
+    u32 blockAudioFrames;
+    u32 _070;
+    u8 _074[0xC];
+    u16 recType;
+    u16 recFormat;
+    u32 recSize;
+    u8 _088[0x18];
+    MovVideoCtx video;
+    MovAudioChan chans[2];
+    union { void* file; struct ThpMovie* movie; };
+    MovFrame frames[6];
+    union { MovFrame* frameQueue[6]; MovFrame* framePtrs[6]; };
+    union { u8* audioStart; u8* _154; };
+    union { u8* audioRead; u8* _158; };
+    union { u8* audioEnd; u8* _15C; };
+    union { u8* audioWrite; u8* _160; };
+    union { u8* videoBuf; u8* readBuf; };
+    u8* audioBuf;
+    u8* texBuf[2];
+    u32 texIndex;
+    u32 blockIndex;
+    u32 frameBase;
+    union { u32 curFrame; u32 currentFrame; };
+    u32 decodedFrames;
+    u32 decodeTime;
+    u32 blockVideoDone;
+    u32 blockAudioDone;
+    u32 _194;
+    OSTime startTime;
+    OSTime pauseStart;
+    union { u64 samplesPlayed; u64 startFrameTime; };
+    u16 width;
+    u16 height;
+    s16 posY;
+    s16 posX;
+    union { u8 _1B8; u8 format; };
+    u8 flags;
+    u8 state;
+    u8 rateMode;
+    volatile u8 decoding;
+} MovPlayer;
+#else
 // One decoded video frame slot.
 typedef struct MovFrame {
     /*0x0*/ u8* buf;
@@ -89,6 +177,7 @@ typedef struct MovPlayer {
     /*0x1BB*/ u8 rateMode;          // 1 = 48k, 0 = 32k, 0xFF = no audio
     /*0x1BC*/ volatile u8 decoding;
 } MovPlayer;
+#endif
 
 // ARAM ring buffer (lbl_803C79D4) used when the whole movie is cached in ARAM.
 typedef struct MovAramRing {
