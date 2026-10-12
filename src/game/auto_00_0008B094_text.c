@@ -5,7 +5,8 @@
 
 extern void* lbl_803CC1B8;
 extern StreamTrack lbl_8034E478[16];
-extern u8 lbl_800E87B4[15][16]; // TODO type: stream file descriptors
+#include "main/menu_globals.h" // StreamFileDesc
+extern StreamFileDesc lbl_800E87B4[15]; // stream file descriptors
 
 // .text:0x0008B094 size:0x1C4 mapped:0x806CA128
 // NONMATCHING 93%: original keeps i*3+0x17 in r30 and uses lbzx/stbx for req[i].step
@@ -34,7 +35,7 @@ void fn_3_8B094(void) {
             return;
         case 1:
             fn_800A8AB0(2);
-            LoadFile(lbl_800E87B4[track], &lbl_8034E478[track], 0, NULL, 1);
+            LoadFile(&lbl_800E87B4[track], &lbl_8034E478[track], 0, NULL, 1);
             task->req[i].step++;
         case 2:
             if (fn_800A8518(1) != 0) {
