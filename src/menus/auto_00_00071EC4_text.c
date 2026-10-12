@@ -1991,10 +1991,8 @@ typedef struct MnOwner {
 extern u8 lbl_80108EC4[];
 extern u8 lbl_2_data_2AF08[];
 
-// fn_2_72E54, size:0x1D4
-// NONMATCHING 80%: zero kept in r30/slot base in r31 swapped vs ours, search loop uses lbz not lbzu
-#if NONMATCHING
-void fn_2_72E54(u8* o) {
+// Body of fn_2_72E54; also inlined into fn_2_7308C.
+static inline void setupHeaderSlots(u8* o) {
     s32 j;
     s32 found = -1;
     u8 v;
@@ -2024,6 +2022,13 @@ void fn_2_72E54(u8* o) {
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
     }
+}
+
+// fn_2_72E54, size:0x1D4
+// NONMATCHING 83%: zero kept in r30/slot base in r31 swapped vs ours, search loop uses lbz not lbzu
+#if NONMATCHING
+void fn_2_72E54(u8* o) {
+    setupHeaderSlots(o);
 }
 #endif
 
@@ -2078,10 +2083,8 @@ void fn_2_7E194(u8* o, s32 index) {
 }
 #endif
 
-// fn_2_72A88, size:0x22C
-// NONMATCHING 88%: character search loop uses lbz instead of the original lbzu walker; register order differs
-#if NONMATCHING
-void fn_2_72A88(u8* o) {
+// Body of fn_2_72A88; also inlined into fn_2_7308C.
+static inline void setupHeaderRoster(u8* o) {
     s32 j;
     s32 found = -1;
     u8 v;
@@ -2101,6 +2104,13 @@ void fn_2_72A88(u8* o) {
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
     }
+}
+
+// fn_2_72A88, size:0x22C
+// NONMATCHING 94%: character search loop uses lbz instead of the original lbzu walker; register order differs
+#if NONMATCHING
+void fn_2_72A88(u8* o) {
+    setupHeaderRoster(o);
 }
 #endif
 
@@ -3389,13 +3399,14 @@ void fn_2_80F5C(u8* o, s32 index) {
 
 // fn_2_7308C, size:0x6CC
 // Team-select header state machine; each case is a pair of the small helpers above.
-// NONMATCHING 45%: structure is right (CW inlines the matched helpers); fn_2_72E54/fn_2_72A88 must match and be defined above it to inline too
+// NONMATCHING 94%: the inlined fn_2_72E54/fn_2_72A88 bodies keep their own mismatches (lbz instead of the
+// original lbzu search walker, register order)
 #if NONMATCHING
 void fn_2_7308C(void) {
     u8* o = lbl_803CC1B8;
     switch (lbl_803CBBC4[0]) {
     case 1:
-        fn_2_72E54(o);
+        setupHeaderSlots(o);
         fn_2_72DDC(o);
         break;
     case 2:
@@ -3403,7 +3414,7 @@ void fn_2_7308C(void) {
         fn_2_72814(o);
         break;
     case 3:
-        fn_2_72A88(o);
+        setupHeaderRoster(o);
         fn_2_72A58();
         break;
     case 0x47:
