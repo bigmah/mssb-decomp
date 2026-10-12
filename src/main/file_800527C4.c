@@ -435,7 +435,7 @@ void fn_80053810(void) {
 #endif
 
 // .text:0x80053FE8 size:0x2DC
-// NONMATCHING 97%: r28/r29 swapped and the loop's zero init scheduled differently
+// NONMATCHING 98.5%: r28/r29 swapped and the loop's zero init scheduled differently
 #if NONMATCHING
 void fn_80053FE8(void) {
     s32 i;
@@ -561,7 +561,7 @@ void fn_800542C4(u8 cur, u8 target, SceneTask* task) {
 #endif
 
 // .text:0x80054910 size:0x1F0
-// NONMATCHING 96%: expected=TRUE scheduled before the call args and a missing mr for done
+// NONMATCHING 86.3%: expected=TRUE scheduled before the call args and a missing mr for done
 #if NONMATCHING
 void fn_80054910(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[8][port + 1]
@@ -1234,7 +1234,7 @@ void someChallengeStarFunction(SceneTask* task) {
 #endif
 
 // .text:0x800572C0 size:0x430
-// NONMATCHING 95%: shownOnPauseMenu read as s8 in the original; register numbering differs
+// NONMATCHING 98.0%: shownOnPauseMenu read as s8 in the original; register numbering differs
 #if NONMATCHING
 void someChallengeStarFunction2(SceneTask* task) {
     u8 set;
@@ -1285,7 +1285,7 @@ void someChallengeStarFunction2(SceneTask* task) {
 #endif
 
 // .text:0x800576F0 size:0x518
-// NONMATCHING 97%: register swaps; text release written as three calls (original is a 3-iteration loop)
+// NONMATCHING 96.4%: register swaps; text release written as three calls (original is a 3-iteration loop)
 // nmverify: fn_8000FEE8 called from a 3-iteration loop in original, three calls here
 // nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
@@ -1398,7 +1398,7 @@ void starMenu(void) {
 }
 
 // .text:0x80057CAC size:0x3A4
-// NONMATCHING 96%: the scout-flag loop counters start from the any-flag register; loop registers differ
+// NONMATCHING 94.3%: the scout-flag loop counters start from the any-flag register; loop registers differ
 #if NONMATCHING
 void fn_80057CAC(void) {
     SceneTask* task = lbl_803CC1B8;
@@ -1508,7 +1508,7 @@ void fn_80058050(void) {
 #endif
 
 // .text:0x80058394 size:0x2B0
-// NONMATCHING 97%: star-1 kept untruncated in r26 in the challenge branch; ours truncates early
+// NONMATCHING 93.4%: star-1 kept untruncated in r26 in the challenge branch; ours truncates early
 #if NONMATCHING
 void fn_80058394(SceneTask* task) {
     CharacterStats* player;
@@ -1564,7 +1564,7 @@ void fn_80058394(SceneTask* task) {
 #endif
 
 // .text:0x80058644 size:0x4DC
-// NONMATCHING 99%: the roster address adds are scheduled in a different order
+// NONMATCHING 99.2%: the roster address adds are scheduled in a different order
 #if NONMATCHING
 void fn_80058644(SceneTask* task) {
     CharacterStats* player;
@@ -1657,7 +1657,7 @@ void fn_80058644(SceneTask* task) {
 #endif
 
 // .text:0x80058B20 size:0x2EC
-// NONMATCHING 95%: same star-select register differences as fn_80058394
+// NONMATCHING 79.9%: same star-select register differences as fn_80058394
 #if NONMATCHING
 void fn_80058B20(SceneTask* task, u8 port) {
     CharacterStats* player;
@@ -2563,7 +2563,7 @@ void fn_8005C2B0(SceneTask* task) {
 #endif
 
 // .text:0x8005C5C4 size:0x26C
-// NONMATCHING 97%: r5/r7 and r0/r4 swapped in the frame-30 branch
+// NONMATCHING 99.4%: r5/r7 and r0/r4 swapped in the frame-30 branch
 #if NONMATCHING
 void fn_8005C5C4(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
@@ -3183,7 +3183,7 @@ void fn_8005F734(SceneTask* task, s32 port) {
 }
 
 // .text:0x8005F9D0 size:0x2D0
-// NONMATCHING 96%: the original keeps the constant 5 in r27 (set in each branch) and tests ready[] with bne/b
+// NONMATCHING 97.3%: the original keeps the constant 5 in r27 (set in each branch) and tests ready[] with bne/b
 #if NONMATCHING
 void fn_8005F9D0(SceneTask* task, s32 port) {
     u8* states = &lbl_803C66B0.steps[9][1];
@@ -3879,7 +3879,7 @@ BOOL fn_80062578(void) {
 }
 
 // .text:0x800625A4 size:0xD0
-// NONMATCHING 98%: the unrolled clear stores the loop counter's zero register (r4) instead of a fresh li r0,0
+// NONMATCHING 96.7%: the unrolled clear stores the loop counter's zero register (r4) instead of a fresh li r0,0
 #if NONMATCHING
 void fn_800625A4(s32 index, s32 step) {
     s32 i;
@@ -4096,7 +4096,7 @@ static inline void PlayCharJointSound(CharActor* obj) {
 }
 
 // .text:0x80062C60 size:0x134
-// NONMATCHING 95%: r7/r8 swapped in the inlined joint loop (see docs/patterns/regalloc.md)
+// NONMATCHING 99.5%: r7/r8 swapped in the inlined joint loop (see docs/patterns/regalloc.md)
 #if NONMATCHING
 void fn_80062C60(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     if (lbl_80366158._28 != 1) {
@@ -4109,7 +4109,7 @@ void fn_80062C60(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
 #endif
 
 // .text:0x80062D94 size:0xD8
-// NONMATCHING 95%: r7/r9/r10 rotated in the joint loop (see docs/patterns/regalloc.md)
+// NONMATCHING 98.9%: r7/r9/r10 rotated in the joint loop (see docs/patterns/regalloc.md)
 #if NONMATCHING
 void fn_80062D94(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     PlayCharJointSound(model);

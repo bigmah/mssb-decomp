@@ -106,7 +106,7 @@ void fn_800BDF70(ActorObject* obj) {
 }
 
 // .text:0x800BDFE0 size:0xBC
-// NONMATCHING 95%: table/index saved registers swapped (r28/r29)
+// NONMATCHING 95.0%: table/index saved registers swapped (r28/r29)
 #if NONMATCHING
 void fn_800BDFE0(ActorObjectTable* table) {
     ShadowState* state = &lbl_803009F8;
@@ -127,7 +127,7 @@ void fn_800BDFE0(ActorObjectTable* table) {
 #endif
 
 // .text:0x800BE09C size:0xBC
-// NONMATCHING 99.8%: shadow-state address lands in r3 instead of r4 before the begin callback
+// NONMATCHING 99.7%: shadow-state address lands in r3 instead of r4 before the begin callback
 #if NONMATCHING
 void fn_800BE09C(void* arg, ShadowCamera* cam) {
     if (lbl_803009F8.enabled) {
@@ -143,7 +143,7 @@ void fn_800BE09C(void* arg, ShadowCamera* cam) {
 #endif
 
 // .text:0x800BE158 size:0x340
-// NONMATCHING 99%: f-register allocation; int->float magic constant is DATA (no .sdata2 split)
+// NONMATCHING 99.0%: f-register allocation; int->float magic constant is DATA (no .sdata2 split)
 #if NONMATCHING
 void fn_800BE158(ShadowCamera* shadow, ShadowCamera* cam) {
     Vec ground;
@@ -418,7 +418,7 @@ void fn_800BEBCC(u8 index, Vec dir) {
 }
 
 // .text:0x800BEC30 size:0x3D8
-// NONMATCHING 99%: register allocation of the arena pointers and the rodata Vec copy
+// NONMATCHING 99.0%: register allocation of the arena pointers and the rodata Vec copy
 #if NONMATCHING
 void fn_800BEC30(u8 numCameras) {
     ShadowDirTable dirs = lbl_800E8030;

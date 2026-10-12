@@ -97,7 +97,7 @@ void SndFree(void* ptr) {
 }
 
 // .text:0x800B099C size:0x78
-// NONMATCHING 95%: block-cur temp lands in r4 instead of r6 (matches only if `size` is reused to hold newCur as an integer)
+// NONMATCHING 84.6%: block-cur temp lands in r4 instead of r6 (matches only if `size` is reused to hold newCur as an integer)
 #if NONMATCHING
 void* SndAlloc(u32 size) {
     u8* cur;
@@ -733,7 +733,7 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, TexImage* tex, u16 width, u
 #endif
 
 // .text:0x800B1EBC size:0x2A4
-// NONMATCHING 99%: map/width/height parameters get different saved registers
+// NONMATCHING 99.6%: map/width/height parameters get different saved registers
 #if NONMATCHING
 // Loads tex into texture map `map` of the current display list (if it isn't already)
 // and sets the texcoord scale. Returns whether anything was written.

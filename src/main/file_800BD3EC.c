@@ -83,7 +83,7 @@ void fn_800BD548(ActorObject* obj, u8 numLights, ...) {
     va_end(list);
 }
 
-// NONMATCHING 98%: loop counter i and entry pointer swap r30/r31
+// NONMATCHING 98.4%: loop counter i and entry pointer swap r30/r31
 #if NONMATCHING
 // .text:0x800BD670 size:0x254
 void fn_800BD670(ActorObjectTable* table, MtxPtr camera) {

@@ -141,7 +141,7 @@ static inline void QuatSlerp(Quaternion* p, Quaternion* q, Quaternion* r, f32 t)
     }
 }
 
-// NONMATCHING 97%: float register allocation only (original also uses f20)
+// NONMATCHING 97.3%: float register allocation only (original also uses f20)
 // .text:0x800B516C size:0x4A0
 #if NONMATCHING
 void Squad(Quaternion* p, Quaternion* a, Quaternion* b, Quaternion* q, Quaternion* r, f32 t) {

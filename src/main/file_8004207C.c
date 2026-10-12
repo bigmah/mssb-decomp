@@ -111,7 +111,7 @@ extern GXPerf1 lbl_800FB554[];
     v = scale * (f32)(field);                \
     (field) = v > 100 ? 100 : v
 
-// NONMATCHING ~95%: chemistry loop walks a pointer instead of the original unrolled base+0x3B offsets
+// NONMATCHING ~97.0%: chemistry loop walks a pointer instead of the original unrolled base+0x3B offsets
 #if NONMATCHING
 void capApplicationFunction(void) {
     s32 team;
@@ -885,7 +885,7 @@ void fn_80044C98(u8 dir, u8 team) {
 #pragma dont_inline on
 
 // .text:0x8004617C size:0x1078
-// NONMATCHING ~98%: team select when g_d_GameSettings._10 > 1 (original leaves t unset), input mask scheduling
+// NONMATCHING ~98.2%: team select when g_d_GameSettings._10 > 1 (original leaves t unset), input mask scheduling
 #if NONMATCHING
 void fn_8004617C(s32 port) {
     s32 t;
@@ -1454,7 +1454,7 @@ void fn_80047CE0(void) {
     lbl_803CBBCC->scene = (id);                               \
     lbl_803CBBCC->step = 0
 
-// NONMATCHING ~96%: roster copy loop and fn_8004CA6C switch dispatch order
+// NONMATCHING ~94.5%: roster copy loop and fn_8004CA6C switch dispatch order
 #if NONMATCHING
 void pauseMenuSelection(void) {
     s32 i;
@@ -2238,7 +2238,7 @@ void fn_800494CC(u8 team) {
     }
 
 
-// NONMATCHING ~99%: lis/addi order of the challenge-save block
+// NONMATCHING ~98.9%: lis/addi order of the challenge-save block
 #if NONMATCHING
 void possiblyTransferDataBetweenDifferentRels(void) {
     s32 i;

@@ -862,7 +862,7 @@ void fn_80038F08(CharModelObj* obj, Model* model, u8 joint) {
 #endif
 
 // .text:0x80039310 size:0x73C
-// NONMATCHING 98%: float register allocation differs (the original keeps one more callee-saved FPR, f24)
+// NONMATCHING 98.0%: float register allocation differs (the original keeps one more callee-saved FPR, f24)
 #if NONMATCHING
 void fn_80039310(BatSim* bat, f32 floorY, f32 minEnergy) {
     Mtx rotM;

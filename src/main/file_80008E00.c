@@ -414,7 +414,7 @@ void PrepFilesToBeLoaded(void) {
     lbl_80366158._1D = 1;
 }
 
-// NONMATCHING 95%: the original addresses lbl_800E8AA8 and the tables after it through one pooled
+// NONMATCHING 95.1%: the original addresses lbl_800E8AA8 and the tables after it through one pooled
 // base register (they are data of this unit, not split yet); fn_80009144 is not inlined (pragma)
 // .text:0x800097A0 size:0x6F4
 #if NONMATCHING

@@ -171,7 +171,7 @@ void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d) {
     }
 }
 
-// NONMATCHING 99%: original loads the anim pointer with lwzu (keeps &slot->anim in r31); ours uses addi+lwz
+// NONMATCHING 98.4%: original loads the anim pointer with lwzu (keeps &slot->anim in r31); ours uses addi+lwz
 // .text:0x8000F534 size:0x3C0
 #if NONMATCHING
 void fn_8000F534(LayoutObj* obj, s32 visible) {
@@ -294,7 +294,7 @@ s32 fn_8000F988(LayoutGroup* group, s32 index, u16 arg2, s32 table, s32 msg, s32
     return -1;
 }
 
-// NONMATCHING 97%: register allocation differs, and an extra branch after the end-of-substring continue
+// NONMATCHING 97.1%: register allocation differs, and an extra branch after the end-of-substring continue
 // .text:0x8000FA9C size:0x2B8
 #if NONMATCHING
 s32 fn_8000FA9C(s32 index) {
@@ -528,7 +528,7 @@ s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSi
     return i;
 }
 
-// NONMATCHING 99%: f2/f3 swapped for the 0.0f constant, and two extra clrlwi on the u16 s+w sum
+// NONMATCHING 98.6%: f2/f3 swapped for the 0.0f constant, and two extra clrlwi on the u16 s+w sum
 // .text:0x800100A4 size:0x3F4
 #if NONMATCHING
 void fn_800100A4(s32 x, s32 y, u16 s, u16 t, u16 w, u32 color, s32 kind, MtxPtr mtx) {
@@ -1019,7 +1019,7 @@ void DrawTextOnCondition(s32 layer) {
     }
 }
 
-// NONMATCHING 96%: extra `mr` when setting up dst before the copy loop
+// NONMATCHING 92.9%: extra `mr` when setting up dst before the copy loop
 // .text:0x80010FA0 size:0x60
 #if NONMATCHING
 void fn_80010FA0(void) {
@@ -1044,7 +1044,7 @@ void fn_80010FA0(void) {
 }
 #endif
 
-// NONMATCHING 96%: saved regs r30/r31 swapped (loop counter vs. lbl_80366B18 base)
+// NONMATCHING 96.4%: saved regs r30/r31 swapped (loop counter vs. lbl_80366B18 base)
 // .text:0x80011000 size:0x140
 #if NONMATCHING
 void fn_80011000(void) {

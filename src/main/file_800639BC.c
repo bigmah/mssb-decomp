@@ -762,7 +762,7 @@ void characterSelectScreen(u8 team) {
 #endif
 
 // .text:0x80066EAC size:0x1F4
-// NONMATCHING 95%: saved-register assignment of the roster pointers differs
+// NONMATCHING 94.7%: saved-register assignment of the roster pointers differs
 #if NONMATCHING
 void fn_80066EAC(u8 team) {
     // The sort pass compares against buf[9] as well (one past the 9 ids); the
@@ -1050,7 +1050,7 @@ BOOL fn_80067B40(s32 unused, u8 charId, u8 flag) {
 }
 
 // .text:0x80067C48 size:0x328
-// NONMATCHING 96%: order of the roster[c / 9][c % 9] address arithmetic differs
+// NONMATCHING 95.8%: order of the roster[c / 9][c % 9] address arithmetic differs
 #if NONMATCHING
 void fn_80067C48(u8 team) {
     u8 order[0x36];

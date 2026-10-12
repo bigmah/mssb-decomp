@@ -18,7 +18,7 @@ extern OSThread* GXSetCurrentGXThread(void);
 extern s32 OSSignalSemaphore(OSSemaphore* sem);
 
 // .text:0x800A7C08 size:0x144
-// NONMATCHING 99%: int->float magic constant and 0.0f/1.0f live in unsplit .sdata2 (reloc names differ); r3/r4 swapped in the callback loop
+// NONMATCHING 99.6%: int->float magic constant and 0.0f/1.0f live in unsplit .sdata2 (reloc names differ); r3/r4 swapped in the callback loop
 #if NONMATCHING
 void* fn_800A7C08(void* arg) {
     GXRenderModeObj* rmode;
@@ -83,7 +83,7 @@ void fn_800A7DB0(void) {
 }
 
 // .text:0x800A7E00 size:0x110
-// NONMATCHING 98%: int->float magic constant lives in unsplit .sdata2 (reloc name differs); lis order of &GXNtsc480Int vs &lbl_803C7420 swapped
+// NONMATCHING 98.0%: int->float magic constant lives in unsplit .sdata2 (reloc name differs); lis order of &GXNtsc480Int vs &lbl_803C7420 swapped
 #if NONMATCHING
 void fn_800A7E00(void) {
     GXRenderModeObj* rmode = &lbl_803C7420.renderModeCopy;
@@ -140,7 +140,7 @@ extern char lbl_800E77C8[];
 extern char lbl_800E77D4[];
 
 // .text:0x800A80E8 size:0x3DC
-// NONMATCHING 98%: int->float magic constant and 0.0f/1.0f live in unsplit .sdata2 (reloc names differ); xfb address computation scheduled slightly differently
+// NONMATCHING 98.1%: int->float magic constant and 0.0f/1.0f live in unsplit .sdata2 (reloc names differ); xfb address computation scheduled slightly differently
 #if NONMATCHING
 void initRenderMode(GXRenderModeObj* rmode, u32 fifoSize, u32 overscan) {
     OSThread* thread = &lbl_803C7420.drawThread;
@@ -1854,7 +1854,7 @@ u16 fn_800ABB14(u8* data, s32 len) {
 }
 
 // .text:0x800ABB60 size:0x70
-// NONMATCHING 96%: removeQueue is called with whatever r3 holds; our call passes &lbl_803C7838 explicitly
+// NONMATCHING 94.1%: removeQueue is called with whatever r3 holds; our call passes &lbl_803C7838 explicitly
 #if NONMATCHING
 void fn_800ABB60(void) {
     CardSlot* slot = lbl_803C7838.slots;
@@ -2414,7 +2414,7 @@ void fn_800ACF14(void* block) {
 }
 
 // .text:0x800ACF34 size:0x44
-// NONMATCHING 97%: register allocation (heap pointer in r4 instead of r5, lo/result regs differ)
+// NONMATCHING 97.3%: register allocation (heap pointer in r4 instead of r5, lo/result regs differ)
 #if NONMATCHING
 void* fn_800ACF34(s32 align, s32 size) {
     HeapArena* heap = &lbl_803C7898;
@@ -2436,7 +2436,7 @@ void* fn_800ACF34(s32 align, s32 size) {
 #endif
 
 // .text:0x800ACF78 size:0x38
-// NONMATCHING 96%: register allocation (base/total/diff registers rotated)
+// NONMATCHING 96.4%: register allocation (base/total/diff registers rotated)
 #if NONMATCHING
 void fn_800ACF78(void* block, s32 size) {
     HeapArena* heap;

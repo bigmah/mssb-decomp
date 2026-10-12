@@ -384,7 +384,7 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
 
 // .text:0x80025C58 size:0x184
 // Binds the shape data to a model: caches each target's vertex array slot and data pointer.
-// NONMATCHING 96%: r5/r6 swapped for geo/arrays vs posSlot; original copies the zero with mr
+// NONMATCHING 96.3%: r5/r6 swapped for geo/arrays vs posSlot; original copies the zero with mr
 #if NONMATCHING
 void fn_80025C58(ShapeData* shape, ShapeModel** model) {
     ShapeModel* m;
@@ -539,7 +539,7 @@ void fn_80025EEC(ShapeAnimPlayer* p, s32 table, s32 entry) {
 
 // .text:0x80025FFC size:0x134
 // Relocates the player's animation set and binds it to model.
-// NONMATCHING 97%: st in r6 instead of r7 (and the tail stores scheduled differently)
+// NONMATCHING 96.5%: st in r6 instead of r7 (and the tail stores scheduled differently)
 #if NONMATCHING
 void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
     ShapeAnimState* st;
