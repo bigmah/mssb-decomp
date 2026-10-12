@@ -178,7 +178,7 @@ void fn_3_E1D00(void) {
             break;
         }
         obj = &lbl_3_common_bss_350E4.objs[i];
-        fn_3_B828C((struct StadiumObj*)obj); // TODO type
+        fn_3_B828C((struct StadiumObj*)obj); // StadObjE8 is this file's view of StadiumObj (rep_1D58.c)
         if (obj->actor != NULL) {
             obj->actor->actor->flags = obj->flags93 | 6;
             fn_800BDF70(obj->actor);

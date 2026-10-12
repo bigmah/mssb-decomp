@@ -2659,7 +2659,6 @@ void fn_3_10FDC8(void) {
             g_GameLogic._125 = 1;
             break;
         case 1:
-            // TODO type: pointer field at g_Minigame+0x1E04
             if (((MinigameTask*)g_Minigame._1E04)->_1A != 0) {
                 changeScene(3, 6);
                 g_GameLogic._125 = 2;
@@ -3185,7 +3184,8 @@ void fn_3_10A0A0(void) {
 extern s32 fn_8004FD64(s32 player);
 extern s32 fn_8004FDE8(s32 p, s32 q);
 extern u32 fn_800628D4(s32 kind);
-extern u8 lbl_80361B20[];  // TODO type: save-data flags block (main/file_8004C5F8.h)
+#include "main/unlock_flags.h"
+extern UnlockFlags lbl_80361B20;
 
 
 static inline void satIncU16(u16* p) {
@@ -3378,7 +3378,7 @@ void fn_3_10CC20(void) {
                 } else {
                     g_Minigame.minigameControlStruct[0]._08[i] = 0;
                 }
-            } else if (lbl_80361B20[g_Minigame._19E8[i]._0] != 0 && (pad->newButtonInput & 0x800)) {
+            } else if (lbl_80361B20.unlocked[g_Minigame._19E8[i]._0] != 0 && (pad->newButtonInput & 0x800)) {
                 g_Minigame.minigameControlStruct[0]._08[i] ^= 1;
                 if (g_Minigame.minigameControlStruct[0]._08[i] != 0) {
                     sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
@@ -3559,7 +3559,7 @@ void fn_3_10CC20(void) {
                     }
                     sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
                 }
-                if (lbl_80361B20[g_Minigame._19E8[i]._0] != 0 && (pad->newButtonInput & 0x800)) {
+                if (lbl_80361B20.unlocked[g_Minigame._19E8[i]._0] != 0 && (pad->newButtonInput & 0x800)) {
                     g_Minigame.minigameControlStruct[0]._08[i] ^= 1;
                     if (g_Minigame.minigameControlStruct[0]._08[i] != 0) {
                         sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);

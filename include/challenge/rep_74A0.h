@@ -4,24 +4,10 @@
 #include "mssbTypes.h"
 #include "C3/geoPalette.h"
 #include "C3/control.h"
-
-typedef struct ChallengeDrawActor {
-    u8 padding[6];
-    u16 boneCount;
-    u8 padding08[0x0C];
-    struct DODisplayObj* display;
-    u8 padding18[0x5C];
-    struct ChallengeDrawActor* children;
-    u8 padding78[0x20];
-    u8 flags98;
-    u8 padding99[0x53];
-    MtxPtr worldMatrix;
-    u8 paddingF0[0x10];
-    struct ChallengeDrawActor* next;
-} ChallengeDrawActor;
+#include "main/file_80063028.h" // GameActor, GameBone
 
 typedef struct ChallengeActorDrawing {
-    ChallengeDrawActor* actor;
+    GameActor* actor;
     u8 padding[4];
     void (*prepare)(struct ChallengeActorDrawing*);
 } ChallengeActorDrawing;
@@ -150,7 +136,7 @@ typedef union ChallengeFileRef {
 
 typedef struct ChallengeViewerActor {
     /*0x000*/ u8 pad00[4];
-    /*0x004*/ ChallengeDrawActor* drawActor;
+    /*0x004*/ GameActor* drawActor;
     /*0x008*/ ChallengeFileRef* model; // loaded by fn_1_1CBE4
     /*0x00C*/ u8 pad0C[4];
     /*0x010*/ void* anim;

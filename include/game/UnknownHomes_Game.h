@@ -821,7 +821,8 @@ typedef struct GameBss32234 {
     /*0x0*/ u8 _00;
     /*0x1*/ u8 _01;
     /*0x2*/ u8 result[4]; // per player: reaction (0, 1, 2)
-} GameBss32234; // size: 0x6
+    /*0x6*/ u8 _06[2];
+} GameBss32234; // size: 0x8 (the replay snapshot copies the first 6 bytes)
 
 extern InMemPitcherType g_Pitcher;
 extern InMemBallType g_Ball;
@@ -3267,6 +3268,7 @@ typedef struct GameScores {
 
 typedef struct {
     lbl_3_common_bss_DE94_s2* _0000;
+    u8 _0004[0x2AF4 - 0x4];
 } lbl_3_common_bss_DE94_s; // size: 0x2AF4
 
 extern lbl_3_common_bss_DE94_s lbl_3_common_bss_DE94;

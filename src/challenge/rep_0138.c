@@ -11,6 +11,7 @@
 #include "Dolphin/os.h"
 #include "C3/geoPalette.h"
 #include "C3/actor.h"
+#include "challenge/ch_data.h" // ChTexArchive
 #include "Dolphin/pad.h"
 
 // Controller state at lbl_803C77B8 (port 0); same layout as main.dol's PadState.
@@ -711,30 +712,30 @@ void fn_1_7280(void) {
 
 // .text:0x0000717C size:0x104
 void fn_1_717C(ChallengeModelOffsets* model) {
-    u8* geometry;
-    u8* actor;
-    u8* textures;
-    actor = (u8*)model + model->mainActor;
-    geometry = (u8*)model + model->mainGeometry;
-    textures = (u8*)model + model->textures;
+    struct DODisplayData* geometry;
+    struct ActorLayout* actor;
+    ChTexArchive* textures;
+    actor = (struct ActorLayout*)((u8*)model + model->mainActor);
+    geometry = (struct DODisplayData*)((u8*)model + model->mainGeometry);
+    textures = (ChTexArchive*)((u8*)model + model->textures);
     fn_1_4DD8((u16*)((u8*)model + model->effects));
-    fn_800B49E4((struct ActorLayout *)actor); // TODO type
-    fn_800BCE38((struct DODisplayData *)geometry); // TODO type
+    fn_800B49E4(actor);
+    fn_800BCE38(geometry);
     convertTextureHeader(textures);
-    lbl_1_common_bss_472B4.texBank = textures + 4;
+    lbl_1_common_bss_472B4.texBank = textures->images;
     fn_800BD190((struct GQRValueGroups*)geometry, textures);
     haveActLayoutPointToGeoHeader(actor, geometry);
-    lbl_1_common_bss_472B4.totalBones = ((struct ActorLayout*)actor)->totalBones;
-    lbl_1_common_bss_472B4.stage[1].layout = (struct ActorLayout*)actor;
-    lbl_1_common_bss_472B4.stage[0].layout = (struct ActorLayout*)actor;
-    actor = (u8*)model + model->secondaryActor;
-    geometry = (u8*)model + model->secondaryGeometry;
-    fn_800B49E4((struct ActorLayout *)actor); // TODO type
-    fn_800BCE38((struct DODisplayData *)geometry); // TODO type
+    lbl_1_common_bss_472B4.totalBones = actor->totalBones;
+    lbl_1_common_bss_472B4.stage[1].layout = actor;
+    lbl_1_common_bss_472B4.stage[0].layout = actor;
+    actor = (struct ActorLayout*)((u8*)model + model->secondaryActor);
+    geometry = (struct DODisplayData*)((u8*)model + model->secondaryGeometry);
+    fn_800B49E4(actor);
+    fn_800BCE38(geometry);
     fn_800BD190((struct GQRValueGroups*)geometry, textures);
     haveActLayoutPointToGeoHeader(actor, geometry);
-    lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
-    lbl_1_common_bss_472B4.object[0].layout = (struct ActorLayout*)actor;
+    lbl_1_common_bss_472B4.object[1].layout = actor;
+    lbl_1_common_bss_472B4.object[0].layout = actor;
 }
 
 // .text:0x00006E14 size:0x368
@@ -823,9 +824,9 @@ void fn_1_6848(void) {
     GXColor color;
     ChalTask* task;
     ChallengeModelOffsets* model;
-    u8* actor;
-    u8* geometry;
-    u8* textures;
+    struct ActorLayout* actor;
+    struct DODisplayData* geometry;
+    ChTexArchive* textures;
     s32 size;
 
     task = lbl_803CC1B8;
@@ -894,27 +895,27 @@ void fn_1_6848(void) {
     case 3:
         if (lbl_803C6CF8.idle == 1) {
             model = task->model;
-            actor = (u8*)model + model->mainActor;
-            geometry = (u8*)model + model->mainGeometry;
-            textures = (u8*)model + model->textures;
+            actor = (struct ActorLayout*)((u8*)model + model->mainActor);
+            geometry = (struct DODisplayData*)((u8*)model + model->mainGeometry);
+            textures = (ChTexArchive*)((u8*)model + model->textures);
             fn_1_4DD8((u16*)((u8*)model + model->effects));
-            fn_800B49E4((struct ActorLayout *)actor); // TODO type
-            fn_800BCE38((struct DODisplayData *)geometry); // TODO type
+            fn_800B49E4(actor);
+            fn_800BCE38(geometry);
             convertTextureHeader(textures);
-            lbl_1_common_bss_472B4.texBank = textures + 4;
+            lbl_1_common_bss_472B4.texBank = textures->images;
             fn_800BD190((struct GQRValueGroups*)geometry, textures);
             haveActLayoutPointToGeoHeader(actor, geometry);
-            lbl_1_common_bss_472B4.totalBones = ((struct ActorLayout*)actor)->totalBones;
-            lbl_1_common_bss_472B4.stage[1].layout = (struct ActorLayout*)actor;
-            lbl_1_common_bss_472B4.stage[0].layout = (struct ActorLayout*)actor;
-            actor = (u8*)model + model->secondaryActor;
-            geometry = (u8*)model + model->secondaryGeometry;
-            fn_800B49E4((struct ActorLayout *)actor); // TODO type
-            fn_800BCE38((struct DODisplayData *)geometry); // TODO type
+            lbl_1_common_bss_472B4.totalBones = actor->totalBones;
+            lbl_1_common_bss_472B4.stage[1].layout = actor;
+            lbl_1_common_bss_472B4.stage[0].layout = actor;
+            actor = (struct ActorLayout*)((u8*)model + model->secondaryActor);
+            geometry = (struct DODisplayData*)((u8*)model + model->secondaryGeometry);
+            fn_800B49E4(actor);
+            fn_800BCE38(geometry);
             fn_800BD190((struct GQRValueGroups*)geometry, textures);
             haveActLayoutPointToGeoHeader(actor, geometry);
-            lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
-            lbl_1_common_bss_472B4.object[0].layout = (struct ActorLayout*)actor;
+            lbl_1_common_bss_472B4.object[1].layout = actor;
+            lbl_1_common_bss_472B4.object[0].layout = actor;
             DCFlushRangeNoSync(task->model, lbl_1_data_8D0[task->modelIdx].sizeInfo & 0x0FFFFFFF);
             lbl_803CC1B8->func = fn_1_6E14;
         }
@@ -1401,7 +1402,8 @@ void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
                 break;
             case DL_LOAD_XF_REG:
                 handled = 1;
-                // TODO type: reads the opcode byte as the high byte of the length
+                // Reads the opcode byte as the high byte of the length (original quirk).
+                // TODO port: big-endian u16 read from the display list; needs the port byte-order helpers
                 skip = *(u16*)dl * 4 + 5;
                 dl += skip;
                 offset += skip;

@@ -174,7 +174,10 @@ typedef struct RepMinigameView {
 typedef struct RepBss37400View {
     /*0x00*/ u8 _00[0x40];
     /*0x40*/ s16 humanPlayer;
-} RepBss37400View;
+    /*0x42*/ u8 _42[0x47 - 0x42];
+    /*0x47*/ u8 _47; // 2: queue fn_3_94BC4 with the HUD (auto_00_00097144)
+    /*0x48*/ u8 _48[0x4E - 0x48];
+} RepBss37400View; // size: 0x4E
 
 // View of g_Ball, only the fields used here.
 typedef struct RepBallView {

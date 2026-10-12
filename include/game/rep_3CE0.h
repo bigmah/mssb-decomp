@@ -56,7 +56,8 @@ typedef struct FadeState {
     /*0x472*/ u8 count;      // number of entries in ids
     /*0x473*/ u8 ids[6];
     /*0x479*/ u8 disabled;
-} FadeState;
+    /*0x47A*/ u8 _47A[0x480 - 0x47A];
+} FadeState; // size: 0x480
 
 extern FadeState lbl_3_common_bss_35154;
 

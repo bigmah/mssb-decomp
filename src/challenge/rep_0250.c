@@ -101,7 +101,7 @@ static u8 sScorePage;        // 0x2FAA: 0-11
 static u8 sScoreUnk01;       // 0x2FA9 (unused)
 static u8 sScoreUnk00;       // 0x2FA8
 
-extern u8 lbl_1_common_bss_47698[]; // TODO type
+#include "challenge/auto_00_000085A8_text.h" // ChSoundTestList lbl_1_common_bss_47698
 
 // .text:0x00009AB0 size:0x3F0
 // Score-screen task: loads the messages and 12 pages, then runs the page handlers and
@@ -115,14 +115,14 @@ void fn_1_9AB0(void) {
     case 0:
         fn_800111B4((MsgTable*)&lbl_1_data_EA8);
         sScoreMsgData = lbl_1_data_EA8.msgs;
-        *(u16*)lbl_1_common_bss_47698 = 0;
-        p = lbl_1_common_bss_47698 + 0xA;
+        lbl_1_common_bss_47698.count = 0;
+        p = &lbl_1_common_bss_47698.slots[8];
         i = 10;
         do {
             p[2] = 0;
             p--;
         } while (--i != 0);
-        lbl_1_common_bss_47698[0xC] = 0;
+        lbl_1_common_bss_47698.slots[10] = 0;
         task->sel = 0;
         sScoreLoadIdx = 0;
         sScorePage = 0;
