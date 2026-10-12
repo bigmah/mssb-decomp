@@ -61,8 +61,8 @@ void fn_8004BEB0(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[2], 5); // TODO type
 }
 
-extern RepeatFxData lbl_800FC720;
-EffectParams* lbl_803CB860 = &lbl_800FC720.unk00;
+extern EffectParams lbl_800FC720;
+EffectParams* lbl_803CB860 = &lbl_800FC720;
 DECL_SECT(".sdata") RGB8 lbl_803CB864[4] = {{0xFF, 0xFF, 0xFF}, {0xFF, 0xB6, 0x64}, {0x00, 0x00, 0x00}, {0x00, 0x00, 0x00}};
 extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 
