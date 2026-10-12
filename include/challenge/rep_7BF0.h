@@ -33,15 +33,23 @@ typedef struct {
     /*0x39*/ s8 stepRequested;
 } ChallengeSimulationSettings; // size: 0x3C
 
+struct ChallengeSimulationMenu;
+typedef s32 (*ChMenuFunc)(struct ChallengeSimulationMenu* menu, u16 buttons);
+
+// Same layout as DebugMenuItem (main/debug_menu.h).
 typedef struct {
-    u32 flags;
-    const char* text;
-    u8 padding08[0x1C];
-    u32 selection;
-    u8 padding28[4];
+    /*0x00*/ u32 flags; // item type
+    /*0x04*/ const char* text;
+    /*0x08*/ s32 min;
+    /*0x0C*/ s32 max;
+    /*0x10*/ s32 step[3];
+    /*0x1C*/ s32* value;
+    /*0x20*/ u32 mask;
+    /*0x24*/ s32 selection;
+    /*0x28*/ ChMenuFunc func;
 } ChallengeMenuItem;
 
-typedef struct {
+typedef struct ChallengeSimulationMenu {
     void* data;
     s32 count;
     s32 capacity;

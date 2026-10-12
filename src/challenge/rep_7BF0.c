@@ -1,3 +1,5 @@
+#include "math.h" // static dolsqrtf2 (the extern one from UnknownHomes_Game.h would emit its constants)
+#undef SQRT2_LINKAGE
 #include "challenge/rep_7BF0.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/gx.h"
@@ -6,6 +8,8 @@
 #include "main/file_8004207C.h"
 #include "main/file_80024184.h"
 #include "main/file_80037054.h"
+#define REP_HEADER_FN repHeader_7BF0
+#include "header_rep_inline.h"
 
 extern PadState lbl_803C77B8[4];
 extern void fn_800B806C(s32 index, f32 bottom, f32 top, f32 left, f32 right, f32 near, f32 far, f32 focalLength);
@@ -19,7 +23,6 @@ static ChallengeSimulationMenu lbl_1_bss_471BC;
 static RigidBody lbl_1_bss_47068;
 // POOL END
 extern f32 lbl_1_rodata_7DFC;
-extern const char* lbl_1_data_11424[];
 
 static ChallengeSimulationSettings lbl_1_data_11300 = {
     { 150000, 50000, 6250, 12500 }, // len, frac, radius, mass
@@ -61,12 +64,83 @@ static u8 sBoxDisplayList[0x40] = {
     0x03, 0x02, 0x03, 0x02, 0x04, 0x06, 0x04, 0x07, 0x04, 0x03, 0x04, 0x03, 0x05, 0x07, 0x05, 0x04,
     0x05, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
-static u32 sB = 1;
-static u32 sC[36] = {0};
-static struct { u8 pad0[0x30]; u32 v; u8 pad1[0x444]; } sD = {{0}};
-static ChallengeMenuItem* sE[2] = {0};
+static const char* sMainMenuTitle = "MAIN MENU"; // default menu data (fn_1_28C34)
+// Help line of the main menu's state item, by simulationState.
+static const char* lbl_1_data_11424[3] = {
+    "A:Sim Start X:Sim Step",
+    "A:Sim Start X:SimStep B:Reset",
+    "A:Sim Stop  B:Reset",
+};
+static ChallengeMenuItem sBatMenu[3] = {
+    { 8, "BACK TO PREV MENU", 0, 0, { 0, 0, 0 }, NULL, 0x100, -1, (ChMenuFunc)fn_1_28AE0 },
+    { 8, "BAT MENU", 0, 0, { 0, 0, 0 }, NULL, 0x100, 1, (ChMenuFunc)fn_1_28AE0 },
+    { 0, NULL, 0, 0, { 0, 0, 0 }, NULL, 0, 0, NULL },
+};
+static ChallengeMenuItem sMainMenu[26] = {
+    { 8, "MAIN MENU", 0, 0, { 0, 0, 0 }, NULL, 0x100, 0, (ChMenuFunc)fn_1_28AE0 },
+    { 8, NULL, 0, 0, { 0, 0, 0 }, NULL, 0x700, 0, fn_1_289E0 },
+    { 0, "SIM NUM  ", 1, 100, { 1, 10, 20 }, &lbl_1_data_11300.cameraFlags, 0, 0, NULL },
+    { 1, "LENGTH   ", 0, 1000000, { 1000, 100, 10000 }, &lbl_1_data_11300.scaledCamera[0], 0, 0, NULL },
+    { 1, "CENTER   ", 0, 1000000, { 1000, 100, 10000 }, &lbl_1_data_11300.scaledCamera[1], 0, 0, NULL },
+    { 1, "RADIUS   ", 0, 1000000, { 1000, 100, 10000 }, &lbl_1_data_11300.scaledCamera[2], 0, 0, NULL },
+    { 1, "MASS     ", 0, 1000000, { 1000, 100, 10000 }, &lbl_1_data_11300.scaledCamera[3], 0, 0, NULL },
+    { 1, "FIRST POS", -10000000, 10000000, { 1000, 100, 10000 }, &lbl_1_data_11300.height, 0, 0, NULL },
+    { 1, "FIRST ROT", -18000000, 18000000, { 100000, 10000, 1000000 }, &lbl_1_data_11300.angle, 0, 0, NULL },
+    { 1, "VEL   X  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.vel[0], 0, 0, NULL },
+    { 1, "VEL   Y  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.vel[1], 0, 0, NULL },
+    { 1, "VEL   Z  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.vel[2], 0, 0, NULL },
+    { 1, "OMEGA X  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.angVel[0], 0, 0, NULL },
+    { 1, "OMEGA Y  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.angVel[1], 0, 0, NULL },
+    { 1, "OMEGA Z  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.angVel[2], 0, 0, NULL },
+    { 1, "AIR REG  ", -10000000, 10000000, { 10, 100, 1000 }, &lbl_1_data_11300.unk50, 0, 0, NULL },
+    { 1, "ENV K    ", -100000000, 100000000, { 10000, 100000, 1000000 }, &sSimParams.spring, 0, 0, NULL },
+    { 1, "ENV D    ", -100000000, 100000000, { 100, 1000, 10000 }, &sSimParams.damping, 0, 0, NULL },
+    { 1, "ENV E    ", -100000000, 100000000, { 10, 100, 1000 }, &sSimParams.unk8, 0, 0, NULL },
+    { 1, "ENV MK   ", 0, 100000000, { 1000, 10000, 100000 }, &sSimParams.friction, 0, 0, NULL },
+    { 1, "ENV R CAP", 0, 100000000, { 1000, 10000, 100000 }, &sSimParams.maxForce, 0, 0, NULL },
+    { 1, "ENV R CUT", 0, 100000000, { 10, 100, 1000 }, &sSimParams.minForce, 0, 0, NULL },
+    { 1, "ENV M CUT", 0, 100000000, { 1000, 10000, 100000 }, &sSimParams.torqueEps, 0, 0, NULL },
+    { 1, "ENV S CAP", 0, 100000000, { 100, 1000, 10000 }, &sSimParams.maxDepth, 0, 0, NULL },
+    { 1, "ENV O CAP", 0, 100000000, { 1000, 10000, 100000 }, &sSimParams.maxAngVel, 0, 0, NULL },
+    { 0, NULL, 0, 0, { 0, 0, 0 }, NULL, 0, 0, NULL },
+};
+static ChallengeMenuItem* sMenus[2] = { sBatMenu, sMainMenu };
+static const Vec sUnusedZero = { 0.0f, 0.0f, 0.0f }; // unreferenced, but in .rodata
 
-// fn_1_2948C, size:0x15C
+// .text:0x00029A9C size:0x1C0
+// NONMATCHING 92%: register allocation/scheduling of the inlined fn_1_2935C prologue
+#if NONMATCHING
+void fn_1_29A9C(void) {
+    fn_1_2935C(&lbl_1_bss_47068);
+    fn_1_289C0(&lbl_1_bss_471D8);
+    lbl_1_data_11300.simulationState = 0;
+    fn_1_28C34(&lbl_1_bss_471BC, 0, NULL);
+    fn_800B806C(0, -240.0f, 240.0f, -320.0f, 320.0f, -512.0f, -1.0f, 1280.0f);
+    lbl_803CC1B8->func = fn_1_295E8;
+}
+#endif
+
+// .text:0x00029A48 size:0x54
+void fn_1_29A48(void) {
+    ChallengeQueueState* state;
+
+    fn_800AD038(lbl_80366158[2]);
+    fn_800A97D0(16, 30);
+    state = lbl_803CC1B8->state;
+    state->state = 1;
+    fn_800B0A14_removeQueue(state);
+}
+
+// .text:0x000295E8 size:0x460
+void fn_1_295E8(void) {
+    ChallengeQueueEntry* task = lbl_803CC1B8;
+
+    fn_1_2948C(task);
+    fn_1_2905C();
+    fn_1_29414(task);
+}
+
+// .text:0x0002948C size:0x15C
 static inline u8 NavigationMask(u16 held) {
     return (held & 0x800) ? 0x91 : ((held & 0x400) ? 0x50 : 0);
 }
@@ -98,49 +172,7 @@ void fn_1_2948C(ChallengeQueueEntry* task) {
     fn_1_27330(&lbl_1_bss_471D8);
 }
 
-
-// fn_1_289E0, size:0x100
-s32 fn_1_289E0(ChallengeSimulationMenu* menu, u16 buttons) {
-    switch (lbl_1_data_11300.simulationState) {
-    case 0:
-        if (buttons & 0x100) {
-            lbl_1_data_11300.simulationState = 2;
-        } else if (buttons & 0x400) {
-            lbl_1_data_11300.stepRequested = 1;
-            lbl_1_data_11300.simulationState = 1;
-        }
-        break;
-    case 1:
-        if (buttons & 0x100) {
-            lbl_1_data_11300.simulationState = 2;
-        } else if (buttons & 0x200) {
-            lbl_1_data_11300.simulationState = 0;
-        } else if (buttons & 0x400) {
-            lbl_1_data_11300.stepRequested = 1;
-        }
-        break;
-    case 2:
-        if (buttons & 0x100) {
-            lbl_1_data_11300.simulationState = 1;
-        } else if (buttons & 0x200) {
-            lbl_1_data_11300.simulationState = 0;
-        }
-        break;
-    }
-    menu->items[menu->selected].text = lbl_1_data_11424[lbl_1_data_11300.simulationState];
-    return 0;
-}
-
-// fn_1_2935C, size:0xB8
-void fn_1_2935C(RigidBody* body) {
-    fn_80037768(body, 2, lbl_1_data_11300.cameraFlags,
-        (f32)lbl_1_data_11300.scaledCamera[0] / 100000.0f,
-        (f32)lbl_1_data_11300.scaledCamera[1] / 100000.0f,
-        (f32)lbl_1_data_11300.scaledCamera[2] / 100000.0f,
-        (f32)lbl_1_data_11300.scaledCamera[3] / 100000.0f);
-}
-
-// fn_1_29414, size:0x78
+// .text:0x00029414 size:0x78
 void fn_1_29414(ChallengeQueueEntry* task) {
     if (task->menuOpen != 0) {
         fn_80048BEC(&lbl_1_bss_471BC, 0, 0);
@@ -150,111 +182,47 @@ void fn_1_29414(ChallengeQueueEntry* task) {
     fn_1_28CE8(task);
 }
 
-// fn_1_29A48, size:0x54
-void fn_1_29A48(void) {
-    ChallengeQueueState* state;
-
-    fn_800AD038(lbl_80366158[2]);
-    fn_800A97D0(16, 30);
-    state = lbl_803CC1B8->state;
-    state->state = 1;
-    fn_800B0A14_removeQueue(state);
+// .text:0x0002935C size:0xB8
+void fn_1_2935C(RigidBody* body) {
+    fn_80037768(body, 2, lbl_1_data_11300.cameraFlags,
+        (f32)lbl_1_data_11300.scaledCamera[0] / 100000.0f,
+        (f32)lbl_1_data_11300.scaledCamera[1] / 100000.0f,
+        (f32)lbl_1_data_11300.scaledCamera[2] / 100000.0f,
+        (f32)lbl_1_data_11300.scaledCamera[3] / 100000.0f);
 }
 
+// .text:0x0002905C size:0x300
+// Steps the rigid-body simulation according to lbl_1_data_11300.simulationState.
+void fn_1_2905C(void) {
+    Mtx m;
 
-// fn_1_289C0, size:0x20
-void fn_1_289C0(ChallengeDebugCamera* camera) {
-    fn_1_273D8(camera);
-}
-
-// fn_1_28C34, size:0xB4
-void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data) {
-    menu->data = data ? data : (void*)sB;
-    menu->capacity = 0x10;
-    menu->cursor = 0;
-    menu->selected = 0;
-    menu->flags = 1;
-    menu->items = sE[which];
-    if (which == 1) {
-        if (sD.v == 0) {
-            sD.v = sC[lbl_1_data_11300.simulationState];
+    switch (lbl_1_data_11300.simulationState) {
+    case 0:
+        fn_1_2935C(&lbl_1_bss_47068);
+        lbl_1_bss_47068.pos.x = 0.0f;
+        lbl_1_bss_47068.pos.y = (f32)lbl_1_data_11300.height / 100000.0f;
+        lbl_1_bss_47068.pos.z = 0.0f;
+        lbl_1_bss_47068.vel.x = (f32)lbl_1_data_11300.vel[0] / 100000.0f;
+        lbl_1_bss_47068.vel.y = (f32)lbl_1_data_11300.vel[1] / 100000.0f;
+        lbl_1_bss_47068.vel.z = (f32)lbl_1_data_11300.vel[2] / 100000.0f;
+        PSMTXMultVec(lbl_1_bss_47068.invRot, &lbl_1_bss_47068.vel, &lbl_1_bss_47068.velLocal);
+        lbl_1_bss_47068.angVel.x = (f32)lbl_1_data_11300.angVel[0] / 100000.0f;
+        lbl_1_bss_47068.angVel.y = (f32)lbl_1_data_11300.angVel[1] / 100000.0f;
+        lbl_1_bss_47068.angVel.z = (f32)lbl_1_data_11300.angVel[2] / 100000.0f;
+        PSMTXRotRad(m, 'X', 0.017453292f * ((f32)lbl_1_data_11300.angle / 100000.0f));
+        C_QUATMtx(&lbl_1_bss_47068.quat, m);
+        fn_800383BC(&lbl_1_bss_47068);
+        break;
+    case 1:
+        if (lbl_1_data_11300.stepRequested == 0) {
+            break;
         }
+        lbl_1_data_11300.stepRequested = 0;
+    case 2:
+        lbl_1_bss_47068.unk50 = (f32)lbl_1_data_11300.unk50 / 100000.0f;
+        fn_80037054(&lbl_1_bss_47068, &sSimParams);
+        break;
     }
-    menu->count = 0;
-    while (menu->items[menu->count].text != NULL) {
-        menu->count++;
-    }
-}
-
-// fn_1_28AE0, size:0x154
-s32 fn_1_28AE0(ChallengeSimulationMenu* menu) {
-    ChallengeQueueEntry* entry = lbl_803CC1B8;
-    entry->selection = menu->items[menu->selected].selection;
-    if (entry->selection < 0) {
-        fn_800AD038(lbl_80366158[2]);
-        fn_800A97D0(16, 30);
-        {
-            ChallengeQueueState* state = lbl_803CC1B8->state;
-            state->state = 1;
-            fn_800B0A14_removeQueue(state);
-        }
-    } else {
-        fn_1_28C34(menu, entry->selection, (void*)menu->items[menu->selected].text);
-    }
-    return 0;
-}
-
-// .text:0x0002858C size:0x434
-// Orbit-camera update (same as fn_1_26D28 without the callback, pitch and height inverted).
-void fn_1_2858C(ChallengeDebugCamera* camera, u16 held, u16 pressed, u16 repeated, ChallengeDebugPad* pad) {
-    Mtx rot;
-    Quaternion q;
-    Vec v;
-
-    if (pressed & 0x10) {
-        fn_1_273D8(camera);
-        return;
-    }
-
-    camera->yaw = camera->yaw - (((3.1415927f * camera->turnSpeed) / 180.0f) * (f32)pad->substickX /
-                                 128.0f) / 60.0f;
-    camera->pitch = camera->pitch + (((3.1415927f * camera->turnSpeed) / 180.0f) *
-                                     (f32)pad->substickY / 128.0f) / 60.0f;
-    while (camera->yaw < -3.1415927f) {
-        camera->yaw += 6.2831855f;
-    }
-    while (camera->yaw >= 3.1415927f) {
-        camera->yaw -= 6.2831855f;
-    }
-    if (camera->pitch < -3.1385248f) {
-        camera->pitch = -3.1385248f;
-    } else if (camera->pitch > 3.1385248f) {
-        camera->pitch = 3.1385248f;
-    }
-
-    v.x = 0.0f;
-    v.y = 0.0f;
-    v.z = 1.0f;
-    PSVECCrossProduct(&v, &camera->up, &camera->direction);
-    PSVECNormalize(&camera->direction, &camera->direction);
-    C_QUATRotAxisRad(&q, &camera->direction, camera->pitch);
-    PSMTXQuat(rot, &q);
-    PSMTXMultVec(rot, &v, &camera->direction);
-    C_QUATRotAxisRad(&q, &camera->up, camera->yaw);
-    PSMTXQuat(rot, &q);
-    PSMTXMultVec(rot, &camera->direction, &camera->direction);
-
-    v.x = (camera->moveSpeed * (f32)-pad->stickX / 128.0f) / 60.0f;
-    v.z = (camera->moveSpeed * (f32)pad->stickY / 128.0f) / 60.0f;
-    v.y -= ((camera->moveSpeed * (f32)pad->triggerL) / 150.0f) / 60.0f;
-    v.y += ((camera->moveSpeed * (f32)pad->triggerR) / 150.0f) / 60.0f;
-    PSMTXMultVec(rot, &v, &v);
-    PSVECAdd(&camera->position, &v, &camera->position);
-
-    camera->zoom = camera->zoom + (camera->zoomSpeed * (f32)(s32)((held >> 10) & 1)) / 60.0f;
-    camera->zoom = camera->zoom - (camera->zoomSpeed * (f32)(s32)((held >> 11) & 1)) / 60.0f;
-    camera->zoom = 0.1f * (f32)(0.0f == camera->zoom) + camera->zoom * (f32)(0.0f != camera->zoom);
-    camera->invZoom = 1.0f / camera->zoom;
 }
 
 // .text:0x00028CE8 size:0x374
@@ -313,58 +281,129 @@ void fn_1_28CE8(ChallengeQueueEntry* task) {
     PSVECScale(&lbl_1_bss_47068.force, lbl_1_bss_47068.invMass, &v);
 }
 
-// .text:0x0002905C size:0x300
-// Steps the rigid-body simulation according to lbl_1_data_11300.simulationState.
-void fn_1_2905C(void) {
-    Mtx m;
-
-    switch (lbl_1_data_11300.simulationState) {
-    case 0:
-        fn_1_2935C(&lbl_1_bss_47068);
-        lbl_1_bss_47068.pos.x = 0.0f;
-        lbl_1_bss_47068.pos.y = (f32)lbl_1_data_11300.height / 100000.0f;
-        lbl_1_bss_47068.pos.z = 0.0f;
-        lbl_1_bss_47068.vel.x = (f32)lbl_1_data_11300.vel[0] / 100000.0f;
-        lbl_1_bss_47068.vel.y = (f32)lbl_1_data_11300.vel[1] / 100000.0f;
-        lbl_1_bss_47068.vel.z = (f32)lbl_1_data_11300.vel[2] / 100000.0f;
-        PSMTXMultVec(lbl_1_bss_47068.invRot, &lbl_1_bss_47068.vel, &lbl_1_bss_47068.velLocal);
-        lbl_1_bss_47068.angVel.x = (f32)lbl_1_data_11300.angVel[0] / 100000.0f;
-        lbl_1_bss_47068.angVel.y = (f32)lbl_1_data_11300.angVel[1] / 100000.0f;
-        lbl_1_bss_47068.angVel.z = (f32)lbl_1_data_11300.angVel[2] / 100000.0f;
-        PSMTXRotRad(m, 'X', 0.017453292f * ((f32)lbl_1_data_11300.angle / 100000.0f));
-        C_QUATMtx(&lbl_1_bss_47068.quat, m);
-        fn_800383BC(&lbl_1_bss_47068);
-        break;
-    case 1:
-        if (lbl_1_data_11300.stepRequested == 0) {
-            break;
+// .text:0x00028C34 size:0xB4
+void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data) {
+    menu->data = data ? data : (void*)sMainMenuTitle;
+    menu->capacity = 0x10;
+    menu->cursor = 0;
+    menu->selected = 0;
+    menu->flags = 1;
+    menu->items = sMenus[which];
+    if (which == 1) {
+        if (sMainMenu[1].text == NULL) {
+            sMainMenu[1].text = lbl_1_data_11424[lbl_1_data_11300.simulationState];
         }
-        lbl_1_data_11300.stepRequested = 0;
-    case 2:
-        lbl_1_bss_47068.unk50 = (f32)lbl_1_data_11300.unk50 / 100000.0f;
-        fn_80037054(&lbl_1_bss_47068, &sSimParams);
-        break;
+    }
+    menu->count = 0;
+    while (menu->items[menu->count].text != NULL) {
+        menu->count++;
     }
 }
 
-// .text:0x000295E8 size:0x460
-void fn_1_295E8(void) {
-    ChallengeQueueEntry* task = lbl_803CC1B8;
-
-    fn_1_2948C(task);
-    fn_1_2905C();
-    fn_1_29414(task);
+// .text:0x00028AE0 size:0x154
+s32 fn_1_28AE0(ChallengeSimulationMenu* menu) {
+    ChallengeQueueEntry* entry = lbl_803CC1B8;
+    entry->selection = menu->items[menu->selected].selection;
+    if (entry->selection < 0) {
+        fn_800AD038(lbl_80366158[2]);
+        fn_800A97D0(16, 30);
+        {
+            ChallengeQueueState* state = lbl_803CC1B8->state;
+            state->state = 1;
+            fn_800B0A14_removeQueue(state);
+        }
+    } else {
+        fn_1_28C34(menu, entry->selection, (void*)menu->items[menu->selected].text);
+    }
+    return 0;
 }
 
-// .text:0x00029A9C size:0x1C0
-// NONMATCHING 92%: register allocation/scheduling of the inlined fn_1_2935C prologue
-#if NONMATCHING
-void fn_1_29A9C(void) {
-    fn_1_2935C(&lbl_1_bss_47068);
-    fn_1_289C0(&lbl_1_bss_471D8);
-    lbl_1_data_11300.simulationState = 0;
-    fn_1_28C34(&lbl_1_bss_471BC, 0, NULL);
-    fn_800B806C(0, -240.0f, 240.0f, -320.0f, 320.0f, -512.0f, -1.0f, 1280.0f);
-    lbl_803CC1B8->func = fn_1_295E8;
+// .text:0x000289E0 size:0x100
+s32 fn_1_289E0(ChallengeSimulationMenu* menu, u16 buttons) {
+    switch (lbl_1_data_11300.simulationState) {
+    case 0:
+        if (buttons & 0x100) {
+            lbl_1_data_11300.simulationState = 2;
+        } else if (buttons & 0x400) {
+            lbl_1_data_11300.stepRequested = 1;
+            lbl_1_data_11300.simulationState = 1;
+        }
+        break;
+    case 1:
+        if (buttons & 0x100) {
+            lbl_1_data_11300.simulationState = 2;
+        } else if (buttons & 0x200) {
+            lbl_1_data_11300.simulationState = 0;
+        } else if (buttons & 0x400) {
+            lbl_1_data_11300.stepRequested = 1;
+        }
+        break;
+    case 2:
+        if (buttons & 0x100) {
+            lbl_1_data_11300.simulationState = 1;
+        } else if (buttons & 0x200) {
+            lbl_1_data_11300.simulationState = 0;
+        }
+        break;
+    }
+    menu->items[menu->selected].text = lbl_1_data_11424[lbl_1_data_11300.simulationState];
+    return 0;
 }
-#endif
+
+// .text:0x000289C0 size:0x20
+void fn_1_289C0(ChallengeDebugCamera* camera) {
+    fn_1_273D8(camera);
+}
+
+// .text:0x0002858C size:0x434
+// Orbit-camera update (same as fn_1_26D28 without the callback, pitch and height inverted).
+void fn_1_2858C(ChallengeDebugCamera* camera, u16 held, u16 pressed, u16 repeated, ChallengeDebugPad* pad) {
+    Mtx rot;
+    Quaternion q;
+    Vec v;
+
+    if (pressed & 0x10) {
+        fn_1_273D8(camera);
+        return;
+    }
+
+    camera->yaw = camera->yaw - (((3.1415927f * camera->turnSpeed) / 180.0f) * (f32)pad->substickX /
+                                 128.0f) / 60.0f;
+    camera->pitch = camera->pitch + (((3.1415927f * camera->turnSpeed) / 180.0f) *
+                                     (f32)pad->substickY / 128.0f) / 60.0f;
+    while (camera->yaw < -3.1415927f) {
+        camera->yaw += 6.2831855f;
+    }
+    while (camera->yaw >= 3.1415927f) {
+        camera->yaw -= 6.2831855f;
+    }
+    if (camera->pitch < -3.1385248f) {
+        camera->pitch = -3.1385248f;
+    } else if (camera->pitch > 3.1385248f) {
+        camera->pitch = 3.1385248f;
+    }
+
+    v.x = 0.0f;
+    v.y = 0.0f;
+    v.z = 1.0f;
+    PSVECCrossProduct(&v, &camera->up, &camera->direction);
+    PSVECNormalize(&camera->direction, &camera->direction);
+    C_QUATRotAxisRad(&q, &camera->direction, camera->pitch);
+    PSMTXQuat(rot, &q);
+    PSMTXMultVec(rot, &v, &camera->direction);
+    C_QUATRotAxisRad(&q, &camera->up, camera->yaw);
+    PSMTXQuat(rot, &q);
+    PSMTXMultVec(rot, &camera->direction, &camera->direction);
+
+    v.x = (camera->moveSpeed * (f32)-pad->stickX / 128.0f) / 60.0f;
+    v.z = (camera->moveSpeed * (f32)pad->stickY / 128.0f) / 60.0f;
+    v.y -= ((camera->moveSpeed * (f32)pad->triggerL) / 150.0f) / 60.0f;
+    v.y += ((camera->moveSpeed * (f32)pad->triggerR) / 150.0f) / 60.0f;
+    PSMTXMultVec(rot, &v, &v);
+    PSVECAdd(&camera->position, &v, &camera->position);
+
+    camera->zoom = camera->zoom + (camera->zoomSpeed * (f32)(s32)((held >> 10) & 1)) / 60.0f;
+    camera->zoom = camera->zoom - (camera->zoomSpeed * (f32)(s32)((held >> 11) & 1)) / 60.0f;
+    camera->zoom = 0.1f * (f32)(0.0f == camera->zoom) + camera->zoom * (f32)(0.0f != camera->zoom);
+    camera->invZoom = 1.0f / camera->zoom;
+}
