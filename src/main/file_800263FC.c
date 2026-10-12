@@ -68,6 +68,15 @@ typedef struct TrailScratch {
     /* 0x90 */ Vec pos[18];
 } TrailScratch;
 extern TrailScratch lbl_8017EC00;
+
+// .bss
+TrailScratch lbl_8017EC00;
+f32 lbl_8017ED68[0x484];      // cosine table, filled at init
+Mtx lbl_8017FF78[2];
+Mtx lbl_8017FFE0 ATTRIBUTE_ALIGN(32);
+Vec lbl_80180010[4];
+Particle lbl_80180040[0x1400];
+Emitter lbl_801F8040[0x10];
 extern const Vec lbl_800E6784;    // (0, -1, 0)
 extern s32 lbl_803CB800;
 extern s32 lbl_803CB808; // easing iterations
@@ -88,6 +97,31 @@ extern s32 lbl_803CBC7C;
 extern Emitter* lbl_803CBC80;  // free emitter list (linked through next)
 extern EmitterHead lbl_803CBC84; // active list head
 #define EMITTER_HEAD ((Emitter*)&lbl_803CBC84)
+
+// .data
+u8 lbl_800F7840[32] = { // 4x4 RGB565 texture (white)
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+};
+UVCoord lbl_800F7860[7] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}, {1, 0}, {1, 1}};
+ParticleParams lbl_800F787C = {NULL, 6, 0, 1000000, 200, 20, {0, 10, 20, 0, 0, 20, 40, 1, 200, 255, 64}};
+TexCoordF lbl_800F78C0[4] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+
+// .sdata
+s32 lbl_803CB7F8 = 63;
+f32 lbl_803CB7FC = 0.05f;
+s32 lbl_803CB800 = 10;
+f32 lbl_803CB804 = 10.0f;
+s32 lbl_803CB808 = 1;
+f32 lbl_803CB80C = 10.0f;
+
+// .sbss (MWCC lays uninitialised small data out in reverse definition order)
+EmitterHead lbl_803CBC84;
+Emitter* lbl_803CBC80;
+s32 lbl_803CBC7C;
+u8 lbl_803CBC78;
+Particle* lbl_803CBC74;
+LightFlashTask* lbl_803CBC70;
 
 static inline f32 CosIdx(s32 angle) {
     s32 i = __abs(angle) & 0x7FF;
