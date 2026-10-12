@@ -85,8 +85,8 @@ typedef struct _TriangleCollisionStruct {
     /*0x60*/ Vec normal;
     /*0x6C*/ f32 distance; // unsure
     /*0x70*/ f32 collisionDistance; // unsure
-    /*0x72*/ E(u16, BALL_COLLISION_TYPE) collisionType;
-} TriangleCollisionStruct; // size: 0x74
+    /*0x74*/ E(u16, BALL_COLLISION_TYPE) collisionType;
+} TriangleCollisionStruct; // size: 0x78
 
 typedef struct _CollisionTriangle{
     /*0x00*/ Vec trianglePoint;

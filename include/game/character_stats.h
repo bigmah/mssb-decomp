@@ -36,7 +36,7 @@ typedef struct _StatTable {
     /*0x038*/ u8 PitchingStatBar;
     /*0x039*/ u8 RunningStatBar;
     /*0x03A*/ u8 FieldingStatBar;
-} StatTable; // size: 0x3B
+} StatTable; // size: 0x3C (0x3B bytes of data + tail padding)
 
 typedef struct _ChemistryTable {
     /*0x000*/ u8 Mario;

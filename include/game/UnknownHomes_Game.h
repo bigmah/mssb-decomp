@@ -1545,7 +1545,7 @@ typedef struct _SomeStarDashStruct {
     /*0x004*/ u8 _4[6];
     /*0x00A*/ u8 _pad_A[2]; // 2 bytes of padding for f32 alignment
     /*0x00C*/ f32 _A;
-    /*0x00E*/ u8 pad[24];
+    /*0x010*/ u8 pad[24];
 } SomeStarDashStruct; // size: 0x28
 
 typedef struct _UnkStarDashFloatStruct {
@@ -1558,7 +1558,7 @@ typedef struct _UnkStarDashFloatStruct {
     /*0x018*/ f32 _18;
     /*0x01C*/ f32 _1C;
     /*0x020*/ s16 _20;
-} UnkStarDashFloatStruct; // size: 0x22
+} UnkStarDashFloatStruct; // size: 0x24 (0x22 + tail padding)
 
 typedef struct _MaybeWallBallStruct {
     /*0x000*/ f32 _0; // start of wall ball struct?
@@ -1779,26 +1779,26 @@ typedef struct _MiniGameStruct {
     /*0x0C0*/ f32 _C0;
     /*0x0C4*/ s32 _C4;
 
-    /*0x0CA*/ SomeStarDashStruct _CA;
-    /*0x0F2*/ SomeStarDashStruct _F2;
-    /*0x11A*/ SomeStarDashStruct _11A;
-    /*0x142*/ SomeStarDashStruct _142;
-    /*0x16A*/ SomeStarDashStruct _16A;
-    /*0x192*/ SomeStarDashStruct _192;
-    /*0x1BA*/ SomeStarDashStruct _1BA;
-    /*0x1E2*/ SomeStarDashStruct _1E2;
-    /*0x20A*/ SomeStarDashStruct _20A;
+    /*0x0C8*/ SomeStarDashStruct _CA;
+    /*0x0F0*/ SomeStarDashStruct _F2;
+    /*0x118*/ SomeStarDashStruct _11A;
+    /*0x140*/ SomeStarDashStruct _142;
+    /*0x168*/ SomeStarDashStruct _16A;
+    /*0x190*/ SomeStarDashStruct _192;
+    /*0x1B8*/ SomeStarDashStruct _1BA;
+    /*0x1E0*/ SomeStarDashStruct _1E2;
+    /*0x208*/ SomeStarDashStruct _20A;
     /*0x230*/ s16 _230;
     /*0x232*/ s16 _232[2];
     /*0x236*/ u8 _236[2];
     /*0x238*/ UnkStarDashFloatStruct _238;
-    /*0x25A*/ SomeStarDashStruct _25A;
-    /*0x282*/ SomeStarDashStruct _282;
-    /*0x2AA*/ SomeStarDashStruct _2AA;
-    /*0x2D2*/ SomeStarDashStruct _2D2;
-    /*0x2FA*/ SomeStarDashStruct _2FA;
-    /*0x322*/ SomeStarDashStruct _322;
-    /*0x34A*/ u8 pad[2];
+    /*0x25C*/ SomeStarDashStruct _25A;
+    /*0x284*/ SomeStarDashStruct _282;
+    /*0x2AC*/ SomeStarDashStruct _2AA;
+    /*0x2D4*/ SomeStarDashStruct _2D2;
+    /*0x2FC*/ SomeStarDashStruct _2FA;
+    /*0x324*/ SomeStarDashStruct _322;
+    /*0x34C*/ u8 pad[2];
     /*0x34E*/ u8 _34E[40];
     /*0x376*/ u8 _376[40];
     /*0x39E*/ u8 _39E[40];
@@ -2737,19 +2737,19 @@ typedef struct {
     /* 0x015 */ u8 _0015;
     artificial_padding(0x15, 0x18, u8);
     /* 0x018 */ VecXYZ _0018;
-    /* 0x018 */ VecXYZ _0024;
+    /* 0x024 */ VecXYZ _0024;
     /* 0x030 */ VecXYZ _030;
     /* 0x03C */ VecXYZ _03C[10];
     /* 0x0B4 */ VecXYZ _0B4;
     /* 0x0C0 */ f32 _0C0;
-    /* 0x0C0 */ VecXYZ _0C4;
+    /* 0x0C4 */ VecXYZ _0C4;
     /* 0x0D0 */ f32 _0D0;
     /* 0x0D4 */ f32 _0D4;
     /* 0x0D8 */ f32 _0D8;
     /* 0x0DC */ f32 _0DC;
     /* 0x0E0 */ s16 _0E0;
     /* 0x0E2 */ u8 _0E2;
-    /* 0x0E2 */ u8 _0E3;
+    /* 0x0E3 */ u8 _0E3;
     /* 0x0E4 */ VecXYZ _0E4;
     /* 0x0F0 */ VecXYZ _0F0;
     /* 0x0FC */ VecXYZ _0FC;
@@ -2790,7 +2790,7 @@ typedef struct {
     /* 0xAAC */ u16 _AAC; // fade-out length in frames
     /* 0xAAE */ u16 _AAE; // fade-in length in frames
     /* 0xAB0 */ void* _AB0; // 0x8000-byte heap buffer (fn_3_106DFC)
-    /* 0xAB5 */ u8 _AB4;
+    /* 0xAB4 */ u8 _AB4;
     /* 0xAB5 */ u8 _AB5;
     /* 0xAB6 */ u8 _AB6;
     /* 0xAB7 */ u8 _AB7;
@@ -2805,8 +2805,8 @@ typedef struct {
     /* 0xAC6 */ u8 _AC6;
     artificial_padding(0xac6, 0xac8, u8);
     /* 0xAC8 */ u8 _AC8;
-    /* 0xAC8 */ u8 _AC9;
-    /* 0xAC8 */ u8 _ACA;
+    /* 0xAC9 */ u8 _AC9;
+    /* 0xACA */ u8 _ACA;
     artificial_padding(0xaca, 0xad8, u8);
     /* 0xAD8 */ u8 _AD8;
     artificial_padding(0xad8, 0x146c, u8);
@@ -2841,10 +2841,10 @@ typedef struct {
     /* 0x2874 */ f32 _2874;
     /* 0x2878 */ f32 _2878;
     /* 0x287C */ f32 _287C;
-    /* 0x2870 */ f32 _2880;
+    /* 0x2880 */ f32 _2880;
     /* 0x2884 */ VecXYZ _2884;
     /* 0x2890 */ VecXYZ _2890;
-    /* 0x289E */ s16 _289C;
+    /* 0x289C */ s16 _289C;
     /* 0x289E */ s16 _289E;
     /* 0x28A0 */ s16 _28A0;
     artificial_padding(0x28A0, 0x28a6, s16);
