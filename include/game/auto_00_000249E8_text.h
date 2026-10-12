@@ -164,7 +164,13 @@ typedef struct Unk32724 {
     /*0xB2*/ u8 _B2[0xB4 - 0xB2];
     /*0xB4*/ u8 _B4;
     /*0xB5*/ u8 _B5;
-    /*0xB6*/ u8 _B6[0xC8 - 0xB6];
+    /*0xB6*/ u8 _B6[0xB9 - 0xB6];
+    /*0xB9*/ s8 _B9; // practice type (auto_00_000B3B70_text)
+    /*0xBA*/ u8 _BA;
+    /*0xBB*/ u8 _BB;
+    /*0xBC*/ u8 _BC;
+    /*0xBD*/ u8 _BD;
+    /*0xBE*/ u8 _BE[0xC8 - 0xBE];
     /*0xC8*/ u8 _C8;
     /*0xC9*/ u8 _C9;
     /*0xCA*/ u8 _CA;
