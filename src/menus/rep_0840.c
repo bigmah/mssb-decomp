@@ -1,4 +1,5 @@
 #include "menus/rep_0840.h"
+#include "header_rep_data.h"
 
 #include <string.h>
 #include "Dolphin/vec.h"
@@ -38,7 +39,6 @@ extern MenuWorld0840* lbl_2_bss_1A8248[];
 extern MenuWork0840* lbl_2_bss_1A824C[];
 extern MenuSceneTask0840* lbl_803CC1B8;
 extern u8 lbl_2_data_3198[];
-extern const f32 lbl_2_rodata_890;
 
 // .text:0x0003BD88 size:0x2B4
 // Scripted menu scene: walks the cursor character to the stadium entrance.
@@ -80,12 +80,12 @@ void fn_2_3BD88(void) {
     case 4:
         if (lbl_2_bss_1A8248[0]->location == 0x30) {
             memcpy(&pos, lbl_2_data_3198 + 0x208, sizeof(Vec));
-            PSVECScale(&pos, lbl_2_rodata_890, &pos);
+            PSVECScale(&pos, 0.5f, &pos);
             fn_2_6AABC(0, &pos);
             fn_2_92654(0x1A, 9);
         } else {
             memcpy(&pos, lbl_2_data_3198 + 0x1F4, sizeof(Vec));
-            PSVECScale(&pos, lbl_2_rodata_890, &pos);
+            PSVECScale(&pos, 0.5f, &pos);
             fn_2_6AABC(0, &pos);
             fn_2_92654(0x19, 9);
         }

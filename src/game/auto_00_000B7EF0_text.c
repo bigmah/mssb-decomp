@@ -10,9 +10,13 @@ typedef struct StadRandState {
 
 extern StadRandState lbl_3_common_bss_350E4;
 
-// .text:0x000B7EF0 size:0x28 mapped:0x806F6F84
-f32 vecDotProduct(VecXYZ* a, VecXYZ* b) {
-    return (a->x * b->x) + (a->y * b->y) + (a->z * b->z);
+// .text:0x000B7F70 size:0x58 mapped:0x806F7004
+s16 fn_3_B7F70(s16 range) {
+    if (range < 0) {
+        range *= -1;
+    }
+    lbl_3_common_bss_350E4.seed = (lbl_3_common_bss_350E4.seed * 5 + 1) % 0x8000;
+    return lbl_3_common_bss_350E4.seed % range;
 }
 
 // .text:0x000B7F18 size:0x58 mapped:0x806F6FAC
@@ -22,11 +26,8 @@ void vecCrossProduct(VecXYZ* out, VecXYZ* a, VecXYZ* b) {
     out->z = (a->x * b->y) - (a->y * b->x);
 }
 
-// .text:0x000B7F70 size:0x58 mapped:0x806F7004
-s16 fn_3_B7F70(s16 range) {
-    if (range < 0) {
-        range *= -1;
-    }
-    lbl_3_common_bss_350E4.seed = (lbl_3_common_bss_350E4.seed * 5 + 1) % 0x8000;
-    return lbl_3_common_bss_350E4.seed % range;
+// .text:0x000B7EF0 size:0x28 mapped:0x806F6F84
+f32 vecDotProduct(VecXYZ* a, VecXYZ* b) {
+    return (a->x * b->x) + (a->y * b->y) + (a->z * b->z);
 }
+

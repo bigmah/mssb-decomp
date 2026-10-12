@@ -2,10 +2,18 @@
 #define __REP_0F60_MENUS_H__
 
 #include "mssbTypes.h"
+#include "menus/menu_asset.h"
 #include "main/file_80024D2C.h"
 #include "Dolphin/mtx.h"
 
 struct GameActor;
+
+// Draw-list node for fn_800A7D4C (DrawCallbackNode in main/file_800A7C08.h).
+typedef struct MenuDrawNode0F60 {
+    /*0x0*/ u32 next; // TODO type: tagged link, set by fn_800A7D4C
+    /*0x4*/ void (*func)(void);
+} MenuDrawNode0F60;
+
 
 // Views of main.dol character types (main/file_80011640.h: CharModel, CharSlot,
 // CharActor); that header can't be included next to this unit's declarations.

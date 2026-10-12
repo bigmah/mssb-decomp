@@ -9,6 +9,7 @@
 #include "menus/auto_00_00000D08_text.h"
 #include "menus/auto_00_00094854_text.h"
 #include "menus/rep_10C0.h"
+#include "menus/menu_asset.h"
 #include "Dolphin/os.h"
 extern u8 lbl_803C6CF8[]; // TODO type: ARAMLoader (main/file_800A6870.h); idle at 0x715
 
@@ -30,9 +31,6 @@ extern u8* lbl_2_bss_1A8248[];
 extern MenuActorMgr lbl_8036E548;
 extern u8 lbl_800E869C[0x20];
 extern u8 lbl_2_data_3CD0[0x10];
-extern u8 lbl_2_data_2F990[][0x10]; // ARAM file descriptors
-extern u8 lbl_2_data_2FA60[][0x10];
-extern s32 lbl_2_data_2FDC0[];
 
 // TODO type: lbl_2_bss_1A824C[0] work area
 #define MENU_ACTOR_COUNT (*(s16*)(lbl_2_bss_1A824C[0] + 0x197746))
@@ -59,7 +57,7 @@ void fn_2_8E6A4(void) {
         break;
     case 1:
         lbl_2_bss_340140->actors[task->count].aram =
-            ARAMTransfer(lbl_2_data_2FA60[lbl_2_data_2FDC0[task->kind]], 0, 0, 0);
+            ARAMTransfer(&lbl_2_data_2FA60[lbl_2_data_2FDC0[task->kind]], 0, 0, 0);
         task->count++;
         task->step = 2;
         break;
@@ -109,7 +107,7 @@ void fn_2_8E8A4(void) {
         task->step = 1;
         break;
     case 1:
-        lbl_2_bss_340140->actors[task->count].aram = ARAMTransfer(lbl_2_data_2F990[task->kind], 0, 0, 0);
+        lbl_2_bss_340140->actors[task->count].aram = ARAMTransfer(&lbl_2_data_2F990[task->kind], 0, 0, 0);
         task->count++;
         task->step = 2;
         break;
@@ -162,7 +160,7 @@ void fn_2_8EA80(void) {
     case 1:
         // TODO type: lbl_2_bss_1A8248[0] + 0x441C is the selected stadium/file index
         lbl_2_bss_340140->actors[task->count].aram =
-            ARAMTransfer(lbl_2_data_2F990[lbl_2_bss_1A8248[0][0x441C]], 0, 0, 0);
+            ARAMTransfer(&lbl_2_data_2F990[lbl_2_bss_1A8248[0][0x441C]], 0, 0, 0);
         task->count++;
         task->step = 2;
         break;
@@ -172,7 +170,7 @@ void fn_2_8EA80(void) {
         }
         break;
     case 3:
-        lbl_2_bss_340140->actors[task->count].aram = ARAMTransfer(lbl_2_data_2F990[task->count + 5], 0, 0, 0);
+        lbl_2_bss_340140->actors[task->count].aram = ARAMTransfer(&lbl_2_data_2F990[task->count + 5], 0, 0, 0);
         task->count++;
         task->step = 4;
         break;

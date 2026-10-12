@@ -1439,7 +1439,10 @@ extern const f64 lbl_3_rodata_3438;
 extern void fn_80062C24(f32*);
 extern void fn_3_14A90C(f32*);
 extern void fn_3_14B9A0(u32 a, Vec* b);
+// .bss (laid out last-defined-first)
+static u8 lbl_3_bss_B6C0[0x40]; // unused
 static f32 lbl_3_bss_B6BC;
+static u8 lbl_3_bss_B6B8[0x4]; // unused
 void fn_3_11A92C(u8* q, s32 n) {
     f32 v[3];
     u8 t;

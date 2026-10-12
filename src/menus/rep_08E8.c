@@ -40,7 +40,10 @@ extern u8* lbl_2_bss_1A824C[];
 extern void* _OSAllocFromHeap(s32 alignment, s32 size);
 extern void fn_2_513E0(void* buffer, s32 x, s32 y, s32 option, s32 style, s32 first, s32 second, s32 third);
 
-extern f32 lbl_2_bss_55B8;
+// This unit's .bss (file statics, emitted in reverse order of definition).
+static MenuNumberState lbl_2_bss_55C0;
+static f32 lbl_2_bss_55BC;
+static f32 lbl_2_bss_55B8;
 extern Vec lbl_2_data_132EC;
 extern Vec lbl_2_data_132F8;
 
@@ -883,7 +886,6 @@ void fn_2_47FF8(void) {
     fn_80052968();
 }
 
-extern f32 lbl_2_bss_55BC;
 extern Vec lbl_2_data_13304;
 extern Vec lbl_2_data_13310;
 
@@ -1374,7 +1376,6 @@ void fn_2_4A6E8(void) {
 
 #undef RESULT_S16
 
-extern MenuNumberState lbl_2_bss_55C0;
 extern u32 lbl_803C7898[];
 extern MenuSceneTask* lbl_803CC1B8;
 extern s32 fn_80016710(u8 kind, s32 index);

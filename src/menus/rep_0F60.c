@@ -6,8 +6,104 @@
 extern u8 lbl_8036E548[];
 extern u8* lbl_2_bss_340140;
 extern u8* lbl_2_bss_1A824C;
-extern u8 lbl_2_data_2F990[];
 extern void* _OSAllocFromHeap(s32 alignment, s32 size);
+extern u8 lbl_800F5D98[];
+extern u8 lbl_800F71D8[];
+extern void fn_2_8ACDC(void);
+
+// Model files, indexed by kind (fn_2_8D9DC, fn_2_8DB14..fn_2_8DCD8, auto_00_0008E6A4).
+MenuAsset lbl_2_data_2F990[13] = {
+    {0x0000040B, 0x4005A338, 0x19233000, 0x0003A448},
+    {0x0000040B, 0x4004D644, 0x1926D800, 0x00030E60},
+    {0x0000040B, 0x40061CB0, 0x1929E800, 0x0003E260},
+    {0x0000040B, 0x4004A820, 0x1930B800, 0x000316E0},
+    {0x0000040B, 0x40046B64, 0x192DD000, 0x0002E4EC},
+    {0x0000040B, 0x40047D78, 0x1933D000, 0x0002F2DC},
+    {0x0000040B, 0x40042A7C, 0x1936C800, 0x0002AD8C},
+    {0x0000040B, 0x40047B30, 0x19397800, 0x0002D5A8},
+    {0x0000040B, 0x4003F9D0, 0x193C5000, 0x00025C68},
+    {0x0000040B, 0x400413A4, 0x193EB000, 0x000292B0},
+    {0x0000040B, 0x40044F28, 0x19432000, 0x0002D5EC},
+    {0x0000040B, 0x40030574, 0x19414800, 0x0001D740},
+    {0x0000040B, 0x40036CD8, 0x1945F800, 0x00023828},
+};
+// Animation files, indexed through lbl_2_data_2FDC0.
+MenuAsset lbl_2_data_2FA60[54] = {
+    {0x0000040B, 0x4005A338, 0x19233000, 0x0003A448},
+    {0x0000040B, 0x40062C34, 0x19483800, 0x000405F4},
+    {0x0000040B, 0x4004A820, 0x1930B800, 0x000316E0},
+    {0x0000040B, 0x4005C0CC, 0x194C4000, 0x0003C38C},
+    {0x0000040B, 0x4004D644, 0x1926D800, 0x00030E60},
+    {0x0000040B, 0x4004E624, 0x19500800, 0x000333F4},
+    {0x0000040B, 0x40046B64, 0x192DD000, 0x0002E4EC},
+    {0x0000040B, 0x40047BF8, 0x19534000, 0x0002D124},
+    {0x0000040B, 0x400474C4, 0x19561800, 0x0002D2C4},
+    {0x0000040B, 0x40047D78, 0x1933D000, 0x0002F2DC},
+    {0x0000040B, 0x40061CB0, 0x1929E800, 0x0003E260},
+    {0x0000040B, 0x4005C08C, 0x1958F000, 0x0003F088},
+    {0x0000040B, 0x40044F28, 0x19432000, 0x0002D5EC},
+    {0x0000040B, 0x4003F9D0, 0x193C5000, 0x00025C68},
+    {0x0000040B, 0x4002F3E8, 0x195CE800, 0x0001E374},
+    {0x0000040B, 0x40049F94, 0x195ED000, 0x0002D67C},
+    {0x0000040B, 0x40030574, 0x19414800, 0x0001D740},
+    {0x0000040B, 0x4004EB58, 0x1961A800, 0x00031A64},
+    {0x0000040B, 0x4002D3B8, 0x1964C800, 0x0001C224},
+    {0x0000040B, 0x40042A7C, 0x1936C800, 0x0002AD8C},
+    {0x0000040B, 0x400425E0, 0x19669000, 0x0002BC8C},
+    {0x0000040B, 0x40047B30, 0x19397800, 0x0002D5A8},
+    {0x0000040B, 0x400425E0, 0x19669000, 0x0002BC8C},
+    {0x0000040B, 0x40040EF0, 0x19695000, 0x00028E20},
+    {0x0000040B, 0x40035DC0, 0x196BE000, 0x00021B80},
+    {0x0000040B, 0x40027FF8, 0x196E0000, 0x00018538},
+    {0x0000040B, 0x40027FF8, 0x196F8800, 0x00018538},
+    {0x0000040B, 0x4003F0E8, 0x19711000, 0x00026FA4},
+    {0x0000040B, 0x40036CD8, 0x1945F800, 0x00023828},
+    {0x0000040B, 0x4003F9D0, 0x19738000, 0x00025C68},
+    {0x0000040B, 0x4003F9D0, 0x1975E000, 0x00025C68},
+    {0x0000040B, 0x4003F9D0, 0x19784000, 0x00025C68},
+    {0x0000040B, 0x4003F9D0, 0x197AA000, 0x00025C68},
+    {0x0000040B, 0x400413A4, 0x193EB000, 0x000292B0},
+    {0x0000040B, 0x40034750, 0x197D0000, 0x000200C4},
+    {0x0000040B, 0x40034750, 0x197F0800, 0x000200C4},
+    {0x0000040B, 0x40034750, 0x19811000, 0x000200C4},
+    {0x0000040B, 0x4002E558, 0x19831800, 0x0001C538},
+    {0x0000040B, 0x4003CA98, 0x1984E000, 0x0002768C},
+    {0x0000040B, 0x4005577C, 0x19875800, 0x000386A0},
+    {0x0000040B, 0x40023EF8, 0x198AE000, 0x00017274},
+    {0x0000040B, 0x4003307C, 0x198C5800, 0x000203B8},
+    {0x0000040B, 0x4003EF28, 0x198E6000, 0x000297C4},
+    {0x0000040B, 0x4003CC00, 0x1990F800, 0x00027F38},
+    {0x0000040B, 0x40030574, 0x19937800, 0x0001D740},
+    {0x0000040B, 0x40030574, 0x19955000, 0x0001D740},
+    {0x0000040B, 0x40030574, 0x19972800, 0x0001D740},
+    {0x0000040B, 0x40030574, 0x19990000, 0x0001D740},
+    {0x0000040B, 0x40038A88, 0x199AD800, 0x00023C60},
+    {0x0000040B, 0x4002A408, 0x199D1800, 0x0001AB60},
+    {0x0000040B, 0x40038A88, 0x199EC800, 0x00023C60},
+    {0x0000040B, 0x4002A408, 0x19A10800, 0x0001AB60},
+    {0x0000040B, 0x4003AD18, 0x19A2B800, 0x00021DBC},
+    {0x0000040B, 0x4003AD18, 0x19A4D800, 0x00021DBC},
+};
+s32 lbl_2_data_2FDC0[32] = {
+    0, 1, 2, 3, 4, 5, 6, 7,
+    8, 9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x18, 0x1B,
+    0x1C, 0x21, 0x25, 0x26, 0x27, 0x28, 0x29, 0x30,
+};
+void* lbl_2_data_2FE40[2] = {lbl_800F5D98, lbl_800F71D8}; // unreferenced
+MenuAsset lbl_2_data_2FE48 = {0x0000040B, 0x400D198C, 0x191D5800, 0x0005D268};
+MenuAsset lbl_2_data_2FE58 = {0x0000040B, 0x400204C0, 0x191C1800, 0x00013FCC};
+u32 lbl_2_data_2FE68[3] = {0, 0, 0};
+MenuDrawNode0F60 lbl_2_data_2FE74 = {2, fn_2_8ACDC}; // unreferenced
+u8 lbl_2_data_2FE7C[8] = {5, 6, 9, 11, 7, 8, 10, 12};
+s32 lbl_2_data_2FE84[10] = {1, 1, 5, 5, 5, 5, 5, 5, 2, 5};
+s32 lbl_2_data_2FEAC[10] = {2, 0xB, 4, 7, 0xA, 2, 8, 0xB, 0x26, 0};
+f32 lbl_2_data_2FED4[3] = {0.0f, 0.0f, 0.0f};
+// lbl_2_data_2FEE0 (Vec, zero) follows, then the jump tables of fn_2_8D270 and fn_2_8DFB0:
+// they stay in the auto split until those functions match.
+extern Vec lbl_2_data_2FEE0;
+
+static f32 lbl_2_bss_B2B8;
 typedef struct {
     u8 pad0[0x25D];
     u8 enabled;
@@ -69,7 +165,7 @@ void fn_2_8CCCC(s32 index, s32 a, s32 b, u8 mode, s32 c, s32 d, s32 e, s32 f) {
 
 // fn_2_8DC00, size:0xD8
 void fn_2_8DC00(void) {
-    u8* t = lbl_2_data_2F990;
+    u8* t = (u8*)lbl_2_data_2F990;
     u32 max = 0;
     u32 v;
     s32 i;
@@ -109,7 +205,7 @@ void fn_2_8DB14(void) {
     s32 i;
     s32 size;
     for (i = 0; i < *(s16*)(lbl_2_bss_1A824C + 0x197746); i++) {
-        v = *(u32*)(lbl_2_data_2F990 + i * 0x10 + 4) & 0x0FFFFFFF;
+        v = lbl_2_data_2F990[i].sizeFlags & 0x0FFFFFFF;
         if (max < v) max = v;
     }
     size = (max + 0x1F) & ~0x1F;
@@ -281,7 +377,6 @@ void fn_2_8D024(void) {
 
 extern u8* lbl_803CC1B8;
 extern u8 lbl_803C6CF8[];
-extern u8 lbl_2_data_2FE48[];
 extern void fn_80052D70(void);
 
 // NONMATCHING 97%: li r6,1 scheduled before the lbl_2_bss_1A824C load in state 6
@@ -296,7 +391,7 @@ void fn_2_8E478(void) {
         o[0x28] = 1;
         break;
     case 1:
-        *(void**)(lbl_2_bss_340140 + 0x2D9C) = ARAMTransfer(lbl_2_data_2FE48, 0, 0, 0);
+        *(void**)(lbl_2_bss_340140 + 0x2D9C) = ARAMTransfer(&lbl_2_data_2FE48, 0, 0, 0);
         *(s16*)(o + 0x14) = *(s16*)(o + 0x14) + 1;
         o[0x28] = 2;
         break;
@@ -330,9 +425,6 @@ void fn_2_8E478(void) {
 
 extern void* memcpy(void* d, const void* s, u32 n);
 extern f32 fn_2_4A1E8(f32 x, f32 y);
-extern Vec lbl_2_data_2FEE0;
-extern f32 lbl_2_data_2FED4[];
-extern f32 lbl_2_bss_B2B8;
 extern u8* lbl_2_bss_3401BC;
 extern void CTRLSetTranslation(u8*, f32, f32, f32);
 extern void CTRLSetRotation(u8*, f32, f32, f32);
@@ -419,8 +511,6 @@ extern void fn_800B2B54(struct GameActor* actor, u16 bone, u8 value);
 extern void fn_800B2B4C(struct GameActor* actor, f32 speed);
 extern void fn_8001B308(s32 index, s32 enable);
 extern void fn_8001B5EC(s32 index, s32 enable);
-extern s32 lbl_2_data_2FE84[];
-extern s32 lbl_2_data_2FEAC[];
 extern const f32 lbl_2_rodata_FC0;
 extern const f32 lbl_2_rodata_FC4;
 
@@ -550,7 +640,6 @@ void fn_2_8C910(void) {
 extern void fn_2_4E824(void);
 extern void fn_2_48DB4(void);
 extern void fn_2_93C64(void);
-extern u8 lbl_2_data_2FE58[];
 
 // NONMATCHING 98%: the inlined fn_2_8B2C0 has the same i/off copy and r3/r4 swap as fn_2_8B2C0
 #if NONMATCHING
@@ -569,7 +658,7 @@ void fn_2_8DFB0(void) {
         break;
     case 1:
         *(s16*)(lbl_2_bss_1A824C + 0x197746) = 0;
-        *(void**)(lbl_2_bss_340140 + 0x2D9C) = ARAMTransfer(lbl_2_data_2FE58, 0, 0, 0);
+        *(void**)(lbl_2_bss_340140 + 0x2D9C) = ARAMTransfer(&lbl_2_data_2FE58, 0, 0, 0);
         *(s16*)(task + 0x14) = *(s16*)(task + 0x14) + 1;
         task[0x28] = 2;
         break;
@@ -631,7 +720,6 @@ extern s32 fn_800637D4(void* player, void* slot);
 extern void* fn_80052634(void* player, void* slot);
 extern s32 fn_80062ED4(void* player, void* slot);
 extern void* memset(void* str, int c, u32 n);
-extern u8 lbl_2_data_2FE7C[];
 extern const f32 lbl_2_rodata_FB8;
 
 // Sets bone `j` of the slot's model up as a separately drawn part (0xFFFF: no such bone).

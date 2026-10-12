@@ -17,16 +17,81 @@ extern const f32 lbl_2_rodata_ED4[];
 extern const f32 lbl_2_rodata_EF0[];
 extern MenuCamera lbl_2_bss_1A81D4;
 extern u8 lbl_803CBBC0[];
-extern u8 lbl_2_data_2E9B4[][8];
 extern void fn_2_48D54(void);
+
+// Stadium background objects, indexed by stadium.
+// Stadium background objects (lbl_2_data_2E608): file statics, reached through one .data anchor.
+static MenuStageObject sStageObjects[4][30] = {
+        {
+            {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {1, 1, 1},
+            {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {2, 2, 1}, {2, 2, 1},
+            {2, 2, 1}, {2, 2, 1}, {2, 2, 1}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0},
+            {3, 0, 0}, {3, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
+            {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
+        },
+        {
+            {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1},
+            {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1},
+            {2, 2, 1}, {2, 2, 1}, {2, 2, 1}, {2, 2, 1}, {2, 2, 1}, {2, 2, 1},
+            {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0},
+            {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
+        },
+        {
+            {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {1, 1, 1},
+            {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {2, 2, 1}, {2, 2, 1},
+            {2, 2, 1}, {2, 2, 1}, {2, 2, 1}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0},
+            {3, 0, 0}, {3, 0, 0}, {4, 0, 0}, {4, 0, 0}, {4, 0, 0}, {4, 0, 0},
+            {4, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
+        },
+        {
+            {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1},
+            {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1},
+            {2, 2, 1}, {2, 2, 1}, {2, 2, 1}, {2, 2, 1}, {2, 2, 1}, {2, 2, 1},
+            {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0},
+            {4, 0, 0}, {4, 0, 0}, {4, 0, 0}, {4, 0, 0}, {4, 0, 0}, {4, 0, 0},
+        },
+    }; // per stadium
+static s16 sStageBoneCount[6] = {1, 1, 1, 10, 11, 0}; // per model
+static s16 sStageTexCount[6] = {8, 8, 8, 4, 7, 0}; // per model
+static s16 sStageTexIndex[5][8] = {
+        {8, 9, 10, 11, 4, 12, 6, 7},
+        {0, 1, 2, 3, 4, 5, 6, 7},
+        {13, 14, 15, 16, 4, 17, 6, 7},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+    }; // per texSet
+static s8 sStageObjectCount[4] = {20, 24, 25, 30}; // per stadium
+
+// Camera eye/target per stadium.
+f32 lbl_2_data_2E944[4][6] = {
+    {1.1f, -10.47f, -0.56f, 1.1f, -9.47f, -0.52f},
+    {1.34f, -11.88f, -0.65f, 1.34f, -10.88f, -0.61f},
+    {1.25f, -11.83f, -0.7f, 1.25f, -10.83f, -0.66f},
+    {1.32f, -11.88f, -0.69f, 1.32f, -10.88f, -0.65f},
+};
+u8 lbl_2_data_2E9A4[16] = {0x00, 0x00, 0x04, 0x0B, 0x40, 0x02, 0x04, 0xC0, 0x19, 0x1C, 0x18, 0x00, 0x00, 0x01, 0x3F, 0xCC}; // unreferenced
+
+// Draw-list nodes for fn_2_86F40, one per frame buffer (lbl_803CBBC0).
+MenuDrawNode lbl_2_data_2E9B4[2] = {
+    {2, fn_2_86F40},
+    {2, fn_2_86F40},
+};
+Vec lbl_2_data_2E9C4 = {0.0f, 0.0f, 0.0f};
+Vec lbl_2_data_2E9D0 = {0.0f, 0.0f, 0.0f};
+Vec lbl_2_data_2E9DC = {-1.5707964f, 0.0f, 0.0f};
+Vec lbl_2_data_2E9E8 = {0.0f, 0.0f, 0.0f};
+u32 lbl_2_data_2E9F4[1] = {0}; // unreferenced (an aggregate: a zero scalar would go to .bss)
+
+// mwcc emits file statics in reverse order of definition.
+static u8 lbl_2_bss_B2A5;
+static s8 lbl_2_bss_B2A4;
+static f32 lbl_2_bss_B2A0;
+static f32 lbl_2_bss_B29C;
 
 extern void fn_2_190DC(ActorObjectTable*, Mtx);
 extern void fn_800A7D4C(s32, void*);
 extern f32 fn_2_4A1E8(f32, f32);
 extern const f32 lbl_2_rodata_EAC;
-extern Vec lbl_2_data_2E9C4;
-extern Vec lbl_2_data_2E9D0;
-extern f32 lbl_2_bss_B29C;
 
 // fn_2_868C8, size:0xEC
 void fn_2_868C8(void) {
@@ -64,7 +129,7 @@ void fn_2_86FEC(void) {
     fn_2_86470();
     fn_2_85D6C(&lbl_2_bss_1A81D4);
     PSMTXCopy(lbl_2_bss_1A81D4.view, fn_80052768_getCamera(0)->view);
-    fn_800A7D4C(0, lbl_2_data_2E9B4[lbl_803CBBC0[0]]);
+    fn_800A7D4C(0, &lbl_2_data_2E9B4[lbl_803CBBC0[0]]);
     fn_2_190DC(lbl_2_bss_340140[0]->table, fn_80052768_getCamera(0)->view);
 }
 
@@ -124,7 +189,6 @@ void fn_2_870D4(f32 value) {
 extern const Vec lbl_2_rodata_E70;
 extern const Vec lbl_2_rodata_E7C;
 extern const f32 lbl_2_rodata_E8C[];
-extern f32 lbl_2_data_2E944[][6];
 extern s8 lbl_2_bss_33FBF5;
 extern void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target);
 
@@ -173,8 +237,6 @@ extern const f32 lbl_2_rodata_EFC[];
 extern const f32 lbl_2_rodata_F00[];
 extern const f32 lbl_2_rodata_F04[];
 extern const f32 lbl_2_rodata_F08[];
-extern s8 lbl_2_bss_B2A4;
-extern u8 lbl_2_bss_B2A5;
 
 // .text:0x86DCC size:0x174
 // NONMATCHING 90%: only register allocation differs (preset base r11 vs r31)
@@ -282,7 +344,6 @@ void fn_2_85AC0(MenuCamera* camera) {
     makeLookAtMatrix(camera->view, &camera->eye, &up, &camera->target);
 }
 
-extern MenuStageData lbl_2_data_2E608;
 extern const f32 lbl_2_rodata_F0C;
 extern void fn_800BD548(ActorObject* entry, u8 numArgs, ...);
 extern void CTRLSetTranslation(Control* control, f32 x, f32 y, f32 z);
@@ -290,15 +351,15 @@ extern void CTRLSetRotation(Control* control, f32 x, f32 y, f32 z);
 
 // Creates actor objects [start, start + count) for the current stadium's background.
 // .text:0x87654 size:0x1D8
-// NONMATCHING 74%: the original reaches lbl_2_data_2E608's sub-tables through one anchored .data pool base (file statics), we index a struct
+// NONMATCHING: same instructions and data anchor now; register allocation differs in the inlined texSet loop
 #if NONMATCHING
 static void menuStageApplyTexSet(s32 i, s32 model, s32 texSet) {
     s32 j;
     s32 k;
     s16* texIndex;
-    for (j = 0; j < lbl_2_data_2E608.boneCount[model]; j++) {
-        texIndex = lbl_2_data_2E608.texIndex[texSet];
-        for (k = 0; k < lbl_2_data_2E608.texCount[model]; k++) {
+    for (j = 0; j < sStageBoneCount[model]; j++) {
+        texIndex = sStageTexIndex[texSet];
+        for (k = 0; k < sStageTexCount[model]; k++) {
             lbl_2_bss_340140[0]->table->objects[i].actor->boneArray[j]->dispObj->textureData
                 ->texturePalette->tex[k].texIndex = j + *texIndex++;
         }
@@ -313,7 +374,7 @@ void fn_2_87654(s32 unused, s32 start, s32 count, void* animBank, struct sHdr* s
     MenuStageObject* object;
 
     for (i = start; i < start + count; i++) {
-        object = &lbl_2_data_2E608.objects[lbl_2_bss_33FBF5][i];
+        object = &sStageObjects[lbl_2_bss_33FBF5][i];
         model = object->model;
         texSet = object->texSet;
         hasTexSet = object->hasTexSet;
@@ -333,10 +394,10 @@ extern void* _OSAllocFromHeap(s32 align, s32 size);
 
 // Allocates the draw states and actor table for the current stadium's background objects.
 // .text:0x87118 size:0x238
-// NONMATCHING 72%: inlines fn_2_87654; same data-pool anchor difference
+// NONMATCHING: inlines fn_2_87654; same register allocation difference
 #if NONMATCHING
 void fn_2_87118(void) {
-    lbl_2_bss_340140[0]->count = lbl_2_data_2E608.objectCount[lbl_2_bss_33FBF5];
+    lbl_2_bss_340140[0]->count = sStageObjectCount[lbl_2_bss_33FBF5];
     lbl_2_bss_340140[0]->states = _OSAllocFromHeap(0x20, lbl_2_bss_340140[0]->count * sizeof(MenuDrawState));
     lbl_2_bss_340140[0]->table = ActorObjectInitTable(lbl_2_bss_340140[0]->count);
     fn_2_87654(0, 0, lbl_2_bss_340140[0]->count, NULL, 0);
@@ -345,7 +406,7 @@ void fn_2_87118(void) {
 
 // fn_2_87118, then resets every draw state and clears each object's animateBones flag.
 // .text:0x87350 size:0x304
-// NONMATCHING 79%: inlines fn_2_87118; same data-pool anchor difference
+// NONMATCHING: inlines fn_2_87118; same register allocation difference
 #if NONMATCHING
 void fn_2_87350(void) {
     s32 i;
@@ -365,9 +426,6 @@ void fn_2_87350(void) {
 }
 #endif
 
-extern Vec lbl_2_data_2E9DC;
-extern Vec lbl_2_data_2E9E8;
-extern f32 lbl_2_bss_B2A0;
 extern u8 lbl_2_bss_33FBF0[];
 extern const f32 lbl_2_rodata_EB0;
 extern const f32 lbl_2_rodata_EB4;
