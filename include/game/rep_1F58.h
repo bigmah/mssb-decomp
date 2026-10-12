@@ -16,4 +16,6 @@ void fn_3_C11CC(s32 who, s32 a);
 void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2);
 void fn_3_C1770(s32 who);
 
+s32 fn_3_C1930(s32 id);
+
 #endif // !__GAME_rep_1F58_H_
