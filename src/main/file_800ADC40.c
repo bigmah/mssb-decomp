@@ -105,6 +105,12 @@ extern u32 lbl_803CC1AC;        // movie file size
 
 // movie.c strings (rodata not split into this unit)
 extern char lbl_800E7B50[]; // "YUV->RGB Conv SrcAddr is NULL!!\n", followed by the strings below
+#ifdef TARGET_PC
+// The code reaches the strings that follow by offset (MOVSTR); on PC they are
+// separate objects, so keep the whole pool here (bytes from main.dol).
+static char s_movStrings[352] = "YUV->RGB Conv SrcAddr is NULL!!\x0a" "\x00" "\x00" "\x00" "\x00" "YUV->RGB Conv DstAddr is NULL!!\x0a" "\x00" "\x00" "\x00" "\x00" "sNp_MovDecodeThread()::ERR!! broken file.\x0a" "\x00" "\x00" "sNp_MovStreamThread()::ERR!! broken file.\x0a" "\x00" "\x00" "HVQM4 1.3\x00" "\x00" "\x00" "sNp_MovStreamThread()::ERR!! Invalid version.\x0a" "\x00" "\x00" "sNp_MovStreamThread()::ERR!! Invalid audio samples per second \x0a" "\x00" "sNp_MovStreamThread()::ERR!! failed to allocate the working buffer\x0a" "\x00" "";
+#define lbl_800E7B50 s_movStrings
+#endif
 extern char lbl_800E7B74[]; // "YUV->RGB Conv DstAddr is NULL!!\n"
 extern char lbl_800E7B98[];
 extern char lbl_803CCF00[8]; // lbl_803CCF00
@@ -118,6 +124,27 @@ extern char lbl_803CCF00[8]; // lbl_803CCF00
 
 #define MOV_STATE_STOP 4
 #define MOV_DVD_DONE() ((s32)*(volatile u8*)&lbl_803C6CF8.idle)
+
+// The HVQM4 stream is big-endian: on PC the headers are swapped into native
+// fields as they are read (exactly once each).
+#ifdef TARGET_PC
+static inline void MOV_SWAP_HEADER(MovPlayer* mov) {
+    swap32_array(&mov->numBlocks - 1, 8); // 0x14..0x34; videoInfo is read bytewise
+    swap32_inplace(&mov->sampleRate);
+}
+#define MOV_SWAP_BLOCK(mov) swap32_array(&(mov)->_060, 5)
+static inline void MOV_SWAP_RECORD(MovPlayer* mov) {
+    mov->recType = be16(mov->recType);
+    mov->recFormat = be16(mov->recFormat);
+    mov->recSize = be32(mov->recSize);
+}
+#define MOV_READ_U32(p) read_be32(p)
+#else
+#define MOV_SWAP_HEADER(mov)
+#define MOV_SWAP_BLOCK(mov)
+#define MOV_SWAP_RECORD(mov)
+#define MOV_READ_U32(p) (*(u32*)(p))
+#endif
 
 // NONMATCHING 73%: the movie.c bss is not split into this unit; the original addresses all of it relative to lbl_802F93A0 (also float rodata names)
 #if NONMATCHING
@@ -445,6 +472,7 @@ static inline BOOL MovStartBlock(MovPlayer* mov) {
         OSPanic(lbl_803CCF00, 0x355, MOV_STR_DECODE_BROKEN);
         return FALSE;
     }
+    MOV_SWAP_BLOCK(mov);
     if ((mov->flags & 1) && mov->rateMode == 0xFF) {
         mov->flags &= ~1;
     }
@@ -551,6 +579,7 @@ BOOL MovStreamThread(MovPlayer* mov) {
         OSPanic(lbl_803CCF00, 0x2ED, MOVSTR(str, MOV_STR_STREAM_BROKEN));
         return FALSE;
     }
+    MOV_SWAP_HEADER(mov);
     if (strncmp(MOVSTR(str, MOV_STR_HVQM4), mov->magic, strlen(MOVSTR(str, MOV_STR_HVQM4))) != 0) {
         for (i = 0x44; i != 0; i--) {}
         OSPanic(lbl_803CCF00, 0x300, MOVSTR(str, MOV_STR_BAD_VERSION));
@@ -653,6 +682,7 @@ void* MovDecodeThread(void* arg) {
                 if (!fn_800AF9B4(mov, 0x44)) {
                     ok = FALSE;
                 } else {
+                    MOV_SWAP_HEADER(mov);
                     ok = MovStartBlock(mov);
                 }
                 if (!ok) {
@@ -704,6 +734,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
                 if (!fn_800AF9B4(&mov->_060, 0x14)) {
                     return 2;
                 }
+                MOV_SWAP_BLOCK(mov);
                 if (mov->state == MOV_STATE_STOP) {
                     return 0;
                 }
@@ -721,6 +752,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
         if (!fn_800AF9B4(&mov->recType, 8)) {
             return 2;
         }
+        MOV_SWAP_RECORD(mov);
         if (mov->state == MOV_STATE_STOP) {
             return 0;
         }
@@ -742,7 +774,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
             if (!fn_800AF9B4(mov->videoBuf, 4)) {
                 return 2;
             }
-            count = *(u32*)mov->videoBuf;
+            count = MOV_READ_U32(mov->videoBuf);
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
             }
@@ -760,6 +792,9 @@ s32 fn_800AF1A8(MovPlayer* mov) {
                 }
                 switch (fn_800AF5FC(mov, format, count)) {
                 case 2:
+#ifdef TARGET_PC
+                    OSYieldThread(); // waiting for a frame slot to be shown
+#endif
                     continue;
                 case 0:
                     if (mov->state == MOV_STATE_STOP) {
@@ -788,7 +823,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
             if (!fn_800AF9B4(mov->audioBuf, 4)) {
                 return 2;
             }
-            count = *(u32*)mov->audioBuf;
+            count = MOV_READ_U32(mov->audioBuf);
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
             }
