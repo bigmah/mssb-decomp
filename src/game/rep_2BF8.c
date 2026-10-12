@@ -1249,6 +1249,9 @@ void fn_3_EC014(void) {
             task->state = 7;
         }
         break;
+    case 7:
+    case 8:
+        break;
     }
     i = 0;
     do {
