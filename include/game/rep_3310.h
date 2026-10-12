@@ -43,75 +43,6 @@ typedef struct Rep3310Item {
     /*0x2A*/ u8 _2A[2];
 } Rep3310Item; // size: 0x2C
 
-// Per-minigame layouts this unit overlays on g_Minigame (MiniGameStruct describes another
-// minigame's use of the same bytes). None of them contain pointers.
-// Player ball / runner i (g_Minigame + i * 0x38, sprites and actors 0x82 + i).
-typedef struct Rep3310Racer {
-    /*0x00*/ Vec pos;
-    /*0x0C*/ Vec _0C;
-    /*0x18*/ u8 _18[0x1A - 0x18];
-    /*0x1A*/ s16 _1A; // frames in the current state
-    /*0x1C*/ s16 _1C;
-    /*0x1E*/ s16 _1E;
-    /*0x20*/ u8 _20[0x26 - 0x20];
-    /*0x26*/ s16 _26;
-    /*0x28*/ s16 animFrame; // frames since the animation started (fn_3_1189C8)
-    /*0x2A*/ u8 state;      // 0: inactive
-    /*0x2B*/ u8 _2B;        // lbl_3_data_22678 index
-    /*0x2C*/ u8 skin;       // lbl_3_data_22670 index
-    /*0x2D*/ u8 _2D;
-    /*0x2E*/ u8 _2E;
-    /*0x2F*/ u8 _2F[0x33 - 0x2F];
-    /*0x33*/ u8 anim;       // current animation (fn_3_1189C8)
-    /*0x34*/ u8 _34[0x38 - 0x34];
-} Rep3310Racer; // size: 0x38
-
-// One of 0x28 markers at g_Minigame + 0xA8.
-typedef struct Rep3310Marker {
-    /*0x00*/ f32 pos[3];
-    /*0x0C*/ u8 _0C[0x26 - 0xC];
-    /*0x26*/ u8 active;
-    /*0x27*/ u8 _27;
-} Rep3310Marker; // size: 0x28
-
-// One of 4 objects at g_Minigame + 0xBB0 (sprites 0xE9 + i).
-typedef struct Rep3310Bouncer {
-    /*0x00*/ f32 f[9]; // [0..2] position, [6..8] rotation
-    /*0x24*/ u8 _24[0x3D - 0x24];
-    /*0x3D*/ u8 state; // nonzero: drawn
-    /*0x3E*/ u8 _3E[0x40 - 0x3E];
-} Rep3310Bouncer; // size: 0x40
-
-typedef union Rep3310MinigameView {
-    Rep3310Racer racers[3];
-    struct {
-        u8 _000[0xA8];
-        Rep3310Marker markers[0x28];
-    } a;
-    struct {
-        u8 _000[0x72C];
-        Rep3310Item items[7];
-    } b;
-    struct {
-        u8 _000[0xBB0];
-        Rep3310Bouncer bouncers[4];
-    } c;
-    struct {
-        u8 _000[0x1180];
-        Vec coinVel[15];
-    } d;
-    struct {
-        u8 _000[0x17C8];
-        s16 coinFrames[30];
-    } e;
-    struct {
-        u8 _000[0x1B19];
-        u8 kindState[7]; // indexed by the coin kind (wallBall_coinsVisibleInd)
-    } f;
-} Rep3310MinigameView;
-
-#define MG3310 (*(Rep3310MinigameView*)&g_Minigame)
-
 // View of g_Ball (InMemBallType in game/UnknownHomes_Game.h), only the fields used here.
 typedef struct Rep3310BallView {
     /*0x00*/ Vec contactPos;
@@ -175,7 +106,7 @@ void fn_3_11A210(void);
 u32 fn_3_11A350(int i);
 void fn_3_11A38C(s32 i, s16 h);
 void fn_3_11A408(void);
-void fn_3_11A92C(Rep3310Sprite* q, s32 n);
+void fn_3_11A92C(u8* q, s32 n);
 void fn_3_11AB2C(void);
 void fn_3_11AC6C(void);
 void fn_3_11B75C(void);
