@@ -321,10 +321,10 @@ void fn_3_DF25C(void) {
     g_Minigame._190F = 0;
     g_Minigame._1910 = 3;
     g_Minigame._1911 = 0;
-    g_Minigame._1914 = 0;
-    g_Minigame._1915 = 0;
-    g_Minigame._1916 = 0;
-    g_Minigame._1917 = 0;
+    g_Minigame._1914[0] = 0;
+    g_Minigame._1914[1] = 0;
+    g_Minigame._1914[2] = 0;
+    g_Minigame._1914[3] = 0;
     for (i = 0; i < g_Minigame.miniGameNumberOfParticipants; i++) {
         g_Minigame.minigameControlStruct[0]._18[i] = i;
     }
@@ -490,10 +490,10 @@ void fn_3_DF8D4(void) {
         g_Minigame.minigameControlStruct[0]._18[i] = i;
         g_Minigame.roleStreak[i].role = -1;
     }
-    g_Minigame._1914 = 0;
-    g_Minigame._1915 = 0;
-    g_Minigame._1916 = 0;
-    g_Minigame._1917 = 0;
+    g_Minigame._1914[0] = 0;
+    g_Minigame._1914[1] = 0;
+    g_Minigame._1914[2] = 0;
+    g_Minigame._1914[3] = 0;
     g_Minigame.turnNumberWithinRound = 0;
     g_Minigame._1939 = 0;
     g_Minigame._190D = 3;

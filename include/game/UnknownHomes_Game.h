@@ -2075,10 +2075,8 @@ typedef struct _MiniGameStruct {
     /*0xCCE*/ u8 _CCE[2];
     /*0xCD0*/ VecXYZ wallBall_coinCoordinates[30];
     /*0xE38*/ u8 pad7[0x1180 - 0xE38];
-    /*0x1180*/ VecXYZ wallBall_coinVelocity;
-    /*0x118C*/ u8 pad8[168];
-    /*0x1234*/ VecXYZ _1234;
-    /*0x1240*/ u8 pad9[1008];
+    /*0x1180*/ VecXYZ wallBall_coinVelocity[30];
+    /*0x12E8*/ u8 pad8[0x1630 - 0x12E8];
     /*0x1630*/ f32 _1630;
     /*0x1634*/ u8 pad10[396];
     /*0x17C0*/ s32 _17C0;
@@ -2148,14 +2146,8 @@ typedef struct _MiniGameStruct {
     /*0x1911*/ u8 _1911;
     /*0x1912*/ u8 pointsTargetReachedInd;
     /*0x1913*/ u8 _1913;
-    /*0x1914*/ u8 _1914;
-    /*0x1915*/ u8 _1915;
-    /*0x1916*/ u8 _1916;
-    /*0x1917*/ u8 _1917;
-    /*0x1918*/ u8 _1918;
-    /*0x1919*/ u8 _1919;
-    /*0x191A*/ u8 _191A;
-    /*0x191B*/ u8 _191B;
+    /*0x1914*/ u8 _1914[4]; // per player
+    /*0x1918*/ u8 _1918[4]; // per player
     /*0x191C*/ s8 _191C[4]; // per player: panel progress
     /*0x1920*/ E(u8, TOY_FIELD_RESULT) toyFieldBallStateResult2;
     /*0x1921*/ u8 _1921;
@@ -2273,7 +2265,8 @@ typedef struct _MiniGameStruct {
     /*0x19CD*/ u8 _19CD;
     /*0x19CE*/ u8 _19CE;
     /*0x19CF*/ u8 _19CF;
-    /*0x19D0*/ s16 _19D0;
+    /*0x19D0*/ u8 _19D0;
+    /*0x19D1*/ u8 _19D1;
     /*0x19D2*/ s16 _19D2[4];
     /*0x19DA*/ s8 _19DA[4];
     /*0x19DE*/ u8 _19DE;
@@ -3168,7 +3161,8 @@ typedef struct GameScores {
     /* 0xAD */ u8 _AD;
     /* 0xAE */ u8 _AE[0xC2 - 0xAE];
     /* 0xC2 */ u8 _C2;
-    /* 0xC3 */ u8 _C3[0xC6 - 0xC3];
+    /*0xC3*/ u8 _C3[0xC5 - 0xC3];
+    /*0xC5*/ u8 _C5;
     /* 0xC6 */ u8 _C6;
     /* 0xC7 */ u8 _C7;
 } GameScores; // size: 0xC8
