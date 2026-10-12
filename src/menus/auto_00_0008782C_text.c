@@ -148,6 +148,9 @@ void fn_2_8782C(void) {
 
     lbl_2_bss_340140->entryCount = 0;
     file = lbl_2_bss_340140->resFile;
+#ifdef TARGET_PC
+    port_swap_offset_table(file, 18); // 5 model sets, 3 more, 2 texture archives
+#endif
     for (i = 0; i < 15; i += 5) {
         lbl_2_bss_340140->res[i + 0] = (u8*)file + file[i + 0];
         lbl_2_bss_340140->res[i + 1] = (u8*)file + file[i + 1];
