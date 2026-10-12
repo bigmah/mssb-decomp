@@ -830,14 +830,13 @@ void fn_3_94930(void) {
 }
 
 // .text:0x0009497C size:0x248 mapped:0x806D3A10
-// NONMATCHING 99%: same instructions; the unrolled j loop loads order[i] before baseIdx and allocates temps differently
-#if NONMATCHING
 void fn_3_9497C(void) {
     RepTask* task = lbl_803CC1B8[0];
     u16 mode;
     s32 i;
     s32 j;
     LayoutObj* obj;
+
     if (lbl_3_common_bss_32724[0x96] != 0) {
         goto remove;
     }
@@ -864,18 +863,17 @@ void fn_3_9497C(void) {
         for (i = 0; i < task->_1A; i++) {
             for (j = 1; j < 6; j++) {
                 obj = lbl_80371C30[task->baseIdx + (lbl_3_data_E758[i] + j)].obj;
-                if ((obj->_5C >> 16) > 40) {
-                    obj->_5C = 60 << 16;
+                if (obj->_5C >> 16 > 40) {
+                    lbl_80371C30[task->baseIdx + (lbl_3_data_E758[i] + j)].obj->_5C = 60 << 16;
                 }
             }
         }
     }
     return;
-remove:
+    remove:
     fn_80034CEC(task);
     REMOVE_QUEUE_NOARG();
 }
-#endif
 
 // .text:0x00094BC4 size:0x2A4 mapped:0x806D3C58
 // NONMATCHING 99% (raw-offset version; this typed rewrite allocates registers differently): only the loop-setup
