@@ -119,6 +119,8 @@ extern MainTask* lbl_803CC1B8;
 // REL modules are linked into the executable: no transfer, no OSLink. The
 // module table (port/src/modules.c) runs each module's prolog/epilog.
 OSModuleHeader* port_module_load(s32 dllIndex);
+BOOL port_skipfe_pending(void); // port/game/skipfe.c
+BOOL port_skipfe_step(void);
 void port_module_prolog(OSModuleHeader* module);
 void port_module_epilog(OSModuleHeader* module);
 #endif
@@ -593,6 +595,19 @@ void fn_800097A0(void) {
         fn_80009144();
         // fallthrough
     case 8:
+#ifdef TARGET_PC
+        // user.ini skipfe: set up an exhibition game and load game.rel.
+        if (port_skipfe_pending()) {
+            if (port_skipfe_step()) {
+                // As when the menus end (case 10).
+                fn_80021410();
+                resetAllDrawingStructs();
+                fn_80009144();
+                task->state = 11;
+            }
+            break;
+        }
+#endif
         g_d_GameSettings._06 = 1;
         fn_800AD038(lbl_80366158.arenaStart);
         lbl_803C6CF8.entryNum = lbl_803CBBD4;

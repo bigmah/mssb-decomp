@@ -111,6 +111,12 @@ extern SceneWork* lbl_3_common_bss_1323C;
 extern SceneWork lbl_3_common_bss_134C4;
 extern u8 lbl_3_data_60F0; // star chance percentage
 
+#ifdef TARGET_PC
+// SoundManager holds pointers, and main/file_80021308.h clashes with this
+// unit's headers: reach SoundManager.unk39A[0] through port/game/views.c.
+u8* port_sound_load_index(void);
+#define lbl_800EF808 (*(struct { u8 loadIndex; }*)port_sound_load_index())
+#else
 // View of lbl_800EF808 (SoundManager in main/file_80021308.h).
 typedef struct {
     /*0x000*/ u8 _000[0x39A];
@@ -118,6 +124,7 @@ typedef struct {
     /*0x39B*/ u8 _39B;
 } SoundManagerView; // size: 0x39C
 extern SoundManagerView lbl_800EF808;
+#endif
 
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h, which can't be
 // included here next to main/file_8004207C.h: their fn_80024D2C prototypes clash).

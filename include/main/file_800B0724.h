@@ -41,13 +41,13 @@ typedef struct SpriteState {
 
 // A geometry palette entry (8 bytes) as seen by fn_800B2AC8.
 typedef struct LoadedGeoEntry {
-    /*0x0*/ u8* obj; // display object
+    /*0x0*/ PTR32(u8) obj; // display object (disc layout: DODescriptor)
     /*0x4*/ u8 pad4[4];
 } LoadedGeoEntry;
 
 typedef struct LoadedGeoPalette {
     /*0x00*/ u8 pad00[0x10];
-    /*0x10*/ LoadedGeoEntry* entries;
+    /*0x10*/ PTR32(LoadedGeoEntry) entries;
 } LoadedGeoPalette;
 
 // C3 ActorBone (0x1C) as stored after the actor layout header.
@@ -65,7 +65,7 @@ typedef struct LoadedActorLayout {
     /*0x00*/ u8 pad00[6];
     /*0x06*/ u16 totalBones;
     /*0x08*/ u8 pad08[8];
-    /*0x10*/ LoadedGeoPalette* pal;
+    /*0x10*/ PTR32(LoadedGeoPalette) pal;
     /*0x14*/ u8 pad14[0xC];
     /*0x20*/ LoadedActorBone bones[1]; // totalBones entries
 } LoadedActorLayout;

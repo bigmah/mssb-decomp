@@ -105,6 +105,9 @@ foreach (w ${MSSB_64_WARNINGS})
 endforeach ()
 
 # Game code from main.dol, game.rel, menus.rel and challenge.rel.
+# PC-only code that needs the game's headers (compiled like the game).
+file(GLOB MSSB_PORT_GAME_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game/*.c)
+list(APPEND MSSB_GAME_SOURCES ${MSSB_PORT_GAME_SOURCES})
 add_library(mssb_game OBJECT ${MSSB_GAME_SOURCES})
 target_include_directories(mssb_game PRIVATE ${MSSB_INCLUDES})
 target_compile_definitions(mssb_game PRIVATE ${MSSB_DEFS})

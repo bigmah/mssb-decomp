@@ -21,6 +21,7 @@ namespace fs = std::filesystem;
 
 extern "C" void game_main(void);
 extern "C" void port_data_fixups(void);
+extern "C" void port_user_ini_load(const char* userPath);
 extern "C" void port_begin_first_frame(void);
 
 static void log_callback(AuroraLogLevel level, const char* module, const char* message, unsigned int len)
@@ -116,6 +117,7 @@ int aurora_main(int argc, char** argv)
     config.allowTextureDumps = getenv("MSSB_DUMP_TEXTURES") != nullptr;
     AuroraInfo info = aurora_initialize(argc, argv, &config);
     port_crash_init(info.userPath);
+    port_user_ini_load(info.userPath);
 
     std::string disc = find_disc(argc, argv, info.userPath);
     if (disc.empty() || !aurora_dvd_open(disc.c_str()))
