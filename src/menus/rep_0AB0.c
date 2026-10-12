@@ -3153,6 +3153,15 @@ void fn_2_5DC5C(void) {
     }
 }
 
+#if !NONMATCHING
+// Switch jump tables of fn_2_5E104; mwcc emits them itself once the function matches.
+void* jumptable_2_data_29970[9] = {
+    (u8*)fn_2_5E104 + 0xE0, (u8*)fn_2_5E104 + 0x484, (u8*)fn_2_5E104 + 0x4B8, (u8*)fn_2_5E104 + 0x4D0,
+    (u8*)fn_2_5E104 + 0x628, (u8*)fn_2_5E104 + 0x634, (u8*)fn_2_5E104 + 0x658, (u8*)fn_2_5E104 + 0x678,
+    (u8*)fn_2_5E104 + 0x6B4,
+};
+#endif
+
 // .text:0x0005E104 size:0x748
 // NONMATCHING 93%: same code; register allocation differs and the original reloads lbl_2_bss_1A8230/1A824C in steps 7/8 instead of reusing the values stored at the top
 #if NONMATCHING
@@ -3292,3 +3301,30 @@ void fn_2_5E104(void) {
     }
 }
 #endif
+
+// Character grids (0x296B8-0x29748); this TU's jump tables follow.
+s16 lbl_2_data_296B8[6 * 6] = {
+    0, 0, 1, 2, 3, 0, 4, 5,
+    6, 7, 8, 9, 10, 11, 12, 13,
+    14, 15, 16, 17, 18, 19, 20, 21,
+    22, 23, 24, 25, 26, 27, 0, 28,
+    29, 30, 31, 0,
+};
+s16 lbl_2_data_29700[36] = {
+    0, 0, 1, 2, 3, 32, 4, 5,
+    6, 7, 8, 9, 10, 11, 12, 13,
+    14, 15, 16, 17, 18, 19, 20, 21,
+    22, 23, 24, 25, 26, 27, 0, 28,
+    29, 30, 31, 0,
+};
+
+// Switch jump table of fn_2_587F8 (auto 5597C): its table sits first among this file's, so that text
+// is part of this TU; defined here while the two are separate units.
+extern void fn_2_587F8(void);
+#if !NONMATCHING
+void* jumptable_2_data_29748[8] = {
+    (u8*)fn_2_587F8 + 0xC8, (u8*)fn_2_587F8 + 0x124, (u8*)fn_2_587F8 + 0x184, (u8*)fn_2_587F8 + 0x724,
+    (u8*)fn_2_587F8 + 0x79C, (u8*)fn_2_587F8 + 0x924, (u8*)fn_2_587F8 + 0x9CC, (u8*)fn_2_587F8 + 0xD38,
+};
+#endif
+

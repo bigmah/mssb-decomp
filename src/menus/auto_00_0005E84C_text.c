@@ -1317,6 +1317,22 @@ void fn_2_627F4(MenuTask* task, MenuItem* item) {
     }
 }
 
+#if !NONMATCHING
+// Switch jump tables of fn_2_62A38; mwcc emits them itself once the function matches.
+void* jumptable_2_data_29BF4[38] = {
+    (u8*)fn_2_62A38 + 0x60, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x94, (u8*)fn_2_62A38 + 0x2C0,
+    (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x22C, (u8*)fn_2_62A38 + 0x25C, (u8*)fn_2_62A38 + 0x298,
+    (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0,
+    (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0,
+    (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x94, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0,
+    (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0,
+    (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0,
+    (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0,
+    (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0,
+    (u8*)fn_2_62A38 + 0x2C0, (u8*)fn_2_62A38 + 0x2C0,
+};
+#endif
+
 // .text:0x00062A38 size:0x2E0
 // NONMATCHING 81%: the third digit (value / 100 % 10) is computed before the first fn_800363D8 call in the original; ours after
 #if NONMATCHING
