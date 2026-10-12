@@ -249,7 +249,7 @@ void fn_3_11EC28(void) {
 #endif
 
 // .text:0x0011F02C size:0x454 mapped:0x8075E0C0
-// NONMATCHING 66%: loop induction variables and slot index folding differ (orig strength-reduces 2*i counters), fn_3_107CD0 return not zero-extended in orig
+// NONMATCHING 93.6%: loop induction variables and slot index folding differ (orig strength-reduces 2*i counters), fn_3_107CD0 return not zero-extended in orig
 #if NONMATCHING
 void fn_3_11F02C(void) {
     u32 snd = 0;
@@ -602,7 +602,7 @@ void fn_3_11FDB0(void) {
 #endif
 
 // .text:0x0012026C size:0x630 mapped:0x8075F300
-// NONMATCHING 60%: register allocation and loop induction (orig walks q + 2*i for delta and keeps 4*i counters); inlines fn_3_125480 as AnyBusy
+// NONMATCHING 93%: register allocation and loop induction (orig walks q + 2*i for delta and keeps 4*i counters); inlines fn_3_125480 as AnyBusy
 #if NONMATCHING
 void fn_3_12026C(void) {
     RepTask* q = REP_TASK;
@@ -2757,7 +2757,7 @@ void fn_3_126604(void) {
 #endif
 
 // .text:0x001274B4 size:0x6B4 mapped:0x80766548
-// NONMATCHING 74%: loop induction registers (orig keeps 4*i+k counters) and g_Minigame base CSE; playCrowdSound is the inlined crowd helper from auto_00_000D8A10_text
+// NONMATCHING 96.8%: loop induction registers (orig keeps 4*i+k counters) and g_Minigame base CSE; playCrowdSound is the inlined crowd helper from auto_00_000D8A10_text
 #if NONMATCHING
 void fn_3_1274B4(void) {
     u8* d = lbl_3_data_226E0;
