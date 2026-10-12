@@ -14,7 +14,7 @@ extern u8 lbl_8034E9A0[];
 #include "main/file_8000F150.h"
 
 // Message scripts, one per lbl_2_data_1E99C entry (u32 command words).
-// PORT: fn_2_4F9xx copies 0x4000 bytes from a script start, reading past its end into
+// PORT: fn_2_50BF4 (and the next function) copy 0x4000 bytes from a script start, reading past its end into
 // the scripts that follow; the port must keep these contiguous or bound the copy.
 u32 lbl_2_data_13460[16] = {0, 0xE, 1, 0, 6, 0x1A, 0, 1, 0xB, 0, 0x3AD, 0xB, 0, 0x3AE, 0x10, 1};
 u32 lbl_2_data_134A0[13] = {0, 0xE, 1, 0, 5, 0x1A, 0, 1, 0xB, 0, 0x3AF, 0x10, 1};
