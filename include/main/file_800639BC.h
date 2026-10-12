@@ -105,7 +105,7 @@ typedef struct EffectDesc {
     /*0x60*/ s32 _60[4];
 } EffectDesc; // size: 0x70
 
-void fn_80069A68(void);
+void fn_80069A68(struct SoundGroupRequest* req, struct SoundGroupData* data); // SoundGroupRequest.onLoaded
 void fn_80069A98(void);
 void fn_80069AD4(void);
 void fn_80069B08(void);

@@ -70,7 +70,15 @@ extern u8 lbl_802E4B00[2][9];
 extern BatFxTables lbl_800FC0FC;
 extern EffectParams lbl_800FBEA4;
 extern EffectParams* lbl_803CB84C; // &lbl_800FBEA4
-extern void* lbl_800FBE90[5]; // ParticleParams template ([0] = tex)
+// Trail spawn template: the leading fields of ParticleParams that fn_8002F258 reads.
+typedef struct TrailParams {
+    /*0x00*/ void* tex; // TexArchive*
+    /*0x04*/ s32 texIndex;
+    /*0x08*/ s32 size;  // x100000
+    /*0x0C*/ s32 unkC;
+    /*0x10*/ s32 unk10;
+} TrailParams;
+extern TrailParams lbl_800FBE90;
 extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 extern char lbl_800E6920[]; // "orderchange.c"
 extern char lbl_800E6930[]; // "//OZ" + SJIS "no return value"
@@ -200,53 +208,36 @@ void capApplicationFunction(void) {
 #endif
 
 // .text:0x80042598 size:0x144
-// NONMATCHING ~90%: the original advances the entry pointer (addi 4) between compares
-#if NONMATCHING
+// Batting-order slot (1-9) of the player at fielding position `slot`.
 s32 fn_80042598(u8 team, s32 slot) {
     OrderEntry* e = lbl_80354720[team];
-
-    if (slot == e->slot) {
-        return 1;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 2;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 3;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 4;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 5;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 6;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 7;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 8;
-    }
-    e++;
-    if (slot == e->slot) {
-        return 9;
+    s32 i;
+    for (i = 0; i < 9; i++, e++) {
+        if (slot == e->slot) {
+            return i + 1;
+        }
     }
     OSPanic(lbl_800E6920, 0xD69, lbl_800E6930);
     return 0;
 }
-#endif
+
+// Inlined copy of fn_80042598 (the original inlines it into the order-change menus).
+#pragma dont_inline off
+static inline s8 findOrderSlot(u8 team, s32 slot) {
+    OrderEntry* e = lbl_80354720[team];
+    s32 i;
+    for (i = 0; i < 9; e++, i++) {
+        if (slot == e->slot) {
+            return i + 1;
+        }
+    }
+    OSPanic(lbl_800E6920, 0xD69, lbl_800E6930);
+    return 0;
+}
+#pragma dont_inline on
 
 // .text:0x800426DC size:0x514
-// NONMATCHING ~80%: source stats indexed as [id/9][id%9] with u8 casts in the original; field copies use lhz/lha differently
+// NONMATCHING 74%: source stats indexed as [id/9][id%9] with u8 casts in the original; register allocation
 #if NONMATCHING
 void transferStatsToInMemRoster(u8 team) {
     s32 slot;
@@ -641,11 +632,9 @@ void starMenuCursor(void) {
     }
 }
 
+#pragma dont_inline off
 // .text:0x80043880 size:0x1418
 // Order-change menu: left (dir 0) / right (dir 1) on the field view.
-// NONMATCHING ~25%: the original inlines fn_80042598 (orderchange.c) at every case
-// nmverify: fn_80042598 inlined on one side (calls match once expanded)
-#if NONMATCHING
 void fn_80043880(u8 dir, u8 team) {
     if (lbl_803297E0.slot[team] == 0) {
         return;
@@ -664,83 +653,84 @@ void fn_80043880(u8 dir, u8 team) {
         lbl_803297E0._CF48[team] = lbl_803297E0.slot[team];
         switch (lbl_80354720[team][lbl_803297E0.slot[team] - 1].slot) {
         case 0:
-            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 4);
             break;
         case 1:
-            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 4);
             break;
         case 2:
-            lbl_803297E0.slot[team] = fn_80042598(team, 3);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 3);
             break;
         case 3:
-            lbl_803297E0.slot[team] = fn_80042598(team, 5);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 5);
             break;
         case 7:
-            lbl_803297E0.slot[team] = fn_80042598(team, 6);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 6);
             break;
         case 8:
-            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 7);
             break;
         case 4:
-            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 2);
             break;
         case 5:
-            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 4);
             break;
         case 6:
-            lbl_803297E0.slot[team] = fn_80042598(team, 8);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 8);
             break;
         }
         if (lbl_803297E0._CF48[team] != lbl_803297E0.slot[team]) {
             fn_800625A4(team, 0x3B);
         }
     } else if (lbl_803297E0.slot[team] == 0) {
-        if (g_d_GameSettings._06 == 2) {
+        if (g_d_GameSettings._06 != 2) {
+            lbl_803297E0._CF4A[team]++;
+            if (lbl_803297E0._CF52[team] > 1) {
+                lbl_803297E0._CF52[team] = 1;
+            }
+            switch (lbl_803297E0._CF52[team]) {
+            case 0:
+                lbl_803297E0._CF52[team] = 0;
+                break;
+            case 1:
+                lbl_803297E0._CF52[team] = 1;
+                break;
+            }
+            fn_800625A4(team, 0x3C);
+        } else {
             sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
             return;
         }
-        lbl_803297E0._CF4A[team]++;
-        if (lbl_803297E0._CF52[team] > 1) {
-            lbl_803297E0._CF52[team] = 1;
-        }
-        switch (lbl_803297E0._CF52[team]) {
-        case 0:
-            lbl_803297E0._CF52[team] = 0;
-            break;
-        case 1:
-            lbl_803297E0._CF52[team] = 1;
-            break;
-        }
-        fn_800625A4(team, 0x3C);
     } else if (lbl_803297E0.slot[team] != 0 && lbl_803297E0._CF52[team] == 1) {
         lbl_803297E0._CF48[team] = lbl_803297E0.slot[team];
         switch (lbl_80354720[team][lbl_803297E0.slot[team] - 1].slot) {
         case 0:
-            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 2);
             break;
         case 1:
-            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 2);
             break;
         case 4:
-            lbl_803297E0.slot[team] = fn_80042598(team, 5);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 5);
             break;
         case 5:
-            lbl_803297E0.slot[team] = fn_80042598(team, 3);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 3);
             break;
         case 6:
-            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 7);
             break;
         case 7:
-            lbl_803297E0.slot[team] = fn_80042598(team, 8);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 8);
             break;
         case 8:
-            lbl_803297E0.slot[team] = fn_80042598(team, 6);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 6);
             break;
         case 2:
-            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 4);
             break;
         case 3:
-            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 2);
             break;
         }
         if (lbl_803297E0._CF48[team] != lbl_803297E0.slot[team]) {
@@ -754,14 +744,10 @@ end:
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
 }
-#endif
 
 // .text:0x80044C98 size:0x14E4
 // Order-change menu: up (dir 0) / down (dir 1). On the field view (_CF52 set) the cursor
 // jumps between fielding positions; fn_80042598 finds the batting slot of a position.
-// NONMATCHING ~25%: the original inlines fn_80042598 (orderchange.c) at every case
-// nmverify: fn_80042598 inlined on one side (calls match once expanded)
-#if NONMATCHING
 void fn_80044C98(u8 dir, u8 team) {
     lbl_803297E0._CF48[team] = lbl_803297E0.slot[team];
     if (dir == 0) {
@@ -781,32 +767,32 @@ void fn_80044C98(u8 dir, u8 team) {
             return;
         }
         if (lbl_803297E0._CF48[team] == 0) {
-            lbl_803297E0.slot[team] = fn_80042598(team, 1);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 1);
             fn_800625A4(team, 0x3D);
             return;
         }
         switch (lbl_80354720[team][lbl_803297E0.slot[team] - 1].slot) {
         case 0:
-            lbl_803297E0.slot[team] = fn_80042598(team, 5);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 5);
             break;
         case 1:
-            lbl_803297E0.slot[team] = fn_80042598(team, 0);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 0);
             break;
         case 2:
-            lbl_803297E0.slot[team] = fn_80042598(team, 8);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 8);
             break;
         case 3:
-            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 7);
             break;
         case 4:
-            lbl_803297E0.slot[team] = fn_80042598(team, 6);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 6);
             break;
         case 5:
-            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 7);
             break;
         case 6:
             if (lbl_803297E0._CF3C[team] != 0) {
-                lbl_803297E0.slot[team] = fn_80042598(team, 4);
+                lbl_803297E0.slot[team] = findOrderSlot(team, 4);
                 fn_800625A4(team, 0x3B);
             } else {
                 lbl_803297E0.slot[team] = 0;
@@ -815,7 +801,7 @@ void fn_80044C98(u8 dir, u8 team) {
             break;
         case 8:
             if (lbl_803297E0._CF3C[team] != 0) {
-                lbl_803297E0.slot[team] = fn_80042598(team, 2);
+                lbl_803297E0.slot[team] = findOrderSlot(team, 2);
                 fn_800625A4(team, 0x3B);
             } else {
                 lbl_803297E0.slot[team] = 0;
@@ -824,7 +810,7 @@ void fn_80044C98(u8 dir, u8 team) {
             break;
         case 7:
             if (lbl_803297E0._CF3C[team] != 0) {
-                lbl_803297E0.slot[team] = fn_80042598(team, 1);
+                lbl_803297E0.slot[team] = findOrderSlot(team, 1);
                 fn_800625A4(team, 0x3B);
             } else {
                 lbl_803297E0.slot[team] = 0;
@@ -852,38 +838,38 @@ void fn_80044C98(u8 dir, u8 team) {
             return;
         }
         if (lbl_803297E0._CF48[team] == 0) {
-            lbl_803297E0.slot[team] = fn_80042598(team, 7);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 7);
             fn_800625A4(team, 0x3D);
             return;
         }
         switch (lbl_80354720[team][lbl_803297E0.slot[team] - 1].slot) {
         case 0:
-            lbl_803297E0.slot[team] = fn_80042598(team, 1);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 1);
             break;
         case 2:
-            lbl_803297E0.slot[team] = fn_80042598(team, 1);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 1);
             break;
         case 4:
-            lbl_803297E0.slot[team] = fn_80042598(team, 1);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 1);
             break;
         case 3:
-            lbl_803297E0.slot[team] = fn_80042598(team, 0);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 0);
             break;
         case 5:
-            lbl_803297E0.slot[team] = fn_80042598(team, 0);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 0);
             break;
         case 7:
-            lbl_803297E0.slot[team] = fn_80042598(team, 5);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 5);
             break;
         case 6:
-            lbl_803297E0.slot[team] = fn_80042598(team, 4);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 4);
             break;
         case 8:
-            lbl_803297E0.slot[team] = fn_80042598(team, 2);
+            lbl_803297E0.slot[team] = findOrderSlot(team, 2);
             break;
         case 1:
             if (lbl_803297E0._CF3C[team] != 0) {
-                lbl_803297E0.slot[team] = fn_80042598(team, 7);
+                lbl_803297E0.slot[team] = findOrderSlot(team, 7);
                 fn_800625A4(team, 0x3B);
             } else {
                 lbl_803297E0.slot[team] = 0;
@@ -896,7 +882,7 @@ void fn_80044C98(u8 dir, u8 team) {
         }
     }
 }
-#endif
+#pragma dont_inline on
 
 // .text:0x8004617C size:0x1078
 // NONMATCHING ~98%: team select when g_d_GameSettings._10 > 1 (original leaves t unset), input mask scheduling
@@ -2957,6 +2943,37 @@ s32 fn_8004AD54(u32 stadium, u8 flags) {
 }
 #endif
 
+
+#pragma dont_inline off
+// Copy of fn_8004AE18 (below) that the original inlines into fn_8004AFA8; the standalone
+// body keeps its own copy because calling this from it changes the early-return branch.
+static inline void fn_8004AE18_inline(s32 idx) {
+    CharActor* model = lbl_8036E548.active[idx];
+    Vec dir;
+    Mtx m;
+
+    lbl_800FBEA4.rgb = (lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->_275)].r << 24) |
+                       ((lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->_275)].g << 16) & 0xFF0000) |
+                       ((lbl_800FC0FC.colors[fn_8004AD54(g_d_GameSettings.StadiumID, model->_275)].b << 8) & 0xFF00);
+    dir.x = 0.0f;
+    dir.y = 0.0f;
+    dir.z = 1.0f;
+    PSMTXRotRad(m, 'Y', model->rot.y);
+    PSMTXMultVec(m, &dir, &dir);
+    fn_80030D88(&model->pos, &dir, (ParticleParams5 *)lbl_803CB84C, 5); // TODO type
+    if (model->kind == 0xE || model->kind == 0x25) {
+        return;
+    }
+    if (model->_276 & 2) {
+        getAnimRelatedCoordinates(idx, 0x1E, (VecXYZ*)&dir);
+        fn_8002F1AC(&dir, idx * 2);
+    }
+    if (model->_276 & 4) {
+        getAnimRelatedCoordinates(idx, 0x22, (VecXYZ*)&dir);
+        fn_8002F1AC(&dir, idx * 2 + 1);
+    }
+}
+
 // .text:0x8004AE18 size:0x190
 void fn_8004AE18(s32 idx) {
     CharActor* model = lbl_8036E548.active[idx];
@@ -2986,29 +3003,26 @@ void fn_8004AE18(s32 idx) {
 }
 
 // .text:0x8004AFA8 size:0x210
-// NONMATCHING ~45%: the original inlines fn_8004AE18; ours calls it
-// nmverify: fn_8004AE18 inlined on one side (calls match once expanded)
-#if NONMATCHING
 void fn_8004AFA8(s32 idx) {
     CharActor* model = lbl_8036E548.active[idx];
     Vec pos;
 
     lbl_803CB84C->stamp = lbl_803CBD0C;
-    lbl_800FBE90[0] = lbl_803CBD0C;
+    lbl_800FBE90.tex = lbl_803CBD0C;
     if (model->kind == 0xE || model->kind == 0x25) {
         return;
     }
-    fn_8004AE18(idx);
+    fn_8004AE18_inline(idx);
     if (model->_276 & 2) {
         getAnimRelatedCoordinates(idx, 0x1E, (VecXYZ*)&pos);
-        fn_8002F258(&pos, idx * 2, (ParticleParams *)lbl_800FBE90); // TODO type
+        fn_8002F258(&pos, idx * 2, (ParticleParams *)&lbl_800FBE90); // only reads the TrailParams prefix
     }
     if (model->_276 & 4) {
         getAnimRelatedCoordinates(idx, 0x22, (VecXYZ*)&pos);
-        fn_8002F258(&pos, idx * 2 + 1, (ParticleParams *)lbl_800FBE90); // TODO type
+        fn_8002F258(&pos, idx * 2 + 1, (ParticleParams *)&lbl_800FBE90); // only reads the TrailParams prefix
     }
 }
-#endif
+#pragma dont_inline on
 
 // fn_8004B1B8, size:0x8
 void fn_8004B1B8(void* value) {
@@ -3046,3 +3060,312 @@ void fn_8004B270(void) {
     lbl_803CBD08 = 0;
     lbl_803CBD04 = 0;
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x800FB3F8..0x800FBF10
+GXPerf0 lbl_800FB4C8[35] = {
+    1, 2, 3, 4, 5, 6, 7, 8,
+    9, 10, 11, 12, 13, 14, 15, 16,
+    17, 18, 19, 20, 21, 22, 23, 24,
+    25, 26, 27, 28, 29, 30, 31, 32,
+    33, 34, 35,
+};
+GXPerf1 lbl_800FB554[23] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22};
+u8 lbl_800FB5B0[16] = {0, 0, 4, 11, 64, 55, 207, 92, 24, 179, 168, 0, 0, 32, 138, 240};
+MsgDef lbl_800FB5C0[78] = {
+    {168, 3, 10, 0, 0},
+    {169, 1, 5, 0, 1},
+    {170, 1, 4, 1, 0},
+    {171, 2, 7, 0, 0},
+    {172, 2, 7, 0, 0},
+    {173, 1, 5, 0, 0},
+    {174, 1, 5, 0, 0},
+    {175, 2, 7, 0, 0},
+    {176, 3, 10, 0, 0},
+    {177, 1, 4, 0, 1},
+    {178, 1, 4, 0, 1},
+    {179, 1, 4, 0, 0},
+    {180, 3, 10, 0, 0},
+    {181, 2, 7, 0, 0},
+    {182, 1, 6, 0, 0},
+    {183, 1, 6, 0, 0},
+    {184, 3, 10, 0, 0},
+    {185, 1, 4, 0, 1},
+    {186, 1, 4, 0, 0},
+    {187, 1, 5, 0, 1},
+    {188, 1, 5, 0, 1},
+    {189, 1, 5, 0, 1},
+    {190, 3, 10, 0, 0},
+    {191, 1, 4, 0, 1},
+    {192, 2, 7, 0, 0},
+    {193, 1, 2, 0, 0},
+    {194, 1, 2, 0, 0},
+    {195, 1, 4, 0, 0},
+    {196, 1, 4, 0, 0},
+    {197, 1, 4, 0, 0},
+    {198, 1, 4, 0, 0},
+    {199, 1, 0, 0, 0},
+    {200, 2, 7, 0, 0},
+    {201, 2, 7, 0, 0},
+    {202, 3, 10, 0, 0},
+    {203, 1, 4, 0, 0},
+    {204, 1, 4, 0, 0},
+    {205, 2, 7, 0, 0},
+    {206, 1, 4, 0, 0},
+    {207, 1, 4, 0, 0},
+    {208, 3, 10, 0, 0},
+    {209, 1, 4, 1, 0},
+    {210, 1, 4, 0, 1},
+    {211, 1, 4, 0, 1},
+    {212, 3, 10, 0, 0},
+    {213, 2, 7, 0, 0},
+    {214, 1, 4, 1, 0},
+    {215, 1, 4, 1, 0},
+    {216, 1, 4, 0, 1},
+    {217, 1, 4, 0, 1},
+    {218, 3, 10, 0, 0},
+    {219, 2, 7, 0, 0},
+    {220, 1, 4, 0, 0},
+    {221, 1, 4, 0, 0},
+    {222, 2, 7, 0, 0},
+    {223, 2, 7, 0, 0},
+    {224, 2, 7, 0, 0},
+    {225, 1, 4, 0, 0},
+    {226, 3, 10, 0, 0},
+    {227, 2, 7, 0, 0},
+    {228, 2, 7, 0, 0},
+    {229, 2, 7, 0, 0},
+    {230, 2, 7, 0, 0},
+    {231, 1, 6, 0, 1},
+    {232, 1, 6, 0, 1},
+    {233, 1, 5, 0, 1},
+    {234, 1, 5, 0, 1},
+    {235, 1, 5, 0, 1},
+    {236, 1, 5, 0, 1},
+    {237, 1, 5, 0, 1},
+    {238, 1, 5, 0, 1},
+    {239, 1, 5, 0, 1},
+    {240, 1, 5, 0, 1},
+    {0, 1, 4, 0, 0},
+    {446, 1, 2, 0, 0},
+    {447, 2, 7, 0, 0},
+    {448, 2, 7, 0, 0},
+    {168, 3, 10, 0, 0},
+}; // NOTE: type size 0x1D4 != symbol size 0x1D8
+s16 lbl_800FB798[54] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+};
+s16 lbl_800FB804[54] = {
+    28, 20, 36, 27, 14, 24, 28, 24,
+    24, 29, 16, 19, 29, 29, 25, 30,
+    26, 28, 29, 20, 30, 28, 28, 28,
+    30, 30, 30, 20, 34, 29, 29, 29,
+    29, 30, 30, 30, 30, 30, 20, 26,
+    30, 26, 29, 30, 26, 26, 26, 26,
+    26, 26, 26, 26, 20, 20,
+};
+s16 lbl_800FB870[54] = {
+    20, 20, 20, 25, 5, 6, 14, 14,
+    14, 21, 8, 14, 20, 22, 99, 22,
+    22, 17, 13, 20, 16, 6, 6, 6,
+    9, 9, 9, 4, 31, 22, 22, 22,
+    22, 14, 14, 14, 14, 99, 8, 23,
+    20, 32, 20, 16, 22, 22, 22, 22,
+    20, 20, 20, 20, 4, 4,
+};
+s16 lbl_800FB8DC[54] = {
+    32, 32, 27, 30, 13, 13, 32, 19,
+    19, 35, 29, 20, 40, 33, 99, 40,
+    39, 27, 28, 33, 23, 22, 22, 22,
+    26, 26, 26, 20, 47, 33, 33, 33,
+    33, 25, 25, 25, 25, 99, 14, 30,
+    35, 34, 40, 23, 39, 39, 39, 39,
+    32, 32, 32, 32, 20, 20,
+};
+s16 lbl_800FB948[54] = {
+    18, 12, 30, 20, 7, 7, 20, 3,
+    3, 21, 4, 12, 21, 21, 10, 23,
+    20, 20, 18, 1, 21, 9, 9, 9,
+    9, 9, 9, 5, 29, 21, 21, 21,
+    21, 21, 21, 21, 21, 9, 8, 20,
+    24, 22, 21, 21, 20, 20, 20, 20,
+    20, 20, 20, 20, 5, 5,
+};
+s16 lbl_800FB9B4[54] = {
+    28, 20, 36, 27, 14, 24, 28, 24,
+    24, 29, 16, 19, 29, 29, 25, 30,
+    26, 28, 29, 20, 30, 28, 28, 28,
+    30, 30, 30, 20, 34, 29, 29, 29,
+    29, 30, 30, 30, 30, 30, 20, 26,
+    30, 26, 29, 30, 26, 26, 26, 26,
+    26, 26, 26, 26, 20, 20,
+};
+s16 lbl_800FBA20[54] = {
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99,
+};
+s16 lbl_800FBA8C[54] = {
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99,
+};
+s16 lbl_800FBAF8[54] = {
+    10, 10, 14, 13, 13, 13, 99, 10,
+    10, 3, 10, 10, 11, 9, 99, 9,
+    10, 10, 10, 10, 11, 10, 10, 10,
+    10, 10, 10, 10, 9, 9, 9, 9,
+    9, 99, 99, 99, 99, 99, 10, 10,
+    10, 99, 11, 11, 14, 14, 14, 14,
+    10, 10, 10, 10, 10, 10,
+};
+s16 lbl_800FBB64[54] = {
+    30, 30, 28, 30, 30, 28, 25, 27,
+    27, 30, 28, 28, 20, 25, 99, 25,
+    28, 23, 28, 28, 25, 30, 30, 30,
+    30, 30, 30, 22, 25, 25, 25, 25,
+    25, 99, 99, 99, 99, 99, 19, 29,
+    34, 99, 20, 25, 17, 17, 17, 17,
+    30, 30, 30, 30, 22, 22,
+};
+s16 lbl_800FBBD0[54] = {
+    12, 14, 8, 9, 9, 14, 12, 15,
+    15, 13, 12, 10, 17, 99, 21, 22,
+    21, 14, 13, 13, 15, 9, 9, 9,
+    9, 9, 9, 6, 27, 21, 21, 21,
+    21, 13, 13, 13, 13, 7, 15, 9,
+    13, 15, 17, 15, 21, 21, 21, 21,
+    12, 12, 12, 12, 6, 6,
+};
+s16 lbl_800FBC3C[54] = {
+    15, 22, 13, 12, 13, 22, 15, 22,
+    22, 16, 19, 13, 45, 99, 28, 22,
+    25, 27, 22, 21, 20, 10, 10, 10,
+    14, 14, 14, 11, 30, 28, 28, 28,
+    28, 25, 25, 25, 25, 11, 16, 13,
+    18, 18, 45, 20, 25, 25, 25, 25,
+    15, 15, 15, 15, 11, 11,
+};
+s16 lbl_800FBCA8[54] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+};
+s16 lbl_800FBD14[54] = {
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99,
+};
+s16 lbl_800FBD80[54] = {
+    22, 56, 99, 55, 28, 17, 50, 16,
+    29, 99, 35, 65, 30, 41, 47, 19,
+    15, 35, 38, 16, 40, 12, 12, 12,
+    13, 13, 13, 16, 18, 41, 41, 41,
+    41, 36, 36, 36, 36, 46, 94, 20,
+    22, 52, 30, 40, 15, 15, 15, 15,
+    6, 6, 6, 6, 16, 16,
+};
+s8 lbl_800FBDEC[120] = {
+    11, 11, 11, 11, 11, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    1, 11, 11, 11, 11, 11, 11, 11, 11, 11, 0, 0, 4, 11, 11, 11,
+    11, 11, 3, 11, 4, 8, 11, 11, 5, 5, 5, 5, 5, 3, 3, 3,
+    0, 11, 0, 0, 0, 11, 3, 3, 11, 11, 11, 3, 11, 11, 11, 11,
+    11, 6, 11, 6, 11, 11, 7, 11, 10, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 9, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 0, 0, 0,
+};
+void fn_8004BEB0(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
+void fn_8006C444(void* obj, f32 frame, s32 a, s32 b);
+void fn_8006C3F8(void* obj, f32 frame, s32 a, s32 b);
+#if NONMATCHING
+// Port build: three handlers have other C signatures (same PPC registers), and wasm checks
+// the type of indirect calls, so they go through SwingFxFunc-shaped adapters.
+static void SwingFx_8004C5F8(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
+    fn_8004C5F8(model, animID, colorIdx);
+}
+static void SwingFx_8006C444(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
+    fn_8006C444(model, frame, animID, colorIdx);
+}
+static void SwingFx_8006C3F8(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
+    fn_8006C3F8(model, frame, animID, colorIdx);
+}
+#define SWINGFX_ADAPT(fn) SwingFx_##fn
+#else
+#define SWINGFX_ADAPT(fn) (SwingFxFunc)fn_##fn
+#endif
+SwingFxFunc lbl_800FBE64[11] = {
+    fn_8004B284,
+    fn_8004BEB0,
+    fn_8004C510,
+    SWINGFX_ADAPT(8004C5F8),
+    fn_80062C60,
+    fn_80062E6C,
+    fn_8004C19C,
+    SWINGFX_ADAPT(8006C444),
+    SWINGFX_ADAPT(8006C3F8),
+    fn_8004ACF4,
+    fn_8004AC00,
+};
+TrailParams lbl_800FBE90 = {NULL, 5, 40000, 128, 64};
+EffectParams lbl_800FBEA4 = {
+    NULL,
+    4,
+    2,
+    80000,
+    30000,
+    {78000, 50, 5, 109000, 101000, 0, 40, 12800000, 8000000, 0, 0},
+    0xFFFFFF00,
+    {0, 75000, 0},
+};
+
+// .bss 0x802E4B00..0x802E4BB0 (MWCC lays these out in reverse definition order)
+GPMetrics lbl_802E4B28;
+u8 lbl_802E4B14[2][9];
+u8 lbl_802E4B00[2][9];
+
+// .sdata 0x803CB838..0x803CB860
+s32 lbl_803CB838 = 1;
+s32 lbl_803CB83C[2] = {0, 0};
+s32 lbl_803CB848 = 1;
+EffectParams *lbl_803CB84C = &lbl_800FBEA4;
+s32 lbl_803CB850 = 45; // TODO: followed by two zero words and an unreferenced -1 (0x803CB85C)
+
+// .sbss 0x803CBCC8..0x803CBD0C (MWCC lays these out in reverse definition order)
+u32 lbl_803CBD08;
+u32 lbl_803CBD04;
+s32 lbl_803CBD00;
+s32 lbl_803CBCFC;
+s32 lbl_803CBCF8;
+s32 lbl_803CBCF0;
+u32 lbl_803CBCE8;
+u8 lbl_803CBCE0[8]; // menu flags (menus)
+u8 lbl_803CBCD8[8]; // menu flags (menus)
+OrderEntry lbl_803CBCD0[2];
+u8 lbl_803CBCCC[2];
+u8 lbl_803CBCC9;
+u8 lbl_803CBCC8;
+

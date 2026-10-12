@@ -573,3 +573,14 @@ void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
     p->active = 1;
 }
 #endif
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .sdata 0x803CB7E8..0x803CB7F8
+ShapeKey lbl_803CB7E8[2] = {{0, 0, 0, 0, 0, 100, 0}, {0, 0, 0, 0, 100, 100, 0}}; // default sequence keys
+ShapeSeqHdr lbl_803CB7F0 = {100, 2};
+ShapeKey* lbl_803CB7F4 = lbl_803CB7E8;
+
+// .sbss 0x803CBC68..0x803CBC70 (MWCC lays these out in reverse definition order)
+s32 lbl_803CBC68;
+

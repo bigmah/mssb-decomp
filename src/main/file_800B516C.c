@@ -614,3 +614,12 @@ void ANIMBind(struct ANIMPipe* pipe, Control* control, struct ANIMAnimTrack* tra
         pipe->keyFrameCache = 0;
     }
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .sdata 0x803CBB48..0x803CBB58
+f32 lbl_803CBB48 = 6.1035156e-05f;
+f32 lbl_803CBB4C = 6.1035156e-05f;
+u8 lbl_803CBB50 = 3;
+u8 lbl_803CBB51 = 3; // NOTE: type size 0x1 != symbol size 0x7
+

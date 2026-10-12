@@ -3265,7 +3265,8 @@ void fn_8001A25C(void) {
 #endif
 
 // .text:0x8001A3FC size:0x2B4
-// NONMATCHING 62%: unrolled init loops and the 13-actor reset loop are laid out differently
+// NONMATCHING 73%: the original keeps count in a register (not folded) and unrolls the 13-actor reset
+// loop 3x with four peeled iterations; as a for loop it unrolls 6x, as a do-while not at all
 #if NONMATCHING
 void fn_8001A3FC(s32 arg) {
     s32 count;
@@ -3300,19 +3301,19 @@ void fn_8001A3FC(s32 arg) {
         p = _OSAllocFromHeap(0x20, (max + 0x1F) & ~0x1F);
         lbl_80118220[0].files = p;
         lbl_803CBC30 = p;
-        lbl_80118220[0]._61 = -1;
-        lbl_80118220[0].slot = 0xFF;
+        lbl_80118220[0].slot = lbl_80118220[0]._61 = -1;
     }
     fn_800145F8(arg);
     lbl_8036E548.partSlots = fn_80023AA4();
     fn_80018DEC(arg);
     fn_80023B04(0xD);
-    for (i = 0; i < 13; i++) {
+    i = 0;
+    do {
         lbl_8036E548.actors[i].modelIndex = i;
         lbl_8036E548.active[i] = NULL;
-        lbl_8036E548._2D6A[i] = -1;
-        lbl_8036E548.actors[i].roster = -1;
-    }
+        lbl_8036E548.actors[i].roster = lbl_8036E548._2D6A[i] = -1;
+        i++;
+    } while (i < 13);
     for (i = 0; i < 9; i++) {
         lbl_8036E548._2D7F[i] = -1;
     }
@@ -4797,12 +4798,12 @@ void fn_8001E474(void) {
 }
 
 // .text:0x8001E488 size:0x2FC
-// NONMATCHING 99%: slot/loop-counter registers swapped
+// NONMATCHING 99%: r25/r26 (view, slot->actor) swapped in the inlined drawSlot
 #if NONMATCHING
 void fn_8001E488(void) {
-    s32 i;
     CharActor* actor;
     ActorObject* slot;
+    s32 i;
     f32 x;
     f32 y;
     Mtx44 proj;
@@ -4852,7 +4853,8 @@ static inline void drawMinigameLayer(void) {
     minigamesGXStuff();
 }
 
-// NONMATCHING 64%: the original inlines fn_8001E488 (not compiled in the matching build since it is NONMATCHING); otherwise register allocation
+// NONMATCHING 93%: register allocation (measured with fn_8001E488 compiled, as in the NONMATCHING build;
+// the original inlines it, so this function only reaches 64% while fn_8001E488 is left out)
 #if NONMATCHING
 void fn_8001E784(void) {
     LightPos* lp;
@@ -5260,3 +5262,53 @@ void fn_8001FDD4(ActorObject* slot) {
         fn_800B9AA8(slot->lights[0]);
     }
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .bss 0x80118220..0x80118740 (MWCC lays these out in reverse definition order)
+CharPart lbl_80118220[13];
+
+// .sdata 0x803CB790..0x803CB7C8
+extern DiskFileEntry lbl_800F1D78[];
+DiskFileEntry *lbl_803CB790 = lbl_800F1D78;
+extern DiskFileEntry lbl_800F71D8[];
+DiskFileEntry *lbl_803CB794 = lbl_800F71D8;
+u16 lbl_803CB798[4] = {74, 75, 65535, 0};
+u16 lbl_803CB7A0[4] = {47, 52, 65535, 0};
+extern DiskFileEntry lbl_800F5D98[];
+DiskFileEntry *lbl_803CB7A8 = lbl_800F5D98;
+CharDrawCallback lbl_803CB7AC[2] = {NULL, NULL};
+u8 lbl_803CB7B4[8] = {19, 25, 20, 26, 74, 75, 60, 61};
+f32 lbl_803CB7BC = 2.0f;
+u8 lbl_803CB7C0 = 32;
+u8 lbl_803CB7C1 = 255;
+u8 lbl_803CB7C2 = 1;
+u8 lbl_803CB7C4[4] = {0, 1, 2, 3}; // NOTE: type size 0x4 != symbol size 0x1
+// lbl_803CB7C5 is part of the object above
+
+// .sbss 0x803CBBF0..0x803CBC40 (MWCC lays these out in reverse definition order)
+u8 lbl_803CBC3C[4];
+u8 lbl_803CBC34[8];
+void* lbl_803CBC30;
+u8 lbl_803CBC2C;
+s32 lbl_803CBC28;
+u8* lbl_803CBC24;
+CharParts* lbl_803CBC20;
+CharPart* lbl_803CBC1C;
+CharActor* lbl_803CBC18;
+u8 lbl_803CBC15;
+u8 lbl_803CBC14;
+CharPart* lbl_803CBC10;
+u8 lbl_803CBC0C;
+void* lbl_803CBC08;
+u8 lbl_803CBC04;
+void* lbl_803CBC00;
+u8 lbl_803CBBFD;
+u8 lbl_803CBBFC;
+u8 lbl_803CBBFB;
+u8 lbl_803CBBFA;
+u8 lbl_803CBBF9;
+u8 lbl_803CBBF8;
+void (*lbl_803CBBF4)(void);
+u32 lbl_803CBBF0;
+

@@ -897,3 +897,9 @@ void fn_800B49E4(ActorLayout* layout) {
         file->bones[i].orientationCtrl = (Control*)((u8*)layout + (u32)file->bones[i].orientationCtrl);
     }
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x80111640..0x80111670
+Mtx lbl_80111640 = {{-1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f, 0.0f}};
+

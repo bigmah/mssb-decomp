@@ -217,7 +217,7 @@ static s32 lbl_3_bss_1858[42];
 static s32 lbl_3_bss_1848[4]; // per runner: frame margin
 static s32 lbl_3_bss_1838[4]; // per runner: base to cover
 static s32 lbl_3_bss_1828[4];
-static u32 lbl_3_bss_1824;
+static s32 lbl_3_bss_1824;
 static s32 lbl_3_bss_1820;
 static s32 lbl_3_bss_181C;
 static s32 lbl_3_bss_1818;
@@ -315,8 +315,23 @@ static inline s32 ballFielderFramesTo(f32 x, f32 z) {
 // AI fielder fi holding the ball: decide where to throw (g_FieldingLogic._0C4) or which
 // base to run to (_0CC). The per-situation predicates (fn_3_A1D04 .. fn_3_A3C00, fn_3_AB554)
 // are inlined into this function in the original.
-// NONMATCHING 38%: the original inlines the situation predicates (fn_3_A1D04, fn_3_A1DA0, fn_3_A1F3C, fn_3_A295C, fn_3_A2B6C, fn_3_A2C9C, fn_3_A2DDC, fn_3_A2FD8, fn_3_A31E8, fn_3_A32B8, fn_3_A37BC, fn_3_A384C, fn_3_A3B30, fn_3_A3C00, fn_3_AB554); here they are called. Decision order follows the asm
+// NONMATCHING 98.7%: the predicates are inlined via their Inl* static-inline bodies; register allocation and scheduling differ
 #if NONMATCHING
+static inline s32 InlA1D04(void);
+static inline int InlA1DA0(void);
+static inline int InlA1F3C(void);
+static inline int InlA295C(void);
+static inline int InlA2B6C(void);
+static inline int InlA2C9C(void);
+static inline int InlA2DDC(void);
+static inline int InlA2FD8(void);
+static inline int InlA31E8(void);
+static inline int InlA32B8(void);
+static inline int InlA37BC(void);
+static inline void InlA384C(void);
+static inline void InlA3B30(void);
+static inline void InlA3C00(void);
+static inline void InlAB554(void);
 void fn_3_A009C(s32 fi) {
     s32 lockout;
     RepFielder* f;
@@ -378,11 +393,11 @@ void fn_3_A009C(s32 fi) {
     if (g_FieldingLogic._10D != 0) {
         f->_192 = 0x2D;
     }
-    fn_3_A3B30();
+    InlA3B30();
     fn_3_A4A10();
-    fn_3_A3C00();
-    fn_3_A384C();
-    lead = fn_3_A1D04();
+    InlA3C00();
+    InlA384C();
+    lead = InlA1D04();
 
     // decide
     if ((g_Ball.ballZoneAwayFromHome == 4 || (g_Ball.ballZoneAwayFromHome == 3 && fi >= 6)) &&
@@ -391,7 +406,7 @@ void fn_3_A009C(s32 fi) {
         if (fn_3_A222C() || fn_3_A3374()) {
             goto decided;
         }
-        if (!fn_3_A1DA0()) {
+        if (!InlA1DA0()) {
             g_FieldingLogic._0C4 = 6;
             g_FieldingLogic._0CC = -1;
             g_FieldingLogic._0DE = -1;
@@ -403,7 +418,7 @@ void fn_3_A009C(s32 fi) {
             if (f->_1C4 <= 1 && lbl_3_bss_1858[1] <= 0) {
                 lockout = 1;
             }
-            if (fn_3_A37BC() && fn_3_A46A0(lbl_3_bss_1808[1])) {
+            if (InlA37BC() && fn_3_A46A0(lbl_3_bss_1808[1])) {
                 goto decided;
             }
         }
@@ -434,10 +449,10 @@ void fn_3_A009C(s32 fi) {
             goto decided;
         }
     }
-    if (lbl_3_bss_181C == 3 && fn_3_A32B8()) {
+    if (lbl_3_bss_181C == 3 && InlA32B8()) {
         goto decided;
     }
-    if (lbl_3_bss_181C == 2 && fn_3_A31E8()) {
+    if (lbl_3_bss_181C == 2 && InlA31E8()) {
         goto decided;
     }
     if (lbl_3_bss_1824 == 0x1000 && lbl_3_bss_1858[lbl_3_bss_1808[3]] <= 6 && fn_3_A46A0(lbl_3_bss_1808[3])) {
@@ -450,19 +465,19 @@ void fn_3_A009C(s32 fi) {
         g_Runners[lbl_3_bss_1808[1]].overrunBaseStage == 0 && fn_3_A46A0(lbl_3_bss_1808[1])) {
         goto decided;
     }
-    if (lbl_3_bss_1824 == 0x1111 && fn_3_A2FD8()) {
+    if (lbl_3_bss_1824 == 0x1111 && InlA2FD8()) {
         goto decided;
     }
-    if (lbl_3_bss_1824 == 0x1011 && fn_3_A2DDC()) {
+    if (lbl_3_bss_1824 == 0x1011 && InlA2DDC()) {
         goto decided;
     }
-    if ((lbl_3_bss_1824 == 0x111 || lbl_3_bss_1824 == 0x11) && fn_3_A2C9C()) {
+    if ((lbl_3_bss_1824 == 0x111 || lbl_3_bss_1824 == 0x11) && InlA2C9C()) {
         goto decided;
     }
-    if ((lbl_3_bss_1824 == 0x1001 || lbl_3_bss_1824 == 0x1101) && fn_3_A2B6C()) {
+    if ((lbl_3_bss_1824 == 0x1001 || lbl_3_bss_1824 == 0x1101) && InlA2B6C()) {
         goto decided;
     }
-    if (lbl_3_bss_1824 == 0x101 && fn_3_A295C()) {
+    if (lbl_3_bss_1824 == 0x101 && InlA295C()) {
         goto decided;
     }
     if ((lbl_3_bss_1824 & 1) && g_Ball.ballZoneAwayFromHome <= 1) {
@@ -480,7 +495,7 @@ void fn_3_A009C(s32 fi) {
     if ((lbl_3_bss_1824 & 1) && lbl_3_bss_1858[0] <= 6 && fn_3_A46A0(lbl_3_bss_1808[0])) {
         goto decided;
     }
-    if ((lbl_3_bss_1824 & 0x1000) && fn_3_A1F3C()) {
+    if ((lbl_3_bss_1824 & 0x1000) && InlA1F3C()) {
         goto decided;
     }
     if (g_Ball.ballZoneAwayFromHome >= 2 && fn_3_A2048()) {
@@ -550,9 +565,34 @@ decided:
     } else {
         g_FieldingLogic._0CC = -1;
     }
-    fn_3_AB554();
+    InlAB554();
 }
 #endif
+
+static inline s32 InlA1D04(void) {
+    f32 prev = lbl_3_rodata_1978;
+    s32 prevIdx;
+    InMemRunnerType* r = &g_Runners[3];
+    s32 i;
+    for (i = 3; i >= 0; r--, i--) {
+        if (r->runnerOnFieldOrOutOrScored == 1) {
+            f32 cur = r->fractionalBasesRan;
+            f32 d = cur - prev;
+            if (d < lbl_3_rodata_193C) {
+                d = -d;
+            }
+            if (d < 0.35f) {
+                if (g_Runners[prevIdx].baseStandingOn < 0) {
+                    return prevIdx;
+                }
+                return i;
+            }
+            prev = cur;
+            prevIdx = i;
+        }
+    }
+    return -1;
+}
 
 // .text:0x000A1D04 size:0x9C mapped:0x806E0D98
 s32 fn_3_A1D04(void) {
@@ -580,8 +620,7 @@ s32 fn_3_A1D04(void) {
     return -1;
 }
 
-// .text:0x000A1DA0 size:0x19C mapped:0x806E0E34
-int fn_3_A1DA0(void) {
+static inline int InlA1DA0(void) {
     RepFielder* f = &g_Fielders[g_Ball.fielderWBallIndex];
     if (f->_070 > -(lbl_3_rodata_1980 * (f32)(100 - f->_1CE) - lbl_3_rodata_196C)) {
         return 0;
@@ -609,8 +648,12 @@ int fn_3_A1DA0(void) {
     return 1;
 }
 
-// .text:0x000A1F3C size:0x10C mapped:0x806E0FD0
-int fn_3_A1F3C(void) {
+// .text:0x000A1DA0 size:0x19C mapped:0x806E0E34
+int fn_3_A1DA0(void) {
+    return InlA1DA0();
+}
+
+static inline int InlA1F3C(void) {
     s32 idx;
     s32 i;
     if (g_Ball.ballZoneAwayFromHome >= 3) {
@@ -638,6 +681,11 @@ int fn_3_A1F3C(void) {
         return 1;
     }
     return 0;
+}
+
+// .text:0x000A1F3C size:0x10C mapped:0x806E0FD0
+int fn_3_A1F3C(void) {
+    return InlA1F3C();
 }
 
 // .text:0x000A2048 size:0x1E4 mapped:0x806E10DC
@@ -874,10 +922,8 @@ found:
     return 1;
 }
 
-// .text:0x000A295C size:0x210 mapped:0x806E19F0
-// NONMATCHING 98.5%: the load of rodata_19A0 is scheduled later than in the original
 #if NONMATCHING
-int fn_3_A295C(void) {
+static inline int InlA295C(void) {
     f32 c = lbl_3_rodata_19A0;
     InMemRunnerType* r = &g_Runners[lbl_3_bss_1808[2]];
     s32 t;
@@ -903,8 +949,15 @@ int fn_3_A295C(void) {
 }
 #endif
 
-// .text:0x000A2B6C size:0x130 mapped:0x806E1C00
-int fn_3_A2B6C(void) {
+// .text:0x000A295C size:0x210 mapped:0x806E19F0
+// NONMATCHING 96.7%: the load of rodata_19A0 is scheduled later than in the original (body in InlA295C, shared with fn_3_A009C)
+#if NONMATCHING
+int fn_3_A295C(void) {
+    return InlA295C();
+}
+#endif
+
+static inline int InlA2B6C(void) {
     s32 idx;
     s16 fl;
     RepFielder* fp;
@@ -933,8 +986,12 @@ int fn_3_A2B6C(void) {
     return 0;
 }
 
-// .text:0x000A2C9C size:0x140 mapped:0x806E1D30
-int fn_3_A2C9C(void) {
+// .text:0x000A2B6C size:0x130 mapped:0x806E1C00
+int fn_3_A2B6C(void) {
+    return InlA2B6C();
+}
+
+static inline int InlA2C9C(void) {
     s32 v;
     if ((lbl_3_bss_1824 & 0x100) && g_Ball.ballDistanceFromBase[3] < 5.0f) {
         if (lbl_3_bss_1858[lbl_3_bss_1808[2]] <= 2 && fn_3_A46A0(lbl_3_bss_1808[2])) {
@@ -956,8 +1013,12 @@ int fn_3_A2C9C(void) {
     return 0;
 }
 
-// .text:0x000A2DDC size:0x1FC mapped:0x806E1E70
-int fn_3_A2DDC(void) {
+// .text:0x000A2C9C size:0x140 mapped:0x806E1D30
+int fn_3_A2C9C(void) {
+    return InlA2C9C();
+}
+
+static inline int InlA2DDC(void) {
     s16 fl;
     RepFielder* fp;
     if (lbl_3_bss_1818 != 0 && fn_3_A46A0(lbl_3_bss_1808[1])) {
@@ -998,10 +1059,13 @@ int fn_3_A2DDC(void) {
     return 0;
 }
 
-// .text:0x000A2FD8 size:0x210 mapped:0x806E206C
-// NONMATCHING 97%: scheduling only (the original loads rodata_1998 before the ball position)
+// .text:0x000A2DDC size:0x1FC mapped:0x806E1E70
+int fn_3_A2DDC(void) {
+    return InlA2DDC();
+}
+
 #if NONMATCHING
-int fn_3_A2FD8(void) {
+static inline int InlA2FD8(void) {
     s32 t;
     f32 x = ((f32*)&g_Ball.AtBat_Contact_BallPos)[0];
     f32 c = lbl_3_rodata_1998;
@@ -1046,8 +1110,15 @@ int fn_3_A2FD8(void) {
 }
 #endif
 
-// .text:0x000A31E8 size:0xD0 mapped:0x806E227C
-int fn_3_A31E8(void) {
+// .text:0x000A2FD8 size:0x210 mapped:0x806E206C
+// NONMATCHING 96.8%: scheduling only (the original loads rodata_1998 before the ball position; body in InlA2FD8, shared with fn_3_A009C)
+#if NONMATCHING
+int fn_3_A2FD8(void) {
+    return InlA2FD8();
+}
+#endif
+
+static inline int InlA31E8(void) {
     s32 idx;
     if (!(lbl_3_bss_1824 & 0x1000)) {
         return 0;
@@ -1068,8 +1139,12 @@ int fn_3_A31E8(void) {
     return 0;
 }
 
-// .text:0x000A32B8 size:0xBC mapped:0x806E234C
-int fn_3_A32B8(void) {
+// .text:0x000A31E8 size:0xD0 mapped:0x806E227C
+int fn_3_A31E8(void) {
+    return InlA31E8();
+}
+
+static inline int InlA32B8(void) {
     s32 idx;
     if (!(lbl_3_bss_1824 & 0x1000)) {
         return 0;
@@ -1088,6 +1163,11 @@ int fn_3_A32B8(void) {
         }
     }
     return 0;
+}
+
+// .text:0x000A32B8 size:0xBC mapped:0x806E234C
+int fn_3_A32B8(void) {
+    return InlA32B8();
 }
 
 // .text:0x000A3374 size:0x348 mapped:0x806E2408
@@ -1195,8 +1275,7 @@ int fn_3_A3768(void) {
     return 0;
 }
 
-// .text:0x000A37BC size:0x90 mapped:0x806E2850
-int fn_3_A37BC(void) {
+static inline int InlA37BC(void) {
     InMemBallType* b = &g_Ball;
     s16 v = b->ballAngleFromHome;
     if (v < 0x398) {
@@ -1213,6 +1292,53 @@ int fn_3_A37BC(void) {
         return 1;
     }
     return 0;
+}
+
+// .text:0x000A37BC size:0x90 mapped:0x806E2850
+int fn_3_A37BC(void) {
+    return InlA37BC();
+}
+
+static inline void InlA384C(void) {
+    RepFielder* f;
+    f32 dz;
+    f32 dx;
+    f32 d;
+    f32 step;
+    f32 a;
+    f32 b;
+    s32 n;
+
+    if ((lbl_3_bss_1824 & 0x11) && lbl_3_bss_1858[lbl_3_bss_1808[1]] <= 4) {
+        f = &g_Fielders[g_Ball.fielderWBallIndex];
+        step = (f32)f->_1CD / lbl_3_rodata_1938;
+        dx = lbl_3_data_4444[4] - f->pos.x;
+        dz = lbl_3_data_4444[5] - f->pos.z;
+        a = dx * dx;
+        b = dz * dz;
+        d = a + b;
+        SQRT_L(d);
+        if (lbl_3_rodata_193C == step) {
+            step = lbl_3_rodata_1958;
+        }
+        if (d > lbl_3_rodata_195C) {
+            n = (s32)(lbl_3_rodata_1960 * d / step);
+        } else if (d > lbl_3_rodata_1964) {
+            n = (s32)(d / step);
+        } else {
+            n = (s32)(lbl_3_rodata_1968 * d / step);
+        }
+        if (d > lbl_3_rodata_196C) {
+            n = (s32)((f32)n * lbl_3_rodata_1970);
+            n += 0x1E;
+        } else if (d > lbl_3_rodata_1974) {
+            n = (s32)((f32)n * lbl_3_rodata_1960);
+            n += 0x1E;
+        }
+        if (n + 0x32 < g_Runners[0].framesToNextBase) {
+            lbl_3_bss_1818 = 1;
+        }
+    }
 }
 
 // .text:0x000A384C size:0x2E4 mapped:0x806E28E0
@@ -1258,8 +1384,7 @@ void fn_3_A384C(void) {
     }
 }
 
-// .text:0x000A3B30 size:0xD0 mapped:0x806E2BC4
-void fn_3_A3B30(void) {
+static inline void InlA3B30(void) {
     s32 diff;
     diff = g_Scores.team[g_GameLogic.homeTeamBattingInd_fieldingTeam].runs[0] - g_Scores.team[g_GameLogic.awayTeamBattingInd_battingTeam].runs[0];
     lbl_3_bss_181C = 0;
@@ -1276,8 +1401,12 @@ void fn_3_A3B30(void) {
     }
 }
 
-// .text:0x000A3C00 size:0xC0 mapped:0x806E2C94
-void fn_3_A3C00(void) {
+// .text:0x000A3B30 size:0xD0 mapped:0x806E2BC4
+void fn_3_A3B30(void) {
+    InlA3B30();
+}
+
+static inline void InlA3C00(void) {
     s32 i;
     lbl_3_bss_1800 = 0;
     for (i = 0; i < 4; i++) {
@@ -1292,6 +1421,11 @@ void fn_3_A3C00(void) {
             }
         }
     }
+}
+
+// .text:0x000A3C00 size:0xC0 mapped:0x806E2C94
+void fn_3_A3C00(void) {
+    InlA3C00();
 }
 
 // .text:0x000A3CC0 size:0x498 mapped:0x806E2D54
@@ -1588,8 +1722,53 @@ normal:
 }
 #endif
 
+#if NONMATCHING
+static inline void InlA53DC(s32 i) {
+    InMemRunnerType* r = &g_Runners[i];
+    RepFielder* f = &g_Fielders[g_Ball.fielderWBallIndex];
+    f32 a;
+    f32 dx;
+    f32 d;
+    f32 step;
+    f32 dz;
+    f32 b;
+    s32 n;
+
+    if (i == 3 && r->baseStandingOn == 3 && g_RunningLogic._00 == 0x1000 && g_Ball.ballZoneAwayFromHome >= 4 &&
+        g_Ball.AtBat_ContactResult == 3) {
+        // inlined fn_3_A6ABC(home x, home z)
+        dx = lbl_3_data_4444[0] - f->pos.x;
+        step = (f32)f->_1CD / lbl_3_rodata_1938;
+        dz = lbl_3_data_4444[1] - f->pos.z;
+        a = dx * dx;
+        b = dz * dz;
+        d = a + b;
+        SQRT_L(d);
+        if (lbl_3_rodata_193C == step) {
+            step = lbl_3_rodata_1958;
+        }
+        if (d > lbl_3_rodata_195C) {
+            n = (s32)(lbl_3_rodata_1960 * d / step);
+        } else if (d > lbl_3_rodata_1964) {
+            n = (s32)(d / step);
+        } else {
+            n = (s32)(lbl_3_rodata_1968 * d / step);
+        }
+        if (d > lbl_3_rodata_196C) {
+            n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
+        } else if (d > lbl_3_rodata_1974) {
+            n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
+        }
+        lbl_3_bss_1828[i] = 0;
+        lbl_3_bss_1838[i] = -1;
+        lbl_3_bss_1848[i] = f->_192 + n + lbl_3_data_1C40 - r->framesToNextBase;
+    }
+}
+#endif
+
 // .text:0x000A4A10 size:0x540 mapped:0x806E3AA4
-// NONMATCHING 41%: the original inlines fn_3_A53DC (with fn_3_A6ABC); here it is called. Loop structure matches
+// NONMATCHING 95%: fn_3_A53DC (with fn_3_A6ABC) inlined through a static-inline copy of its body; register allocation and
+// a few scheduling differences remain
 #if NONMATCHING
 void fn_3_A4A10(void) {
     s32 i;
@@ -1606,7 +1785,7 @@ void fn_3_A4A10(void) {
             if (r->tagUpInd == 2) {
                 fn_3_A4F50(i);
             } else if (r->baseStandingOn != -1 && r->forceOutCd <= 0) {
-                fn_3_A53DC(i);
+                InlA53DC(i);
             } else if (r->overrunBaseStage == 0) {
                 if (r->forceOutCd == 1) {
                     fn_3_A5704(i);
@@ -1741,48 +1920,10 @@ void fn_3_A4F50(s32 i) {
 #endif
 
 // .text:0x000A53DC size:0x328 mapped:0x806E4470
-// NONMATCHING 87.5%: instruction scheduling and register allocation differ; fn_3_A6ABC is inlined
+// NONMATCHING 90%: instruction scheduling and register allocation differ; body (with fn_3_A6ABC inlined) is InlA53DC above, shared with fn_3_A4A10
 #if NONMATCHING
 void fn_3_A53DC(s32 i) {
-    InMemRunnerType* r = &g_Runners[i];
-    RepFielder* f = &g_Fielders[g_Ball.fielderWBallIndex];
-    f32 a;
-    f32 dx;
-    f32 d;
-    f32 step;
-    f32 dz;
-    f32 b;
-    s32 n;
-
-    if (i == 3 && r->baseStandingOn == 3 && g_RunningLogic._00 == 0x1000 && g_Ball.ballZoneAwayFromHome >= 4 &&
-        g_Ball.AtBat_ContactResult == 3) {
-        // inlined fn_3_A6ABC(home x, home z)
-        dx = lbl_3_data_4444[0] - f->pos.x;
-        step = (f32)f->_1CD / lbl_3_rodata_1938;
-        dz = lbl_3_data_4444[1] - f->pos.z;
-        a = dx * dx;
-        b = dz * dz;
-        d = a + b;
-        SQRT_L(d);
-        if (lbl_3_rodata_193C == step) {
-            step = lbl_3_rodata_1958;
-        }
-        if (d > lbl_3_rodata_195C) {
-            n = (s32)(lbl_3_rodata_1960 * d / step);
-        } else if (d > lbl_3_rodata_1964) {
-            n = (s32)(d / step);
-        } else {
-            n = (s32)(lbl_3_rodata_1968 * d / step);
-        }
-        if (d > lbl_3_rodata_196C) {
-            n = (s32)((f32)n * lbl_3_rodata_1970) + 0x1E;
-        } else if (d > lbl_3_rodata_1974) {
-            n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
-        }
-        lbl_3_bss_1828[i] = 0;
-        lbl_3_bss_1838[i] = -1;
-        lbl_3_bss_1848[i] = f->_192 + n + lbl_3_data_1C40 - r->framesToNextBase;
-    }
+    InlA53DC(i);
 }
 #endif
 
@@ -2217,6 +2358,25 @@ s32 fn_3_A6ABC(f32 x, f32 z) {
         n = (s32)((f32)n * lbl_3_rodata_1960) + 0x1E;
     }
     return n;
+}
+
+static inline void InlA6D48(void) {
+    s32 i;
+    lbl_3_bss_1824 = 0;
+    lbl_3_bss_1808[0] = -1;
+    lbl_3_bss_1808[1] = -1;
+    lbl_3_bss_1808[2] = -1;
+    lbl_3_bss_1808[3] = -1;
+    for (i = 3; i >= 0; i--) {
+        InMemRunnerType* r = &g_Runners[i];
+        if (r->runnerOnFieldOrOutOrScored == 1) {
+            s32 b = r->currentBase;
+            lbl_3_bss_1824 |= 1 << ((s32)r->fractionalBasesRan * 4);
+            if (lbl_3_bss_1808[b] < 0 || g_Runners[lbl_3_bss_1808[b]].baseStandingOn >= 0) {
+                lbl_3_bss_1808[b] = i;
+            }
+        }
+    }
 }
 
 // .text:0x000A6D48 size:0x150 mapped:0x806E5DDC
@@ -2771,8 +2931,7 @@ void fn_3_A8074(s32 idx) {
     g_FieldingLogic._0DE = res;
 }
 
-// .text:0x000A8338 size:0x140 mapped:0x806E73CC
-void fn_3_A8338(s32 idx) {
+static inline void InlA8338(s32 idx) {
     g_FieldingLogic_s* fl;
     s16 sel;
     RepFielder* fp;
@@ -2804,6 +2963,11 @@ void fn_3_A8338(s32 idx) {
         }
     }
     fn_3_A3CC0();
+}
+
+// .text:0x000A8338 size:0x140 mapped:0x806E73CC
+void fn_3_A8338(s32 idx) {
+    InlA8338(idx);
 }
 
 // .text:0x000A8478 size:0x150 mapped:0x806E750C
@@ -2853,11 +3017,10 @@ tail:
 }
 #endif
 
-// .text:0x000A85C8 size:0x40C mapped:0x806E765C
-// NONMATCHING 92.5%: float register allocation in the inlined fn_3_A6ABC body differs
 #if NONMATCHING
-#pragma dont_inline off
-void fn_3_A85C8(f32 dist) {
+// fn_3_A89D4 inlines this whole body; CW needs a raised inline limit for that
+#pragma inline_max_size(600)
+static inline void InlA85C8(f32 dist) {
     s32 target;
     s32 runnerFrames;
     s32 i;
@@ -2892,12 +3055,21 @@ void fn_3_A85C8(f32 dist) {
         }
     }
 }
+#endif
+
+// .text:0x000A85C8 size:0x40C mapped:0x806E765C
+// NONMATCHING 92.5%: float register allocation in the inlined fn_3_A6ABC body differs
+#if NONMATCHING
+#pragma dont_inline off
+void fn_3_A85C8(f32 dist) {
+    InlA85C8(dist);
+}
 #pragma dont_inline on
 #endif
 
 // .text:0x000A89D4 size:0x980 mapped:0x806E7A68
 // Chooses g_FieldingLogic.throwSpeedType for the current throw.
-// NONMATCHING 55%: the original inlines fn_3_A85C8 (with fn_3_A6ABC) as its tail; here it is called. Code before it matches up to register allocation
+// NONMATCHING 90%: fn_3_A85C8 (with fn_3_A6ABC) inlined as its tail via InlA85C8; register allocation differs
 #if NONMATCHING
 void fn_3_A89D4(void) {
     RepFielder* f;
@@ -3001,7 +3173,7 @@ void fn_3_A89D4(void) {
         }
         return;
     }
-    fn_3_A85C8(dist);
+    InlA85C8(dist);
 }
 #endif
 
@@ -3202,8 +3374,7 @@ void fn_3_A9984(int fi) {
     f->pos.z = f->pos.z + f->velZ;
 }
 
-// .text:0x000A9C74 size:0xAC mapped:0x806E8D08
-void fn_3_A9C74(int i) {
+static inline void InlA9C74(int i) {
     RepFielder* f = &g_Fielders[i];
     int r = checkFieldingStat(g_GameLogic.teamFielding, f->rosterID, 5);
     if (f->_1F8 >= 3) {
@@ -3216,10 +3387,18 @@ void fn_3_A9C74(int i) {
     }
 }
 
+// .text:0x000A9C74 size:0xAC mapped:0x806E8D08
+void fn_3_A9C74(int i) {
+    InlA9C74(i);
+}
+
 // .text:0x000A9D20 size:0xD1C mapped:0x806E8DB4
 // Per-frame update for fielder fi while the play is live.
-// NONMATCHING 61%: the original inlines fn_3_A6D48, fn_3_A8338, fn_3_AABF8, fn_3_AAA3C and fn_3_A9C74; here they are called. Control flow matches
+// NONMATCHING 96%: fn_3_A6D48, fn_3_A8338, fn_3_AABF8, fn_3_AAA3C and fn_3_A9C74 inlined via their Inl* static-inline bodies; register allocation differs
 #if NONMATCHING
+static inline int InlAABF8(void);
+static inline void InlAAA3C(int idx);
+#pragma inline_max_size(600)
 void fn_3_A9D20(s32 fi) {
     s32 handled;
     RepFielder* f;
@@ -3316,7 +3495,7 @@ void fn_3_A9D20(s32 fi) {
         f->throwing = 0;
         return;
     }
-    fn_3_A6D48();
+    InlA6D48();
     if (g_FieldingLogic._0C4 < 0) {
         // no throw chosen yet
         if (f->_1C6 != 0) {
@@ -3324,7 +3503,7 @@ void fn_3_A9D20(s32 fi) {
         } else if (g_FieldingLogic._116 == 0) {
             fn_3_A76B4();
             if (g_FieldingLogic._0CC >= 0) {
-                fn_3_A8338(fi);
+                InlA8338(fi);
             } else {
                 g_FieldingLogic._0E2 = -1;
             }
@@ -3354,7 +3533,7 @@ void fn_3_A9D20(s32 fi) {
                 g_FieldingLogic._0C4 = -1;
             }
         } else if (g_FieldingLogic._0C4 == 5) {
-            if (fn_3_AABF8()) {
+            if (InlAABF8()) {
                 f->throwTarget.x = lbl_3_data_4444[8];
                 f->throwTarget.y = lbl_3_rodata_193C;
                 g_Ball.throwDestination.x = f->throwTarget.x;
@@ -3366,13 +3545,13 @@ void fn_3_A9D20(s32 fi) {
             }
         }
         g_FieldingLogic._119 = 0;
-        fn_3_AAA3C(fi);
+        InlAAA3C(fi);
         if (g_FieldingLogic._0C4 >= 0) {
             g_FieldingLogic._0CC = -1;
             fn_3_A89D4();
             fn_3_79040();
         }
-        fn_3_A9C74(fi);
+        InlA9C74(fi);
         goto check;
     }
     if (f->_215 != 0) {
@@ -3437,6 +3616,46 @@ after:
 }
 #endif
 
+static inline void InlAAA3C(int idx) {
+    RepFielder* f = &g_Fielders[idx];
+    s16 ce = g_FieldingLogic._0CE;
+    s16 c4;
+    if (ce < 0) {
+        return;
+    }
+    c4 = g_FieldingLogic._0C4;
+    if (c4 < 0 || c4 > 3) {
+        return;
+    }
+    if (f->distToBase[c4] > lbl_3_rodata_19F0 && g_FieldingLogic._0DC < 0) {
+        return;
+    }
+    if (c4 == ce) {
+        if (g_FieldingLogic._0E0 >= 0 && g_FieldingLogic._0E0 <= 3) {
+            if (g_FieldingLogic._0DC == g_Runners[g_FieldingLogic._0E0].nextBase || g_FieldingLogic._0DC == g_Runners[g_FieldingLogic._0E0].currentBase) {
+                g_FieldingLogic._119 = 1;
+            }
+        }
+    }
+    if (g_FieldingLogic._0CE == 9) {
+        if (g_FieldingLogic._0E0 >= 0 && g_FieldingLogic._0E0 <= 3) {
+            InMemRunnerType* r = &g_Runners[g_FieldingLogic._0E0];
+            if (r->runnerOnFieldOrOutOrScored == 1 && g_FieldingLogic._0C4 == r->baseRunningTowards) {
+                g_FieldingLogic._119 = 1;
+            }
+        }
+    }
+    if (g_FieldingLogic._119 != 0) {
+        if (g_FieldingLogic._0C4 >= 0 && g_FieldingLogic._0C4 <= 3) {
+            s32 o = g_FieldingLogic._0C4;
+            f32 a = game_atan2(lbl_3_data_4444[o*2] - f->pos.x, lbl_3_data_4444[o*2+1] - f->pos.z);
+            if (fn_3_9FC1C(a, f->facing) > 0x40) {
+                g_FieldingLogic._119 = 0;
+            }
+        }
+    }
+}
+
 // .text:0x000AAA3C size:0x1BC mapped:0x806E9AD0
 void fn_3_AAA3C(int idx) {
     RepFielder* f = &g_Fielders[idx];
@@ -3478,8 +3697,7 @@ void fn_3_AAA3C(int idx) {
     }
 }
 
-// .text:0x000AABF8 size:0x8C mapped:0x806E9C8C
-int fn_3_AABF8(void) {
+static inline int InlAABF8(void) {
     s16 idx = g_FieldingLogic._0D8;
     if (idx == -1) {
         return 0;
@@ -3493,10 +3711,15 @@ int fn_3_AABF8(void) {
     return !(g_Fielders[g_Ball.fielderWBallIndex]._0B8 < lbl_3_rodata_19F0);
 }
 
-// .text:0x000AAC84 size:0x36C mapped:0x806E9D18
-// NONMATCHING 89%: receiver position loads use lfsx/lfsu in the original, register allocation differs; fn_3_A6ABC is inlined
+// .text:0x000AABF8 size:0x8C mapped:0x806E9C8C
+int fn_3_AABF8(void) {
+    return InlAABF8();
+}
+
 #if NONMATCHING
-void fn_3_AAC84(f32* x, f32* z) {
+// fn_3_ABDD0 inlines this whole body; CW needs a raised inline limit for that
+#pragma inline_max_size(600)
+static inline void InlAAC84(f32* x, f32* z) {
     RepFielder* f;
     RepFielder* t;
     s32 idx;
@@ -3554,6 +3777,14 @@ void fn_3_AAC84(f32* x, f32* z) {
         *z = (f32)n * t->velZ + g_Fielders[idx].pos.z;
     }
     g_Ball.fielderBeingThrownTo = idx;
+}
+#endif
+
+// .text:0x000AAC84 size:0x36C mapped:0x806E9D18
+// NONMATCHING 88%: receiver position loads use lfsx/lfsu in the original, register allocation differs; fn_3_A6ABC is inlined (body in InlAAC84, shared with fn_3_ABDD0)
+#if NONMATCHING
+void fn_3_AAC84(f32* x, f32* z) {
+    InlAAC84(x, z);
 }
 #endif
 
@@ -3627,8 +3858,7 @@ void fn_3_AAFF0(f32* x, f32* z) {
 }
 #endif
 
-// .text:0x000AB554 size:0x5C mapped:0x806EA5E8
-void fn_3_AB554(void) {
+static inline void InlAB554(void) {
     s16 v;
     if (g_FieldingLogic._10D == 0) {
         return;
@@ -3643,6 +3873,11 @@ void fn_3_AB554(void) {
     } else {
         g_FieldingLogic._10D = 0;
     }
+}
+
+// .text:0x000AB554 size:0x5C mapped:0x806EA5E8
+void fn_3_AB554(void) {
+    InlAB554();
 }
 
 // .text:0x000AB5B0 size:0x820 mapped:0x806EA644
@@ -3882,7 +4117,7 @@ void fn_3_AB5B0(s32 maxFrames, f32* outAngle, f32* speedPtr) {
 
 // .text:0x000ABDD0 size:0xC28 mapped:0x806EAE64
 // Releases the throw by fielder fi toward the chosen target.
-// NONMATCHING 66%: the original inlines fn_3_AAC84 (with fn_3_A6ABC) for the default target; here it is called
+// NONMATCHING 90%: fn_3_AAC84 (with fn_3_A6ABC) inlined for the default target via InlAAC84; register allocation differs
 #if NONMATCHING
 void fn_3_ABDD0(s32 fi) {
     RepFielder* f;
@@ -3951,7 +4186,7 @@ void fn_3_ABDD0(s32 fi) {
     } else if (g_FieldingLogic._0C4 == 6 && g_FieldingLogic._0BE >= 0 && g_FieldingLogic._0BE != fi) {
         fn_3_AAFF0(&tx, &tz);
     } else {
-        fn_3_AAC84(&tx, &tz);
+        InlAAC84(&tx, &tz);
     }
     g_Ball.throwTarget.x = tx;
     g_Ball.throwTarget.z = tz;

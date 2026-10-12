@@ -7,9 +7,6 @@
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
 
-extern const f32 lbl_803CD060; // 0.0f
-extern const f32 lbl_803CD064; // 1.0f
-extern char lbl_800E7FC8[];
 
 
 // .text:0x800BD8C4 size:0x160
@@ -25,7 +22,7 @@ void fn_800BD8C4(ActorObjectTable* table, MtxPtr camera) {
             continue;
         }
         if (t->objects[0].setAnimation) {
-            ACTSetAnimation(t->objects[0].actor, t->objects[0].animBank, 0, t->objects[0].seqNum, lbl_803CD060, t->objects[0].speed);
+            ACTSetAnimation(t->objects[0].actor, t->objects[0].animBank, 0, t->objects[0].seqNum, 0.0f, t->objects[0].speed);
         }
         if (t->objects[0].setTime) {
             fn_800B4CA0(t->objects[0].actor, t->objects[0].time);
@@ -113,7 +110,7 @@ void fn_800BDC88(ActorObjectTable* table, u16 index, u16 id, ActorLayout* layout
     fn_800B4048(&table->objects[index].actor, layout, index);
     fn_800B4724(table->objects[index].actor, skHeader);
     table->objects[index].seqNum = 0;
-    table->objects[index].unk54 = lbl_803CD064;
+    table->objects[index].unk54 = 1.0f;
     table->objects[index].unk64 = 0;
     table->objects[index].unk66 = 0;
     table->objects[index].boneRemap = NULL;
@@ -133,7 +130,7 @@ void fn_800BDC88(ActorObjectTable* table, u16 index, u16 id, ActorLayout* layout
         table->objects[index].setAnimation = 1;
         table->objects[index].setSpeed = 1;
         table->objects[index].setTime = 1;
-        table->objects[index].speed = lbl_803CD060;
+        table->objects[index].speed = 0.0f;
         if (table->objects[index].actor != NULL) {
             table->objects[index].actor->tickFlag = 0;
         }
@@ -147,7 +144,8 @@ ActorObjectTable* ActorObjectInitTable(u16 count) {
     u16 i;
 
     if (count == 0) {
-        OSReport(lbl_800E7FC8);
+        // "...ActorObjectInitTable関数が引数0で呼ばれました。テーブルは作成されずにリターンします。"
+        OSReport("Warning : ActorObjectInitTable\x8A\xD6\x90\x94\x82\xAA\x88\xF8\x90\x94" "0\x82\xC5\x8C\xC4\x82\xCE\x82\xEA\x82\xDC\x82\xB5\x82\xBD\x81" "B\x83" "e\x81[\x83u\x83\x8B\x82\xCD\x8D\xEC\x90\xAC\x82\xB3\x82\xEA\x82\xB8\x82\xC9\x83\x8A\x83^\x81[\x83\x93\x82\xB5\x82\xDC\x82\xB7\x81" "B\n");
         return NULL;
     }
     table = _OSAllocFromHeap(0x20, count * sizeof(ActorObject) + 0x34);
@@ -158,9 +156,9 @@ ActorObjectTable* ActorObjectInitTable(u16 count) {
         table->objects[i].animBank = NULL;
         table->objects[i].callback = NULL;
         table->objects[i].seqNum = 0;
-        table->objects[i].unk54 = lbl_803CD064;
-        table->objects[i].time = lbl_803CD060;
-        table->objects[i].speed = lbl_803CD060;
+        table->objects[i].unk54 = 1.0f;
+        table->objects[i].time = 0.0f;
+        table->objects[i].speed = 0.0f;
         table->objects[i].unk64 = 0;
         table->objects[i].unk66 = 0;
         table->objects[i].boneRemap = NULL;

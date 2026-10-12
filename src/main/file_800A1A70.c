@@ -95,3 +95,20 @@ void GDLoadTlut(void* tlut_ptr, u32 tmem_addr, GXTlutSize size) {
     GDWriteBPCmd(0xFEFFFF00);
     GDWriteBPCmd(0x0F000000);
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x8010F158..0x8010F160
+u8 lbl_8010F158[8] = {0, 4, 1, 5, 2, 6, 0, 0};
+
+// .sdata 0x803CBA98..0x803CBAC0
+u8 lbl_803CBA98[8] = {128, 129, 130, 131, 160, 161, 162, 163};
+u8 lbl_803CBAA0[8] = {132, 133, 134, 135, 164, 165, 166, 167};
+u8 lbl_803CBAA8[8] = {136, 137, 138, 139, 168, 169, 170, 171};
+u8 lbl_803CBAB0[8] = {148, 149, 150, 151, 180, 181, 182, 183};
+u8 lbl_803CBAB8[8] = {152, 153, 154, 155, 184, 185, 186, 187};
+
+// .sbss 0x803CC0F0..0x803CC0F8 (MWCC lays these out in reverse definition order)
+GDOverflowCb lbl_803CC0F4;
+GDLObj* lbl_803CC0F0;
+

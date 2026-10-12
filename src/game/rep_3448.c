@@ -249,7 +249,7 @@ void fn_3_11EC28(void) {
 #endif
 
 // .text:0x0011F02C size:0x454 mapped:0x8075E0C0
-// NONMATCHING 66%: loop induction variables and slot index folding differ (orig strength-reduces 2*i counters), fn_3_107CD0 return not zero-extended in orig
+// NONMATCHING 93.6%: loop induction variables and slot index folding differ (orig strength-reduces 2*i counters), fn_3_107CD0 return not zero-extended in orig
 #if NONMATCHING
 void fn_3_11F02C(void) {
     u32 snd = 0;
@@ -602,7 +602,7 @@ void fn_3_11FDB0(void) {
 #endif
 
 // .text:0x0012026C size:0x630 mapped:0x8075F300
-// NONMATCHING 60%: register allocation and loop induction (orig walks q + 2*i for delta and keeps 4*i counters); inlines fn_3_125480 as AnyBusy
+// NONMATCHING 93%: register allocation and loop induction (orig walks q + 2*i for delta and keeps 4*i counters); inlines fn_3_125480 as AnyBusy
 #if NONMATCHING
 void fn_3_12026C(void) {
     RepTask* q = REP_TASK;
@@ -925,8 +925,24 @@ void fn_3_120FF8(void) {
 }
 #endif
 
+// fn_3_125424's body (step a slot's frame toward v), inlined by its callers
+static inline s32 Inl125424(RepTask* q, s32 i, u32 v) {
+    RepObj* o = REP_OBJ(q, i);
+    u32 x = o->frame >> 16;
+    if (x < v) {
+        o->mode = 1;
+        return 0;
+    }
+    if (x > v) {
+        o->mode = 4;
+        return 0;
+    }
+    o->mode = 0;
+    return 1;
+}
+
 // .text:0x00121304 size:0x604 mapped:0x80760398
-// NONMATCHING 68%: loop induction variables (orig strength-reduces the 4*i slot counters), the inlined fn_3_125424(q, i + 1, 0) keeps its dead x < 0 test
+// NONMATCHING 93.7%: loop induction (orig keeps a separate 4*i counter for the slot index), fn_3_107CD0 result not zero-extended in orig
 #if NONMATCHING
 void fn_3_121304(void) {
     u32 snd = 0;
@@ -937,13 +953,12 @@ void fn_3_121304(void) {
     u32 i;
     s32 n;
     s32 lead;
-    s32 tied;
+    u32 tied;
     s32 d;
     s32 step;
     s8 p;
     s8 c;
     u32 v;
-    u32 x;
     if (fn_3_12536C()) {
         fn_80034CEC(q);
         REMOVE_QUEUE_NOARG();
@@ -979,8 +994,8 @@ void fn_3_121304(void) {
         lead = fn_3_107CD0();
         tied = fn_3_107C88();
         m = g_Minigame;
-        for (i = 0; i < 4; i++) {
-            p = m[0x18E0 + i];
+        for (i = 0; i < 4; i++, m++) {
+            p = m[0x18E0];
             if (p < 0) {
                 continue;
             }
@@ -1003,10 +1018,10 @@ void fn_3_121304(void) {
                     q->u24.flag[p] = 0;
                     REP_OBJ(q, i + 0x19)->frame = 0;
                     REP_OBJ(q, i + 0x19)->mode = 1;
-                    REP_OBJ(q, i * 4 + 0x1D)->frame = 0;
-                    REP_OBJ(q, i * 4 + 0x1E)->frame = 0;
-                    REP_OBJ(q, i * 4 + 0x1F)->frame = 0;
-                    REP_OBJ(q, i * 4 + 0x20)->frame = 0;
+                    (*(RepObj**)((u8*)lbl_80371C30 + (q->baseIdx + i * 4 + 0x1D) * sizeof(RepSlot)))->frame = 0;
+                    (*(RepObj**)((u8*)lbl_80371C30 + (q->baseIdx + i * 4 + 0x1E) * sizeof(RepSlot)))->frame = 0;
+                    (*(RepObj**)((u8*)lbl_80371C30 + (q->baseIdx + i * 4 + 0x1F) * sizeof(RepSlot)))->frame = 0;
+                    (*(RepObj**)((u8*)lbl_80371C30 + (q->baseIdx + i * 4 + 0x20) * sizeof(RepSlot)))->frame = 0;
                 }
             }
             v = *sc;
@@ -1018,23 +1033,9 @@ void fn_3_121304(void) {
             fn_800363D8(q, i * 4 + 0x1F, 1, 0x66, (v % 100) / 10);
             fn_800363D8(q, i * 4 + 0x20, 1, 0x66, v % 10);
             if (i == g_Minigame[0x190C]) {
-                o = REP_OBJ(q, i + 1);
-                x = o->frame >> 16;
-                if (x < 10) {
-                    o->mode = 1;
-                } else if (x > 10) {
-                    o->mode = 4;
-                } else {
-                    o->mode = 0;
-                }
+                Inl125424(q, i + 1, 10);
             } else {
-                o = REP_OBJ(q, i + 1);
-                x = o->frame >> 16;
-                if (x > 0) {
-                    o->mode = 4;
-                } else {
-                    o->mode = 0;
-                }
+                Inl125424(q, i + 1, 0);
             }
             if (tied == 0 && *sc == *(s16*)(g_Minigame + 0x18BC + lead * 4)) {
                 REP_OBJ(q, i + 0x2D)->flags |= 2;
@@ -1296,7 +1297,7 @@ void fn_3_122334(void) {
 }
 
 // .text:0x001226D4 size:0x650 mapped:0x80761768
-// NONMATCHING 66%: slot accesses use per-k table bases (lbl_80371C30 + k*8) in orig, g_Minigame hoisted into the prelude, inlined fn_3_125424(q, 0, 0x10)
+// NONMATCHING 96%: g_Minigame is hoisted into the prelude in orig, and its first case-4 status test is materialised (subfic/cntlzw); inlined fn_3_125424(q, 0, 0x10)
 #if NONMATCHING
 void fn_3_1226D4(void) {
     RepTask* q = REP_TASK;
@@ -1321,16 +1322,10 @@ void fn_3_1226D4(void) {
         q->state = 1;
         break;
     case 1:
-        REP_OBJ(q, 0)->mode = 0;
-        REP_OBJ(q, 0)->frame = 0;
-        REP_OBJ(q, 1)->mode = 0;
-        REP_OBJ(q, 1)->frame = 0;
-        REP_OBJ(q, 2)->mode = 0;
-        REP_OBJ(q, 2)->frame = 0;
-        REP_OBJ(q, 3)->mode = 0;
-        REP_OBJ(q, 3)->frame = 0;
-        REP_OBJ(q, 4)->mode = 0;
-        REP_OBJ(q, 4)->frame = 0;
+        for (k = 0; k < 5; k++) {
+            ((RepSlot*)lbl_80371C30 + k)[q->baseIdx].obj->mode = 0;
+            ((RepSlot*)lbl_80371C30 + k)[q->baseIdx].obj->frame = 0;
+        }
         if (g_Minigame[0x1DF7] != 0) {
             g_Minigame[0x1DF7] = 0;
             q->timer = 0;
@@ -1339,14 +1334,10 @@ void fn_3_1226D4(void) {
         }
         break;
     case 2:
-        REP_OBJ(q, 1)->mode = 1;
-        REP_OBJ(q, 1)->frame = 0;
-        REP_OBJ(q, 2)->mode = 1;
-        REP_OBJ(q, 2)->frame = 0;
-        REP_OBJ(q, 3)->mode = 1;
-        REP_OBJ(q, 3)->frame = 0;
-        REP_OBJ(q, 4)->mode = 1;
-        REP_OBJ(q, 4)->frame = 0;
+        for (k = 1; k < 5; k++) {
+            ((RepSlot*)lbl_80371C30 + k)[q->baseIdx].obj->mode = 1;
+            ((RepSlot*)lbl_80371C30 + k)[q->baseIdx].obj->frame = 0;
+        }
         q->state = 3;
         break;
     case 3:
@@ -2766,7 +2757,7 @@ void fn_3_126604(void) {
 #endif
 
 // .text:0x001274B4 size:0x6B4 mapped:0x80766548
-// NONMATCHING 74%: loop induction registers (orig keeps 4*i+k counters) and g_Minigame base CSE; playCrowdSound is the inlined crowd helper from auto_00_000D8A10_text
+// NONMATCHING 96.8%: loop induction registers (orig keeps 4*i+k counters) and g_Minigame base CSE; playCrowdSound is the inlined crowd helper from auto_00_000D8A10_text
 #if NONMATCHING
 void fn_3_1274B4(void) {
     u8* d = lbl_3_data_226E0;
@@ -3129,13 +3120,12 @@ void fn_3_128B90(void) {
 }
 
 // .text:0x00128C18 size:0x758 mapped:0x80767CAC
-// NONMATCHING 62%: orig reloads g_Minigame per test, uses named rodata floats and walks m + j for the player bytes; register allocation
+// NONMATCHING 91%: orig loads its float constants (0.0f, 0.01f, 0.5f) from named rodata where ours are pooled, walks m + j for the player bytes; register allocation
 #if NONMATCHING
 void fn_3_128C18(void) {
     RepTask* q = REP_TASK;
     RepObj* o;
-    u8* m;
-    u32 found;
+    s32 found;
     s32 j;
     s32 k;
     u8 c;
@@ -3164,16 +3154,15 @@ void fn_3_128C18(void) {
         return;
     }
     lbl_3_common_bss_32724[0xB8] = 0;
-    m = g_Minigame;
-    if (g_GameLogic[0x11E] == 0x27 && m[0x1A3D] == 1) {
+    if (g_GameLogic[0x11E] == 0x27 && g_Minigame[0x1A3D] == 1) {
         found = 0;
         for (j = 0; j < 4; j++) {
-            if (m[0x1E08 + j * 2] == *(s8*)(m + 0x1908) && m[0x1E09 + j * 2] == 0) {
+            if (g_Minigame[0x1E08 + j * 2] == *(s8*)(g_Minigame + 0x1908) && g_Minigame[0x1E09 + j * 2] == 0) {
                 found = 1;
                 break;
             }
         }
-        if (m[0x1E09] == 0 && m[0x1E0B] == 0 && m[0x1E0D] == 0 && m[0x1E0F] == 0) {
+        if (g_Minigame[0x1E09] == 0 && g_Minigame[0x1E0B] == 0 && g_Minigame[0x1E0D] == 0 && g_Minigame[0x1E0F] == 0) {
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[2];
         } else if (found != 0) {
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[8];
@@ -3187,10 +3176,10 @@ void fn_3_128C18(void) {
         REP_OBJC(q, 0)->y = 0.0f;
         return;
     }
-    if (m[0x1A2B] == 3 || (g_d_GameSettings[7] == 6 && *(s8*)(m + 0x1908) >= 0 && m[0x1A43] != 0)) {
-        if (m[0x1A43] == 1) {
+    if (g_Minigame[0x1A2B] == 3 || (g_d_GameSettings[7] == 6 && *(s8*)(g_Minigame + 0x1908) >= 0 && g_Minigame[0x1A43] != 0)) {
+        if (g_Minigame[0x1A43] == 1) {
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[7];
-        } else if (m[0x1A43] != 0) {
+        } else if (g_Minigame[0x1A43] != 0) {
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[6];
         } else {
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[5];
@@ -3202,8 +3191,8 @@ void fn_3_128C18(void) {
         REP_OBJC(q, 0)->y = 0.0f;
         return;
     }
-    if (m[0x1906] > 1) {
-        if (m[0x19A8] != 0) {
+    if (g_Minigame[0x1906] > 1) {
+        if (g_Minigame[0x19A8] != 0) {
             REP_OBJC(q, 0)->flags |= 2;
             REP_OBJC(q, 0)->mode = 1;
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[2];
@@ -3213,13 +3202,13 @@ void fn_3_128C18(void) {
         }
         k = 0;
         for (j = 0; j < 4; j++) {
-            if (m[0x18E8 + j] == 1) {
-                getAnimRelatedCoordinates(*(s8*)(m + 0x18CC + j), 9, &pos);
-                c = m[0x18D0 + j];
+            if (g_Minigame[0x18E8 + j] == 1) {
+                getAnimRelatedCoordinates(*(s8*)(g_Minigame + 0x18CC + j), 9, &pos);
+                c = g_Minigame[0x18D0 + j];
                 pos.y = 0.01f * -(f32)lbl_3_data_7F10[c] * charSizeMultipliers[c][0] - 0.5f;
                 fn_3_1650C(&sx, &sy, 0, pos.x, pos.y, pos.z);
                 // fixed x position per player count (lbl_3_data_226E0: [count - 1][4])
-                sx = *(s16*)(lbl_3_data_226E0 + m[0x1906] * 8 + j * 2 - 8);
+                sx = *(s16*)(lbl_3_data_226E0 + g_Minigame[0x1906] * 8 + j * 2 - 8);
                 o = REP_OBJ(q, k);
                 o->flags |= 2;
                 REP_OBJ(q, k)->mode = 1;
@@ -3231,13 +3220,13 @@ void fn_3_128C18(void) {
         }
         return;
     }
-    if (*(s16*)(m + 0x1A26) != 0) {
+    if (*(s16*)(g_Minigame + 0x1A26) != 0) {
         k = 0;
         for (j = 0; j < 4; j++) {
-            if (*(s8*)(m + 0x18CC + j) >= 0) {
+            if (*(s8*)(g_Minigame + 0x18CC + j) >= 0) {
                 REP_OBJ(q, k)->flags |= 2;
                 REP_OBJ(q, k)->mode = 1;
-                if (m[0x1A37] == 1) {
+                if (g_Minigame[0x1A37] == 1) {
                     REP_OBJ(q, k)->anim = lbl_3_data_AA98[0];
                 } else {
                     REP_OBJ(q, k)->anim = lbl_3_data_AA98[4];

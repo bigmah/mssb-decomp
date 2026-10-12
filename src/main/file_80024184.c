@@ -209,12 +209,10 @@ void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 si
 
 // .text:0x800247E4 size:0x5C
 // Byte offset of texel (x, y) in a texture of 4x4 texel tiles.
-// NONMATCHING 58%: same arithmetic, the original schedules the y terms first
-#if NONMATCHING
 s32 fn_800247E4(s32 x, s32 y, s32 width, s32 bytesPerTexel) {
-    return bytesPerTexel * (width * (y / 4 * 4) + (x / 4 * 16 + y % 4 * 4 + x % 4));
+    s32 row = ((y / 4) * 4) * width;
+    return bytesPerTexel * ((x % 4) + (((y % 4) << 2) + (row + ((x / 4) << 4))));
 }
-#endif
 
 // .text:0x80024840 size:0x134
 // NONMATCHING 99%: r0/r3 swapped loading the mission status
@@ -372,3 +370,13 @@ s32 fn_80024C6C(FielderSortInfo* info, s32 team) {
         }
     }
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x800F76E0..0x800F7830
+u8 lbl_800F76E0[32] = {
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+}; // 4x4 texture data
+TexImage lbl_800F7700 = {lbl_800F76E0, NULL, 4, 4, 0, 0, 1, 1, 0.0f, 0, 0, 0, 5, 0, 0, 0, 0, {0, 0}};
+

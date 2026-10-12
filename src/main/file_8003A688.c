@@ -3316,3 +3316,13 @@ copy:
     }
 }
 #endif
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x800FADA0..0x800FB3F8
+
+// .bss 0x802D4AC0..0x802E4B00 (MWCC lays these out in reverse definition order)
+SaveImage lbl_802D4B00;
+u64 lbl_802D4AE0[4];
+ARQRequest lbl_802D4AC0;
+

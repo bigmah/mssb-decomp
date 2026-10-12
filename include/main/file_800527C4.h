@@ -134,7 +134,7 @@ void fn_80062764(struct SoundLoadTask* task);
 BOOL fn_80062794(s32 voice);
 s32 fn_800627C4(u8* state);
 s32 fn_800627F8(u8* state);
-void fn_8006282C(void);
+void fn_8006282C(struct SoundGroupRequest* req, struct SoundGroupData* data); // SoundGroupRequest.onLoaded
 s32 fn_8006285C(u8* state);
 u32 fn_800628D4(s32 kind);
 void fn_80062948(void);
