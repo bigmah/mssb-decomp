@@ -1,4 +1,5 @@
 #include "game/rep_3310.h"
+#include "Unknown/File_0x800a64e0.h"
 #include "game/rep_1D58.h"
 #include "game/rep_1C0.h"
 #define REP_HEADER_FN repHeader_3310
@@ -16,7 +17,7 @@ extern u8 lbl_3_data_22670[];
 extern u8 g_Minigame[];
 extern const f32 lbl_3_rodata_33AC;
 extern const f32 lbl_3_rodata_33B0;
-extern f32 lbl_3_data_225F0[];
+extern AssetLoadInstructions lbl_3_data_225F0[3];
 extern f32 lbl_3_data_21A64[];
 struct TexArchive;
 extern void fn_80033B58(struct TexArchive* arc, s32 idx, GXTexWrapMode wrapS, GXTexWrapMode wrapT);
@@ -1793,4 +1794,32 @@ void fn_3_11D2C8(s32 idx, s32 start, s32 count, void* animBank, struct sHdr* skH
         CTRLSetRotation(&lbl_8036E548.objs->objects[k].worldControl.base, 0.0f, 0.0f, 0.0f);
     }
 }
+
+
+// .data 0x000225F0..0x000226E0
+AssetLoadInstructions lbl_3_data_225F0[3] = {
+    {1035, {0x40001640}, {0x8EB4800}, 3128},
+    {1035, {0x400B2D00}, {0x8EB5800}, 436552},
+    {0, {1670}, {0x8F20800}, 1672},
+};
+f32 lbl_3_data_22620[3] = {0.0f, -0.15f, 18.5f};
+f32 lbl_3_data_2262C = 0.45f;
+u8 lbl_3_data_22630[4] = {0, 1, 3, 2}; // unreferenced
+u8 lbl_3_data_22634[4] = {15, 15, 15, 15};
+u8 lbl_3_data_22638[4] = {2, 0, 3, 1};
+u8 lbl_3_data_2263C[2] = {0, 1};
+u8 lbl_3_data_2263E = 2;
+u8 lbl_3_data_2263F = 6;
+f32 lbl_3_data_22640[4] = {0.75f, 0.05f, 3.0f, 0.02f}; // unreferenced
+f32 lbl_3_data_22650[3] = {5.0f, 5.0f, 10.0f};
+Rep3310BallCfg lbl_3_data_2265C = {{1, 0, 2, 3}, 2.0f, 8.0f, 1.0f, 60};
+u8 lbl_3_data_22670[8] = {2, 0, 3, 4, 1, 0, 0, 0};
+f32 lbl_3_data_22678[4] = {2.0f, 2.5f, 1.0f, 1.0f};
+f32 lbl_3_data_22688[3] = {0.5f, 0.0f, -0.5f};
+f32 lbl_3_data_22694[6] = {0.5f, 1.0f, 1.0f, 0.5f, 0.5f, 0.5f};
+s16 lbl_3_data_226AC[8] = {0, 0, 20, 10, 0, 0, 3920, 0};
+u8 lbl_3_data_226BC[8] = {3, 1, 4, 2, 0, 0, 0, 0};
+f32 lbl_3_data_226C4[4] = {1.5f, 0.7f, 1.0f, 0.5f};
+f32 lbl_3_data_226D4[2] = {1.0f, 30.0f};
+f32 lbl_3_data_226DC = 4.0f;
 
