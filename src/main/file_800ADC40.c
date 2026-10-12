@@ -95,7 +95,7 @@ extern f32 lbl_803CC184;        // quad depth
 extern const GXColor lbl_803CCEE8; // white
 extern u32 lbl_803CC188;        // AI DMA buffer index
 extern AIDCallback lbl_803CC18C; // previous AI DMA callback
-extern u32 lbl_803CC190;
+extern void (*lbl_803CC190)(u32 frame); // per-frame callback (file_800A7C08.c)
 extern u8 lbl_803CC194;         // vertex buffer index
 extern s32 lbl_803CC19C;        // last decode result
 extern u32 lbl_803CC1A0;        // stream bytes consumed
@@ -1705,7 +1705,7 @@ u32 lbl_803CC1A0;
 s32 lbl_803CC19C;
 u32 lbl_803CC198; // type from another unit
 u8 lbl_803CC194;
-u32 lbl_803CC190;
+void (*lbl_803CC190)(u32 frame);
 AIDCallback lbl_803CC18C;
 u32 lbl_803CC188;
 f32 lbl_803CC184;
@@ -1724,7 +1724,7 @@ u8* lbl_803CC174;
 // .data 0x801112E0: the two alternating frame-draw callbacks queued by file_800A7C08
 // (DrawCallbackNode in main/file_800A7C08.h: a link word, then the function).
 typedef struct MovDrawNode {
-    /*0x0*/ u32 link;
+    /*0x0*/ uintptr_t link; // pointer-sized on PC, like DrawLink
     /*0x4*/ void (*func)(void);
 } MovDrawNode;
 MovDrawNode lbl_801112E0[2] = {
