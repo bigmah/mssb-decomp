@@ -677,11 +677,27 @@ def permute_ext(src: str, fn: str, budget: float, jobs: int):
         cand = (o / "source.c").read_text()
         span = find_fn(cand, fn)
         if span:
-            match = tidy(cand[span[0]:span[1]])
+            match = tidy(regenerate(cand, fn) or cand[span[0]:span[1]])
             break
     print(f"{fn}: permuter base {base} -> best {best}"
           + (f"; MATCH in {outs[0][1]}" if match else ""), flush=True)
     return best, match
+
+
+def regenerate(source: str, fn: str):
+    """fn from a permuter output file, printed again by pycparser with only the
+    parentheses C needs (permuter's printer puts them around every subexpression)."""
+    if str(PERMUTER) not in sys.path:
+        sys.path.insert(0, str(PERMUTER))
+    try:
+        from src.ast_util import parse_c
+        from perm_pycparser import c_ast as ca, c_generator
+        source = re.sub(r"^([^=;\n]*[\w\]]) : \((0x[0-9A-Fa-f]+)\);", r"\1 = FIXEDADDR(\2);", source, flags=re.M)
+        ast = parse_c(source)
+        fdef = next(x for x in ast.ext if isinstance(x, ca.FuncDef) and x.decl.name == fn)
+        return c_generator.CGenerator(reduce_parentheses=True).visit(fdef)
+    except Exception:
+        return None
 
 
 def tidy(fn_text: str) -> str:
@@ -715,6 +731,8 @@ def tidy(fn_text: str) -> str:
     text = "\n".join(out)
     text = re.sub(r"\((\+\+|--)(\w+)\)", r"\1\2", text)          # (++i) -> ++i
     text = re.sub(r"\(\(void \*\) 0\)|\(void \*\) 0\b", "NULL", text)
+    text = re.sub(r"\(((?:const |unsigned |struct )*\w+) (\*+)\)", r"(\1\2)", text)  # (T *) -> (T*)
+    text = re.sub(r"\((\w+(?:\*+)?)\) (?=[\w(*&])", r"(\1)", text)  # (T) x -> (T)x
     text = re.sub(r"^(\s+[A-Za-z_][\w ]*?) (\*+)(\w+)", r"\1\2 \3", text, flags=re.M)  # T *x -> T* x
     return text
 
