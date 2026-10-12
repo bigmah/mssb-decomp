@@ -2478,8 +2478,10 @@ void fn_2_A6E0(void) {
 }
 #endif
 
-// NONMATCHING 60%: only computes colours/slots into locals (the draw calls that used them
-// are compiled out), so it has no side effects; kept as a readable reconstruction.
+// NONMATCHING 87%: only computes colours/slots into locals (the draw calls that used them
+// are compiled out), so it has no side effects; kept as a readable reconstruction. The original
+// reloads starMissionCompletionTracker[0x441F] per team and ends with a dead compare chain on
+// lbl_803CBBCC[0]+4 (2..3, 9, 0x13, 4) that no C form here reproduces.
 #if NONMATCHING
 // fn_2_95D8, size:0x4F4
 void fn_2_95D8(void) {
@@ -2494,15 +2496,25 @@ void fn_2_95D8(void) {
     s32 n;
     if (*(u16*)(lbl_803CBBCC[0] + 4) < 4) {
         for (t = 0; t < 2; t++) {
-            sel = (t == 0) ? ((s32*)lbl_2_bss_F468)[t] : ((s32*)lbl_2_bss_F468)[t] - 10;
-            color[t] = (t == 0) ? 0xFF0F : 0xF00F;
+            if (t == 0) {
+                sel = ((s32*)lbl_2_bss_F468)[t];
+            } else {
+                sel = ((s32*)lbl_2_bss_F468)[t] - 10;
+            }
+            if (t == 0) {
+                color[t] = 0xFF0F;
+            } else {
+                color[t] = 0xF00F;
+            }
             for (i = 0; i < 9; i++) {
                 for (j = 0; j < 9; j++) {
                     if (i == (s8)lbl_80354720[t * 0x24 + j * 4 + 1]) {
                         break;
                     }
                 }
-                if (g_d_GameSettings.GameModeSelected != 5 || t == 0) {
+                if (g_d_GameSettings.GameModeSelected != 5) {
+                    cap = *(s32*)(lbl_8034E9A0 + t * 4 + 0x46E0);
+                } else if (t == 0) {
                     cap = *(s32*)(lbl_8034E9A0 + t * 4 + 0x46E0);
                 } else {
                     cap = (s8)starMissionCompletionTracker[0x441F];
@@ -2536,9 +2548,13 @@ void fn_2_95D8(void) {
             }
             for (t = 0; t < 2; t++) {
                 for (j = 0; j < 9; j++) {
-                    if (i == (s8)lbl_803C6724[t * 9 + j + 2] && color[0] != 0xFFF) {
+                    if (i == (s8)lbl_803C6724[t * 9 + j + 2] && t == 0 && color[0] != 0xFFF) {
                         used[i] = i;
-                        color[0] = (t == 0) ? 0x88F : 0x808F;
+                        color[0] = 0x88F;
+                        slot[t][j] = i;
+                    } else if (i == (s8)lbl_803C6724[t * 9 + j + 2] && t != 0 && color[0] != 0xFFF) {
+                        used[i] = i;
+                        color[0] = 0x808F;
                         slot[t][j] = i;
                     }
                 }
