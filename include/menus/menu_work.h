@@ -276,7 +276,9 @@ typedef struct MenuCtx {
     /*0x0AF8*/ MenuRosterEntry charsBackup[54]; // copy of chars
     /*0x15F0*/ u8 _15F0;
     /*0x15F1*/ u8 _15F1[20]; // indexed; copied into _43C2
-    /*0x1605*/ u8 _1605[0x1610 - 0x1605];
+    /*0x1605*/ u8 _1605;
+    /*0x1606*/ u8 _1606;
+    /*0x1607*/ u8 _1607[0x1610 - 0x1607];
     /*0x1610*/ MenuEntry entries[14];
     /*0x21E0*/ MenuObject objects[42];
     /*0x40B8*/ MenuOrderSlot order[9];
@@ -370,14 +372,27 @@ typedef struct MenuSortEntry {
     /*0x4*/ s32 v;
 } MenuSortEntry; // size: 0x8
 
+// One cell of the menu draw grids (MenuData.cells, MenuDrawArea.entries).
+typedef struct MenuDrawEntry {
+    /*0x00*/ void (*draw)(void* context, struct MenuDrawEntry* entry);
+    /*0x04*/ s16 _04;
+    /*0x06*/ s16 _06;
+    /*0x08*/ s16 column;
+    /*0x0A*/ s16 _0A;
+    /*0x0C*/ s16 row;
+    /*0x0E*/ s16 _0E; // layout object index
+    /*0x10*/ s16 _10;
+    /*0x12*/ s16 _12;
+    /*0x14*/ s16 _14;
+    /*0x16*/ u8 _16[2];
+} MenuDrawEntry; // size: 0x18
+
 // Draw area after the per-layer flags (lbl_2_bss_1A8230 points at it); starts with the
 // MenuDrawEntry[10][864] table used by fn_2_53F04.
 typedef struct MenuDrawArea {
-    /*0x00000*/ u8 _00000[0x32A0F];
-    /*0x32A0F*/ u8 _32A0F;
-    /*0x32A10*/ u8 _32A10[0x32A55 - 0x32A10];
-    /*0x32A55*/ u8 _32A55;
-    /*0x32A56*/ u8 _32A56[0x32A86 - 0x32A56];
+    /*0x00000*/ MenuDrawEntry entries[10][864];
+    /*0x32A00*/ u8 _32A00[4];
+    /*0x32A04*/ u8 _32A04[13][10]; // indexed
     /*0x32A86*/ u8 _32A86;
     /*0x32A87*/ u8 _32A87;
 } MenuDrawArea;
@@ -385,17 +400,41 @@ typedef struct MenuDrawArea {
 // Menus work buffer (lbl_2_bss_1A8250; lbl_2_bss_1A8234 and lbl_2_bss_1A824C point at
 // it, lbl_2_bss_1A8230 at drawArea); only the fields used here.
 typedef struct MenuData {
-    /*0x000000*/ u8 _000000[0x162600]; // MenuCell0730[0x46][0x360] (rep_0730.h)
+    /*0x000000*/ MenuDrawEntry cells[0x46][864];
     /*0x162600*/ s16 timer;
     /*0x162602*/ u8 _162602[2];
     /*0x162604*/ u8 layerFlags[13][0x46]; // per layout group: start an animation
     /*0x162992*/ u8 done;
     /*0x162993*/ u8 _162993[0x162998 - 0x162993];
     /*0x162998*/ MenuDrawArea drawArea;
-    /*0x195420*/ u8 _195420[0x196FB8 - 0x195420];
-    /*0x196FB8*/ s32 _196FB8;
-    /*0x196FBC*/ s32 _196FBC;
-    /*0x196FC0*/ u8 _196FC0[0x197298 - 0x196FC0];
+    /*0x195420*/ u8 _195420[0x195424 - 0x195420];
+    /*0x195424*/ void* _195424;
+    /*0x195428*/ void* _195428;
+    /*0x19542C*/ u8 _19542C; // start of the block cleared by fn_2_515DC (up to _1972BC)
+    /*0x19542D*/ u8 _19542D[0x1954AC - 0x19542D];
+    /*0x1954AC*/ s32 _1954AC[2]; // per text channel
+    /*0x1954B4*/ u8 _1954B4[0x196F1C - 0x1954B4];
+    /*0x196F1C*/ s32* msScript;  // message script interpreter (fn_2_4EB9C)
+    /*0x196F20*/ s32 msSavedOp;
+    /*0x196F24*/ s32 _196F24;
+    /*0x196F28*/ s32 _196F28;
+    /*0x196F2C*/ u8 _196F2C[0x196F30 - 0x196F2C];
+    /*0x196F30*/ s32 _196F30;
+    /*0x196F34*/ s32 _196F34;
+    /*0x196F38*/ s32 _196F38[32]; // script variables
+    /*0x196FB8*/ s32 _196FB8[2]; // per text channel
+    /*0x196FC0*/ s16 _196FC0;
+    /*0x196FC2*/ u8 _196FC2[0x196FCA - 0x196FC2];
+    /*0x196FCA*/ s16 _196FCA[2]; // per text channel
+    /*0x196FCE*/ u8 _196FCE[0x196FD2 - 0x196FCE];
+    /*0x196FD2*/ s16 _196FD2;
+    /*0x196FD4*/ s16 _196FD4;
+    /*0x196FD6*/ s16 _196FD6;
+    /*0x196FD8*/ u8 _196FD8[0x196FE0 - 0x196FD8];
+    /*0x196FE0*/ s16 _196FE0;
+    /*0x196FE2*/ u8 _196FE2[0x196FE4 - 0x196FE2];
+    /*0x196FE4*/ s16 _196FE4;
+    /*0x196FE6*/ u8 _196FE6[0x197298 - 0x196FE6];
     /*0x197298*/ s16 _197298[2]; // indexed
     /*0x19729C*/ s16 _19729C;
     /*0x19729E*/ s16 _19729E;
@@ -407,13 +446,14 @@ typedef struct MenuData {
     /*0x1972AA*/ s16 _1972AA;
     /*0x1972AC*/ s16 _1972AC[2]; // indexed
     /*0x1972B0*/ s16 _1972B0;
-    /*0x1972B2*/ u8 _1972B2[0x1972B4 - 0x1972B2];
+    /*0x1972B2*/ s16 _1972B2;
     /*0x1972B4*/ s16 _1972B4;
     /*0x1972B6*/ u8 _1972B6;
     /*0x1972B7*/ u8 _1972B7;
     /*0x1972B8*/ u8 _1972B8;
     /*0x1972B9*/ u8 _1972B9;
-    /*0x1972BA*/ u8 _1972BA[0x1972BC - 0x1972BA];
+    /*0x1972BA*/ u8 _1972BA;
+    /*0x1972BB*/ u8 _1972BB;
     /*0x1972BC*/ u8 _1972BC;
     /*0x1972BD*/ u8 _1972BD;
     /*0x1972BE*/ s16 _1972BE;
@@ -488,13 +528,20 @@ typedef struct MenuData {
     /*0x197748*/ u8 _197748[0x19774C - 0x197748];
     /*0x19774C*/ s16 _19774C;
     /*0x19774E*/ s16 _19774E;
-    /*0x197750*/ u8 _197750[0x197756 - 0x197750];
+    /*0x197750*/ u8 _197750[0x197752 - 0x197750];
+    /*0x197752*/ s16 _197752;
+    /*0x197754*/ s16 _197754;
     /*0x197756*/ s16 _197756[14]; // animation per entry (MenuEntry.objectId)
-    /*0x197772*/ u8 _197772[0x19779A - 0x197772];
+    /*0x197772*/ u8 _197772[0x197778 - 0x197772];
+    /*0x197778*/ s16 _197778;
+    /*0x19777A*/ s16 _19777A;
+    /*0x19777C*/ u8 _19777C[0x197796 - 0x19777C];
+    /*0x197796*/ s16 _197796;
+    /*0x197798*/ s16 _197798;
     /*0x19779A*/ s16 _19779A;
     /*0x19779C*/ s16 _19779C;
     /*0x19779E*/ s16 _19779E;
-    /*0x1977A0*/ u8 _1977A0[0x1977A2 - 0x1977A0];
+    /*0x1977A0*/ s16 _1977A0;
     /*0x1977A2*/ s16 frameSetA[5];
     /*0x1977AC*/ u8 _1977AC[0x19780E - 0x1977AC];
     /*0x19780E*/ s16 frameSetB[5];
@@ -509,7 +556,9 @@ typedef struct MenuData {
     /*0x19783D*/ u8 _19783D;
     /*0x19783E*/ u8 _19783E;
     /*0x19783F*/ u8 _19783F;
-    /*0x197840*/ u8 _197840[0x197843 - 0x197840];
+    /*0x197840*/ u8 _197840;
+    /*0x197841*/ u8 _197841;
+    /*0x197842*/ u8 _197842;
     /*0x197843*/ s8 _197843;
     /*0x197844*/ u8 _197844;
     /*0x197845*/ u8 _197845;

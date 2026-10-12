@@ -1146,7 +1146,7 @@ void fn_2_3D878(void) {
     case 2:
         if ((o->counter)-- == 0) {
             lbl_2_bss_1A8234[0]->layerFlags[6][6] = 1;
-            lbl_2_bss_1A8230[0]->_32A0F = 1;
+            lbl_2_bss_1A8230[0]->_32A04[1][1] = 1;
             o->counter = lbl_2_data_1056C[lbl_2_bss_1A8248[0]->_4415][lbl_2_bss_1A8248[0]->_441C];
             o->step = 3;
         }

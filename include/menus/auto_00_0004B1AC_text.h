@@ -117,9 +117,9 @@ void fn_2_54234(InitEntry* entries, s32 count);
 
 void fn_2_54354(InitEntry* entries, s32 count);
 
-void fn_2_53CEC(u8* menu);
+void fn_2_53CEC(struct MenuTask* menu);
 
-void fn_2_53DF8(u8* menu);
+void fn_2_53DF8(struct MenuTask* menu);
 
 void fn_2_4B1AC(void);
 

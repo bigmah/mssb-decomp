@@ -4560,7 +4560,7 @@ void fn_2_2749C(MenuTableContext* menu, MenuItemState* item) {
     case 2: {
         LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
         object->flags |= 2;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A824C->_196FBC);
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A824C->_196FB8[1]);
         item->state = 37;
         break;
     }
@@ -4601,7 +4601,7 @@ void fn_2_27660(MenuTableContext* menu, MenuItemState* item) {
     case 2: {
         LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
         object->flags |= 2;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A824C->_196FB8);
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A824C->_196FB8[0]);
         item->state = 37;
         break;
     }
@@ -10037,7 +10037,7 @@ void fn_2_20D08(void) {
     case 0x68:
         if (QUEUE_DONE == 1) {
             lbl_2_bss_1A8234->layerFlags[8][6] = 1;
-            lbl_2_bss_1A8230->_32A55 = 1;
+            lbl_2_bss_1A8230->_32A04[8][1] = 1;
             queue->baseIdx = 0x32;
             CHALLENGE_STATE = 0x69;
         }
