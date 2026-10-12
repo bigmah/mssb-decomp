@@ -643,9 +643,18 @@ typedef struct MenuData {
     /*0x1978FB*/ u8 _1978FB;
 } MenuData; // size: 0x1978FC (lbl_2_bss_1A8250)
 
-// lbl_2_bss_1A823C points at this; only the fields used here.
+// Scene flow state lbl_800E877C (SceneFlow in main/menu_globals.h, which this
+// extends; lbl_803CBBCC and lbl_2_bss_1A823C point at it). Only the fields used here.
 typedef struct MenuFlags {
-    /*0x00*/ u8 _00[0x30];
+    /*0x00*/ u16 _00;
+    /*0x02*/ u16 scene;
+    /*0x04*/ u16 step;
+    /*0x06*/ u16 prevScene;
+    /*0x08*/ u16 prevStep;
+    /*0x0A*/ u16 _0A;
+    /*0x0C*/ u16 padHeld[2];
+    /*0x10*/ u8 _10;
+    /*0x11*/ u8 _11[0x30 - 0x11];
     /*0x30*/ s16 mode;
     /*0x32*/ s16 state;
     /*0x34*/ u8 _34;
