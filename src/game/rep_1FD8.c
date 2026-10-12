@@ -2211,7 +2211,7 @@ void fn_3_C8650(void** files) {
     idx = _OSAllocFromHeap(4, 0x40);
     g->fileIdx = idx;
     fn_3_B9D68(lbl_3_data_17704.fileIdx, 16, files, idx);
-    bss->tex = files[0];
+    bss->tex = STADIUM_FILE(files, 0);
 
     for (nB = 0; nB < 10; nB++) {
         if (pb[nB].type == 7) {
@@ -2221,32 +2221,32 @@ void fn_3_C8650(void** files) {
     nActors = nB + 5;
     g->nActors = nActors;
     ACTOR_TABLE = ActorObjectInitTable((u16)nActors);
-    fn_800BDC88(ACTOR_TABLE, 0, 0, files[idx[1]], NULL, NULL);
-    fn_800BDC88(ACTOR_TABLE, 1, 1, files[idx[2]], NULL, NULL);
-    fn_800BDC88(ACTOR_TABLE, 2, 2, files[idx[3]], NULL, NULL);
+    fn_800BDC88(ACTOR_TABLE, 0, 0, STADIUM_FILE(files, idx[1]), NULL, NULL);
+    fn_800BDC88(ACTOR_TABLE, 1, 1, STADIUM_FILE(files, idx[2]), NULL, NULL);
+    fn_800BDC88(ACTOR_TABLE, 2, 2, STADIUM_FILE(files, idx[3]), NULL, NULL);
     k = 3;
     for (i = 0; i < nB; i++, k++) {
-        fn_800BDC88(ACTOR_TABLE, (u16)k, (u16)k, files[idx[4]], NULL, NULL);
+        fn_800BDC88(ACTOR_TABLE, (u16)k, (u16)k, STADIUM_FILE(files, idx[4]), NULL, NULL);
     }
-    fn_800BDC88(ACTOR_TABLE, (u16)k, (u16)k, files[idx[5]], NULL, NULL);
+    fn_800BDC88(ACTOR_TABLE, (u16)k, (u16)k, STADIUM_FILE(files, idx[5]), NULL, NULL);
     k2 = k + 1;
-    fn_800BDC88(ACTOR_TABLE, (u16)k2, (u16)k2, files[idx[6]], NULL, NULL);
+    fn_800BDC88(ACTOR_TABLE, (u16)k2, (u16)k2, STADIUM_FILE(files, idx[6]), NULL, NULL);
     for (i = 0; i < nActors; i++) {
         fn_800BD548(&ACTOR_TABLE->objects[i], 4, g->lights[0], g->lights[1], g->lights[2], g->lights[3]);
     }
-    fn_80025DDC(files[idx[10]]);
+    fn_80025DDC(STADIUM_FILE(files, idx[10]));
     for (i = 0; i < nB; i++) {
-        fn_80025C58(files[idx[10]], (ShapeModel**)&ACTOR_TABLE->objects[i + 3].actor);
+        fn_80025C58(STADIUM_FILE(files, idx[10]), (ShapeModel**)&ACTOR_TABLE->objects[i + 3].actor);
     }
-    bss->anim130.set = files[idx[11]];
-    fn_80025FFC(files[idx[10]], &bss->anim130);
+    bss->anim130.set = STADIUM_FILE(files, idx[11]);
+    fn_80025FFC(STADIUM_FILE(files, idx[10]), &bss->anim130);
     fn_80025EEC(&bss->anim130, 0, 0);
-    fn_80025DDC(files[idx[12]]);
-    fn_80025C58(files[idx[12]], (ShapeModel**)&ACTOR_TABLE->objects[1].actor);
-    bss->animD4.set = files[idx[13]];
-    fn_80025FFC(files[idx[12]], &bss->animD4);
+    fn_80025DDC(STADIUM_FILE(files, idx[12]));
+    fn_80025C58(STADIUM_FILE(files, idx[12]), (ShapeModel**)&ACTOR_TABLE->objects[1].actor);
+    bss->animD4.set = STADIUM_FILE(files, idx[13]);
+    fn_80025FFC(STADIUM_FILE(files, idx[12]), &bss->animD4);
     fn_80025EEC(&bss->animD4, 0, 0);
-    fn_80035750(files[idx[15]], files[idx[14]], 5);
+    fn_80035750(STADIUM_FILE(files, idx[15]), STADIUM_FILE(files, idx[14]), 5);
     bss->fD0 = fn_800B0A5C_insertQueue(fn_3_C3C2C, 2);
     fn_80034E20(bss->fD0, lbl_3_data_10C1C);
 
@@ -2314,7 +2314,7 @@ void fn_3_C8650(void** files) {
             o->idx = j;
             o->type = pa[j].type;
             o->model = &ACTOR_TABLE->objects[2];
-            o->anim = files[idx[7]];
+            o->anim = STADIUM_FILE(files, idx[7]);
             o->update = fn_3_C7A0C;
             o->hit = fn_3_C749C;
             o->visible = pa[j].visible;
@@ -2407,10 +2407,10 @@ void fn_3_C8650(void** files) {
             o->type = pc[j].type;
             if (o->type == 4) {
                 o->model = &ACTOR_TABLE->objects[k];
-                o->anim = files[idx[8]];
+                o->anim = STADIUM_FILE(files, idx[8]);
             } else {
                 o->model = &ACTOR_TABLE->objects[k2];
-                o->anim = files[idx[9]];
+                o->anim = STADIUM_FILE(files, idx[9]);
             }
             o->update = NULL;
             o->hit = fn_3_C414C;
@@ -2455,7 +2455,7 @@ void fn_3_C8650(void** files) {
     }
     fn_800528AC(fn_3_C3A38);
     fn_3_C39C8();
-    fn_3_C1974(files[idx[0]]);
+    fn_3_C1974(STADIUM_FILE(files, idx[0]));
     fn_3_B97C8(fn_3_C2974);
 }
 #endif

@@ -955,36 +955,36 @@ void fn_3_FA58C(void** files) {
     idx = _OSAllocFromHeap(4, 0x44);
     lbl_3_common_bss_350E4.fileIdx = idx;
     fn_3_B9D68(&lbl_3_data_1BA98[50], 0x11, files, idx); // the file kinds follow the 50 object spots
-    lbl_3_bss_B660 = files[0];
-    fn_80035750(files[idx[16]], files[idx[15]], 5);
+    lbl_3_bss_B660 = STADIUM_FILE(files, 0);
+    fn_80035750(STADIUM_FILE(files, idx[16]), STADIUM_FILE(files, idx[15]), 5);
     lbl_3_bss_B628[0] = fn_800B0A5C_insertQueue(fn_3_F8E20, 2);
     fn_80034E20(lbl_3_bss_B628[0], lbl_3_data_10E9C);
 
     tbl = ActorObjectInitTable(0x10);
     lbl_8036E548.slots6C = tbl;
-    fn_800BDC88(tbl, 0, 0, files[idx[1]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 1, 1, files[idx[3]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 2, 2, files[idx[4]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 3, 3, files[idx[5]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 4, 4, files[idx[6]], NULL, NULL);
+    fn_800BDC88(tbl, 0, 0, STADIUM_FILE(files, idx[1]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 1, 1, STADIUM_FILE(files, idx[3]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 2, 2, STADIUM_FILE(files, idx[4]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 3, 3, STADIUM_FILE(files, idx[5]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 4, 4, STADIUM_FILE(files, idx[6]), NULL, NULL);
     for (k = 0; k < 9; k++) {
-        fn_800BDC88(lbl_8036E548.slots6C, k + 5, k + 5, files[idx[2]], files[idx[2] + 2], NULL);
-        fn_3_B97DC(&lbl_8036E548.slots6C->objects[k + 5], files[idx[2] + 2]);
+        fn_800BDC88(lbl_8036E548.slots6C, k + 5, k + 5, STADIUM_FILE(files, idx[2]), STADIUM_FILE(files, idx[2] + 2), NULL);
+        fn_3_B97DC(&lbl_8036E548.slots6C->objects[k + 5], STADIUM_FILE(files, idx[2] + 2));
         lbl_8036E548.slots6C->objects[k + 5].setAnimation = 0;
     }
-    fn_800BDC88(lbl_8036E548.slots6C, 14, 14, files[idx[7]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 15, 15, files[idx[8]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 14, 14, STADIUM_FILE(files, idx[7]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 15, 15, STADIUM_FILE(files, idx[8]), NULL, NULL);
     lbl_3_common_bss_350E4.numActorObjs = 0x10;
     for (k = 0; k < 16; k++) {
         fn_800BD548(&lbl_8036E548.slots6C->objects[k], 4, lbl_3_common_bss_350E4.lights[0], lbl_3_common_bss_350E4.lights[1],
                     lbl_3_common_bss_350E4.lights[2], lbl_3_common_bss_350E4.lights[3]);
     }
-    if (files[idx[13]] != NULL) {
-        fn_80025DDC(files[idx[13]]);
+    if (STADIUM_FILE(files, idx[13]) != NULL) {
+        fn_80025DDC(STADIUM_FILE(files, idx[13]));
         // ShapeModel is fn_80025C58's view of the GameActor in the actor slot.
-        fn_80025C58(files[idx[13]], (ShapeModel**)&lbl_8036E548.slots6C->objects[15].actor);
-        lbl_3_bss_B578.set = files[idx[14]];
-        fn_80025FFC(files[idx[13]], &lbl_3_bss_B578);
+        fn_80025C58(STADIUM_FILE(files, idx[13]), (ShapeModel**)&lbl_8036E548.slots6C->objects[15].actor);
+        lbl_3_bss_B578.set = STADIUM_FILE(files, idx[14]);
+        fn_80025FFC(STADIUM_FILE(files, idx[13]), &lbl_3_bss_B578);
         fn_80025EEC(&lbl_3_bss_B578, 0, 0);
     }
 
@@ -1036,7 +1036,7 @@ void fn_3_FA58C(void** files) {
                 q->prevState = 0;
                 q->state = 0;
                 p->actorObj = &lbl_8036E548.slots6C->objects[0];
-                p->shadow = files[idx[9]];
+                p->shadow = STADIUM_FILE(files, idx[9]);
                 p->update = NULL;
                 p->onHit = NULL;
                 p->visible = 0;
@@ -1079,7 +1079,7 @@ void fn_3_FA58C(void** files) {
                     q->state = q->prevState;
                 }
                 p->actorObj = &lbl_8036E548.slots6C->objects[q->prevState];
-                p->shadow = files[idx[9 + q->state]];
+                p->shadow = STADIUM_FILE(files, idx[9 + q->state]);
                 p->update = NULL;
                 p->onHit = lbl_3_data_1BA88[q->prevState];
                 p->visible = def->visible;

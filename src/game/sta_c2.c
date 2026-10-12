@@ -733,29 +733,29 @@ void fn_3_CCC24(void** files, u32* idx) {
     nObjs = nProps + 5;
     g->numActorObjs = nObjs;
     C2_SLOTS = ActorObjectInitTable(nObjs);
-    fn_800BDC88(C2_SLOTS, 0, 0, files[idx[1]], NULL, NULL);
+    fn_800BDC88(C2_SLOTS, 0, 0, STADIUM_FILE(files, idx[1]), NULL, NULL);
     for (j = 1, i = 0; i < 3; i++, j++) {
-        fn_800BDC88(C2_SLOTS, j, j, files[idx[3]], NULL, NULL);
-        fn_3_B97DC(C2_OBJ(j), files[idx[3] + 2]);
+        fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[3]), NULL, NULL);
+        fn_3_B97DC(C2_OBJ(j), STADIUM_FILE(files, idx[3] + 2));
     }
-    fn_800BDC88(C2_SLOTS, j, j, files[idx[4]], NULL, NULL);
+    fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[4]), NULL, NULL);
     chainIdx = j;
     propBase = j + 1;
     for (i = 0, j = propBase; i < nProps; i++, j++) {
-        fn_800BDC88(C2_SLOTS, j, j, files[idx[8]], NULL, NULL);
-        fn_3_B97DC(C2_OBJ(j), files[idx[8] + 2]);
+        fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[8]), NULL, NULL);
+        fn_3_B97DC(C2_OBJ(j), STADIUM_FILE(files, idx[8] + 2));
     }
     for (i = 0; i < nObjs; i++) {
         fn_800BD548(C2_OBJ(i), 4, g->lights[0], g->lights[1], g->lights[2], g->lights[3]);
     }
-    if (files[idx[15]] != NULL && files[idx[17]] != NULL) {
-        fn_80025DDC(files[idx[15]]);
-        fn_80025C58(files[idx[15]], (ShapeModel**)&C2_OBJ(0)->actor);
-        lbl_3_bss_A034[20].set = files[idx[17]];
-        fn_80025FFC(files[idx[15]], &lbl_3_bss_A034[20]);
+    if (STADIUM_FILE(files, idx[15]) != NULL && STADIUM_FILE(files, idx[17]) != NULL) {
+        fn_80025DDC(STADIUM_FILE(files, idx[15]));
+        fn_80025C58(STADIUM_FILE(files, idx[15]), (ShapeModel**)&C2_OBJ(0)->actor);
+        lbl_3_bss_A034[20].set = STADIUM_FILE(files, idx[17]);
+        fn_80025FFC(STADIUM_FILE(files, idx[15]), &lbl_3_bss_A034[20]);
         fn_80025EEC(&lbl_3_bss_A034[20], 0, 1);
     }
-    fn_80035750(files[idx[25]], files[idx[24]], 5);
+    fn_80035750(STADIUM_FILE(files, idx[25]), STADIUM_FILE(files, idx[24]), 5);
     task = fn_800B0A5C_insertQueue(fn_3_CE954, 2);
     lbl_3_bss_A8A4 = task;
     fn_80034E20(task, lbl_3_data_10D3C);
@@ -771,7 +771,7 @@ void fn_3_CCC24(void** files, u32* idx) {
     // object 0: the main object with the 4-node chain
     p->main.nodes = lbl_3_bss_A8D0;
     p->base.actorObj = C2_OBJ(0);
-    p->base.shadow = files[idx[13]];
+    p->base.shadow = STADIUM_FILE(files, idx[13]);
     p->base.update = (C2ObjFn)fn_3_CBC18;
     p->base.onHit = NULL;
     p->base.hasShadow = 0;
@@ -3779,7 +3779,7 @@ void fn_3_D67CC(void** files) {
     idx = _OSAllocFromHeap(4, 0x68);
     g->fileIdx = idx;
     fn_3_B9D68((u8*)&lbl_3_data_182C0 + 0x604, 26, (u8*)files, (s32*)idx);
-    lbl_3_bss_ADD0[0] = files[0];
+    lbl_3_bss_ADD0[0] = STADIUM_FILE(files, 0);
     lbl_3_data_182C0 = -1;
     lbl_3_data_182C4 = -1;
     if (g_d_GameSettings.GameModeSelected == 7) {
@@ -3811,95 +3811,95 @@ void fn_3_D67CC(void** files) {
     C2_SLOTS = ActorObjectInitTable(nObjs);
     j = 0;
     for (i = 0; i < nMain; i++, j++) {
-        fn_800BDC88(C2_SLOTS, j, j, files[idx[1 + i]], NULL, NULL);
+        fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[1 + i]), NULL, NULL);
     }
     compBase = j;
     for (i = 0; i < nComp; i++, j++) {
-        fn_800BDC88(C2_SLOTS, j, j, files[idx[3]], NULL, NULL);
-        fn_3_B97DC(C2_OBJ(j), files[idx[3] + 2]);
+        fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[3]), NULL, NULL);
+        fn_3_B97DC(C2_OBJ(j), STADIUM_FILE(files, idx[3] + 2));
     }
     chainIdx = j;
-    fn_800BDC88(C2_SLOTS, j, j, files[idx[4]], NULL, NULL);
+    fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[4]), NULL, NULL);
     j++;
     spinBase = j;
     for (i = 0; i < nSpin; i++, j++) {
-        fn_800BDC88(C2_SLOTS, j, j, files[idx[5]], NULL, NULL);
+        fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[5]), NULL, NULL);
     }
     markerIdx = j;
-    fn_800BDC88(C2_SLOTS, j, j, files[idx[6]], NULL, NULL);
+    fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[6]), NULL, NULL);
     ringIdx = j + 1;
-    fn_800BDC88(C2_SLOTS, j + 1, j + 1, files[idx[7]], NULL, NULL);
+    fn_800BDC88(C2_SLOTS, j + 1, j + 1, STADIUM_FILE(files, idx[7]), NULL, NULL);
     j += 2;
     propBase = j;
     for (i = 0; i < nProp; i++, j++) {
-        fn_800BDC88(C2_SLOTS, j, j, files[idx[8]], NULL, NULL);
-        fn_3_B97DC(C2_OBJ(j), files[idx[8] + 2]);
+        fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[8]), NULL, NULL);
+        fn_3_B97DC(C2_OBJ(j), STADIUM_FILE(files, idx[8] + 2));
     }
     postBase = j;
     for (i = 0; i < nPost; i++, j++) {
-        fn_800BDC88(C2_SLOTS, j, j, files[idx[9 + i]], NULL, NULL);
+        fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[9 + i]), NULL, NULL);
     }
     lampBase = j;
     for (i = 0; i < nLamp; i++, j++) {
-        fn_800BDC88(C2_SLOTS, j, j, files[idx[12]], NULL, NULL);
+        fn_800BDC88(C2_SLOTS, j, j, STADIUM_FILE(files, idx[12]), NULL, NULL);
     }
     for (i = 0; i < nObjs; i++) {
         fn_800BD548(C2_OBJ(i), 4, g->lights[0], g->lights[1], g->lights[2], g->lights[3]);
     }
 
     // animations: one player per object, the first set up from the file, the rest copied
-    if (files[idx[15]] != NULL && files[idx[16]] != NULL && files[idx[17]] != NULL) {
-        fn_80025DDC(files[idx[15]]);
-        fn_80025DDC(files[idx[16]]);
+    if (STADIUM_FILE(files, idx[15]) != NULL && STADIUM_FILE(files, idx[16]) != NULL && STADIUM_FILE(files, idx[17]) != NULL) {
+        fn_80025DDC(STADIUM_FILE(files, idx[15]));
+        fn_80025DDC(STADIUM_FILE(files, idx[16]));
         for (i = 0; i < nMain; i++) {
-            fn_80025C58(files[idx[15 + i]], (ShapeModel**)&C2_OBJ(i)->actor);
+            fn_80025C58(STADIUM_FILE(files, idx[15 + i]), (ShapeModel**)&C2_OBJ(i)->actor);
         }
         for (i = 0, player = &lbl_3_bss_A034[20]; i < nMain; i++, player++) {
             if (i == 0) {
-                player->set = files[idx[17]];
-                fn_80025FFC(files[idx[15]], player);
+                player->set = STADIUM_FILE(files, idx[17]);
+                fn_80025FFC(STADIUM_FILE(files, idx[15]), player);
             } else {
                 memcpy(player, &lbl_3_bss_A034[20 + i - 1], sizeof(ShapeAnimPlayer));
-                player->model = files[idx[15 + i]];
+                player->model = STADIUM_FILE(files, idx[15 + i]);
             }
             fn_80025EEC(player, 0, 1);
         }
     }
-    if (files[idx[18]] != NULL && files[idx[19]] != NULL) {
-        fn_80025DDC(files[idx[18]]);
+    if (STADIUM_FILE(files, idx[18]) != NULL && STADIUM_FILE(files, idx[19]) != NULL) {
+        fn_80025DDC(STADIUM_FILE(files, idx[18]));
         for (i = 0; i < nLamp; i++) {
-            fn_80025C58(files[idx[18 + i]], (ShapeModel**)&C2_OBJ(lampBase + i)->actor);
+            fn_80025C58(STADIUM_FILE(files, idx[18 + i]), (ShapeModel**)&C2_OBJ(lampBase + i)->actor);
         }
         for (i = 0, player = &lbl_3_bss_A034[10]; i < nLamp; i++, player++) {
             if (i == 0) {
-                player->set = files[idx[19]];
-                fn_80025FFC(files[idx[18]], player);
+                player->set = STADIUM_FILE(files, idx[19]);
+                fn_80025FFC(STADIUM_FILE(files, idx[18]), player);
             } else {
                 memcpy(player, &lbl_3_bss_A034[10 + i - 1], sizeof(ShapeAnimPlayer));
-                player->model = files[idx[18 + i]];
+                player->model = STADIUM_FILE(files, idx[18 + i]);
             }
             fn_80025EEC(player, 0, 0);
         }
     }
-    if (files[idx[20]] != NULL && files[idx[21]] != NULL && files[idx[22]] != NULL && files[idx[23]] != NULL) {
-        fn_80025DDC(files[idx[20]]);
-        fn_80025DDC(files[idx[21]]);
-        fn_80025DDC(files[idx[22]]);
+    if (STADIUM_FILE(files, idx[20]) != NULL && STADIUM_FILE(files, idx[21]) != NULL && STADIUM_FILE(files, idx[22]) != NULL && STADIUM_FILE(files, idx[23]) != NULL) {
+        fn_80025DDC(STADIUM_FILE(files, idx[20]));
+        fn_80025DDC(STADIUM_FILE(files, idx[21]));
+        fn_80025DDC(STADIUM_FILE(files, idx[22]));
         for (i = 0; i < nPost; i++) {
-            fn_80025C58(files[idx[20 + i]], (ShapeModel**)&C2_OBJ(postBase + i)->actor);
+            fn_80025C58(STADIUM_FILE(files, idx[20 + i]), (ShapeModel**)&C2_OBJ(postBase + i)->actor);
         }
         for (i = 0, player = &lbl_3_bss_A034[0]; i < nPost; i++, player++) {
             if (i == 0) {
-                player->set = files[idx[23]];
-                fn_80025FFC(files[idx[20]], player);
+                player->set = STADIUM_FILE(files, idx[23]);
+                fn_80025FFC(STADIUM_FILE(files, idx[20]), player);
             } else {
                 memcpy(player, &lbl_3_bss_A034[0 + i - 1], sizeof(ShapeAnimPlayer));
-                player->model = files[idx[20 + i]];
+                player->model = STADIUM_FILE(files, idx[20 + i]);
             }
             fn_80025EEC(player, 0, 0);
         }
     }
-    fn_80035750(files[idx[25]], files[idx[24]], 5);
+    fn_80035750(STADIUM_FILE(files, idx[25]), STADIUM_FILE(files, idx[24]), 5);
     lbl_3_bss_A8A4 = fn_800B0A5C_insertQueue(fn_3_CE954, 2);
     fn_80034E20(lbl_3_bss_A8A4, lbl_3_data_10D3C);
     fn_3_D511C();
@@ -3932,7 +3932,7 @@ void fn_3_D67CC(void** files) {
             o->main._B8 = &lbl_3_rodata_24D0;
         }
         o->base.actorObj = C2_OBJ(i);
-        o->base.shadow = files[idx[13]];
+        o->base.shadow = STADIUM_FILE(files, idx[13]);
         o->base.update = (C2ObjFn)fn_3_D3F54;
         o->base.onHit = fn_3_D196C;
         o->base.hasShadow = 1;
@@ -4208,7 +4208,7 @@ void fn_3_D67CC(void** files) {
         o->hit._A4 = 0;
         o->hit.emitter = NULL;
         o->base.actorObj = C2_OBJ(postBase + i);
-        o->base.shadow = files[idx[14]];
+        o->base.shadow = STADIUM_FILE(files, idx[14]);
         o->base.update = (C2ObjFn)fn_3_CF930;
         o->base.onHit = fn_3_CF72C;
         o->base.visible = 1;

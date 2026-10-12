@@ -36,6 +36,15 @@ u8 __##currentOffset##padding[((currentOffset) - (lastOffset) - sizeof(typeOfLas
 #define U32_MAX (0xFFFFFFFF)
 #define U32_MIN (0)
 
+// Entry i of a stadium/scene file table relocated by fn_3_B9D68: a pointer on
+// GameCube, a PTR32 (u32 heap offset) on PC, where the table keeps its 4-byte
+// disc entries.
+#ifdef TARGET_PC
+#define STADIUM_FILE(files, i) PTR32_GET(void, ((u32*)(files))[i])
+#else
+#define STADIUM_FILE(files, i) ((void*)(files)[i])
+#endif
+
 // Enum macro to help debug types
 #define E(storage, enumType) storage
 

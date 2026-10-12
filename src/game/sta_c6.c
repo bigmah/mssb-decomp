@@ -1041,7 +1041,7 @@ u8 fn_3_E7B20(void** files, u32* idx) {
         o->kind = lbl_3_bss_AEB4[0][i].kind;
         o->subObj = &lbl_8036E548.slots6C->objects[23];
         o->actorObj = &lbl_8036E548.slots6C->objects[o->kind];
-        o->shadow = files[idx[o->kind + 31]];
+        o->shadow = STADIUM_FILE(files, idx[o->kind + 31]);
         o->visible = 1;
         o->hasShadow = 1;
         o->ctrl.base.type = 0;
@@ -1083,7 +1083,7 @@ u8 fn_3_E7B20(void** files, u32* idx) {
         o->flagIdx = 6 - i;
         o->subObj = &lbl_8036E548.slots6C->objects[24];
         o->actorObj = &lbl_8036E548.slots6C->objects[o->kind];
-        o->shadow = files[idx[o->kind + 31]];
+        o->shadow = STADIUM_FILE(files, idx[o->kind + 31]);
         o->visible = 1;
         o->hasShadow = 1;
         o->ctrl.base.type = 0;
@@ -1242,40 +1242,40 @@ void fn_3_E8B24(void** files) {
     idx = list->fileIdx = _OSAllocFromHeap(4, 0xBC);
     fn_3_B9D68(lbl_3_data_19610, 0x2F, files, idx);
     lbl_8036E548.slots6C = ActorObjectInitTable(30);
-    fn_800BDC88(lbl_8036E548.slots6C, 0, 0, files[idx[1]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 1, 1, files[idx[2]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 2, 2, files[idx[3]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 3, 3, files[idx[4]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 4, 4, files[idx[5]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 5, 5, files[idx[6]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 6, 6, files[idx[7]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 7, 7, files[idx[8]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 8, 8, files[idx[9]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 9, 9, files[idx[10]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 10, 10, files[idx[11]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 11, 11, files[idx[12]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 12, 12, files[idx[13]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 13, 13, files[idx[14]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 14, 14, files[idx[15]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 15, 15, files[idx[16]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 0, 0, STADIUM_FILE(files, idx[1]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 1, 1, STADIUM_FILE(files, idx[2]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 2, 2, STADIUM_FILE(files, idx[3]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 3, 3, STADIUM_FILE(files, idx[4]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 4, 4, STADIUM_FILE(files, idx[5]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 5, 5, STADIUM_FILE(files, idx[6]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 6, 6, STADIUM_FILE(files, idx[7]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 7, 7, STADIUM_FILE(files, idx[8]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 8, 8, STADIUM_FILE(files, idx[9]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 9, 9, STADIUM_FILE(files, idx[10]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 10, 10, STADIUM_FILE(files, idx[11]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 11, 11, STADIUM_FILE(files, idx[12]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 12, 12, STADIUM_FILE(files, idx[13]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 13, 13, STADIUM_FILE(files, idx[14]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 14, 14, STADIUM_FILE(files, idx[15]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 15, 15, STADIUM_FILE(files, idx[16]), NULL, NULL);
     for (i = 0; i < 7; i++) {
-        fn_800BDC88(lbl_8036E548.slots6C, i + 16, i + 16, files[idx[i + 17]], NULL, NULL);
-        fn_3_B97DC(&lbl_8036E548.slots6C->objects[i + 16], files[idx[i + 17] + 2]);
+        fn_800BDC88(lbl_8036E548.slots6C, i + 16, i + 16, STADIUM_FILE(files, idx[i + 17]), NULL, NULL);
+        fn_3_B97DC(&lbl_8036E548.slots6C->objects[i + 16], STADIUM_FILE(files, idx[i + 17] + 2));
     }
-    fn_800BDC88(lbl_8036E548.slots6C, 23, 23, files[idx[24]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 24, 24, files[idx[25]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 25, 25, files[idx[26]], NULL, NULL);
-    fn_3_B97DC(&lbl_8036E548.slots6C->objects[25], files[idx[26] + 2]);
-    fn_800BDC88(lbl_8036E548.slots6C, 26, 26, files[idx[27]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 27, 27, files[idx[28]], NULL, NULL);
-    fn_800BDC88(lbl_8036E548.slots6C, 28, 28, files[idx[29]], NULL, NULL);
-    fn_3_B97DC(&lbl_8036E548.slots6C->objects[28], files[idx[29] + 2]);
+    fn_800BDC88(lbl_8036E548.slots6C, 23, 23, STADIUM_FILE(files, idx[24]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 24, 24, STADIUM_FILE(files, idx[25]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 25, 25, STADIUM_FILE(files, idx[26]), NULL, NULL);
+    fn_3_B97DC(&lbl_8036E548.slots6C->objects[25], STADIUM_FILE(files, idx[26] + 2));
+    fn_800BDC88(lbl_8036E548.slots6C, 26, 26, STADIUM_FILE(files, idx[27]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 27, 27, STADIUM_FILE(files, idx[28]), NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 28, 28, STADIUM_FILE(files, idx[29]), NULL, NULL);
+    fn_3_B97DC(&lbl_8036E548.slots6C->objects[28], STADIUM_FILE(files, idx[29] + 2));
     obj = &lbl_8036E548.slots6C->objects[28];
     obj->time = lbl_3_rodata_2B98;
     obj->setTime = 1;
     fn_800B4CA0(lbl_8036E548.slots6C->objects[28].actor, lbl_8036E548.slots6C->objects[28].time);
-    fn_800BDC88(lbl_8036E548.slots6C, 29, 29, files[idx[30]], NULL, NULL);
-    fn_3_B97DC(&lbl_8036E548.slots6C->objects[29], files[idx[30] + 2]);
+    fn_800BDC88(lbl_8036E548.slots6C, 29, 29, STADIUM_FILE(files, idx[30]), NULL, NULL);
+    fn_3_B97DC(&lbl_8036E548.slots6C->objects[29], STADIUM_FILE(files, idx[30] + 2));
     obj = &lbl_8036E548.slots6C->objects[29];
     obj->time = lbl_3_rodata_2BA0;
     obj->setTime = 1;
@@ -1283,7 +1283,7 @@ void fn_3_E8B24(void** files) {
 
     lbl_3_common_bss_350E4.numActorObjs = 30;
     for (i = 0; i < lbl_3_common_bss_350E4.numActorObjs; i++) {
-        fn_800BD478(&lbl_8036E548.slots6C->objects[i].actor, files[idx[i + 1]]);
+        fn_800BD478(&lbl_8036E548.slots6C->objects[i].actor, STADIUM_FILE(files, idx[i + 1]));
     }
     for (i = 0; i < 30; i++) {
         fn_800BD548(&lbl_8036E548.slots6C->objects[i], 4, lbl_3_common_bss_350E4.lights[0], lbl_3_common_bss_350E4.lights[1],
