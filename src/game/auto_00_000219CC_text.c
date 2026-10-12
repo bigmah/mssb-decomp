@@ -10,15 +10,29 @@ extern FielderView g_Fielders[];
 extern SceneWork* lbl_3_common_bss_1323C;
 
 typedef struct QueueParentView {
+#ifdef TARGET_PC
+    void* _00[4]; // func, prev, next, parent
+    s16 done;
+#else
     /*0x00*/ u8 _00[0x10];
     /*0x10*/ s16 done;
+#endif
 } QueueParentView;
 
 // Running task (lbl_803CC1B8, cf. SceneTask in main/file_80069BDC.h).
 typedef struct WaitTaskView {
+#ifdef TARGET_PC
+    void* _00[3]; // func, prev, next
+    QueueParentView* parent;
+    s16 _10;
+    u16 _12;
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned
+    u8 _14[0x18 - 0x14];
+#else
     /*0x00*/ u8 _00[0xC];
     /*0x0C*/ QueueParentView* parent;
     /*0x10*/ u8 _10[0x18 - 0x10];
+#endif
     /*0x18*/ s16 timer;
     /*0x1A*/ u8 _1A[0x22 - 0x1A];
     /*0x22*/ s16 state;

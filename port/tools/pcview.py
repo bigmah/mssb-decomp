@@ -14,11 +14,11 @@ changes (viewcheck reports it).
 import os, re, subprocess, sys, functools
 
 R = os.getcwd()
-PC = ['/usr/bin/clang', '-fsyntax-only', '-ferror-limit=0', '-Wno-everything', '-DNDEBUG=1', '-DNONMATCHING=1', '-DTARGET_PC',
+PC = ['/usr/bin/clang', '-S', '-emit-llvm', '-o', '/dev/null', '-ferror-limit=0', '-Wno-everything', '-DNDEBUG=1', '-DNONMATCHING=1', '-DTARGET_PC',
       '-DVERNUM=0', '-DVERSION=0', '-Iport/include_game', '-Iport/include', '-Iport/extern/aurora/include', '-Iinclude', '-std=gnu11',
       '-arch', 'arm64', '-fsigned-char', '-U_FORTIFY_SOURCE', '-D_FORTIFY_SOURCE=0', '-include', 'port/include/port/prelude.h',
       '-Xclang', '-fdump-record-layouts']
-GC = ['/usr/bin/clang', '-target', 'powerpc-unknown-eabi', '-fsyntax-only', '-ferror-limit=0', '-nostdinc', '-Iinclude',
+GC = ['/usr/bin/clang', '-target', 'powerpc-unknown-eabi', '-S', '-emit-llvm', '-o', '/dev/null', '-ferror-limit=0', '-nostdinc', '-Iinclude',
       '-Iinclude/stl', '-DNONMATCHING=1', '-fsigned-char', '-Wno-everything', '-Xclang', '-fdump-record-layouts']
 if not os.path.isdir('port/include_game'):
     PC.remove('-Iport/include_game')
@@ -169,4 +169,5 @@ def main():
             open(p_, 'w').write(src[p_])
 
 
-main()
+if __name__ == '__main__':
+    main()

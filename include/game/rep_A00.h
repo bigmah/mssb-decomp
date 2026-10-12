@@ -2,10 +2,16 @@
 #define __GAME_rep_A00_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_HEAD
 
 // Screen-fade task (lbl_803CC1B8 while fn_3_21C90 / fn_3_21DE4 run); only the fields used here.
 typedef struct FadeTask {
+#ifdef TARGET_PC
+    SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
+    u8 _14[0x1E - 0x14];
+#else
     /*0x00*/ u8 _00[0x1E];
+#endif
     /*0x1E*/ u16 frame;
     /*0x20*/ u16 alpha;
     /*0x22*/ s16 state; // fn_3_21AA8 wait task

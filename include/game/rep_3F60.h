@@ -24,8 +24,15 @@ typedef struct EffectNode {
 
 // Scene task that feeds an EffectNode each frame (lbl_803CC1B8 while it runs).
 typedef struct EffectTask {
+#ifdef TARGET_PC
+    void* _00[4]; // func, prev, next, parent
+    s16 _10;
+    u16 priority;
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned
+#else
     /*0x00*/ u8 _00[0x12];
     /*0x12*/ u16 priority;
+#endif
     /*0x14*/ Vec pos;
     /*0x20*/ f32 scale;
     /*0x24*/ u16 frame;

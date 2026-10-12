@@ -110,7 +110,14 @@ typedef struct JointAttachTask {
     /*0x00*/ void (*func)(struct JointAttachTask*);
     /*0x04*/ struct JointAttachTask* prev;
     /*0x08*/ struct JointAttachTask* next;
+#ifdef TARGET_PC
+    void* _0C; // parent
+    s16 _10;
+    u16 _12;
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned
+#else
     /*0x0C*/ u8 _0C[0x14 - 0x0C];
+#endif
     /*0x14*/ void (*callback)(void);
     /*0x18*/ RigidBody* body;
     /*0x1C*/ void* anim;

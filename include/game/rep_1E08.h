@@ -40,6 +40,9 @@ typedef struct RingBurstTask {
     /* 0x00 */ Rep1E08TaskHead head;
     /* 0x10 */ s16 delay;
     /* 0x12 */ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned
+#endif
     /* 0x14 */ Vec pos;
     /* 0x20 */ s32 n;
     /* 0x24 */ BDCA4E* ring;
@@ -50,6 +53,9 @@ typedef struct LoadTask1E08 {
     /* 0x00 */ Rep1E08TaskHead head;
     /* 0x10 */ s16 _10;
     /* 0x12 */ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned
+#endif
     /* 0x14 */ u16 loader; // lbl_3_data_11390 index
     /* 0x16 */ u16 slot;   // StadiumFxState._40C index
 } LoadTask1E08;
@@ -59,6 +65,9 @@ typedef struct LayoutFxTask {
     /* 0x00 */ Rep1E08TaskHead head;
     /* 0x10 */ s16 _10;
     /* 0x12 */ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned
+#endif
     /* 0x14 */ u16 objIdx; // first slot in lbl_80371C30
     /* 0x16 */ u16 _16;
     /* 0x18 */ s16 _18;

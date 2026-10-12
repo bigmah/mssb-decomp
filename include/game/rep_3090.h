@@ -40,10 +40,19 @@ typedef struct ScenePlacement {
 /* Scene task running fn_3_FDA1C (script command 0x5B): loads the fielder models one by one,
    then sets parent->_10 = 1. Only the fields used here. */
 typedef struct ModelLoadTask {
+#ifdef TARGET_PC
+    void* _00[3]; // func, prev, next
+    struct SceneTask* parent;
+    s16 _10;
+    u16 _12;
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned
+    u8 _14[0x1E - 0x14];
+#else
     /* 0x00 */ u8 _00[0xC];
     /* 0x0C */ struct SceneTask* parent;
     /* 0x10 */ s16 _10;
     /* 0x12 */ u8 _12[0x1E - 0x12];
+#endif
     /* 0x1E */ u16 idx;   // fielder whose model is loading
     /* 0x20 */ u8 _20[2];
     /* 0x22 */ s16 state;

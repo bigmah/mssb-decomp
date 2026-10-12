@@ -553,8 +553,13 @@ typedef struct ParticleParamsAttract {
 
 // Queue task that flashes the stadium lights (fn_8002852C).
 typedef struct LightFlashTask {
+#ifdef TARGET_PC
+    SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
+    StadiumLight light;
+#else
     /* 0x00 */ u8 unk0[0x14];
     /* 0x14 */ StadiumLight light;
+#endif
     /* 0x1E */ u8 r;
     /* 0x1F */ u8 g;
     /* 0x20 */ u8 b;

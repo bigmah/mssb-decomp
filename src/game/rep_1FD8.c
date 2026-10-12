@@ -134,8 +134,13 @@ extern void fn_800528C0(s16* sx, s16* sy, f32 x, f32 y, f32 z);
 
 // fn_3_C2244's task (queue node; data starts at 0x14)
 typedef struct C2244Task {
+#ifdef TARGET_PC
+    SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
+    f32 pos[3];
+#else
     /*0x00*/ u8 hdr[0x14];
     /*0x14*/ f32 pos[3];
+#endif
     /*0x20*/ s16 f20[2]; // spin angle of the two extra quads
     /*0x24*/ u8 f24;
     /*0x25*/ u8 f25[2];
@@ -523,8 +528,13 @@ typedef struct C366CHdr {
 } C366CHdr;
 // Smoke task: keeps six emitters (fn_3_C30F0) alive.
 typedef struct C298CTask {
+#ifdef TARGET_PC
+    SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
+    struct C366CHdr* emitters[6];
+#else
     /*0x00*/ u8 hdr[0x14];
     /*0x14*/ struct C366CHdr* emitters[6];
+#endif
 } C298CTask;
 void fn_3_C298C(void) {
     C298CTask* e = (C298CTask*)lbl_803CC1B8;

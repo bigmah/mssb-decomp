@@ -231,9 +231,17 @@ struct CharQueueTask;
 
 // Task object (lbl_803CC1B8) running fn_800177B4.
 typedef struct CharLoadTask {
+#ifdef TARGET_PC
+    void* _00[3]; // func, prev, next
+    struct CharQueueTask* parent;
+    s16 _10;
+    u16 _12;
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned
+#else
     /*0x00*/ u8 _00[0xC];
     /*0x0C*/ struct CharQueueTask* parent;
     /*0x10*/ u8 _10[0x4];
+#endif
     /*0x14*/ u8 state;
     /*0x15*/ u8 index;
     /*0x16*/ u8 kind;
@@ -247,10 +255,18 @@ typedef struct CharLoadTask {
 
 // Drawing-queue task returned by fn_800B0A5C_insertQueue.
 typedef struct CharQueueTask {
+#ifdef TARGET_PC
+    void* _00[3]; // func, prev, next
+    struct CharQueueTask* parent;
+    s16 _10;
+    u16 _12;
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned
+#else
     /*0x00*/ u8 _00[0xC];
     /*0x0C*/ struct CharQueueTask* parent;
     /*0x10*/ s16 _10;
     /*0x12*/ u8 _12[0x2];
+#endif
     /*0x14*/ u8 _14;
 } CharQueueTask;
 
