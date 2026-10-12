@@ -2862,7 +2862,9 @@ tail:
 // NONMATCHING 92.5%: float register allocation in the inlined fn_3_A6ABC body differs
 #if NONMATCHING
 #pragma dont_inline off
-void fn_3_A85C8(f32 dist) {
+// fn_3_A89D4 inlines this whole body; CW needs a raised inline limit for that
+#pragma inline_max_size(600)
+static inline void InlA85C8(f32 dist) {
     s32 target;
     s32 runnerFrames;
     s32 i;
@@ -2897,12 +2899,16 @@ void fn_3_A85C8(f32 dist) {
         }
     }
 }
+
+void fn_3_A85C8(f32 dist) {
+    InlA85C8(dist);
+}
 #pragma dont_inline on
 #endif
 
 // .text:0x000A89D4 size:0x980 mapped:0x806E7A68
 // Chooses g_FieldingLogic.throwSpeedType for the current throw.
-// NONMATCHING 55%: the original inlines fn_3_A85C8 (with fn_3_A6ABC) as its tail; here it is called. Code before it matches up to register allocation
+// NONMATCHING 90%: fn_3_A85C8 (with fn_3_A6ABC) inlined as its tail via InlA85C8; register allocation differs
 #if NONMATCHING
 void fn_3_A89D4(void) {
     RepFielder* f;
@@ -3006,7 +3012,7 @@ void fn_3_A89D4(void) {
         }
         return;
     }
-    fn_3_A85C8(dist);
+    InlA85C8(dist);
 }
 #endif
 
