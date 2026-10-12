@@ -1,4 +1,5 @@
 #include "challenge/rep_7A28.h"
+#include "challenge/ch_data.h"
 #include "static/UnknownHomes_Static.h"
 #include <string.h>
 #include "Dolphin/mtx.h"
@@ -53,13 +54,6 @@ typedef struct ChBeamParams {
     /* 0x24 */ s32 texIndex2[8];
 } ChBeamParams;
 
-// Same layout as AssetLoadInstructions (Unknown/File_0x800a64e0.h).
-typedef struct ChFileEntry {
-    /* 0x0 */ u32 compressionConstants;
-    /* 0x4 */ u32 sizeFlags;
-    /* 0x8 */ u32 aramOffset;
-    /* 0xC */ u32 compressedSize;
-} ChFileEntry;
 
 extern void fn_8003414C(void*);
 extern void fn_8002F5F4(Vec* pos, Vec* dir, ChBeamParams* prm);
