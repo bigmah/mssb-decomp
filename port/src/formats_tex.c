@@ -7,14 +7,36 @@
 // pad[1] of a converted archive; zero on disc.
 #define TEX_ARCHIVE_SWAPPED 0x50
 
+static int dims_ok(uint16_t h, uint16_t w)
+{
+    return h != 0 && w != 0 && h <= 1024 && w <= 1024;
+}
+
+static int archive_is_native(const uint8_t* b)
+{
+    uint16_t count = *(const uint16_t*)b;
+    if (count == 0)
+        return 1;
+    uint16_t h = *(const uint16_t*)(b + 4 + 8);
+    uint16_t w = *(const uint16_t*)(b + 4 + 10);
+    int native = dims_ok(h, w);
+    int be = dims_ok(__builtin_bswap16(h), __builtin_bswap16(w));
+    if (native != be)
+        return native;
+    // Square power-of-two sizes read the same: fall back to the count.
+    return (count & 0xFF) != 0;
+}
+
 int port_swap_tex_archive(void* archive)
 {
     uint8_t* b = (uint8_t*)archive;
     if (b[3] == TEX_ARCHIVE_SWAPPED)
         return 0;
-    // Archives built into the executable (port/gen) are already native. A
-    // big-endian count below 256 reads back with a zero low byte.
-    if ((*(uint16_t*)b & 0xFF) != 0)
+    // Archives built into the executable (port/gen) are already native.
+    // Tell them apart by the first image's size (1..1024 texels each way);
+    // the count alone can't (big-endian counts >= 256 have a non-zero low
+    // byte too).
+    if (archive_is_native(b))
     {
         b[3] = TEX_ARCHIVE_SWAPPED;
         return 1;
