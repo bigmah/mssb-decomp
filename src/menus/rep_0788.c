@@ -1,4 +1,12 @@
 #include "menus/rep_0788.h"
+#include "main/file_8000F150.h"
+#include "main/file_8001FE00.h"
+#include "main/file_80011640.h"
+#include "main/file_8003A688.h"
+#include "menus/menu_work.h"
+
+extern MenuData* lbl_2_bss_1A824C;
+extern MenuCtx* lbl_2_bss_1A8248;
 #include "Dolphin/gx.h"
 #include "main/file_80024184.h"
 #include "game/UnknownHomes_Game.h"
@@ -1380,7 +1388,7 @@ InitEntry lbl_2_data_9FC8[659] = {
 };
 
 void fn_2_25524(MenuTableContext* menu, MenuItemState* item);
-void fn_2_2577C(u8* a, u8* b);
+void fn_2_2577C(MenuTableContext* a, MenuItemState* b);
 void fn_2_26864(MenuTableContext* menu, MenuItemState* item);
 void fn_2_26C70(MenuTableContext* menu, MenuItemState* item);
 void fn_2_270B8(MenuTableContext* menu, MenuItemState* item);
@@ -2104,13 +2112,9 @@ extern void fn_2_243BC(void);
 
 extern void fn_2_24488(void);
 
-typedef struct { u8* object; s32 _04; } MenuTableEntry;
-extern MenuTableEntry lbl_80371C30[];
-extern u8* lbl_2_bss_1A824C[];
 extern s16 lbl_2_data_3D30[][4];
-extern u8* lbl_803CC1B8[];
-extern u8* lbl_2_bss_1A8248;
-extern u8 lbl_8036E548[];
+// The running scene task (lbl_803CC1B8, a SceneTask) seen as a menu task.
+#define MENU_TASK ((MenuTask*)lbl_803CC1B8)
 extern void fn_2_68E68(void);
 extern void fn_2_8FD14(void);
 extern void fn_2_8AEE0(void);
@@ -2119,28 +2123,28 @@ extern void fn_2_47CFC(void);
 
 // fn_2_2025C, size:0xCC
 void fn_2_2025C(void) {
-    u8* menu = lbl_2_bss_1A8248;
-    if (menu[0x44F2] == 2) {
-        lbl_8036E548[0x307A] = 0;
-    } else if (lbl_2_bss_1A824C[0][0x1978F3] != 0) {
-        lbl_8036E548[0x307A] = 4;
+    MenuCtx* menu = lbl_2_bss_1A8248;
+    if (menu->_44F2 == 2) {
+        lbl_8036E548._307A = 0;
+    } else if (lbl_2_bss_1A824C->_1978F3 != 0) {
+        lbl_8036E548._307A = 4;
     }
-    if (lbl_8036E548[0x307A] == 4) {
-        if (menu[0x44F2] != 3) {
-            if (menu[0x44F2] != 4) {
+    if (lbl_8036E548._307A == 4) {
+        if (menu->_44F2 != 3) {
+            if (menu->_44F2 != 4) {
                 fn_2_68E68();
             }
             fn_2_8FD14();
             fn_2_8AEE0();
             fn_2_47FF8();
-            if (lbl_2_bss_1A8248[0x44F2] != 4) {
+            if (lbl_2_bss_1A8248->_44F2 != 4) {
                 fn_2_47CFC();
             }
         }
     }
     GXSetZCompLoc(GX_FALSE);
 }
-extern u8* lbl_2_bss_1A8230[];
+extern MenuDrawArea* lbl_2_bss_1A8230;
 extern void fn_2_4E878(void*, void*);
 extern void fn_2_4E858(void* object);
 extern void fn_2_53F04(void*);
@@ -2154,14 +2158,14 @@ void fn_2_2A21C(MenuTableContext* menu, MenuItemState* item) {
 
 // fn_2_24728, size:0xD8
 s32 fn_2_24728(s32 character) {
-    u8* menu = lbl_2_bss_1A8248;
+    MenuCtx* menu = lbl_2_bss_1A8248;
     s32 index;
-    u8* record;
+    MenuLocSlot* record;
 
     for (index = 0; index < 51; index++) {
-        record = menu + index * 10;
-        if (record[0x40F1] == 0 && record[0x40F2] == 1 &&
-            (s32)record[0x40F5] == character && menu[character + 0x4431] == 1) {
+        record = &menu->slots[index];
+        if (record->_3 == 0 && record->_4 == 1 &&
+            (s32)record->_7 == character && menu->_4431[character] == 1) {
             return 1;
         }
     }
@@ -2187,14 +2191,14 @@ void fn_2_32C64(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         /* fallthrough */
     }
@@ -2207,7 +2211,7 @@ void fn_2_32C64(MenuTableContext* menu, MenuItemState* item) {
 
 // fn_2_242FC, size:0xC0
 void fn_2_242FC(void) {
-    MenuQueueState* queue = (MenuQueueState*)lbl_803CC1B8[0];
+    MenuQueueState* queue = MENU_TASK;
     switch ((s32)queue->stateB) {
     case 1:
         break;
@@ -2219,27 +2223,27 @@ void fn_2_242FC(void) {
     }
     fn_2_53F04(queue);
     fn_2_5400C();
-    if (lbl_2_bss_1A8230[0][0x32A86] != 0) {
+    if (lbl_2_bss_1A8230->_32A86 != 0) {
         fn_2_53CEC(queue);
         fn_2_4E858(queue);
         REMOVE_QUEUE_NOARG();
         queue->stateB = 0;
-        lbl_2_bss_1A8230[0][0x32A86] = 0;
+        lbl_2_bss_1A8230->_32A86 = 0;
     }
 }
 
-#define MENU_INPUT_CONTEXT ((MenuInputContext*)lbl_2_bss_1A824C[0])
+#define MENU_INPUT_CONTEXT lbl_2_bss_1A824C
 
 // fn_2_1FFC4, size:0xB0
 void fn_2_1FFC4(s32 count) {
-    u16* repeat = (u16*)((u8*)&lbl_803C77B8 + 4);
-    if (repeat[MENU_INPUT_CONTEXT->port * 16] & 8) {
+    u16* repeat = &((MenuPad*)&lbl_803C77B8)->repeat; // stepped by whole MenuPads
+    if (repeat[MENU_INPUT_CONTEXT->port * (sizeof(MenuPad) / sizeof(u16))] & 8) {
         MENU_INPUT_CONTEXT->selection--;
         if (MENU_INPUT_CONTEXT->selection < 0) {
             MENU_INPUT_CONTEXT->selection = count - 1;
         }
     }
-    if (repeat[MENU_INPUT_CONTEXT->port * 16] & 4) {
+    if (repeat[MENU_INPUT_CONTEXT->port * (sizeof(MenuPad) / sizeof(u16))] & 4) {
         MENU_INPUT_CONTEXT->selection++;
         if (MENU_INPUT_CONTEXT->selection >= count) {
             MENU_INPUT_CONTEXT->selection = 0;
@@ -2264,11 +2268,11 @@ void fn_2_1FF0C(s32 index) {
 }
 
 void fn_2_24EB0(s16 value) {
-    *(s16*)(lbl_803CC1B8[0] + 0x10) = value;
+    MENU_TASK->_10 = value;
 }
 
 s16 fn_2_24E9C(void) {
-    return *(s16*)(lbl_803CC1B8[0] + 0x10);
+    return MENU_TASK->_10;
 }
 
 s16 fn_2_201E4(s16 row, s16 column) {
@@ -2277,78 +2281,78 @@ s16 fn_2_201E4(s16 row, s16 column) {
 }
 
 void fn_2_20218(void) {
-    lbl_2_bss_1A824C[0][0x19782B] = 0;
-    lbl_2_bss_1A824C[0][0x19782C] = 0;
-    lbl_2_bss_1A824C[0][0x19782A] = 0;
-    lbl_2_bss_1A824C[0][0x197832] = 0;
+    lbl_2_bss_1A824C->_19782B = 0;
+    lbl_2_bss_1A824C->_19782C = 0;
+    lbl_2_bss_1A824C->_19782A = 0;
+    lbl_2_bss_1A824C->_197832 = 0;
 }
 
-void fn_2_272BC(u8* menu, u8* item) {
-    u8* object = lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)(item + 0xE)].object;
-    *(u32*)(object + 0x54) &= ~2;
+void fn_2_272BC(MenuTableContext* menu, MenuItemState* item) {
+    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+    object->flags &= ~2;
 }
 
-void fn_2_25D6C(u8* menu, u8* item) {
-    u8* object = lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)(item + 0xE)].object;
-    *(u32*)(object + 0x54) &= ~2;
+void fn_2_25D6C(MenuTableContext* menu, MenuItemState* item) {
+    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+    object->flags &= ~2;
 }
 
-void fn_2_25A1C(u8* menu, u8* item) {
-    u8* object = lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)(item + 0xE)].object;
-    *(u32*)(object + 0x54) &= ~2;
+void fn_2_25A1C(MenuTableContext* menu, MenuItemState* item) {
+    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+    object->flags &= ~2;
 }
 
-void fn_2_25850(u8* menu, u8* item) {
-    u8* object = lbl_80371C30[*(u16*)(menu + 0x14) + *(s16*)(item + 0xE)].object;
-    *(u32*)(object + 0x54) &= ~2;
+void fn_2_25850(MenuTableContext* menu, MenuItemState* item) {
+    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+    object->flags &= ~2;
 }
 
 // fn_2_246E0, size:0x44
 void fn_2_246E0(void) {
-    u8* object = fn_800B0A5C_insertQueue((void*)fn_2_24488, 2);
-    *(s16*)(object + 0x1C) = 0;
+    MenuTask* object = fn_800B0A5C_insertQueue((void*)fn_2_24488, 2);
+    object->stateA = 0;
     fn_2_54354(lbl_2_data_9FC8, 0x293);
 }
 
 // fn_2_2469C, size:0x44
 void fn_2_2469C(void) {
-    u8* object = fn_800B0A5C_insertQueue((void*)fn_2_243BC, 2);
-    *(s16*)(object + 0x1C) = 0;
+    MenuTask* object = fn_800B0A5C_insertQueue((void*)fn_2_243BC, 2);
+    object->stateA = 0;
     fn_2_54354(lbl_2_data_F0EC, 0x13A);
 }
 
 // fn_2_2460C, size:0x44
 void fn_2_2460C(void) {
-    u8* object = fn_800B0A5C_insertQueue((void*)fn_2_24238, 2);
-    *(s16*)(object + 0x1C) = 0;
+    MenuTask* object = fn_800B0A5C_insertQueue((void*)fn_2_24238, 2);
+    object->stateA = 0;
     fn_2_54354(lbl_2_data_105FC, 0x2);
 }
 
 // fn_2_245C8, size:0x44
 void fn_2_245C8(void) {
-    u8* object = fn_800B0A5C_insertQueue((void*)fn_2_2416C, 2);
-    *(s16*)(object + 0x1C) = 0;
+    MenuTask* object = fn_800B0A5C_insertQueue((void*)fn_2_2416C, 2);
+    object->stateA = 0;
     fn_2_54354(lbl_2_data_1073C, 0x8);
 }
 
 // fn_2_24650, size:0x4C
 void fn_2_24650(void) {
-    u8* object = fn_800B0A5C_insertQueue((void*)fn_2_242FC, 2);
-    *(s16*)(object + 0x1C) = 0;
-    *(s16*)(object + 0x1E) = 0;
+    MenuTask* object = fn_800B0A5C_insertQueue((void*)fn_2_242FC, 2);
+    object->stateA = 0;
+    object->stateB = 0;
     fn_2_54234(lbl_2_data_104EC, 2);
 }
 
 // fn_2_1FF14, size:0xB0
 void fn_2_1FF14(s32 count) {
-    u16* repeat = (u16*)((u8*)&lbl_803C77B8 + 4);
-    if (repeat[MENU_INPUT_CONTEXT->port * 16] & 8) {
+    u16* repeat = &((MenuPad*)&lbl_803C77B8)->repeat; // stepped by whole MenuPads
+    if (repeat[MENU_INPUT_CONTEXT->port * (sizeof(MenuPad) / sizeof(u16))] & 8) {
         MENU_INPUT_CONTEXT->secondarySelection--;
         if (MENU_INPUT_CONTEXT->secondarySelection < 0) {
             MENU_INPUT_CONTEXT->secondarySelection = count - 1;
         }
     }
-    if (repeat[MENU_INPUT_CONTEXT->port * 16] & 4) {
+    if (repeat[MENU_INPUT_CONTEXT->port * (sizeof(MenuPad) / sizeof(u16))] & 4) {
         MENU_INPUT_CONTEXT->secondarySelection++;
         if (MENU_INPUT_CONTEXT->secondarySelection >= count) {
             MENU_INPUT_CONTEXT->secondarySelection = 0;
@@ -2356,7 +2360,7 @@ void fn_2_1FF14(s32 count) {
     }
 }
 
-extern u8* lbl_2_bss_1A8234[];
+extern MenuData* lbl_2_bss_1A8234;
 extern void fn_2_53F88(void*);
 extern void fn_2_54120(void);
 extern void fn_2_53DF8(void*);
@@ -2364,7 +2368,7 @@ extern void fn_8000FE54(void);
 
 // fn_2_20074, size:0x70
 s32 fn_2_20074(void) {
-    u16 v = *(u16*)((u8*)&lbl_803C77B8 + ((s8)lbl_2_bss_1A824C[0][0x197863] << 5));
+    u16 v = ((MenuPad*)&lbl_803C77B8)[(s8)lbl_2_bss_1A824C->port].held;
     s32 r;
     if (v & 0x8) {
         r = 0;
@@ -2382,7 +2386,7 @@ s32 fn_2_20074(void) {
 
 // fn_2_24238, size:0xC4
 void fn_2_24238(void) {
-    MenuQueueState* queue = (MenuQueueState*)lbl_803CC1B8[0];
+    MenuQueueState* queue = MENU_TASK;
     switch ((s32)queue->stateA) {
     case 1:
         break;
@@ -2394,21 +2398,19 @@ void fn_2_24238(void) {
     }
     fn_2_53F88(queue);
     fn_2_54120();
-    if (lbl_2_bss_1A8234[0][0x162992] != 0) {
+    if (lbl_2_bss_1A8234->done != 0) {
         fn_8000FE54();
         fn_2_53DF8(queue);
         fn_2_4E858(queue);
         REMOVE_QUEUE_NOARG();
         queue->stateA = 0;
-        lbl_2_bss_1A8234[0][0x162992] = 0;
+        lbl_2_bss_1A8234->done = 0;
     }
 }
 
-extern void fn_8000F8F4(void*);
-
 // fn_2_243BC, size:0xCC
 void fn_2_243BC(void) {
-    MenuQueueState* queue = (MenuQueueState*)lbl_803CC1B8[0];
+    MenuQueueState* queue = MENU_TASK;
     switch ((s32)queue->stateA) {
     case 1:
         break;
@@ -2420,21 +2422,21 @@ void fn_2_243BC(void) {
     }
     fn_2_53F88(queue);
     fn_2_54120();
-    if (lbl_2_bss_1A8234[0][0x162992] != 0) {
+    if (lbl_2_bss_1A8234->done != 0) {
         fn_8000FE54();
         fn_2_53DF8(queue);
-        fn_8000F8F4(queue);
+        fn_8000F8F4((LayoutGroup*)queue);
         fn_2_4E858(queue);
         REMOVE_QUEUE_NOARG();
         queue->stateA = 0;
-        lbl_2_bss_1A8234[0][0x162992] = 0;
+        lbl_2_bss_1A8234->done = 0;
     }
 }
 
 
 // fn_2_2416C, size:0xCC
 void fn_2_2416C(void) {
-    MenuQueueState* queue = (MenuQueueState*)lbl_803CC1B8[0];
+    MenuQueueState* queue = MENU_TASK;
     switch ((s32)queue->stateA) {
     case 1:
         break;
@@ -2446,14 +2448,14 @@ void fn_2_2416C(void) {
     }
     fn_2_53F88(queue);
     fn_2_54120();
-    if (lbl_2_bss_1A8234[0][0x162992] != 0) {
+    if (lbl_2_bss_1A8234->done != 0) {
         fn_8000FE54();
         fn_2_53DF8(queue);
-        fn_8000F8F4(queue);
+        fn_8000F8F4((LayoutGroup*)queue);
         fn_2_4E858(queue);
         REMOVE_QUEUE_NOARG();
         queue->stateA = 0;
-        lbl_2_bss_1A8234[0][0x162992] = 0;
+        lbl_2_bss_1A8234->done = 0;
     }
 }
 
@@ -2465,14 +2467,14 @@ void fn_2_327D4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         /* fallthrough */
     }
@@ -2491,15 +2493,15 @@ void fn_2_33614(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         item->state = 37;
         /* fallthrough */
     }
@@ -2518,16 +2520,16 @@ void fn_2_25D98(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) =
-            (u32)lbl_2_bss_1A8248[0x441C] << 16;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C =
+            (u32)lbl_2_bss_1A8248->_441C << 16;
         item->state = 37;
         /* fallthrough */
     }
@@ -2546,20 +2548,20 @@ void fn_2_2E17C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -2576,21 +2578,21 @@ void fn_2_2D508(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -2602,7 +2604,7 @@ void fn_2_2D508(MenuTableContext* menu, MenuItemState* item) {
 
 // fn_2_24488, size:0x140
 void fn_2_24488(void) {
-    MenuQueueState* queue = (MenuQueueState*)lbl_803CC1B8[0];
+    MenuQueueState* queue = MENU_TASK;
     switch ((s32)queue->stateA) {
     case 0:
         fn_2_4E878(queue, lbl_2_data_4C68);
@@ -2610,25 +2612,25 @@ void fn_2_24488(void) {
         queue->timerA = 0;
         break;
     case 1:
-        if ((s32)lbl_2_bss_1A824C[0][0x1978FB] == 1) {
-            lbl_2_bss_1A8234[0][0x16268A] = 1;
-            lbl_2_bss_1A8234[0][0x162874] = 0;
+        if ((s32)lbl_2_bss_1A824C->_1978FB == 1) {
+            lbl_2_bss_1A8234->layerFlags[1][64] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][64] = 0;
         } else {
-            lbl_2_bss_1A8234[0][0x162874] = 1;
-            lbl_2_bss_1A8234[0][0x16268A] = 0;
+            lbl_2_bss_1A8234->layerFlags[8][64] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][64] = 0;
         }
         break;
     }
     fn_2_53F88(queue);
     fn_2_54120();
-    if (lbl_2_bss_1A8234[0][0x162992] != 0) {
+    if (lbl_2_bss_1A8234->done != 0) {
         fn_8000FE54();
         fn_2_53DF8(queue);
-        fn_8000F8F4(queue);
+        fn_8000F8F4((LayoutGroup*)queue);
         fn_2_4E858(queue);
         REMOVE_QUEUE_NOARG();
         queue->stateA = 0;
-        lbl_2_bss_1A8234[0][0x162992] = 0;
+        lbl_2_bss_1A8234->done = 0;
     }
 }
 
@@ -2640,14 +2642,14 @@ void fn_2_322E4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -2659,8 +2661,8 @@ void fn_2_322E4(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -2688,14 +2690,14 @@ void fn_2_2DE78(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -2707,8 +2709,8 @@ void fn_2_2DE78(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -2731,15 +2733,15 @@ void fn_2_2C378(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
@@ -2751,8 +2753,8 @@ void fn_2_2C378(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -2770,23 +2772,23 @@ void fn_2_2835C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -2803,21 +2805,21 @@ void fn_2_26170(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        MenuInputContext* frames = MENU_INPUT_CONTEXT;
+        MenuData* frames = MENU_INPUT_CONTEXT;
         s16 frame = frames->frameSetA[item->index];
         if (frame != -1) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = (s32)frame << 16;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = (s32)frame << 16;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         /* fallthrough */
@@ -2837,21 +2839,21 @@ void fn_2_26010(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        MenuInputContext* frames = MENU_INPUT_CONTEXT;
+        MenuData* frames = MENU_INPUT_CONTEXT;
         s16 frame = frames->frameSetC[item->index];
         if (frame != -1) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = (s32)frame << 16;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = (s32)frame << 16;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         /* fallthrough */
@@ -2871,21 +2873,21 @@ void fn_2_25EB0(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        MenuInputContext* frames = MENU_INPUT_CONTEXT;
+        MenuData* frames = MENU_INPUT_CONTEXT;
         s16 frame = frames->frameSetB[item->index];
         if (frame != -1) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = (s32)frame << 16;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = (s32)frame << 16;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         /* fallthrough */
@@ -2905,22 +2907,22 @@ void fn_2_28224(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -2937,18 +2939,18 @@ void fn_2_26F80(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) =
-            (u32)lbl_2_bss_1A8248[0x441C] << 16;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C =
+            (u32)lbl_2_bss_1A8248->_441C << 16;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         item->state = 37;
         /* fallthrough */
     }
@@ -2967,25 +2969,25 @@ void fn_2_253B0(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3004,24 +3006,24 @@ void fn_2_2E44C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        *(f32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x48) = lbl_2_rodata_7E4[0];
-        *(f32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x4C) = 0.0f;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->x = lbl_2_rodata_7E4[0];
+        lbl_80371C30[menu->baseIdx + item->offset].obj->y = 0.0f;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3038,15 +3040,15 @@ void fn_2_31F50(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
@@ -3058,10 +3060,10 @@ void fn_2_31F50(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -3089,20 +3091,20 @@ void fn_2_28D24(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
     case 37: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         return;
     }
     case 5:
@@ -3113,8 +3115,8 @@ void fn_2_28D24(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -3131,16 +3133,16 @@ void fn_2_2BDA4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) =
-            (s32)*(s16*)(lbl_2_bss_1A824C[0] + 0x197714) << 16;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C =
+            (s32)lbl_2_bss_1A824C->_197714 << 16;
         item->state = 37;
         return;
     }
@@ -3152,8 +3154,8 @@ void fn_2_2BDA4(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -3171,17 +3173,17 @@ void fn_2_2AEDC(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) =
-            (s32)*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) << 16;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C =
+            (s32)lbl_2_bss_1A824C->_197706 << 16;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -3193,8 +3195,8 @@ void fn_2_2AEDC(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
             item->state = 7;
         }
         /* fallthrough */
@@ -3213,27 +3215,27 @@ void fn_2_24EC4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x19774E) = 0;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object;
+        lbl_2_bss_1A824C->_19774E = 0;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3250,28 +3252,28 @@ void fn_2_28090(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 8:
     case 2: {
-        u8* object;
-        if (lbl_2_bss_1A824C[0][0x1978F6] == 0) {
+        LayoutObj* object;
+        if (lbl_2_bss_1A824C->_1978F6 == 0) {
             fn_800363D8(menu, item->offset, 1, 0x41, 7);
         } else {
             fn_800363D8(menu, item->offset, 1, 0x41, 8);
         }
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x50000;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0x50000;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3288,18 +3290,18 @@ void fn_2_2CA30(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2:
-        if ((s32)lbl_2_bss_1A8248[0x43C2 + item->index] == 1) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
+        if ((s32)lbl_2_bss_1A8248->_43C2[item->index] == 1) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         return;
@@ -3311,8 +3313,8 @@ void fn_2_2CA30(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -3323,20 +3325,20 @@ void fn_2_2CA30(MenuTableContext* menu, MenuItemState* item) {
 }
 
 // fn_2_2577C, size:0xD4
-void fn_2_2577C(u8* a, u8* b) {
+void fn_2_2577C(MenuTableContext* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* object = lbl_80371C30[*(u16*)(a + 0x14) + *(s16*)(b + 0xE)].object;
-        *(u32*)(object + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* object = lbl_80371C30[a->baseIdx + b->offset].obj;
+        object->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2:
-        *(s16*)(b + 4) = 0x25;
+        b->state = 0x25;
         break;
     case 1:
     case 5:
@@ -3355,16 +3357,16 @@ void fn_2_2587C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
         item->state = 37;
         return;
     }
@@ -3372,12 +3374,12 @@ void fn_2_2587C(MenuTableContext* menu, MenuItemState* item) {
         item->state = 6;
         return;
     case 6:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         item->state = 7;
         return;
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3385,10 +3387,6 @@ void fn_2_2587C(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
 }
-
-extern s16 fn_8000F988(void*, s16, u16, s32, s32, s32);
-extern void fn_8000FE08(s16, s32, s16);
-extern u8 lbl_80366B18[];
 
 // fn_2_25050, size:0x1B0
 void fn_2_25050(MenuTableContext* menu, MenuItemState* item) {
@@ -3398,20 +3396,20 @@ void fn_2_25050(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object;
+        LayoutObj* object;
         item->unk12 = 0xFF;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x399, 0);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 4, 0x399, 0);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        fn_8000FE08(item->unk14, 4, *(s16*)(lbl_2_bss_1A824C[0] + 0x19774C));
-        lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object;
+        fn_8000FE08(item->unk14, 4, lbl_2_bss_1A824C->_19774C);
+        lbl_80366B18.entries[item->unk14].hAlign = 1;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 3;
         return;
     }
@@ -3422,8 +3420,8 @@ void fn_2_25050(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         return;
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
@@ -3441,20 +3439,20 @@ void fn_2_25200(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object;
+        LayoutObj* object;
         item->unk12 = 0xFF;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x399, 0);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 4, 0x399, 0);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        fn_8000FE08(item->unk14, 4, *(s16*)(lbl_2_bss_1A824C[0] + 0x19774C));
-        lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object;
+        fn_8000FE08(item->unk14, 4, lbl_2_bss_1A824C->_19774C);
+        lbl_80366B18.entries[item->unk14].hAlign = 1;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 3;
         return;
     }
@@ -3465,8 +3463,8 @@ void fn_2_25200(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         return;
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
@@ -3484,33 +3482,33 @@ void fn_2_33720(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3527,33 +3525,33 @@ void fn_2_32D54(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3570,33 +3568,33 @@ void fn_2_328C4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3613,33 +3611,33 @@ void fn_2_32434(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3656,33 +3654,33 @@ void fn_2_31BE0(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3699,33 +3697,33 @@ void fn_2_31384(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3742,33 +3740,33 @@ void fn_2_3109C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3785,33 +3783,33 @@ void fn_2_2E298(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3828,33 +3826,33 @@ void fn_2_2DFC8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3871,33 +3869,33 @@ void fn_2_2CDA4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3914,33 +3912,33 @@ void fn_2_2C4E4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -3957,33 +3955,33 @@ void fn_2_2A068(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -4000,33 +3998,33 @@ void fn_2_28794(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -4043,33 +4041,33 @@ void fn_2_27EDC(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -4078,7 +4076,6 @@ void fn_2_27EDC(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 
-typedef struct { u8 pad0[0x197726]; s16 k; u8 pad1[0x19789F - 0x197728]; u8 arr[1]; } MenuSel;
 
 // fn_2_30C4C, size:0x134
 void fn_2_30C4C(MenuTableContext* menu, MenuItemState* item) {
@@ -4088,14 +4085,14 @@ void fn_2_30C4C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -4110,8 +4107,8 @@ void fn_2_30C4C(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -4129,14 +4126,14 @@ void fn_2_2FBCC(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -4151,8 +4148,8 @@ void fn_2_2FBCC(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -4170,14 +4167,14 @@ void fn_2_31250(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -4192,8 +4189,8 @@ void fn_2_31250(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -4211,15 +4208,15 @@ void fn_2_2FA7C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
@@ -4234,8 +4231,8 @@ void fn_2_2FA7C(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -4253,15 +4250,15 @@ void fn_2_2FD00(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
@@ -4276,8 +4273,8 @@ void fn_2_2FD00(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -4295,23 +4292,23 @@ void fn_2_30D80(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2:
     case 17: {
-        u8* object;
-        MenuSel* ctx = (MenuSel*)lbl_2_bss_1A824C[0];
+        LayoutObj* object;
+        MenuData* ctx = lbl_2_bss_1A824C;
         s32 value = 0x14;
-        s16 k = ctx->k;
-        if ((s8)ctx->arr[item->index + k] != 2) {
+        s16 k = ctx->_197726;
+        if ((s8)ctx->_19789F[item->index + k] != 2) {
             value = k;
         }
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = value << 16;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = value << 16;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -4323,8 +4320,8 @@ void fn_2_30D80(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -4368,37 +4365,37 @@ void fn_2_2B064(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        object[0x68] = 4;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_68 = 4;
         item->timer = 9;
         item->state = 6;
         return;
     }
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0 || item->timer-- <= 0) {
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0 || item->timer-- <= 0) {
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         return;
     }
     case 37:
@@ -4420,15 +4417,15 @@ void fn_2_2CF58(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
@@ -4442,14 +4439,14 @@ void fn_2_2CF58(MenuTableContext* menu, MenuItemState* item) {
     case 31:
     case 34:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
             item->state = 37;
         }
         return;
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         return;
     }
     case 37:
@@ -4466,35 +4463,35 @@ void fn_2_272E8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        object[0x68] = 4;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_68 = 4;
         item->state = 6;
         return;
     }
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         return;
     }
     case 37:
@@ -4514,18 +4511,18 @@ void fn_2_2AD30(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        determineIfMissionDescriptionIsShown(lbl_800E869C[*(s16*)(lbl_2_bss_1A824C[0] + 0x197706)]);
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) =
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x197706) << 16;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object;
+        determineIfMissionDescriptionIsShown(lbl_800E869C[lbl_2_bss_1A824C->_197706]);
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C =
+            lbl_2_bss_1A824C->_197706 << 16;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -4535,8 +4532,8 @@ void fn_2_2AD30(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
             item->state = 7;
         }
         return;
@@ -4546,8 +4543,6 @@ void fn_2_2AD30(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 
-extern void fn_8000FD9C(s16, s32, s32);
-
 // fn_2_2749C, size:0x1C4
 void fn_2_2749C(MenuTableContext* menu, MenuItemState* item) {
     s16 state = fn_2_53BC8(item);
@@ -4556,26 +4551,26 @@ void fn_2_2749C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0xFF;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x1C7, 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 4, 0x1C7, 0);
         fn_8000FD9C(item->unk14, 1, 0);
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1972A2) = item->unk14;
+        lbl_2_bss_1A824C->_1972A2 = item->unk14;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, *(s32*)(lbl_2_bss_1A824C[0] + 0x196FBC));
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A824C->_196FB8[1]);
         item->state = 37;
         break;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
@@ -4584,8 +4579,8 @@ void fn_2_2749C(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 
@@ -4597,26 +4592,26 @@ void fn_2_27660(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0xFF;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x1C7, 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 4, 0x1C7, 0);
         fn_8000FD9C(item->unk14, 1, 0);
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1972A0) = item->unk14;
+        lbl_2_bss_1A824C->_1972A0 = item->unk14;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, *(s32*)(lbl_2_bss_1A824C[0] + 0x196FB8));
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A824C->_196FB8[0]);
         item->state = 37;
         break;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
@@ -4625,8 +4620,8 @@ void fn_2_27660(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 
@@ -4638,19 +4633,19 @@ void fn_2_32A78(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0xFF;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x30A, 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 4, 0x30A, 0);
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object;
+        LayoutObj* object;
         fn_8000FE08(item->unk14, 4, 0x30A);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80366B18.entries[item->unk14].hAlign = 1;
         item->state = 3;
         break;
     }
@@ -4661,8 +4656,8 @@ void fn_2_32A78(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         break;
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
@@ -4670,10 +4665,10 @@ void fn_2_32A78(MenuTableContext* menu, MenuItemState* item) {
     case 1:
         break;
     }
-    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+    lbl_80366B18.entries[item->unk14].hAlign = 1;
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 
@@ -4685,19 +4680,19 @@ void fn_2_325E8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0xFF;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x30B, 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 4, 0x30B, 0);
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object;
+        LayoutObj* object;
         fn_8000FE08(item->unk14, 4, 0x30B);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80366B18.entries[item->unk14].hAlign = 1;
         item->state = 3;
         break;
     }
@@ -4708,8 +4703,8 @@ void fn_2_325E8(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         break;
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
@@ -4717,10 +4712,10 @@ void fn_2_325E8(MenuTableContext* menu, MenuItemState* item) {
     case 1:
         break;
     }
-    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+    lbl_80366B18.entries[item->unk14].hAlign = 1;
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 
@@ -4732,21 +4727,20 @@ void fn_2_27B7C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0xFF;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x35C, 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 4, 0x35C, 0);
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object;
-        u8* p = lbl_2_bss_1A824C[0] + 0x190000;
-        p += (s8)p[0x78F0];
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, (s8)p[0x78DB] + 0x35C);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+        LayoutObj* object;
+        MenuData* p = lbl_2_bss_1A824C;
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, (s8)p->_1978DB[p->_1978F0] + 0x35C);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80366B18.entries[item->unk14].hAlign = 1;
         item->state = 3;
         break;
     }
@@ -4757,8 +4751,8 @@ void fn_2_27B7C(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         break;
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
@@ -4766,10 +4760,10 @@ void fn_2_27B7C(MenuTableContext* menu, MenuItemState* item) {
     case 1:
         break;
     }
-    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+    lbl_80366B18.entries[item->unk14].hAlign = 1;
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 
@@ -4782,21 +4776,20 @@ void fn_2_31880(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0xFF;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x316, 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 4, 0x316, 0);
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object;
-        u8* p = lbl_2_bss_1A824C[0] + 0x190000;
-        p += (s8)p[0x7867];
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, (s8)p[0x7868] + 0x316);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+        LayoutObj* object;
+        MenuData* p = lbl_2_bss_1A824C;
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, (s8)p->_197868[p->_197867] + 0x316);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80366B18.entries[item->unk14].hAlign = 1;
         item->state = 3;
         break;
     }
@@ -4807,8 +4800,8 @@ void fn_2_31880(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         break;
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
@@ -4816,10 +4809,10 @@ void fn_2_31880(MenuTableContext* menu, MenuItemState* item) {
     case 1:
         break;
     }
-    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+    lbl_80366B18.entries[item->unk14].hAlign = 1;
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 
@@ -4835,17 +4828,17 @@ void fn_2_31D94(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        fn_800363D8(menu, item->offset, 1, 0x83, lbl_2_data_38C0[lbl_2_bss_1A8248[0x441C]]);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object;
+        fn_800363D8(menu, item->offset, 1, 0x83, lbl_2_data_38C0[lbl_2_bss_1A8248->_441C]);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
@@ -4855,10 +4848,10 @@ void fn_2_31D94(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            object[0x68] = 0;
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->_68 = 0;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         return;
     case 37:
@@ -4875,19 +4868,18 @@ void fn_2_31538(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        u8* p = lbl_2_bss_1A824C[0] + 0x190000;
-        p += (s8)p[0x7867];
-        fn_800363D8(menu, item->offset, 1, 0x83, ((s8*)p)[0x7868]);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object;
+        MenuData* p = lbl_2_bss_1A824C;
+        fn_800363D8(menu, item->offset, 1, 0x83, p->_197868[p->_197867]);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
@@ -4897,10 +4889,10 @@ void fn_2_31538(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            object[0x68] = 0;
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->_68 = 0;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         return;
     case 37:
@@ -4919,19 +4911,18 @@ void fn_2_27824(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        u8* p = lbl_2_bss_1A824C[0] + 0x190000;
-        p += (s8)p[0x78F0];
-        fn_800363D8(menu, item->offset, 1, 0x83, lbl_2_data_3714[((s8*)p)[0x78DB]]);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object;
+        MenuData* p = lbl_2_bss_1A824C;
+        fn_800363D8(menu, item->offset, 1, 0x83, lbl_2_data_3714[(s8)p->_1978DB[p->_1978F0]]);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
@@ -4941,10 +4932,10 @@ void fn_2_27824(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            object[0x68] = 0;
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->_68 = 0;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         return;
     case 37:
@@ -4961,19 +4952,19 @@ void fn_2_320D8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0xFF;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, lbl_2_bss_1A8248[0x441C] + 0x30C, 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 4, lbl_2_bss_1A8248->_441C + 0x30C, 0);
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A8248[0x441C] + 0x30C);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+        LayoutObj* object;
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A8248->_441C + 0x30C);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80366B18.entries[item->unk14].hAlign = 1;
         item->state = 3;
         break;
     }
@@ -4984,8 +4975,8 @@ void fn_2_320D8(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         break;
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
@@ -4993,10 +4984,10 @@ void fn_2_320D8(MenuTableContext* menu, MenuItemState* item) {
     case 1:
         break;
     }
-    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+    lbl_80366B18.entries[item->unk14].hAlign = 1;
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 
@@ -5009,37 +5000,37 @@ void fn_2_2F8A4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        fn_800363D8(menu, item->offset, 1, 6, lbl_2_bss_1A8248[0x4415]);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object;
+        fn_800363D8(menu, item->offset, 1, 6, lbl_2_bss_1A8248->_4415);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        object[0x68] = 4;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_68 = 4;
         item->state = 6;
         return;
     }
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         return;
     }
     case 37:
@@ -5060,21 +5051,21 @@ void fn_2_2CBCC(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        if ((s32)lbl_2_bss_1A8248[item->index + 0x43C2] == 1) {
-            *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x68;
+        LayoutObj* object;
+        if ((s32)lbl_2_bss_1A8248->_43C2[item->index] == 1) {
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x68;
         } else {
-            *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x67;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x67;
         }
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
@@ -5084,8 +5075,8 @@ void fn_2_2CBCC(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         return;
     case 37:
@@ -5104,21 +5095,21 @@ void fn_2_2DCA8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
+        LayoutObj* object;
         fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
         if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
         } else {
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x10000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0x10000;
         }
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -5128,8 +5119,8 @@ void fn_2_2DCA8(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         return;
     case 37:
@@ -5138,7 +5129,6 @@ void fn_2_2DCA8(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 
-extern u8 lbl_8034E9A0[];
 extern void* memcpy(void* dest, const void* src, u32 n);
 
 // fn_2_2C1A8, size:0x1D8
@@ -5149,18 +5139,18 @@ void fn_2_2C1A8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        s32 v = lbl_800E869C[*(s16*)(lbl_2_bss_1A824C[0] + 0x197706)];
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) =
-            (u32)lbl_8034E9A0[v / 9 * 0x5A0 + v % 9 * 0xA0 + 0x31] << 16;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object;
+        s32 v = lbl_800E869C[lbl_2_bss_1A824C->_197706];
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C =
+            (u32)lbl_8034E9A0.teams[v / 9][v % 9].stats.CharacterClass << 16;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -5170,8 +5160,8 @@ void fn_2_2C1A8(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         return;
     case 37:
@@ -5191,21 +5181,21 @@ void fn_2_2C698(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        if ((s32)lbl_2_bss_1A8248[item->index + 0x43C2] == 1) {
-            u8* object;
+        if ((s32)lbl_2_bss_1A8248->_43C2[item->index] == 1) {
+            LayoutObj* object;
             fn_800363D8(menu, item->offset, 1, 0x6C, item->index);
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         return;
@@ -5216,8 +5206,8 @@ void fn_2_2C698(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         return;
     case 37:
@@ -5237,21 +5227,21 @@ void fn_2_2C860(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         item->state = 38;
         return;
     }
     case 2: {
-        if ((s32)lbl_2_bss_1A8248[item->index + 0x43C2] == 1) {
-            u8* object;
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = item->index << 16;
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
+        if ((s32)lbl_2_bss_1A8248->_43C2[item->index] == 1) {
+            LayoutObj* object;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = item->index << 16;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         return;
@@ -5262,8 +5252,8 @@ void fn_2_2C860(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         return;
     case 37:
@@ -5283,39 +5273,39 @@ void fn_2_2E5C8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 3;
         return;
     }
     case 3:
-        if (*(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) >> 16 >= 200) {
-            if (lbl_2_bss_1A8248[0x4446] != 0) {
-                lbl_2_bss_1A8234[0][0x16267A] = 1;
+        if (lbl_80371C30[menu->baseIdx + item->offset].obj->_5C >> 16 >= 200) {
+            if (lbl_2_bss_1A8248->_4446 != 0) {
+                lbl_2_bss_1A8234->layerFlags[1][48] = 1;
             }
             item->state = 4;
         }
         /* fallthrough */
     case 4: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if (*(u32*)(object + 0x5C) >> 16 >= 260) {
-            object[0x68] = 0;
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if (object->_5C >> 16 >= 260) {
+            object->_68 = 0;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
             item->state = 37;
         }
         return;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         /* fallthrough */
     }
     case 37:
@@ -5332,15 +5322,15 @@ void fn_2_2F710(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         break;
     }
@@ -5348,21 +5338,21 @@ void fn_2_2F710(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         break;
     case 5: {
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         break;
     }
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         break;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -5378,37 +5368,37 @@ void fn_2_30EF8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2:
     case 17: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         break;
     }
     case 5: {
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         break;
     }
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         break;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -5424,28 +5414,28 @@ void fn_2_306D8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object;
-        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        LayoutObj* object;
+        MenuData* ctx = lbl_2_bss_1A824C;
         s32 sum = item->index;
-        sum += *(s16*)(ctx + 0x772A);
-        fn_800363D8(menu, item->offset, 1, 0x65, (s8)ctx[sum + 0x789F] == 2 ? 0x14 : sum);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        sum += ctx->_19772A;
+        fn_800363D8(menu, item->offset, 1, 0x65, (s8)ctx->_19789F[sum] == 2 ? 0x14 : sum);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
     case 8:
     case 17: {
-        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        MenuData* ctx = lbl_2_bss_1A824C;
         s32 sum = item->index;
-        sum += *(s16*)(ctx + 0x772A);
-        fn_800363D8(menu, item->offset, 1, 0x65, (s8)ctx[sum + 0x789F] == 2 ? 0x14 : sum);
+        sum += ctx->_19772A;
+        fn_800363D8(menu, item->offset, 1, 0x65, (s8)ctx->_19789F[sum] == 2 ? 0x14 : sum);
         item->state = 37;
         return;
     }
@@ -5457,8 +5447,8 @@ void fn_2_306D8(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         /* fallthrough */
     }
@@ -5476,45 +5466,45 @@ void fn_2_270B8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 3;
         break;
     }
     case 3: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0xDC) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0xDC) {
+            object->_68 = 0;
             item->state = 37;
         }
         break;
     }
     case 5: {
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x14A0000;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0x14A0000;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 6;
         break;
     }
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0x140) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0x140) {
+            object->_68 = 0;
             item->state = 7;
         }
         break;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -5532,30 +5522,30 @@ void fn_2_2B43C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2:
     case 8: {
-        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
+        MenuData* ctx = lbl_2_bss_1A824C;
         s32 index = item->index;
-        if (lbl_80109AE8[*(s16*)(ctx + 0x7706)][index].type != -1) {
-            if (*(s16*)(ctx + 0x7710) == index) {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x5C) = 0;
-                object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        if (lbl_80109AE8[ctx->_197706][index].type != -1) {
+            if (ctx->_197710 == index) {
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->_5C = 0;
+                object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             } else {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         break;
@@ -5568,8 +5558,8 @@ void fn_2_2B43C(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -5586,36 +5576,36 @@ void fn_2_2FE50(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0;
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) == item->index) {
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0;
+        if (lbl_2_bss_1A824C->_197728 == item->index) {
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         } else {
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         break;
     }
     case 17: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0;
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) == item->index) {
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0;
+        if (lbl_2_bss_1A824C->_197728 == item->index) {
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         } else {
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         item->state = 37;
         break;
@@ -5628,8 +5618,8 @@ void fn_2_2FE50(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -5646,16 +5636,16 @@ void fn_2_26864(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
         item->timer = 250;
         item->state = 3;
         break;
@@ -5664,41 +5654,41 @@ void fn_2_26864(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 37;
         }
         break;
     }
     case 37: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0x78) {
-            *(u32*)(object + 0x5C) = 0x320000;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0x78) {
+            object->_5C = 0x320000;
         }
         break;
     }
     case 17:
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x780000;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0x780000;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 18;
         break;
     case 18: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0x82) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0x82) {
+            object->_68 = 0;
             item->state = 19;
         }
         break;
     }
     case 19: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     }
@@ -5712,58 +5702,58 @@ void fn_2_300BC(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0;
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) == item->index) {
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0;
+        if (lbl_2_bss_1A824C->_197728 == item->index) {
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         } else {
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         break;
     }
     case 17: {
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) == item->index) {
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        if (lbl_2_bss_1A824C->_197728 == item->index) {
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            if ((*(u32*)(object + 0x5C) >> 16) >= 10) {
-                *(u32*)(object + 0x5C) = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            if ((object->_5C >> 16) >= 10) {
+                object->_5C = 0;
             }
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         }
         item->state = 18;
         break;
     }
     case 18: {
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197728) != item->index) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-                *(u32*)(object + 0x5C) = 0;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        if (lbl_2_bss_1A824C->_197728 != item->index) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            if ((object->_5C >> 16) == 0) {
+                object->_5C = 0;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             }
         }
         break;
     }
     case 5:
         item->timer = 14;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         item->state = 6;
         break;
     case 6: {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -5780,61 +5770,61 @@ void fn_2_284B0(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         item->state = 37;
         break;
     }
     case 17: {
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) == item->unk10) {
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        if (lbl_2_bss_1A824C->_197706 == item->unk10) {
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 37;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            if ((*(u32*)(object + 0x5C) >> 16) >= 10) {
-                *(u32*)(object + 0x5C) = 0xA0000;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            if ((object->_5C >> 16) >= 10) {
+                object->_5C = 0xA0000;
             }
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
             item->state = 18;
         }
         break;
     }
     case 18: {
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) != item->unk10) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-                *(u32*)(object + 0x5C) = 0;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        if (lbl_2_bss_1A824C->_197706 != item->unk10) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            if ((object->_5C >> 16) == 0) {
+                object->_5C = 0;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
                 item->state = 37;
             }
         }
         break;
     }
     case 5:
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0xA0000;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0xA0000;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         break;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         break;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -5850,63 +5840,63 @@ void fn_2_26C70(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 3;
         break;
     }
     case 3: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0xDC) {
-            *(u32*)(lbl_2_bss_1A824C[0] + 0x1976A8) = fn_80062890(13);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0xDC) {
+            lbl_2_bss_1A824C->_1976A8 = fn_80062890(13);
         }
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0x12C) {
-            *(u32*)(object + 0x5C) = 0x12C0000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0x12C) {
+            object->_5C = 0x12C0000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 37;
         }
         break;
     }
     case 17:
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x12C0000;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0x12C0000;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 18;
         break;
     case 18: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0x15E) {
-            *(u32*)(object + 0x5C) = 0x15E0000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0x15E) {
+            object->_5C = 0x15E0000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 37;
         }
         break;
     }
     case 5:
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x15E0000;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0x15E0000;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 6;
         break;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0x140) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0x140) {
+            object->_68 = 0;
             item->state = 7;
         }
         break;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -5922,58 +5912,58 @@ void fn_2_28948(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* ctx;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
-        ctx = lbl_2_bss_1A824C[0] + 0x190000;
-        if (ctx[0x78F6] == 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
-        } else if (*(s16*)(ctx + 0x7706) == item->unk10) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        MenuData* ctx;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
+        ctx = lbl_2_bss_1A824C;
+        if (ctx->_1978F6 == 0) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
+        } else if (ctx->_197706 == item->unk10) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         item->state = 37;
         break;
     }
     case 8: {
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) == item->unk10) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        if (lbl_2_bss_1A824C->_197706 == item->unk10) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         item->state = 37;
         break;
     }
     case 37: {
-        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
-        if (ctx[0x78F6] == 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
-        } else if (*(s16*)(ctx + 0x7706) == item->unk10) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        MenuData* ctx = lbl_2_bss_1A824C;
+        if (ctx->_1978F6 == 0) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
+        } else if (ctx->_197706 == item->unk10) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         break;
     }
@@ -5985,8 +5975,8 @@ void fn_2_28948(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x54) &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->flags &= ~2U;
         }
         break;
     }
@@ -6001,48 +5991,48 @@ void fn_2_2E7D0(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2:
-        if ((s8)lbl_2_bss_1A8248[0x444B] == -1) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        if ((s8)lbl_2_bss_1A8248->_444B == -1) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 3;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
             item->state = 37;
         }
         break;
     case 3: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0xE) {
-            *(u32*)(object + 0x5C) = 0xE0000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0xE) {
+            object->_5C = 0xE0000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 37;
         }
         break;
     }
     case 8:
-        if ((s8)lbl_2_bss_1A8248[0x444C] == -1) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0xF0000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        if ((s8)lbl_2_bss_1A8248->_444C == -1) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0xF0000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 9;
         } else {
             item->state = 37;
         }
         break;
     case 9: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0x19) {
-            *(u32*)(object + 0x5C) = 0x190000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0x19) {
+            object->_5C = 0x190000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 37;
         }
         break;
@@ -6055,38 +6045,38 @@ void fn_2_2E7D0(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 22;
         }
         break;
     }
     case 22: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0xE) {
-            *(u32*)(object + 0x5C) = 0xE0000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0xE) {
+            object->_5C = 0xE0000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 37;
         }
         break;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         break;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         break;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -6102,88 +6092,88 @@ void fn_2_2EBE4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        s32 value = (s8)lbl_2_bss_1A8248[0x444B];
+        s32 value = (s8)lbl_2_bss_1A8248->_444B;
         if (value == -1) {
             item->state = 37;
         } else {
-            u8* object;
+            LayoutObj* object;
             fn_800363D8(menu, item->offset, 4, 0x64, value);
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 3;
         }
         break;
     }
     case 3: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0xA) {
-            *(u32*)(object + 0x5C) = 0xA0000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0xA) {
+            object->_5C = 0xA0000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 37;
         }
         break;
     }
     case 8: {
-        u8* object;
-        fn_800363D8(menu, item->offset, 4, 0x64, *(s8*)(lbl_2_bss_1A8248 + 0x444B));
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0xB0000;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object;
+        fn_800363D8(menu, item->offset, 4, 0x64, lbl_2_bss_1A8248->_444B);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0xB0000;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 9;
         break;
     }
     case 9: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0x15) {
-            *(u32*)(object + 0x5C) = 0xA0000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0x15) {
+            object->_5C = 0xA0000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 37;
         }
         break;
     }
     case 20:
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0x160000;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0x160000;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 21;
         break;
     case 21: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0x2D) {
-            *(u32*)(object + 0x5C) = 0;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0x2D) {
+            object->_5C = 0;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 22;
         }
         break;
     }
     case 22: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 37;
         break;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         break;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         break;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -6201,31 +6191,31 @@ void fn_2_30894(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
         s16 index = item->index;
-        s16 sel = *(s16*)(lbl_2_bss_1A824C[0] + 0x19772A);
-        if ((s32)lbl_2_bss_1A8248[index + sel + 0x43C2] == 1) {
+        s16 sel = lbl_2_bss_1A824C->_19772A;
+        if ((s32)lbl_2_bss_1A8248->_43C2[index + sel] == 1) {
             s32 k = index + sel;
             if (lbl_2_data_373C[k] == 0) {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
-            } else if (*(s8*)(lbl_2_bss_1A8248 + 0x444B) == k) {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
+            } else if (lbl_2_bss_1A8248->_444B == k) {
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             } else {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         break;
@@ -6233,39 +6223,39 @@ void fn_2_30894(MenuTableContext* menu, MenuItemState* item) {
     case 8:
     case 17: {
         s16 index = item->index;
-        s16 sel = *(s16*)(lbl_2_bss_1A824C[0] + 0x19772A);
-        if ((s32)lbl_2_bss_1A8248[index + sel + 0x43C2] == 1) {
+        s16 sel = lbl_2_bss_1A824C->_19772A;
+        if ((s32)lbl_2_bss_1A8248->_43C2[index + sel] == 1) {
             s32 k = index + sel;
             if (lbl_2_data_373C[k] == 0) {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
-            } else if (*(s8*)(lbl_2_bss_1A8248 + 0x444B) == k) {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
+            } else if (lbl_2_bss_1A8248->_444B == k) {
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             } else {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         break;
     }
     case 5:
         item->timer = 14;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         item->state = 6;
         break;
     case 6: {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -6282,25 +6272,25 @@ void fn_2_2D8C4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
         u8 id = lbl_800E869C[item->unk10];
-        s32 flag = lbl_2_bss_1A8248[id + 0x43D6];
+        s32 flag = lbl_2_bss_1A8248->_43D6[id];
         if (fn_8006C79C(id) != 0) {
             if (flag == 1) {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
             } else {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
         }
         item->state = 37;
         break;
@@ -6313,8 +6303,8 @@ void fn_2_2D8C4(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -6332,26 +6322,26 @@ void fn_2_2DAA8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
         u8 id = lbl_800E869C[item->unk10];
-        s32 flag = lbl_2_bss_1A8248[id + 0x43D6];
+        s32 flag = lbl_2_bss_1A8248->_43D6[id];
         if (fn_8006C79C(id) != 0) {
             if (flag == 1) {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             } else {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         break;
@@ -6364,8 +6354,8 @@ void fn_2_2DAA8(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -6383,16 +6373,16 @@ void fn_2_32F08(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0xFF;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 4, 0x2E0, 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 4, 0x2E0, 0);
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object;
-        switch (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972B4)) {
+        LayoutObj* object;
+        switch (lbl_2_bss_1A824C->_1972B4) {
         case 0:
             fn_8000FE08(item->unk14, 4, 0x2E0);
             break;
@@ -6421,9 +6411,9 @@ void fn_2_32F08(MenuTableContext* menu, MenuItemState* item) {
             fn_8000FE08(item->unk14, 4, 0x315);
             break;
         }
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80366B18.entries[item->unk14].hAlign = 1;
         item->state = 3;
         break;
     }
@@ -6434,8 +6424,8 @@ void fn_2_32F08(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         break;
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
@@ -6443,10 +6433,10 @@ void fn_2_32F08(MenuTableContext* menu, MenuItemState* item) {
     case 1:
         break;
     }
-    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+    lbl_80366B18.entries[item->unk14].hAlign = 1;
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 
@@ -6458,32 +6448,32 @@ void fn_2_2D640(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) == item->unk10) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        if (lbl_2_bss_1A824C->_197706 == item->unk10) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         item->state = 37;
         break;
     case 37:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706) == item->unk10) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        if (lbl_2_bss_1A824C->_197706 == item->unk10) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         break;
     case 5:
@@ -6494,8 +6484,8 @@ void fn_2_2D640(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -6510,18 +6500,18 @@ void fn_2_2AA8C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 0, 8, 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 0, 8, 0);
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 0, lbl_800E869C[*(s16*)(lbl_2_bss_1A824C[0] + 0x197706)] + 8);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        LayoutObj* object;
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 0, lbl_800E869C[lbl_2_bss_1A824C->_197706] + 8);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 3;
         break;
     }
@@ -6552,8 +6542,8 @@ void fn_2_2AA8C(MenuTableContext* menu, MenuItemState* item) {
             item->unk12 = 0;
         }
         if (item->unk12 <= 0 || item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
             item->state = 7;
         }
         break;
@@ -6562,10 +6552,10 @@ void fn_2_2AA8C(MenuTableContext* menu, MenuItemState* item) {
     case 1:
         break;
     }
-    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 0;
+    lbl_80366B18.entries[item->unk14].hAlign = 0;
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 
@@ -6582,22 +6572,22 @@ void fn_2_2A77C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 0, lbl_8010B3E8[0], 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 0, lbl_8010B3E8[0], 0);
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object;
-        u8 id = lbl_800E869C[*(s16*)(lbl_2_bss_1A824C[0] + 0x197706)];
+        LayoutObj* object;
+        u8 id = lbl_800E869C[lbl_2_bss_1A824C->_197706];
         s32 row = fn_2_44F14(id);
         s32 col = fn_8006CDC0(id);
         s32 a = lbl_8010B444[row][col];
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 0, a + lbl_8010B3E8[*(s16*)(lbl_2_bss_1A824C[0] + 0x197706)]);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 0, a + lbl_8010B3E8[lbl_2_bss_1A824C->_197706]);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 3;
         break;
     }
@@ -6628,8 +6618,8 @@ void fn_2_2A77C(MenuTableContext* menu, MenuItemState* item) {
             item->unk12 = 0;
         }
         if (item->unk12 <= 0 || item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
             item->state = 7;
         }
         break;
@@ -6638,10 +6628,10 @@ void fn_2_2A77C(MenuTableContext* menu, MenuItemState* item) {
     case 1:
         break;
     }
-    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 0;
+    lbl_80366B18.entries[item->unk14].hAlign = 0;
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 
@@ -6654,39 +6644,39 @@ void fn_2_25524(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2:
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x19774E) = 0;
-        if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197857) == item->index) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        lbl_2_bss_1A824C->_19774E = 0;
+        if (lbl_2_bss_1A824C->_197857 == item->index) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 3;
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
             item->state = 37;
         }
         break;
     case 3:
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x19774E) += 1;
-        if ((*(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) >> 16) >=
+        lbl_2_bss_1A824C->_19774E += 1;
+        if ((lbl_80371C30[menu->baseIdx + item->offset].obj->_5C >> 16) >=
             (u32)lbl_2_data_107BC[item->index]) {
-            lbl_2_bss_1A824C[0][0x197859] = 1;
+            lbl_2_bss_1A824C->_197859 = 1;
             item->state = 37;
         }
         break;
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         item->state = 6;
         break;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 4:
@@ -6704,87 +6694,87 @@ void fn_2_2D0D4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0x50000;
-        fn_800363D8(menu, item->offset, 1, 0x41, *(s16*)(lbl_2_bss_1A824C[0] + 0x197730));
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0x50000;
+        fn_800363D8(menu, item->offset, 1, 0x41, lbl_2_bss_1A824C->_197730);
         item->state = 37;
         break;
     }
     case 30: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0x50000;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0x50000;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 31;
         break;
     }
     case 31: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            fn_800363D8(menu, item->offset, 1, 0x41, *(s16*)(lbl_2_bss_1A824C[0] + 0x197730));
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x5C) = 0xA0000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            fn_800363D8(menu, item->offset, 1, 0x41, lbl_2_bss_1A824C->_197730);
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->_5C = 0xA0000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
             item->state = 32;
         }
         break;
     }
     case 32: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) <= 5) {
-            *(u32*)(object + 0x5C) = 0x50000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) <= 5) {
+            object->_5C = 0x50000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 38;
         }
         break;
     }
     case 33: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0x50000;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0x50000;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 34;
         break;
     }
     case 34: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 10) {
-            fn_800363D8(menu, item->offset, 1, 0x41, *(s16*)(lbl_2_bss_1A824C[0] + 0x197730));
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x5C) = 0;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 10) {
+            fn_800363D8(menu, item->offset, 1, 0x41, lbl_2_bss_1A824C->_197730);
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->_5C = 0;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 35;
         }
         break;
     }
     case 35: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 5) {
-            *(u32*)(object + 0x5C) = 0x50000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 5) {
+            object->_5C = 0x50000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 38;
         }
         break;
     }
     case 8: {
-        u8* object;
-        fn_800363D8(menu, item->offset, 1, 0x41, *(s16*)(lbl_2_bss_1A824C[0] + 0x197730));
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0x50000;
+        LayoutObj* object;
+        fn_800363D8(menu, item->offset, 1, 0x41, lbl_2_bss_1A824C->_197730);
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0x50000;
         item->state = 38;
         break;
     }
     case 5: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0x50000;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0x50000;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -6800,88 +6790,88 @@ void fn_2_331C8(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x5C) = 0;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        if (lbl_2_bss_1A824C->_1976DE == 0) {
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->_5C = 0;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         } else {
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x5C) = 0xF0000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->_5C = 0xF0000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         }
         item->state = 3;
         break;
     }
     case 3:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            if ((*(u32*)(object + 0x5C) >> 16) >= 5) {
-                *(u32*)(object + 0x5C) = 0x50000;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        if (lbl_2_bss_1A824C->_1976DE == 0) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            if ((object->_5C >> 16) >= 5) {
+                object->_5C = 0x50000;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
                 item->state = 37;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            if ((*(u32*)(object + 0x5C) >> 16) <= 10) {
-                *(u32*)(object + 0x5C) = 0xA0000;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            if ((object->_5C >> 16) <= 10) {
+                object->_5C = 0xA0000;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
                 item->state = 37;
             }
         }
         break;
     case 37:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            if ((*(u32*)(object + 0x5C) >> 16) <= 5) {
-                *(u32*)(object + 0x5C) = 0x50000;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        if (lbl_2_bss_1A824C->_1976DE == 0) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            if ((object->_5C >> 16) <= 5) {
+                object->_5C = 0x50000;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             } else {
-                object[0x68] = 4;
+                object->_68 = 4;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            if ((*(u32*)(object + 0x5C) >> 16) >= 10) {
-                *(u32*)(object + 0x5C) = 0xA0000;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            if ((object->_5C >> 16) >= 10) {
+                object->_5C = 0xA0000;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             } else {
-                object[0x68] = 1;
+                object->_68 = 1;
             }
         }
         break;
     case 5:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        if (lbl_2_bss_1A824C->_1976DE == 0) {
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         } else {
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         }
         item->state = 6;
         break;
     case 6:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-                object[0x68] = 0;
+        if (lbl_2_bss_1A824C->_1976DE == 0) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            if ((object->_5C >> 16) == 0) {
+                object->_68 = 0;
                 item->state = 7;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            if ((*(u32*)(object + 0x5C) >> 16) >= 15) {
-                object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            if ((object->_5C >> 16) >= 15) {
+                object->_68 = 0;
                 item->state = 7;
             }
         }
         break;
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     }
@@ -6896,39 +6886,39 @@ void fn_2_2EFCC(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->index) {
     case 0:
-        digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) / 100;
+        digit = lbl_2_bss_1A824C->_197736 / 100;
         break;
     case 1:
-        digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) / 10 % 10;
+        digit = lbl_2_bss_1A824C->_197736 / 10 % 10;
         break;
     case 2:
-        digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) % 10;
+        digit = lbl_2_bss_1A824C->_197736 % 10;
         break;
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x5C) = 0;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x197734) = *(s16*)(lbl_2_bss_1A8248 + 0x43BC);
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) = *(s16*)(lbl_2_bss_1A824C[0] + 0x19773C) = *(s16*)(lbl_2_bss_1A8248 + 0x43BC);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->_5C = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
+        lbl_2_bss_1A824C->_197734 = lbl_2_bss_1A8248->_43BC;
+        lbl_2_bss_1A824C->_197736 = lbl_2_bss_1A824C->_19773C = lbl_2_bss_1A8248->_43BC;
         switch (item->index) {
         case 0:
-            digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) / 100;
+            digit = lbl_2_bss_1A824C->_197736 / 100;
             break;
         case 1:
-            digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) / 10 % 10;
+            digit = lbl_2_bss_1A824C->_197736 / 10 % 10;
             break;
         case 2:
-            digit = *(s16*)(lbl_2_bss_1A824C[0] + 0x197736) % 10;
+            digit = lbl_2_bss_1A824C->_197736 % 10;
             break;
         }
         fn_800363D8(menu, item->offset, 1, 0xD, digit);
@@ -6936,15 +6926,15 @@ void fn_2_2EFCC(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
     case 3: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0x15) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0x15) {
+            object->_68 = 0;
             item->state = 37;
         }
         break;
     }
     case 17:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197736) != *(s16*)(lbl_2_bss_1A824C[0] + 0x19773C)) {
+        if (lbl_2_bss_1A824C->_197736 != lbl_2_bss_1A824C->_19773C) {
             fn_800363D8(menu, item->offset, 1, 0xD, digit);
             item->state = 18;
         } else {
@@ -6955,7 +6945,7 @@ void fn_2_2EFCC(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         break;
     case 20:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x197736) != *(s16*)(lbl_2_bss_1A824C[0] + 0x19773C)) {
+        if (lbl_2_bss_1A824C->_197736 != lbl_2_bss_1A824C->_19773C) {
             fn_800363D8(menu, item->offset, 1, 0xD, digit);
             item->state = 21;
         } else {
@@ -6969,33 +6959,33 @@ void fn_2_2EFCC(MenuTableContext* menu, MenuItemState* item) {
     case 33:
         switch (item->index) {
         case 0:
-            digit = *(s16*)(lbl_2_bss_1A8248 + 0x43BC) / 100;
+            digit = lbl_2_bss_1A8248->_43BC / 100;
             break;
         case 1:
-            digit = *(s16*)(lbl_2_bss_1A8248 + 0x43BC) / 10 % 10;
+            digit = lbl_2_bss_1A8248->_43BC / 10 % 10;
             break;
         case 2:
-            digit = *(s16*)(lbl_2_bss_1A8248 + 0x43BC) % 10;
+            digit = lbl_2_bss_1A8248->_43BC % 10;
             break;
         }
         fn_800363D8(menu, item->offset, 1, 0xD, digit);
         item->state = 37;
         break;
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         break;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         break;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -7011,87 +7001,87 @@ void fn_2_29884(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        if (lbl_2_bss_1A824C[0][0x1978F6] == 0) {
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        if (lbl_2_bss_1A824C->_1978F6 == 0) {
             if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
-                s32 flag = (lbl_2_bss_1A8248 + lbl_800E869C[item->unk10])[0x444D];
+                s32 flag = lbl_2_bss_1A8248->_444D[lbl_800E869C[item->unk10]];
                 if (flag == 1) {
-                    *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2E;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2E;
                     fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
-                    object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x5C) = 0;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                    object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->_5C = 0;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
                 } else {
-                    *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2D;
                     fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
-                    object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x5C) = 0;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                    object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->_5C = 0;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
                 }
             } else {
-                *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2D;
                 fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
-                object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x5C) = 0x10000;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->_5C = 0x10000;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             }
         } else {
             if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
-                s32 flag = (lbl_2_bss_1A8248 + lbl_800E869C[item->unk10])[0x44B9];
+                s32 flag = lbl_2_bss_1A8248->_44B9[lbl_800E869C[item->unk10]];
                 if (flag == 1) {
-                    *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2E;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2E;
                     fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
-                    object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x5C) = 0;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                    object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->_5C = 0;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
                 } else {
-                    *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2D;
                     fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
-                    object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x5C) = 0;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                    object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->_5C = 0;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
                 }
             } else {
-                *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2D;
                 fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
-                object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x5C) = 0x10000;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->_5C = 0x10000;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             }
         }
         item->state = 37;
         break;
     }
     case 8: {
-        u8* object;
+        LayoutObj* object;
         if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
-            s32 flag = (lbl_2_bss_1A8248 + lbl_800E869C[item->unk10])[0x44B9];
+            s32 flag = lbl_2_bss_1A8248->_44B9[lbl_800E869C[item->unk10]];
             if (flag == 1) {
-                *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2E;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2E;
                 fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
-                object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x5C) = 0;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->_5C = 0;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             } else {
-                *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2D;
                 fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
-                object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x5C) = 0;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->_5C = 0;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             }
         } else {
-            *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2D;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2D;
             fn_800363D8(menu, item->offset, 1, 0x43, item->unk10);
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x5C) = 0x10000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->_5C = 0x10000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         item->state = 37;
         break;
@@ -7102,8 +7092,8 @@ void fn_2_29884(MenuTableContext* menu, MenuItemState* item) {
         break;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     case 37:
@@ -7118,23 +7108,23 @@ int rand(void);
 s32 fn_2_200E4(void) {
     s32 level;
 
-    if ((lbl_2_bss_1A8248 + *(s16*)(lbl_2_bss_1A8248 + 0x16C0) * 10)[0x40F6] == 1) {
+    if (lbl_2_bss_1A8248->slots[lbl_2_bss_1A8248->entries[0].targetLocation]._8 == 1) {
         return 0;
     }
-    if ((lbl_2_bss_1A8248 + *(s16*)(lbl_2_bss_1A8248 + 0x16C0) * 10)[0x40F0] == 5) {
+    if (lbl_2_bss_1A8248->slots[lbl_2_bss_1A8248->entries[0].targetLocation]._2 == 5) {
         return 0;
     }
-    level = lbl_2_bss_1A8248[0x442B];
+    level = lbl_2_bss_1A8248->_442B;
     if (level > 3) {
         level = 3;
     }
-    if (lbl_2_data_2E44[lbl_2_bss_1A8248[0x4415]][level] >= rand() % 100 &&
-        lbl_2_bss_1A8248[0x441C] != 5) {
-        if (lbl_2_bss_1A8248[0x4422] == 0) {
+    if (lbl_2_data_2E44[lbl_2_bss_1A8248->_4415][level] >= rand() % 100 &&
+        lbl_2_bss_1A8248->_441C != 5) {
+        if (lbl_2_bss_1A8248->_4422 == 0) {
             return 0;
         }
-        if (lbl_2_bss_1A8248[0x442B] < 3) {
-            lbl_2_bss_1A8248[0x442B]++;
+        if (lbl_2_bss_1A8248->_442B < 3) {
+            lbl_2_bss_1A8248->_442B++;
         }
         return 1;
     }
@@ -7149,24 +7139,24 @@ void fn_2_26AF4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
         item->timer = 0xDC;
         item->state = 3;
         return;
     }
     case 3:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 37;
         }
     case 1:
@@ -7190,27 +7180,27 @@ void fn_2_2F544(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
         s16* out = list;
-        u8* entry = lbl_2_bss_1A8248;
-        u8* object;
+        MenuOrderSlot* entry = lbl_2_bss_1A8248->order;
+        LayoutObj* object;
         s16 value;
         s16 i;
         for (i = 0; i < 9; i++) {
-            value = *(s16*)(entry + 0x40B8);
-            if (value != lbl_803CB8F0[lbl_2_bss_1A8248[0x441C]]) {
+            value = entry->charId;
+            if (value != lbl_803CB8F0[lbl_2_bss_1A8248->_441C]) {
                 *out++ = value;
             }
-            entry += 6;
+            entry++;
         }
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = list[item->index] << 16;
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = list[item->index] << 16;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         return;
     }
@@ -7220,8 +7210,8 @@ void fn_2_2F544(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
     case 37:
     case 1:
@@ -7232,7 +7222,6 @@ void fn_2_2F544(MenuTableContext* menu, MenuItemState* item) {
 
 // Byte pair `i` of roster slot `r` in the menu work buffer (0x34-byte slots, pairs from +9).
 // Written as an array-of-arrays cast: the matching code adds slot*0x34+9 before i*2.
-#define ROSTER_PAIR(r, i) (((s8(*)[2])(((u8(*)[0x34])lbl_2_bss_1A8248)[r] + 9))[i])
 
 // fn_2_2B654, size:0x230
 void fn_2_2B654(MenuTableContext* menu, MenuItemState* item) {
@@ -7242,27 +7231,27 @@ void fn_2_2B654(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
         s32 index = item->index;
-        s32 row = *(s16*)(lbl_2_bss_1A824C[0] + 0x197706);
-        u8* object;
+        s32 row = lbl_2_bss_1A824C->_197706;
+        LayoutObj* object;
         if (lbl_80109AE8[row][index].type != -1) {
-            if (ROSTER_PAIR(lbl_800E869C[row], index)[0] < 0) {
-                object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            if ((s8)((u8*)&lbl_2_bss_1A8248->chars[lbl_800E869C[row]].missions[0].state)[index * 2] < 0) {
+                object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             } else {
-                object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
+                object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
             }
         } else {
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         item->state = 37;
         return;
@@ -7273,8 +7262,8 @@ void fn_2_2B654(MenuTableContext* menu, MenuItemState* item) {
         return;
     case 6:
         if (item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
     case 37:
     case 1:
@@ -7290,17 +7279,17 @@ void fn_2_2BB34(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
         s32 index = item->index;
-        s32 row = *(s16*)(lbl_2_bss_1A824C[0] + 0x197706);
-        u8* object;
+        s32 row = lbl_2_bss_1A824C->_197706;
+        LayoutObj* object;
         if (lbl_80109AE8[row][index].type != -1) {
-            if (ROSTER_PAIR(lbl_800E869C[row], index)[0] < 0) {
+            if ((s8)((u8*)&lbl_2_bss_1A8248->chars[lbl_800E869C[row]].missions[0].state)[index * 2] < 0) {
                 fn_800363D8(menu, item->offset, 1, 0x5A, 1);
             } else {
                 fn_800363D8(menu, item->offset, 1, 0x5A, 0);
@@ -7308,27 +7297,27 @@ void fn_2_2BB34(MenuTableContext* menu, MenuItemState* item) {
         } else {
             fn_800363D8(menu, item->offset, 1, 0x5A, 0);
         }
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 37;
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
     }
     case 37:
     case 1:
@@ -7344,40 +7333,40 @@ void fn_2_2BF20(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2:
     case 8: {
-        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
-        s32 row = *(s16*)(ctx + 0x7706);
+        MenuData* ctx = lbl_2_bss_1A824C;
+        s32 row = ctx->_197706;
         if (lbl_80109AE8[row][item->index].type != -1) {
             s32 first;
             s32 second;
             s16 firstValue;
-            u8* record;
-            first = *(s16*)(ctx + 0x7710);
-            record = lbl_2_bss_1A8248 + lbl_800E869C[row] * 0x34;
-            firstValue = record[9 + first * 2];
-            if ((s8)firstValue < 0 && (s8)record[9 + (second = *(s16*)(ctx + 0x7712)) * 2] < 0 &&
+            MenuRosterEntry* record;
+            first = ctx->_197710;
+            record = &lbl_2_bss_1A8248->chars[lbl_800E869C[row]];
+            firstValue = ((u8*)&record->missions[0].state)[first * 2];
+            if ((s8)firstValue < 0 && (s8)((u8*)&record->missions[0].state)[(second = ctx->_197712) * 2] < 0 &&
                 first != second) {
             } else if ((s8)firstValue < 0) {
-                u8* object;
-                *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
-                object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                LayoutObj* object;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
+                object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             } else {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         item->state = 37;
         break;
@@ -7390,8 +7379,8 @@ void fn_2_2BF20(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -7408,37 +7397,37 @@ void fn_2_2B884(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2:
     case 8: {
-        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
-        s32 row = *(s16*)(ctx + 0x7706);
+        MenuData* ctx = lbl_2_bss_1A824C;
+        s32 row = ctx->_197706;
         s32 index = item->index;
         if (lbl_80109AE8[row][index].type != -1) {
-            if (ROSTER_PAIR(lbl_800E869C[row], index)[0] < 0) {
-                if (*(s16*)(ctx + 0x7710) == index) {
-                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x54) |= 2;
-                    *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            if ((s8)((u8*)&lbl_2_bss_1A8248->chars[lbl_800E869C[row]].missions[0].state)[index * 2] < 0) {
+                if (ctx->_197710 == index) {
+                    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->flags |= 2;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
                 } else {
-                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x54) &= ~2U;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->flags &= ~2U;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
                 }
             } else {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         item->state = 37;
         break;
@@ -7451,8 +7440,8 @@ void fn_2_2B884(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -7489,19 +7478,19 @@ void fn_2_25A48(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object;
-        *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) =
-            lbl_2_data_1050C[lbl_2_bss_1A8248[0x4415]][lbl_2_bss_1A8248[0x441C]];
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_64 =
+            lbl_2_data_1050C[lbl_2_bss_1A8248->_4415][lbl_2_bss_1A8248->_441C];
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
         item->timer = 30;
         item->state = 3;
         break;
@@ -7510,38 +7499,38 @@ void fn_2_25A48(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 4;
         }
         break;
     }
     case 4: {
-        if ((*(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) >> 16) >= lbl_2_data_1053C[lbl_2_bss_1A8248[0x4415]][lbl_2_bss_1A8248[0x441C]]) {
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = lbl_2_data_1053C[lbl_2_bss_1A8248[0x4415]][lbl_2_bss_1A8248[0x441C]] << 16;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        if ((lbl_80371C30[menu->baseIdx + item->offset].obj->_5C >> 16) >= lbl_2_data_1053C[lbl_2_bss_1A8248->_4415][lbl_2_bss_1A8248->_441C]) {
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = lbl_2_data_1053C[lbl_2_bss_1A8248->_4415][lbl_2_bss_1A8248->_441C] << 16;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             item->state = 37;
         }
         break;
     }
     case 5:
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) =
-            lbl_2_data_1056C[lbl_2_bss_1A8248[0x4415]][lbl_2_bss_1A8248[0x441C]] << 16;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C =
+            lbl_2_data_1056C[lbl_2_bss_1A8248->_4415][lbl_2_bss_1A8248->_441C] << 16;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         item->state = 6;
         break;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0xA1) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0xA1) {
+            object->_68 = 0;
             item->state = 7;
         }
         break;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -7560,25 +7549,25 @@ void fn_2_3039C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        s16 value = lbl_2_data_3764[item->index + *(s16*)(lbl_2_bss_1A824C[0] + 0x19772A)][lbl_2_bss_1A8248[0x4415]];
-        u8* object;
+        s16 value = lbl_2_data_3764[item->index + lbl_2_bss_1A824C->_19772A][lbl_2_bss_1A8248->_4415];
+        LayoutObj* object;
         fn_800363D8(menu, item->offset, 1, 0x66, value / 100 % 10);
         fn_800363D8(menu, item->offset, 2, 0x66, value / 10 % 10);
         fn_800363D8(menu, item->offset, 3, 0x66, value % 10);
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 37;
         break;
     }
     case 8:
     case 17: {
-        s16 value = lbl_2_data_3764[item->index + *(s16*)(lbl_2_bss_1A824C[0] + 0x19772A)][lbl_2_bss_1A8248[0x4415]];
+        s16 value = lbl_2_data_3764[item->index + lbl_2_bss_1A824C->_19772A][lbl_2_bss_1A8248->_4415];
         fn_800363D8(menu, item->offset, 1, 0x66, value / 100 % 10);
         fn_800363D8(menu, item->offset, 2, 0x66, value / 10 % 10);
         fn_800363D8(menu, item->offset, 3, 0x66, value % 10);
@@ -7593,8 +7582,8 @@ void fn_2_3039C(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -7603,11 +7592,11 @@ void fn_2_3039C(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 
-extern u8* lbl_2_bss_1A8244[];
+extern MenuProgress* lbl_2_bss_1A8244;
 
 static inline s32 fn_2_262D0_canAdvance(void) {
     s32 result = 0;
-    if (lbl_2_bss_1A8244[0][0xE4 + lbl_2_bss_1A8248[0x4415]] == 0 && lbl_2_bss_1A8248[0x4415] < 3) {
+    if (lbl_2_bss_1A8244->_E4[lbl_2_bss_1A8248->_4415] == 0 && lbl_2_bss_1A8248->_4415 < 3) {
         result = 1;
     }
     return result;
@@ -7621,26 +7610,26 @@ void fn_2_262D0(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
         item->state = 3;
         break;
     }
     case 17:
         if (fn_2_262D0_canAdvance()) {
-            *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 7;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 7;
             item->timer = 0x8C;
             item->state = 18;
         } else {
-            *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 8;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 8;
             item->timer = 0x8C;
             item->state = 18;
         }
@@ -7649,43 +7638,43 @@ void fn_2_262D0(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) |= 2;
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags |= 2;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 19;
         }
         break;
     }
     case 19: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0xA0) {
-            *(u32*)(object + 0x5C) = 0x410000;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0xA0) {
+            object->_5C = 0x410000;
         }
         break;
     }
     case 5:
         if (fn_2_262D0_canAdvance()) {
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0xA00000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0xA00000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 6;
         } else {
-            *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0xA00000;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0xA00000;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             item->state = 6;
         }
         break;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) >= 0xB4) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) >= 0xB4) {
+            object->_68 = 0;
             item->state = 7;
         }
         break;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         break;
     }
     case 37:
@@ -7714,17 +7703,17 @@ void* jumptable_2_data_10F7C[38] = {
 #if NONMATCHING
 static inline void fn_2_28EA0_showIfChanged(MenuTableContext* menu, MenuItemState* item) {
     u8 id = lbl_800E869C[item->unk10];
-    s32 flag = (s8)lbl_2_bss_1A8248[0x44B9 + id];
+    s32 flag = (s8)lbl_2_bss_1A8248->_44B9[id];
     s32 current = fn_8006CDC0(id);
     s32 saved = fn_2_44E2C(id);
     if (flag == 1 && current != saved) {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
     } else {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
     }
 }
 
@@ -7737,28 +7726,28 @@ void fn_2_28EA0(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2:
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
-        if (lbl_2_bss_1A824C[0][0x1978F6] == 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
+        if (lbl_2_bss_1A824C->_1978F6 == 0) {
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         } else if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
             fn_2_28EA0_showIfChanged(menu, item);
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         item->state = 37;
         break;
     case 8:
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
         fn_2_28EA0_showIfChanged(menu, item);
         item->state = 37;
         break;
@@ -7770,10 +7759,10 @@ void fn_2_28EA0(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -7818,26 +7807,26 @@ void fn_2_2A338(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->unk12 = 0;
-        item->unk14 = fn_8000F988(menu, item->offset, item->unk10, 0, lbl_8010A768[0][0].textId, 0);
+        item->unk14 = fn_8000F988((LayoutGroup*)menu, item->offset, item->unk10, 0, lbl_8010A768[0][0].textId, 0);
         item->state = 38;
         break;
     }
     case 2:
     case 8: {
-        u8* ctx = lbl_2_bss_1A824C[0] + 0x190000;
-        s32 row = *(s16*)(ctx + 0x7706);
-        s32 sel = *(s16*)(ctx + 0x7710);
+        MenuData* ctx = lbl_2_bss_1A824C;
+        s32 row = ctx->_197706;
+        s32 sel = ctx->_197710;
         s16 textId = lbl_8010A768[row][sel].textId;
         s16 check = lbl_8010A768[row][sel].unk2;
         s16 flags = lbl_80109AE8[row][sel].flags;
         s16 minLevel = lbl_80109AE8[row][sel].minLevel;
-        u8* record = lbl_2_bss_1A8248 + lbl_800E869C[row] * 0x34;
-        u8* object;
-        if (check != -1 && (s8)record[sel * 2 + 0xA] == 0) {
-            u8 level = lbl_2_bss_1A8248[0x4415];
+        MenuRosterEntry* record = &lbl_2_bss_1A8248->chars[lbl_800E869C[row]];
+        LayoutObj* object;
+        if (check != -1 && (s8)record->missions[sel].shown == 0) {
+            u8 level = lbl_2_bss_1A8248->_4415;
             if (level < minLevel) {
                 fn_8000FE08(item->unk14, 0, 0x1C6);
             } else if ((flags & 2) && level < 1) {
@@ -7849,8 +7838,8 @@ void fn_2_2A338(MenuTableContext* menu, MenuItemState* item) {
             } else {
                 fn_8000FE08(item->unk14, 0, 0x1C5);
             }
-        } else if (check != -1 && (s32)record[sel * 2 + 0xA] == 1 && (s8)record[sel * 2 + 9] == 0) {
-            u8 level = lbl_2_bss_1A8248[0x4415];
+        } else if (check != -1 && (s32)record->missions[sel].shown == 1 && record->missions[sel].state == 0) {
+            u8 level = lbl_2_bss_1A8248->_4415;
             if (level < minLevel) {
                 fn_8000FE08(item->unk14, 0, 0x1C6);
             } else if ((flags & 2) && level < 1) {
@@ -7865,8 +7854,8 @@ void fn_2_2A338(MenuTableContext* menu, MenuItemState* item) {
         } else {
             fn_8000FE08(item->unk14, 0, textId);
         }
-        object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
+        object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
         item->state = 3;
         break;
     }
@@ -7897,22 +7886,21 @@ void fn_2_2A338(MenuTableContext* menu, MenuItemState* item) {
             item->unk12 = 0;
         }
         if (item->unk12 <= 0 || item->timer-- <= 0) {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
             item->state = 7;
         }
         break;
     }
     }
-    lbl_80366B18[item->unk14 * 0x38 + 0x2F] = 1;
+    lbl_80366B18.entries[item->unk14].hAlign = 1;
     {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x58) = (u32)item->unk12 | (*(u32*)(object + 0x58) & ~0xFFU);
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->color = (u32)item->unk12 | (object->color & ~0xFFU);
     }
 }
 #endif
 
-extern u8 lbl_8034E9A0[];
 extern void* memcpy(void* dest, const void* src, u32 n);
 extern u8 lbl_2_data_3F98[][0x1FE];
 extern u8 lbl_2_data_3F60[][9];
@@ -7927,7 +7915,7 @@ extern void fn_2_432EC(void);
 
 static inline u8 fn_2_20328_mode(void) {
     u8 mode = 0;
-    switch (*(s32*)(lbl_8034E9A0 + 0x46E0)) { // TODO type: CharSelectState.captain[0]
+    switch (lbl_8034E9A0._46E0) {
     case 0:
         mode = 0;
         break;
@@ -7956,85 +7944,85 @@ void fn_2_20328(void) {
     u8 level;
     s32 i;
 
-    lbl_2_bss_1A8248[0x441C] = mode;
-    level = lbl_8034E9A0[0x4711];
-    lbl_2_bss_1A8248[0x4416] = level;
-    lbl_2_bss_1A8248[0x4415] = level;
-    lbl_2_bss_1A8248[0x441D] = lbl_803CB8F0[lbl_2_bss_1A8248[0x441C]];
-    memcpy(lbl_2_bss_1A8248 + 0x40EE, lbl_2_data_3F98[lbl_2_bss_1A8248[0x441C]], 0x1FE);
-    memcpy(lbl_2_bss_1A8248 + 0x440C, lbl_2_data_3F60[lbl_2_bss_1A8248[0x441C]], 9);
+    lbl_2_bss_1A8248->_441C = mode;
+    level = lbl_8034E9A0._4711;
+    lbl_2_bss_1A8248->_4416 = level;
+    lbl_2_bss_1A8248->_4415 = level;
+    lbl_2_bss_1A8248->_441D = lbl_803CB8F0[lbl_2_bss_1A8248->_441C];
+    memcpy(lbl_2_bss_1A8248->slots, lbl_2_data_3F98[lbl_2_bss_1A8248->_441C], 0x1FE);
+    memcpy(lbl_2_bss_1A8248->_440C, lbl_2_data_3F60[lbl_2_bss_1A8248->_441C], 9);
     fn_2_6AE08();
-    *(s16*)(lbl_2_bss_1A8248 + 0x16C2) = lbl_2_data_3EC8[lbl_2_bss_1A8248[0x441C]];
-    *(s16*)(lbl_2_bss_1A8248 + 0x16C0) = lbl_2_data_3EC8[lbl_2_bss_1A8248[0x441C]];
-    *(s16*)(lbl_2_bss_1A8248 + 0x16BE) = lbl_2_data_3EC8[lbl_2_bss_1A8248[0x441C]];
-    *(s16*)(lbl_2_bss_1A8248 + 0x1798) = -1;
-    *(s16*)(lbl_2_bss_1A8248 + 0x1796) = -1;
+    lbl_2_bss_1A8248->entries[0].locationIndex = lbl_2_data_3EC8[lbl_2_bss_1A8248->_441C];
+    lbl_2_bss_1A8248->entries[0].targetLocation = lbl_2_data_3EC8[lbl_2_bss_1A8248->_441C];
+    lbl_2_bss_1A8248->entries[0]._AE = lbl_2_data_3EC8[lbl_2_bss_1A8248->_441C];
+    lbl_2_bss_1A8248->entries[1].targetLocation = -1;
+    lbl_2_bss_1A8248->entries[1]._AE = -1;
     fn_2_90538();
-    lbl_2_bss_1A8248[0x4418] = lbl_2_data_2E40[lbl_2_bss_1A8248[0x4415]];
-    lbl_2_bss_1A8248[0x4419] = lbl_2_data_2E40[lbl_2_bss_1A8248[0x4415]];
-    *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 0;
-    *(s16*)(lbl_2_bss_1A8248 + 0x43BE) = 0;
-    lbl_2_bss_1A8248[0x4422] = 0;
-    lbl_2_bss_1A8248[0x4423] = 0;
-    lbl_2_bss_1A8248[0x4424] = 0;
-    lbl_2_bss_1A8248[0x4426] = 0;
-    lbl_2_bss_1A8248[0x4427] = 0;
-    lbl_2_bss_1A8248[0x4428] = 0;
-    lbl_2_bss_1A8248[0x4449] = 0;
-    if (lbl_2_bss_1A8248[0x441C] == 5) {
-        lbl_2_bss_1A8248[0x4439] = 0;
+    lbl_2_bss_1A8248->_4418 = lbl_2_data_2E40[lbl_2_bss_1A8248->_4415];
+    lbl_2_bss_1A8248->_4419 = lbl_2_data_2E40[lbl_2_bss_1A8248->_4415];
+    lbl_2_bss_1A8248->_43BC = 0;
+    lbl_2_bss_1A8248->_43BE = 0;
+    lbl_2_bss_1A8248->_4422 = 0;
+    lbl_2_bss_1A8248->_4423 = 0;
+    lbl_2_bss_1A8248->_4424 = 0;
+    lbl_2_bss_1A8248->_4426 = 0;
+    lbl_2_bss_1A8248->_4427 = 0;
+    lbl_2_bss_1A8248->_4428 = 0;
+    lbl_2_bss_1A8248->_4449 = 0;
+    if (lbl_2_bss_1A8248->_441C == 5) {
+        lbl_2_bss_1A8248->_4439 = 0;
     } else {
-        lbl_2_bss_1A8248[0x4439] = 1;
+        lbl_2_bss_1A8248->_4439 = 1;
     }
-    lbl_2_bss_1A8248[0x441A] = 0;
-    lbl_2_bss_1A8248[0x444A] = 0;
-    lbl_2_bss_1A8248[0x4446] = 0;
-    lbl_2_bss_1A8248[0x4447] = 0;
-    lbl_2_bss_1A8248[0x44EF] = 0;
-    lbl_2_bss_1A8248[0x44F0] = 0;
-    lbl_2_bss_1A8248[0x44F4] = 0;
-    lbl_2_bss_1A8248[0x442A] = 0;
-    *(s8*)(lbl_2_bss_1A8248 + 0x444C) = -1;
-    *(s8*)(lbl_2_bss_1A8248 + 0x444B) = -1;
+    lbl_2_bss_1A8248->_441A = 0;
+    lbl_2_bss_1A8248->_444A = 0;
+    lbl_2_bss_1A8248->_4446 = 0;
+    lbl_2_bss_1A8248->_4447 = 0;
+    lbl_2_bss_1A8248->_44EF = 0;
+    lbl_2_bss_1A8248->_44F0 = 0;
+    lbl_2_bss_1A8248->_44F4 = 0;
+    lbl_2_bss_1A8248->_442A = 0;
+    lbl_2_bss_1A8248->_444C = -1;
+    lbl_2_bss_1A8248->_444B = -1;
     for (i = 0; i < 20; i++) {
-        lbl_2_bss_1A8248[0x43C2 + i] = lbl_2_bss_1A8248[0x15F1 + i];
+        lbl_2_bss_1A8248->_43C2[i] = lbl_2_bss_1A8248->_15F1[i];
     }
-    lbl_2_bss_1A8248[0x442B] = 0;
-    lbl_2_bss_1A8248[0x442F] = 0;
-    lbl_2_bss_1A8248[0x442C] = 0;
-    lbl_2_bss_1A8248[0x442D] = 0;
-    lbl_2_bss_1A8248[0x442E] = 0;
-    lbl_2_bss_1A8248[0x4438] = 0;
-    lbl_2_bss_1A8248[0x4445] = 1;
-    *(s32*)(lbl_2_bss_1A8248 + 0x42EC) = 0;
-    lbl_2_bss_1A8248[0x4431] = 0;
-    lbl_2_bss_1A8248[0x4432] = 0;
-    lbl_2_bss_1A8248[0x4433] = 0;
-    lbl_2_bss_1A8248[0x4434] = 0;
-    lbl_2_bss_1A8248[0x4435] = 0;
+    lbl_2_bss_1A8248->_442B = 0;
+    lbl_2_bss_1A8248->_442F = 0;
+    lbl_2_bss_1A8248->_442C = 0;
+    lbl_2_bss_1A8248->_442D = 0;
+    lbl_2_bss_1A8248->_442E = 0;
+    lbl_2_bss_1A8248->_4438 = 0;
+    lbl_2_bss_1A8248->_4445 = 1;
+    lbl_2_bss_1A8248->_42EC = 0;
+    lbl_2_bss_1A8248->_4431[0] = 0;
+    lbl_2_bss_1A8248->_4431[1] = 0;
+    lbl_2_bss_1A8248->_4431[2] = 0;
+    lbl_2_bss_1A8248->_4431[3] = 0;
+    lbl_2_bss_1A8248->_4431[4] = 0;
     fn_2_46ADC();
     fn_2_45978();
     for (i = 0; i < 9; i++) {
-        *(s16*)(lbl_2_bss_1A8248 + 0x40B8 + i * 6) = inMemRoster[0][i].stats.CharID;
+        lbl_2_bss_1A8248->order[i].charId = inMemRoster[0][i].stats.CharID;
     }
-    lbl_2_bss_1A8248[0x44F6] = 0;
-    lbl_2_bss_1A8248[0x44F7] = 0;
+    lbl_2_bss_1A8248->_44F6 = 0;
+    lbl_2_bss_1A8248->_44F7 = 0;
     fn_2_42EB0();
     fn_2_432EC();
-    lbl_2_bss_1A8248[0x44F8] = 3;
-    lbl_2_bss_1A8248[0x44F9] = 3;
-    lbl_2_bss_1A8248[0x44FA] = 3;
-    lbl_2_bss_1A8248[0x44FB] = 3;
-    lbl_2_bss_1A8248[0x44FC] = 3;
-    lbl_2_bss_1A8248[0x44FD] = 3;
-    lbl_2_bss_1A8248[0x44FE] = 0;
-    lbl_2_bss_1A8248[0x44FF] = 0;
-    lbl_2_bss_1A8248[0x4500] = 0;
-    lbl_2_bss_1A8248[0x4501] = 0;
-    lbl_2_bss_1A8248[0x4502] = 0;
-    lbl_2_bss_1A8248[0x4503] = 0;
-    lbl_2_bss_1A8248[0x4504] = 0;
-    lbl_2_bss_1A8248[0x4505] = 0;
+    lbl_2_bss_1A8248->_44F8[0] = 3;
+    lbl_2_bss_1A8248->_44F8[1] = 3;
+    lbl_2_bss_1A8248->_44F8[2] = 3;
+    lbl_2_bss_1A8248->_44F8[3] = 3;
+    lbl_2_bss_1A8248->_44F8[4] = 3;
+    lbl_2_bss_1A8248->_44F8[5] = 3;
+    lbl_2_bss_1A8248->_44FE[0] = 0;
+    lbl_2_bss_1A8248->_44FE[1] = 0;
+    lbl_2_bss_1A8248->_44FE[2] = 0;
+    lbl_2_bss_1A8248->_44FE[3] = 0;
+    lbl_2_bss_1A8248->_44FE[4] = 0;
+    lbl_2_bss_1A8248->_44FE[5] = 0;
+    lbl_2_bss_1A8248->_44FE[6] = 0;
+    lbl_2_bss_1A8248->_44FE[7] = 0;
 }
 
 extern void fn_2_467FC(void);
@@ -8046,86 +8034,86 @@ void fn_2_207FC(void) {
     u8 level;
     s32 i;
 
-    lbl_2_bss_1A8248[0x441C] = mode;
-    level = lbl_8034E9A0[0x4711];
-    lbl_2_bss_1A8248[0x4416] = level;
-    lbl_2_bss_1A8248[0x4415] = level;
-    lbl_2_bss_1A8248[0x441D] = lbl_803CB8F0[lbl_2_bss_1A8248[0x441C]];
-    memcpy(lbl_2_bss_1A8248 + 0x40EE, lbl_2_data_3F98[lbl_2_bss_1A8248[0x441C]], 0x1FE);
-    memcpy(lbl_2_bss_1A8248 + 0x440C, lbl_2_data_3F60[lbl_2_bss_1A8248[0x441C]], 9);
+    lbl_2_bss_1A8248->_441C = mode;
+    level = lbl_8034E9A0._4711;
+    lbl_2_bss_1A8248->_4416 = level;
+    lbl_2_bss_1A8248->_4415 = level;
+    lbl_2_bss_1A8248->_441D = lbl_803CB8F0[lbl_2_bss_1A8248->_441C];
+    memcpy(lbl_2_bss_1A8248->slots, lbl_2_data_3F98[lbl_2_bss_1A8248->_441C], 0x1FE);
+    memcpy(lbl_2_bss_1A8248->_440C, lbl_2_data_3F60[lbl_2_bss_1A8248->_441C], 9);
     fn_2_6AE08();
-    *(s16*)(lbl_2_bss_1A8248 + 0x16C2) = lbl_2_data_3EC8[lbl_2_bss_1A8248[0x441C]];
-    *(s16*)(lbl_2_bss_1A8248 + 0x16C0) = lbl_2_data_3EC8[lbl_2_bss_1A8248[0x441C]];
-    *(s16*)(lbl_2_bss_1A8248 + 0x16BE) = lbl_2_data_3EC8[lbl_2_bss_1A8248[0x441C]];
-    *(s16*)(lbl_2_bss_1A8248 + 0x1798) = -1;
-    *(s16*)(lbl_2_bss_1A8248 + 0x1796) = -1;
+    lbl_2_bss_1A8248->entries[0].locationIndex = lbl_2_data_3EC8[lbl_2_bss_1A8248->_441C];
+    lbl_2_bss_1A8248->entries[0].targetLocation = lbl_2_data_3EC8[lbl_2_bss_1A8248->_441C];
+    lbl_2_bss_1A8248->entries[0]._AE = lbl_2_data_3EC8[lbl_2_bss_1A8248->_441C];
+    lbl_2_bss_1A8248->entries[1].targetLocation = -1;
+    lbl_2_bss_1A8248->entries[1]._AE = -1;
     fn_2_90538();
-    lbl_2_bss_1A8248[0x4418] = lbl_2_data_2E40[0];
-    lbl_2_bss_1A8248[0x4419] = lbl_2_data_2E40[0];
-    *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 0;
-    *(s16*)(lbl_2_bss_1A8248 + 0x43BE) = 0;
-    lbl_2_bss_1A8248[0x4422] = 0;
-    lbl_2_bss_1A8248[0x4423] = 0;
-    lbl_2_bss_1A8248[0x4424] = 0;
-    lbl_2_bss_1A8248[0x4425] = 0;
-    lbl_2_bss_1A8248[0x4426] = 0;
-    lbl_2_bss_1A8248[0x4427] = 0;
-    lbl_2_bss_1A8248[0x4428] = 0;
-    lbl_2_bss_1A8248[0x4449] = 0;
-    if (lbl_2_bss_1A8248[0x441C] == 5) {
-        lbl_2_bss_1A8248[0x4439] = 0;
+    lbl_2_bss_1A8248->_4418 = lbl_2_data_2E40[0];
+    lbl_2_bss_1A8248->_4419 = lbl_2_data_2E40[0];
+    lbl_2_bss_1A8248->_43BC = 0;
+    lbl_2_bss_1A8248->_43BE = 0;
+    lbl_2_bss_1A8248->_4422 = 0;
+    lbl_2_bss_1A8248->_4423 = 0;
+    lbl_2_bss_1A8248->_4424 = 0;
+    lbl_2_bss_1A8248->_4425 = 0;
+    lbl_2_bss_1A8248->_4426 = 0;
+    lbl_2_bss_1A8248->_4427 = 0;
+    lbl_2_bss_1A8248->_4428 = 0;
+    lbl_2_bss_1A8248->_4449 = 0;
+    if (lbl_2_bss_1A8248->_441C == 5) {
+        lbl_2_bss_1A8248->_4439 = 0;
     } else {
-        lbl_2_bss_1A8248[0x4439] = 1;
+        lbl_2_bss_1A8248->_4439 = 1;
     }
-    lbl_2_bss_1A8248[0x441A] = 0;
-    lbl_2_bss_1A8248[0x444A] = 0;
-    lbl_2_bss_1A8248[0x4446] = 0;
-    lbl_2_bss_1A8248[0x4447] = 0;
-    lbl_2_bss_1A8248[0x44EF] = 0;
-    lbl_2_bss_1A8248[0x44F0] = 0;
-    lbl_2_bss_1A8248[0x44F4] = 0;
-    lbl_2_bss_1A8248[0x442A] = 0;
-    *(s8*)(lbl_2_bss_1A8248 + 0x444C) = -1;
-    *(s8*)(lbl_2_bss_1A8248 + 0x444B) = -1;
+    lbl_2_bss_1A8248->_441A = 0;
+    lbl_2_bss_1A8248->_444A = 0;
+    lbl_2_bss_1A8248->_4446 = 0;
+    lbl_2_bss_1A8248->_4447 = 0;
+    lbl_2_bss_1A8248->_44EF = 0;
+    lbl_2_bss_1A8248->_44F0 = 0;
+    lbl_2_bss_1A8248->_44F4 = 0;
+    lbl_2_bss_1A8248->_442A = 0;
+    lbl_2_bss_1A8248->_444C = -1;
+    lbl_2_bss_1A8248->_444B = -1;
     for (i = 0; i < 20; i++) {
-        lbl_2_bss_1A8248[0x43C2 + i] = 0;
+        lbl_2_bss_1A8248->_43C2[i] = 0;
     }
-    lbl_2_bss_1A8248[0x442B] = 0;
-    lbl_2_bss_1A8248[0x442F] = 0;
-    lbl_2_bss_1A8248[0x442C] = 0;
-    lbl_2_bss_1A8248[0x442D] = 0;
-    lbl_2_bss_1A8248[0x442E] = 0;
-    lbl_2_bss_1A8248[0x4438] = 0;
-    lbl_2_bss_1A8248[0x4445] = 1;
-    *(s32*)(lbl_2_bss_1A8248 + 0x42EC) = 0;
-    lbl_2_bss_1A8248[0x4431] = 0;
-    lbl_2_bss_1A8248[0x4432] = 0;
-    lbl_2_bss_1A8248[0x4433] = 0;
-    lbl_2_bss_1A8248[0x4434] = 0;
-    lbl_2_bss_1A8248[0x4435] = 0;
+    lbl_2_bss_1A8248->_442B = 0;
+    lbl_2_bss_1A8248->_442F = 0;
+    lbl_2_bss_1A8248->_442C = 0;
+    lbl_2_bss_1A8248->_442D = 0;
+    lbl_2_bss_1A8248->_442E = 0;
+    lbl_2_bss_1A8248->_4438 = 0;
+    lbl_2_bss_1A8248->_4445 = 1;
+    lbl_2_bss_1A8248->_42EC = 0;
+    lbl_2_bss_1A8248->_4431[0] = 0;
+    lbl_2_bss_1A8248->_4431[1] = 0;
+    lbl_2_bss_1A8248->_4431[2] = 0;
+    lbl_2_bss_1A8248->_4431[3] = 0;
+    lbl_2_bss_1A8248->_4431[4] = 0;
     fn_2_46ADC();
     fn_2_467FC();
     fn_2_45978();
     fn_2_45810();
     for (i = 0; i < 9; i++) {
-        *(s16*)(lbl_2_bss_1A8248 + 0x40B8 + i * 6) = inMemRoster[0][i].stats.CharID;
+        lbl_2_bss_1A8248->order[i].charId = inMemRoster[0][i].stats.CharID;
     }
-    lbl_2_bss_1A8248[0x44F6] = 0;
-    lbl_2_bss_1A8248[0x44F7] = 0;
-    lbl_2_bss_1A8248[0x44F8] = 3;
-    lbl_2_bss_1A8248[0x44F9] = 3;
-    lbl_2_bss_1A8248[0x44FA] = 3;
-    lbl_2_bss_1A8248[0x44FB] = 3;
-    lbl_2_bss_1A8248[0x44FC] = 3;
-    lbl_2_bss_1A8248[0x44FD] = 3;
-    lbl_2_bss_1A8248[0x44FE] = 0;
-    lbl_2_bss_1A8248[0x44FF] = 0;
-    lbl_2_bss_1A8248[0x4500] = 0;
-    lbl_2_bss_1A8248[0x4501] = 0;
-    lbl_2_bss_1A8248[0x4502] = 0;
-    lbl_2_bss_1A8248[0x4503] = 0;
-    lbl_2_bss_1A8248[0x4504] = 0;
-    lbl_2_bss_1A8248[0x4505] = 0;
+    lbl_2_bss_1A8248->_44F6 = 0;
+    lbl_2_bss_1A8248->_44F7 = 0;
+    lbl_2_bss_1A8248->_44F8[0] = 3;
+    lbl_2_bss_1A8248->_44F8[1] = 3;
+    lbl_2_bss_1A8248->_44F8[2] = 3;
+    lbl_2_bss_1A8248->_44F8[3] = 3;
+    lbl_2_bss_1A8248->_44F8[4] = 3;
+    lbl_2_bss_1A8248->_44F8[5] = 3;
+    lbl_2_bss_1A8248->_44FE[0] = 0;
+    lbl_2_bss_1A8248->_44FE[1] = 0;
+    lbl_2_bss_1A8248->_44FE[2] = 0;
+    lbl_2_bss_1A8248->_44FE[3] = 0;
+    lbl_2_bss_1A8248->_44FE[4] = 0;
+    lbl_2_bss_1A8248->_44FE[5] = 0;
+    lbl_2_bss_1A8248->_44FE[6] = 0;
+    lbl_2_bss_1A8248->_44FE[7] = 0;
 }
 
 struct SpaniOwner;
@@ -8148,31 +8136,31 @@ void fn_2_338D4(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         return;
     }
     case 2: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) |= 2;
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags |= 2;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         switch (kind) {
         case 0:
-            value = *(s16*)(lbl_2_bss_1A824C[0] + 0x197766);
-            magnitude = __abs(*(s16*)(lbl_2_bss_1A824C[0] + 0x197766));
+            value = lbl_2_bss_1A824C->_197756[8];
+            magnitude = __abs(lbl_2_bss_1A824C->_197756[8]);
             break;
         case 1:
-            value = *(s16*)(lbl_2_bss_1A824C[0] + 0x197768);
-            magnitude = __abs(*(s16*)(lbl_2_bss_1A824C[0] + 0x197768));
+            value = lbl_2_bss_1A824C->_197756[9];
+            magnitude = __abs(lbl_2_bss_1A824C->_197756[9]);
             break;
         case 2:
-            value = *(s16*)(lbl_2_bss_1A824C[0] + 0x19776A);
-            magnitude = __abs(*(s16*)(lbl_2_bss_1A824C[0] + 0x19776A));
+            value = lbl_2_bss_1A824C->_197756[10];
+            magnitude = __abs(lbl_2_bss_1A824C->_197756[10]);
             break;
         case 3:
-            value = *(s16*)(lbl_2_bss_1A824C[0] + 0x19776C);
-            magnitude = __abs(*(s16*)(lbl_2_bss_1A824C[0] + 0x19776C));
+            value = lbl_2_bss_1A824C->_197756[11];
+            magnitude = __abs(lbl_2_bss_1A824C->_197756[11]);
             break;
         }
         if (magnitude == 10000) {
@@ -8238,7 +8226,7 @@ void fn_2_338D4(MenuTableContext* menu, MenuItemState* item) {
                 } else {
                     x0 = 0;
                 }
-                *(f32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x48) = x0;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->x = x0;
                 break;
             }
             }
@@ -8247,20 +8235,20 @@ void fn_2_338D4(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
     case 5:
-        lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 4;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 4;
         item->state = 6;
         return;
     case 6: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        if ((*(u32*)(object + 0x5C) >> 16) == 0) {
-            object[0x68] = 0;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        if ((object->_5C >> 16) == 0) {
+            object->_68 = 0;
             item->state = 7;
         }
         return;
     }
     case 7: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
     }
     case 37:
     case 1:
@@ -8299,83 +8287,83 @@ void fn_2_2926C(MenuTableContext* menu, MenuItemState* item) {
     }
     switch (item->state) {
     case 0: {
-        u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-        *(u32*)(object + 0x54) &= ~2U;
+        LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+        object->flags &= ~2U;
         item->state = 38;
         break;
     }
     case 2:
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
-        if (lbl_2_bss_1A824C[0][0x1978F6] == 0) {
-            *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2C;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
+        if (lbl_2_bss_1A824C->_1978F6 == 0) {
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2C;
             if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
-                if ((s32)lbl_2_bss_1A8248[0x444D + lbl_800E869C[item->unk10]] == 1) {
-                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x54) |= 2;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                if ((s32)lbl_2_bss_1A8248->_444D[lbl_800E869C[item->unk10]] == 1) {
+                    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->flags |= 2;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
                 } else {
-                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x54) &= ~2U;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->flags &= ~2U;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
                 }
             } else {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             }
         } else {
-            *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2F;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2F;
             if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
                 id = lbl_800E869C[item->unk10];
-                flag = lbl_2_bss_1A8248[0x44B9 + id];
+                flag = lbl_2_bss_1A8248->_44B9[id];
                 current = fn_8006CDC0(id);
                 saved = fn_2_44E2C(id);
                 if (flag == 1 && current == saved) {
-                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x54) |= 2;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->flags |= 2;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
                 } else if (flag == 0 && current == saved) {
-                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x54) |= 2;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->flags |= 2;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
                 } else {
-                    u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                    *(u32*)(object + 0x54) &= ~2U;
-                    lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                    LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                    object->flags &= ~2U;
+                    lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
                 }
             } else {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             }
         }
         item->state = 37;
         break;
     case 8:
-        *(u32*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x5C) = 0;
-        *(s16*)(lbl_80371C30[menu->firstIndex + item->offset].object + 0x64) = 0x2F;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0;
+        lbl_80371C30[menu->baseIdx + item->offset].obj->_64 = 0x2F;
         if (fn_8006C79C(lbl_800E869C[item->unk10]) == 1) {
             id = lbl_800E869C[item->unk10];
-            flag = lbl_2_bss_1A8248[0x44B9 + id];
+            flag = lbl_2_bss_1A8248->_44B9[id];
             current = fn_8006CDC0(id);
             saved = fn_2_44E2C(id);
             if (flag == 1 && current == saved) {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
             } else if (flag == 0 && current == saved) {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) |= 2;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags |= 2;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             } else {
-                u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-                *(u32*)(object + 0x54) &= ~2U;
-                lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+                LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+                object->flags &= ~2U;
+                lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
             }
         } else {
-            u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
+            LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
         }
         item->state = 37;
         break;
@@ -8387,10 +8375,10 @@ void fn_2_2926C(MenuTableContext* menu, MenuItemState* item) {
         s16 previous = item->timer;
         item->timer = previous - 1;
         if (previous <= 0) {
-            u8* object;
-            lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 0;
-            object = lbl_80371C30[menu->firstIndex + item->offset].object;
-            *(u32*)(object + 0x54) &= ~2U;
+            LayoutObj* object;
+            lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 0;
+            object = lbl_80371C30[menu->baseIdx + item->offset].obj;
+            object->flags &= ~2U;
         }
         break;
     }
@@ -8400,7 +8388,7 @@ void fn_2_2926C(MenuTableContext* menu, MenuItemState* item) {
 }
 #endif
 
-extern u8* lbl_2_bss_1A823C[];
+extern MenuFlags* lbl_2_bss_1A823C;
 extern const Vec lbl_2_data_2EA4[];
 extern s16 lbl_2_data_3ED4[];
 extern s16 lbl_2_data_3EE0[];
@@ -8424,39 +8412,39 @@ void fn_2_24800(void) {
 
     fn_2_6ACF4();
     fn_800B0A5C_insertQueue(fn_2_71F60, 2);
-    if (*(s16*)(lbl_2_bss_1A823C[0] + 0x30) == 5) {
+    if (lbl_2_bss_1A823C->mode == 5) {
         fn_2_72054(0, 8);
     } else {
         fn_2_72054(0, 4);
     }
-    scene = *(s16*)(lbl_2_bss_1A823C[0] + 0x30);
+    scene = lbl_2_bss_1A823C->mode;
     if (scene == 0) {
-        fn_2_6ABFC(0, fn_2_4C3D8(lbl_2_bss_1A8248[0x441C]));
+        fn_2_6ABFC(0, fn_2_4C3D8(lbl_2_bss_1A8248->_441C));
     } else if (scene != 4) {
-        if (lbl_2_bss_1A8248[0x441C] == 3 && lbl_2_bss_1A8248[0x441E] == 1 &&
-            *(s16*)(lbl_2_bss_1A8248 + 0x16C2) == 0xB && scene == 3) {
-            memcpy(&position, &lbl_2_data_2EA4[*(s16*)(lbl_2_bss_1A8248 + 0x16C2)], sizeof(Vec));
+        if (lbl_2_bss_1A8248->_441C == 3 && lbl_2_bss_1A8248->_441E == 1 &&
+            lbl_2_bss_1A8248->entries[0].locationIndex == 0xB && scene == 3) {
+            memcpy(&position, &lbl_2_data_2EA4[lbl_2_bss_1A8248->entries[0].locationIndex], sizeof(Vec));
             position.x += 0.3f;
             position.z -= 0.3f;
             fn_2_6AABC(0, &position);
         } else {
-            fn_2_6ABFC(0, *(s16*)(lbl_2_bss_1A8248 + 0x16C2));
+            fn_2_6ABFC(0, lbl_2_bss_1A8248->entries[0].locationIndex);
         }
     }
-    scene = *(s16*)(lbl_2_bss_1A823C[0] + 0x30);
+    scene = lbl_2_bss_1A823C->mode;
     if (scene == 4) {
         fn_2_72054(1, 3);
     } else if (scene == 8 || scene == 1) {
-        if (lbl_2_bss_1A8248[0x442F] == 1) {
+        if (lbl_2_bss_1A8248->_442F == 1) {
             s16 location = fn_2_689CC(1);
-            *(s16*)(lbl_2_bss_1A8248 + 0x179A) = location;
-            *(s16*)(lbl_2_bss_1A8248 + 0x1798) = location;
-            *(s16*)(lbl_2_bss_1A8248 + 0x1796) = location;
+            lbl_2_bss_1A8248->entries[1].locationIndex = location;
+            lbl_2_bss_1A8248->entries[1].targetLocation = location;
+            lbl_2_bss_1A8248->entries[1]._AE = location;
             fn_2_6ABFC(1, location);
             fn_2_72054(1, 6);
-            lbl_2_bss_1A8248[0x442F] = 1;
+            lbl_2_bss_1A8248->_442F = 1;
         }
-    } else if (lbl_2_bss_1A8248[0x441C] == 5) {
+    } else if (lbl_2_bss_1A8248->_441C == 5) {
         fn_2_72054(1, 0);
     } else {
         s32 pick;
@@ -8464,28 +8452,28 @@ void fn_2_24800(void) {
         pick = rand() % 2;
         if (position.x > 0.0f) {
             fn_2_6ABFC(1, lbl_2_data_3EEC[pick]);
-            *(s16*)(lbl_2_bss_1A8248 + 0x179A) = lbl_2_data_3EEC[pick];
+            lbl_2_bss_1A8248->entries[1].locationIndex = lbl_2_data_3EEC[pick];
         } else {
             fn_2_6ABFC(1, lbl_2_data_3EF0[pick]);
-            *(s16*)(lbl_2_bss_1A8248 + 0x179A) = lbl_2_data_3EF0[pick];
+            lbl_2_bss_1A8248->entries[1].locationIndex = lbl_2_data_3EF0[pick];
         }
         fn_2_72054(1, 6);
-        lbl_2_bss_1A8248[0x442F] = 1;
+        lbl_2_bss_1A8248->_442F = 1;
     }
     {
-        lbl_2_bss_1A824C[0][0x19782A] = 1;
-        lbl_2_bss_1A824C[0][0x19782B] = 1;
-        lbl_2_bss_1A824C[0][0x197832] = 1;
+        lbl_2_bss_1A824C->_19782A = 1;
+        lbl_2_bss_1A824C->_19782B = 1;
+        lbl_2_bss_1A824C->_197832 = 1;
         for (i = 0, offset = 0, location = lbl_2_data_3ED4, target = lbl_2_data_3EE0; i < 5; i++) {
-            lbl_2_bss_1A824C[0][0x19782D + i] = 1;
-            if (*(s16*)(lbl_2_bss_1A823C[0] + 0x30) == 0) {
+            lbl_2_bss_1A824C->_19782D[i] = 1;
+            if (lbl_2_bss_1A823C->mode == 0) {
                 fn_2_6ABFC(i + 2, *location);
-                *(s16*)(lbl_2_bss_1A8248 + offset + 0x1872) = *location;
+                lbl_2_bss_1A8248->entries[i + 2].locationIndex = *location;
             }
-            if (lbl_2_bss_1A824C[0][0x19782D + i] == 1) {
-                if (*(s16*)(lbl_2_bss_1A823C[0] + 0x30) == 5 && lbl_2_bss_1A8248[0x4420] == i) {
+            if (lbl_2_bss_1A824C->_19782D[i] == 1) {
+                if (lbl_2_bss_1A823C->mode == 5 && lbl_2_bss_1A8248->_4420 == i) {
                     fn_2_72054(i + 2, 8);
-                    if (*(s16*)(lbl_2_bss_1A8248 + 0x16C2) == *target) {
+                    if (lbl_2_bss_1A8248->entries[0].locationIndex == *target) {
                         fn_2_6ABFC(i + 2, *location);
                     }
                 } else {
@@ -8509,23 +8497,23 @@ void fn_2_24800(void) {
     fn_2_92654(0, 1);
     for (i = 0; i < 6; i++) {
         fn_2_90428(i + 1);
-        if (lbl_2_bss_1A8248[0x440C + i] == 1) {
+        if (lbl_2_bss_1A8248->_440C[i] == 1) {
             fn_2_92654(i + 1, 2);
         }
     }
     fn_2_90428(7);
-    if (lbl_2_bss_1A8248[0x440E] == 1) {
+    if (lbl_2_bss_1A8248->_440C[2] == 1) {
         fn_2_92654(7, 2);
     }
-    if (lbl_2_bss_1A8248[0x4439] == 1) {
+    if (lbl_2_bss_1A8248->_4439 == 1) {
         fn_2_90428(8);
         fn_2_92654(8, 2);
     }
     for (i = 0; i < 6; i++) {
         fn_2_90428(i + 10);
         fn_2_90428(i + 16);
-        if ((lbl_2_bss_1A8248[fn_2_4C3D8(i) * 10 + 0x40F1] == 2 || lbl_2_bss_1A8248[fn_2_4C3D8(i) * 10 + 0x40F1] == 3) &&
-            lbl_2_bss_1A8248[0x441C] != i) {
+        if ((lbl_2_bss_1A8248->slots[fn_2_4C3D8(i)]._3 == 2 || lbl_2_bss_1A8248->slots[fn_2_4C3D8(i)]._3 == 3) &&
+            lbl_2_bss_1A8248->_441C != i) {
             fn_2_92654(i + 10, 2);
         }
     }
@@ -8533,11 +8521,11 @@ void fn_2_24800(void) {
     fn_2_92654(0x16, 2);
     fn_2_90428(0x17);
     fn_2_92654(0x17, 1);
-    if (lbl_2_bss_1A8248[0x4446] == 0 && lbl_2_bss_1A8248[0x441C] != 5) {
+    if (lbl_2_bss_1A8248->_4446 == 0 && lbl_2_bss_1A8248->_441C != 5) {
         fn_2_90428(0x18);
         fn_2_92654(0x18, 2);
     }
-    if (lbl_2_bss_1A8248[0x442A] == 1) {
+    if (lbl_2_bss_1A8248->_442A == 1) {
         fn_2_90428(0x19);
         fn_2_92654(0x19, 1);
         fn_2_90428(0x1A);
@@ -8550,30 +8538,17 @@ void fn_2_24800(void) {
     fn_2_94604(1);
     fn_2_94634(1);
     fn_2_93C64();
-    lbl_2_bss_1A8248[0x44F3] = 1;
-    switch (*(s16*)(lbl_2_bss_1A823C[0] + 0x30)) {
+    lbl_2_bss_1A8248->_44F3 = 1;
+    switch (lbl_2_bss_1A823C->mode) {
     case 0:
-        lbl_2_bss_1A8248[0x441B] = 1;
+        lbl_2_bss_1A8248->_441B = 1;
         break;
     }
 }
 #endif
 
-// One controller entry of lbl_803C77B8 (PadState in main/file_800A7C08.h,
-// which can't be included next to UnknownHomes_Static.h).
-typedef struct MenuPad {
-    /* 0x00 */ u16 held;
-    /* 0x02 */ u16 down;
-    /* 0x04 */ u16 repeat;
-    /* 0x06 */ u8 pad06[0xA];
-    /* 0x10 */ s8 stickX;
-    /* 0x11 */ s8 stickY;
-    /* 0x12 */ s8 substickX;
-    /* 0x13 */ s8 substickY;
-    /* 0x14 */ u8 pad14[0xC];
-} MenuPad; // size: 0x20
 
-#define MENU_PAD (((MenuPad*)&lbl_803C77B8)[(s8)lbl_2_bss_1A824C[0][0x197863]])
+#define MENU_PAD (((MenuPad*)&lbl_803C77B8)[(s8)lbl_2_bss_1A824C->port])
 
 extern void fn_2_46C2C(s32 unused, Vec* src);
 extern void fn_2_3F66C(void);
@@ -8583,23 +8558,23 @@ extern void fn_2_3FA14(void);
 static inline void fn_2_1D440_unlockTeam(s32 team) {
     s32 i;
     for (i = 0; i < 51; i++) {
-        u8* record = lbl_2_bss_1A8248 + i * 10;
-        if (record[0x40F0] == team && (record[0x40F1] == 1 || record[0x40F1] == 0)) {
-            if (lbl_2_bss_1A8248[0x441C] == 5) {
-                if (record[0x40F2] == 1) {
-                    record[0x40F1] = 3;
+        MenuLocSlot* record = &lbl_2_bss_1A8248->slots[i];
+        if (record->_2 == team && (record->_3 == 1 || record->_3 == 0)) {
+            if (lbl_2_bss_1A8248->_441C == 5) {
+                if (record->_4 == 1) {
+                    record->_3 = 3;
                 } else {
-                    record[0x40F1] = 0;
+                    record->_3 = 0;
                 }
             } else {
-                record[0x40F1] = 0;
+                record->_3 = 0;
             }
         }
     }
-    lbl_2_bss_1A8248[0x440C + team] = 1;
-    if (!(lbl_2_bss_1A8248[0x4428] & (1 << team))) {
-        lbl_2_bss_1A8248[0x4423]++;
-        lbl_2_bss_1A8248[0x4428] |= 1 << team;
+    lbl_2_bss_1A8248->_440C[team] = 1;
+    if (!(lbl_2_bss_1A8248->_4428 & (1 << team))) {
+        lbl_2_bss_1A8248->_4423++;
+        lbl_2_bss_1A8248->_4428 |= 1 << team;
     }
 }
 
@@ -8633,14 +8608,14 @@ void* jumptable_2_data_10864[14] = {
 // NONMATCHING 98%: register allocation and a few compare forms (cmpw vs cmpwi) differ
 #if NONMATCHING
 void fn_2_1D440(void) {
-    u8* queue = lbl_803CC1B8[0];
+    MenuTask* queue = MENU_TASK;
     s32 i;
 
-    switch (*(s8*)(queue + 0x28)) {
+    switch (queue->step) {
     case 0:
         MENU_INPUT_CONTEXT->secondarySelection = 0;
         MENU_INPUT_CONTEXT->selection = 0;
-        queue[0x28] = 1;
+        queue->step = 1;
         break;
     case 1:
         fn_2_1FFC4(19);
@@ -8648,69 +8623,69 @@ void fn_2_1D440(void) {
             switch (i) {
             case 0:
                 if (MENU_INPUT_CONTEXT->selection == i && ((MENU_PAD.down & 0x100) || MENU_PAD.substickY > 0x32)) {
-                    queue[0x28] = 13;
+                    queue->step = 13;
                 }
                 break;
             case 1:
                 if (MENU_INPUT_CONTEXT->selection == i) {
                     u16 repeat = MENU_PAD.repeat;
                     if (repeat & 1) {
-                        if (*(s16*)(lbl_2_bss_1A8248 + 0x43BC) > 0) {
+                        if (lbl_2_bss_1A8248->_43BC > 0) {
                             fn_80062890(0x37);
                             fn_2_46D34(-1);
                         } else {
                             fn_80062890(0x37);
-                            *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 999;
+                            lbl_2_bss_1A8248->_43BC = 999;
                         }
-                        lbl_2_bss_1A8234[0][0x162933] = 1;
+                        lbl_2_bss_1A8234->layerFlags[11][45] = 1;
                     } else if (repeat & 2) {
-                        if (*(s16*)(lbl_2_bss_1A8248 + 0x43BC) < 999) {
+                        if (lbl_2_bss_1A8248->_43BC < 999) {
                             fn_80062890(0x37);
                             fn_2_46D34(1);
                         } else {
                             fn_80062890(0x37);
-                            *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 0;
+                            lbl_2_bss_1A8248->_43BC = 0;
                         }
-                        lbl_2_bss_1A8234[0][0x162979] = 1;
+                        lbl_2_bss_1A8234->layerFlags[12][45] = 1;
                     } else if (repeat & 0x40) {
                         fn_80062890(0x37);
-                        *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 0;
+                        lbl_2_bss_1A8248->_43BC = 0;
                     } else if (repeat & 0x20) {
                         fn_80062890(0x37);
-                        *(s16*)(lbl_2_bss_1A8248 + 0x43BC) = 999;
+                        lbl_2_bss_1A8248->_43BC = 999;
                     }
                 }
                 break;
             case 2:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 3)) {
-                    lbl_2_bss_1A8248[0x44F2] ^= 1;
+                    lbl_2_bss_1A8248->_44F2 ^= 1;
                 }
                 break;
             case 3:
                 if (MENU_INPUT_CONTEXT->selection == i) {
                     u16 repeat = MENU_PAD.repeat;
                     if (repeat & 1) {
-                        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) > 0) {
-                            (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C))--;
+                        if (lbl_2_bss_1A824C->_19779C > 0) {
+                            (lbl_2_bss_1A824C->_19779C)--;
                         } else {
-                            *(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) = 999;
+                            lbl_2_bss_1A824C->_19779C = 999;
                         }
                     } else if (repeat & 2) {
-                        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) < 999) {
-                            (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C))++;
+                        if (lbl_2_bss_1A824C->_19779C < 999) {
+                            (lbl_2_bss_1A824C->_19779C)++;
                         } else {
-                            *(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) = 0;
+                            lbl_2_bss_1A824C->_19779C = 0;
                         }
                     } else if (repeat & 0x40) {
-                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) = 0;
+                        lbl_2_bss_1A824C->_19779C = 0;
                     } else if (repeat & 0x20) {
-                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) = 999;
+                        lbl_2_bss_1A824C->_19779C = 999;
                     }
-                    if ((MENU_PAD.repeat & 0x100) && *(s16*)(lbl_2_bss_1A824C[0] + 0x19773E) == 0) {
-                        fn_2_46D34(*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C));
+                    if ((MENU_PAD.repeat & 0x100) && lbl_2_bss_1A824C->_19773E == 0) {
+                        fn_2_46D34(lbl_2_bss_1A824C->_19779C);
                         ((u8*)fn_800B0A5C_insertQueue(fn_2_3FA14, 2))[0x28] = 0;
-                        *(s16*)(queue + 0x10) = 0;
-                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19773E) = 1;
+                        queue->_10 = 0;
+                        lbl_2_bss_1A824C->_19773E = 1;
                     }
                 }
                 break;
@@ -8720,77 +8695,77 @@ void fn_2_1D440(void) {
                     if (repeat & 1) {
                         // NOTE: the original tests and decrements 0x19779C here but
                         // increments 0x19779E below.
-                        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) > 0) {
-                            (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C))--;
+                        if (lbl_2_bss_1A824C->_19779C > 0) {
+                            (lbl_2_bss_1A824C->_19779C)--;
                         } else {
-                            *(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) = 999;
+                            lbl_2_bss_1A824C->_19779C = 999;
                         }
                     } else if (repeat & 2) {
-                        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779C) < 999) {
-                            (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779E))++;
+                        if (lbl_2_bss_1A824C->_19779C < 999) {
+                            (lbl_2_bss_1A824C->_19779E)++;
                         } else {
-                            *(s16*)(lbl_2_bss_1A824C[0] + 0x19779E) = 0;
+                            lbl_2_bss_1A824C->_19779E = 0;
                         }
                     } else if (repeat & 0x40) {
-                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19779E) = 0;
+                        lbl_2_bss_1A824C->_19779E = 0;
                     } else if (repeat & 0x20) {
-                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19779E) = 999;
+                        lbl_2_bss_1A824C->_19779E = 999;
                     }
-                    if ((MENU_PAD.repeat & 0x100) && *(s16*)(lbl_2_bss_1A824C[0] + 0x19773E) == 0) {
-                        fn_2_46D34(-*(s16*)(lbl_2_bss_1A824C[0] + 0x19779E));
-                        if (*(s16*)(lbl_2_bss_1A8248 + 0x43BE) > 0) {
+                    if ((MENU_PAD.repeat & 0x100) && lbl_2_bss_1A824C->_19773E == 0) {
+                        fn_2_46D34(-lbl_2_bss_1A824C->_19779E);
+                        if (lbl_2_bss_1A8248->_43BE > 0) {
                             ((u8*)fn_800B0A5C_insertQueue(fn_2_3F66C, 2))[0x28] = 0;
-                            *(s16*)(queue + 0x10) = 0;
+                            queue->_10 = 0;
                         }
-                        *(s16*)(lbl_2_bss_1A824C[0] + 0x19773E) = 1;
+                        lbl_2_bss_1A824C->_19773E = 1;
                     }
                 }
                 break;
             case 5:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
-                    queue[0x28] = 2;
+                    queue->step = 2;
                 }
                 break;
             case 6:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
-                    queue[0x28] = 3;
+                    queue->step = 3;
                 }
                 break;
             case 7:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
-                    lbl_2_bss_1A824C[0][0x19784A] = 1;
-                    lbl_2_bss_1A824C[0][0x197846] = 1;
-                    lbl_2_bss_1A824C[0][0x197847] = 0;
-                    queue[0x28] = 4;
+                    lbl_2_bss_1A824C->_19784A = 1;
+                    lbl_2_bss_1A824C->_197846 = 1;
+                    lbl_2_bss_1A824C->_197847 = 0;
+                    queue->step = 4;
                 }
                 break;
             case 8:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
-                    lbl_2_bss_1A824C[0][0x19784A] = 1;
-                    lbl_2_bss_1A824C[0][0x197846] = 0;
-                    lbl_2_bss_1A824C[0][0x197845] = 1;
-                    queue[0x28] = 5;
+                    lbl_2_bss_1A824C->_19784A = 1;
+                    lbl_2_bss_1A824C->_197846 = 0;
+                    lbl_2_bss_1A824C->_197845 = 1;
+                    queue->step = 5;
                 }
                 break;
             case 9:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
-                    lbl_2_bss_1A824C[0][0x19784A] = 1;
-                    lbl_2_bss_1A824C[0][0x197846] = 2;
-                    queue[0x28] = 6;
+                    lbl_2_bss_1A824C->_19784A = 1;
+                    lbl_2_bss_1A824C->_197846 = 2;
+                    queue->step = 6;
                 }
                 break;
             case 10:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
-                    queue[0x28] = 7;
+                    queue->step = 7;
                 }
                 break;
             case 11:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x103)) {
                     s32 j;
-                    lbl_2_bss_1A8248[0x441A] = 1;
-                    lbl_2_bss_1A8248[0x4439] = 0;
-                    *(s16*)(lbl_2_bss_1A8248 + 0x16C2) = lbl_2_data_3EC8[5];
-                    fn_2_6ABFC(0, *(s16*)(lbl_2_bss_1A8248 + 0x16C2));
+                    lbl_2_bss_1A8248->_441A = 1;
+                    lbl_2_bss_1A8248->_4439 = 0;
+                    lbl_2_bss_1A8248->entries[0].locationIndex = lbl_2_data_3EC8[5];
+                    fn_2_6ABFC(0, lbl_2_bss_1A8248->entries[0].locationIndex);
                     for (j = 0; j < 5; j++) {
                         fn_2_1C714(j);
                     }
@@ -8800,9 +8775,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->selection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x4415] = (lbl_2_bss_1A8248[0x4415] + 3) % 4;
+                        lbl_2_bss_1A8248->_4415 = (lbl_2_bss_1A8248->_4415 + 3) % 4;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x4415] = (lbl_2_bss_1A8248[0x4415] + 1) % 4;
+                        lbl_2_bss_1A8248->_4415 = (lbl_2_bss_1A8248->_4415 + 1) % 4;
                     }
                 }
                 break;
@@ -8822,9 +8797,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->selection == i) {
                     u16 repeat = MENU_PAD.repeat;
                     if (repeat & 0x800) {
-                        lbl_2_bss_1A824C[0][0x19785C] = ((s8)lbl_2_bss_1A824C[0][0x19785C] + 1) % 2;
+                        lbl_2_bss_1A824C->_19785C = ((s8)lbl_2_bss_1A824C->_19785C + 1) % 2;
                     } else if (repeat & 0x400) {
-                        lbl_2_bss_1A824C[0][0x19785C] = ((s8)lbl_2_bss_1A824C[0][0x19785C] + 1) % 2;
+                        lbl_2_bss_1A824C->_19785C = ((s8)lbl_2_bss_1A824C->_19785C + 1) % 2;
                     }
                     if (MENU_PAD.down & 0x100) {
                         Vec zero;
@@ -8837,19 +8812,19 @@ void fn_2_1D440(void) {
                 break;
             case 15:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
-                    queue[0x28] = 9;
+                    queue->step = 9;
                 }
                 break;
             case 16:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
-                    queue[0x28] = 11;
+                    queue->step = 11;
                 }
                 break;
             case 17:
                 if (MENU_INPUT_CONTEXT->selection == i && (MENU_PAD.down & 0x102)) {
                     s32 j;
                     for (j = 0; j < 20; j++) {
-                        lbl_2_bss_1A8248[0x43C2 + j] = 1;
+                        lbl_2_bss_1A8248->_43C2[j] = 1;
                     }
                 }
                 break;
@@ -8857,26 +8832,26 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->selection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x44F8] = 0;
-                        lbl_2_bss_1A8248[0x44F9] = 0;
-                        lbl_2_bss_1A8248[0x44FA] = 0;
-                        lbl_2_bss_1A8248[0x44FB] = 0;
-                        lbl_2_bss_1A8248[0x44FC] = 0;
-                        lbl_2_bss_1A8248[0x44FD] = 0;
+                        lbl_2_bss_1A8248->_44F8[0] = 0;
+                        lbl_2_bss_1A8248->_44F8[1] = 0;
+                        lbl_2_bss_1A8248->_44F8[2] = 0;
+                        lbl_2_bss_1A8248->_44F8[3] = 0;
+                        lbl_2_bss_1A8248->_44F8[4] = 0;
+                        lbl_2_bss_1A8248->_44F8[5] = 0;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x44F8] = 3;
-                        lbl_2_bss_1A8248[0x44F9] = 3;
-                        lbl_2_bss_1A8248[0x44FA] = 3;
-                        lbl_2_bss_1A8248[0x44FB] = 3;
-                        lbl_2_bss_1A8248[0x44FC] = 3;
-                        lbl_2_bss_1A8248[0x44FD] = 3;
+                        lbl_2_bss_1A8248->_44F8[0] = 3;
+                        lbl_2_bss_1A8248->_44F8[1] = 3;
+                        lbl_2_bss_1A8248->_44F8[2] = 3;
+                        lbl_2_bss_1A8248->_44F8[3] = 3;
+                        lbl_2_bss_1A8248->_44F8[4] = 3;
+                        lbl_2_bss_1A8248->_44F8[5] = 3;
                     }
                 }
                 break;
             }
         }
         if ((MENU_PAD.down & 0x200) || MENU_PAD.substickY > 0x32) {
-            queue[0x28] = 13;
+            queue->step = 13;
         }
         break;
     case 2:
@@ -8886,7 +8861,7 @@ void fn_2_1D440(void) {
             case 0:
                 if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x300)) {
                     MENU_INPUT_CONTEXT->secondarySelection = 0;
-                    queue[0x28] = 1;
+                    queue->step = 1;
                 }
                 break;
             case 1:
@@ -8923,9 +8898,9 @@ void fn_2_1D440(void) {
         }
         if (MENU_PAD.down & 0x201) {
             MENU_INPUT_CONTEXT->secondarySelection = 0;
-            queue[0x28] = 1;
+            queue->step = 1;
         } else if (MENU_PAD.substickY > 0x32) {
-            queue[0x28] = 13;
+            queue->step = 13;
         }
         break;
     case 3:
@@ -8935,7 +8910,7 @@ void fn_2_1D440(void) {
             case 0:
                 if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x300)) {
                     MENU_INPUT_CONTEXT->secondarySelection = 0;
-                    queue[0x28] = 1;
+                    queue->step = 1;
                 }
                 break;
             case 1:
@@ -8974,32 +8949,32 @@ void fn_2_1D440(void) {
         }
         if (MENU_PAD.down & 0x201) {
             MENU_INPUT_CONTEXT->secondarySelection = 0;
-            queue[0x28] = 1;
+            queue->step = 1;
         } else if (MENU_PAD.substickY > 0x32) {
-            queue[0x28] = 13;
+            queue->step = 13;
         }
         break;
     case 4:
         fn_2_1FF14(1);
         if (MENU_INPUT_CONTEXT->secondarySelection == 0) {
             if (MENU_PAD.down & 0x10) {
-                lbl_2_bss_1A824C[0][0x197847] ^= 1;
+                lbl_2_bss_1A824C->_197847 ^= 1;
             }
             if (MENU_PAD.down & 0x200) {
-                lbl_2_bss_1A824C[0][0x19784A] = 0;
-                lbl_2_bss_1A824C[0][0x197846] = 0;
+                lbl_2_bss_1A824C->_19784A = 0;
+                lbl_2_bss_1A824C->_197846 = 0;
                 MENU_INPUT_CONTEXT->secondarySelection = 0;
-                lbl_2_bss_1A824C[0][0x197847] = 0;
-                fn_2_6ABFC(0, *(s16*)(lbl_2_bss_1A8248 + 0x16C2));
-                queue[0x28] = 1;
+                lbl_2_bss_1A824C->_197847 = 0;
+                fn_2_6ABFC(0, lbl_2_bss_1A8248->entries[0].locationIndex);
+                queue->step = 1;
             }
             if (MENU_PAD.down & 0x100) {
                 Vec position;
                 fn_2_68DAC(0, &position);
-                (*(s16*)(lbl_2_bss_1A824C[0] + 0x19779A))++;
+                (lbl_2_bss_1A824C->_19779A)++;
             }
             if (MENU_PAD.down & 0x1000) {
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x19779A) = 0;
+                lbl_2_bss_1A824C->_19779A = 0;
             }
         }
         break;
@@ -9009,17 +8984,17 @@ void fn_2_1D440(void) {
             MenuPad* pad = &MENU_PAD;
             u16 down = pad->down;
             if ((down & 1) && (pad->held & 0x100)) {
-                lbl_2_bss_1A824C[0][0x197849] = (lbl_2_bss_1A824C[0][0x197849] + 19) % 20;
+                lbl_2_bss_1A824C->_197849 = (lbl_2_bss_1A824C->_197849 + 19) % 20;
             } else if ((down & 2) && (pad->held & 0x100)) {
-                lbl_2_bss_1A824C[0][0x197849] = (lbl_2_bss_1A824C[0][0x197849] + 1) % 20;
+                lbl_2_bss_1A824C->_197849 = (lbl_2_bss_1A824C->_197849 + 1) % 20;
             }
             down = MENU_PAD.down;
             if (down & 0x200) {
-                lbl_2_bss_1A824C[0][0x19784A] = 0;
-                lbl_2_bss_1A824C[0][0x197846] = 0;
+                lbl_2_bss_1A824C->_19784A = 0;
+                lbl_2_bss_1A824C->_197846 = 0;
                 MENU_INPUT_CONTEXT->secondarySelection = 0;
-                lbl_2_bss_1A824C[0][0x197845] = 0;
-                queue[0x28] = 1;
+                lbl_2_bss_1A824C->_197845 = 0;
+                queue->step = 1;
             } else if (down & 0x1000) {
                 fn_2_93C64();
             }
@@ -9032,21 +9007,21 @@ void fn_2_1D440(void) {
             u16 down = pad->down;
             u16 repeat;
             if (down & 0x200) {
-                lbl_2_bss_1A824C[0][0x19784A] = 0;
-                lbl_2_bss_1A824C[0][0x197846] = 0;
+                lbl_2_bss_1A824C->_19784A = 0;
+                lbl_2_bss_1A824C->_197846 = 0;
                 MENU_INPUT_CONTEXT->secondarySelection = 0;
-                fn_2_6ABFC(0, *(s16*)(lbl_2_bss_1A8248 + 0x16C2));
-                queue[0x28] = 1;
+                fn_2_6ABFC(0, lbl_2_bss_1A8248->entries[0].locationIndex);
+                queue->step = 1;
             } else if ((down & 0x40) && (pad->held & 0x100)) {
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) = (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) + 28) % 29;
+                lbl_2_bss_1A824C->_1972BE = (lbl_2_bss_1A824C->_1972BE + 28) % 29;
             } else if ((down & 0x20) && (pad->held & 0x100)) {
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) = (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) + 1) % 29;
+                lbl_2_bss_1A824C->_1972BE = (lbl_2_bss_1A824C->_1972BE + 1) % 29;
             } else {
                 repeat = pad->repeat;
                 if (repeat & 0x800) {
-                    *(f32*)(lbl_2_bss_1A8248 + *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) * 0xBC + 0x2208) -= 0.1f;
+                    lbl_2_bss_1A8248->objects[lbl_2_bss_1A824C->_1972BE]._28 -= 0.1f;
                 } else if (repeat & 0x400) {
-                    *(f32*)(lbl_2_bss_1A8248 + *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE) * 0xBC + 0x2208) += 0.1f;
+                    lbl_2_bss_1A8248->objects[lbl_2_bss_1A824C->_1972BE]._28 += 0.1f;
                 }
             }
         }
@@ -9057,16 +9032,16 @@ void fn_2_1D440(void) {
             switch (i) {
             case 0:
                 if (MENU_INPUT_CONTEXT->secondarySelection == i && (MENU_PAD.down & 0x301)) {
-                    queue[0x28] = 1;
+                    queue->step = 1;
                 }
                 break;
             case 1:
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x443B] = ((s8)lbl_2_bss_1A8248[0x443B] + 3) % 4;
+                        lbl_2_bss_1A8248->_443B = ((s8)lbl_2_bss_1A8248->_443B + 3) % 4;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x443B] = ((s8)lbl_2_bss_1A8248[0x443B] + 1) % 4;
+                        lbl_2_bss_1A8248->_443B = ((s8)lbl_2_bss_1A8248->_443B + 1) % 4;
                     }
                 }
                 break;
@@ -9074,9 +9049,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x443C] = ((s8)lbl_2_bss_1A8248[0x443C] + 1) % 2;
+                        lbl_2_bss_1A8248->_443C = ((s8)lbl_2_bss_1A8248->_443C + 1) % 2;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x443C] = ((s8)lbl_2_bss_1A8248[0x443C] + 1) % 2;
+                        lbl_2_bss_1A8248->_443C = ((s8)lbl_2_bss_1A8248->_443C + 1) % 2;
                     }
                 }
                 break;
@@ -9084,9 +9059,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x443D] = ((s8)lbl_2_bss_1A8248[0x443D] + 3) % 4;
+                        lbl_2_bss_1A8248->_443D = ((s8)lbl_2_bss_1A8248->_443D + 3) % 4;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x443D] = ((s8)lbl_2_bss_1A8248[0x443D] + 1) % 4;
+                        lbl_2_bss_1A8248->_443D = ((s8)lbl_2_bss_1A8248->_443D + 1) % 4;
                     }
                 }
                 break;
@@ -9094,9 +9069,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x443E] = ((s8)lbl_2_bss_1A8248[0x443E] + 1) % 2;
+                        lbl_2_bss_1A8248->_443E = ((s8)lbl_2_bss_1A8248->_443E + 1) % 2;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x443E] = ((s8)lbl_2_bss_1A8248[0x443E] + 1) % 2;
+                        lbl_2_bss_1A8248->_443E = ((s8)lbl_2_bss_1A8248->_443E + 1) % 2;
                     }
                 }
                 break;
@@ -9104,9 +9079,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x443F] = ((s8)lbl_2_bss_1A8248[0x443F] + 2) % 3;
+                        lbl_2_bss_1A8248->_443F = ((s8)lbl_2_bss_1A8248->_443F + 2) % 3;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x443F] = ((s8)lbl_2_bss_1A8248[0x443F] + 1) % 3;
+                        lbl_2_bss_1A8248->_443F = ((s8)lbl_2_bss_1A8248->_443F + 1) % 3;
                     }
                 }
                 break;
@@ -9114,9 +9089,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x4437] = ((s8)lbl_2_bss_1A8248[0x4437] + 3) % 4;
+                        lbl_2_bss_1A8248->_4437 = ((s8)lbl_2_bss_1A8248->_4437 + 3) % 4;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x4437] = ((s8)lbl_2_bss_1A8248[0x4437] + 1) % 4;
+                        lbl_2_bss_1A8248->_4437 = ((s8)lbl_2_bss_1A8248->_4437 + 1) % 4;
                     }
                 }
                 break;
@@ -9124,9 +9099,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x4440] = ((s8)lbl_2_bss_1A8248[0x4440] + 3) % 4;
+                        lbl_2_bss_1A8248->_4440 = ((s8)lbl_2_bss_1A8248->_4440 + 3) % 4;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x4440] = ((s8)lbl_2_bss_1A8248[0x4440] + 1) % 4;
+                        lbl_2_bss_1A8248->_4440 = ((s8)lbl_2_bss_1A8248->_4440 + 1) % 4;
                     }
                 }
                 break;
@@ -9134,9 +9109,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x4441] = ((s8)lbl_2_bss_1A8248[0x4441] + 1) % 2;
+                        lbl_2_bss_1A8248->_4441 = ((s8)lbl_2_bss_1A8248->_4441 + 1) % 2;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x4441] = ((s8)lbl_2_bss_1A8248[0x4441] + 1) % 2;
+                        lbl_2_bss_1A8248->_4441 = ((s8)lbl_2_bss_1A8248->_4441 + 1) % 2;
                     }
                 }
                 break;
@@ -9144,9 +9119,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x4442] = ((s8)lbl_2_bss_1A8248[0x4442] + 3) % 4;
+                        lbl_2_bss_1A8248->_4442 = ((s8)lbl_2_bss_1A8248->_4442 + 3) % 4;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x4442] = ((s8)lbl_2_bss_1A8248[0x4442] + 1) % 4;
+                        lbl_2_bss_1A8248->_4442 = ((s8)lbl_2_bss_1A8248->_4442 + 1) % 4;
                     }
                 }
                 break;
@@ -9154,9 +9129,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x4443] = ((s8)lbl_2_bss_1A8248[0x4443] + 1) % 2;
+                        lbl_2_bss_1A8248->_4443 = ((s8)lbl_2_bss_1A8248->_4443 + 1) % 2;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x4443] = ((s8)lbl_2_bss_1A8248[0x4443] + 1) % 2;
+                        lbl_2_bss_1A8248->_4443 = ((s8)lbl_2_bss_1A8248->_4443 + 1) % 2;
                     }
                 }
                 break;
@@ -9164,9 +9139,9 @@ void fn_2_1D440(void) {
                 if (MENU_INPUT_CONTEXT->secondarySelection == i) {
                     u16 down = MENU_PAD.down;
                     if (down & 1) {
-                        lbl_2_bss_1A8248[0x443A] = (lbl_2_bss_1A8248[0x443A] + 3) % 4;
+                        lbl_2_bss_1A8248->_443A = (lbl_2_bss_1A8248->_443A + 3) % 4;
                     } else if (down & 2) {
-                        lbl_2_bss_1A8248[0x443A] = (lbl_2_bss_1A8248[0x443A] + 1) % 4;
+                        lbl_2_bss_1A8248->_443A = (lbl_2_bss_1A8248->_443A + 1) % 4;
                     }
                 }
                 break;
@@ -9174,36 +9149,36 @@ void fn_2_1D440(void) {
         }
         if (MENU_PAD.down & 0x300) {
             MENU_INPUT_CONTEXT->secondarySelection = 0;
-            queue[0x28] = 1;
+            queue->step = 1;
         } else if (MENU_PAD.substickY > 0x32) {
-            queue[0x28] = 13;
+            queue->step = 13;
         }
         break;
     case 9:
         ((u8*)fn_800B0A5C_insertQueue(fn_2_1CF94, 2))[0x28] = 0;
-        *(s16*)(queue + 0x10) = 0;
-        queue[0x28] = 10;
+        queue->_10 = 0;
+        queue->step = 10;
         break;
     case 10:
-        if (*(s16*)(queue + 0x10) == 1) {
-            queue[0x28] = 1;
+        if (queue->_10 == 1) {
+            queue->step = 1;
         }
         break;
     case 11:
         ((u8*)fn_800B0A5C_insertQueue(fn_2_1C860, 2))[0x28] = 0;
-        *(s16*)(queue + 0x10) = 0;
-        queue[0x28] = 12;
+        queue->_10 = 0;
+        queue->step = 12;
         break;
     case 12:
-        if (*(s16*)(queue + 0x10) == 1) {
-            queue[0x28] = 1;
+        if (queue->_10 == 1) {
+            queue->step = 1;
         }
         break;
     case 13: {
-        u8* parent = *(u8**)(queue + 0xC);
-        *(s16*)(parent + 0x10) = 1;
+        MenuTask* parent = queue->parent;
+        parent->_10 = 1;
         fn_800B0A14_removeQueue(parent);
-        queue[0x28] = 0;
+        queue->step = 0;
         break;
     }
     }
@@ -9211,9 +9186,7 @@ void fn_2_1D440(void) {
 #endif
 
 extern GXColor lbl_2_data_107C8;
-extern u8 lbl_8037169C[];
-extern u8 lbl_800E877C[];
-extern u8 lbl_803C50E8[];
+extern MenuFlags lbl_800E877C; // lbl_2_bss_1A823C points here
 extern u8 lbl_800EFBA4[];
 extern u8 lbl_80361B20[];
 extern u8 lbl_2_data_3CE0[];
@@ -9257,15 +9230,14 @@ BOOL fn_80062794(s32 voice);
 void fn_8006877C(u8 track);
 void fn_80068838(void);
 
-#define CHALLENGE_STATE (*(s16*)(lbl_2_bss_1A823C[0] + 0x32))
-#define CHALLENGE_MODE (*(s16*)(lbl_2_bss_1A823C[0] + 0x30))
-#define QUEUE_DONE (*(s16*)(queue + 0x10))
-#define SCENE_FLOW_S16(off) (*(s16*)(lbl_800E877C + (off))) // TODO type: SceneFlow
+#define CHALLENGE_STATE (lbl_2_bss_1A823C->state)
+#define CHALLENGE_MODE (lbl_2_bss_1A823C->mode)
+#define QUEUE_DONE (queue->_10)
 
 // Starts a menu task and clears its "done" flag in our queue entry.
 #define START_TASK(fn) \
     do { \
-        ((u8*)fn_800B0A5C_insertQueue(fn, 2))[0x28] = 0; \
+        ((MenuTask*)fn_800B0A5C_insertQueue(fn, 2))->step = 0; \
         QUEUE_DONE = 0; \
     } while (0)
 
@@ -9317,27 +9289,27 @@ void* jumptable_2_data_10944[132] = {
 // NONMATCHING 90%: register allocation and scheduling in the big state switch differ
 #if NONMATCHING
 void fn_2_20D08(void) {
-    u8* queue = lbl_803CC1B8[0];
+    MenuTask* queue = MENU_TASK;
     GXColor clear;
 
-    lbl_2_bss_1A824C[0][0x1978FB] = 0;
+    lbl_2_bss_1A824C->_1978FB = 0;
     switch (CHALLENGE_STATE) {
     case 0x0:
-        if (*(s8*)(lbl_2_bss_1A8248 + 0x44F4) == 0) {
+        if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
             CHALLENGE_STATE = 1;
         } else {
             fn_2_515DC(4);
-            lbl_2_bss_1A8234[0][0x162992] = 0;
-            lbl_2_bss_1A8230[0][0x32A86] = 0;
+            lbl_2_bss_1A8234->done = 0;
+            lbl_2_bss_1A8230->_32A86 = 0;
             fn_2_54474();
             fn_2_2469C();
             fn_2_24650();
-            lbl_2_bss_1A824C[0][0x197864] = 1;
+            lbl_2_bss_1A824C->_197864 = 1;
             CHALLENGE_STATE = 0x65;
         }
         break;
     case 0x1:
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x197746) = 7;
+        lbl_2_bss_1A824C->_197746 = 7;
         ((u8*)fn_800B0A5C_insertQueue(fn_2_1B314, 2))[0x28] = 0;
         clear = lbl_2_data_107C8;
         GXSetCopyClear(clear, 0xFFFFFF);
@@ -9360,8 +9332,8 @@ void fn_2_20D08(void) {
         break;
     case 0x5:
         fn_2_515DC(4);
-        lbl_2_bss_1A8234[0][0x162992] = 0;
-        lbl_2_bss_1A8230[0][0x32A86] = 0;
+        lbl_2_bss_1A8234->done = 0;
+        lbl_2_bss_1A8230->_32A86 = 0;
         fn_2_54474();
         fn_2_246E0();
         fn_2_24800();
@@ -9376,25 +9348,25 @@ void fn_2_20D08(void) {
         GXSetCopyClear(clear, 0xFFFFFF);
         switch (CHALLENGE_MODE) {
         case 3:
-            if ((s32)lbl_2_bss_1A8248[0x4443] == 1) {
+            if ((s32)lbl_2_bss_1A8248->_4443 == 1) {
                 changeScene(1, 6);
             } else {
-                fn_800203E0(10, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248[0x441E]]);
+                fn_800203E0(10, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248->_441E]);
             }
             break;
         case 4:
-            if ((s32)lbl_2_bss_1A8248[0x443E] == 1) {
+            if ((s32)lbl_2_bss_1A8248->_443E == 1) {
                 changeScene(1, 6);
             } else {
-                fn_800203E0(10, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248[0x441C]]);
+                fn_800203E0(10, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248->_441C]);
             }
             changeScene(1, 6);
             break;
         case 5:
-            if ((s32)lbl_2_bss_1A8248[0x443C] == 1) {
+            if ((s32)lbl_2_bss_1A8248->_443C == 1) {
                 changeScene(1, 6);
             } else {
-                fn_800203E0(10, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248[0x441C]]);
+                fn_800203E0(10, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248->_441C]);
             }
             break;
         case 0:
@@ -9411,25 +9383,25 @@ void fn_2_20D08(void) {
             changeScene(1, 6);
             break;
         }
-        lbl_2_bss_1A8234[0][0x16264B] = 1;
-        lbl_2_bss_1A8234[0][0x162657] = 1;
-        lbl_2_bss_1A8234[0][0x162659] = 1;
-        lbl_2_bss_1A8234[0][0x16265A] = 1;
-        lbl_2_bss_1A8234[0][0x16265B] = 1;
-        lbl_2_bss_1A8234[0][0x162676] = 1;
-        lbl_2_bss_1A8234[0][0x162677] = 1;
-        lbl_2_bss_1A8234[0][0x162678] = 1;
-        lbl_2_bss_1A8234[0][0x16265F] = 1;
-        lbl_2_bss_1A8234[0][0x162663] = 1;
-        lbl_2_bss_1A8234[0][0x16268A] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][1] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][13] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][15] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][16] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][17] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][44] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][45] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][46] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][21] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][25] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][64] = 1;
         CHALLENGE_STATE = 0xC;
         break;
     case 0xC:
-        if (lbl_8037169C[0x12] != 0) {
+        if (lbl_8037169C.done != 0) {
             switch (CHALLENGE_MODE) {
             case 0:
-                if (lbl_2_bss_1A8248[0x4505] == 0) {
-                    lbl_2_bss_1A8248[0x4505] = 1;
+                if (lbl_2_bss_1A8248->_44FE[7] == 0) {
+                    lbl_2_bss_1A8248->_44FE[7] = 1;
                     CHALLENGE_STATE = 0xD;
                 } else {
                     CHALLENGE_STATE = 0x12;
@@ -9484,23 +9456,23 @@ void fn_2_20D08(void) {
         break;
     case 0xE:
         if (QUEUE_DONE == 1) {
-            if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-                lbl_2_bss_1A824C[0][0x19783F] = 0;
+            if (lbl_2_bss_1A824C->_19783F == 1) {
+                lbl_2_bss_1A824C->_19783F = 0;
                 CHALLENGE_STATE = 0x10;
             } else {
                 CHALLENGE_STATE = 0xF;
             }
-        } else if ((MENU_PAD.down & 0x1000) && lbl_2_bss_1A824C[0][0x1972B9] == 1) {
-            lbl_2_bss_1A824C[0][0x19783F] = 1;
+        } else if ((MENU_PAD.down & 0x1000) && lbl_2_bss_1A824C->_1972B9 == 1) {
+            lbl_2_bss_1A824C->_19783F = 1;
         }
         break;
     case 0xF:
         CHALLENGE_STATE = 0x12;
         break;
     case 0x10:
-        lbl_2_bss_1A8234[0][0x162842] = 1;
-        lbl_2_bss_1A8234[0][0x162871] = 1;
-        lbl_2_bss_1A8234[0][0x162872] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][14] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][61] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][62] = 1;
         START_TASK(fn_2_38538);
         CHALLENGE_STATE = 0x11;
         break;
@@ -9513,10 +9485,10 @@ void fn_2_20D08(void) {
     state_12: {
         s32 direction;
         s16 target;
-        lbl_2_bss_1A8248[0x44F3] = 0;
-        if ((s32)lbl_2_bss_1A824C[0][0x19789E] == 1) {
+        lbl_2_bss_1A8248->_44F3 = 0;
+        if ((s32)lbl_2_bss_1A824C->_19789E == 1) {
             fn_2_1C490();
-            lbl_2_bss_1A824C[0][0x19789E] = 0;
+            lbl_2_bss_1A824C->_19789E = 0;
             CHALLENGE_STATE = 0x1E;
             break;
         }
@@ -9525,23 +9497,23 @@ void fn_2_20D08(void) {
             break;
         }
         direction = fn_2_20074();
-        target = fn_2_201E4(*(s16*)(lbl_2_bss_1A8248 + 0x16C2), direction);
+        target = fn_2_201E4(lbl_2_bss_1A8248->entries[0].locationIndex, direction);
         if (direction == -1) {
-            lbl_2_bss_1A824C[0][0x1978FB] = 1;
+            lbl_2_bss_1A824C->_1978FB = 1;
         }
         if (target != -1 &&
-            (lbl_2_bss_1A8248[target * 10 + 0x40F2] == 7 || lbl_2_bss_1A8248[target * 10 + 0x40F2] == 8) &&
-            lbl_2_bss_1A8248[0x442A] == 1) {
-            *(s16*)(lbl_2_bss_1A8248 + 0x16C0) = target;
+            (lbl_2_bss_1A8248->slots[target]._4 == 7 || lbl_2_bss_1A8248->slots[target]._4 == 8) &&
+            lbl_2_bss_1A8248->_442A == 1) {
+            lbl_2_bss_1A8248->entries[0].targetLocation = target;
             fn_2_1C490();
             CHALLENGE_STATE = 0x1C;
-        } else if (target != -1 && lbl_2_bss_1A8248[target * 10 + 0x40F1] != 1 &&
-                   lbl_2_bss_1A8248[target * 10 + 0x40F4] == 0 &&
-                   lbl_2_bss_1A8248[target * 10 + 0x40F2] != 7 && lbl_2_bss_1A8248[target * 10 + 0x40F2] != 8) {
-            *(s16*)(lbl_2_bss_1A8248 + 0x16C0) = target;
-            lbl_2_bss_1A8248[0x4448] = direction;
-            *(s16*)(lbl_2_bss_1A8248 + 0x16BE) = *(s16*)(lbl_2_bss_1A8248 + 0x16C2);
-            lbl_2_bss_1A824C[0][0x19783D] = 0;
+        } else if (target != -1 && lbl_2_bss_1A8248->slots[target]._3 != 1 &&
+                   lbl_2_bss_1A8248->slots[target]._6 == 0 &&
+                   lbl_2_bss_1A8248->slots[target]._4 != 7 && lbl_2_bss_1A8248->slots[target]._4 != 8) {
+            lbl_2_bss_1A8248->entries[0].targetLocation = target;
+            lbl_2_bss_1A8248->_4448 = direction;
+            lbl_2_bss_1A8248->entries[0]._AE = lbl_2_bss_1A8248->entries[0].locationIndex;
+            lbl_2_bss_1A824C->_19783D = 0;
             fn_2_72054(0, 2);
             fn_2_1C490();
             CHALLENGE_STATE = 0x14;
@@ -9549,45 +9521,45 @@ void fn_2_20D08(void) {
         } else {
             u16 held = MENU_PAD.held;
             if ((held & 8) || (held & 4) || (held & 1) || (held & 2)) {
-                lbl_2_bss_1A824C[0][0x1978FB] = 1;
+                lbl_2_bss_1A824C->_1978FB = 1;
             }
-            *(s8*)(lbl_2_bss_1A8248 + 0x4448) = -1;
+            lbl_2_bss_1A8248->_4448 = -1;
         }
         if (MENU_PAD.down & 0x100) {
-            s16 current = *(s16*)(lbl_2_bss_1A8248 + 0x16C2);
-            u8* record = lbl_2_bss_1A8248 + current * 10;
-            if (record[0x40F1] == 0 && record[0x40F2] == 0 && record[0x40F3] != lbl_2_bss_1A8248[0x441C] &&
+            s16 current = lbl_2_bss_1A8248->entries[0].locationIndex;
+            MenuLocSlot* record = &lbl_2_bss_1A8248->slots[current];
+            if (record->_3 == 0 && record->_4 == 0 && record->_5 != lbl_2_bss_1A8248->_441C &&
                 fn_2_45938(current) == 1) {
-                lbl_2_bss_1A8248[0x44EF] = 0;
-                lbl_2_bss_1A8248[0x44F3] = 1;
+                lbl_2_bss_1A8248->_44EF = 0;
+                lbl_2_bss_1A8248->_44F3 = 1;
                 CHALLENGE_STATE = 0x17;
                 break;
             }
-            current = *(s16*)(lbl_2_bss_1A8248 + 0x16C2);
-            record = lbl_2_bss_1A8248 + current * 10;
-            if (record[0x40F1] == 0 && record[0x40F2] == 0 && record[0x40F3] == lbl_2_bss_1A8248[0x441C] &&
-                lbl_2_bss_1A8248[0x441C] == 5 && lbl_2_bss_1A8248[0x4422] >= 5) {
-                lbl_2_bss_1A8248[0x44EF] = 1;
-                lbl_2_bss_1A8248[0x44F3] = 1;
+            current = lbl_2_bss_1A8248->entries[0].locationIndex;
+            record = &lbl_2_bss_1A8248->slots[current];
+            if (record->_3 == 0 && record->_4 == 0 && record->_5 == lbl_2_bss_1A8248->_441C &&
+                lbl_2_bss_1A8248->_441C == 5 && lbl_2_bss_1A8248->_4422 >= 5) {
+                lbl_2_bss_1A8248->_44EF = 1;
+                lbl_2_bss_1A8248->_44F3 = 1;
                 CHALLENGE_STATE = 0x17;
                 break;
             }
-            if (record[0x40F1] == 0 && record[0x40F2] == 0 && record[0x40F3] != lbl_2_bss_1A8248[0x441C] &&
+            if (record->_3 == 0 && record->_4 == 0 && record->_5 != lbl_2_bss_1A8248->_441C &&
                 fn_2_45938(current) == 0) {
                 sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
                 break;
             }
-            current = *(s16*)(lbl_2_bss_1A8248 + 0x16C2);
-            record = lbl_2_bss_1A8248 + current * 10;
-            if (record[0x40F1] == 0 && record[0x40F2] == 4 && record[0x40F3] != lbl_2_bss_1A8248[0x441C]) {
-                lbl_2_bss_1A8248[0x44EF] = 0;
-                lbl_2_bss_1A8248[0x44F3] = 1;
+            current = lbl_2_bss_1A8248->entries[0].locationIndex;
+            record = &lbl_2_bss_1A8248->slots[current];
+            if (record->_3 == 0 && record->_4 == 4 && record->_5 != lbl_2_bss_1A8248->_441C) {
+                lbl_2_bss_1A8248->_44EF = 0;
+                lbl_2_bss_1A8248->_44F3 = 1;
                 CHALLENGE_STATE = 0x2D;
                 break;
             }
-            if (record[0x40F1] == 0 && record[0x40F2] == 6) {
+            if (record->_3 == 0 && record->_4 == 6) {
                 CHALLENGE_STATE = 0x60;
-                lbl_2_bss_1A8248[0x44F3] = 1;
+                lbl_2_bss_1A8248->_44F3 = 1;
                 break;
             }
         }
@@ -9596,21 +9568,21 @@ void fn_2_20D08(void) {
             if (slot >= 2 && slot <= 6 && (MENU_PAD.down & 0x100)) {
                 fn_2_68654(0, 1);
                 fn_2_68638(0, slot);
-                lbl_2_bss_1A8248[0x44F3] = 1;
+                lbl_2_bss_1A8248->_44F3 = 1;
                 CHALLENGE_STATE = 0x26;
                 goto state_26;
             }
             if (MENU_PAD.down & 0x1000) {
-                lbl_2_bss_1A8248[0x44F2] = 3;
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) = 0;
+                lbl_2_bss_1A8248->_44F2 = 3;
+                lbl_2_bss_1A824C->_1976D8 = 0;
                 QUEUE_DONE = 0;
-                *(s16*)(lbl_2_bss_1A8234[0] + 0x162600) = 0x10;
-                lbl_2_bss_1A8234[0][0x162660] = 1;
+                lbl_2_bss_1A8234->timer = 0x10;
+                lbl_2_bss_1A8234->layerFlags[1][22] = 1;
                 sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
-                lbl_2_bss_1A8248[0x44F3] = 1;
+                lbl_2_bss_1A8248->_44F3 = 1;
                 CHALLENGE_STATE = 0x40;
             } else if (MENU_PAD.down & 0x20) {
-                lbl_2_bss_1A8248[0x44F3] = 1;
+                lbl_2_bss_1A8248->_44F3 = 1;
                 CHALLENGE_STATE = 0x5A;
             }
         }
@@ -9618,8 +9590,8 @@ void fn_2_20D08(void) {
     }
     case 0x13:
     state_13:
-        *(s16*)(lbl_2_bss_1A8248 + 0x16BE) = *(s16*)(lbl_2_bss_1A8248 + 0x16C2);
-        lbl_2_bss_1A824C[0][0x19783D] = 0;
+        lbl_2_bss_1A8248->entries[0]._AE = lbl_2_bss_1A8248->entries[0].locationIndex;
+        lbl_2_bss_1A824C->_19783D = 0;
         fn_2_72054(0, 2);
         CHALLENGE_STATE = 0x14;
         break;
@@ -9627,14 +9599,14 @@ void fn_2_20D08(void) {
         if (fn_2_686B0(0) == 1) {
             fn_2_6AF80(0, 0);
             fn_2_1C41C();
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1976F2) = 10;
+            lbl_2_bss_1A824C->_1976F2 = 10;
             CHALLENGE_STATE = 0x20;
         } else {
             s32 slot = fn_2_684D0(0);
             if (slot >= 2 && slot <= 6 && (MENU_PAD.down & 0x100)) {
                 fn_2_68654(0, 1);
                 fn_2_68638(0, slot);
-                lbl_2_bss_1A8248[0x44F3] = 1;
+                lbl_2_bss_1A8248->_44F3 = 1;
                 fn_2_6AF80(0, 0);
                 fn_2_1C41C();
                 CHALLENGE_STATE = 0x26;
@@ -9643,13 +9615,13 @@ void fn_2_20D08(void) {
             if (fn_2_6AFD4(0) == 1) {
                 s16 current;
                 fn_2_6AF80(0, 0);
-                current = *(s16*)(lbl_2_bss_1A8248 + 0x16C2);
-                if (lbl_2_bss_1A8248[current * 10 + 0x40F6] == 0) {
+                current = lbl_2_bss_1A8248->entries[0].locationIndex;
+                if (lbl_2_bss_1A8248->slots[current]._8 == 0) {
                     fn_2_1C41C();
                     CHALLENGE_STATE = 0x12;
                     goto state_12;
                 }
-                *(s16*)(lbl_2_bss_1A8248 + 0x16C0) = fn_2_201E4(current, *(s8*)(lbl_2_bss_1A8248 + 0x4448));
+                lbl_2_bss_1A8248->entries[0].targetLocation = fn_2_201E4(current, lbl_2_bss_1A8248->_4448);
                 CHALLENGE_STATE = 0x13;
                 goto state_13;
             }
@@ -9686,9 +9658,9 @@ void fn_2_20D08(void) {
         break;
     case 0x16: {
         s16 done = QUEUE_DONE;
-        if (done != 0 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B0) == 0) {
+        if (done != 0 && lbl_2_bss_1A824C->_1972B0 == 0) {
             CHALLENGE_STATE = 0x17;
-        } else if (done != 0 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B0) == 1) {
+        } else if (done != 0 && lbl_2_bss_1A824C->_1972B0 == 1) {
             CHALLENGE_STATE = 0x12;
         }
         break;
@@ -9701,58 +9673,58 @@ void fn_2_20D08(void) {
         break;
     case 0x18: {
         s16 done = QUEUE_DONE;
-        if (done == 1 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
-            if ((s32)lbl_2_bss_1A8248[0x4443] == 1) {
+        if (done == 1 && lbl_2_bss_1A824C->_1976DE == 0) {
+            if ((s32)lbl_2_bss_1A8248->_4443 == 1) {
                 changeScene(3, 6);
             } else {
-                fn_800203E0(12, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248[0x441E]]);
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1976F2) = 0x78;
+                fn_800203E0(12, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248->_441E]);
+                lbl_2_bss_1A824C->_1976F2 = 0x78;
             }
-            *(u32*)(lbl_2_bss_1A824C[0] + 0x1976A8) = fn_80062890(11);
+            lbl_2_bss_1A824C->_1976A8 = fn_80062890(11);
             CHALLENGE_STATE = 0x19;
-        } else if (done == 1 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 1) {
+        } else if (done == 1 && lbl_2_bss_1A824C->_1976DE == 1) {
             CHALLENGE_STATE = 0x12;
         }
         break;
     }
     case 0x19:
-        if ((u8)fn_80062794(*(s32*)(lbl_2_bss_1A824C[0] + 0x1976A8)) == 0) {
+        if ((u8)fn_80062794((s32)lbl_2_bss_1A824C->_1976A8) == 0) {
             CHALLENGE_STATE = 0x1A;
         }
         break;
     case 0x1A:
-        if ((s32)lbl_2_bss_1A8248[0x4443] == 1) {
-            if (lbl_8037169C[0x13] != 0) {
+        if ((s32)lbl_2_bss_1A8248->_4443 == 1) {
+            if (lbl_8037169C._13 != 0) {
                 START_TASK(fn_2_40B90);
                 CHALLENGE_STATE = 0x1B;
             }
-        } else if ((*(s16*)(lbl_2_bss_1A824C[0] + 0x1976F2))-- == 0) {
+        } else if ((lbl_2_bss_1A824C->_1976F2)-- == 0) {
             START_TASK(fn_2_40B90);
             CHALLENGE_STATE = 0x1B;
         }
         break;
     case 0x1B:
         if (QUEUE_DONE == 1) {
-            if ((s32)lbl_2_bss_1A8248[0x4443] == 1) {
-                *(void (**)(void))lbl_803CC1B8[0] = fn_2_1B7B4;
-                SCENE_FLOW_S16(0x30) = 3;
-                SCENE_FLOW_S16(0x32) = 0;
+            if ((s32)lbl_2_bss_1A8248->_4443 == 1) {
+                MENU_TASK->func = fn_2_1B7B4;
+                lbl_800E877C.mode = 3;
+                lbl_800E877C.state = 0;
             } else {
                 fn_2_4D194();
-                *(void (**)(void))lbl_803CC1B8[0] = fn_2_11D8;
+                MENU_TASK->func = fn_2_11D8;
                 fn_2_11A0(10);
-                SCENE_FLOW_S16(0x30) = 3;
-                SCENE_FLOW_S16(0x32) = 0;
+                lbl_800E877C.mode = 3;
+                lbl_800E877C.state = 0;
             }
         }
         break;
     case 0x20:
-        if ((*(s16*)(lbl_2_bss_1A824C[0] + 0x1976F2))-- == 0) {
+        if ((lbl_2_bss_1A824C->_1976F2)-- == 0) {
             CHALLENGE_STATE = 0x21;
         }
         break;
     case 0x21:
-        lbl_2_bss_1A8248[0x4430] = 0;
+        lbl_2_bss_1A8248->_4430 = 0;
         fn_2_4DEE8();
         fn_80068838();
         fn_2_422FC(3);
@@ -9761,44 +9733,44 @@ void fn_2_20D08(void) {
         break;
     case 0x22:
         if (QUEUE_DONE == 1) {
-            *(u32*)(lbl_2_bss_1A824C[0] + 0x1976A8) = fn_80062890(11);
+            lbl_2_bss_1A824C->_1976A8 = fn_80062890(11);
             CHALLENGE_STATE = 0x23;
         }
         break;
     case 0x23:
-        if ((u8)fn_80062794(*(s32*)(lbl_2_bss_1A824C[0] + 0x1976A8)) == 0) {
-            if ((s32)lbl_2_bss_1A8248[0x443E] == 1) {
+        if ((u8)fn_80062794((s32)lbl_2_bss_1A824C->_1976A8) == 0) {
+            if ((s32)lbl_2_bss_1A8248->_443E == 1) {
                 changeScene(3, 6);
             } else {
-                fn_800203E0(12, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248[0x441C]]);
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1976F2) = 0x78;
+                fn_800203E0(12, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248->_441C]);
+                lbl_2_bss_1A824C->_1976F2 = 0x78;
             }
             CHALLENGE_STATE = 0x24;
         }
         break;
     case 0x24:
-        if ((s32)lbl_2_bss_1A8248[0x443E] == 1) {
-            if (lbl_8037169C[0x13] != 0) {
+        if ((s32)lbl_2_bss_1A8248->_443E == 1) {
+            if (lbl_8037169C._13 != 0) {
                 START_TASK(fn_2_40B90);
                 CHALLENGE_STATE = 0x25;
             }
-        } else if ((*(s16*)(lbl_2_bss_1A824C[0] + 0x1976F2))-- == 0) {
+        } else if ((lbl_2_bss_1A824C->_1976F2)-- == 0) {
             START_TASK(fn_2_40B90);
             CHALLENGE_STATE = 0x25;
         }
         break;
     case 0x25:
         if (QUEUE_DONE == 1) {
-            if ((s32)lbl_2_bss_1A8248[0x443E] == 1) {
-                *(void (**)(void))lbl_803CC1B8[0] = fn_2_1B7B4;
-                SCENE_FLOW_S16(0x30) = 4;
-                SCENE_FLOW_S16(0x32) = 0;
+            if ((s32)lbl_2_bss_1A8248->_443E == 1) {
+                MENU_TASK->func = fn_2_1B7B4;
+                lbl_800E877C.mode = 4;
+                lbl_800E877C.state = 0;
             } else {
                 fn_2_4CEE0();
-                *(void (**)(void))lbl_803CC1B8[0] = fn_2_11D8;
+                MENU_TASK->func = fn_2_11D8;
                 fn_2_11A0(4);
-                SCENE_FLOW_S16(0x30) = 4;
-                SCENE_FLOW_S16(0x32) = 0;
+                lbl_800E877C.mode = 4;
+                lbl_800E877C.state = 0;
             }
         }
         break;
@@ -9807,19 +9779,19 @@ void fn_2_20D08(void) {
         s32 index = fn_2_68690(0) - 2;
         switch (index) {
         case 0:
-            fn_2_422FC(*(s8*)(lbl_2_bss_1A8248 + 0x44F8 + index) + 0x14);
+            fn_2_422FC((s8)lbl_2_bss_1A8248->_44F8[index] + 0x14);
             break;
         case 1:
-            fn_2_422FC(*(s8*)(lbl_2_bss_1A8248 + 0x44F8 + index) + 0x18);
+            fn_2_422FC((s8)lbl_2_bss_1A8248->_44F8[index] + 0x18);
             break;
         case 2:
-            fn_2_422FC(*(s8*)(lbl_2_bss_1A8248 + 0x44F8 + index) + 0x1C);
+            fn_2_422FC((s8)lbl_2_bss_1A8248->_44F8[index] + 0x1C);
             break;
         case 3:
-            fn_2_422FC(*(s8*)(lbl_2_bss_1A8248 + 0x44F8 + index) + 0x20);
+            fn_2_422FC((s8)lbl_2_bss_1A8248->_44F8[index] + 0x20);
             break;
         case 4:
-            fn_2_422FC(*(s8*)(lbl_2_bss_1A8248 + 0x44F8 + index) + 0x24);
+            fn_2_422FC((s8)lbl_2_bss_1A8248->_44F8[index] + 0x24);
             break;
         }
         START_TASK(fn_2_42388);
@@ -9828,9 +9800,9 @@ void fn_2_20D08(void) {
     }
     case 0x27: {
         s16 done = QUEUE_DONE;
-        if (done == 1 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
+        if (done == 1 && lbl_2_bss_1A824C->_1976DE == 0) {
             CHALLENGE_STATE = 0x28;
-        } else if (done == 1 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 1) {
+        } else if (done == 1 && lbl_2_bss_1A824C->_1976DE == 1) {
             fn_2_68654(0, 0);
             CHALLENGE_STATE = 0x12;
         }
@@ -9844,28 +9816,28 @@ void fn_2_20D08(void) {
         break;
     case 0x29:
         if (QUEUE_DONE == 1) {
-            *(u32*)(lbl_2_bss_1A824C[0] + 0x1976A8) = fn_80062890(6);
+            lbl_2_bss_1A824C->_1976A8 = fn_80062890(6);
             CHALLENGE_STATE = 0x2B;
         }
         break;
     case 0x2B:
-        if ((u8)fn_80062794(*(s32*)(lbl_2_bss_1A824C[0] + 0x1976A8)) == 0) {
-            if ((s32)lbl_2_bss_1A8248[0x443C] == 1) {
+        if ((u8)fn_80062794((s32)lbl_2_bss_1A824C->_1976A8) == 0) {
+            if ((s32)lbl_2_bss_1A8248->_443C == 1) {
                 changeScene(3, 6);
             } else {
-                fn_800203E0(12, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248[0x441C]]);
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1976F2) = 0x78;
+                fn_800203E0(12, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248->_441C]);
+                lbl_2_bss_1A824C->_1976F2 = 0x78;
             }
             CHALLENGE_STATE = 0x2A;
         }
         break;
     case 0x2A:
-        if ((s32)lbl_2_bss_1A8248[0x443C] == 1) {
-            if (lbl_8037169C[0x13] != 0) {
+        if ((s32)lbl_2_bss_1A8248->_443C == 1) {
+            if (lbl_8037169C._13 != 0) {
                 START_TASK(fn_2_40B90);
                 CHALLENGE_STATE = 0x2C;
             }
-        } else if ((*(s16*)(lbl_2_bss_1A824C[0] + 0x1976F2))-- == 0) {
+        } else if ((lbl_2_bss_1A824C->_1976F2)-- == 0) {
             START_TASK(fn_2_40B90);
             CHALLENGE_STATE = 0x2C;
         }
@@ -9873,29 +9845,29 @@ void fn_2_20D08(void) {
     case 0x2C:
         if (QUEUE_DONE == 1) {
             fn_2_68654(0, 0);
-            if ((s32)lbl_2_bss_1A8248[0x443C] == 1) {
-                *(void (**)(void))lbl_803CC1B8[0] = fn_2_1B7B4;
-                SCENE_FLOW_S16(0x30) = 5;
-                SCENE_FLOW_S16(0x32) = 0;
+            if ((s32)lbl_2_bss_1A8248->_443C == 1) {
+                MENU_TASK->func = fn_2_1B7B4;
+                lbl_800E877C.mode = 5;
+                lbl_800E877C.state = 0;
             } else {
                 fn_2_4C9C4();
-                *(void (**)(void))lbl_803CC1B8[0] = fn_2_11D8;
+                MENU_TASK->func = fn_2_11D8;
                 fn_2_11A0(4);
-                SCENE_FLOW_S16(0x30) = 5;
-                SCENE_FLOW_S16(0x32) = 0;
+                lbl_800E877C.mode = 5;
+                lbl_800E877C.state = 0;
             }
         }
         break;
     case 0x2D:
-        fn_2_422FC(*(s8*)(lbl_2_bss_1A8248 + 0x44FD) + 0x28);
+        fn_2_422FC((s8)lbl_2_bss_1A8248->_44F8[5] + 0x28);
         START_TASK(fn_2_42388);
         CHALLENGE_STATE = 0x2E;
         break;
     case 0x2E: {
         s16 done = QUEUE_DONE;
-        if (done == 1 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
+        if (done == 1 && lbl_2_bss_1A824C->_1976DE == 0) {
             CHALLENGE_STATE = 0x2F;
-        } else if (done == 1 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 1) {
+        } else if (done == 1 && lbl_2_bss_1A824C->_1976DE == 1) {
             CHALLENGE_STATE = 0x12;
         }
         break;
@@ -9905,50 +9877,50 @@ void fn_2_20D08(void) {
         CHALLENGE_STATE = 0x30;
         break;
     case 0x30:
-        *(u32*)(lbl_2_bss_1A824C[0] + 0x1976A8) = fn_80062890(11);
+        lbl_2_bss_1A824C->_1976A8 = fn_80062890(11);
         CHALLENGE_STATE = 0x31;
         break;
     case 0x31:
-        if ((u8)fn_80062794(*(s32*)(lbl_2_bss_1A824C[0] + 0x1976A8)) == 0) {
-            if ((s32)lbl_2_bss_1A8248[0x4441] == 1) {
+        if ((u8)fn_80062794((s32)lbl_2_bss_1A824C->_1976A8) == 0) {
+            if ((s32)lbl_2_bss_1A8248->_4441 == 1) {
                 changeScene(3, 6);
             } else {
-                fn_800203E0(12, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248[0x441C]]);
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1976F2) = 0x78;
+                fn_800203E0(12, (s8)lbl_2_data_3CE0[lbl_2_bss_1A8248->_441C]);
+                lbl_2_bss_1A824C->_1976F2 = 0x78;
             }
             CHALLENGE_STATE = 0x32;
         }
         break;
     case 0x32:
-        if ((s32)lbl_2_bss_1A8248[0x4441] == 1) {
-            if (lbl_8037169C[0x13] != 0) {
+        if ((s32)lbl_2_bss_1A8248->_4441 == 1) {
+            if (lbl_8037169C._13 != 0) {
                 START_TASK(fn_2_40B90);
                 CHALLENGE_STATE = 0x33;
             }
-        } else if ((*(s16*)(lbl_2_bss_1A824C[0] + 0x1976F2))-- == 0) {
+        } else if ((lbl_2_bss_1A824C->_1976F2)-- == 0) {
             START_TASK(fn_2_40B90);
             CHALLENGE_STATE = 0x33;
         }
         break;
     case 0x33:
         if (QUEUE_DONE == 1) {
-            if ((s32)lbl_2_bss_1A8248[0x4441] == 1) {
-                *(void (**)(void))lbl_803CC1B8[0] = fn_2_1B7B4;
-                SCENE_FLOW_S16(0x30) = 6;
-                SCENE_FLOW_S16(0x32) = 0;
+            if ((s32)lbl_2_bss_1A8248->_4441 == 1) {
+                MENU_TASK->func = fn_2_1B7B4;
+                lbl_800E877C.mode = 6;
+                lbl_800E877C.state = 0;
             } else {
                 fn_2_4C81C();
-                *(void (**)(void))lbl_803CC1B8[0] = fn_2_11D8;
+                MENU_TASK->func = fn_2_11D8;
                 fn_2_11A0(4);
-                SCENE_FLOW_S16(0x30) = 6;
-                SCENE_FLOW_S16(0x32) = 0;
+                lbl_800E877C.mode = 6;
+                lbl_800E877C.state = 0;
             }
         }
         break;
     case 0x34: {
-        s8 result = *(s8*)(lbl_2_bss_1A824C[0] + 0x197843);
+        s8 result = lbl_2_bss_1A824C->_197843;
         if (result == 0) {
-            if (lbl_2_bss_1A8248[0x441C] == 5) {
+            if (lbl_2_bss_1A8248->_441C == 5) {
                 fn_2_422FC(6);
             } else {
                 fn_2_422FC(5);
@@ -9967,23 +9939,23 @@ void fn_2_20D08(void) {
     }
     case 0x35:
         if (QUEUE_DONE == 1) {
-            s8 result = *(s8*)(lbl_2_bss_1A824C[0] + 0x197843);
+            s8 result = lbl_2_bss_1A824C->_197843;
             if (result == 0) {
-                lbl_2_bss_1A8248[0x44FE + lbl_2_bss_1A8248[0x441E]] = 0;
+                lbl_2_bss_1A8248->_44FE[lbl_2_bss_1A8248->_441E] = 0;
             } else if (result == 1) {
-                lbl_2_bss_1A8248[0x44FE + lbl_2_bss_1A8248[0x441E]] = 1;
+                lbl_2_bss_1A8248->_44FE[lbl_2_bss_1A8248->_441E] = 1;
             } else {
-                lbl_2_bss_1A8248[0x44FE + lbl_2_bss_1A8248[0x441E]] = 2;
+                lbl_2_bss_1A8248->_44FE[lbl_2_bss_1A8248->_441E] = 2;
             }
-            if (*(s8*)(lbl_2_bss_1A8248 + 0x44EF) != 0) {
-                lbl_2_bss_1A8248[0x44F0] = 1;
+            if ((s8)lbl_2_bss_1A8248->_44EF != 0) {
+                lbl_2_bss_1A8248->_44F0 = 1;
             }
             fn_2_45978();
             CHALLENGE_STATE = 0x12;
         }
         break;
     case 0x36: {
-        s8 result = *(s8*)(lbl_2_bss_1A824C[0] + 0x197843);
+        s8 result = lbl_2_bss_1A824C->_197843;
         if (result == 0) {
             fn_2_422FC(9);
             ((u8*)fn_800B0A5C_insertQueue(fn_2_42388, 2))[0x28] = 0;
@@ -10002,40 +9974,40 @@ void fn_2_20D08(void) {
         if (QUEUE_DONE == 1) {
             s8 result;
             s16 current;
-            if (lbl_2_bss_1A8248[0x442B] < 3) {
-                lbl_2_bss_1A8248[0x442B]++;
+            if (lbl_2_bss_1A8248->_442B < 3) {
+                lbl_2_bss_1A8248->_442B++;
             }
-            result = *(s8*)(lbl_2_bss_1A824C[0] + 0x197843);
+            result = lbl_2_bss_1A824C->_197843;
             if (result == 0) {
-                if (lbl_2_bss_1A8248[0x442C] < 3) {
-                    lbl_2_bss_1A8248[0x442C]++;
+                if (lbl_2_bss_1A8248->_442C < 3) {
+                    lbl_2_bss_1A8248->_442C++;
                 }
-                lbl_2_bss_1A8248[0x4504] = 0;
+                lbl_2_bss_1A8248->_44FE[6] = 0;
             } else if (result == 1) {
-                if (lbl_2_bss_1A8248[0x442D] < 3) {
-                    lbl_2_bss_1A8248[0x442D]++;
+                if (lbl_2_bss_1A8248->_442D < 3) {
+                    lbl_2_bss_1A8248->_442D++;
                 }
-                lbl_2_bss_1A8248[0x4504] = 1;
+                lbl_2_bss_1A8248->_44FE[6] = 1;
             } else {
-                if (lbl_2_bss_1A8248[0x442E] < 3) {
-                    lbl_2_bss_1A8248[0x442E]++;
+                if (lbl_2_bss_1A8248->_442E < 3) {
+                    lbl_2_bss_1A8248->_442E++;
                 }
-                lbl_2_bss_1A8248[0x4504] = 2;
+                lbl_2_bss_1A8248->_44FE[6] = 2;
             }
             fn_2_45978();
-            current = *(s16*)(lbl_2_bss_1A8248 + 0x16C2);
-            if (lbl_2_bss_1A8248[current * 10 + 0x40F6] == 0) {
+            current = lbl_2_bss_1A8248->entries[0].locationIndex;
+            if (lbl_2_bss_1A8248->slots[current]._8 == 0) {
                 fn_2_1C41C();
                 CHALLENGE_STATE = 0x12;
                 goto state_12;
             }
-            *(s16*)(lbl_2_bss_1A8248 + 0x16C0) = fn_2_201E4(current, *(s8*)(lbl_2_bss_1A8248 + 0x4448));
+            lbl_2_bss_1A8248->entries[0].targetLocation = fn_2_201E4(current, lbl_2_bss_1A8248->_4448);
             CHALLENGE_STATE = 0x13;
             goto state_13;
         }
         break;
     case 0x38: {
-        s8 result = *(s8*)(lbl_2_bss_1A824C[0] + 0x197843);
+        s8 result = lbl_2_bss_1A824C->_197843;
         if (result == 0) {
             fn_2_422FC(12);
             ((u8*)fn_800B0A5C_insertQueue(fn_2_42388, 2))[0x28] = 0;
@@ -10057,7 +10029,7 @@ void fn_2_20D08(void) {
         }
         break;
     case 0x3A: {
-        s8 result = *(s8*)(lbl_2_bss_1A824C[0] + 0x197843);
+        s8 result = lbl_2_bss_1A824C->_197843;
         if (result == 0) {
             fn_2_422FC(15);
             ((u8*)fn_800B0A5C_insertQueue(fn_2_42388, 2))[0x28] = 0;
@@ -10086,7 +10058,7 @@ void fn_2_20D08(void) {
         CHALLENGE_STATE = 0x3D;
         break;
     case 0x3D:
-        if (lbl_8037169C[0x13] != 0) {
+        if (lbl_8037169C._13 != 0) {
             clear = lbl_2_data_107C8;
             GXSetCopyClear(clear, 0xFFFFFF);
             CHALLENGE_STATE = 0x3E;
@@ -10099,9 +10071,9 @@ void fn_2_20D08(void) {
     case 0x3F:
         if (QUEUE_DONE == 1) {
             fn_2_11A0(15);
-            SCENE_FLOW_S16(0x30) = 10;
-            SCENE_FLOW_S16(0x32) = 0;
-            *(void (**)(void))lbl_803CC1B8[0] = fn_2_11D8;
+            lbl_800E877C.mode = 10;
+            lbl_800E877C.state = 0;
+            MENU_TASK->func = fn_2_11D8;
             CHALLENGE_STATE = 0;
         }
         break;
@@ -10112,12 +10084,12 @@ void fn_2_20D08(void) {
         break;
     case 0x5B:
         if (QUEUE_DONE == 1) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
     case 0x5C:
-        if (lbl_2_bss_1A8248[0x4422] >= 4) {
+        if (lbl_2_bss_1A8248->_4422 >= 4) {
             fn_2_422FC(0x2D);
         } else {
             fn_2_422FC(0x2E);
@@ -10127,10 +10099,10 @@ void fn_2_20D08(void) {
         break;
     case 0x5D: {
         s16 done = QUEUE_DONE;
-        if (done == 1 && lbl_2_bss_1A8248[0x4422] >= 4) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1976E4) = lbl_2_data_2E6C[lbl_2_bss_1A8248[0x4415]];
+        if (done == 1 && lbl_2_bss_1A8248->_4422 >= 4) {
+            lbl_2_bss_1A824C->_1976E4 = lbl_2_data_2E6C[lbl_2_bss_1A8248->_4415];
             CHALLENGE_STATE = 0x5E;
-        } else if (done == 1 && lbl_2_bss_1A8248[0x4422] < 4) {
+        } else if (done == 1 && lbl_2_bss_1A8248->_4422 < 4) {
             CHALLENGE_STATE = 0x12;
         }
         break;
@@ -10148,23 +10120,23 @@ void fn_2_20D08(void) {
     case 0x60:
         fn_2_422FC(0x30);
         START_TASK(fn_2_42388);
-        lbl_2_bss_1A824C[0][0x1978FA] = 1;
-        *(u32*)(lbl_2_bss_1A824C[0] + 0x1976A8) = fn_80062890(16);
+        lbl_2_bss_1A824C->_1978FA = 1;
+        lbl_2_bss_1A824C->_1976A8 = fn_80062890(16);
         CHALLENGE_STATE = 0x61;
         break;
     case 0x61: {
         s16 done = QUEUE_DONE;
-        if (done == 1 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B0) == 0) {
+        if (done == 1 && lbl_2_bss_1A824C->_1972B0 == 0) {
             CHALLENGE_STATE = 0x63;
-        } else if (done == 1 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B0) == 1) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+        } else if (done == 1 && lbl_2_bss_1A824C->_1972B0 == 1) {
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
     }
     case 0x62:
         if (QUEUE_DONE == 1) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
@@ -10175,7 +10147,7 @@ void fn_2_20D08(void) {
         break;
     case 0x64:
         if (QUEUE_DONE == 1) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
@@ -10185,9 +10157,9 @@ void fn_2_20D08(void) {
         fn_2_42FC8();
         clear = lbl_2_data_107C8;
         GXSetCopyClear(clear, 0xFFFFFF);
-        g_d_GameSettings.challengeCaptainStarBought[*(s8*)(lbl_2_bss_1A8248 + 0x444B)] = 0;
-        *(s8*)(lbl_2_bss_1A8248 + 0x444C) = -1;
-        *(s8*)(lbl_2_bss_1A8248 + 0x444B) = -1;
+        g_d_GameSettings.challengeCaptainStarBought[lbl_2_bss_1A8248->_444B] = 0;
+        lbl_2_bss_1A8248->_444C = -1;
+        lbl_2_bss_1A8248->_444B = -1;
         changeScene(1, 6);
         QUEUE_DONE = 1;
         CHALLENGE_STATE = 0x66;
@@ -10203,19 +10175,19 @@ void fn_2_20D08(void) {
         break;
     case 0x68:
         if (QUEUE_DONE == 1) {
-            lbl_2_bss_1A8234[0][0x16283A] = 1;
-            lbl_2_bss_1A8230[0][0x32A55] = 1;
-            *(s16*)(queue + 0x14) = 0x32;
+            lbl_2_bss_1A8234->layerFlags[8][6] = 1;
+            lbl_2_bss_1A8230->_32A04[8][1] = 1;
+            queue->baseIdx = 0x32;
             CHALLENGE_STATE = 0x69;
         }
         break;
     case 0x69:
-        if ((*(s16*)(queue + 0x14))-- == 0) {
+        if (queue->baseIdx-- == 0) {
             CHALLENGE_STATE = 0x6A;
         }
         break;
     case 0x6A:
-        lbl_2_bss_1A824C[0][0x1978F7] = 1;
+        lbl_2_bss_1A824C->_1978F7 = 1;
         START_TASK(fn_2_399C0);
         CHALLENGE_STATE = 0x6B;
         break;
@@ -10225,8 +10197,8 @@ void fn_2_20D08(void) {
         }
         break;
     case 0x6C:
-        if (lbl_2_bss_1A8244[0][0xF5] == 0) {
-            lbl_2_bss_1A8244[0][0xF5] = 1;
+        if (lbl_2_bss_1A8244->_F5 == 0) {
+            lbl_2_bss_1A8244->_F5 = 1;
             if (g_d_GameSettings._12 < 1) {
                 g_d_GameSettings._12 = 1;
             }
@@ -10243,8 +10215,8 @@ void fn_2_20D08(void) {
         }
         break;
     case 0x6E:
-        if (lbl_2_bss_1A8244[0][0xE7] == 0 && lbl_2_bss_1A8248[0x4415] == 3) {
-            lbl_2_bss_1A8244[0][0xF4] = 1;
+        if (lbl_2_bss_1A8244->_E4[3] == 0 && lbl_2_bss_1A8248->_4415 == 3) {
+            lbl_2_bss_1A8244->_F4 = 1;
             START_TASK(fn_2_3DC60);
             CHALLENGE_STATE = 0x6F;
         } else {
@@ -10299,17 +10271,17 @@ void fn_2_20D08(void) {
         break;
     case 0x78:
         if (fn_2_24E9C() != 0) {
-            *(s16*)(queue + 0x14) = 0x32;
+            queue->baseIdx = 0x32;
             CHALLENGE_STATE = 0x79;
         }
         break;
     case 0x79:
-        if ((*(s16*)(queue + 0x14))-- == 0) {
+        if (queue->baseIdx-- == 0) {
             CHALLENGE_STATE = 0x3C;
         }
         break;
     case 0x40:
-        if ((*(s16*)(lbl_2_bss_1A8234[0] + 0x162600))-- == 0) {
+        if ((lbl_2_bss_1A8234->timer)-- == 0) {
             CHALLENGE_STATE = 0x41;
         }
         break;
@@ -10317,15 +10289,15 @@ void fn_2_20D08(void) {
         u16 repeat = MENU_PAD.repeat;
         u16 down;
         if (repeat & 8) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) = (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) + 3) % 4;
-            if (lbl_803C50E8[0x47] == 1 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) == 2) {
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) = (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) + 3) % 4;
+            lbl_2_bss_1A824C->_1976D8 = (lbl_2_bss_1A824C->_1976D8 + 3) % 4;
+            if (lbl_803C50E8._47 == 1 && lbl_2_bss_1A824C->_1976D8 == 2) {
+                lbl_2_bss_1A824C->_1976D8 = (lbl_2_bss_1A824C->_1976D8 + 3) % 4;
             }
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else if (repeat & 4) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) = (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) + 1) % 4;
-            if (lbl_803C50E8[0x47] == 1 && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) == 2) {
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) = (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) + 1) % 4;
+            lbl_2_bss_1A824C->_1976D8 = (lbl_2_bss_1A824C->_1976D8 + 1) % 4;
+            if (lbl_803C50E8._47 == 1 && lbl_2_bss_1A824C->_1976D8 == 2) {
+                lbl_2_bss_1A824C->_1976D8 = (lbl_2_bss_1A824C->_1976D8 + 1) % 4;
             }
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
@@ -10343,7 +10315,7 @@ void fn_2_20D08(void) {
         CHALLENGE_STATE = 0x43;
         break;
     case 0x43:
-        switch (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8)) {
+        switch (lbl_2_bss_1A824C->_1976D8) {
         case 0:
             CHALLENGE_STATE = 0x44;
             break;
@@ -10354,7 +10326,7 @@ void fn_2_20D08(void) {
             CHALLENGE_STATE = 0x46;
             break;
         case 3:
-            if (lbl_803C50E8[0x47] == 1) {
+            if (lbl_803C50E8._47 == 1) {
                 CHALLENGE_STATE = 0x4A;
             } else {
                 CHALLENGE_STATE = 0x4E;
@@ -10363,13 +10335,13 @@ void fn_2_20D08(void) {
         }
         break;
     case 0x44:
-        *(s16*)(lbl_2_bss_1A8234[0] + 0x162600) = 0x10;
-        lbl_2_bss_1A8234[0][0x16284A] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A8234->layerFlags[8][22] = 1;
         CHALLENGE_STATE = 0x45;
         break;
     case 0x45:
-        if ((*(s16*)(lbl_2_bss_1A8234[0] + 0x162600))-- == 0) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+        if ((lbl_2_bss_1A8234->timer)-- == 0) {
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
@@ -10378,15 +10350,15 @@ void fn_2_20D08(void) {
         CHALLENGE_STATE = 0x7A;
         break;
     case 0x47:
-        if ((*(s16*)(lbl_2_bss_1A8234[0] + 0x162600))-- == 0) {
-            *(s16*)(lbl_2_bss_1A8234[0] + 0x162600) = 0x10;
+        if ((lbl_2_bss_1A8234->timer)-- == 0) {
+            lbl_2_bss_1A8234->timer = 0x10;
             CHALLENGE_STATE = 0x48;
         }
         break;
     case 0x48:
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B4) = 5;
-        lbl_2_bss_1A824C[0][0x1972B6] = 0;
-        lbl_2_bss_1A824C[0][0x1972B7] = 0;
+        lbl_2_bss_1A824C->_1972B4 = 5;
+        lbl_2_bss_1A824C->_1972B6 = 0;
+        lbl_2_bss_1A824C->_1972B7 = 0;
         START_TASK(fn_2_39408);
         CHALLENGE_STATE = 0x49;
         break;
@@ -10395,25 +10367,25 @@ void fn_2_20D08(void) {
             changeScene(3, 6);
             CHALLENGE_STATE = 0x7A;
         } else if (QUEUE_DONE == 2 || QUEUE_DONE == 3) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
     case 0x4A:
-        *(s16*)(lbl_2_bss_1A8234[0] + 0x162600) = 0x10;
-        lbl_2_bss_1A8234[0][0x16284A] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A8234->layerFlags[8][22] = 1;
         CHALLENGE_STATE = 0x4B;
         break;
     case 0x4B:
-        if ((*(s16*)(lbl_2_bss_1A8234[0] + 0x162600))-- == 0) {
-            *(s16*)(lbl_2_bss_1A8234[0] + 0x162600) = 0x10;
+        if ((lbl_2_bss_1A8234->timer)-- == 0) {
+            lbl_2_bss_1A8234->timer = 0x10;
             CHALLENGE_STATE = 0x4C;
         }
         break;
     case 0x4C:
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B4) = 6;
-        lbl_2_bss_1A824C[0][0x1972B6] = lbl_2_data_38CC[6];
-        lbl_2_bss_1A824C[0][0x1972B7] = 0;
+        lbl_2_bss_1A824C->_1972B4 = 6;
+        lbl_2_bss_1A824C->_1972B6 = lbl_2_data_38CC[6];
+        lbl_2_bss_1A824C->_1972B7 = 0;
         START_TASK(fn_2_39408);
         CHALLENGE_STATE = 0x4D;
         break;
@@ -10422,25 +10394,25 @@ void fn_2_20D08(void) {
             changeScene(3, 6);
             CHALLENGE_STATE = 0x7E;
         } else if (QUEUE_DONE == 2 || QUEUE_DONE == 3) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
     case 0x4E:
-        *(s16*)(lbl_2_bss_1A8234[0] + 0x162600) = 0x10;
-        lbl_2_bss_1A8234[0][0x16284A] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A8234->layerFlags[8][22] = 1;
         CHALLENGE_STATE = 0x4F;
         break;
     case 0x4F:
-        if ((*(s16*)(lbl_2_bss_1A8234[0] + 0x162600))-- == 0) {
-            *(s16*)(lbl_2_bss_1A8234[0] + 0x162600) = 0x10;
+        if ((lbl_2_bss_1A8234->timer)-- == 0) {
+            lbl_2_bss_1A8234->timer = 0x10;
             CHALLENGE_STATE = 0x50;
         }
         break;
     case 0x50:
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B4) = 7;
-        lbl_2_bss_1A824C[0][0x1972B6] = lbl_2_data_38CC[7];
-        lbl_2_bss_1A824C[0][0x1972B7] = 0;
+        lbl_2_bss_1A824C->_1972B4 = 7;
+        lbl_2_bss_1A824C->_1972B6 = lbl_2_data_38CC[7];
+        lbl_2_bss_1A824C->_1972B7 = 0;
         START_TASK(fn_2_39408);
         CHALLENGE_STATE = 0x51;
         break;
@@ -10451,14 +10423,14 @@ void fn_2_20D08(void) {
         } else if (QUEUE_DONE == 2) {
             CHALLENGE_STATE = 0x52;
         } else if (QUEUE_DONE == 3) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
     case 0x52:
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B4) = 8;
-        lbl_2_bss_1A824C[0][0x1972B6] = lbl_2_data_38CC[8];
-        lbl_2_bss_1A824C[0][0x1972B7] = 1;
+        lbl_2_bss_1A824C->_1972B4 = 8;
+        lbl_2_bss_1A824C->_1972B6 = lbl_2_data_38CC[8];
+        lbl_2_bss_1A824C->_1972B7 = 1;
         START_TASK(fn_2_39408);
         CHALLENGE_STATE = 0x53;
         break;
@@ -10467,18 +10439,18 @@ void fn_2_20D08(void) {
             changeScene(4, 6);
             CHALLENGE_STATE = 0x7E;
         } else if (QUEUE_DONE == 2 || QUEUE_DONE == 3) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
     case 0x56:
-        *(s16*)(lbl_2_bss_1A8234[0] + 0x162600) = 0x10;
-        lbl_2_bss_1A8234[0][0x16284A] = 1;
+        lbl_2_bss_1A8234->timer = 0x10;
+        lbl_2_bss_1A8234->layerFlags[8][22] = 1;
         CHALLENGE_STATE = 0x57;
         break;
     case 0x57:
-        if ((*(s16*)(lbl_2_bss_1A8234[0] + 0x162600))-- == 0) {
-            *(s16*)(lbl_2_bss_1A8234[0] + 0x162600) = 0x10;
+        if ((lbl_2_bss_1A8234->timer)-- == 0) {
+            lbl_2_bss_1A8234->timer = 0x10;
             CHALLENGE_STATE = 0x58;
         }
         break;
@@ -10488,12 +10460,12 @@ void fn_2_20D08(void) {
         break;
     case 0x59:
         if (QUEUE_DONE == 1) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
     case 0x7A:
-        if (lbl_8037169C[0x13] != 0) {
+        if (lbl_8037169C._13 != 0) {
             START_TASK(fn_2_40B90);
             CHALLENGE_STATE = 0x7B;
         }
@@ -10501,14 +10473,14 @@ void fn_2_20D08(void) {
     case 0x7B:
         if (QUEUE_DONE == 1) {
             fn_2_11A0(15);
-            SCENE_FLOW_S16(0x30) = 8;
-            SCENE_FLOW_S16(0x32) = 0;
-            *(void (**)(void))lbl_803CC1B8[0] = fn_2_11D8;
+            lbl_800E877C.mode = 8;
+            lbl_800E877C.state = 0;
+            MENU_TASK->func = fn_2_11D8;
             CHALLENGE_STATE = 0;
         }
         break;
     case 0x7C:
-        if (lbl_8037169C[0x13] != 0) {
+        if (lbl_8037169C._13 != 0) {
             START_TASK(fn_2_40B90);
             CHALLENGE_STATE = 0x7D;
         }
@@ -10516,14 +10488,14 @@ void fn_2_20D08(void) {
     case 0x7D:
         if (QUEUE_DONE == 1) {
             fn_2_11A0(15);
-            SCENE_FLOW_S16(0x30) = 9;
-            SCENE_FLOW_S16(0x32) = 0;
-            *(void (**)(void))lbl_803CC1B8[0] = fn_2_11D8;
+            lbl_800E877C.mode = 9;
+            lbl_800E877C.state = 0;
+            MENU_TASK->func = fn_2_11D8;
             CHALLENGE_STATE = 0;
         }
         break;
     case 0x7E:
-        if (lbl_8037169C[0x13] != 0) {
+        if (lbl_8037169C._13 != 0) {
             START_TASK(fn_2_40B90);
             CHALLENGE_STATE = 0x7F;
         }
@@ -10531,9 +10503,9 @@ void fn_2_20D08(void) {
     case 0x7F:
         if (QUEUE_DONE == 1) {
             fn_2_11A0(5);
-            SCENE_FLOW_S16(0x30) = 9;
-            SCENE_FLOW_S16(0x32) = 0;
-            *(void (**)(void))lbl_803CC1B8[0] = fn_2_11D8;
+            lbl_800E877C.mode = 9;
+            lbl_800E877C.state = 0;
+            MENU_TASK->func = fn_2_11D8;
             CHALLENGE_STATE = 0;
         }
         break;
@@ -10543,14 +10515,14 @@ void fn_2_20D08(void) {
         break;
     case 0x83:
         if (QUEUE_DONE == 1) {
-            lbl_2_bss_1A8248[0x44F2] = 0;
+            lbl_2_bss_1A8248->_44F2 = 0;
             CHALLENGE_STATE = 0x12;
         }
         break;
     }
     fn_2_2025C();
     g_d_GameSettings.FrameCountWhileNotAtMainMenu++;
-    (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976C0))++;
+    (lbl_2_bss_1A824C->_1976C0)++;
 }
 #endif
 

@@ -7,6 +7,11 @@
 #define REP_HEADER_FN repHeader_menus_05F0
 #include "header_rep_inline.h"
 #include "menus/rep_05F0.h"
+#include "menus/menu_work.h"
+#include "main/file_800BD8C4.h"
+#include "main/file_80021308.h"
+#include "main/file_80008E00.h"
+extern SoundManager lbl_800EF808;
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
 #include "musyx/musyx.h"
@@ -18,8 +23,6 @@
 
 OptionsMenu lbl_2_bss_1033C;
 
-extern u8 lbl_800EF808[];
-extern u8 lbl_80366158[];
 extern u8 lbl_800E8754[];
 extern void fn_80021204(void);
 extern s32 fn_8003AE70(s32 selector);
@@ -34,7 +37,7 @@ extern u8 lbl_800EFBA4[]; // menu sound-effect volumes
 extern u8 lbl_803C50E8[];
 extern u8 lbl_8034E978[];
 extern u8 lbl_803C66B0[];
-extern u8 lbl_2_bss_F410[];
+extern MenuSelVars lbl_2_bss_F410;
 extern void fn_800625A4(s32 port, s32 sound);
 extern void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h);
 extern void fn_2_96D20(void);
@@ -59,7 +62,7 @@ extern CharSelPads lbl_8034E9A0;
 // Same test as fn_2_19554 (settings differ from the saved ones), with an int result.
 static inline s32 settingsChanged(void) {
     s32 result = 0;
-    if (lbl_800EF808[0x398] != fn_8003AE70(0) || lbl_800EF808[0x397] != fn_8003AE70(1) || lbl_80366158[0x1F] != fn_8003AE70(2)) {
+    if (lbl_800EF808.unk398 != fn_8003AE70(0) || lbl_800EF808.outputMode != fn_8003AE70(1) || lbl_80366158._1F != fn_8003AE70(2)) {
         result = 1;
     }
     return result;
@@ -77,8 +80,8 @@ void fn_2_19D04(void) {
         menu->state = 1;
     case 1:
         changeScene(1, 6);
-        *(s32*)(lbl_2_bss_F410 + 8) = 0; // TODO type
-        *(s32*)(lbl_2_bss_F410 + 0xC) = 0;
+        lbl_2_bss_F410._08 = 0;
+        lbl_2_bss_F410._0C = 0;
         fn_2_96D20();
         fn_800625A4(0, 0x59);
         lbl_2_bss_1033C.prevCursor = 0;
@@ -99,11 +102,11 @@ void fn_2_19D04(void) {
     case 5:
         fn_2_194E8();
         fn_8003BF54(0, 0, 0, 0, 1, 4, 1, 0, 4);
-        *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+        ((MenuTask*)lbl_803CC1B8[0])->_10 = 0;
         lbl_2_bss_1033C.state = 6;
         break;
     case 6: {
-        s16 result = *(s16*)(lbl_803CC1B8[0] + 0x10);
+        s16 result = ((MenuTask*)lbl_803CC1B8[0])->_10;
         if (result != 0) {
             switch (result) {
             case 1:
@@ -267,9 +270,9 @@ void fn_2_197AC(u8 port) {
 
 // fn_2_19778, size:0x34
 void fn_2_19778(void) {
-    s8 x = lbl_800EF808[0x398];
-    s8 y = lbl_80366158[0x1F];
-    s8 z = lbl_800EF808[0x396];
+    s8 x = lbl_800EF808.unk398;
+    s8 y = lbl_80366158._1F;
+    s8 z = lbl_800EF808.soundMode;
     lbl_2_bss_1033C.rumble = x;
     lbl_2_bss_1033C.option2 = y;
     lbl_2_bss_1033C.sound = z;
@@ -280,36 +283,36 @@ void fn_2_195DC(void) {
     OptionsMenu* menu = &lbl_2_bss_1033C;
     switch (menu->cursor) {
     case 0:
-        if (menu->rumble != 0 && lbl_800EF808[0x398] == 0) {
+        if (menu->rumble != 0 && lbl_800EF808.unk398 == 0) {
             initializeUnknown();
             fn_800B0A5C_insertQueue(fn_80062A94, 0x1000);
-        } else if (menu->rumble == 0 && lbl_800EF808[0x398] != 0) {
+        } else if (menu->rumble == 0 && lbl_800EF808.unk398 != 0) {
             fn_80062A74();
         }
-        lbl_800EF808[0x398] = menu->rumble;
+        lbl_800EF808.unk398 = menu->rumble;
         lbl_2_bss_1033C._0D = menu->rumble;
         break;
     case 1:
-        if (menu->sound != lbl_800EF808[0x396]) {
+        if (menu->sound != lbl_800EF808.soundMode) {
             fn_80062A74();
             if (menu->sound == 1) {
-                lbl_800EF808[0x396] = 1;
+                lbl_800EF808.soundMode = 1;
             } else if (menu->sound == 0) {
-                lbl_800EF808[0x396] = 0;
+                lbl_800EF808.soundMode = 0;
             } else {
-                lbl_800EF808[0x396] = 2;
+                lbl_800EF808.soundMode = 2;
             }
-            fn_80021228(lbl_800EF808[0x396]);
+            fn_80021228(lbl_800EF808.soundMode);
             fn_800B0A5C_insertQueue(fn_80062A94, 0x1000);
-            lbl_800EF808[0x396] = menu->sound;
+            lbl_800EF808.soundMode = menu->sound;
         }
         break;
     case 2:
         if (menu->option2 != 0) {
-            lbl_80366158[0x1F] = 1;
+            lbl_80366158._1F = 1;
             fn_800A97EC(0, 0x32, 1);
         } else {
-            lbl_80366158[0x1F] = 0;
+            lbl_80366158._1F = 0;
         }
         break;
     }
@@ -323,7 +326,7 @@ void fn_2_195D8(void) {
 // fn_2_19554, size:0x84
 s8 fn_2_19554(void) {
     s32 result = 0;
-    if (lbl_800EF808[0x398] != fn_8003AE70(0) || lbl_800EF808[0x397] != fn_8003AE70(1) || lbl_80366158[0x1F] != fn_8003AE70(2)) {
+    if (lbl_800EF808.unk398 != fn_8003AE70(0) || lbl_800EF808.outputMode != fn_8003AE70(1) || lbl_80366158._1F != fn_8003AE70(2)) {
         result = 1;
     }
     return result;
@@ -331,9 +334,9 @@ s8 fn_2_19554(void) {
 
 // fn_2_19520, size:0x34
 void fn_2_19520(void) {
-    s8 x = lbl_800EF808[0x398];
-    s8 y = lbl_80366158[0x1F];
-    s8 z = lbl_800EF808[0x396];
+    s8 x = lbl_800EF808.unk398;
+    s8 y = lbl_80366158._1F;
+    s8 z = lbl_800EF808.soundMode;
     lbl_2_bss_1033C.rumble = x;
     lbl_2_bss_1033C.option2 = y;
     lbl_2_bss_1033C.sound = z;
@@ -342,12 +345,12 @@ void fn_2_19520(void) {
 // fn_2_194E8, size:0x38
 void fn_2_194E8(void) {
     fn_80021204();
-    lbl_800E8754[0x25] = lbl_80366158[0x1F];
+    lbl_800E8754[0x25] = lbl_80366158._1F;
 }
 
 // fn_2_194BC, size:0x2C
-void fn_2_194BC(u8* object) {
-    void* p = *(void**)(object + 0x70);
+void fn_2_194BC(struct ActorObject* object) {
+    void* p = object->lights[0];
     if (p != NULL) {
         fn_800B9AA8(p);
     }

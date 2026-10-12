@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "main/file_80069BDC.h"
+#include "menus/menu_work.h"
 
 // Same layout as MenuSlot / CharSelectLayout in main/file_800639BC.h, which can't be
 // included together with main/file_8004207C.h (both declare lbl_8034E9A0).
@@ -21,24 +22,6 @@ typedef struct MenuCharLayout {
     /*0x400*/ u8 _400[0x454 - 0x400];
 } MenuCharLayout; // size: 0x454
 
-// Menu task as seen by the rep_0AB0 menu screens (lbl_803CC1B8 while one of them runs).
-typedef struct MenuScreenTask {
-    /*0x00*/ void (*func)(void);
-    /*0x04*/ struct MenuScreenTask* prev;
-    /*0x08*/ struct MenuScreenTask* next;
-    /*0x0C*/ struct MenuScreenTask* parent;
-    /*0x10*/ s16 signal; // set to 1 by a child task when it is done
-    /*0x12*/ u16 priority;
-    /*0x14*/ u8 _14[2];
-    /*0x16*/ s16 arg;
-    /*0x18*/ u16 timer;
-    /*0x1A*/ u16 _1A;
-    /*0x1C*/ u16 state;
-    /*0x1E*/ u16 subState;
-    /*0x20*/ u8 _20[8];
-    /*0x28*/ s8 step;
-} MenuScreenTask;
-
 // Scene state shared by the menu screens (lbl_2_bss_1A823C -> lbl_800E877C).
 typedef struct MenuSceneState {
     /*0x00*/ u8 _00[0x30];
@@ -46,14 +29,6 @@ typedef struct MenuSceneState {
     /*0x32*/ s16 state;
     /*0x34*/ u8 _34;
 } MenuSceneState;
-
-// Draw area after the per-layer flags (lbl_2_bss_1A8230 points at it); starts with the
-// MenuDrawEntry[10][864] table used by fn_2_53F04.
-typedef struct MenuDrawArea {
-    /*0x00000*/ u8 _00000[0x32A86];
-    /*0x32A86*/ u8 _32A86;
-    /*0x32A87*/ u8 _32A87;
-} MenuDrawArea;
 
 // Menu work buffer (lbl_2_bss_1A8250; lbl_2_bss_1A8234 and lbl_2_bss_1A824C point at it).
 typedef struct MenuWorkBuf {

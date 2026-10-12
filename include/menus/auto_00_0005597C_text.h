@@ -24,22 +24,7 @@ typedef struct MenuSaveData {
     /*0x400*/ s8 vals[32];
 } MenuSaveData;
 
-// View of one lbl_803C77B8 controller entry (PadState in main/file_800A7C08.h).
-typedef struct MenuPad {
-    /*0x00*/ u16 held;
-    /*0x02*/ u16 down;
-    /*0x04*/ u8 _04[0x13 - 0x4];
-    /*0x13*/ s8 substickY;
-    /*0x14*/ u8 _14[0x20 - 0x14];
-} MenuPad;
-
-// Menu view of the scene task in lbl_803CC1B8.
-typedef struct MenuTask {
-    /*0x00*/ u8 _00[0xC];
-    /*0x0C*/ SceneTask* parent;
-    /*0x10*/ u8 _10[0x28 - 0x10];
-    /*0x28*/ s8 state;
-} MenuTask;
+// The scene task in lbl_803CC1B8 is a MenuTask (menus/menu_work.h).
 
 s32 fn_2_5597C(void);
 void fn_2_55A40(void);

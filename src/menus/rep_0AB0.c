@@ -2099,7 +2099,7 @@ void fn_2_5AE54(void) {
     fn_2_53F88(task);
     fn_2_54120();
     if (lbl_2_bss_1A8234->done != 0) {
-        fn_2_53DF8((u8*)task);
+        fn_2_53DF8((MenuTask*)task);
         fn_8000F8F4((LayoutGroup*)task);
         fn_8000FE54();
         fn_2_4E858(task);
