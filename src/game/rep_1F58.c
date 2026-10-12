@@ -4,8 +4,6 @@
 #include "Dolphin/mtx.h"
 
 extern u8 lbl_3_common_bss_35154[];
-extern u8 lbl_3_data_17260[];
-extern u8* lbl_3_data_174A0[];
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 // .bss (laid out last-defined-first)
 static u8 lbl_3_bss_9D40[0x40];
@@ -13,9 +11,8 @@ static u8 lbl_3_bss_9D20[0x20];
 extern u8* lbl_803CC1B8;
 extern u8 lbl_8036E548[];
 extern u8 lbl_803CBBC0;
-typedef struct { u8 p0[8]; f32 a, b, c; s32 x; } E18_1F58;
+typedef struct { void* next; void (*draw)(u8* a); f32 a, b, c; s32 x; } E18_1F58;
 typedef struct { E18_1F58 e[2]; } E30_1F58;
-extern E30_1F58 lbl_3_data_174A8[];
 extern u8 lbl_80366158[];
 extern void fn_800A7D4C(int, void*);
 extern void fn_800B0A14_removeQueue(void*);
@@ -25,9 +22,8 @@ extern f32 lbl_3_rodata_1FAC;
 extern f32 lbl_3_rodata_1FC0;
 extern f64 lbl_3_rodata_1FC8;
 extern f32 lbl_3_rodata_1FD4;
-extern f32 lbl_3_rodata_1FD0;
+extern const f32 lbl_3_rodata_1FD0;
 extern f64 sin(f64);
-typedef struct { s16 id; s16 s2; f32 v[3]; f32 p[3]; f32 x; } E32_1F58;
 typedef struct { s32 v; s32 w; } T8_1F58;
 // Mirrors main/file_800263FC.h (that header clashes with this file's GX externs).
 typedef struct ParticleParamsAttract {
@@ -43,22 +39,79 @@ typedef struct ParticleParamsAttract {
 } ParticleParamsAttract;
 extern BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out); // main/file_80011640.h
 extern void fn_80027674(Vec* center, Vec* target, ParticleParamsAttract* prm, u8 type, f32 radius);
-typedef struct {
-    /* 0x000 */ u8 a[4];
-    /* 0x004 */ f32 b[3];
-    /* 0x010 */ u8 col[2][3];
-    /* 0x016 */ u8 pad16[2];
-    /* 0x018 */ E32_1F58 c[2];
-    /* 0x058 */ s32 _58;
-    /* 0x05C */ u8 pad5C[8];
-    /* 0x064 */ ParticleParamsAttract prm;
-    /* 0x0A4 */ T8_1F58 tbl[8];
-    /* 0x0E4 */ u8 padE4[0x254 - 0xE4];
-    /* 0x254 */ f32 _254;
-    /* 0x258 */ u8* tasks[2];
-} D1F58;
-extern D1F58 lbl_3_data_17248;
-extern u8 lbl_3_data_17258[];
+void fn_3_C095C(u8* a);
+// .data lbl_3_data_17248..17508: separate objects that the code reaches through one pooled base.
+static u8 lbl_3_data_17248[4] = {80, 80, 0, 0};                         // aura alpha per slot
+static f32 lbl_3_data_1724C[3] = {18.849556f, 18.849556f, 37.699112f};  // pulse speed per slot
+static u8 lbl_3_data_17258[2][3] = {{255, 247, 136}, {255, 247, 136}};  // aura colour per slot
+E32_1F58 lbl_3_data_17260[2] = {{-1}, {-1}};
+static s32 lbl_3_data_172A0 = 250000; // particle radius, fixed point (/100000)
+s32 lbl_3_data_172A4 = 150000;        // unused
+s32 lbl_3_data_172A8 = 4;             // unused
+static ParticleParamsAttract lbl_3_data_172AC = {NULL, 3, 30, 8000, 10, 20, 1, 15, {99000, 99800, -500, -899, 255, 20, 10, -1}};
+// Per character: aura height (v) and size (w), fixed point (/100000).
+static T8_1F58 lbl_3_data_172EC[0x36] = {
+    {129999, 250000},
+    {129999, 250000},
+    {150000, 270000},
+    {80000, 250000},
+    {150000, 250000},
+    {150000, 250000},
+    {129999, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {150000, 280000},
+    {150000, 259999},
+    {150000, 259999},
+    {100000, 250000},
+    {50000, 250000},
+    {150000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {120000, 250000},
+    {70000, 250000},
+    {100000, 250000},
+    {129999, 250000},
+    {150000, 259999},
+    {150000, 259999},
+    {150000, 259999},
+    {100000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {150000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {150000, 250000},
+    {129999, 290000},
+    {80000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {100000, 250000},
+    {129999, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {150000, 250000},
+    {150000, 250000},
+};
+static f32 lbl_3_data_1749C = 95.0f;
+static u8* lbl_3_data_174A0[2] = {NULL, NULL}; // the two tracking tasks
+static E30_1F58 lbl_3_data_174A8[2] = {
+    {{{NULL, fn_3_C095C}, {NULL, fn_3_C095C}}},
+    {{{NULL, fn_3_C095C}, {NULL, fn_3_C095C}}},
+};
 extern s32 fn_8005268C(void);
 extern u8* fn_80052734(s32);
 extern s32 fn_80024DB0(void*);
@@ -96,11 +149,11 @@ void fn_3_C0854(void) {
         if (lbl_3_data_174A0[i] != NULL) {
             lbl_3_data_174A0[i][0x20] = 1;
         }
-        v = *(s16*)(lbl_3_data_17260 + i * 32);
+        v = lbl_3_data_17260[i].id;
         if (v >= 0) {
             j = 1;
             do {
-                if (v == *(s16*)(lbl_3_data_17260 + j * 32)) {
+                if (v == lbl_3_data_17260[j].id) {
                     break;
                 }
             } while (j-- != 0);
@@ -109,7 +162,7 @@ void fn_3_C0854(void) {
                 if (t != NULL) {
                     *(s32*)(t + 0x5C) = 0;
                 }
-                *(s16*)(lbl_3_data_17260 + j * 32) = -1;
+                lbl_3_data_17260[j].id = -1;
                 k = 0x18;
                 if (j != 0) {
                     k = 0x17;
@@ -181,7 +234,7 @@ void fn_3_C0AD8(void) {
 void fn_3_C0C4C(s32 i) {
     u8* p = fn_800B0A5C_insertQueue(fn_3_C0AD8, 1);
     *(s32*)(p + 0x14) = 0;
-    *(s32*)(p + 0x1C) = *(s16*)(lbl_3_data_17260 + i * 32);
+    *(s32*)(p + 0x1C) = lbl_3_data_17260[i].id;
     p[0x20] = 0;
     for (i = 0; i < 2; i++) {
         if (lbl_3_data_174A0[i] == 0) {
@@ -228,7 +281,7 @@ void fn_3_C0DD8(s32 unused, s32* stage, s32* coord, s32* map, u8* c1, u8* c2) {
     s16* q;
     s32 a = *(s8*)((u8*)fn_80011570() + 0x254); // TODO type: CharActor.index
     k = 1;
-    q = (s16*)(lbl_3_data_17260 + 0x20);
+    q = &lbl_3_data_17260[1].id;
     do {
         if (a == *q) {
             break;
@@ -271,7 +324,7 @@ void fn_3_C1004(void) {
     u8* t = ((u8**)(lbl_8036E548 + 0x2C50))[id];
     s32 k;
     j = 1;
-    q = (s16*)(lbl_3_data_17260 + 0x20);
+    q = &lbl_3_data_17260[1].id;
     do {
         if (id == *q) {
             break;
@@ -283,10 +336,10 @@ void fn_3_C1004(void) {
             if (t != NULL) {
                 *(s32*)(t + 0x5C) = 0;
             }
-            *(s16*)(lbl_3_data_17260 + j * 32) = -1;
+            lbl_3_data_17260[j].id = -1;
             fn_800B0A14_removeQueue(lbl_3_data_17260);
         }
-        fn_3_C0D10(j, lbl_3_data_17258[j * 3], lbl_3_data_17258[j * 3 + 1], lbl_3_data_17258[j * 3 + 2], (a[0x15] * a[0x16]) / 10);
+        fn_3_C0D10(j, lbl_3_data_17258[j][0], lbl_3_data_17258[j][1], lbl_3_data_17258[j][2], (a[0x15] * a[0x16]) / 10);
         k = 0x18;
         if (j != 0) {
             k = 0x17;
@@ -296,15 +349,13 @@ void fn_3_C1004(void) {
 }
 
 // .text:0x000C11CC size:0x178 mapped:0x80700260
-// 77%: original never folds data_17248+K into displacements (hoisted addi r30,sym; then addi K / sthx / lfsx / lbzx indexed); CW folds every d+K form tried (struct, u8*, array extern, block/function-scope ptr vars, inline helper). fmul operand order is d->a[j] * (...).
 void fn_3_C11CC(s32 who, s32 a) {
-    D1F58* d = &lbl_3_data_17248;
     s32 j;
     s16* q;
     u8* o;
     s32 k;
     j = 1;
-    q = &d->c[1].id;
+    q = &lbl_3_data_17260[1].id;
     do {
         if (who == *q) {
             break;
@@ -313,11 +364,11 @@ void fn_3_C11CC(s32 who, s32 a) {
     } while (j-- != 0);
     if (j >= 0) {
         if (a != 0) {
-            u8* t = ((u8**)lbl_8036E548)[who + 0x2C50 / 4];
+            u8* t = ((u8**)(lbl_8036E548 + 0x2C50))[who];
             if (t != NULL) {
                 *(s32*)(t + 0x5C) = 0;
             }
-            d->c[j].id = -1;
+            lbl_3_data_17260[j].id = -1;
             k = 0x18;
             if (j != 0) {
                 k = 0x17;
@@ -327,8 +378,7 @@ void fn_3_C11CC(s32 who, s32 a) {
             o = fn_800B0A5C_insertQueue(fn_3_C1004, *(u16*)(*(u8**)&lbl_803CC1B8 + 0x12));
             o[0x14] = who;
             {
-                f64 s = sin(d->b[j] * d->c[j].x / lbl_3_rodata_1FD0);
-                o[0x15] = (lbl_3_rodata_1FC8 * s + lbl_3_rodata_1FC8) * d->a[j];
+                o[0x15] = lbl_3_data_17248[j] * (0.5 * sin(lbl_3_data_1724C[j] * lbl_3_data_17260[j].x / lbl_3_rodata_1FD0) + 0.5);
             }
             o[0x16] = 10;
         }
@@ -338,10 +388,9 @@ void fn_3_C11CC(s32 who, s32 a) {
 // .text:0x000C1344 size:0x42C mapped:0x807003D8
 extern f64 lbl_3_rodata_1FB0;
 extern f64 lbl_3_rodata_1FB8;
-// NONMATCHING 70%: same data_17248+K hoisting issue as fn_3_C11CC (original indexes off addi'd bases: lfsx/lbzx/stwx); regalloc
+// NONMATCHING 75%: statement order around the burst (k / delay reload) and register allocation
 #if NONMATCHING
 void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
-    D1F58* d = &lbl_3_data_17248;
     u8* actor;
     E32_1F58* e;
     s16* q;
@@ -352,12 +401,12 @@ void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
     if (lbl_80366158[0x28] != 0) {
         return;
     }
-    actor = ((u8**)lbl_8036E548)[who + 0x2C50 / 4];
+    actor = ((u8**)(lbl_8036E548 + 0x2C50))[who];
     if (actor == NULL) {
         return;
     }
     j = 1;
-    q = &d->c[1].id;
+    q = &lbl_3_data_17260[1].id;
     do {
         if (who == *q) {
             break;
@@ -367,28 +416,28 @@ void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
     if (j < 0) {
         return;
     }
-    e = &d->c[j];
+    e = &lbl_3_data_17260[j];
     getAnimRelatedCoordinates(who, 4, (Vec*)e->v);
-    if (t > lbl_3_rodata_1FA8 && t < d->_254) {
-        if (d->c[j].s2-- == 0) {
-            d->c[j].s2 = d->prm.unk1C;
+    if (t > lbl_3_rodata_1FA8 && t < lbl_3_data_1749C) {
+        if (lbl_3_data_17260[j].s2-- == 0) {
+            lbl_3_data_17260[j].s2 = lbl_3_data_172AC.unk1C;
             k = 0x18;
             if (j != 0) {
                 k = 0x17;
             }
-            fn_80027674((Vec*)e->p, (Vec*)e->v, &d->prm, k, (f32)d->_58 / lbl_3_rodata_1FD4);
+            fn_80027674((Vec*)e->p, (Vec*)e->v, &lbl_3_data_172AC, k, (f32)lbl_3_data_172A0 / lbl_3_rodata_1FD4);
             *(void**)(actor + 0x5C) = fn_3_C0DD8; // TODO type: CharActor draw hook
         }
     }
-    sin(t * d->b[j] / lbl_3_rodata_1FD0);
+    sin(t * lbl_3_data_1724C[j] / lbl_3_rodata_1FD0);
     if (t < lbl_3_rodata_1FD0) {
-        fn_3_C0D10(j, d->col[j][0], d->col[j][1], d->col[j][2],
-                   (lbl_3_rodata_1FC8 * sin(t * d->b[j] / lbl_3_rodata_1FD0) + lbl_3_rodata_1FC8) * d->a[j]);
-        d->c[j].x = t;
+        fn_3_C0D10(j, lbl_3_data_17258[j][0], lbl_3_data_17258[j][1], lbl_3_data_17258[j][2],
+                   (lbl_3_rodata_1FC8 * sin(t * lbl_3_data_1724C[j] / lbl_3_rodata_1FD0) + lbl_3_rodata_1FC8) * lbl_3_data_17248[j]);
+        lbl_3_data_17260[j].x = t;
     } else {
-        fn_3_C0D10(j, d->col[j][0], d->col[j][1], d->col[j][2],
-                   (lbl_3_rodata_1FC8 * sin(t2 * d->b[j] / lbl_3_rodata_1FD0) + lbl_3_rodata_1FC8) * d->a[j]);
-        d->c[j].x = t2;
+        fn_3_C0D10(j, lbl_3_data_17258[j][0], lbl_3_data_17258[j][1], lbl_3_data_17258[j][2],
+                   (lbl_3_rodata_1FC8 * sin(t2 * lbl_3_data_1724C[j] / lbl_3_rodata_1FD0) + lbl_3_rodata_1FC8) * lbl_3_data_17248[j]);
+        lbl_3_data_17260[j].x = t2;
     }
     if (track != 0 && lbl_3_common_bss_35154[0x477 + j] == 0) {
         lbl_3_common_bss_35154[0x477 + j] = 1;
@@ -397,8 +446,8 @@ void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
         *(s32*)(o + 0x1C) = e->id;
         o[0x20] = 0;
         for (i = 0; i < 2; i++) {
-            if (d->tasks[i] == NULL) {
-                d->tasks[i] = o;
+            if (lbl_3_data_174A0[i] == NULL) {
+                lbl_3_data_174A0[i] = o;
                 *(s32*)(o + 0x18) = i;
                 break;
             }
@@ -408,17 +457,16 @@ void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
 #endif
 
 // .text:0x000C1770 size:0x1C0 mapped:0x80700804
-// ~50%: CSE of data_17248+0x18+j*32 and regalloc differ
+// NONMATCHING 99.5%: j and the slot offset j << 5 get swapped saved registers (r30/r29)
+#if NONMATCHING
 void fn_3_C1770(s32 who) {
-    u8* d = (u8*)&lbl_3_data_17248;
-    u8* t = ((u8**)lbl_8036E548)[who + 0x2C50 / 4];
+    u8* t = ((u8**)(lbl_8036E548 + 0x2C50))[who];
     s32 j;
-    s32 off;
     s16* q;
     s32 k;
     if (t != NULL) {
         j = 1;
-        q = (s16*)(d + 0x18 + 0x20);
+        q = &lbl_3_data_17260[1].id;
         do {
             if (*q == -1) {
                 break;
@@ -426,22 +474,36 @@ void fn_3_C1770(s32 who) {
             q -= 0x10;
         } while (j-- != 0);
         if (j >= 0) {
-            off = j << 5;
-            *(s32*)(d + 0x64) = *(s32*)(lbl_3_common_bss_35154 + 4);
-            *(s16*)(d + 0x18 + off) = who;
-            *(f32*)(d + 0x18 + off + 0x10) = *(f32*)(t + 0x34);
-            *(f32*)(d + 0x18 + off + 0x18) = *(f32*)(t + 0x3C);
-            *(f32*)(d + 0x18 + off + 0x14) = -((f32) * (s32*)(d + 0xA4 + (s8)t[0x252] * 8) / lbl_3_rodata_1FD4);
-            memcpy(d + 0x18 + off + 4, d + 0x18 + off + 0x10, 0xC);
-            *(s16*)(d + 0x18 + off + 2) = 0;
+            lbl_3_data_172AC.tex = *(void**)(lbl_3_common_bss_35154 + 4);
+            lbl_3_data_17260[j].id = who;
+            lbl_3_data_17260[j].p[0] = *(f32*)(t + 0x34);
+            lbl_3_data_17260[j].p[2] = *(f32*)(t + 0x3C);
+            lbl_3_data_17260[j].p[1] = -((f32)lbl_3_data_172EC[(s8)t[0x252]].v / lbl_3_rodata_1FD4);
+            memcpy(lbl_3_data_17260[j].v, lbl_3_data_17260[j].p, 0xC);
+            lbl_3_data_17260[j].s2 = 0;
             k = 0x18;
             if (j != 0) {
                 k = 0x17;
             }
             fn_80027918(k, lbl_3_rodata_1FA8);
             GXInitTexObj(lbl_3_bss_9D20, lbl_3_bss_9D40, 4, 4, 6, 0, 0, 0);
-            GXInitTexObjLOD(lbl_3_bss_9D20, 1, 1, lbl_3_rodata_1FA8, lbl_3_rodata_1FA8, lbl_3_rodata_1FA8, 0, 0, 0);
+            GXInitTexObjLOD(lbl_3_bss_9D20, 1, 1, 0.0f, 0.0f, 0.0f, 0, 0, 0);
             lbl_3_common_bss_35154[0x477 + j] = 0;
         }
     }
+}
+#endif
+
+// Returns the slot index whose id equals `id`, or -1.
+// .text:0x000C1930 size:0x34 mapped:0x807009C4
+s32 fn_3_C1930(s32 id) {
+    s32 k = 1;
+    E32_1F58* q = &lbl_3_data_17260[1];
+    do {
+        if (id == q->id) {
+            break;
+        }
+        q--;
+    } while (k-- != 0);
+    return k;
 }

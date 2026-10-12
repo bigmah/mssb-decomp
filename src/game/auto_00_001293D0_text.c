@@ -9,7 +9,7 @@
 #include "main/file_8001FE00.h" // lbl_8037169C
 #include "game/auto_00_00097144_text.h"
 #include "game/auto_00_0011D3AC_text.h"
-#include "game/auto_00_000E911C_text.h"
+#include "game/rep_2BF8.h"
 
 extern LayoutSlot lbl_80371C30[];
 extern u8 lbl_3_common_bss_37400[];

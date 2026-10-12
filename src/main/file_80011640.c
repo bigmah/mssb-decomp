@@ -163,7 +163,7 @@ typedef struct Unk80366158 {
 extern Unk80366158 lbl_80366158;
 extern f32 fn_800B4A44(GameActor* model, u16 joint);
 extern f32 fn_800B4C40(GameActor* model);
-extern s32 fn_8004AD54(u8 stadium, u8 kind);
+extern s32 fn_8004AD54(u32 stadium, s32 flags);
 extern void fn_8004B208(CharActor* actor, s16 anim, s32 a, f32 t);
 extern void fn_800B2B4C(GameActor* model, f32 v);
 extern void fn_800B993C(void);

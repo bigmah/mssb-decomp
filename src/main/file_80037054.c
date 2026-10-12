@@ -53,8 +53,22 @@ extern const f32 lbl_803CC790; // 0.2962963
 extern const f32 lbl_803CC794; // -0.1
 extern const f32 lbl_803CC798; // 3.375
 
-extern Vec lbl_800F79A0[2];
-extern BatSim lbl_800F79B8;
+// .data is defined before the code: mwcc reaches it through one pooled base.
+// .data 0x800F79A0..0x800F7A40
+Vec lbl_800F79A0 = {0.0f, 0.0f, 0.0f};
+Vec lbl_800F79AC = {0.0f, 0.0f, 0.0f};
+BatSim lbl_800F79B8 = {
+    {{1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.0f}},
+    {0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f},
+    {0.0f, -0.89597f, 0.0f},
+    {{0.0f, -0.89597f, 0.0f}, {0.0f, 0.89597f, 0.0f}},
+    {0.23933218f, 0.02711064f, 0.23933218f},
+    0,
+    25,
+    36,
+    0,
+};
 extern s16 lbl_803CB818;
 extern f32 lbl_803CB81C;
 extern s32 lbl_803CB820;
@@ -773,19 +787,16 @@ void fn_80038EC4(CharModelObj* obj, Model** model, s32 joint) {
 }
 
 // .text:0x80038F08 size:0x408
-// NONMATCHING 92%: the original addresses lbl_800F79A0 and lbl_800F79B8 (= lbl_800F79A0 + 0x18)
-// through one base register; with two separate symbols we load each address separately.
-#if NONMATCHING
 void fn_80038F08(CharModelObj* obj, Model* model, u8 joint) {
     Mtx dm;
-    Mtx m;
     Vec v;
-    Vec prev;
     BatSim* bat = &lbl_800F79B8;
     f32 frameDt = lbl_803CC720 * lbl_803CB81C;
-    ModelJoint* hand = model->joints[obj->jointMap[bat->jointBase + joint]];
     ModelJoint* batJoint;
+    Vec prev;
     s32 i;
+    ModelJoint* hand = model->joints[obj->jointMap[bat->jointBase + joint]];
+    Mtx m;
 
     if (bat->state < 0) {
         return;
@@ -812,9 +823,9 @@ void fn_80038F08(CharModelObj* obj, Model* model, u8 joint) {
         prev.z = bat->mtx[2][3];
         PSVECSubtract(&v, &prev, &bat->vel);
         if (lbl_803CBCA0 != 0) {
-            memcpy(&bat->vel, &lbl_800F79A0[1], sizeof(Vec));
+            memcpy(&bat->vel, &lbl_800F79AC, sizeof(Vec));
         } else {
-            PSVECAdd(&bat->vel, &lbl_800F79A0[0], &bat->vel);
+            PSVECAdd(&bat->vel, &lbl_800F79A0, &bat->vel);
         }
         PSVECScale(&bat->vel, lbl_803CB824, &bat->vel);
         PSVECScale(&bat->vel, lbl_803CC73C / frameDt, &bat->vel);
@@ -859,10 +870,10 @@ void fn_80038F08(CharModelObj* obj, Model* model, u8 joint) {
         bat->state += (bat->state == 2);
     }
 }
-#endif
 
 // .text:0x80039310 size:0x73C
-// NONMATCHING 98.0%: float register allocation differs (the original keeps one more callee-saved FPR, f24)
+// NONMATCHING 98.8%: FPR numbering of floorY/minEnergy vs half/c (f26/f27/f25 in the original) and the
+// load/store order of the Euler sub-step terms
 #if NONMATCHING
 void fn_80039310(BatSim* bat, f32 floorY, f32 minEnergy) {
     Mtx rotM;
@@ -884,6 +895,7 @@ void fn_80039310(BatSim* bat, f32 floorY, f32 minEnergy) {
     f32 dt = lbl_803CC720 * lbl_803CB81C;
     f32 mag;
     f32 half;
+    f32 c;
     f32 inv;
     f32 y;
     f32 energy;
@@ -913,10 +925,11 @@ void fn_80039310(BatSim* bat, f32 floorY, f32 minEnergy) {
     k.y = invIy * (bat->inertia.z - bat->inertia.x);
     k.z = invIz * (bat->inertia.x - bat->inertia.y);
     PSVECScale(&k, dt, &k);
+    c = lbl_803CC780;
     for (i = 0; i < 4; i++) {
-        t.y = k.y * (w.z * w.x - lbl_803CC780 * w.y);
-        t.x = k.x * (w.y * w.z - lbl_803CC780 * w.x);
-        t.z = k.z * (w.x * w.y - lbl_803CC780 * w.z);
+        t.y = k.y * (w.z * w.x - c * w.y);
+        t.x = k.x * (w.y * w.z - c * w.x);
+        t.z = k.z * (w.x * w.y - c * w.z);
         if (i == 1 || i == 2) {
             PSVECScale(&t, lbl_803CC754, &t);
         }
@@ -1028,7 +1041,7 @@ void fn_80039310(BatSim* bat, f32 floorY, f32 minEnergy) {
 void fn_80039A4C(void) {
     lbl_800F79B8.state = -1;
     lbl_803CBCA2[0] = 0;
-    memset(lbl_800F79A0, 0, sizeof(Vec));
+    memset(&lbl_800F79A0, 0, sizeof(Vec));
     lbl_803CB818 = -1;
     lbl_803CB820 = -1;
     lbl_803CBCA1 = 0;
@@ -1050,20 +1063,6 @@ void* fn_80039AB4(void) {
 
 // ---- Data (initialisers generated from the original DOL) ----
 
-// .data 0x800F79A0..0x800F7A40
-Vec lbl_800F79A0[2] = {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}};
-BatSim lbl_800F79B8 = {
-    {{1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.0f}},
-    {0.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 0.0f},
-    {0.0f, -0.89597f, 0.0f},
-    {{0.0f, -0.89597f, 0.0f}, {0.0f, 0.89597f, 0.0f}},
-    {0.23933218f, 0.02711064f, 0.23933218f},
-    0,
-    25,
-    36,
-    0,
-};
 
 // .sdata 0x803CB818..0x803CB828
 s16 lbl_803CB818 = -1;

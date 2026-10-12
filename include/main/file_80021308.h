@@ -12,16 +12,6 @@ typedef AssetLoadInstructions DiskFileEntry;
 // Same as &table[id], but keeps the original's (id * 16) address arithmetic.
 #define DISK_FILE_ENTRY(table, id) ((DiskFileEntry*)((u8*)(table) + (id) * sizeof(DiskFileEntry)))
 
-// lbl_800F71D8: more disc file entries plus index tables used by the loaders.
-typedef struct SoundFileTables {
-    /* 0x000 */ DiskFileEntry files[0x1D];
-    /* 0x1D0 */ u8 unk1D0[0x10];
-    /* 0x1E0 */ s8 aramFiles[0x36][2];        // {lbl_800EFD38 index, sub index or -1}
-    /* 0x24C */ s8 variantFiles[2][6][2];     // file offsets added to index * 7
-    /* 0x264 */ s8 variantSet[0x36];          // row of variantFiles to use
-    /* 0x29A */ u8 unk29A[6];
-} SoundFileTables; // size: 0x2A0
-
 // Musyx sound group data as loaded from disc. The pointers are stored as
 // offsets from the start of the block and relocated after loading.
 typedef struct SoundGroupData {

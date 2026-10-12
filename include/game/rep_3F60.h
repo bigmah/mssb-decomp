@@ -54,10 +54,6 @@ typedef struct EffectAnims {
     /*0x479*/ u8 _479;
 } EffectAnims;
 
-// View of lbl_3_data_285A8 (one block of the original's data, 0x285A8..0x28928).
-// rep_3F60's .data (lbl_3_data_285A8 kind y offsets, 28680 params, 286C8 nodes, 28908 shown,
-// 28914 flags, 2891E/28920 joints) is defined in rep_3F60.c as separate objects.
-
 void fn_3_168414(EffectNode* node);
 void fn_3_168704(void);
 void fn_3_16892C(CharActor* actor, f32 frame, s32 b, s32 unused); // AnimEventCallback (fn_8006C3F0)

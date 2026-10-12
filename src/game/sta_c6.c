@@ -38,60 +38,10 @@ void fn_3_B9D68(void* names, s32 n, void** files, u32* out);
 #define CUR_CAMERA_VIEW() (fn_80052768_getCamera(fn_8005268C())->view)
 
 extern StaC6List lbl_3_common_bss_350E4;
-extern u8 lbl_3_data_19018[3][4];   // overlay colours picked by fn_3_E6410 / fn_3_E64A8
-extern StaC6Data lbl_3_data_19024;
-extern u8 lbl_3_data_19610[];       // TODO type: file name table for fn_3_B9D68 (47 files)
-extern s8 lbl_3_data_1963F;         // object index the ball touched
-extern s8 lbl_3_data_19640;
-extern Vec lbl_3_data_19644[7];     // wall panel positions
-extern f32 lbl_3_data_19698[7];     // wall panel rotations
-extern StaC6Data2 lbl_3_data_196B4;
-extern u8 lbl_3_data_1976C;         // nonzero: show the lit overlay (bone 2)
-extern u8 lbl_80366158[];
-extern u16 lbl_3_data_81DC[];       // per stadium: crowd sound id base
-extern MinigameSoundParams lbl_3_data_8404[];
-extern MinigameSoundParams lbl_3_data_84B8[];
-
-extern f32 lbl_3_rodata_2B90;
-extern f32 lbl_3_rodata_2B94;
-extern f32 lbl_3_rodata_2B98;
-extern f32 lbl_3_rodata_2B9C;
-extern f32 lbl_3_rodata_2BA0;
-extern f32 lbl_3_rodata_2BA4;
-extern char lbl_3_rodata_2BB0[];
-extern char lbl_3_rodata_2BBC[];
-
-// This unit's .bss (AE50..AEE0) as statics, declared in reverse address order.
-// AE52..AE7A are single bytes so the pool has no alignment gaps; AE51 is its own
-// object so the store compiles to stb 1(base) with no extra addi.
-static StaC6Spot* lbl_3_bss_AEB4[11]; // [0]: field panel spots in use
-static StaC6Pad* lbl_3_bss_AEB0;      // wall panels in use
-static s8 lbl_3_bss_AEAE;             // layout index
-static u8 lbl_3_bss_AEAD;             // number of field panel objects
-static u8 lbl_3_bss_AEAC;             // number of panels (kinds 0-15)
-static s32 lbl_3_bss_AE88[9];
-static s32 lbl_3_bss_AE84;
-static u8 lbl_3_bss_AE80[4];
-static u8 lbl_3_bss_AE7C;
-static u8 lbl_3_bss_AE7B;
-static u8 lbl_3_bss_AE52, lbl_3_bss_AE53, lbl_3_bss_AE54, lbl_3_bss_AE55, lbl_3_bss_AE56, lbl_3_bss_AE57, lbl_3_bss_AE58, lbl_3_bss_AE59, lbl_3_bss_AE5A, lbl_3_bss_AE5B, lbl_3_bss_AE5C, lbl_3_bss_AE5D, lbl_3_bss_AE5E, lbl_3_bss_AE5F, lbl_3_bss_AE60, lbl_3_bss_AE61, lbl_3_bss_AE62, lbl_3_bss_AE63, lbl_3_bss_AE64, lbl_3_bss_AE65, lbl_3_bss_AE66, lbl_3_bss_AE67, lbl_3_bss_AE68, lbl_3_bss_AE69, lbl_3_bss_AE6A, lbl_3_bss_AE6B, lbl_3_bss_AE6C, lbl_3_bss_AE6D, lbl_3_bss_AE6E, lbl_3_bss_AE6F, lbl_3_bss_AE70, lbl_3_bss_AE71, lbl_3_bss_AE72, lbl_3_bss_AE73, lbl_3_bss_AE74, lbl_3_bss_AE75, lbl_3_bss_AE76, lbl_3_bss_AE77, lbl_3_bss_AE78, lbl_3_bss_AE79, lbl_3_bss_AE7A;
-static u8 lbl_3_bss_AE51;
-static u8 lbl_3_bss_AE50;
-
-#define BONE(obj, i) ((obj)->actor->boneArray[i])
-
-// .text:0x000E59B4 size:0x68 mapped:0x80724A48
-void fn_3_E59B4(StaC6Obj* o) {
-    GameActor* actor = o->actorObj->actor;
-    if (lbl_3_rodata_2B90 + fn_800B4C40(actor) > lbl_3_rodata_2B94) {
-        fn_800B4CA0(actor, lbl_3_rodata_2B98);
-    }
-    AnimateActorBones(actor);
-}
-
-// .data 0x00019018..0x00019770
-u8 lbl_3_data_19018[3][4] = {{190, 0, 0, 255}, {200, 118, 0, 255}, {0, 160, 0, 255}};
-StaC6Data lbl_3_data_19024 = {
+// .data lbl_3_data_19018..19770: separate objects that the code reaches through one pooled base.
+// overlay colours picked by fn_3_E6410 / fn_3_E64A8
+static u8 lbl_3_data_19018[3][4] = {{190, 0, 0, 255}, {200, 118, 0, 255}, {0, 160, 0, 255}};
+static StaC6Data lbl_3_data_19024 = {
     {
         {{5, 72, 0, 255}, {13, 180, 0, 255}, {18, 250, 0, 255}},
         {{5, 72, 0, 255}, {13, 180, 0, 255}, {18, 250, 0, 255}},
@@ -220,15 +170,15 @@ StaC6Data lbl_3_data_19024 = {
         },
     },
 };
-u8 lbl_3_data_19610[47] = {
+static u8 lbl_3_data_19610[0x2F] = { // file kinds for fn_3_B9D68 (47 files)
     1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 4, 4, 4, 4, 4, 4, 4, 2, 2, 4, 2, 2, 4, 4, 6,
     6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
 };
-s8 lbl_3_data_1963F = -1;
-s8 lbl_3_data_19640 = -1;
-u8 lbl_3_data_19641 = 255; // unreferenced
-Vec lbl_3_data_19644[7] = {
+static s8 lbl_3_data_1963F = -1; // object index the ball touched
+static s8 lbl_3_data_19640 = -1;
+s8 lbl_3_data_19641 = -1; // unused
+static Vec lbl_3_data_19644[7] = { // wall panel positions
     {48.443f, 0.1f, 66.104f},
     {35.956f, 0.1f, 80.987f},
     {19.132f, 0.1f, 90.701f},
@@ -237,22 +187,63 @@ Vec lbl_3_data_19644[7] = {
     {-35.956f, 0.1f, 80.987f},
     {-48.443f, 0.1f, 66.104f},
 };
-f32 lbl_3_data_19698[7] = {60.0f, 40.0f, 20.0f, 0.0f, -20.0f, -40.0f, -60.0f};
-StaC6Data2 lbl_3_data_196B4 = {
-    {0, 0, 0, 0, 0, 0, 0, 0},
-    {
-        {-54.758f, 0.0f, 69.75f},
-        {-40.643f, 0.0f, 86.573f},
-        {-21.625f, 0.0f, 97.552f},
-        {0.0f, 0.0f, 101.366f},
-        {21.625f, 0.0f, 97.552f},
-        {40.643f, 0.0f, 86.573f},
-        {54.758f, 0.0f, 69.75f},
-    },
-    {-60.0f, -40.0f, -20.0f, 0.0f, 20.0f, 40.0f, 60.0f},
-    {10, 9, 11, 2, 3, 4, 5, 6, 10, 9, 11, 2, 3, 4, 5, 6},
+// wall panel rotations
+static f32 lbl_3_data_19698[7] = {60.0f, 40.0f, 20.0f, 0.0f, -20.0f, -40.0f, -60.0f};
+// Targets (objects 16-22): hit flags (read by auto_00_000E587C_text), placement, panel kind results.
+u8 lbl_3_data_196B4[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static Vec lbl_3_data_196BC[7] = {
+    {-54.758f, 0.0f, 69.75f},
+    {-40.643f, 0.0f, 86.573f},
+    {-21.625f, 0.0f, 97.552f},
+    {0.0f, 0.0f, 101.366f},
+    {21.625f, 0.0f, 97.552f},
+    {40.643f, 0.0f, 86.573f},
+    {54.758f, 0.0f, 69.75f},
 };
-u8 lbl_3_data_1976C = 1;
+static f32 lbl_3_data_19710[7] = {-60.0f, -40.0f, -20.0f, 0.0f, 20.0f, 40.0f, 60.0f};
+static u32 lbl_3_data_1972C[16] = {10, 9, 11, 2, 3, 4, 5, 6, 10, 9, 11, 2, 3, 4, 5, 6}; // toy field result that lights panel kind n
+static u8 lbl_3_data_1976C = 1; // nonzero: show the lit overlay (bone 2)
+extern u8 lbl_80366158[];
+extern u16 lbl_3_data_81DC[];       // per stadium: crowd sound id base
+extern MinigameSoundParams lbl_3_data_8404[];
+extern MinigameSoundParams lbl_3_data_84B8[];
+
+extern f32 lbl_3_rodata_2B90;
+extern f32 lbl_3_rodata_2B94;
+extern f32 lbl_3_rodata_2B98;
+extern f32 lbl_3_rodata_2B9C;
+extern f32 lbl_3_rodata_2BA0;
+extern f32 lbl_3_rodata_2BA4;
+extern char lbl_3_rodata_2BB0[];
+extern char lbl_3_rodata_2BBC[];
+
+// This unit's .bss (AE50..AEE0) as statics, declared in reverse address order.
+// AE52..AE7A are single bytes so the pool has no alignment gaps; AE51 is its own
+// object so the store compiles to stb 1(base) with no extra addi.
+static StaC6Spot* lbl_3_bss_AEB4[11]; // [0]: field panel spots in use
+static StaC6Pad* lbl_3_bss_AEB0;      // wall panels in use
+static s8 lbl_3_bss_AEAE;             // layout index
+static u8 lbl_3_bss_AEAD;             // number of field panel objects
+static u8 lbl_3_bss_AEAC;             // number of panels (kinds 0-15)
+static s32 lbl_3_bss_AE88[9];
+static s32 lbl_3_bss_AE84;
+static u8 lbl_3_bss_AE80[4];
+static u8 lbl_3_bss_AE7C;
+static u8 lbl_3_bss_AE7B;
+static u8 lbl_3_bss_AE52, lbl_3_bss_AE53, lbl_3_bss_AE54, lbl_3_bss_AE55, lbl_3_bss_AE56, lbl_3_bss_AE57, lbl_3_bss_AE58, lbl_3_bss_AE59, lbl_3_bss_AE5A, lbl_3_bss_AE5B, lbl_3_bss_AE5C, lbl_3_bss_AE5D, lbl_3_bss_AE5E, lbl_3_bss_AE5F, lbl_3_bss_AE60, lbl_3_bss_AE61, lbl_3_bss_AE62, lbl_3_bss_AE63, lbl_3_bss_AE64, lbl_3_bss_AE65, lbl_3_bss_AE66, lbl_3_bss_AE67, lbl_3_bss_AE68, lbl_3_bss_AE69, lbl_3_bss_AE6A, lbl_3_bss_AE6B, lbl_3_bss_AE6C, lbl_3_bss_AE6D, lbl_3_bss_AE6E, lbl_3_bss_AE6F, lbl_3_bss_AE70, lbl_3_bss_AE71, lbl_3_bss_AE72, lbl_3_bss_AE73, lbl_3_bss_AE74, lbl_3_bss_AE75, lbl_3_bss_AE76, lbl_3_bss_AE77, lbl_3_bss_AE78, lbl_3_bss_AE79, lbl_3_bss_AE7A;
+static u8 lbl_3_bss_AE51;
+static u8 lbl_3_bss_AE50;
+
+#define BONE(obj, i) ((obj)->actor->boneArray[i])
+
+// .text:0x000E59B4 size:0x68 mapped:0x80724A48
+void fn_3_E59B4(StaC6Obj* o) {
+    GameActor* actor = o->actorObj->actor;
+    if (lbl_3_rodata_2B90 + fn_800B4C40(actor) > lbl_3_rodata_2B94) {
+        fn_800B4CA0(actor, lbl_3_rodata_2B98);
+    }
+    AnimateActorBones(actor);
+}
 
 // .text:0x000E5A1C size:0x68 mapped:0x80724AB0
 void fn_3_E5A1C(StaC6Obj* o) {
@@ -267,15 +258,15 @@ void fn_3_E5A1C(StaC6Obj* o) {
 #define STA_PLACE(o)                                                                                                                        \
     do {                                                                                                                                    \
         PSMTXIdentity(m);                                                                                                                   \
-        c.type = 0;                                                                                                                         \
+        c.base.type = 0;                                                                                                                         \
         if (o->kind < 8) {                                                                                                                  \
-            CTRLSetTranslation(&c, lbl_3_bss_AEB4[0][o->index].pos.x, lbl_3_bss_AEB4[0][o->index].pos.y, lbl_3_bss_AEB4[0][o->index].pos.z);\
-            CTRLSetRotation(&c, 0.0f, lbl_3_bss_AEB4[0][o->index].rotY, 0.0f);                                                              \
+            CTRLSetTranslation(&c.base, lbl_3_bss_AEB4[0][o->index].pos.x, lbl_3_bss_AEB4[0][o->index].pos.y, lbl_3_bss_AEB4[0][o->index].pos.z);\
+            CTRLSetRotation(&c.base, 0.0f, lbl_3_bss_AEB4[0][o->index].rotY, 0.0f);                                                              \
         } else {                                                                                                                            \
-            CTRLSetTranslation(&c, lbl_3_data_19644[o->slot].x, lbl_3_data_19644[o->slot].y, lbl_3_data_19644[o->slot].z);                  \
-            CTRLSetRotation(&c, 0.0f, lbl_3_data_19698[o->slot], 0.0f);                                                                     \
+            CTRLSetTranslation(&c.base, lbl_3_data_19644[o->slot].x, lbl_3_data_19644[o->slot].y, lbl_3_data_19644[o->slot].z);                  \
+            CTRLSetRotation(&c.base, 0.0f, lbl_3_data_19698[o->slot], 0.0f);                                                                     \
         }                                                                                                                                   \
-        CTRLBuildMatrix(&c, m);                                                                                                             \
+        CTRLBuildMatrix(&c.base, m);                                                                                                             \
         for (i = 0; i < o->actorObj->actor->totalBones; i++) {                                                                              \
             bone = o->actorObj->actor->boneArray[i];                                                                                        \
             CTRLBuildMatrix(&bone->orientCtrl.base, bone->forwardMtx);                                                                      \
@@ -299,7 +290,7 @@ void fn_3_E5A1C(StaC6Obj* o) {
 // .text:0x000E5A84 size:0x238 mapped:0x80724B18
 // Place the object's bones at its spot.
 void fn_3_E5A84(StaC6Obj* o) {
-    Control c;
+    GameControl c;
     Mtx m;
     GameBone* bone;
     s32 i;
@@ -599,7 +590,7 @@ void fn_3_E6798(StaC6Obj* o) {
     GameActor* actor = o->actorObj->actor;
     s32 i;
     for (i = 0; i < 7; i++) {
-        if (lbl_3_data_196B4.hit[i] != 0) {
+        if (lbl_3_data_196B4[i] != 0) {
             GameBone* b = actor->boneArray[i];
             b->dispObj = b->baseDispObj;
         } else {
@@ -619,7 +610,7 @@ void fn_3_E6798(StaC6Obj* o) {
         ActorObject* obj_;                                                       \
         ActorObjectTable* t_;                                                    \
         for (i_ = 0; i_ < 7; i_++) {                                             \
-            lbl_3_data_196B4.hit[i_] = 0;                                        \
+            lbl_3_data_196B4[i_] = 0;                                        \
             t_ = lbl_8036E548.slots6C;                                           \
             actor_ = t_->objects[i_ + 16].actor;                                 \
             obj_ = &t_->objects[i_ + 16];                                        \
@@ -661,41 +652,47 @@ void fn_3_E698C(StaC6Obj* o) {
     actor = tmp = o->actorObj->actor;
     t = fn_800B4C40(tmp);
     idx = o->kind - 16;
-    if (lbl_3_data_196B4.hit[idx] == 0) {
+    if (lbl_3_data_196B4[idx] == 0) {
         fn_800B4CA0(actor, 0.0f);
         AnimateActorBones(actor);
     }
-    if (lbl_3_data_196B4.hit[idx] != 0 && t <= 60.0f) {
+    if (lbl_3_data_196B4[idx] != 0 && t <= 60.0f) {
         AnimateActorBones(actor);
     }
 }
 
 // .text:0x000E6A48 size:0x348 mapped:0x80725ADC
-// NONMATCHING 88.8%: the original reaches lbl_3_data_19644/19698/1963F/196B4 through one pooled
-// lbl_3_data_19018 base (this unit's .data was static there); fn_3_E5A84 and fn_3_E6578 are inlined
-// by hand, frame is 0x10 smaller.
+// NONMATCHING 99.9%: only the pooled .data base `addi r31` is scheduled one instruction earlier than in
+// the original (before the PSMTXIdentity argument)
 #if NONMATCHING
-// Draw a panel: place it, pick its overlay texture and colours, and record a wall panel hit.
-void fn_3_E6A48(StaC6Obj* o) {
-    Control c;
+#pragma dont_inline off
+#pragma inline_max_size(100000)
+static inline void E5A84_inl(StaC6Obj* o) {
     Mtx m;
+    GameControl c;
     GameBone* bone;
     s32 i;
+    STA_PLACE(o);
+}
+static inline void E6578_inl(StaC6Obj* o) {
     ActorObject* sub;
     struct DODisplayObj* disp;
     TextureData* tex;
 
-    STA_PLACE(o);
-
     STA_PICK_TEXTURE(o);
+}
+// Draw a panel: place it, pick its overlay texture and colours, and record a wall panel hit.
+void fn_3_E6A48(StaC6Obj* o) {
+    E5A84_inl(o);
+    E6578_inl(o);
 
     if (o->subObj != NULL) {
         fn_3_E5FEC(o);
         fn_800BDA94(o->subObj, CUR_CAMERA_VIEW());
     }
     if (g_GameLogic.gameStatus == 2 && g_Minigame.toyFieldBallStateResult != 0) {
-        if (g_Minigame.toyFieldBallStateResult == lbl_3_data_196B4.kindResult[o->kind] && lbl_3_data_1963F == o->index && o->kind >= 8) {
-            lbl_3_data_196B4.hit[o->flagIdx] = 1;
+        if (g_Minigame.toyFieldBallStateResult == lbl_3_data_1972C[o->kind] && lbl_3_data_1963F == o->index && o->kind >= 8) {
+            lbl_3_data_196B4[o->flagIdx] = 1;
         }
     }
 }
@@ -703,40 +700,31 @@ void fn_3_E6A48(StaC6Obj* o) {
 
 // .text:0x000E6D90 size:0x5C0 mapped:0x80725E24
 // Play crowd sound n (see playCrowdSound in rep_2998.c).
-#define PLAY_CROWD_SOUND(n)                                                       \
-    do {                                                                          \
-        s32 stadium_ = g_d_GameSettings.StadiumID;                                \
-        u8 vol_;                                                                  \
-        SND_VOICEID voice_;                                                       \
-        if (g_d_GameSettings.GameModeSelected == 6) {                             \
-            vol_ = lbl_3_data_84B8[n].vol;                                        \
-        } else {                                                                  \
-            vol_ = lbl_3_data_8404[stadium_ * 15 + n].vol;                        \
-        }                                                                         \
-        voice_ = sndFXStartEx(lbl_3_data_81DC[stadium_] + n, vol_, 0x3F, 0);      \
-        if (g_d_GameSettings.GameModeSelected == 6) {                             \
-            vol_ = lbl_3_data_84B8[n].ctrl;                                       \
-        } else {                                                                  \
-            vol_ = lbl_3_data_8404[stadium_ * 15 + n].ctrl;                       \
-        }                                                                         \
-        sndFXCtrl(voice_, 0x5B, vol_);                                            \
-    } while (0)
+static inline void playCrowdSound(s32 n) {
+    s32 stadium;
+    u8 vol;
+    SND_VOICEID voice;
 
-// NONMATCHING 90.5%: the original reaches this unit's .data (lbl_3_data_19024/1963F/19644/19698/196B4)
-// through one pooled lbl_3_data_19018 base; fn_3_E5A84, fn_3_E6528 and fn_3_E6578 are inlined by hand,
-// frame is 0x10 smaller, register allocation differs.
+    stadium = g_d_GameSettings.StadiumID;
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        vol = lbl_3_data_84B8[n].vol;
+    } else {
+        vol = lbl_3_data_8404[stadium * 15 + n].vol;
+    }
+    voice = sndFXStartEx(lbl_3_data_81DC[stadium] + n, vol, 0x3F, 0);
+    if (g_d_GameSettings.GameModeSelected == 6) {
+        vol = lbl_3_data_84B8[n].ctrl;
+    } else {
+        vol = lbl_3_data_8404[stadium * 15 + n].ctrl;
+    }
+    sndFXCtrl(voice, 0x5B, vol);
+}
+
+// NONMATCHING 99.8%: only the pooled .data base `addi r31` is scheduled one instruction earlier (as fn_3_E6A48)
 #if NONMATCHING
 // Panel pre-draw: place it, light it when the ball touches it, and colour it.
 void fn_3_E6D90(StaC6Obj* o) {
-    Control c;
-    Mtx m;
-    GameBone* bone;
-    s32 i;
-    ActorObject* sub;
-    struct DODisplayObj* disp;
-    TextureData* tex;
-
-    STA_PLACE(o);
+    E5A84_inl(o);
 
     if (g_GameLogic.gameStatus == 0 || g_GameLogic.gameStatus == 1) {
         STA_RESET_COLOR(o);
@@ -746,19 +734,19 @@ void fn_3_E6D90(StaC6Obj* o) {
     }
     if (g_GameLogic.gameStatus == 2) {
         if (g_Ball.AtBat_ContactResult != 0) {
-            if (lbl_3_data_1963F == o->index && g_Minigame.maybeTFCollisionResultState == lbl_3_data_196B4.kindResult[o->kind]) {
+            if (lbl_3_data_1963F == o->index && g_Minigame.maybeTFCollisionResultState == lbl_3_data_1972C[o->kind]) {
                 memcpy(o->color, o->colorHit, 4);
                 o->bodyColor = lbl_3_data_19024.bodyColors[2];
                 if (o->lit == 0) {
-                    PLAY_CROWD_SOUND(0x14);
+                    playCrowdSound(0x14);
                 }
                 o->lit = 1;
-                if (g_Minigame.toyFieldBallStateResult != 0 && g_Minigame.toyFieldBallStateResult == lbl_3_data_196B4.kindResult[o->kind] &&
+                if (g_Minigame.toyFieldBallStateResult != 0 && g_Minigame.toyFieldBallStateResult == lbl_3_data_1972C[o->kind] &&
                     o->kind >= 8) {
-                    if (lbl_3_data_196B4.hit[o->flagIdx] == 0) {
-                        PLAY_CROWD_SOUND(0x17);
+                    if (lbl_3_data_196B4[o->flagIdx] == 0) {
+                        playCrowdSound(0x17);
                     }
-                    lbl_3_data_196B4.hit[o->flagIdx] = 1;
+                    lbl_3_data_196B4[o->flagIdx] = 1;
                 }
             } else {
                 memcpy(o->color, o->colorMiss, 4);
@@ -775,8 +763,7 @@ void fn_3_E6D90(StaC6Obj* o) {
         o->lit = 1;
     }
     fn_3_E5FEC(o);
-
-    STA_PICK_TEXTURE(o);
+    E6578_inl(o);
 
     if (o->subObj != NULL) {
         fn_800BDA94(o->subObj, CUR_CAMERA_VIEW());
@@ -1008,9 +995,8 @@ void fn_3_E7A2C(StaC6Obj* o) {
 }
 
 // .text:0x000E7B20 size:0xFA8 mapped:0x80726BB4
-// NONMATCHING 89.7%: the original reaches lbl_3_data_19024/196B4 through one pooled lbl_3_data_19018
-// base (this unit's .data was static there) and keeps two object pointers; register allocation and
-// frame size differ. fn_3_E7A2C, fn_3_E6528 and fn_3_E67F4 are inlined (macros here).
+// NONMATCHING 93%: keeps two object pointers in the original; register allocation and frame size
+// differ. fn_3_E7A2C, fn_3_E6528 and fn_3_E67F4 are inlined (macros here).
 #if NONMATCHING
 // Create the stadium objects for the current number of players: field panels, wall panels,
 // the 7 targets and 4 scenery objects; the rest of the list is cleared.
@@ -1140,9 +1126,9 @@ u8 fn_3_E7B20(void** files, u32* idx) {
         o->visible = 1;
         o->hasShadow = 1;
         o->ctrl.base.type = 0;
-        CTRLSetTranslation(&o->ctrl.base, lbl_3_data_196B4.targetPos[o->kind - 16].x, lbl_3_data_196B4.targetPos[o->kind - 16].y,
-                           lbl_3_data_196B4.targetPos[o->kind - 16].z);
-        CTRLSetRotation(&o->ctrl.base, 0.0f, lbl_3_data_196B4.targetRotY[o->kind - 16], 0.0f);
+        CTRLSetTranslation(&o->ctrl.base, lbl_3_data_196BC[o->kind - 16].x, lbl_3_data_196BC[o->kind - 16].y,
+                           lbl_3_data_196BC[o->kind - 16].z);
+        CTRLSetRotation(&o->ctrl.base, 0.0f, lbl_3_data_19710[o->kind - 16], 0.0f);
         o->bit5 = 1;
         o->_92 = 0xFF;
         o->_8C = 0;

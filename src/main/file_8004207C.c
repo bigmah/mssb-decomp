@@ -2893,7 +2893,7 @@ void fn_8004ACF4(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
 // .text:0x8004AD54 size:0xC4
 // NONMATCHING ~90%: nested switches instead of the original if/return chain (MWCC folds that to cntlzw)
 #if NONMATCHING
-s32 fn_8004AD54(u32 stadium, u8 flags) {
+s32 fn_8004AD54(u32 stadium, s32 flags) {
     s32 variant = flags & 0x7F;
 
     switch (stadium) {

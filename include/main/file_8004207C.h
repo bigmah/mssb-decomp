@@ -236,7 +236,7 @@ s32 fn_8004ABE0(void);
 
 s32 fn_8004ABE8(s32 clear);
 
-s32 fn_8004AD54(u32 stadium, u8 flags);
+s32 fn_8004AD54(u32 stadium, s32 flags);
 void fn_8004AE18(s32 idx);
 void fn_8004AFA8(s32 idx);
 
