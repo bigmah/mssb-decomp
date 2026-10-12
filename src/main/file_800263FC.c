@@ -1171,21 +1171,21 @@ void fn_8002955C(Vec* pos, Vec* axis, ParticleParamsC* prm) {
 #endif
 
 // .text:0x800297F0 size:0x4D8
-// NONMATCHING 89%: float register allocation (yaw/pitch and the spin range) and scheduling of the conversions
+// NONMATCHING 94%: float register allocation of yaw/pitch and scheduling of the conversions (declaration and conversion order tuned by search)
 #if NONMATCHING
 void fn_800297F0(Emitter* e, Vec* pos, Vec* axis, ParticleParamsC* prm) {
-    s32 lifeRange;
     SparkParticle* p;
+    s32 lifeRange;
     f32 spinMin;
     f32 spinRange;
     f32 speedMin;
     f32 speedRange;
     f32 sizeMin;
     f32 sizeRange;
-    f32 gravity;
-    f32 yaw;
-    f32 yawRange;
     f32 pitch;
+    f32 yaw;
+    f32 gravity;
+    f32 yawRange;
     f32 pitchRange;
     f32 pitchEnd;
     s32 fadeStart;
@@ -1197,9 +1197,9 @@ void fn_800297F0(Emitter* e, Vec* pos, Vec* axis, ParticleParamsC* prm) {
     sizeMin = (f32)prm->unk24 / 100000.0f;
     sizeRange = (f32)prm->unk28 / 100000.0f - sizeMin;
     spinMin = ((f32)prm->unk1C / 100000.0f) / 360.0f;
+    lifeRange = prm->unk10 - prm->unkC;
     spinRange = ((f32)prm->unk20 / 100000.0f) / 360.0f - spinMin;
     gravity = (f32)prm->unk2C / 100000.0f;
-    lifeRange = prm->unk10 - prm->unkC;
     p = (SparkParticle*)e->particles;
     if (axis != NULL) {
         yaw = (f32)prm->unk48 / 100000.0f;
