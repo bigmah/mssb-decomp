@@ -526,8 +526,9 @@ game/rep_3C80.c:
 	.data       start:0x00027D58 end:0x00027EC0
 
 game/rep_3CE0.c:
-	.text       start:0x0015FB84 end:0x00160578
+	.text       start:0x0015F874 end:0x00160578
 	.rodata     start:0x00003CE0 end:0x00003D50
+	.data       start:0x00027EC0 end:0x000281F0
 
 game/rep_3D50.c:
 	.text       start:0x00160578 end:0x001608F0

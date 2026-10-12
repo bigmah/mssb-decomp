@@ -33,28 +33,38 @@ typedef struct PlayerMarkerSlot {
     /*0xC*/ u32 baseColor;
 } PlayerMarkerSlot;
 
-// lbl_3_data_27F10 (addressed through the lbl_3_data_27EC0 base in the original).
+// Fade timing, marker slot offsets and the per-frame-buffer marker nodes (lbl_3_data_27F10).
 typedef struct PlayerMarkerLayout {
-    /*0x000*/ s32 _00;
-    /*0x004*/ s32 _04;
+    /*0x000*/ s32 fadeScale;    // final fade level (FadeState.level)
+    /*0x004*/ s32 fadeDuration; // frames
     /*0x008*/ PlayerMarkerSlot one[1];
     /*0x018*/ PlayerMarkerSlot two[2];
     /*0x038*/ PlayerMarkerSlot three[3];
     /*0x068*/ s32 height; // marker height above the character (x100000)
     /*0x06C*/ PlayerMarkerNode nodes[2]; // per frame buffer (lbl_803CBBC0)
-    /*0x1F4*/ Mtx44 orthoProj;
-    /*0x234*/ u8 _234[0x250 - 0x234];
-    /*0x250*/ u8 clearDL[0x20];   // display list drawing a full-screen quad
-    /*0x270*/ u8 clearVerts[0x70]; // its positions (stride 0xC)
-} PlayerMarkerLayout; // size: 0x2E0
+} PlayerMarkerLayout; // size: 0x1F4
 
-// lbl_3_data_27EC0 + lbl_3_data_27F10.
-typedef struct PlayerMarkerData {
-    /*0x000*/ s32 size[3][2];  // marker width/radius per size class (x100000)
-    /*0x018*/ u8 sizeClass[0x38]; // per character kind
-    /*0x050*/ PlayerMarkerLayout layout;
-} PlayerMarkerData;
+// Screen-fade / stadium-effect state (lbl_3_common_bss_35154); only the fields used by this unit.
+typedef struct FadeState {
+    /*0x000*/ u8 _000[0x4];
+    /*0x004*/ u8* effectFile;
+    /*0x008*/ u8 _008[0x468 - 0x8];
+    /*0x468*/ s32 level;     // current fade amount (0..fadeScale), drawn as the fade colour
+    /*0x46C*/ u8 _46C[4];
+    /*0x470*/ u8 active;
+    /*0x471*/ u8 done;
+    /*0x472*/ u8 count;      // number of entries in ids
+    /*0x473*/ u8 ids[6];
+    /*0x479*/ u8 disabled;
+} FadeState;
 
+extern FadeState lbl_3_common_bss_35154;
+
+void fn_3_15F874(s32 useB);
+void fn_3_15F998(void);
+void fn_3_15F9AC(void);
+void fn_3_15F9C0(void);
+void fn_3_15FA58(s32 n, s32* ids);
 void fn_3_15FB84(s32 count, ...);
 void fn_3_15FF28(PlayerMarkerNode* node);
 
