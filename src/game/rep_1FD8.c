@@ -111,7 +111,8 @@ extern void fn_8003A8A0(void* model, Mtx viewMtx, s32 unused);
 extern u32 lbl_3_bss_9D88;
 extern u16 lbl_3_data_177F0;
 typedef struct Rep1FD8Ent {
-    u8 pad0[8];
+    void* next;                           // draw-list link
+    void (*draw)(struct Rep1FD8Ent* ent); // fn_3_C1C18
     Mtx m;
     void* w38;
 } Rep1FD8Ent;
@@ -925,7 +926,7 @@ typedef struct {
 } C42A4Bss;
 typedef struct { u8 pad[0x10]; u8 f10; u8 f11; u8 f12; u8 f13; } C42A4Ent;
 extern u8 lbl_3_bss_9DE0[];
-extern u8 lbl_3_data_17704[];
+extern f32 lbl_3_data_17704[59];
 extern f32 lbl_3_rodata_2154;
 extern void fn_3_B8414(void*, void*);
 extern void fn_3_B8464(void*, void*);
@@ -945,7 +946,7 @@ void fn_3_C42A4(s32* a, s32* b) {
         v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
         g->p40[*a] = v;
         ((void (*)(void))fn_3_B8574)();
-        e = (C42A4Ent*)lbl_3_data_17704;
+        e = (C42A4Ent*)((u8*)lbl_3_data_17704);
         off = v * 4;
         for (j = 0; j < 10; e++, j++) {
             if (k == e->f12 && e->f10 != 7) {
@@ -1011,7 +1012,7 @@ extern void fn_80033CC8(void*, void*);
 extern const f32 lbl_3_rodata_2168[];
 extern const f32 lbl_3_rodata_21A4;
 extern const f32 lbl_3_rodata_21AC;
-extern u8 lbl_3_data_17514[];
+extern f32 lbl_3_data_17514[55];
 extern const f32 lbl_3_rodata_21A8;
 extern f64 pow(f64, f64);
 // .text:0x000C4724 size:0x1AC mapped:0x807037B8
@@ -1555,7 +1556,7 @@ typedef struct {
     u8 visible;
     u8 f12;
     u8 pad13;
-} StadPlace14; // lbl_3_data_17514 / lbl_3_data_17704
+} StadPlace14; // ((u8*)lbl_3_data_17514) / ((u8*)lbl_3_data_17704)
 typedef struct {
     f32 x, y, z;
     f32 rotY;
@@ -1910,7 +1911,7 @@ typedef struct C7A0CEnt {
     u8 placed; // 0x99
     u8 pad9A[0x9C - 0x9A];
     Vec pos; // 0x9C
-    u8 idx;  // 0xA8: entry in lbl_3_data_17514
+    u8 idx;  // 0xA8: entry in ((u8*)lbl_3_data_17514)
     u8 padA9[0xAC - 0xA9];
     f32 speed; // 0xAC
     u8 state;  // 0xB0
@@ -1921,8 +1922,8 @@ typedef struct {
     f32 x, y, z;
     f32 ang;
     u8 pad10[4];
-} C7A0CTbl; // lbl_3_data_17514
-#define C7A0C_TBL ((C7A0CTbl*)lbl_3_data_17514)
+} C7A0CTbl; // ((u8*)lbl_3_data_17514)
+#define C7A0C_TBL ((C7A0CTbl*)((u8*)lbl_3_data_17514))
 extern f32 lbl_3_data_17508[];
 extern s16 fn_3_B7F70(s16 range);
 extern s32 fn_3_8BBC4(s32 id, f32* pos, f32* dir, s32 type);
@@ -2032,7 +2033,7 @@ void fn_3_C7A0C(C7A0CEnt* e) {
 
 typedef struct { u32 w[17]; } C42A4Cpy;
 extern u8 lbl_3_bss_9DE4[];
-extern u8 lbl_3_data_17514[];
+extern f32 lbl_3_data_17514[55];
 extern f32 lbl_3_rodata_21E0;
 // .text:0x000C805C size:0x1E0 mapped:0x807070F0
 void fn_3_C805C(s32* a, s32* b) {
@@ -2051,7 +2052,7 @@ void fn_3_C805C(s32* a, s32* b) {
         v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
         g->p40[*a] = v;
         ((void (*)(void))fn_3_B8574)();
-        e = (C42A4Ent*)lbl_3_data_17514;
+        e = (C42A4Ent*)((u8*)lbl_3_data_17514);
         off = v * 4;
         for (j = 0; j < 10; e++, j++) {
             if (k == e->f12 && e->f10 != 7) {
@@ -2150,9 +2151,9 @@ extern u8 lbl_3_data_10C1C[];
 void fn_3_C8650(void** files) {
     C42A4Bss* g = (C42A4Bss*)lbl_3_common_bss_350E4;
     C3C2CBss* bss = &lbl_3_bss_9D80;
-    StadPlace14* pa = (StadPlace14*)lbl_3_data_17514;
+    StadPlace14* pa = (StadPlace14*)((u8*)lbl_3_data_17514);
     StadPlace18* pb = (StadPlace18*)lbl_3_data_175FC;
-    StadPlace14* pc = (StadPlace14*)lbl_3_data_17704;
+    StadPlace14* pc = (StadPlace14*)((u8*)lbl_3_data_17704);
     StadObj1FD8* o;
     s32* idx;
     u32 nB;
@@ -2417,4 +2418,47 @@ void fn_3_C8650(void** files) {
     fn_3_B97C8(fn_3_C2974);
 }
 #endif
+
+
+// .data 0x00017508..0x00017898
+f32 lbl_3_data_17508[3] = {1.0f, 3.0f, 5.0f};
+f32 lbl_3_data_17514[55] = {
+    -51.592f, -18.0f, 68.051f, 306.0f, 9.477712e-38f, -43.569f, -18.0f, 76.869f,
+    314.0f, 9.477712e-38f, -33.845f, -18.0f, 84.008f, 330.0f, 9.477712e-38f, 51.592f,
+    -18.0f, 68.051f, 52.0f, 9.477999e-38f, 43.569f, -18.0f, 76.869f, 44.0f,
+    9.477999e-38f, 33.845f, -18.0f, 84.008f, 28.0f, 9.477999e-38f, 0.0f, 0.0f,
+    0.0f, 0.0f, 9.704596e-35f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+};
+f32 lbl_3_data_175F0[3] = {0.06f, 0.07f, 0.08f};
+C71CCEnt lbl_3_data_175FC[11] = {
+    {-48.0f, 5.5f, 25.0f, {0, 0, 0, 0}, 3, 1, 1, {3, 1, 39, 0, 1}},
+    {-43.0f, 5.5f, 56.0f, {0, 0, 0, 0}, 3, 1, 1, {3, 1, 59, 0, 90}},
+    {-10.0f, 5.5f, 77.0f, {0, 0, 0, 0}, 3, 1, 2, {3, 0, 180, 0, 90}},
+    {10.0f, 5.5f, 77.0f, {0, 0, 0, 0}, 3, 1, 2, {3, 1, 14, 0, 90}},
+    {45.0f, 5.5f, 23.0f, {0, 0, 0, 0}, 3, 1, 3, {3, 0, 245, 0, 1}},
+    {43.0f, 5.5f, 56.0f, {0, 0, 0, 0}, 3, 1, 3, {3, 0, 135, 0, 90}},
+    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 7, 0, 255, {7, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
+};
+f32 lbl_3_data_17704[59] = {
+    -12.891f, -5.93f, 87.961f, 348.0f, 1.5164347e-36f, 12.891f, -5.93f, 87.961f,
+    12.0f, 1.5164347e-36f, -23.0f, -0.02f, 72.0f, 0.0f, 6.0659225e-36f, -22.0f,
+    -0.02f, 45.0f, 0.0f, 6.0659225e-36f, -50.0f, -0.02f, 38.0f, 0.0f,
+    6.0659225e-36f, 23.0f, -0.02f, 72.0f, 0.0f, 6.066106e-36f, 22.0f, -0.02f,
+    45.0f, 0.0f, 6.066106e-36f, 50.0f, -0.02f, 38.0f, 0.0f, 6.066106e-36f,
+    0.0f, 0.0f, 0.0f, 0.0f, 9.704596e-35f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.387867e-38f,
+    9.551472e-38f, 2.5208502e-35f, 4.122694e-34f,
+};
+u16 lbl_3_data_177F0 = 4;
+s32 lbl_3_data_177F4 = 2;
+u8 lbl_3_data_177F8[12] = {0, 200, 5, 146, 8, 104, 255, 255, 255, 0, 0, 0};
+Rep1FD8Ent lbl_3_data_17804[2] = {{NULL, fn_3_C1C18}, {NULL, fn_3_C1C18}};
+f32 lbl_3_data_1787C = 0.7f;
+s16 lbl_3_data_17880[12] = {106, -98, 220, 94, -87, 230, 120, -80, 212, 0, 0, 0};
 

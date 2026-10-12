@@ -48,7 +48,7 @@ extern u8* lbl_3_bss_9F48;    // water indirect texture (I8, 128 x 64)
 extern GXTexObj lbl_3_bss_9F4C;
 
 extern StaC0ObjList lbl_3_common_bss_350E4;
-extern StaC0Part lbl_3_data_17B98[10];
+extern StaC0Part lbl_3_data_17B98[11];
 extern u8 lbl_3_data_17CF8[]; // TODO type: file name table for fn_3_B9D68
 extern u16 lbl_3_data_81DC[]; // per stadium: crowd sound id base
 extern u8 lbl_3_data_10F7C[];
@@ -555,3 +555,19 @@ void fn_3_C9DB4(void** files) {
     fn_3_C9C94();
 }
 #endif
+
+// .data 0x00017B98..0x00017D08
+StaC0Part lbl_3_data_17B98[11] = {
+    {{24.4f, 0.0f, 117.2f}, {1.0f, 1.0f, 1.0f}, -16.0f, 2, {1, 0, 0}},
+    {{5.549f, 0.0f, 111.0f}, {1.0f, 1.0f, 1.0f}, 0.0f, 2, {1, 0, 0}},
+    {{-22.0f, 0.0f, 109.8f}, {0.9f, 0.9f, 0.9f}, 32.0f, 2, {1, 0, 0}},
+    {{98.0f, 0.0f, 73.0f}, {1.0f, 1.0f, 1.0f}, 75.0f, 2, {1, 0, 0}},
+    {{-112.0f, 0.0f, 66.0f}, {1.0f, 1.0f, 1.0f}, -25.0f, 2, {1, 0, 0}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 4, {0, 0, 0}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 0, {0, 0, 0}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 0, {0, 0, 0}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 0, {0, 0, 0}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 0, {0, 0, 0}},
+}; // NOTE: type size 0x140 != symbol size 0x160
+u8 lbl_3_data_17CF8[16] = {1, 2, 4, 4, 4, 4, 2, 8, 9, 0, 0, 0, 0, 0, 0, 0};
+
