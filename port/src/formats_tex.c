@@ -33,3 +33,8 @@ int port_swap_tex_archive(void* archive)
     b[3] = TEX_ARCHIVE_SWAPPED;
     return 1;
 }
+
+void port_swap_offset_table(void* table, uint32_t count)
+{
+    swap32_array(table, count);
+}

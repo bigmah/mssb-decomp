@@ -3,6 +3,8 @@
 // Scalars become native; texture data and display lists stay big-endian.
 #pragma once
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,6 +18,11 @@ void port_swap_msg_table(void* table);
 // u16 index, u16 pad}. Returns 0 if the archive was already converted
 // (relocated), 1 if the caller should relocate it now.
 int port_swap_tex_archive(void* archive);
+
+// A table of count u32 file offsets at the start of a container file (font
+// archive, ...). Call it exactly once per load (values can't tell native
+// from big-endian reliably).
+void port_swap_offset_table(void* table, uint32_t count);
 
 #ifdef __cplusplus
 }
