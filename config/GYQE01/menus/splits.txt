@@ -179,6 +179,7 @@ menus/rep_0F10.c:
 
 auto_00_0008782C_text:
 	.text       start:0x0008782C end:0x0008ACE0
+	.data       start:0x0002E9F8 end:0x0002F98C
 	.bss        start:0x0034009C end:0x00340140 align:4 common
 
 menus/rep_0F60.c:
