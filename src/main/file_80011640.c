@@ -3992,15 +3992,13 @@ void fn_8001BE50(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
 #endif
 
 // .text:0x8001C234 size:0x2F4
-// NONMATCHING 98%: register allocation
-#if NONMATCHING
 void fn_8001C234(u32* doneMask) {
-    s32 i;
     CharActor* actor;
-    s32 j;
-    s32 n;
     f32 frames;
+    s32 i;
     f32 t;
+    s32 n;
+    s32 j;
 
     *doneMask = 0;
     for (i = 0; i < 13; i++) {
@@ -4064,7 +4062,6 @@ void fn_8001C234(u32* doneMask) {
         }
     }
 }
-#endif
 
 // .text:0x8001C528 size:0x60
 void fn_8001C528(void) {
