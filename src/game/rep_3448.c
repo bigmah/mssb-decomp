@@ -3129,13 +3129,12 @@ void fn_3_128B90(void) {
 }
 
 // .text:0x00128C18 size:0x758 mapped:0x80767CAC
-// NONMATCHING 62%: orig reloads g_Minigame per test, uses named rodata floats and walks m + j for the player bytes; register allocation
+// NONMATCHING 91%: orig loads its float constants (0.0f, 0.01f, 0.5f) from named rodata where ours are pooled, walks m + j for the player bytes; register allocation
 #if NONMATCHING
 void fn_3_128C18(void) {
     RepTask* q = REP_TASK;
     RepObj* o;
-    u8* m;
-    u32 found;
+    s32 found;
     s32 j;
     s32 k;
     u8 c;
@@ -3164,16 +3163,15 @@ void fn_3_128C18(void) {
         return;
     }
     lbl_3_common_bss_32724[0xB8] = 0;
-    m = g_Minigame;
-    if (g_GameLogic[0x11E] == 0x27 && m[0x1A3D] == 1) {
+    if (g_GameLogic[0x11E] == 0x27 && g_Minigame[0x1A3D] == 1) {
         found = 0;
         for (j = 0; j < 4; j++) {
-            if (m[0x1E08 + j * 2] == *(s8*)(m + 0x1908) && m[0x1E09 + j * 2] == 0) {
+            if (g_Minigame[0x1E08 + j * 2] == *(s8*)(g_Minigame + 0x1908) && g_Minigame[0x1E09 + j * 2] == 0) {
                 found = 1;
                 break;
             }
         }
-        if (m[0x1E09] == 0 && m[0x1E0B] == 0 && m[0x1E0D] == 0 && m[0x1E0F] == 0) {
+        if (g_Minigame[0x1E09] == 0 && g_Minigame[0x1E0B] == 0 && g_Minigame[0x1E0D] == 0 && g_Minigame[0x1E0F] == 0) {
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[2];
         } else if (found != 0) {
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[8];
@@ -3187,10 +3185,10 @@ void fn_3_128C18(void) {
         REP_OBJC(q, 0)->y = 0.0f;
         return;
     }
-    if (m[0x1A2B] == 3 || (g_d_GameSettings[7] == 6 && *(s8*)(m + 0x1908) >= 0 && m[0x1A43] != 0)) {
-        if (m[0x1A43] == 1) {
+    if (g_Minigame[0x1A2B] == 3 || (g_d_GameSettings[7] == 6 && *(s8*)(g_Minigame + 0x1908) >= 0 && g_Minigame[0x1A43] != 0)) {
+        if (g_Minigame[0x1A43] == 1) {
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[7];
-        } else if (m[0x1A43] != 0) {
+        } else if (g_Minigame[0x1A43] != 0) {
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[6];
         } else {
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[5];
@@ -3202,8 +3200,8 @@ void fn_3_128C18(void) {
         REP_OBJC(q, 0)->y = 0.0f;
         return;
     }
-    if (m[0x1906] > 1) {
-        if (m[0x19A8] != 0) {
+    if (g_Minigame[0x1906] > 1) {
+        if (g_Minigame[0x19A8] != 0) {
             REP_OBJC(q, 0)->flags |= 2;
             REP_OBJC(q, 0)->mode = 1;
             REP_OBJC(q, 0)->anim = lbl_3_data_AA98[2];
@@ -3213,13 +3211,13 @@ void fn_3_128C18(void) {
         }
         k = 0;
         for (j = 0; j < 4; j++) {
-            if (m[0x18E8 + j] == 1) {
-                getAnimRelatedCoordinates(*(s8*)(m + 0x18CC + j), 9, &pos);
-                c = m[0x18D0 + j];
+            if (g_Minigame[0x18E8 + j] == 1) {
+                getAnimRelatedCoordinates(*(s8*)(g_Minigame + 0x18CC + j), 9, &pos);
+                c = g_Minigame[0x18D0 + j];
                 pos.y = 0.01f * -(f32)lbl_3_data_7F10[c] * charSizeMultipliers[c][0] - 0.5f;
                 fn_3_1650C(&sx, &sy, 0, pos.x, pos.y, pos.z);
                 // fixed x position per player count (lbl_3_data_226E0: [count - 1][4])
-                sx = *(s16*)(lbl_3_data_226E0 + m[0x1906] * 8 + j * 2 - 8);
+                sx = *(s16*)(lbl_3_data_226E0 + g_Minigame[0x1906] * 8 + j * 2 - 8);
                 o = REP_OBJ(q, k);
                 o->flags |= 2;
                 REP_OBJ(q, k)->mode = 1;
@@ -3231,13 +3229,13 @@ void fn_3_128C18(void) {
         }
         return;
     }
-    if (*(s16*)(m + 0x1A26) != 0) {
+    if (*(s16*)(g_Minigame + 0x1A26) != 0) {
         k = 0;
         for (j = 0; j < 4; j++) {
-            if (*(s8*)(m + 0x18CC + j) >= 0) {
+            if (*(s8*)(g_Minigame + 0x18CC + j) >= 0) {
                 REP_OBJ(q, k)->flags |= 2;
                 REP_OBJ(q, k)->mode = 1;
-                if (m[0x1A37] == 1) {
+                if (g_Minigame[0x1A37] == 1) {
                     REP_OBJ(q, k)->anim = lbl_3_data_AA98[0];
                 } else {
                     REP_OBJ(q, k)->anim = lbl_3_data_AA98[4];
