@@ -2870,7 +2870,7 @@ void fn_3_F6938(s32* n) {
         lbl_3_common_bss_350E4.groupObjs[k] = idx;
         lbl_3_common_bss_350E4.groupCount[*n]++;
         e = (StaC5Obj*)lbl_3_common_bss_350E4.objs + idx;
-        o = (void*)*(s32*)(&e->shadow);
+        o = e->shadow;
         c.c.type = 0;
         CTRLSetTranslation(&c.c, lbl_3_data_1B884[e->idx].v.x, -lbl_3_data_1B884[e->idx].v.y, lbl_3_data_1B884[e->idx].v.z);
         CTRLSetScale(&c.c, lbl_3_rodata_2F40[0], lbl_3_rodata_2F40[0], lbl_3_rodata_2F40[0]);

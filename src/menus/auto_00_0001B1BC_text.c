@@ -111,7 +111,7 @@ static inline void* relocateArchive(u32* data, s32 index, s32 count) {
     u32* p = data + count;
     while (count-- != 0) {
         p--;
-        *p += (u32)data; // TODO: 32-bit file offsets relocated in place
+        *p += PTR_TO_U32(data); // TODO(port): 32-bit file offsets relocated in place
     }
     return entry;
 }

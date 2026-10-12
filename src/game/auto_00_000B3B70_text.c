@@ -165,7 +165,7 @@ extern void fn_3_B77DC(void);
 extern void fn_3_15B610(void);
 extern s32 fn_80014F40(s32);
 extern s32 fn_80014D4C(s32);
-extern u8 lbl_3_data_FC20[];
+extern s16* lbl_3_data_FC20[]; // practice scripts by level
 extern s32 fn_8001594C(s32);
 extern s32 fn_3_B3CD4(void);
 extern s32 fn_3_750DC(void);
@@ -508,7 +508,7 @@ void fn_3_B6994(void) {
             fn_3_B3C78(3);
         } else {
             fn_3_B27A4();
-            g_Practice.commandList = (void*)((u32*)lbl_3_data_FC20)[g_Practice.practiceLevel];
+            g_Practice.commandList = (void*)lbl_3_data_FC20[g_Practice.practiceLevel];
             fn_3_B3C78(1);
         }
         changeScene(1, 6);

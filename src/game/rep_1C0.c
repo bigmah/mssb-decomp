@@ -1116,7 +1116,7 @@ s16 fn_3_6424(u8* base, CollisionBox** out) {
     s32 i;
     p = (u32*)(*out = (CollisionBox*)(base + 4));
     for (i = n; i >= 0; i--) {
-        *p += (u32)base; // TODO port: in-place 32-bit offset relocation; needs the port's relocation layer
+        *p += PTR_TO_U32(base); // TODO(port): in-place 32-bit offset relocation
         p++;
     }
     return n;

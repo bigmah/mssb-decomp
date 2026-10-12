@@ -5,7 +5,7 @@
 
 // Sound state (lbl_3_common_bss_34C58, 0x38 bytes).
 typedef struct SndState34C58 {
-    s32 unk0;
+    void* unk0; // file loaded by ARAMTransfer (relocated in place)
     s32 unk4;
     s32 unk8;
     s32 unkC[4]; // sound voice ids, -1 = none

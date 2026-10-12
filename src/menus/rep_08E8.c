@@ -165,7 +165,7 @@ u16* fn_2_4A094(u16* destination, const u16* source) {
 s32 fn_2_4A068(const u16* string) {
     const u16* end = string;
     while (*end != 0x4000) end++;
-    return end - string;
+    return (s32)(end - string);
 }
 
 s32 fn_2_46D00(void) {

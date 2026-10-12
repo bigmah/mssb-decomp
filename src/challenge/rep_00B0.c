@@ -436,7 +436,7 @@ void fn_1_19AC(void) {
     }
 
     GDPadCurr32();
-    size = lbl_1_common_bss_472B4.dl.ptr - lbl_1_common_bss_472B4.dl.start;
+    size = (u32)(lbl_1_common_bss_472B4.dl.ptr - lbl_1_common_bss_472B4.dl.start);
     DCFlushRangeNoSync(lbl_1_common_bss_472B4.dlBuf, size);
     lbl_1_common_bss_472B4.dlSize = size;
     if (size > 0x80000) {

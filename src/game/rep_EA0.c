@@ -181,7 +181,7 @@ void fn_3_67620(s32 type, u16 frames) {
         dl += 6;
         i++;
     } while (i < 60);
-    DCStoreRangeNoSync(start, dl - start);
+    DCStoreRangeNoSync(start, (u32)(dl - start));
 
     // Same strip with the vertices in reverse order.
     memcpy(sTrailDisplayListReversed, sTrailDisplayList, 3);

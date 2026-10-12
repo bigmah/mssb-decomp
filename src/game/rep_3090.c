@@ -2350,10 +2350,10 @@ u32 fn_3_105C28(ReplayAnim* p, u32 key) {
 void fn_3_105C84(ReplayAnim* p) {
     u32* a;
     s16 i;
-    a = (u32*)&p->frameTbl; /* TODO port: frameTbl/tracks[] hold 32-bit file offsets relocated in place; needs the port's relocation layer */
-    *a += (u32)p;
+    a = (u32*)&p->frameTbl; /* TODO(port): frameTbl/tracks[] hold 32-bit file offsets relocated in place */
+    *a += PTR_TO_U32(p);
     for (i = 0; i < p->numTracks; i++) {
-        a[i + 1] += (u32)p;
+        a[i + 1] += PTR_TO_U32(p);
     }
     CAMV->frameEnd = p->numFrames << 16;
 }

@@ -1474,7 +1474,7 @@ void fn_3_BC6D8(Vec* a, Vec* b, int idx, int c) {
     s_BC6D8_f[0] = g_UNK_StadiumDetails._04;
     s_BC6D8_e.unkC = (s32)((f32)old * ((f32)s_BC6D8_b[idx % 14] / lbl_3_rodata_1EC4));
     p = s_BC6D8_c[idx];
-    switch ((u32)p) { case 0: p = (u32*)&s_BC6D8_d[lbl_3_bss_9968 & 0xF]; break; }
+    switch ((uintptr_t)p) { case 0: p = (u32*)&s_BC6D8_d[lbl_3_bss_9968 & 0xF]; break; }
     fn_80028628(a, b, &s_BC6D8_e, s_BC6D8_a[idx % 14], p, (struct ParticleParams5*)s_BC6D8_f, c);
     lbl_3_bss_9968 += rand();
     s_BC6D8_e.unkC = old;
@@ -2484,7 +2484,7 @@ void fn_3_BF238(void) {
         if (tbl[i] == NULL) {
             continue;
         }
-        tbl[i] = (u8*)tbl + (u32)tbl[i]; // TODO port: in-place relocation of the loaded file's 32-bit offsets; needs the port's relocation layer
+        tbl[i] = (u8*)tbl + (uintptr_t)tbl[i]; // TODO(port): the file holds 32-bit offsets but assets[] is a pointer table (8 bytes per entry on PC)
         switch (i) {
         case 0: case 8: case 18: case 24: case 30: case 36:
             tex = lbl_3_common_bss_35154.assets[i];

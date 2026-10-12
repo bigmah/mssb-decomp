@@ -361,7 +361,7 @@ void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx) {
             n = *(u16*)sub;
             q = (u32*)(sub + 4);
             for (i = n; i >= 0; i--) {
-                *q += (u32)sub; // TODO port: in-place 32-bit offset relocation; needs the port's relocation layer
+                *q += PTR_TO_U32(sub); // TODO(port): in-place 32-bit offset relocation
                 q++;
             }
             break;
@@ -382,7 +382,7 @@ void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx) {
         i++;
     } while (--count != 0);
     while (idx-- != 0) {
-        ((u32*)table)[idx] += (u32)table; // TODO port: in-place 32-bit offset relocation; needs the port's relocation layer
+        ((u32*)table)[idx] += PTR_TO_U32(table); // TODO(port): in-place 32-bit offset relocation
     }
 }
 
@@ -680,7 +680,7 @@ void* fn_3_B91C8(s32 type, s32 idx0, Mtx arg) {
 // .text:0x000B916C size:0x5C mapped:0x806F8200
 void processStadiumObjectFunction(int stadium, void* a, int b, void* c) {
     StadiumObjMgr* l = &lbl_3_common_bss_350E4;
-    s32 i = (s32)a;
+    s32 i = (s32)(intptr_t)a;
     if (i < l->count) {
         void (*f)(int, int, void*) = l->objs[i].func;
         if (f != 0) {

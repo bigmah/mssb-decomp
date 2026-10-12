@@ -815,7 +815,7 @@ void fn_2_8D270(u8 index) {
         if (actor->files[i] == NULL) {
             break;
         }
-        actor->files[i] = (u8*)files + (u32)files[i]; // TODO port: 32-bit file offsets read through void*
+        actor->files[i] = (u8*)files + (uintptr_t)files[i]; // TODO(port): 32-bit file offsets read through void* (8 bytes on PC)
     }
     tex = actor->files[0];
     convertTextureHeader(tex);

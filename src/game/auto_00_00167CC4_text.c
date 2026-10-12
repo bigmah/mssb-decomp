@@ -104,7 +104,7 @@ void fn_3_1680D4(void) {
         return;
     }
     if (task->done) {
-        fn_800B0A14_removeQueue((void*)anim);
+        fn_800B0A14_removeQueue((void*)(intptr_t)anim); // the argument is ignored
     }
 }
 

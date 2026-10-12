@@ -31,8 +31,9 @@ void fn_3_CB6EC(f32 x, f32 y, f32 z) {
 
 // .text:0x000CB6B4 size:0x38 mapped:0x8070A748
 void fn_3_CB6B4(void** file) {
-    *file = (u8*)*file + (u32)file;
-    convertTextureHeader(lbl_3_bss_9FDC = *file);
+    // TODO(port): in-place offset relocation (the slot holds a 32-bit offset)
+    *(u32*)file += PTR_TO_U32(file);
+    convertTextureHeader(lbl_3_bss_9FDC = U32_TO_PTR(*(u32*)file));
 }
 
 // .data 0x18268: particle burst parameters (tex is filled in by fn_3_CB6EC).

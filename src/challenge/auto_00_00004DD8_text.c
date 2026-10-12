@@ -12,6 +12,6 @@ void fn_1_4DD8(u16* file) {
     table = (u32*)(file + 2);
     for (i = (s16)file[0]; i >= 0; i--) {
         // TODO port: in-place 32-bit offset relocation; needs the port's relocation layer
-        *table++ += (u32)file;
+        *table++ += PTR_TO_U32(file);
     }
 }

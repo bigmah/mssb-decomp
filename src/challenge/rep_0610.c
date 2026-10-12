@@ -5912,20 +5912,20 @@ void fn_1_135C0(void) {
         header = (u32*)lbl_8036E548.actors[0].files;
         for (k = 0; k < 5; k++) {
             if (header[k] != 0) {
-                header[k] += (u32)header; // TODO port: in-place 32-bit offset relocation; needs the port's relocation layer
+                header[k] += PTR_TO_U32(header); // TODO(port): in-place offset relocation of a big-endian disc header
             }
         }
         if (lbl_1_data_A978[lbl_1_bss_68FC.character[0]] >= 0) {
             files = lbl_1_bss_60A0;
             for (k = 0; k < 16; k++) {
-                ((u32*)lbl_1_bss_60A0)[k] += (u32)lbl_1_bss_60A0; // TODO port: same (in-place relocation)
+                ((u32*)lbl_1_bss_60A0)[k] += PTR_TO_U32(lbl_1_bss_60A0); // TODO(port): same (in-place relocation)
             }
         }
         header = (u32*)lbl_8036E548.actors[0].files;
-        textures = (void*)header[0];
-        layout = (struct ActorLayout*)header[1];
-        geometry = (void*)header[2];
-        skin = (void*)header[3];
+        textures = U32_TO_PTR(header[0]);
+        layout = (struct ActorLayout*)U32_TO_PTR(header[1]);
+        geometry = U32_TO_PTR(header[2]);
+        skin = U32_TO_PTR(header[3]);
         convertTextureHeader(textures);
         LoadActorLayout(layout);
         convertGeometryAndSknHeader(geometry, skin);
@@ -5934,8 +5934,8 @@ void fn_1_135C0(void) {
         if (lbl_1_data_A978[lbl_1_bss_68FC.character[0]] >= 0) {
             files = lbl_1_bss_60A0;
             for (k = 0; k <= 7; k += 2) {
-                struct ActorLayout* extraLayout = (struct ActorLayout*)((u32*)lbl_1_bss_60A0)[k];
-                void* extraGeometry = (void*)((u32*)lbl_1_bss_60A0)[k + 1];
+                struct ActorLayout* extraLayout = (struct ActorLayout*)U32_TO_PTR(((u32*)lbl_1_bss_60A0)[k]);
+                void* extraGeometry = U32_TO_PTR(((u32*)lbl_1_bss_60A0)[k + 1]);
                 LoadActorLayout(extraLayout);
                 convertGeometryAndSknHeader(extraGeometry, NULL);
                 haveActLayoutPointToGeoHeader(extraLayout, extraGeometry);
@@ -5981,19 +5981,19 @@ void fn_1_135C0(void) {
     object->speed = 0.0f;
 
     // Shape (facial) animation players.
-    lbl_1_bss_67B8[5] = (void*)(lbl_8036E548.actors[lbl_1_bss_5F73].files)[4];
+    lbl_1_bss_67B8[5] = U32_TO_PTR(((u32*)lbl_8036E548.actors[lbl_1_bss_5F73].files)[4]);
     if (lbl_1_bss_67B8[5] != NULL && lbl_1_bss_6940.player[lbl_1_bss_5F73].variant == 0) {
         fn_80025DDC(lbl_1_bss_67B8[5]);
         fn_80025C58(lbl_1_bss_67B8[5], (struct ShapeModel**)&lbl_8036E548.slots->objects[0].actor);
         if (lbl_1_data_A978[lbl_1_bss_68FC.character[0]] >= 0) {
             for (k = 0; k < 4; k++) {
-                lbl_1_bss_67B8[6 + k] = (void*)((u32*)lbl_1_bss_60A0)[8 + k];
+                lbl_1_bss_67B8[6 + k] = U32_TO_PTR(((u32*)lbl_1_bss_60A0)[8 + k]);
                 fn_80025DDC(lbl_1_bss_67B8[6 + k]);
                 fn_80025C58(lbl_1_bss_67B8[6 + k], (struct ShapeModel**)&((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[k].actor);
                 if (k + 1 == 4) {
-                    players[k + 1].set = ((ShapeAnimSet**)lbl_1_bss_60A0)[15];
+                    players[k + 1].set = (ShapeAnimSet*)U32_TO_PTR(((u32*)lbl_1_bss_60A0)[15]);
                 } else {
-                    players[k + 1].set = ((ShapeAnimSet**)lbl_1_bss_60A0)[13 + k];
+                    players[k + 1].set = (ShapeAnimSet*)U32_TO_PTR(((u32*)lbl_1_bss_60A0)[13 + k]);
                     fn_80025FFC(lbl_1_bss_67B8[6 + k], &players[k + 1]);
                     fn_80025EEC(&players[k + 1], 0, 0);
                 }
@@ -6002,7 +6002,7 @@ void fn_1_135C0(void) {
             fn_1_D300(&lbl_8036E548.actors[lbl_1_bss_5F73]);
         }
         if (lbl_1_bss_3070.parts != 0) {
-            players->set = ((ShapeAnimSet**)lbl_1_bss_60A0)[12];
+            players->set = (ShapeAnimSet*)U32_TO_PTR(((u32*)lbl_1_bss_60A0)[12]);
             fn_80025FFC(lbl_1_bss_67B8[5], players);
             fn_80025EEC(players, 0, 0);
             lbl_1_bss_67B8[0] = &players->state;

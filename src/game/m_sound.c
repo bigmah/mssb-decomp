@@ -1739,19 +1739,19 @@ void fn_3_90434(void) {
 // .text:0x00090674 size:0x88 mapped:0x806CF708
 void fn_3_90674(s32 idx) {
     SeqEnt6* e = &lbl_3_data_88E0[idx];
-    lbl_3_common_bss_34C58.unk4 = sndSeqPlayEx(e->a, e->b, (void*)lbl_3_bss_1774[idx], 0, 0);
+    lbl_3_common_bss_34C58.unk4 = sndSeqPlayEx(e->a, e->b, U32_TO_PTR(lbl_3_bss_1774[idx]), 0, 0);
     sndSeqVolume(lbl_3_data_830C[idx * 2], 0, lbl_3_common_bss_34C58.unk4, 0);
 }
 
 // .text:0x000906FC size:0x58 mapped:0x806CF790
 void fn_3_906FC(void) {
     u32* p;
-    u32 base;
+    u8* base;
     s32 i;
     base = lbl_3_common_bss_34C58.unk0;
     p = (u32*)base;
     for (i = 0; i < (g_d_GameSettings.GameModeSelected == 2 ? 1 : 0x14); i++) {
-        *p += base;
+        *p += PTR_TO_U32(base); // TODO(port): in-place offset relocation
         p++;
     }
     lbl_3_bss_1774 = (u32*)base;
@@ -1775,7 +1775,7 @@ u32 fn_3_9056C(s32 idx) {
         sndSeqVolume(0, 0, s->unk8, 1);
         return 0;
     }
-    s->unk8 = sndSeqPlayEx(e->a, e->b, (void*)lbl_3_bss_1774[idx], 0, 0);
+    s->unk8 = sndSeqPlayEx(e->a, e->b, U32_TO_PTR(lbl_3_bss_1774[idx]), 0, 0);
     lbl_800EF808.volumeA = vol = ((SeqVol2*)lbl_3_data_830C)[idx].v;
     sndSeqVolume(vol, 0, s->unk8, 0);
     return 1;

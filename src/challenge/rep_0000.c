@@ -589,7 +589,7 @@ void fn_1_1B0(u32* table, s32 count) {
     s32 i;
     for (i = 0; i < count; i++) {
         if (table[i] != 0) {
-            table[i] += (u32)table;
+            table[i] += PTR_TO_U32(table);
         }
     }
 }
@@ -598,26 +598,26 @@ void fn_1_E8(ChallengeModelHeader* model) {
     s32 i;
     u32* p = (u32*)model;
     for (i = 0; i < 5; i++) {
-        if (p[i] != 0) p[i] += (u32)model;
+        if (p[i] != 0) p[i] += PTR_TO_U32(model);
     }
-    convertTextureHeader((void*)model->textures);
-    LoadActorLayout((void*)model->actor);
-    convertGeometryAndSknHeader((void*)model->geometry, (void*)model->skin);
-    haveActLayoutPointToGeoHeader((void*)model->actor, (void*)model->geometry);
-    if (model->extra != 0) fn_80025DDC((void*)model->extra);
+    convertTextureHeader(U32_TO_PTR(model->textures));
+    LoadActorLayout(U32_TO_PTR(model->actor));
+    convertGeometryAndSknHeader(U32_TO_PTR(model->geometry), U32_TO_PTR(model->skin));
+    haveActLayoutPointToGeoHeader(U32_TO_PTR(model->actor), U32_TO_PTR(model->geometry));
+    if (model->extra != 0) fn_80025DDC(U32_TO_PTR(model->extra));
 }
 
 void fn_1_20(ChallengeModelHeader* model) {
     s32 i;
     u32* p = (u32*)model;
     for (i = 0; i < 5; i++) {
-        if (p[i] != 0) p[i] += (u32)model;
+        if (p[i] != 0) p[i] += PTR_TO_U32(model);
     }
-    convertTextureHeader((void*)model->textures);
-    LoadActorLayout((void*)model->actor);
-    convertGeometryAndSknHeader((void*)model->geometry, (void*)model->skin);
-    haveActLayoutPointToGeoHeader((void*)model->actor, (void*)model->geometry);
-    if (model->extra != 0) fn_80025DDC((void*)model->extra);
+    convertTextureHeader(U32_TO_PTR(model->textures));
+    LoadActorLayout(U32_TO_PTR(model->actor));
+    convertGeometryAndSknHeader(U32_TO_PTR(model->geometry), U32_TO_PTR(model->skin));
+    haveActLayoutPointToGeoHeader(U32_TO_PTR(model->actor), U32_TO_PTR(model->geometry));
+    if (model->extra != 0) fn_80025DDC(U32_TO_PTR(model->extra));
 }
 
 void fn_1_0(void* bank, char* name) {
