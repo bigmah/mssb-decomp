@@ -101,7 +101,9 @@ typedef struct RepMinigameView {
     /*0x18D0*/ u8 _18D0[0x18D8 - 0x18D0];
     /*0x18D8*/ u8 _18D8[4]; // per player
     /*0x18DC*/ u8 aiStrength[4];
-    /*0x18E0*/ u8 _18E0[0x18F0 - 0x18E0];
+    /*0x18E0*/ u8 _18E0[0x18E8 - 0x18E0];
+    /*0x18E8*/ u8 _18E8[4];
+    /*0x18EC*/ u8 _18EC[0x18F0 - 0x18EC];
     /*0x18F0*/ u8 _18F0[4];
     /*0x18F4*/ s8 slotPlayer[4];
     /*0x18F8*/ s8 playerSlot[4];
@@ -110,13 +112,16 @@ typedef struct RepMinigameView {
     /*0x1904*/ s8 currentPlayer;
     /*0x1905*/ s8 rosterID;
     /*0x1906*/ u8 numParticipants;
-    /*0x1907*/ u8 _1907[2];
+    /*0x1907*/ u8 _1907;
+    /*0x1908*/ s8 _1908; // player slot
     /*0x1909*/ u8 multiPlayerInd;
     /*0x190A*/ u8 _190A;
     /*0x190B*/ u8 turnOverStatus;
     /*0x190C*/ u8 _190C[0x193A - 0x190C];
     /*0x193A*/ u8 itemState[100]; // items: 1..6 = type on the field, +100 once collected
-    /*0x199E*/ u8 _199E[0x1A26 - 0x199E];
+    /*0x199E*/ u8 _199E[0x19A8 - 0x199E];
+    /*0x19A8*/ u8 _19A8;
+    /*0x19A9*/ u8 _19A9[0x1A26 - 0x19A9];
     /*0x1A26*/ s16 pointsReqToWin;
     /*0x1A28*/ u8 _1A28[2];
     /*0x1A2A*/ u8 gameMode;
