@@ -715,6 +715,7 @@ config.libs = [
             Object(Matching, "main/common/sFrustums.c"),
             Object(Matching, "main/common/lbl_803CB49C.c"),
             Object(Matching, "main/common/lbl_803CB6FC.c"),
+            Object(Matching, "main/data_800E8300.c"),
             Object(NonMatching, "main/file_80008E00.c"),
             Object(NonMatching, "main/file_8000A0AC.c"),
             Object(NonMatching, "main/file_8000BA3C.c"),

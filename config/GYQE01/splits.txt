@@ -125,6 +125,11 @@ main/common/lbl_803CB49C.c: order:36
 main/common/lbl_803CB6FC.c: order:37
 	.bss        start:0x803CB6FC end:0x803CB734 align:4 common
 
+main/data_800E8300.c:
+	.rodata     start:0x800E63A0 end:0x800E6550
+	.data       start:0x800E8300 end:0x800E8AA8
+	.sdata      start:0x803CB740 end:0x803CB760
+
 main/file_80008E00.c:
 	extab       start:0x80005600 end:0x80005640
 	extabindex  start:0x80006C60 end:0x80006CC0
@@ -155,7 +160,7 @@ main/file_8000F150.c:
 	extabindex  start:0x80006DA4 end:0x80006E40
 	.text       start:0x8000F150 end:0x80011468
 	.data       start:0x800E8F60 end:0x800EE800
-	.sdata      start:0x803CB760 end:0x803CB790
+	.sdata      start:0x803CB760 end:0x803CB790 align:32
 	.sbss       start:0x803CBBE8 end:0x803CBBF0
 	.sdata2     start:0x803CC490 end:0x803CC4B8
 

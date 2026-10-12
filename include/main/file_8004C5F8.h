@@ -6,6 +6,7 @@
 #include "static/Camera.h"
 #include "static/Pad.h"
 #include "main/file_8004B284.h"
+#include "main/menu_globals.h" // CharTableEntry
 struct CharActor;
 struct ActorObject;
 
@@ -78,14 +79,6 @@ typedef struct RosterSelect {
 
 extern RosterSelect lbl_803C6028;
 
-// lbl_800E8558 entries (one per character).
-typedef struct CharTableEntry {
-    /*0x0*/ u8 _0;
-    /*0x1*/ u8 id;
-    /*0x2*/ u8 _2[2];
-    /*0x4*/ u8 _4; // selectable
-    /*0x5*/ u8 _5;
-} CharTableEntry; // size: 0x6
 
 
 

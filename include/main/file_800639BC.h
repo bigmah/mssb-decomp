@@ -60,12 +60,6 @@ typedef struct TeamSelect {
 
 extern TeamSelect lbl_803C6724;
 
-// Menu cursor/slot positions as stored in .data (all words).
-typedef struct MenuSlotSrc {
-    /*0x0*/ s32 id;
-    /*0x4*/ s32 x;
-    /*0x8*/ s32 y;
-} MenuSlotSrc; // size: 0xC
 
 typedef struct MenuSlot {
     /*0x0*/ s32 id;

@@ -29,7 +29,7 @@ extern u8 lbl_803CB8D0[8];
 extern u8 lbl_80108EC4[12];       // character ids to pick from
 extern StreamTrack lbl_802E4CE8[16];
 extern StreamTrack lbl_8034E478[16];
-extern u8 lbl_800E87B4[15][16];   // TODO type: stream file descriptors
+extern StreamFileDesc lbl_800E87B4[15]; // stream file descriptors
 extern u8 lbl_800E88A4[16][2];    // stream volumes
 extern CharGroupTable lbl_80108EDC;
 extern MenuSlotSrc lbl_800E88C4[6][5];
@@ -1247,7 +1247,7 @@ void fn_8006877C(u8 track) {
         } else {
             fn_800A8AB0(2);
         }
-        fn_800A8E30(lbl_800E87B4[track], &lbl_8034E478[track], 0, NULL);
+        fn_800A8E30(&lbl_800E87B4[track], &lbl_8034E478[track], 0, NULL);
         fn_800A86B4(4);
         fn_800A86B4(1);
     }
