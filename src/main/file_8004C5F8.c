@@ -37,7 +37,6 @@ extern u8 lbl_800E854C[];
 extern s32 fn_80024C04(s32 index);
 extern u8 lbl_800FDE60[];
 extern u8 lbl_80361B20[];
-extern u8 starMissionCompletionTracker[]; // TODO type (ChallengeTrackingStruct[])
 // Column-order and layout tables that follow lbl_800FE5D4 / lbl_800FE93C / lbl_800FDE84.
 extern u8 lbl_800FE5E0[6][6];
 extern u8 lbl_800FDEB8[12][12];
