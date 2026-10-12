@@ -43,7 +43,7 @@ extern MenuStateCallback lbl_2_data_30864[3];
 extern MenuStateCallback lbl_2_data_30870[4];
 extern MenuStateCallback lbl_2_data_30880[3];
 
-extern u8 lbl_2_data_3198[];
+extern MenuSpot lbl_2_data_3198[];
 extern const f32 lbl_2_rodata_1084;
 extern const f64 lbl_2_rodata_1088;
 extern const f32 lbl_2_rodata_10B8[];
@@ -53,7 +53,7 @@ extern const f32 lbl_2_rodata_10A8[];
 extern const f32 lbl_2_rodata_10AC[];
 extern const f32 lbl_2_rodata_10B4[];
 extern const f32 lbl_2_rodata_10B0;
-extern u8 lbl_2_data_369C[];
+extern MenuSpot lbl_2_data_369C[];
 
 // .text:0x904A8 size:0x90
 void fn_2_904A8(void) {
@@ -105,20 +105,18 @@ void fn_2_8FC88(s32 index) {
 
 // .text:0x903A8 size:0x80
 void fn_2_903A8(s32 index) {
-    s32 offset = index * 0x14;
     MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
-    memcpy(slot, lbl_2_data_369C + offset, 12);
+    memcpy(slot, &lbl_2_data_369C[index].position, sizeof(Vec));
     slot->_30 = lbl_2_rodata_1080;
-    slot->_28 = ((f32*)lbl_2_data_369C)[index * 5 + 3];
+    slot->_28 = lbl_2_data_369C[index]._0C;
 }
 
 // .text:0x90428 size:0x80
 void fn_2_90428(s32 index) {
-    s32 offset = index * 0x14;
     MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
-    memcpy(slot, lbl_2_data_3198 + offset, 12);
+    memcpy(slot, &lbl_2_data_3198[index].position, sizeof(Vec));
     slot->_30 = lbl_2_rodata_1080;
-    slot->_28 = ((f32*)lbl_2_data_3198)[index * 5 + 3];
+    slot->_28 = lbl_2_data_3198[index]._0C;
 }
 
 // .text:0x00091B7C size:0x4
