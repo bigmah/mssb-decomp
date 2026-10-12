@@ -7,6 +7,7 @@
 #include "static/GameSettings.h"
 #undef minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased
 #include "game/rep_AC8.h"
+#include "game/running_logic.h" // g_RunningLogic
 #include "game/rep_D0.h"
 #include "game/rep_540.h"
 #include "game/rep_18E8.h"
@@ -107,14 +108,13 @@ extern f32 lbl_3_rodata_B94;
 extern f32 lbl_3_rodata_B98;
 extern f32 lbl_3_rodata_B60;
 extern u8 lbl_3_data_4884[];
-extern u8 lbl_8036E548[];
+#include "main/file_80011640.h" // CharMgr lbl_8036E548
 extern f32 lbl_3_rodata_B24;
 extern f32 lbl_3_rodata_B20;
 extern f32 lbl_3_rodata_B9C;
 extern f32 lbl_3_rodata_B48;
 extern u8 lbl_3_data_3C40[];
 extern u8 lbl_3_data_4444[];
-extern u8 g_RunningLogic[];
 extern u8 lbl_3_data_4930[];
 extern s16 lbl_3_data_49DC[];
 extern f32 lbl_3_rodata_BE4;
@@ -177,7 +177,7 @@ extern f32 lbl_3_rodata_C3C;
 extern f32 lbl_3_rodata_C40;
 extern f32 lbl_3_rodata_C44;
 extern f32 lbl_3_rodata_C4C;
-extern u8 g_Scores[];
+extern GameScores g_Scores;
 extern f32 lbl_3_rodata_C64;
 extern f32 lbl_3_rodata_C68;
 extern f32 lbl_3_data_4618[];
@@ -453,7 +453,7 @@ static inline int StartJumpInline(int i) {
     f->_1AE = (n + n) + k + 2;
     f->_204 = 0;
     if (type != 0) {
-        fn_3_1682AC(((void**)lbl_8036E548)[i + 0xB14], 6);
+        fn_3_1682AC(lbl_8036E548.active[i], 6);
     }
     g_FieldingLogic.curPadRec->_2 = 0;
     return 1;
@@ -840,7 +840,7 @@ static inline int StartDiveInl(int i) {
     f->_1B0 = n + 1;
     f->_204 = 0;
     if (type != 0) {
-        fn_3_1682AC(((void**)lbl_8036E548)[i + 0xB14], 6);
+        fn_3_1682AC(lbl_8036E548.active[i], 6);
     }
     g_FieldingLogic.curPadRec->_2 = 0;
     return 1;
@@ -1063,7 +1063,7 @@ int fn_3_258D8(int i) {
     f->_1B0 = n + 1;
     f->_204 = 0;
     if (type != 0) {
-        fn_3_1682AC(((void**)lbl_8036E548)[i + 0xB14], 6);
+        fn_3_1682AC(lbl_8036E548.active[i], 6);
     }
     g_FieldingLogic.curPadRec->_2 = 0;
     return 1;
@@ -1296,7 +1296,7 @@ void fn_3_26664(int i) {
     return;
 go:
     if (checkFieldingStat(g_GameLogic.teamFielding, f->rosterID, 10) != 0) {
-        fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 10);
+        fn_3_1682AC(lbl_8036E548.active[who], 10);
         playSoundEffect(0x1A8);
         return;
     }
@@ -2188,14 +2188,14 @@ run:
     f->_224 = dz * t + f->z;
     f->_140 = game_atan2(dx, dz);
     if (stat3 != 0) {
-        fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 3);
+        fn_3_1682AC(lbl_8036E548.active[who], 3);
         playSoundEffect(0x1A8);
     } else if (stat8 != 0) {
-        fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 8);
+        fn_3_1682AC(lbl_8036E548.active[who], 8);
         playSoundEffect(0x1A8);
     } else if (stat9 != 0) {
         f->_265 = 1;
-        fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 8);
+        fn_3_1682AC(lbl_8036E548.active[who], 8);
         playSoundEffect(0x1A8);
     }
     dbl = 0;
@@ -2391,7 +2391,7 @@ int fn_3_2A288(int i) {
             if (f->wallAbility == 2) {
                 if (fn_3_28224(i) != 0) {
                     g_FieldingLogic.curPadRec->_2 = 0;
-                    fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 1);
+                    fn_3_1682AC(lbl_8036E548.active[who], 1);
                     return 1;
                 }
             } else if (f->wallAbility == 1) {
@@ -2402,7 +2402,7 @@ int fn_3_2A288(int i) {
             } else if (f->wallAbility == 3) {
                 if (fn_3_30214(i) != 0) {
                     g_FieldingLogic.curPadRec->_2 = 0;
-                    fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 2);
+                    fn_3_1682AC(lbl_8036E548.active[who], 2);
                     return 1;
                 }
             }
@@ -3112,7 +3112,7 @@ void fn_3_2C698(int i) {
             f->_1EE = 0;
         }
         if (f->_258 <= 1 && checkFieldingStat(g_GameLogic.teamFielding, f->rosterID, 7) != 0) {
-            fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 7);
+            fn_3_1682AC(lbl_8036E548.active[who], 7);
             playSoundEffect(0x1A8);
         }
     }
@@ -3979,7 +3979,7 @@ void fn_3_2F7D4(int i) {
     f->_1AE = n * 2 + k + 2;
     f->_204 = 0;
     if (type != 0) {
-        fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[i], 6);
+        fn_3_1682AC(lbl_8036E548.active[i], 6);
     }
 }
 #endif
@@ -6953,11 +6953,11 @@ void fn_3_3A234(int i) {
         f->_050 = g_FieldingLogic.curBoost->scale * cap;
     }
     if (g_Ball.fielderWBallIndex == i && checkFieldingStat(g_GameLogic.teamFielding, f->rosterID, 0xB) != 0) {
-        u8** slot = (u8**)(lbl_8036E548 + 0x2C50) + who;
+        CharActor** slot = lbl_8036E548.active + who;
         f->_050 = f->_050 * lbl_3_data_46F0;
-        (*slot)[0x27A] = 1;
+        (*slot)->_279[1] = 1;
         if (f->_1A0 == 1) {
-            fn_3_1682AC(((void**)lbl_8036E548)[who + 0xB14], 0xB);
+            fn_3_1682AC(lbl_8036E548.active[who], 0xB);
         }
     }
     if (g_Minigame.GameMode_MiniGame == 6) {
@@ -7054,11 +7054,11 @@ void fn_3_3A584(int i) {
 run:
     spd = f->_050;
     if (g_Ball.fielderWBallIndex == i && checkFieldingStat(g_GameLogic.teamFielding, f->rosterID, 0xB) != 0) {
-        u8** slot = (u8**)(lbl_8036E548 + 0x2C50) + who;
+        CharActor** slot = lbl_8036E548.active + who;
         spd *= lbl_3_data_46F0;
-        (*slot)[0x27A] = 1;
+        (*slot)->_279[1] = 1;
         if (f->_1A0 == 1) {
-            fn_3_1682AC(((void**)lbl_8036E548)[who + 0xB14], 0xB);
+            fn_3_1682AC(lbl_8036E548.active[who], 0xB);
         }
     }
     f->_030 = spd * (f32)cos(f->_064);
@@ -8748,9 +8748,9 @@ void fn_3_411AC(void) {
     f32 d;
     f32 dx, dz;
     g_FieldingLogic._123 = 0;
-    if (g_Scores[0xAA] <= *(int*)g_Scores && g_Scores[0xAD] != 0 && *(s16*)(g_Scores + 4) == *(s16*)(g_Scores + 0x2A) &&
+    if (g_Scores.maxInnings <= g_Scores.inning && g_Scores._AD != 0 && g_Scores.team[0].runs[0] == g_Scores.team[1].runs[0] &&
         g_GameLogic.teamAIInd[g_GameLogic.awayTeamBattingInd_battingTeam] != 0 && g_Strikes.storedOuts <= 1 &&
-        (*(s16*)(g_RunningLogic + 2) & 0x1000) && fn_3_B7E10(g_Ball.landingSpotLocation.x, g_Ball.landingSpotLocation.z) != 0 &&
+        (g_RunningLogic.occupiedBases & 0x1000) && fn_3_B7E10(g_Ball.landingSpotLocation.x, g_Ball.landingSpotLocation.z) != 0 &&
         fn_3_B7D6C(g_Ball.landingSpotLocation.x, g_Ball.landingSpotLocation.z) == 0 && g_Ball.physicsSubstruct.hitLandingSpotDistFromHome > lbl_3_rodata_C00) {
         g_FieldingLogic._123 = 1;
     }
@@ -11279,7 +11279,7 @@ void fn_3_4BA0C(void) {
     u8 s;
     InMemFielderView* h;
     f32 d0, d1, d2;
-    if (g_Strikes.outs >= 3 || g_RunningLogic[0x10] == 0) {
+    if (g_Strikes.outs >= 3 || g_RunningLogic._10 == 0) {
         return;
     }
     for (n = 0; n < 4; n++) {
@@ -12196,7 +12196,7 @@ void fn_3_4EFC8(int i, int mode) {
         }
     } else if (res == 1) {
         k = f->_186;
-        if (*(s16*)(g_RunningLogic + 0xE) + 0x1E >
+        if (g_RunningLogic._0E + 0x1E >
             f->_186 + fn_3_A6810(tx[k * 4], tz[k * 4],
                                             *(f32*)(lbl_3_data_4444 + 8), *(f32*)(lbl_3_data_4444 + 0xC)) + 0x3C) {
             g_FieldingLogic._0F2 |= 1 << i;
@@ -12302,7 +12302,7 @@ void fn_3_4F504(int i) {
         }
     } else if (res == 1) {
         k = f->_186;
-        if (*(s16*)(g_RunningLogic + 0xE) + 0x1E >
+        if (g_RunningLogic._0E + 0x1E >
             f->_186 + fn_3_A6810(tx[k * 4], tz[k * 4], *(f32*)(lbl_3_data_4444 + 8), *(f32*)(lbl_3_data_4444 + 0xC)) + 0x3C) {
             g_FieldingLogic._0F2 |= 1 << i;
         }
@@ -12490,7 +12490,7 @@ void fn_3_4FB34(int i) {
             k = f->_186;
             if (fn_3_9FCF8(fn_3_9FB8C(tx[k * 4], tz[k * 4]), f->_180) < 0x80) {
                 k = f->_186;
-                if (*(s16*)(g_RunningLogic + 0xE) - 0x14 >
+                if (g_RunningLogic._0E - 0x14 >
                     f->_186 + fn_3_A6810(tx[k * 4], tz[k * 4], *(f32*)(lbl_3_data_4444 + 8), *(f32*)(lbl_3_data_4444 + 0xC)) + 0x14) {
                     g_FieldingLogic._0F2 |= 1 << i;
                 }
@@ -13252,7 +13252,7 @@ void fn_3_530EC(int i) {
 // per-frame special-motion update for fielder i; returns 2 = busy, 1 = moved, 0/bool = free
 int fn_3_53130(int i) {
     InMemFielderView* f = &g_Fielders[i];
-    u8* obj = *(u8**)(lbl_8036E548 + 0x2C74);
+    CharActor* obj = lbl_8036E548.active[9];
     int k = 0; // original leaves this unset outside minigames (only read when g_Minigame.GameMode_MiniGame is 5/6)
     f32 d;
     f32 pos[1];
@@ -13260,9 +13260,9 @@ int fn_3_53130(int i) {
     u8 st;
     if (g_d_GameSettings.minigamesEnabled != 0) {
         k = g_Minigame.minigameControlStruct[0].fieldOrder[i - 2];
-        obj = ((u8**)(lbl_8036E548 + 0x2C50))[k];
+        obj = lbl_8036E548.active[k];
     }
-    if (f->_1D3 == 0xC && obj != NULL && *(s16*)(obj + 0x62) >= 0x11 && *(s16*)(obj + 0x62) <= 0x1C) {
+    if (f->_1D3 == 0xC && obj != NULL && obj->anim[0] >= 0x11 && obj->anim[0] <= 0x1C) {
         return 2;
     }
     if (f->_20F != 0) {
@@ -13676,13 +13676,13 @@ void fn_3_544B8(void) {
 // .text:0x00054900 size:0x258 mapped:0x80693994
 void fn_3_54900(int i) {
     InMemFielderView* f = &g_Fielders[i];
-    int m = *(s16*)(g_RunningLogic + 4);
+    int m = g_RunningLogic._04;
     f32 x;
     f32 z;
     if (f->_1F5s >= 0) {
         x = *(f32*)(lbl_3_data_4444 + 0x20);
         z = *(f32*)(lbl_3_data_4444 + 0x24);
-    } else if (g_RunningLogic[0x10] == 0) {
+    } else if (g_RunningLogic._10 == 0) {
         f->_04C = f->_048;
         f->_1F2 = 1;
         return;
@@ -14330,7 +14330,7 @@ void fn_3_55EEC(int i) {
     f->_1E5 = 1;
     if (g_Strikes.outs >= 3) {
         f->_1E5 = 4;
-    } else if (g_RunningLogic[0x10] == 0 || g_Ball.AtBat_ContactResult == -1 || g_Ball.deadBallReason != 0) {
+    } else if (g_RunningLogic._10 == 0 || g_Ball.AtBat_ContactResult == -1 || g_Ball.deadBallReason != 0) {
         f->_1E5 = 0;
     } else if (g_Ball.fielderWBallIndex == i) {
         f->_1E5 = 3;
