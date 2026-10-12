@@ -3881,6 +3881,15 @@ void fn_3_AB554(void) {
     InlAB554();
 }
 
+#if !NONMATCHING
+// Switch jump tables of fn_3_AB5B0; mwcc emits them itself once the function matches.
+void* jumptable_3_data_F4E0[11] = {
+    (u8*)fn_3_AB5B0 + 0x3A8, (u8*)fn_3_AB5B0 + 0x3B8, (u8*)fn_3_AB5B0 + 0x3C8, (u8*)fn_3_AB5B0 + 0x468,
+    (u8*)fn_3_AB5B0 + 0x3D8, (u8*)fn_3_AB5B0 + 0x3E8, (u8*)fn_3_AB5B0 + 0x3F8, (u8*)fn_3_AB5B0 + 0x408,
+    (u8*)fn_3_AB5B0 + 0x448, (u8*)fn_3_AB5B0 + 0x460, (u8*)fn_3_AB5B0 + 0x468,
+};
+#endif
+
 // .text:0x000AB5B0 size:0x820 mapped:0x806EA644
 // Searches for a throw angle that makes the ball reach the throw target at a catchable height.
 // NONMATCHING 96.8%: float register allocation differs (the original keeps 0.0f in f31 across the search loop)
@@ -4291,3 +4300,11 @@ void fn_3_ABDD0(s32 fi) {
 
 
 #pragma dont_inline off
+
+// Copy of the 0x2C-byte table of an inlined header function (also at 0xF4A4 in rep_16B8);
+// emitted after this file's jump table.
+u8 lbl_3_data_F50C[44] = {
+    0, 0, 0, 0, 2, 5, 4, 3, 8, 3, 4, 5, 2, 6, 0, 1,
+    8, 6, 7, 1, 2, 0, 7, 4, 4, 3, 1, 2, 5, 1, 2, 4,
+    6, 8, 7, 6, 8, 5, 3, 3, 5, 7, 4, 6,
+};
