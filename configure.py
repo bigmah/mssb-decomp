@@ -738,6 +738,7 @@ config.libs = [
             Object(Matching, "Musyx/synthmacros.c"),
             Object(Matching, "Musyx/synthvoice.c"),
             Object(Matching, "Musyx/synth_ac.c"),
+            Object(Matching, "Musyx/synth_dbtab.c"),
             Object(Matching, "Musyx/synth_adsr.c"),
             Object(Matching, "Musyx/synth_vsamples.c"),
             Object(Matching, "Musyx/s_data.c"),
