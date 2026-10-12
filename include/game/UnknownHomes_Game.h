@@ -700,13 +700,19 @@ typedef struct _InMemFielderType {
     /*0x1F6*/ u8 _1F6;
     /*0x1F7*/ s8 _1F7;
     /*0x1F8*/ u8 _1F8;
-    /*0x1F9*/ u8 _1F9[0x200 - 0x1F9];
+    /*0x1F9*/ u8 _1F9[0x1FC - 0x1F9];
+    /*0x1FC*/ u8 _1FC; // nonzero: keep the model facing as is (fn_3_6AF9C)
+    /*0x1FD*/ u8 _1FD;
+    /*0x1FE*/ u8 _1FE;
+    /*0x1FF*/ u8 _1FF;
     /*0x200*/ u8 _200;
     /*0x201*/ u8 _201[0x203 - 0x201];
     /*0x203*/ u8 _203;
     /*0x204*/ u8 _204;
     /*0x205*/ u8 _205;
-    /*0x206*/ u8 _206[0x20D - 0x206];
+    /*0x206*/ u8 _206[0x20A - 0x206];
+    /*0x20A*/ u8 _20A; // nonzero: model keeps its animation rotation (fn_3_6B144)
+    /*0x20B*/ u8 _20B[0x20D - 0x20B];
     /*0x20D*/ u8 minigamePlayer; // roster slot in minigames
     /*0x20E*/ u8 _20E;
     /*0x20F*/ u8 _20F;

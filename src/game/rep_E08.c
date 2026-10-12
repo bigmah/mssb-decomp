@@ -826,7 +826,7 @@ check_state:
             AnimateCharacter(k, v, 1, 1, 0, 0, e->_40, -1);
         } else if (f->wallAbility == 1 && anim == 0x28) {
             AnimateCharacter(k, 2, 1, 2, 1, 0, e->_40, -1);
-            f->_206[4] = 1;
+            f->_20A = 1;
         } else if (spd > lbl_3_rodata_E90) {
             AnimateCharacter(k, 5, 1, 1, 0, 0, e->_40, -1);
         } else {
@@ -849,7 +849,7 @@ check_state:
         AnimateCharacter(k, 3, 1, 1, 0, 0, e->_40, -1);
     } else if (f->wallAbility == 1 && anim == 0x28) {
         AnimateCharacter(k, v, 1, 2, 1, 0, e->_40, -1);
-        f->_206[4] = 1;
+        f->_20A = 1;
     } else if (anim == 0xF) {
         AnimateCharacter(k, v, 1, 2, 1, 0, e->_40, -1);
     } else if (i == 1 && g_Ball.framesSinceHit < 0x78) {
@@ -2347,7 +2347,7 @@ void fn_3_668BC(void) {
         k = i;
         e->_1C = e->_10;
         o = actors[i];
-        f->_206[4] = 0;
+        f->_20A = 0;
         e->_20 = e->_14;
         e->_24 = e->_18;
         if (g_d_GameSettings.minigamesEnabled != 0) {
@@ -2399,20 +2399,20 @@ void fn_3_668BC(void) {
             }
         }
         if (e->_44 != 0) {
-            f->_1F9[4] = 1;
+            f->_1FD = 1;
             if (f->_1AA < 0x7FFE) {
                 f->_1AA = f->_1AA + 1;
             } else {
                 f->_1AA = 0x7FFF;
             }
         } else {
-            f->_1F9[4] = 0;
+            f->_1FD = 0;
             f->_1AA = 0;
         }
         if (o != NULL && o->anim[0] == 0xF) {
-            f->_1F9[5] = 1;
+            f->_1FE = 1;
         } else {
-            f->_1F9[5] = 0;
+            f->_1FE = 0;
         }
         e->_3C = fn_8001B35C(k, 1);
         e->_3E = fn_8001B35C(k, 0);
