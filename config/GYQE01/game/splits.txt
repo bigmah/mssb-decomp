@@ -436,7 +436,7 @@ game/sta_c4.c:
 
 auto_00_000FBCD0_text:
 	.text       start:0x000FBCD0 end:0x000FC448
-	.data       start:0x00021010 end:0x00021048
+	.data       start:0x0001C0A8 end:0x00021048
 
 game/rep_3090.c:
 	.text       start:0x000FC448 end:0x00106DFC
