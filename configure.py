@@ -931,7 +931,7 @@ config.libs = [
             Object(NonMatching, "game/rep_3F60.c"),
             Object(NonMatching, "game/kinoko.c"),
             Object(NonMatching, "game/rep_4090.c"),
-            Object(NonMatching, "game/rep_4138.c"),
+            Object(Matching, "game/rep_4138.c"),
         ]
     ),
      Rel(
