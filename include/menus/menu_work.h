@@ -41,8 +41,19 @@ typedef struct MenuTask {
     /*0x0C*/ struct MenuTask* parent;
     /*0x10*/ s16 _10;
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    // SceneTask.u14 holds pointers: 8-byte aligned on PC.
+    union {
+        struct {
+            u16 baseIdx; // SceneTask.u14.objIdx
+            u16 count;   // SceneTask.u14.objCount
+        };
+        void* _u14;
+    };
+#else
     /*0x14*/ u16 baseIdx;
     /*0x16*/ u16 count;
+#endif
     /*0x18*/ u16 timerA;
     /*0x1A*/ u16 timerB;
     /*0x1C*/ u16 stateA;

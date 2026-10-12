@@ -53,6 +53,9 @@ void port_swap_tex_palette(void* pal);
 // from big-endian reliably).
 void port_swap_offset_table(void* table, uint32_t count);
 
+// Character stats records (0xA0 bytes each), port/src/formats_game.c.
+void port_swap_char_stats(void* data, uint32_t count);
+
 #ifdef __cplusplus
 }
 #endif
