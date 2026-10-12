@@ -581,10 +581,10 @@ void unsure_FillRosterPositions(u8 team) {
 #endif
 
 // .text:0x80065DEC size:0x10C0
-// NONMATCHING 77%: the original inlines placeByClass, chemRank, copyCharacterStats and
-// fn_80066EAC; logic and calls otherwise line up
+// NONMATCHING 86%: placeByClass, chemRank, copyCharacterStats and fn_80066EAC are inlined as in the
+// original; register allocation and loop layout differ
 #if NONMATCHING
-static void placeByClass(s8* field, s8 c) {
+static inline void placeByClass(s8* field, s8 c) {
     u8* pref = lbl_80109054[0][lbl_8034E9A0.roster[c / 9][c % 9].stats.CharacterClass];
     s32 p;
     u8 r;
@@ -602,11 +602,45 @@ static void placeByClass(s8* field, s8 c) {
 }
 
 
+// Copy of fn_80066EAC (defined below); the original inlines it here and into fn_80068838.
+static inline void fn_80066EAC_inline(u8 team) {
+    // The sort pass compares against buf[9] as well (one past the 9 ids); the
+    // original buffer is 9 bytes there, so that byte is uninitialised.
+    s8 buf[10];
+    s32 i;
+    s32 j;
+    s32 k;
+    s16 id;
+    u8 chem;
+    s8 t;
+
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            id = inMemRoster[team][j].stats.CharID;
+            chem = ((u8*)&inMemRoster[team][i])[id + 0x3B]; // chemistry[id]
+            if (chem < 90 || chem == 100) {
+                buf[j] = -1;
+            } else {
+                buf[j] = id;
+            }
+        }
+        for (j = 0; j < 9; j++) {
+            for (k = 0; k < 10; k++) {
+                if (buf[j] > buf[k]) {
+                    t = buf[j];
+                    buf[j] = buf[k];
+                    buf[k] = t;
+                }
+            }
+        }
+        memcpy(lbl_8034E9A0.chemPartners[team][i], buf, 9);
+    }
+}
+
 // Assigns field positions to a team's 9 players: the captain first, then the
 // captain-type characters and then the others in chemistry order, each at the
 // first free position preferred by its class. Then copies the players' stats
 // into inMemRoster in field-position order.
-// nmverify: fn_80066EAC inlined on one side (calls match once expanded)
 void characterSelectScreen(u8 team) {
     s16 charIds[9];
     s8 field[9];
@@ -713,7 +747,7 @@ void characterSelectScreen(u8 team) {
     for (i = 0; i < 9; i++) {
         c = field[i];
         copyCharacterStats(&inMemRoster[team][i], &lbl_8034E9A0.roster[c / 9][c % 9]);
-        fn_80066EAC(team);
+        fn_80066EAC_inline(team);
         lbl_80354720[team][i][0] = i;
         lbl_80354720[team][i][1] = i;
         for (k = 0; k < 9; k++) {
@@ -1248,40 +1282,6 @@ static inline BOOL fn_80067B40_inline(s32 unused, u8 charId, u8 flag) {
         }
     }
     return FALSE;
-}
-
-static inline void fn_80066EAC_inline(u8 team) {
-    // The sort pass compares against buf[9] as well (one past the 9 ids); the
-    // original buffer is 9 bytes there, so that byte is uninitialised.
-    s8 buf[10];
-    s32 i;
-    s32 j;
-    s32 k;
-    s16 id;
-    u8 chem;
-    s8 t;
-
-    for (i = 0; i < 9; i++) {
-        for (j = 0; j < 9; j++) {
-            id = inMemRoster[team][j].stats.CharID;
-            chem = ((u8*)&inMemRoster[team][i])[id + 0x3B]; // chemistry[id]
-            if (chem < 90 || chem == 100) {
-                buf[j] = -1;
-            } else {
-                buf[j] = id;
-            }
-        }
-        for (j = 0; j < 9; j++) {
-            for (k = 0; k < 10; k++) {
-                if (buf[j] > buf[k]) {
-                    t = buf[j];
-                    buf[j] = buf[k];
-                    buf[k] = t;
-                }
-            }
-        }
-        memcpy(lbl_8034E9A0.chemPartners[team][i], buf, 9);
-    }
 }
 
 static inline void fn_80069854_inline(void) {
