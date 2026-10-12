@@ -8,17 +8,45 @@
 
 extern EffectTask* lbl_803CC1B8; // running scene task
 extern EffectAnims lbl_3_common_bss_35154;
-extern EffectData lbl_3_data_285A8;
-extern s32 lbl_3_data_28680[]; // fixed point (/100000): [1 + 3 * i] model offsets, [0xD..0x11] sizes/frames
-extern u8 lbl_3_data_28914[];
-extern u16 lbl_3_data_2891E;
-extern u16 lbl_3_data_28920;
 extern u8 lbl_803CBBC0; // current frame buffer (0/1)
 extern s32 fn_8005268C(void);
 extern void* fn_80052734(s32 index);
 extern void fn_800A7D4C(s32 list, void* node);
 extern void fn_800B4C04(GameActor* actor, f32 speed);
 extern void fn_800B4CA0(GameActor* actor, f32 time);
+void fn_3_168A6C(EffectNode* node);
+
+// .data lbl_3_data_285A8..28928: separate objects that the code reaches through one pooled base.
+// Effect height offset per character kind, fixed point (/100000).
+static s32 lbl_3_data_285A8[0x36] = {
+    -250000, -250000, -250000, -200000, -200000, -200000, -250000, -240000,
+    -240000, -250000, -200000, -150000, -200000, -200000, -250000, -350000,
+    -200000, -250000, -200000, -200000, -250000, -200000, -200000, -200000,
+    -180000, -180000, -180000, -250000, -200000, -200000, -200000, -200000,
+    -200000, -250000, -250000, -250000, -250000, -180000, -280000, -200000,
+    -200000, -200000, -250000, -250000, -200000, -200000, -200000, -200000,
+    -250000, -250000, -250000, -250000, -250000, -250000,
+};
+// Fixed point (/100000): [1 + 3 * i] model offsets, [0xD..0x11] sizes/frames.
+static s32 lbl_3_data_28680[0x12] = {0, 50000, 0, 0, 50000, 0, 0, 50000, 0, 0, 0, 0, 0, 300000, 100000, 300000, 100000, 300000};
+static EffectNode lbl_3_data_286C8[9][2] = {
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+};
+// Set while an actor's effect node is queued this frame (cleared by auto_00_001690C0_text).
+u8 lbl_3_data_28908[0xC] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+u8 lbl_3_data_28914[0xA] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static u16 lbl_3_data_2891E = 9;
+static u16 lbl_3_data_28920 = 9;
+static u16 lbl_3_data_28922 = 9;
+u16 lbl_3_data_28924[2] = {0, 0}; // unused
 
 #define FIXED(x) ((f32)(x) / 100000.0f)
 
@@ -80,13 +108,10 @@ void fn_3_168414(EffectNode* node) {
 }
 #endif
 
-// NONMATCHING 76%: same pooled lbl_3_data_285A8 anchor as fn_3_168DFC (addi base,0x36C; lbzx/stbx) changes scheduling
-#if NONMATCHING
 // .text:0x00168704 size:0x228 mapped:0x807A7798
 // Queues the effect node of the task's actor (at its joint) while flag bit 1 stays set.
 void fn_3_168704(void) {
     EffectTask* task = lbl_803CC1B8;
-    EffectData* d = &lbl_3_data_285A8;
     EffectNode* node;
     CharActor* actor;
     u8 idx;
@@ -96,27 +121,27 @@ void fn_3_168704(void) {
         REMOVE_QUEUE_NOARG();
         return;
     }
-    if (d->shown[task->actor] != 0) {
+    if (lbl_3_data_28908[task->actor] != 0) {
         if (lbl_80366158._28 != 0) {
-            d->flags[task->actor] &= ~1;
+            lbl_3_data_28914[task->actor] &= ~1;
         }
         REMOVE_QUEUE_NOARG();
         return;
     }
-    if (!(d->flags[task->actor] & 2)) {
-        d->flags[task->actor] &= ~1;
+    if (!(lbl_3_data_28914[task->actor] & 2)) {
+        lbl_3_data_28914[task->actor] &= ~1;
         REMOVE_QUEUE_NOARG();
         return;
     }
-    d->shown[task->actor] = 1;
+    lbl_3_data_28908[task->actor] = 1;
     idx = task->actor;
-    node = &d->nodes[idx][lbl_803CBBC0];
-    node->draw = fn_3_168414;
     actor = lbl_8036E548.active[idx];
+    node = &lbl_3_data_286C8[idx][lbl_803CBBC0];
+    node->draw = fn_3_168414;
     node->frame = task->frame;
-    getAnimRelatedCoordinates(task->actor, d->joints[1], &node->pos);
-    node->pos.y += FIXED(d->kindYOfs[actor->kind]);
-    node->scale = FIXED(d->params[0x34 / 4]);
+    getAnimRelatedCoordinates(task->actor, lbl_3_data_28922, &node->pos);
+    node->pos.y += FIXED(lbl_3_data_285A8[actor->kind]);
+    node->scale = FIXED(lbl_3_data_28680[0x34 / 4]);
     node->objIdx = task->objIdx;
     node->animIdx = task->animIdx;
     node->animIdx2 = task->animIdx2;
@@ -127,7 +152,6 @@ void fn_3_168704(void) {
     fn_800A7D4C(0, node);
     task->frame %= 60;
 }
-#endif
 
 // .text:0x0016892C size:0x140 mapped:0x807A79C0
 void fn_3_16892C(CharActor* actor, f32 frame, s32 b, s32 unused) {
@@ -213,34 +237,33 @@ void fn_3_168CD8(CharActor* actor, f32 frame, s32 unused0, s32 unused1) {
     }
 }
 
-// NONMATCHING 87%: the original reaches lbl_3_data_285A8 fields through a pooled data anchor (addi base,0x360; lbzx); ours folds the offset (lbzu)
-#if NONMATCHING
 // .text:0x00168DFC size:0x1A4 mapped:0x807A7E90
 // Queues the task's effect node at a fixed position until its animation has run once.
 void fn_3_168DFC(void) {
     EffectTask* task = lbl_803CC1B8;
-    EffectData* d = &lbl_3_data_285A8;
     EffectNode* node;
     u8* shown;
     u8 idx;
+    CharActor* actor;
 
     if (g_d_GameSettings._55 != 0 || lbl_3_common_bss_35154._479 != 0) {
         // removeQueue ignores its argument; the original passes whatever is in r3.
         REMOVE_QUEUE_NOARG();
         return;
     }
-    shown = d->shown;
+    shown = lbl_3_data_28908;
     if (shown[task->actor] != 0) {
         REMOVE_QUEUE_NOARG();
         return;
     }
     shown[task->actor] = 1;
     idx = task->actor;
-    node = &d->nodes[idx][lbl_803CBBC0];
+    actor = lbl_8036E548.active[idx];
+    node = &lbl_3_data_286C8[idx][lbl_803CBBC0];
     node->draw = fn_3_168A6C;
     node->frame = task->frame;
     node->pos.x = task->pos.x;
-    node->pos.y = task->pos.y + FIXED(d->kindYOfs[lbl_8036E548.active[idx]->kind]);
+    node->pos.y = task->pos.y + FIXED(lbl_3_data_285A8[actor->kind]);
     node->pos.z = task->pos.z;
     node->scale = task->scale;
     node->objIdx = task->objIdx;
@@ -254,7 +277,6 @@ void fn_3_168DFC(void) {
         REMOVE_QUEUE_NOARG();
     }
 }
-#endif
 
 // .text:0x00168FA0 size:0x120 mapped:0x807A8034
 void fn_3_168FA0(s32 a, s32 b) {
