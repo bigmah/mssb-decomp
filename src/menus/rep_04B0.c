@@ -42,7 +42,9 @@ typedef struct CharSel04B0 {
     /*0x4729*/ u8 _4729;
     /*0x472A*/ u8 _472A[0x472C - 0x472A];
     /*0x472C*/ PortInput input[4];
-    /*0x4744*/ u8 _4744[0x4757 - 0x4744];
+    /*0x4744*/ u8 _4744[0x4748 - 0x4744];
+    /*0x4748*/ void* _4748[2]; // menu tasks (CharSelectState)
+    /*0x4750*/ u8 _4750[0x4757 - 0x4750];
     /*0x4757*/ u8 charFlag[0x36]; // per character id: already picked
 } CharSel04B0;
 extern CharSel04B0 lbl_8034E9A0;
