@@ -1476,9 +1476,8 @@ void fn_2_9257C(void) {
     s32 i;
     MenuData* work;
 
-    // TODO type: lbl_2_bss_1A8248[0] state byte 0x44F2
-    if (((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 1 || ((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 2 ||
-        ((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 3) {
+    if (lbl_2_bss_1A8248[0]->_44F2 == 1 || lbl_2_bss_1A8248[0]->_44F2 == 2 ||
+        lbl_2_bss_1A8248[0]->_44F2 == 3) {
         return;
     }
     for (i = 0; i < 29; i++) {
