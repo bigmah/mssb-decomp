@@ -42,21 +42,14 @@ extern u8* lbl_803CC1B8;
 extern u32 lbl_803CB750;
 extern void fn_8004153C(void);
 extern void fn_800A97D0(s32, s32);
-extern u8 lbl_8034E9A0[];
-extern u8 lbl_803C66B0[];
+#include "main/charsel_state_type.h"
+extern CharSelectState lbl_8034E9A0;
 extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void fn_800216F8(u8 group, s32 (*callback)(u8* state));
 extern s32 fn_80022A24(u8, u8);
 extern void fn_800229CC(void);
 
-typedef struct {
-    u8 pad0[2];
-    u16 held;
-    u16 held4;
-    u8 pad6[0x1A];
-} PadEntry;
-extern MenuFlags* lbl_803CBBCC[];
-extern PadEntry lbl_803C77B8[];
+extern MenuPad lbl_803C77B8[];
 // Layer setup for fn_80036C88 (fn_2_0's GX setup is the layer callback in lbl_2_data_C0).
 s32 lbl_2_data_0[0x30] = {
     0xA40, 0, 0, 0, 0x900, 0x5E60, 0x4DE0, 0x2700, 0, 0, 0, 0, 0, 0x400, 0x8C0, 0x20, 0x6A0,
@@ -87,8 +80,8 @@ u32 lbl_2_bss_B644;
 void fn_2_A14(void) {
     fn_800B0A5C_insertQueue(fn_2_160, 0x1000);
     fn_800B0A5C_insertQueue(fn_2_110, 0xF000);
-    lbl_803CBBCC[0]->step = 0;
-    lbl_803CBBCC[0]->scene = 0;
+    lbl_803CBBCC->step = 0;
+    lbl_803CBBCC->scene = 0;
 }
 
 // fn_2_978, size:0x9C
@@ -117,7 +110,7 @@ void fn_2_978(void) {
 
 // fn_2_940, size:0x38
 void fn_2_940(void) {
-    if (lbl_803CBBCC[0]->_00 == 5) {
+    if (lbl_803CBBCC->_00 == 5) {
         REMOVE_QUEUE_NOARG();
     }
 }
@@ -125,25 +118,25 @@ void fn_2_940(void) {
 // fn_2_794, size:0x1AC
 void fn_2_794(void) {
     MenuTask* task = (MenuTask*)lbl_803CC1B8;
-    switch (lbl_803CBBCC[0]->_00) {
+    switch (lbl_803CBBCC->_00) {
     case 0:
         task->_10 = 0;
         fn_800B0A5C_insertQueue(fn_2_160, 0x1000);
         fn_800B0A5C_insertQueue(fn_2_110, 0xF000);
-        lbl_803CBBCC[0]->step = 0;
-        lbl_803CBBCC[0]->scene = 0;
+        lbl_803CBBCC->step = 0;
+        lbl_803CBBCC->scene = 0;
         fn_800B0A5C_insertQueue(fn_2_940, 0x100);
-        (lbl_803CBBCC[0]->_00)++;
+        (lbl_803CBBCC->_00)++;
         break;
     case 1:
-        lbl_803CBBCC[0]->_00 = 3;
+        lbl_803CBBCC->_00 = 3;
         break;
     case 3:
         fn_2_978(); // inlined
-        lbl_803CBBCC[0]->_00 = 4;
+        lbl_803CBBCC->_00 = 4;
     case 4:
         if (task->_10 != 0) {
-            lbl_803CBBCC[0]->_00 = 5;
+            lbl_803CBBCC->_00 = 5;
     case 5:
             task->parent->_10 = task->_10;
             REMOVE_QUEUE_NOARG();
@@ -158,7 +151,7 @@ void fn_2_708(void) {
     lbl_803CB750 += OSGetTick();
     fn_8004153C();
     fn_800A97D0(0x10, 0x1E);
-    lbl_803CBBCC[0]->_00 = 0;
+    lbl_803CBBCC->_00 = 0;
     o->state = 0;
     fn_800B0A5C_insertQueue(fn_2_664, 0x1000);
     (*(MenuBootTask**)&lbl_803CC1B8)->func = fn_2_554;
@@ -169,14 +162,14 @@ void fn_2_664(void) {
     s32 i;
     for (i = 0; i < 4; i++) {
         s8 a;
-        if (lbl_803C66B0[i + 0x55] == 1 || (a = lbl_8034E9A0[i + 0x46F8]) == -1) {
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x472C) = 0;
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x472E) = 0;
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x4730) = 0;
+        if (lbl_803C66B0.active[i] == 1 || (a = lbl_8034E9A0.ports[i]) == -1) {
+            lbl_8034E9A0.input[i].held = 0;
+            lbl_8034E9A0.input[i].pressed = 0;
+            lbl_8034E9A0.input[i].repeat = 0;
         } else {
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x472C) = *(u16*)((u8*)lbl_803C77B8 + (s8)lbl_8034E9A0[i + 0x46F8] * 32);
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x472E) = *(u16*)((u8*)lbl_803C77B8 + (s8)lbl_8034E9A0[i + 0x46F8] * 32 + 2);
-            *(u16*)(lbl_8034E9A0 + i * 6 + 0x4730) = *(u16*)((u8*)lbl_803C77B8 + (s8)lbl_8034E9A0[i + 0x46F8] * 32 + 4);
+            lbl_8034E9A0.input[i].held = lbl_803C77B8[(s8)lbl_8034E9A0.ports[i]].held;
+            lbl_8034E9A0.input[i].pressed = lbl_803C77B8[(s8)lbl_8034E9A0.ports[i]].down;
+            lbl_8034E9A0.input[i].repeat = lbl_803C77B8[(s8)lbl_8034E9A0.ports[i]].repeat;
         }
     }
 }
@@ -194,7 +187,7 @@ void fn_2_554(void) {
             sndVolume(0x7F, 0xA, 0xFF);
             o->state = 2;
     case 2:
-            ARAMTransfer(lbl_2_data_C8, lbl_8034E9A0, 1, 0);
+            ARAMTransfer(lbl_2_data_C8, &lbl_8034E9A0, 1, 0);
             o->state = 3;
         }
         break;
@@ -279,18 +272,18 @@ s32 fn_2_1A8(u8 idx, u8 kind, u16 mask) {
     s32 r = -1;
     switch (kind) {
     case 0:
-        v = *(u16*)((u8*)lbl_803C77B8 + idx * 32);
+        v = lbl_803C77B8[idx].held;
         break;
     case 1:
-        v = lbl_803CBBCC[0]->padHeld[idx];
+        v = lbl_803CBBCC->padHeld[idx];
         break;
     case 2:
-        v = lbl_803C77B8[idx].held4;
+        v = lbl_803C77B8[idx].repeat;
         break;
     }
     v &= mask;
     if (kind == 1) {
-        lbl_803CBBCC[0]->_10 |= 1 << idx;
+        lbl_803CBBCC->_10 |= 1 << idx;
     }
     if (v & 0x100) {
         r = 4;
@@ -314,16 +307,16 @@ s32 fn_2_1A8(u8 idx, u8 kind, u16 mask) {
 
 // fn_2_160, size:0x48
 void fn_2_160(void) {
-    lbl_803CBBCC[0]->padHeld[0] |= *(u16*)((u8*)lbl_803C77B8 + 2);
-    lbl_803CBBCC[0]->padHeld[1] |= *(u16*)((u8*)lbl_803C77B8 + 0x22);
-    lbl_803CBBCC[0]->_10 = 0;
+    lbl_803CBBCC->padHeld[0] |= lbl_803C77B8[0].down;
+    lbl_803CBBCC->padHeld[1] |= lbl_803C77B8[1].down;
+    lbl_803CBBCC->_10 = 0;
 }
 
 // fn_2_110, size:0x50
 void fn_2_110(void) {
     u8 i;
     for (i = 0; i < 2; i++) {
-        MenuFlags* p = lbl_803CBBCC[0];
+        SceneFlow* p = lbl_803CBBCC;
         if (p->_10 & (1 << (u8)i)) {
             p->padHeld[i] = 0;
         }
@@ -333,7 +326,7 @@ void fn_2_110(void) {
 // _prolog, size:0x88
 void _prolog(void) {
     s32* layers;
-    lbl_803CBBCC[0] = &lbl_800E877C;
+    lbl_803CBBCC = (SceneFlow*)&lbl_800E877C; // MenuFlags starts with a SceneFlow
     lbl_800E877C.scene = 0;
     fn_800A7D4C(0, &lbl_2_data_C0);
     fn_800B0A5C_insertQueue(fn_2_708, 0x8000);

@@ -17,8 +17,7 @@ typedef struct CharSelectState {
     /*0x46E0*/ s32 captain[2]; // captain character id per team
     /*0x46E8*/ u8* heapMarkA[2]; // saved lbl_803C7898 lo/hi (fn_2_129AC)
     /*0x46F0*/ u8* heapMarkB[2]; // saved lbl_803C7898 lo/hi (fn_2_12988)
-    /*0x46F8*/ u8 ports[2];
-    /*0x46FA*/ u8 _46FA[0x46FC - 0x46FA];
+    /*0x46F8*/ u8 ports[4]; // controller port per player (-1: none)
     /*0x46FC*/ s8 _46FC[4];
     /*0x4700*/ u8 _4700;
     /*0x4701*/ u8 _4701;
