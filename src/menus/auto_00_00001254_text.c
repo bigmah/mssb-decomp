@@ -1406,9 +1406,6 @@ void fn_2_102C8(u8 team) {
 }
 #endif
 
-// NONMATCHING 99%: case 3 reloads the s8 timer before the decrement in the original
-// nmverify: fn_2_323C fn_2_8940 inlined on one side (calls match once expanded)
-#if NONMATCHING
 // fn_2_110B0, size:0x244
 void fn_2_110B0(void) {
     u8* scene = lbl_803CBBCC[0];
@@ -1436,12 +1433,10 @@ void fn_2_110B0(void) {
         }
         break;
     case 3:
-        if ((s8)lbl_2_bss_F468[0x36] < 0) {
-            if (lbl_803C66B0[0x5D] == 0 && lbl_803C66B0[0x5E] == 0) {
-                fn_2_72630();
-                lbl_2_bss_F468[0x33] = 0;
-                *(u16*)(lbl_803CBBCC[0] + 4) = 4;
-            }
+        if ((s8)lbl_2_bss_F468[0x36] < 0 && lbl_803C66B0[0x5D] == 0 && lbl_803C66B0[0x5E] == 0) {
+            fn_2_72630();
+            lbl_2_bss_F468[0x33] = 0;
+            *(u16*)(lbl_803CBBCC[0] + 4) = 4;
         } else {
             lbl_2_bss_F468[0x36]--;
         }
@@ -1472,7 +1467,6 @@ void fn_2_110B0(void) {
         break;
     }
 }
-#endif
 
 // fn_2_2FC0, size:0x244
 void fn_2_2FC0(u8 mode, s32 b, s32 c) {
