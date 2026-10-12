@@ -7,7 +7,7 @@
 #include "game/game_batter.h"
 #include "game/rep_540.h"
 #include "game/rep_AC8.h"
-#include "game/auto_00_0001E154_text.h"
+#include "game/rep_8C8.h"
 #include "game/rep_1C0.h"
 #include "game/rep_1188.h"
 #include "game/auto_00_000AC9F8_text.h"

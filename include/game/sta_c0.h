@@ -97,18 +97,6 @@ typedef struct StaC0ObjList {
     /*0x6D*/ u8 numActorObjs;
 } StaC0ObjList;
 
-// lbl_3_bss_9F38: crowd sound and stadium state. lbl_3_bss_9F3C, lbl_3_bss_9F48 and
-// lbl_3_bss_9F4C inside it are separate variables (see sta_c0.c).
-typedef struct StaC0Work {
-    /*0x00*/ u8 _00[8];
-    /*0x08*/ s32 h0;
-    /*0x0C*/ s32 h1;
-    /*0x10*/ u8 _10[0x34 - 0x10];
-    /*0x34*/ u8 flag;
-    /*0x35*/ u8 _35[3];
-    /*0x38*/ ShapeAnimPlayer anim;
-} StaC0Work;
-
 void fn_3_C9744(void);
 void fn_3_C9878(void);
 void fn_3_C99F8(StaC0Obj* o);

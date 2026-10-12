@@ -3,6 +3,16 @@
 
 #include "mssbTypes.h"
 
+// Character aura slot (lbl_3_data_17260, two slots); id -1: free.
+typedef struct E32_1F58 {
+    /*0x00*/ s16 id;
+    /*0x02*/ s16 s2; // frames until the next particle burst
+    /*0x04*/ f32 v[3];
+    /*0x10*/ f32 p[3];
+    /*0x1C*/ f32 x;
+} E32_1F58;
+extern E32_1F58 lbl_3_data_17260[2];
+
 void fn_3_C0854(void);
 void fn_3_C095C(u8* a);
 void fn_3_C0AD8(void);
@@ -15,5 +25,7 @@ void fn_3_C1004(void);
 void fn_3_C11CC(s32 who, s32 a);
 void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2);
 void fn_3_C1770(s32 who);
+
+s32 fn_3_C1930(s32 id);
 
 #endif // !__GAME_rep_1F58_H_
