@@ -86,7 +86,8 @@ void fn_3_7C1FC(s32 flag) {
 #pragma dont_inline off // the original inlines dolsqrtf2 here (deferred inlining reads the EOF state)
 #pragma pool_data off
 // .text:0x0007C4E4 size:0x2C8 mapped:0x806BB578
-// NONMATCHING 91%: the original keeps the replay-frame offset in its own register (frame + i * 8)
+// NONMATCHING 96%: the loop-invariant float constant addresses are materialised in a different order
+// (original: 56, 0, 16, 64, int->float magic); register numbering follows from that
 #if NONMATCHING
 void fn_3_7C4E4(void) {
     g_Stats_s* st = &g_Stats;
@@ -105,11 +106,12 @@ void fn_3_7C4E4(void) {
     in = frame->input;
     for (i = 0; i < 2; i++, in++) {
         InputStruct* c = &g_Controls[g_Stats.controller[i]];
+        ReplayInput* src = &g_ReplayLogic[st->playFrameCounter].input[i];
         f32 mag;
-        c->buttonInput = frame->input[i].buttonInput;
-        c->newButtonInput = frame->input[i].newButtonInput;
-        c->right_left = frame->input[i].right_left;
-        c->up_down = frame->input[i].up_down;
+        c->buttonInput = src->buttonInput;
+        c->newButtonInput = src->newButtonInput;
+        c->right_left = src->right_left;
+        c->up_down = src->up_down;
         g_Controls[g_Stats.controller[i]].controlStickAngle = in->controlStickAngle;
         mag = dolsqrtf2((f32)c->right_left * (f32)c->right_left + (f32)c->up_down * (f32)c->up_down) - 16.0f;
         if (mag > 56.0f) {

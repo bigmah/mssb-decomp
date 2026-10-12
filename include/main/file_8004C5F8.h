@@ -37,18 +37,13 @@ typedef struct SwingFx {
     /*0x0F0*/ EffectParamsB trails[2];
 } SwingFx; // size: 0x198
 
-// Per-dialog-kind layout (lbl_800FEAAC).
+// Per-dialog-kind layout (lbl_800FEAAC[11]; colours are lbl_800FEAF0[12][2]).
 typedef struct DialogLayout {
     /*0x0*/ u16 anim0;
     /*0x2*/ u16 anim1;
     /*0x4*/ u16 msgId;
 } DialogLayout; // size: 0x6
 
-typedef struct DialogTables {
-    /*0x00*/ DialogLayout layouts[11];
-    /*0x42*/ u8 _42[2];
-    /*0x44*/ u8 colors[12][2];
-} DialogTables; // size: 0x5C
 
 // Sprite layout descriptor handed to fn_80034E20 (only the fields used here).
 typedef struct LayoutDesc {
@@ -72,7 +67,7 @@ typedef struct RosterSelect {
     /*0x7F*/ s8 _7F[4];
     /*0x83*/ u8 _83[9];
     /*0x8C*/ u8 _8C;
-    /*0x8D*/ s8 _8D;
+    /*0x8D*/ u8 _8D;
     /*0x8E*/ u8 _8E;
     /*0x8F*/ u8 _8F;
     /*0x90*/ u8 _90;

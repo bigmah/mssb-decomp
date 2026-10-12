@@ -83,23 +83,21 @@ void fn_800BD548(ActorObject* obj, u8 numLights, ...) {
     va_end(list);
 }
 
-// NONMATCHING 98.4%: loop counter i and entry pointer swap r30/r31
-#if NONMATCHING
 // .text:0x800BD670 size:0x254
 void fn_800BD670(ActorObjectTable* table, MtxPtr camera) {
     u16 i;
-    ActorObject* entry;
     GameActor* obj;
+    ActorObject* entry;
 
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
     GXSetCullMode(GX_CULL_BACK);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     for (i = 0; i < table->count; i++) {
-        obj = table->objects[i].actor;
+        entry = &table->objects[i];
+        obj = entry->actor;
         if (obj == NULL || table->objects[i].animateBones == 0) {
             continue;
         }
-        entry = &table->objects[i];
         if (entry->callback != NULL) {
             entry->callback(entry);
         }
@@ -116,4 +114,3 @@ void fn_800BD670(ActorObjectTable* table, MtxPtr camera) {
         }
     }
 }
-#endif

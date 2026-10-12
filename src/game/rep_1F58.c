@@ -11,8 +11,7 @@ static u8 lbl_3_bss_9D20[0x20];
 extern u8* lbl_803CC1B8;
 extern u8 lbl_8036E548[];
 extern u8 lbl_803CBBC0;
-// Draw-list node (DrawCallbackNode, main/file_800A7C08.h) plus the marker position.
-typedef struct { void* next; void (*func)(void); f32 a, b, c; s32 x; } E18_1F58;
+typedef struct { void* next; void (*draw)(u8* a); f32 a, b, c; s32 x; } E18_1F58;
 typedef struct { E18_1F58 e[2]; } E30_1F58;
 extern u8 lbl_80366158[];
 extern void fn_800A7D4C(int, void*);
@@ -23,9 +22,8 @@ extern f32 lbl_3_rodata_1FAC;
 extern f32 lbl_3_rodata_1FC0;
 extern f64 lbl_3_rodata_1FC8;
 extern f32 lbl_3_rodata_1FD4;
-extern f32 lbl_3_rodata_1FD0;
+extern const f32 lbl_3_rodata_1FD0;
 extern f64 sin(f64);
-typedef struct { s16 id; s16 s2; f32 v[3]; f32 p[3]; f32 x; } E32_1F58;
 typedef struct { s32 v; s32 w; } T8_1F58;
 // Mirrors main/file_800263FC.h (that header clashes with this file's GX externs).
 typedef struct ParticleParamsAttract {
@@ -41,26 +39,78 @@ typedef struct ParticleParamsAttract {
 } ParticleParamsAttract;
 extern BOOL getAnimRelatedCoordinates(s32 index, s32 joint, Vec* out); // main/file_80011640.h
 extern void fn_80027674(Vec* center, Vec* target, ParticleParamsAttract* prm, u8 type, f32 radius);
-
-// Spotlight state (file statics, reached through one pooled base): per-slot alpha and
-// pulse speed, colours, the two light slots, particle parameters and the per-character
-// radius table (x100000).
-static u8 lbl_3_data_17248[4] = {0x50, 0x50, 0, 0};
-static f32 lbl_3_data_1724C[3] = {18.849556f, 18.849556f, 37.699112f};
-static u8 lbl_3_data_17258[2][3] = {{0xFF, 0xF7, 0x88}, {0xFF, 0xF7, 0x88}};
-static E32_1F58 lbl_3_data_17260[2] = {
-    {-1, 0, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f},
-    {-1, 0, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f},
-};
-static s32 lbl_3_data_172A0 = 250000;
-static s32 lbl_3_data_172A4[2] = {150000, 4};
+void fn_3_C095C(u8* a);
+// .data lbl_3_data_17248..17508: separate objects that the code reaches through one pooled base.
+static u8 lbl_3_data_17248[4] = {80, 80, 0, 0};                         // aura alpha per slot
+static f32 lbl_3_data_1724C[3] = {18.849556f, 18.849556f, 37.699112f};  // pulse speed per slot
+static u8 lbl_3_data_17258[2][3] = {{255, 247, 136}, {255, 247, 136}};  // aura colour per slot
+E32_1F58 lbl_3_data_17260[2] = {{-1}, {-1}};
+static s32 lbl_3_data_172A0 = 250000; // particle radius, fixed point (/100000)
+s32 lbl_3_data_172A4 = 150000;        // unused
+s32 lbl_3_data_172A8 = 4;             // unused
 static ParticleParamsAttract lbl_3_data_172AC = {NULL, 3, 30, 8000, 10, 20, 1, 15, {99000, 99800, -500, -899, 255, 20, 10, -1}};
-static T8_1F58 lbl_3_data_172EC[54] = {{129999, 250000}, {129999, 250000}, {150000, 270000}, {80000, 250000}, {150000, 250000}, {150000, 250000}, {129999, 250000}, {60000, 250000}, {60000, 250000}, {150000, 280000}, {150000, 259999}, {150000, 259999}, {100000, 250000}, {50000, 250000}, {150000, 250000}, {60000, 250000}, {60000, 250000}, {120000, 250000}, {70000, 250000}, {100000, 250000}, {129999, 250000}, {150000, 259999}, {150000, 259999}, {150000, 259999}, {100000, 250000}, {100000, 250000}, {100000, 250000}, {150000, 250000}, {60000, 250000}, {60000, 250000}, {60000, 250000}, {60000, 250000}, {60000, 250000}, {100000, 250000}, {100000, 250000}, {100000, 250000}, {100000, 250000}, {150000, 250000}, {129999, 290000}, {80000, 250000}, {60000, 250000}, {60000, 250000}, {100000, 250000}, {129999, 250000}, {60000, 250000}, {60000, 250000}, {60000, 250000}, {60000, 250000}, {100000, 250000}, {100000, 250000}, {100000, 250000}, {100000, 250000}, {150000, 250000}, {150000, 250000}};
+// Per character: aura height (v) and size (w), fixed point (/100000).
+static T8_1F58 lbl_3_data_172EC[0x36] = {
+    {129999, 250000},
+    {129999, 250000},
+    {150000, 270000},
+    {80000, 250000},
+    {150000, 250000},
+    {150000, 250000},
+    {129999, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {150000, 280000},
+    {150000, 259999},
+    {150000, 259999},
+    {100000, 250000},
+    {50000, 250000},
+    {150000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {120000, 250000},
+    {70000, 250000},
+    {100000, 250000},
+    {129999, 250000},
+    {150000, 259999},
+    {150000, 259999},
+    {150000, 259999},
+    {100000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {150000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {150000, 250000},
+    {129999, 290000},
+    {80000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {100000, 250000},
+    {129999, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {60000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {100000, 250000},
+    {150000, 250000},
+    {150000, 250000},
+};
 static f32 lbl_3_data_1749C = 95.0f;
-static u8* lbl_3_data_174A0[2] = {NULL, NULL};
+static u8* lbl_3_data_174A0[2] = {NULL, NULL}; // the two tracking tasks
 static E30_1F58 lbl_3_data_174A8[2] = {
-    {{{NULL, (void (*)(void))fn_3_C095C, 0.0f, 0.0f, 0.0f, 0}, {NULL, (void (*)(void))fn_3_C095C, 0.0f, 0.0f, 0.0f, 0}}},
-    {{{NULL, (void (*)(void))fn_3_C095C, 0.0f, 0.0f, 0.0f, 0}, {NULL, (void (*)(void))fn_3_C095C, 0.0f, 0.0f, 0.0f, 0}}},
+    {{{NULL, fn_3_C095C}, {NULL, fn_3_C095C}}},
+    {{{NULL, fn_3_C095C}, {NULL, fn_3_C095C}}},
 };
 extern s32 fn_8005268C(void);
 extern u8* fn_80052734(s32);
@@ -171,11 +221,11 @@ void fn_3_C0AD8(void) {
             *(s32*)(o + 0x14) += 1;
         }
     } else {
-        lbl_3_data_174A0[*(s32*)(o + 0x18)] = 0;
+        ((u8**)lbl_3_data_174A0)[*(s32*)(o + 0x18)] = 0;
         fn_800B0A14_removeQueue(lbl_3_data_174A0);
     }
     if (*(u32*)(o + 0x14) >= *(u16*)(lbl_3_common_bss_35154 + 0x38)) {
-        lbl_3_data_174A0[*(s32*)(o + 0x18)] = 0;
+        ((u8**)lbl_3_data_174A0)[*(s32*)(o + 0x18)] = 0;
         fn_800B0A14_removeQueue(lbl_3_data_174A0);
     }
 }
@@ -299,7 +349,6 @@ void fn_3_C1004(void) {
 }
 
 // .text:0x000C11CC size:0x178 mapped:0x80700260
-// 89%: the pooled-static base now matches the original; scheduling of the indexed loads and regalloc differ. fmul operand order is lbl_3_data_17248[j] * (...).
 void fn_3_C11CC(s32 who, s32 a) {
     s32 j;
     s16* q;
@@ -315,7 +364,7 @@ void fn_3_C11CC(s32 who, s32 a) {
     } while (j-- != 0);
     if (j >= 0) {
         if (a != 0) {
-            u8* t = ((u8**)lbl_8036E548)[who + 0x2C50 / 4];
+            u8* t = ((u8**)(lbl_8036E548 + 0x2C50))[who];
             if (t != NULL) {
                 *(s32*)(t + 0x5C) = 0;
             }
@@ -329,8 +378,7 @@ void fn_3_C11CC(s32 who, s32 a) {
             o = fn_800B0A5C_insertQueue(fn_3_C1004, *(u16*)(*(u8**)&lbl_803CC1B8 + 0x12));
             o[0x14] = who;
             {
-                f64 s = sin(lbl_3_data_1724C[j] * lbl_3_data_17260[j].x / lbl_3_rodata_1FD0);
-                o[0x15] = (lbl_3_rodata_1FC8 * s + lbl_3_rodata_1FC8) * lbl_3_data_17248[j];
+                o[0x15] = lbl_3_data_17248[j] * (0.5 * sin(lbl_3_data_1724C[j] * lbl_3_data_17260[j].x / lbl_3_rodata_1FD0) + 0.5);
             }
             o[0x16] = 10;
         }
@@ -340,7 +388,7 @@ void fn_3_C11CC(s32 who, s32 a) {
 // .text:0x000C1344 size:0x42C mapped:0x807003D8
 extern f64 lbl_3_rodata_1FB0;
 extern f64 lbl_3_rodata_1FB8;
-// NONMATCHING 75%: pool base right (statics); indexed-load scheduling and regalloc differ
+// NONMATCHING 75%: statement order around the burst (k / delay reload) and register allocation
 #if NONMATCHING
 void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
     u8* actor;
@@ -353,7 +401,7 @@ void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
     if (lbl_80366158[0x28] != 0) {
         return;
     }
-    actor = ((u8**)lbl_8036E548)[who + 0x2C50 / 4];
+    actor = ((u8**)(lbl_8036E548 + 0x2C50))[who];
     if (actor == NULL) {
         return;
     }
@@ -409,9 +457,10 @@ void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
 #endif
 
 // .text:0x000C1770 size:0x1C0 mapped:0x80700804
-// 92%: scheduling of the pool/rodata address loads and r29/r30 swapped
+// NONMATCHING 99.5%: j and the slot offset j << 5 get swapped saved registers (r30/r29)
+#if NONMATCHING
 void fn_3_C1770(s32 who) {
-    u8* t = ((u8**)lbl_8036E548)[who + 0x2C50 / 4];
+    u8* t = ((u8**)(lbl_8036E548 + 0x2C50))[who];
     s32 j;
     s16* q;
     s32 k;
@@ -438,13 +487,14 @@ void fn_3_C1770(s32 who) {
             }
             fn_80027918(k, lbl_3_rodata_1FA8);
             GXInitTexObj(lbl_3_bss_9D20, lbl_3_bss_9D40, 4, 4, 6, 0, 0, 0);
-            GXInitTexObjLOD(lbl_3_bss_9D20, 1, 1, lbl_3_rodata_1FA8, lbl_3_rodata_1FA8, lbl_3_rodata_1FA8, 0, 0, 0);
+            GXInitTexObjLOD(lbl_3_bss_9D20, 1, 1, 0.0f, 0.0f, 0.0f, 0, 0, 0);
             lbl_3_common_bss_35154[0x477 + j] = 0;
         }
     }
 }
+#endif
 
-// Returns the light slot whose id equals `id`, or -1.
+// Returns the slot index whose id equals `id`, or -1.
 // .text:0x000C1930 size:0x34 mapped:0x807009C4
 s32 fn_3_C1930(s32 id) {
     s32 k = 1;
