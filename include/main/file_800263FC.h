@@ -414,7 +414,8 @@ typedef struct ParticleParamsE {
     /* 0x50 */ s32 phase1;
     /* 0x54 */ f32 size[3];
     /* 0x60 */ s32 alpha[3];
-} ParticleParamsE;
+    /* 0x6C */ s32 unk6C;
+} ParticleParamsE; // size: 0x70 (template: lbl_80108D48)
 
 // Streak particle (type 10): flies from start towards end in three eased
 // phases. A different view of a Particle pool entry.

@@ -6,10 +6,11 @@
 #include "main/menu_globals.h"
 #include "main/file_800A7C08.h"
 #include "game/auto_00_000759BC_text.h"
+#include "main/unlock_flags.h"
 
 u8 starMissionCompletionTracker[0x4508];
 u8 lbl_80361C18[0x38];
-u8 lbl_80361B20[0xF8]; // UnlockFlags (menus/auto_00_00013BA4_text.h)
+UnlockFlags lbl_80361B20;
 u8 lbl_803616CC[0x454]; // MenuCharLayout (menus/rep_0AB0.h)
 u8 lbl_80354768[0xCF64]; // SaveProgress (main/file_8003A688.h)
 u8 lbl_80354720[2][9][4]; // OrderEntry[2][9] (main/file_8004207C.h)

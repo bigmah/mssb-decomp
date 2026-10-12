@@ -85,19 +85,7 @@ typedef struct CharGroupTable {
     /*0x5C*/ u16 variants[12][2][4];  // per captain (lbl_80108ED0 order), two 4-character sets
 } CharGroupTable; // size: 0x11C
 
-// Particle/effect emitter description passed to fn_8002B7F8 (template at lbl_80108D48).
-typedef struct EffectDesc {
-    /*0x00*/ s32 id;
-    /*0x04*/ s32 _04[4];
-    /*0x14*/ f32 size[6];
-    /*0x2C*/ s32 _2C[3];
-    /*0x38*/ f32 _38;
-    /*0x3C*/ s32 _3C;
-    /*0x40*/ f32 _40;
-    /*0x44*/ s32 _44[4];
-    /*0x54*/ f32 _54[3];
-    /*0x60*/ s32 _60[4];
-} EffectDesc; // size: 0x70
+// Effect descriptions for fn_8002B7F8 are ParticleParamsE (main/file_800263FC.h).
 
 void fn_80069A68(struct SoundGroupRequest* req, struct SoundGroupData* data); // SoundGroupRequest.onLoaded
 void fn_80069A98(void);

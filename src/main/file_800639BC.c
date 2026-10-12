@@ -15,16 +15,17 @@
 #include "Dolphin/mtx.h"
 #include "string.h"
 #include "main/file_800263FC.h"
+#include "main/unlock_flags.h"
 
 extern SoundManager lbl_800EF808;
 extern AssetLoadInstructions lbl_801092E8; // logo sound data
 extern AssetLoadInstructions lbl_80109044; // message table
-extern u8 lbl_80109378[]; // TODO type (spani creation desc)
+extern SpaniDesc lbl_80109378[2]; // starts with these (Unk80109378 in file_80069BDC.c)
 extern void* lbl_803CBD30; // queue node of the logo screen task
 extern u16 lbl_803CBD24;
 
-extern u8 lbl_80361B20[0xF8]; // TODO type
-extern u8 lbl_800E8754[0x28]; // TODO type
+extern UnlockFlags lbl_80361B20;
+extern SavedSettings lbl_800E8754;
 extern u8 lbl_803CB8D0[8];
 extern u8 lbl_80108EC4[12];       // character ids to pick from
 extern StreamTrack lbl_802E4CE8[16];
@@ -65,8 +66,8 @@ extern u8 lbl_803CBD1F; // fade-in: current volume
 extern u8 lbl_803CBD20; // fade-out: volume steps per second
 extern u8 lbl_80108DB8[0x24]; // character ids in roster order
 extern u8 lbl_80108DDC[0x18]; // extra character ids (variants)
-extern EffectDesc lbl_80108D48;
-extern s32 lbl_803CBD0C;
+extern ParticleParamsE lbl_80108D48;
+extern TexArchive* lbl_803CBD0C; // effect particle textures (set by fn_8004B1B8)
 
 extern s32 randRange_FUN_80042bf0(s32 lo, s32 hi);
 extern void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAddr);
@@ -118,21 +119,21 @@ static inline s32 chemRank(u8 team, s32 id, s32 rank) {
 
 // Copy of fn_80064430 (defined below); the original inlines it into fn_800639BC.
 static inline void spawnFootDust(Vec* pos, u8 count, f32 scale2, f32 scale) {
-    EffectDesc desc;
+    ParticleParamsE desc;
 
-    memcpy(&desc, &lbl_80108D48, sizeof(EffectDesc));
-    desc.id = lbl_803CBD0C;
-    desc.size[0] *= scale;
-    desc.size[1] *= scale;
-    desc.size[2] *= scale;
-    desc.size[3] *= scale;
-    desc.size[4] *= scale;
-    desc.size[5] *= scale;
-    desc._38 *= scale;
-    desc._54[0] *= scale2;
-    desc._54[1] *= scale2;
-    desc._54[2] *= scale2;
-    fn_8002B7F8(pos, (ParticleParamsE *)&desc, count); // TODO type
+    memcpy(&desc, &lbl_80108D48, sizeof(ParticleParamsE));
+    desc.tex = lbl_803CBD0C;
+    desc.subSizeY[0] *= scale;
+    desc.subSizeY[1] *= scale;
+    desc.subSizeY[2] *= scale;
+    desc.subSizeX[0] *= scale;
+    desc.subSizeX[1] *= scale;
+    desc.subSizeX[2] *= scale;
+    desc.radius *= scale;
+    desc.size[0] *= scale2;
+    desc.size[1] *= scale2;
+    desc.size[2] *= scale2;
+    fn_8002B7F8(pos, &desc, count);
 }
 
 // .text:0x800639BC size:0x988
@@ -251,41 +252,41 @@ s32 fn_800639BC(s8 idx, Vec* a, Vec* b) {
 
 // .text:0x80064344 size:0xEC
 void fn_80064344(Vec* pos, Vec* v) {
-    EffectDesc desc;
+    ParticleParamsE desc;
     f32 scale = 3.0f * PSVECMag(v);
 
-    memcpy(&desc, &lbl_80108D48, sizeof(EffectDesc));
-    desc.id = lbl_803CBD0C;
+    memcpy(&desc, &lbl_80108D48, sizeof(ParticleParamsE));
+    desc.tex = lbl_803CBD0C;
+    desc.subSizeY[0] *= scale;
+    desc.subSizeY[1] *= scale;
+    desc.subSizeY[2] *= scale;
+    desc.subSizeX[0] *= scale;
+    desc.subSizeX[1] *= scale;
+    desc.subSizeX[2] *= scale;
+    desc.radius *= scale;
     desc.size[0] *= scale;
     desc.size[1] *= scale;
     desc.size[2] *= scale;
-    desc.size[3] *= scale;
-    desc.size[4] *= scale;
-    desc.size[5] *= scale;
-    desc._38 *= scale;
-    desc._54[0] *= scale;
-    desc._54[1] *= scale;
-    desc._54[2] *= scale;
-    fn_8002B7F8(pos, (ParticleParamsE *)&desc, 1); // TODO type
+    fn_8002B7F8(pos, &desc, 1);
 }
 
 // .text:0x80064430 size:0x104
 void fn_80064430(Vec* pos, u8 count, f32 scale2, f32 scale) {
-    EffectDesc desc;
+    ParticleParamsE desc;
 
-    memcpy(&desc, &lbl_80108D48, sizeof(EffectDesc));
-    desc.id = lbl_803CBD0C;
-    desc.size[0] *= scale;
-    desc.size[1] *= scale;
-    desc.size[2] *= scale;
-    desc.size[3] *= scale;
-    desc.size[4] *= scale;
-    desc.size[5] *= scale;
-    desc._38 *= scale;
-    desc._54[0] *= scale2;
-    desc._54[1] *= scale2;
-    desc._54[2] *= scale2;
-    fn_8002B7F8(pos, (ParticleParamsE *)&desc, count); // TODO type
+    memcpy(&desc, &lbl_80108D48, sizeof(ParticleParamsE));
+    desc.tex = lbl_803CBD0C;
+    desc.subSizeY[0] *= scale;
+    desc.subSizeY[1] *= scale;
+    desc.subSizeY[2] *= scale;
+    desc.subSizeX[0] *= scale;
+    desc.subSizeX[1] *= scale;
+    desc.subSizeX[2] *= scale;
+    desc.radius *= scale;
+    desc.size[0] *= scale2;
+    desc.size[1] *= scale2;
+    desc.size[2] *= scale2;
+    fn_8002B7F8(pos, &desc, count);
 }
 
 // .text:0x80064534 size:0x220
@@ -416,8 +417,8 @@ void fn_8006496C(void) {
 // .text:0x800649BC size:0x48
 void fn_800649BC(void) {
     g_d_GameSettings.home_AwaySetting = randRange_FUN_80042bf0(0, 1);
-    lbl_800E8754[0] = 3;
-    lbl_800E8754[3] = lbl_803CB8D0[0];
+    lbl_800E8754.innings = 3;
+    lbl_800E8754._01[2] = lbl_803CB8D0[0];
 }
 
 // .text:0x80064A04 size:0x13E8
@@ -834,7 +835,7 @@ void fn_800670A0(u8 team) {
 void fn_800671FC(void) {
     u8 stadium;
 
-    if (lbl_80361B20[0xF5] != 0) {
+    if (lbl_80361B20._F5 != 0) {
         stadium = randRange_FUN_80042bf0(0, 5);
     } else {
         do {
@@ -1591,7 +1592,7 @@ void fn_80069B08(void) {
 BOOL fn_80069B68(void) {
     if (fn_80035838(&lbl_801092E8, 0x16) != 0) {
         lbl_803CBD30 = fn_800B0A5C_insertQueue(fn_80069B08, lbl_803CC1B8->priority);
-        fn_80034E20(lbl_803CBD30, (SpaniDesc *)lbl_80109378); // TODO type
+        fn_80034E20(lbl_803CBD30, lbl_80109378);
         lbl_80366158._2A = 0;
         return TRUE;
     }
@@ -1602,17 +1603,12 @@ BOOL fn_80069B68(void) {
 
 // .data 0x80108D30..0x8010924C
 s8 lbl_80108D30[0x18] = {-1, 7, 8, 13, 15, 28, 29, 30, 31, 32, 0, 0, -1, 7, 8, 13, 15, 28, 29, 30, 31, 32, 0, 0};
-EffectDesc lbl_80108D48 = {
-    0,
-    {9, 4, 30, 15},
-    {0.6f, 1.4f, 0.6f, 1.2f, 1.2f, 2.0f},
-    {0, 255, 0},
-    0.02f,
-    0,
-    360.0f,
-    {8, 1, 90, 50},
-    {0.0f, 2.0f, 2.8f},
-    {255, 200, 0, 14},
+ParticleParamsE lbl_80108D48 = {
+    NULL, 9, 4, 30, 15,
+    {0.6f, 1.4f, 0.6f}, {1.2f, 1.2f, 2.0f}, {0, 255, 0},
+    0.02f, 0.0f, 360.0f,
+    8, 1, 90, 50,
+    {0.0f, 2.0f, 2.8f}, {255, 200, 0}, 14,
 };
 u8 lbl_80108DB8[0x24] = {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
