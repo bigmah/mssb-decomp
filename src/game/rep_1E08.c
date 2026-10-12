@@ -2386,7 +2386,7 @@ void fn_3_BF070(void) {
     s32 i;
     fn_8003A85C(s_BF070a[g_d_GameSettings.StadiumID]);
     fn_8003A848(s_BF070b[g_d_GameSettings.StadiumID][0], s_BF070b[g_d_GameSettings.StadiumID][1], s_BF070b[g_d_GameSettings.StadiumID][2]);
-    w = STADIUM_FILE(lbl_3_common_bss_35154._08, 6);
+    w = STADIUM_FILE((void**)lbl_3_common_bss_35154._08, 6);
     lbl_3_common_bss_35154._3B1 = 1;
     for (i = 0; i < 13; i++) {
         CharActor* o = lbl_8036E548.active[i];
@@ -2575,15 +2575,15 @@ void fn_3_BF6C0(void) {
     if (lbl_803C6CF8.idle == 1) {
         fn_3_B9D68(s_BF070e, 6, lbl_3_common_bss_35154._08, buf);
         c = &lbl_3_common_bss_35154;
-        lbl_3_common_bss_35154.archive = STADIUM_FILE(c->_08, 0);
-        fn_8004B1B8(STADIUM_FILE(c->_08, 0));
-        fn_80035750(STADIUM_FILE(c->_08, 1), STADIUM_FILE(c->_08, 2), 4);
+        lbl_3_common_bss_35154.archive = STADIUM_FILE((void**)c->_08, 0);
+        fn_8004B1B8(STADIUM_FILE((void**)c->_08, 0));
+        fn_80035750(STADIUM_FILE((void**)c->_08, 1), STADIUM_FILE((void**)c->_08, 2), 4);
         t = ActorObjectInitTable(1);
         lbl_8036E548._0070 = t;
-        fn_800BDC88(t, 0, 0, STADIUM_FILE(c->_08, buf[4]), 0, 0);
+        fn_800BDC88(t, 0, 0, STADIUM_FILE((void**)c->_08, buf[4]), 0, 0);
         fn_8003A85C(s_BF070a[g_d_GameSettings.StadiumID]);
         fn_8003A848(s_BF070b[g_d_GameSettings.StadiumID][0], s_BF070b[g_d_GameSettings.StadiumID][1], s_BF070b[g_d_GameSettings.StadiumID][2]);
-        w = STADIUM_FILE(c->_08, 6);
+        w = STADIUM_FILE((void**)c->_08, 6);
         lbl_3_common_bss_35154._3B1 = 1;
         for (i = 0; i < 13; i++) {
             CharActor* o = lbl_8036E548.active[i];

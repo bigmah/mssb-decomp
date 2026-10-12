@@ -2,6 +2,7 @@
 #define __GAME_rep_1F58_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_HEAD
 #include "Dolphin/mtx.h"
 #include "game/rep_3F60.h" // EffectAnim
 
@@ -31,7 +32,7 @@ typedef struct E30_1F58 {
 
 // Scene task that feeds an E18_1F58 each frame (fn_3_C0AD8; lbl_803CC1B8 while it runs).
 typedef struct Rep1F58Track {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
     /*0x14*/ u32 frame;
     /*0x18*/ s32 slot;  // index into lbl_3_data_174A0 / lbl_3_data_174A8
     /*0x1C*/ s32 actor; // index into lbl_8036E548.active
@@ -40,7 +41,7 @@ typedef struct Rep1F58Track {
 
 // Scene task that fades an aura out (fn_3_C1004).
 typedef struct Rep1F58Fade {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
     /*0x14*/ u8 who; // index into lbl_8036E548.active
     /*0x15*/ u8 alpha;
     /*0x16*/ u8 count; // frames left (from 10)

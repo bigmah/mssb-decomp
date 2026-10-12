@@ -2,6 +2,7 @@
 #define __GAME_rep_2308_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_HEAD
 #include "Dolphin/mtx.h"
 #include "game/rep_3F60.h" // EffectAnim
 
@@ -26,7 +27,7 @@ typedef struct R2308 {
 
 // Scene task that feeds an E2308 each frame (lbl_803CC1B8 while it runs).
 typedef struct Rep2308Task {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
     /*0x14*/ Vec pos;
     /*0x20*/ Rep2308Quat rot;
     /*0x30*/ u16 frame;

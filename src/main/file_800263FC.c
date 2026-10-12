@@ -3773,6 +3773,13 @@ void fn_80034E20(SpaniGroup* g, SpaniDesc* descs) {
     SpaniObj* obj;
     s32 idx;
 
+#ifdef TARGET_PC
+    // Tables still declared as bytes hold big-endian SpaniDescs: swap them
+    // in place the first time (see port_spani_descs_native).
+    if (!port_spani_descs_native(descs)) {
+        port_swap_spani_descs(descs);
+    }
+#endif
     for (i = 0; i < 0x360; i++) {
         if (lbl_80371C30[i].obj == NULL) {
             g->u14.objIdx = i;

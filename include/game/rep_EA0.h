@@ -2,6 +2,7 @@
 #define __GAME_rep_EA0_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_HEAD
 #include "Dolphin/mtx.h"
 #include "Dolphin/vec.h"
 #include "game/UnknownHomes_Game.h"
@@ -46,7 +47,7 @@ typedef struct TrailMesh {
 
 // The task running fn_3_678B8 (lbl_803CC1B8 while it runs); only the fields used here.
 typedef struct TrailTask {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
     /*0x14*/ Vec* dir; // fixed trail direction, or NULL to follow the trail
     /*0x18*/ Vec dirBuf;
 } TrailTask;

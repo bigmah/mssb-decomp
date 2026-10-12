@@ -57,6 +57,15 @@ typedef struct SceneTask {
 #define SCENE_TASK_VIEW_LINKS u8 _04[0x10];
 #endif
 
+// The whole SceneTask head (0x00..0x14) for views that don't name it.
+#ifdef TARGET_PC
+#define SCENE_TASK_VIEW_HEAD \
+    void* _headFunc;         \
+    SCENE_TASK_VIEW_LINKS
+#else
+#define SCENE_TASK_VIEW_HEAD u8 _head[0x14];
+#endif
+
 // Owners of sprite (spani) and layout object runs are scene tasks.
 typedef SceneTask SpaniOwner;
 typedef SceneTask SpaniGroup;

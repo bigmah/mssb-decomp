@@ -105,3 +105,36 @@ void port_swap_camera_anim(void* anim)
         }
     }
 }
+
+// SpaniDesc list (include/main/SpaniDesc.h, 0x20 bytes each) ending with
+// type 3, declared as bytes in some units: u16 type, u16 animId, f32 x, y,
+// s32, u8, u8, s16 parent, u8[4], f32 scale, u8, u8, s16.
+void port_swap_spani_descs(void* descs)
+{
+    for (uint8_t* d = (uint8_t*)descs;; d += 0x20)
+    {
+        swap16_array(d, 2);
+        swap32_array(d + 4, 3);
+        swap16_inplace(d + 0x12);
+        swap32_inplace(d + 0x18);
+        swap16_inplace(d + 0x1E);
+        if (*(uint16_t*)d == 3)
+            break;
+    }
+}
+
+// Whether a SpaniDesc list is in host order: types are 0..3 and the list ends
+// with type 3, so a big-endian list shows a type >= 0x100 before any 3.
+int port_spani_descs_native(const void* descs)
+{
+    const uint8_t* d = (const uint8_t*)descs;
+    for (int i = 0; i < 1024; i++, d += 0x20)
+    {
+        uint16_t type = *(const uint16_t*)d;
+        if (type == 3)
+            return 1;
+        if (type > 3)
+            return 0;
+    }
+    return 1;
+}

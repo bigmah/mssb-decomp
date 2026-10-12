@@ -42,7 +42,7 @@ u8 __##currentOffset##padding[((currentOffset) - (lastOffset) - sizeof(typeOfLas
 #ifdef TARGET_PC
 #define STADIUM_FILE(files, i) PTR32_GET(void, ((u32*)(files))[i])
 #else
-#define STADIUM_FILE(files, i) ((void*)(files)[i])
+#define STADIUM_FILE(files, i) ((files)[i])
 #endif
 
 // Enum macro to help debug types

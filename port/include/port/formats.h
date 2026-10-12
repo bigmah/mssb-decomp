@@ -60,6 +60,9 @@ void port_swap_stadium_collision(void* table);
 // Replay/scene camera animations, port/src/formats_game.c.
 void port_swap_camera_anim_list(void* list);
 void port_swap_camera_anim(void* anim);
+// SpaniDesc lists declared as bytes, port/src/formats_game.c.
+void port_swap_spani_descs(void* descs);
+int port_spani_descs_native(const void* descs);
 
 #ifdef __cplusplus
 }
