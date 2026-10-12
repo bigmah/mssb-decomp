@@ -2,6 +2,7 @@
 #include "menus/auto_00_0004B1AC_text.h"
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
+#include "menus/menu_work.h"
 
 extern u8* lbl_2_bss_1A8234[];
 extern u8* lbl_2_bss_1A824C[];
@@ -77,31 +78,10 @@ typedef struct MissionDef {
 } MissionDef;
 extern MissionDef lbl_80109AE8[][10];
 
-// One controller's latched buttons in lbl_803C77B8 (see PadState in main/file_800A7C08.h).
-typedef struct MenuPad {
-    /*0x00*/ u16 held;
-    /*0x02*/ u16 down;
-    /*0x04*/ u16 repeat;
-    /*0x06*/ u8 _06[0x1A];
-} MenuPad; // size: 0x20
 #define MENU_PADS ((MenuPad*)&lbl_803C77B8)
 #define MENU_PAD_REPEAT(port) (*(u16*)((u8*)&lbl_803C77B8._04 + (port) * 0x20))
 #define MENU_PAD_DOWN(port) (*(u16*)((u8*)&lbl_803C77B8._02 + (port) * 0x20))
 
-// Entries at the start of the block lbl_2_bss_1A8248 points at.
-typedef struct MenuRosterEntry {
-    /*0x00*/ s8* limits; // indexed by [_4415 * 6 + _441C + 4]
-    /*0x04*/ u8 _04[2];
-    /*0x06*/ s8 value;
-    /*0x07*/ u8 _07;
-    /*0x08*/ struct {
-        u8 _0;
-        s8 state; // star mission state (-2 / 0 / ...)
-    } missions[10];
-    /*0x1C*/ u8 _1C[0x31 - 0x1C];
-    /*0x31*/ u8 _31;
-    /*0x32*/ u8 _32[2];
-} MenuRosterEntry; // size: 0x34
 #define ROSTER ((MenuRosterEntry*)lbl_2_bss_1A8248)
 #define ROSTER_LIMIT(e) ((e)->limits[lbl_2_bss_1A8248[0x4415] * 6 + lbl_2_bss_1A8248[0x441C] + 4])
 extern void fn_8004B1B8(void* tex);

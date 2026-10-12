@@ -4,35 +4,34 @@
 #include "menus/auto_00_0003C03C_text.h"
 #include "menus/auto_00_0004B1AC_text.h"
 #include "menus/rep_0788.h"
+#include "main/file_8000F150.h"
+#include "main/file_8001FE00.h"
+#include "main/menu_globals.h"
+#include "main/file_800527C4.h"
 extern s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSize);
 
 extern void fn_2_4E7EC(void);
 extern void fn_2_4E824(void);
-extern u8* lbl_80371C30[];
-extern u8* lbl_2_bss_1A8244[];
-extern u8* lbl_2_bss_1A8248[];
+extern MenuProgress* lbl_2_bss_1A8244;
+extern MenuCtx* lbl_2_bss_1A8248;
 extern s16 fn_2_53BC8(void*);
-extern u8* lbl_2_bss_1A8234[];
-extern u8* lbl_2_bss_1A824C[];
-extern u8* lbl_803CC1B8;
+extern MenuData* lbl_2_bss_1A8234;
+extern MenuData* lbl_2_bss_1A824C;
+extern MenuScreenTask* lbl_803CC1B8;
 extern void fn_800B0A14_removeQueue(void*);
 extern s32 fn_2_45A84();
 extern void fn_2_90428(s32);
 extern void fn_2_92654(s32, u8);
 extern u8 fn_8006862C(s32, s32);
-extern u8 lbl_8037169C[];
 extern void fn_80036134(void*, s32, s32, s32);
-extern s16 fn_8000F988(void*, s16, u16, s32, s32, s32);
-extern u8 lbl_80366B18[];
 extern s16 lbl_2_data_C924[3][12]; // rep_0788.c
 extern s16 lbl_2_data_C8F8[6];
 extern s16 lbl_2_data_C904[16];
-extern void fn_8000FE08(s16, s32, s32);
 
 // fn_2_37430, size:0x2C
-void fn_2_37430(u8* a, u8* b) {
-    u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-    *(u32*)(p + 0x54) &= ~2;
+void fn_2_37430(MenuTask* a, MenuItemState* b) {
+    LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+    p->flags &= ~2;
 }
 
 // fn_2_3745C, size:0x4
@@ -81,33 +80,35 @@ void fn_2_37D94(void) {
 
 // fn_2_38EA8, size:0xA0
 void fn_2_38EA8(void) {
-    lbl_2_bss_1A8248[0][0x4416] = lbl_2_bss_1A8248[0][0x4415];
-    lbl_2_bss_1A8244[0][0xE4 + lbl_2_bss_1A8248[0][0x4415]] = 1;
-    if (lbl_2_bss_1A8248[0][0x4415] < 3) {
-        u8* e = lbl_2_bss_1A8244[0] + lbl_2_bss_1A8248[0][0x441C];
-        if (e[0xE8] == 0) {
-            e[0xE8] = 1;
+    lbl_2_bss_1A8248->_4416 = lbl_2_bss_1A8248->_4415;
+    lbl_2_bss_1A8244->_E4[lbl_2_bss_1A8248->_4415] = 1;
+    if (lbl_2_bss_1A8248->_4415 < 3) {
+        // The original offsets the whole block by the stadium, then reads the
+        // per-stadium byte tables at fixed offsets (all-u8 struct, so portable).
+        MenuProgress* e = (MenuProgress*)((u8*)lbl_2_bss_1A8244 + lbl_2_bss_1A8248->_441C);
+        if (e->_E8[0] == 0) {
+            e->_E8[0] = 1;
         }
-        lbl_2_bss_1A8248[0][0x4415] = lbl_2_bss_1A8248[0][0x4415] + 1;
-        e = lbl_2_bss_1A8244[0] + lbl_2_bss_1A8248[0][0x441C];
-        e[0xDE] = e[0xDE] + 1;
+        lbl_2_bss_1A8248->_4415 = lbl_2_bss_1A8248->_4415 + 1;
+        e = (MenuProgress*)((u8*)lbl_2_bss_1A8244 + lbl_2_bss_1A8248->_441C);
+        e->_DE[0] = e->_DE[0] + 1;
     }
 }
 
 // fn_2_372AC, size:0xB0
-void fn_2_372AC(u8* a, u8* b) {
+void fn_2_372AC(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0:
-        *(s16*)(b + 4) = 0x26;
+        b->state = 0x26;
         break;
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x25;
         break;
     }
     case 0x25:
@@ -116,20 +117,20 @@ void fn_2_372AC(u8* a, u8* b) {
 }
 
 // fn_2_3735C, size:0xD4
-void fn_2_3735C(u8* a, u8* b) {
+void fn_2_3735C(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2:
-        *(s16*)(b + 4) = 0x25;
+        b->state = 0x25;
         break;
     case 1:
     case 5:
@@ -142,88 +143,88 @@ void fn_2_3735C(u8* a, u8* b) {
 
 // fn_2_380B0, size:0xF8
 void fn_2_380B0(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    switch (p->step) {
     case 0:
-        *(s16*)(p + 0x14) = 0x15;
-        lbl_2_bss_1A8234[0][0x160000 + 0x264E] = 1;
-        p[0x28] = 1;
+        p->counter = 0x15;
+        lbl_2_bss_1A8234->layerFlags[1][4] = 1;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_381A8, size:0xF8
 void fn_2_381A8(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    switch (p->step) {
     case 0:
-        *(s16*)(p + 0x14) = 0x15;
-        lbl_2_bss_1A8234[0][0x160000 + 0x2838] = 1;
-        p[0x28] = 1;
+        p->counter = 0x15;
+        lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_35754, size:0x10C
-void fn_2_35754(u8* a, u8* b) {
+void fn_2_35754(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+        b->state = 0x25;
         break;
     }
     case 1:
@@ -234,23 +235,23 @@ void fn_2_35754(u8* a, u8* b) {
 }
 
 // fn_2_35DB4, size:0x10C
-void fn_2_35DB4(u8* a, u8* b) {
+void fn_2_35DB4(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+        b->state = 0x25;
         break;
     }
     case 1:
@@ -261,27 +262,27 @@ void fn_2_35DB4(u8* a, u8* b) {
 }
 
 // fn_2_34F6C, size:0x11C
-void fn_2_34F6C(u8* a, u8* b) {
+void fn_2_34F6C(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        b->state = 0x25;
         break;
     }
     case 5: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     }
     case 1:
@@ -292,214 +293,214 @@ void fn_2_34F6C(u8* a, u8* b) {
 
 // fn_2_38C14, size:0x130
 void fn_2_38C14(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    switch (p->step) {
     case 0:
-        *(s16*)(p + 0x14) = 0x14;
-        p[0x28] = 2;
+        p->counter = 0x14;
+        p->step = 2;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            lbl_2_bss_1A824C[0][0x19782C] = 1;
-            *(s16*)(p + 0x14) = 0x14;
-            p[0x28] = 2;
+            lbl_2_bss_1A824C->_19782C = 1;
+            p->counter = 0x14;
+            p->step = 2;
         }
         break;
     }
     case 2: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            *(s16*)(p + 0x14) = 0x14;
-            p[0x28] = 3;
+            p->counter = 0x14;
+            p->step = 3;
         }
         break;
     }
     case 3:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_38D44, size:0x164
 void fn_2_38D44(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    switch (p->step) {
     case 0:
         if (fn_2_45A84() == 1) {
-            *(s16*)(p + 0x14) = 1;
-            p[0x28] = 1;
+            p->counter = 1;
+            p->step = 1;
         } else {
-            p[0x28] = 4;
+            p->step = 4;
         }
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        lbl_2_bss_1A8234[0][0x160000 + 0x2680] = 1;
-        *(s16*)(p + 0x14) = 0x5A;
-        p[0x28] = 3;
+        lbl_2_bss_1A8234->layerFlags[1][54] = 1;
+        p->counter = 0x5A;
+        p->step = 3;
         break;
     case 3: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x286A] = 1;
-            p[0x28] = 4;
+            lbl_2_bss_1A8234->layerFlags[8][54] = 1;
+            p->step = 4;
         }
         break;
     }
     case 4:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_37D98, size:0x16C
 void fn_2_37D98(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    switch (p->step) {
     case 0:
         changeScene(1, 6);
-        *(s16*)(p + 0x14) = 0x26AE;
-        *(s16*)(p + 0x16) = 0;
-        lbl_2_bss_1A8234[0][0x160000 + 0x264B] = 1;
-        p[0x28] = 1;
+        p->counter = 0x26AE;
+        p->arg = 0;
+        lbl_2_bss_1A8234->layerFlags[1][1] = 1;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
-        *(s16*)(p + 0x16) = *(s16*)(p + 0x16) + 1;
+        p->arg = p->arg + 1;
         break;
     }
     case 2:
         if (fn_8006862C(0x1A4, 0) == 0) {
-            p[0x28] = 3;
+            p->step = 3;
         }
         break;
     case 3:
         changeScene(3, 6);
-        p[0x28] = 4;
+        p->step = 4;
         break;
     case 4:
-        if (lbl_8037169C[0x13] != 0) {
-            q = *(u8**)(p + 0xC);
-            *(s16*)(q + 0x10) = 1;
+        if (lbl_8037169C._13 != 0) {
+            q = p->parent;
+            q->signal = 1;
             fn_800B0A14_removeQueue(q);
-            p[0x28] = 0;
+            p->step = 0;
         }
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_37F04, size:0x1AC
 void fn_2_37F04(void) {
-    u8* p = lbl_803CC1B8;
-    u8* gs = (u8*)&g_d_GameSettings;
-    u8* q;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    GameInitVariables* gs = &g_d_GameSettings;
+    MenuScreenTask* q;
+    switch (p->step) {
     case 0:
-        if (*(s8*)&lbl_2_bss_1A8248[0][0x444B] != -1) {
-            *(s16*)(p + 0x14) = 0x14;
-            p[0x28] = 1;
+        if (lbl_2_bss_1A8248->_444B != -1) {
+            p->counter = 0x14;
+            p->step = 1;
         } else {
-            p[0x28] = 4;
+            p->step = 4;
         }
         break;
     case 1: {
         s16 t;
-        if (*(s16*)(p + 0x14) == 4) {
+        if (p->counter == 4) {
             fn_80062890(0x43);
         }
-        t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        gs[*(s8*)&lbl_2_bss_1A8248[0][0x444B] + 0x3C] = 0;
-        *(s8*)&lbl_2_bss_1A8248[0][0x444C] = -1;
-        *(s8*)&lbl_2_bss_1A8248[0][0x444B] = -1;
-        lbl_2_bss_1A8234[0][0x160000 + 0x281C] = 1;
-        *(s16*)(p + 0x14) = 0x3C;
-        p[0x28] = 3;
+        gs->challengeCaptainStarBought[lbl_2_bss_1A8248->_444B] = 0;
+        lbl_2_bss_1A8248->_444C = -1;
+        lbl_2_bss_1A8248->_444B = -1;
+        lbl_2_bss_1A8234->layerFlags[7][46] = 1;
+        p->counter = 0x3C;
+        p->step = 3;
         break;
     case 3: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 4;
+            p->step = 4;
         }
         break;
     }
     case 4:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_3BC24, size:0x164
 void fn_2_3BC24(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    switch (p->step) {
     case 0:
-        lbl_2_bss_1A8248[0][0x442A] = 1;
-        *(s16*)(p + 0x14) = 0x3C;
-        p[0x28] = 1;
+        lbl_2_bss_1A8248->_442A = 1;
+        p->counter = 0x3C;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
             fn_2_90428(0x19);
             fn_2_92654(0x19, 8);
@@ -508,69 +509,69 @@ void fn_2_3BC24(void) {
             fn_2_90428(0x1B);
             fn_2_92654(0x1B, 2);
             fn_80062890(0x42);
-            *(s16*)(p + 0x14) = 0xB4;
-            p[0x28] = 2;
+            p->counter = 0xB4;
+            p->step = 2;
         }
         break;
     }
     case 2: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 3;
+            p->step = 3;
         }
         break;
     }
     case 3:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_35088, size:0x1B4
-void fn_2_35088(u8* a, u8* b) {
+void fn_2_35088(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     }
     case 7: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     }
     case 1:
@@ -580,40 +581,40 @@ void fn_2_35088(u8* a, u8* b) {
 }
 
 // fn_2_34060, size:0x1B4
-void fn_2_34060(u8* a, u8* b) {
+void fn_2_34060(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     }
     case 7: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     }
     case 1:
@@ -623,40 +624,40 @@ void fn_2_34060(u8* a, u8* b) {
 }
 
 // fn_2_34524, size:0x1B4
-void fn_2_34524(u8* a, u8* b) {
+void fn_2_34524(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     }
     case 7: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     }
     case 1:
@@ -666,40 +667,40 @@ void fn_2_34524(u8* a, u8* b) {
 }
 
 // fn_2_34844, size:0x1B4
-void fn_2_34844(u8* a, u8* b) {
+void fn_2_34844(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     }
     case 7: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     }
     case 1:
@@ -709,40 +710,40 @@ void fn_2_34844(u8* a, u8* b) {
 }
 
 // fn_2_35860, size:0x1B4
-void fn_2_35860(u8* a, u8* b) {
+void fn_2_35860(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     }
     case 7: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     }
     case 1:
@@ -752,40 +753,40 @@ void fn_2_35860(u8* a, u8* b) {
 }
 
 // fn_2_35EC0, size:0x1B4
-void fn_2_35EC0(u8* a, u8* b) {
+void fn_2_35EC0(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     }
     case 7: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     }
     case 1:
@@ -795,40 +796,40 @@ void fn_2_35EC0(u8* a, u8* b) {
 }
 
 // fn_2_3697C, size:0x1B4
-void fn_2_3697C(u8* a, u8* b) {
+void fn_2_3697C(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     }
     case 7: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     }
     case 1:
@@ -838,40 +839,40 @@ void fn_2_3697C(u8* a, u8* b) {
 }
 
 // fn_2_36F44, size:0x1B4
-void fn_2_36F44(u8* a, u8* b) {
+void fn_2_36F44(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     }
     case 7: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     }
     case 1:
@@ -881,40 +882,40 @@ void fn_2_36F44(u8* a, u8* b) {
 }
 
 // fn_2_370F8, size:0x1B4
-void fn_2_370F8(u8* a, u8* b) {
+void fn_2_370F8(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     }
     case 7: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     }
     case 1:
@@ -924,32 +925,32 @@ void fn_2_370F8(u8* a, u8* b) {
 }
 
 // fn_2_346D8, size:0x16C
-void fn_2_346D8(u8* a, u8* b) {
+void fn_2_346D8(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        b->state = 0x25;
         break;
     }
     case 5:
-        *(s16*)(b + 6) = 0x29;
-        *(s16*)(b + 4) = 6;
+        b->timer = 0x29;
+        b->state = 6;
         break;
     case 6:
-        if ((*(s16*)(b + 6))-- <= 0) {
-            lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-            *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+        if ((b->timer)-- <= 0) {
+            lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+            lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         }
         break;
     case 1:
@@ -959,33 +960,33 @@ void fn_2_346D8(u8* a, u8* b) {
 }
 
 // fn_2_34214, size:0x188
-void fn_2_34214(u8* a, u8* b) {
+void fn_2_34214(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        *(s16*)(b + 6) = 0x29;
-        *(s16*)(b + 4) = 6;
+        b->timer = 0x29;
+        b->state = 6;
         break;
     case 6:
-        if ((*(s16*)(b + 6))-- <= 0) {
-            lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-            *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+        if ((b->timer)-- <= 0) {
+            lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+            lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         }
         break;
     case 1:
@@ -995,33 +996,33 @@ void fn_2_34214(u8* a, u8* b) {
 }
 
 // fn_2_3439C, size:0x188
-void fn_2_3439C(u8* a, u8* b) {
+void fn_2_3439C(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        *(s16*)(b + 6) = 0x29;
-        *(s16*)(b + 4) = 6;
+        b->timer = 0x29;
+        b->state = 6;
         break;
     case 6:
-        if ((*(s16*)(b + 6))-- <= 0) {
-            lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-            *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+        if ((b->timer)-- <= 0) {
+            lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+            lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         }
         break;
     case 1:
@@ -1031,35 +1032,35 @@ void fn_2_3439C(u8* a, u8* b) {
 }
 
 // fn_2_34BCC, size:0x1E0
-void fn_2_34BCC(u8* a, u8* b) {
+void fn_2_34BCC(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p;
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x5C) = 0;
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_5C = 0;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        *(s16*)(b + 6) = 3;
-        *(s16*)(b + 4) = 6;
+        b->timer = 3;
+        b->state = 6;
         break;
     case 6:
-        if ((*(s16*)(b + 6))-- <= 0) {
-            lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-            *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+        if ((b->timer)-- <= 0) {
+            lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+            lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         }
         break;
     case 1:
@@ -1069,36 +1070,36 @@ void fn_2_34BCC(u8* a, u8* b) {
 }
 
 // fn_2_349F8, size:0x1D4
-void fn_2_349F8(u8* a, u8* b) {
+void fn_2_349F8(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p;
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x5C) = 0;
-        fn_800363D8(a, *(s16*)(b + 0xE), 1, 0xCD, lbl_2_bss_1A8248[0][0x4415] - 1);
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_5C = 0;
+        fn_800363D8(a, b->offset, 1, 0xCD, lbl_2_bss_1A8248->_4415 - 1);
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        *(s16*)(b + 6) = 3;
-        *(s16*)(b + 4) = 6;
+        b->timer = 3;
+        b->state = 6;
         break;
     case 6:
-        if ((*(s16*)(b + 6))-- <= 0) {
-            lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-            *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+        if ((b->timer)-- <= 0) {
+            lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+            lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         }
         break;
     case 1:
@@ -1108,33 +1109,33 @@ void fn_2_349F8(u8* a, u8* b) {
 }
 
 // fn_2_36074, size:0x190
-void fn_2_36074(u8* a, u8* b) {
+void fn_2_36074(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p;
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x5C) = 0;
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_5C = 0;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     }
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+        b->state = 6;
         break;
     case 6:
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         break;
     case 1:
     case 0x25:
@@ -1144,34 +1145,34 @@ void fn_2_36074(u8* a, u8* b) {
 
 
 // fn_2_36204, size:0x1C4
-void fn_2_36204(u8* a, u8* b) {
+void fn_2_36204(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2:
-        if (((s16*)(lbl_2_bss_1A824C[0] + 0x1972AC))[*(s16*)(b + 0xA)] == 3) {
-            u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-            *(u32*)(p + 0x54) |= 2;
-            lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
+        if (lbl_2_bss_1A824C->_1972AC[b->index] == 3) {
+            LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+            p->flags |= 2;
+            lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
         }
-        *(s16*)(b + 4) = 0x25;
+        b->state = 0x25;
         break;
     case 5:
-        if (((s16*)(lbl_2_bss_1A824C[0] + 0x1972AC))[*(s16*)(b + 0xA)] == 3) {
-            lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
+        if (lbl_2_bss_1A824C->_1972AC[b->index] == 3) {
+            lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
         }
-        *(s16*)(b + 4) = 6;
+        b->state = 6;
         break;
     case 6:
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         break;
     case 1:
     case 0x25:
@@ -1181,35 +1182,35 @@ void fn_2_36204(u8* a, u8* b) {
 
 
 // fn_2_36590, size:0x1C0
-void fn_2_36590(u8* a, u8* b) {
+void fn_2_36590(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        fn_80036134(a, 0x12, *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B0), *(s16*)(b + 0xE));
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        fn_80036134(a, 0x12, lbl_2_bss_1A824C->_1972B0, b->offset);
+        b->state = 0x25;
         break;
     }
     case 0x25:
-        fn_80036134(a, 0x12, *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B0), *(s16*)(b + 0xE));
+        fn_80036134(a, 0x12, lbl_2_bss_1A824C->_1972B0, b->offset);
         break;
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+        b->state = 6;
         break;
     case 6:
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         break;
     case 1:
         break;
@@ -1218,35 +1219,35 @@ void fn_2_36590(u8* a, u8* b) {
 
 
 // fn_2_363C8, size:0x1C8
-void fn_2_363C8(u8* a, u8* b) {
+void fn_2_363C8(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        fn_80036134(a, 0x293, *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B0) + 1, *(s16*)(b + 0xE));
-        *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        fn_80036134(a, 0x293, lbl_2_bss_1A824C->_1972B0 + 1, b->offset);
+        b->state = 0x25;
         break;
     }
     case 0x25:
-        fn_80036134(a, 0x293, *(s16*)(lbl_2_bss_1A824C[0] + 0x1972B0) + 1, *(s16*)(b + 0xE));
+        fn_80036134(a, 0x293, lbl_2_bss_1A824C->_1972B0 + 1, b->offset);
         break;
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+        b->state = 6;
         break;
     case 6:
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         break;
     case 1:
         break;
@@ -1255,35 +1256,35 @@ void fn_2_363C8(u8* a, u8* b) {
 
 
 // fn_2_36B30, size:0x1E4
-void fn_2_36B30(u8* a, u8* b) {
+void fn_2_36B30(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 0x25;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 0x25;
         break;
     case 0x25:
-        if (((s16*)(lbl_2_bss_1A824C[0] + 0x197298))[*(s16*)(b + 0xA)] != 0) {
-            *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) |= 2;
+        if (lbl_2_bss_1A824C->_197298[b->index] != 0) {
+            lbl_80371C30[a->baseIdx + b->offset].obj->flags |= 2;
         } else {
-            *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+            lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         }
         break;
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 0;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 0;
+        b->state = 6;
         break;
     case 6:
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x54) &= ~2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->flags &= ~2;
         break;
     case 1:
         break;
@@ -1293,126 +1294,126 @@ void fn_2_36B30(u8* a, u8* b) {
 
 
 // fn_2_3523C, size:0x1C0
-void fn_2_3523C(u8* a, u8* b) {
-    u8* p;
+void fn_2_3523C(MenuTask* a, MenuItemState* b) {
+    LayoutObj* p;
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 0x12) = 0xFF;
-        *(s16*)(b + 0x14) = fn_8000F988(a, *(s16*)(b + 0xE), *(s16*)(b + 0x10), 4, 0x312, 0);
-        *(s16*)(b + 4) = 0x26;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->unk12 = 0xFF;
+        b->unk14 = fn_8000F988((LayoutGroup*)a, b->offset, b->unk10, 4, 0x312, 0);
+        b->state = 0x26;
         break;
     }
     case 2: {
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80366B18[*(s16*)(b + 0x14) * 0x38 + 0x2F] = 1;
-        *(s16*)(b + 4) = 3;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80366B18.entries[b->unk14].hAlign = 1;
+        b->state = 3;
         break;
     }
     case 3:
-        *(s16*)(b + 4) = 0x25;
+        b->state = 0x25;
         break;
     case 0x25:
-        *(s16*)(b + 4) = 0x25;
+        b->state = 0x25;
         break;
     case 5: {
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 1:
     case 4:
         break;
     }
-    p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-    *(u32*)(p + 0x58) = *(s16*)(b + 0x12) | (*(u32*)(p + 0x58) & 0xFFFFFF00);
+    p = lbl_80371C30[a->baseIdx + b->offset].obj;
+    p->color = b->unk12 | (p->color & 0xFFFFFF00);
 }
 
 // fn_2_34D70, size:0x1FC
-void fn_2_34D70(u8* a, u8* b) {
-    u8* p;
+void fn_2_34D70(MenuTask* a, MenuItemState* b) {
+    LayoutObj* p;
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 0x12) = 0xFF;
-        *(s16*)(b + 0x14) = fn_8000F988(a, *(s16*)(b + 0xE), *(s16*)(b + 0x10), 4, 0x306, 0);
-        *(s16*)(b + 4) = 0x26;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->unk12 = 0xFF;
+        b->unk14 = fn_8000F988((LayoutGroup*)a, b->offset, b->unk10, 4, 0x306, 0);
+        b->state = 0x26;
         break;
     }
     case 2: {
-        fn_8000FE08(*(s16*)(b + 0x14), 4, lbl_2_bss_1A8248[0][0x4415] + 0x305);
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80366B18[*(s16*)(b + 0x14) * 0x38 + 0x2F] = 1;
-        *(s16*)(b + 4) = 3;
+        fn_8000FE08(b->unk14, 4, lbl_2_bss_1A8248->_4415 + 0x305);
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80366B18.entries[b->unk14].hAlign = 1;
+        b->state = 3;
         break;
     }
     case 3:
-        *(s16*)(b + 4) = 0x25;
+        b->state = 0x25;
         break;
     case 0x25:
-        *(s16*)(b + 4) = 0x25;
+        b->state = 0x25;
         break;
     case 5: {
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 1:
     case 4:
         break;
     }
-    lbl_80366B18[*(s16*)(b + 0x14) * 0x38 + 0x2F] = 1;
-    p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-    *(u32*)(p + 0x58) = *(s16*)(b + 0x12) | (*(u32*)(p + 0x58) & 0xFFFFFF00);
+    lbl_80366B18.entries[b->unk14].hAlign = 1;
+    p = lbl_80371C30[a->baseIdx + b->offset].obj;
+    p->color = b->unk12 | (p->color & 0xFFFFFF00);
 }
 
 // fn_2_33E70, size:0x1F0
-void fn_2_33E70(u8* a, u8* b) {
-    u8* p;
+void fn_2_33E70(MenuTask* a, MenuItemState* b) {
+    LayoutObj* p;
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     case 2:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        fn_800363D8(a, *(s16*)(b + 0xE), 1, 0x2E, lbl_2_data_C924[*(s16*)(b + 0xA)][lbl_2_bss_1A824C[0][0x19785B]]);
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        fn_800363D8(a, b->offset, 1, 0x2E, lbl_2_data_C924[b->index][lbl_2_bss_1A824C->_19785B]);
         break;
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     case 7:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     case 1:
     case 0x25:
@@ -1421,47 +1422,47 @@ void fn_2_33E70(u8* a, u8* b) {
 }
 
 // fn_2_36D04, size:0x240
-void fn_2_36D04(u8* a, u8* b) {
-    u8* p;
+void fn_2_36D04(MenuTask* a, MenuItemState* b) {
+    LayoutObj* p;
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     case 2:
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x5C) = 0xF0000;
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 3;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_5C = 0xF0000;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 3;
         break;
     case 3:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) >= lbl_2_data_C8F8[*(s16*)(b + 0x10)]) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 0x25;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) >= lbl_2_data_C8F8[b->unk10]) {
+            p->_68 = 0;
+            b->state = 0x25;
         }
         break;
     case 5:
-        *(u32*)(lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2] + 0x5C) = lbl_2_data_C8F8[*(s16*)(b + 0x10)] << 16;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_5C = lbl_2_data_C8F8[b->unk10] << 16;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 6;
         break;
     case 6:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) >= lbl_2_data_C904[*(s16*)(b + 0x10)]) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) >= lbl_2_data_C904[b->unk10]) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     case 7:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     case 1:
     case 4:
@@ -1471,54 +1472,54 @@ void fn_2_36D04(u8* a, u8* b) {
 }
 
 // fn_2_36750, size:0x22C
-void fn_2_36750(u8* a, u8* b) {
-    u8* p;
+void fn_2_36750(MenuTask* a, MenuItemState* b) {
+    LayoutObj* p;
     s16 v;
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     case 2:
-        if (*(s16*)(b + 0xA) == 0) {
-            v = *(s16*)(lbl_2_bss_1A824C[0] + 0x1972AA);
+        if (b->index == 0) {
+            v = lbl_2_bss_1A824C->_1972AA;
             if (v != 0xA) {
-                fn_800363D8(a, *(s16*)(b + 0xE), 1, 0x54, v);
+                fn_800363D8(a, b->offset, 1, 0x54, v);
             }
         } else {
-            fn_800363D8(a, *(s16*)(b + 0xE), 1, 0x54, lbl_2_bss_1A8248[0][0x441C]);
+            fn_800363D8(a, b->offset, 1, 0x54, lbl_2_bss_1A8248->_441C);
         }
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) |= 2;
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 1;
-        *(s16*)(b + 4) = 3;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags |= 2;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 1;
+        b->state = 3;
         break;
     case 3:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) >= 0x15) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 0x25;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) >= 0x15) {
+            p->_68 = 0;
+            b->state = 0x25;
         }
         break;
     case 5:
-        lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2][0x68] = 4;
-        *(s16*)(b + 4) = 6;
+        lbl_80371C30[a->baseIdx + b->offset].obj->_68 = 4;
+        b->state = 6;
         break;
     case 6:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-            p[0x68] = 0;
-            *(s16*)(b + 4) = 7;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        if ((p->_5C >> 16) == 0) {
+            p->_68 = 0;
+            b->state = 7;
         }
         break;
     case 7:
-        p = lbl_80371C30[(*(u16*)(a + 0x14) + *(s16*)(b + 0xE)) * 2];
-        *(u32*)(p + 0x54) &= ~2;
+        p = lbl_80371C30[a->baseIdx + b->offset].obj;
+        p->flags &= ~2;
         break;
     case 1:
     case 4:
@@ -1556,10 +1557,10 @@ extern void fn_800ADC40(void*, s32);
 // fn_2_37460, size:0x1D0
 void fn_2_37460(void) {
     Fn37460Data* d = &lbl_2_bss_15A0;
-    u8* o = lbl_803CC1B8;
+    MenuScreenTask* o = lbl_803CC1B8;
     void* p;
     s32 sz;
-    switch ((s8)o[0x28]) {
+    switch ((s8)o->step) {
     case 0:
         fn_2_4E824();
         p = _OSAllocFromHeap(0x20, 0x1C0);
@@ -1569,12 +1570,12 @@ void fn_2_37460(void) {
         p = _OSAllocFromHeap(0x20, 0x400000);
         d->alt = p;
         fn_800ADC40(p, d->size);
-        o[0x28]++;
+        o->step++;
         return;
     case 1:
         if (fn_800ADB04(lbl_2_data_12180, d->heap, 1, 0) != 0) {
             fn_80009018(d->heap);
-            o[0x28]++;
+            o->step++;
         }
         break;
     case 2:
@@ -1584,14 +1585,14 @@ void fn_2_37460(void) {
             d->buf = p;
             fn_800AD500(d->heap, p);
             fn_800AD95C(d->heap, 1);
-            o[0x28]++;
+            o->step++;
             return;
         }
         break;
     case 3:
         fn_800AD070();
         if (fn_800AD780(d->heap) != 0) {
-            o[0x28]++;
+            o->step++;
             return;
         }
         break;
@@ -1600,63 +1601,63 @@ void fn_2_37460(void) {
             fn_80009018(NULL);
             fn_800AD9F4(d->heap);
             fn_800ADBFC();
-            o[0x28]++;
+            o->step++;
             return;
         }
         break;
     case 5:
         fn_2_4E7EC();
-        p = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)((u8*)p + 0x10) = 1;
+        p = lbl_803CC1B8->parent;
+        ((MenuScreenTask*)p)->signal = 1;
         fn_800B0A14_removeQueue(p);
-        o[0x28] = 0;
+        o->step = 0;
         return;
     }
 }
 
 // fn_2_38A40, size:0x1D4
 void fn_2_38A40(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    switch (p->step) {
     case 0:
-        lbl_2_bss_1A8248[0][0x44F2] = 3;
-        *(s16*)(p + 0x14) = 0xF;
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19729C) != 0) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x264C] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x264D] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x264E] = 1;
+        lbl_2_bss_1A8248->_44F2 = 3;
+        p->counter = 0xF;
+        if (lbl_2_bss_1A824C->_19729C != 0) {
+            lbl_2_bss_1A8234->layerFlags[1][2] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][3] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][4] = 1;
         }
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19729E) != 0) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x2652] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2653] = 1;
+        if (lbl_2_bss_1A824C->_19729E != 0) {
+            lbl_2_bss_1A8234->layerFlags[1][8] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][9] = 1;
         }
-        if ((s8)lbl_2_bss_1A824C[0][0x1978FA] == 0) {
-            *(u32*)(lbl_2_bss_1A824C[0] + 0x1976A8) = fn_80062890(0x11);
+        if ((s8)lbl_2_bss_1A824C->_1978FA == 0) {
+            lbl_2_bss_1A824C->_1976A8 = fn_80062890(0x11);
         }
-        lbl_2_bss_1A824C[0][0x1978FA] = 0;
-        p[0x28] = 1;
+        lbl_2_bss_1A824C->_1978FA = 0;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
@@ -1664,540 +1665,540 @@ extern void fn_2_4A6E8(void);
 
 // fn_2_3BA40, size:0x1E4
 void fn_2_3BA40(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    u8* e;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    MenuPad* e;
+    switch (p->step) {
     case 0:
-        *(s16*)(p + 0x14) = 0x3C;
+        p->counter = 0x3C;
         fn_2_4A6E8();
-        lbl_2_bss_1A8234[0][0x160000 + 0x2669] = 1;
-        lbl_2_bss_1A8234[0][0x160000 + 0x266A] = 1;
-        lbl_2_bss_1A8234[0][0x160000 + 0x266B] = 1;
-        lbl_2_bss_1A8234[0][0x160000 + 0x266C] = 1;
-        lbl_2_bss_1A8234[0][0x160000 + 0x266D] = 1;
-        p[0x28] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][31] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][32] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][33] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][34] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][35] = 1;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        e = (u8*)&lbl_803C77B8;
-        e += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
-        if (*(u16*)(e + 2) & 0x300) {
-            *(s16*)(p + 0x14) = 0x32;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2853] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2854] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2855] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2856] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2857] = 1;
-            p[0x28] = 3;
+        e = (MenuPad*)&lbl_803C77B8;
+        e += lbl_2_bss_1A824C->port;
+        if (e->down & 0x300) {
+            p->counter = 0x32;
+            lbl_2_bss_1A8234->layerFlags[8][31] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][32] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][33] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][34] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][35] = 1;
+            p->step = 3;
         }
         break;
     case 3: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 4;
+            p->step = 4;
         }
         break;
     }
     case 4:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_38824, size:0x21C
 void fn_2_38824(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    switch (p->step) {
     case 0:
-        *(s16*)(p + 0x14) = 0xA;
-        if (*(s16*)(p + 0x18) == 1) {
-            *(s16*)(p + 0x18) = 0;
-            switch (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972AC)) {
+        p->counter = 0xA;
+        if (p->timer == 1) {
+            p->timer = 0;
+            switch (lbl_2_bss_1A824C->_1972AC[0]) {
             case 0:
-                lbl_2_bss_1A8234[0][0x160000 + 0x264F] = 1;
+                lbl_2_bss_1A8234->layerFlags[1][5] = 1;
                 break;
             case 1:
-                lbl_2_bss_1A8234[0][0x160000 + 0x2650] = 1;
+                lbl_2_bss_1A8234->layerFlags[1][6] = 1;
                 break;
             case 2:
             case 3:
-                lbl_2_bss_1A8234[0][0x160000 + 0x2651] = 1;
+                lbl_2_bss_1A8234->layerFlags[1][7] = 1;
                 break;
             }
         }
-        if (*(s16*)(p + 0x1A) == 1) {
-            *(s16*)(p + 0x1A) = 0;
-            switch (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972AE)) {
+        if (p->_1A == 1) {
+            p->_1A = 0;
+            switch (lbl_2_bss_1A824C->_1972AC[1]) {
             case 0:
-                lbl_2_bss_1A8234[0][0x160000 + 0x2654] = 1;
+                lbl_2_bss_1A8234->layerFlags[1][10] = 1;
                 break;
             case 1:
-                lbl_2_bss_1A8234[0][0x160000 + 0x2655] = 1;
+                lbl_2_bss_1A8234->layerFlags[1][11] = 1;
                 break;
             case 2:
             case 3:
-                lbl_2_bss_1A8234[0][0x160000 + 0x2656] = 1;
+                lbl_2_bss_1A8234->layerFlags[1][12] = 1;
                 break;
             }
         }
-        p[0x28] = 1;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_382A0, size:0x298
 void fn_2_382A0(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
     s16 m;
-    switch (*(s8*)(p + 0x28)) {
+    switch (p->step) {
     case 0:
-        *(s16*)(p + 0x14) = 5;
-        m = *(s16*)(p + 0x16);
-        if ((m == 0 || m == 2) && *(s16*)(lbl_2_bss_1A824C[0] + 0x1972A4) != 0) {
-            switch (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972AC)) {
+        p->counter = 5;
+        m = p->arg;
+        if ((m == 0 || m == 2) && lbl_2_bss_1A824C->_1972A4 != 0) {
+            switch (lbl_2_bss_1A824C->_1972AC[0]) {
             case 0:
-                lbl_2_bss_1A8234[0][0x160000 + 0x2839] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][5] = 1;
                 break;
             case 1:
-                lbl_2_bss_1A8234[0][0x160000 + 0x283A] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][6] = 1;
                 break;
             case 2:
             case 3:
-                lbl_2_bss_1A8234[0][0x160000 + 0x283B] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][7] = 1;
                 break;
             }
         }
-        m = *(s16*)(p + 0x16);
-        if ((m == 1 || m == 2) && *(s16*)(lbl_2_bss_1A824C[0] + 0x1972A6) != 0) {
-            switch (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972AE)) {
+        m = p->arg;
+        if ((m == 1 || m == 2) && lbl_2_bss_1A824C->_1972A6 != 0) {
+            switch (lbl_2_bss_1A824C->_1972AC[1]) {
             case 0:
-                lbl_2_bss_1A8234[0][0x160000 + 0x283E] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][10] = 1;
                 break;
             case 1:
-                lbl_2_bss_1A8234[0][0x160000 + 0x283F] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][11] = 1;
                 break;
             case 2:
             case 3:
-                lbl_2_bss_1A8234[0][0x160000 + 0x2840] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][12] = 1;
                 break;
             }
         }
-        p[0x28] = 1;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        m = *(s16*)(p + 0x16);
+        m = p->arg;
         if (m == 0 || m == 2) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1972A4) = 0;
+            lbl_2_bss_1A824C->_1972A4 = 0;
         }
-        m = *(s16*)(p + 0x16);
+        m = p->arg;
         if (m == 1 || m == 2) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1972A6) = 0;
+            lbl_2_bss_1A824C->_1972A6 = 0;
         }
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_38538, size:0x2EC
 void fn_2_38538(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    switch (*(s8*)(p + 0x28)) {
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    switch (p->step) {
     case 0:
-        *(s16*)(p + 0x14) = 0x1E;
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19729C) != 0) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x2836] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2837] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2838] = 1;
+        p->counter = 0x1E;
+        if (lbl_2_bss_1A824C->_19729C != 0) {
+            lbl_2_bss_1A8234->layerFlags[8][2] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][3] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][4] = 1;
         }
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972A4) != 0) {
-            switch (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972AC)) {
+        if (lbl_2_bss_1A824C->_1972A4 != 0) {
+            switch (lbl_2_bss_1A824C->_1972AC[0]) {
             case 0:
-                lbl_2_bss_1A8234[0][0x160000 + 0x2839] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][5] = 1;
                 break;
             case 1:
-                lbl_2_bss_1A8234[0][0x160000 + 0x283A] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][6] = 1;
                 break;
             case 2:
             case 3:
-                lbl_2_bss_1A8234[0][0x160000 + 0x283B] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][7] = 1;
                 break;
             }
         }
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x19729E) != 0) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x283C] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x283D] = 1;
+        if (lbl_2_bss_1A824C->_19729E != 0) {
+            lbl_2_bss_1A8234->layerFlags[8][8] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][9] = 1;
         }
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972A6) != 0) {
-            switch (*(s16*)(lbl_2_bss_1A824C[0] + 0x1972AE)) {
+        if (lbl_2_bss_1A824C->_1972A6 != 0) {
+            switch (lbl_2_bss_1A824C->_1972AC[1]) {
             case 0:
-                lbl_2_bss_1A8234[0][0x160000 + 0x283E] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][10] = 1;
                 break;
             case 1:
-                lbl_2_bss_1A8234[0][0x160000 + 0x283F] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][11] = 1;
                 break;
             case 2:
             case 3:
-                lbl_2_bss_1A8234[0][0x160000 + 0x2840] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][12] = 1;
                 break;
             }
         }
-        *(u32*)(lbl_2_bss_1A824C[0] + 0x1976A8) = fn_80062890(0x11);
-        p[0x28] = 1;
+        lbl_2_bss_1A824C->_1976A8 = fn_80062890(0x11);
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        lbl_2_bss_1A8248[0][0x44F2] = 0;
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1972A6) = 0;
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1972A4) = 0;
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        lbl_2_bss_1A8248->_44F2 = 0;
+        lbl_2_bss_1A824C->_1972A6 = 0;
+        lbl_2_bss_1A824C->_1972A4 = 0;
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
-#define FN353FC_ENT(a, b) lbl_80371C30[(*(u16*)((a) + 0x14) + *(s16*)((b) + 0xE)) * 2]
+#define FN353FC_ENT(a, b) lbl_80371C30[(a)->baseIdx + (b)->offset].obj
 
 // fn_2_353FC, size:0x358
-void fn_2_353FC(u8* a, u8* b) {
+void fn_2_353FC(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = FN353FC_ENT(a, b);
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = FN353FC_ENT(a, b);
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2:
-        *(u32*)(FN353FC_ENT(a, b) + 0x54) |= 2;
-        *(u32*)(FN353FC_ENT(a, b) + 0x5C) = 0;
-        FN353FC_ENT(a, b)[0x68] = 1;
-        *(s16*)(b + 4) = 3;
+        FN353FC_ENT(a, b)->flags |= 2;
+        FN353FC_ENT(a, b)->_5C = 0;
+        FN353FC_ENT(a, b)->_68 = 1;
+        b->state = 3;
         break;
     case 3:
-        if ((*(u32*)(FN353FC_ENT(a, b) + 0x5C) >> 16) >= 5) {
-            *(s16*)(b + 4) = 0x25;
+        if ((FN353FC_ENT(a, b)->_5C >> 16) >= 5) {
+            b->state = 0x25;
         }
         break;
     case 0x25:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DA) == 0) {
-            u8* p = FN353FC_ENT(a, b);
-            if ((*(u32*)(p + 0x5C) >> 16) <= 5) {
-                *(u32*)(p + 0x5C) = 0x50000;
-                FN353FC_ENT(a, b)[0x68] = 0;
+        if (lbl_2_bss_1A824C->_1976DA == 0) {
+            LayoutObj* p = FN353FC_ENT(a, b);
+            if ((p->_5C >> 16) <= 5) {
+                p->_5C = 0x50000;
+                FN353FC_ENT(a, b)->_68 = 0;
             } else {
-                p[0x68] = 4;
+                p->_68 = 4;
             }
         } else {
-            u8* p = FN353FC_ENT(a, b);
-            if ((*(u32*)(p + 0x5C) >> 16) >= 0xA) {
-                *(u32*)(p + 0x5C) = 0xA0000;
-                FN353FC_ENT(a, b)[0x68] = 0;
+            LayoutObj* p = FN353FC_ENT(a, b);
+            if ((p->_5C >> 16) >= 0xA) {
+                p->_5C = 0xA0000;
+                FN353FC_ENT(a, b)->_68 = 0;
             } else {
-                p[0x68] = 1;
+                p->_68 = 1;
             }
         }
         break;
     case 5:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DA) == 0) {
-            FN353FC_ENT(a, b)[0x68] = 4;
+        if (lbl_2_bss_1A824C->_1976DA == 0) {
+            FN353FC_ENT(a, b)->_68 = 4;
         } else {
-            FN353FC_ENT(a, b)[0x68] = 1;
+            FN353FC_ENT(a, b)->_68 = 1;
         }
-        *(s16*)(b + 4) = 6;
+        b->state = 6;
         break;
     case 6:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DA) == 0) {
-            u8* p = FN353FC_ENT(a, b);
-            if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-                p[0x68] = 0;
-                *(s16*)(b + 4) = 7;
+        if (lbl_2_bss_1A824C->_1976DA == 0) {
+            LayoutObj* p = FN353FC_ENT(a, b);
+            if ((p->_5C >> 16) == 0) {
+                p->_68 = 0;
+                b->state = 7;
             }
         } else {
-            u8* p = FN353FC_ENT(a, b);
-            if ((*(u32*)(p + 0x5C) >> 16) >= 0xF) {
-                p[0x68] = 0;
-                *(s16*)(b + 4) = 7;
+            LayoutObj* p = FN353FC_ENT(a, b);
+            if ((p->_5C >> 16) >= 0xF) {
+                p->_68 = 0;
+                b->state = 7;
             }
         }
         break;
     case 7:
-        *(u32*)(FN353FC_ENT(a, b) + 0x54) &= ~2;
+        FN353FC_ENT(a, b)->flags &= ~2;
         break;
     }
 }
 
 // fn_2_35A14, size:0x3A0
-void fn_2_35A14(u8* a, u8* b) {
+void fn_2_35A14(MenuTask* a, MenuItemState* b) {
     s16 r = fn_2_53BC8(b);
     if (r != -1) {
-        *(s16*)(b + 4) = r;
+        b->state = r;
     }
-    switch (*(s16*)(b + 4)) {
+    switch (b->state) {
     case 0: {
-        u8* p = FN353FC_ENT(a, b);
-        *(u32*)(p + 0x54) &= ~2;
-        *(s16*)(b + 4) = 0x26;
+        LayoutObj* p = FN353FC_ENT(a, b);
+        p->flags &= ~2;
+        b->state = 0x26;
         break;
     }
     case 2:
-        fn_800363D8(a, *(s16*)(b + 0xE), 1, 0xCF, *(s16*)(b + 0x10));
-        *(u32*)(FN353FC_ENT(a, b) + 0x54) |= 2;
-        *(u32*)(FN353FC_ENT(a, b) + 0x5C) = 0;
-        FN353FC_ENT(a, b)[0x68] = 1;
-        *(s16*)(b + 4) = 3;
+        fn_800363D8(a, b->offset, 1, 0xCF, b->unk10);
+        FN353FC_ENT(a, b)->flags |= 2;
+        FN353FC_ENT(a, b)->_5C = 0;
+        FN353FC_ENT(a, b)->_68 = 1;
+        b->state = 3;
         break;
     case 3: {
-        u8* p = FN353FC_ENT(a, b);
-        if ((*(u32*)(p + 0x5C) >> 16) >= 3) {
-            *(u32*)(p + 0x5C) = 0x30000;
-            FN353FC_ENT(a, b)[0x68] = 0;
-            *(s16*)(b + 4) = 0x25;
+        LayoutObj* p = FN353FC_ENT(a, b);
+        if ((p->_5C >> 16) >= 3) {
+            p->_5C = 0x30000;
+            FN353FC_ENT(a, b)->_68 = 0;
+            b->state = 0x25;
         }
         break;
     }
     case 0x25:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) == *(s16*)(b + 0xA)) {
-            u8* p = FN353FC_ENT(a, b);
-            if ((*(u32*)(p + 0x5C) >> 16) >= 8) {
-                *(u32*)(p + 0x5C) = 0x80000;
-                FN353FC_ENT(a, b)[0x68] = 0;
+        if (lbl_2_bss_1A824C->_1976D8 == b->index) {
+            LayoutObj* p = FN353FC_ENT(a, b);
+            if ((p->_5C >> 16) >= 8) {
+                p->_5C = 0x80000;
+                FN353FC_ENT(a, b)->_68 = 0;
             } else {
-                p[0x68] = 1;
+                p->_68 = 1;
             }
         } else {
-            u8* p = FN353FC_ENT(a, b);
-            if ((*(u32*)(p + 0x5C) >> 16) <= 3) {
-                *(u32*)(p + 0x5C) = 0x30000;
-                FN353FC_ENT(a, b)[0x68] = 0;
+            LayoutObj* p = FN353FC_ENT(a, b);
+            if ((p->_5C >> 16) <= 3) {
+                p->_5C = 0x30000;
+                FN353FC_ENT(a, b)->_68 = 0;
             } else {
-                p[0x68] = 4;
+                p->_68 = 4;
             }
         }
         break;
     case 5:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) == *(s16*)(b + 0xA)) {
-            FN353FC_ENT(a, b)[0x68] = 1;
+        if (lbl_2_bss_1A824C->_1976D8 == b->index) {
+            FN353FC_ENT(a, b)->_68 = 1;
         } else {
-            FN353FC_ENT(a, b)[0x68] = 4;
+            FN353FC_ENT(a, b)->_68 = 4;
         }
-        *(s16*)(b + 4) = 6;
+        b->state = 6;
         break;
     case 6:
-        if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976D8) == *(s16*)(b + 0xA)) {
-            u8* p = FN353FC_ENT(a, b);
-            if ((*(u32*)(p + 0x5C) >> 16) >= 0xB) {
-                p[0x68] = 0;
-                *(s16*)(b + 4) = 7;
+        if (lbl_2_bss_1A824C->_1976D8 == b->index) {
+            LayoutObj* p = FN353FC_ENT(a, b);
+            if ((p->_5C >> 16) >= 0xB) {
+                p->_68 = 0;
+                b->state = 7;
             }
         } else {
-            u8* p = FN353FC_ENT(a, b);
-            if ((*(u32*)(p + 0x5C) >> 16) == 0) {
-                p[0x68] = 0;
-                *(s16*)(b + 4) = 7;
+            LayoutObj* p = FN353FC_ENT(a, b);
+            if ((p->_5C >> 16) == 0) {
+                p->_68 = 0;
+                b->state = 7;
             }
         }
         break;
     case 7:
-        *(u32*)(FN353FC_ENT(a, b) + 0x54) &= ~2;
+        FN353FC_ENT(a, b)->flags &= ~2;
         break;
     }
 }
 
 // fn_2_38F48, size:0x26C
 void fn_2_38F48(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
-    u8* e;
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
+    MenuPad* e;
     s32 last;
-    switch (*(s8*)(p + 0x28)) {
+    switch (p->step) {
     case 0:
         last = 0;
-        if (lbl_2_bss_1A8244[0][0xE4 + lbl_2_bss_1A8248[0][0x4415]] == 0 && lbl_2_bss_1A8248[0][0x4415] < 3) {
+        if (lbl_2_bss_1A8244->_E4[lbl_2_bss_1A8248->_4415] == 0 && lbl_2_bss_1A8248->_4415 < 3) {
             last = 1;
         }
         fn_2_38EA8();
         if (last) {
-            *(s16*)(p + 0x14) = 0x12;
-            lbl_2_bss_1A8234[0][0x160000 + 0x264F] = 1;
+            p->counter = 0x12;
+            lbl_2_bss_1A8234->layerFlags[1][5] = 1;
             fn_80062890(0x38);
-            p[0x28] = 1;
+            p->step = 1;
         } else {
-            p[0x28] = 4;
+            p->step = 4;
         }
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        e = (u8*)&lbl_803C77B8;
-        e += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
-        if (*(u16*)(e + 2) & 0x100) {
-            *(s16*)(p + 0x14) = 0x12;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2839] = 1;
-            p[0x28] = 3;
+        e = (MenuPad*)&lbl_803C77B8;
+        e += lbl_2_bss_1A824C->port;
+        if (e->down & 0x100) {
+            p->counter = 0x12;
+            lbl_2_bss_1A8234->layerFlags[8][5] = 1;
+            p->step = 3;
         }
         break;
     case 3: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 4;
+            p->step = 4;
         }
         break;
     }
     case 4:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 
 // fn_2_391B4, size:0x254
 void fn_2_391B4(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
     u16 btn;
-    switch (*(s8*)(p + 0x28)) {
+    switch (p->step) {
     case 0:
-        *(s16*)(p + 0x14) = 0x1E;
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1976E0) = 0;
-        p[0x28] = 1;
+        p->counter = 0x1E;
+        lbl_2_bss_1A824C->_1976E0 = 0;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        btn = ((u16*)((u8*)&lbl_803C77B8 + 4))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10];
-        if ((btn & 1) && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976E0) == 1) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1976E0) = 0;
-        } else if ((btn & 2) && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976E0) == 0) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1976E0) = 1;
+        btn = MENUPAD_U16(repeat, lbl_2_bss_1A824C->port);
+        if ((btn & 1) && lbl_2_bss_1A824C->_1976E0 == 1) {
+            lbl_2_bss_1A824C->_1976E0 = 0;
+        } else if ((btn & 2) && lbl_2_bss_1A824C->_1976E0 == 0) {
+            lbl_2_bss_1A824C->_1976E0 = 1;
         }
-        btn = ((u16*)((u8*)&lbl_803C77B8 + 2))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10];
+        btn = MENUPAD_U16(down, lbl_2_bss_1A824C->port);
         if (btn & 0x100) {
-            p[0x28] = 3;
+            p->step = 3;
         } else if (btn & 0x200) {
-            if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976E0) == 0) {
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1976E0) = 1;
+            if (lbl_2_bss_1A824C->_1976E0 == 0) {
+                lbl_2_bss_1A824C->_1976E0 = 1;
             } else {
-                p[0x28] = 3;
+                p->step = 3;
             }
         }
-        if (*(s16*)(p + 0x16) == 0) {
+        if (p->arg == 0) {
             fn_8000FF04(4, 0x2E0, 0x64, 0xC8, 9, -1, 0);
         } else {
-            fn_8000FF04(4, lbl_2_bss_1A8248[0][0x4420] + 0x2ED, 0x64, 0xC8, 9, -1, 0);
+            fn_8000FF04(4, lbl_2_bss_1A8248->_4420 + 0x2ED, 0x64, 0xC8, 9, -1, 0);
         }
         break;
     case 3:
-        *(s16*)(p + 0x14) = 0x10;
-        p[0x28] = 4;
+        p->counter = 0x10;
+        p->step = 4;
         break;
     case 4: {
-        if ((*(s16*)(p + 0x14))-- == 0) {
-            if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976E0) == 0) {
-                q = *(u8**)(lbl_803CC1B8 + 0xC);
-                *(s16*)(q + 0x10) = 1;
+        if ((p->counter)-- == 0) {
+            if (lbl_2_bss_1A824C->_1976E0 == 0) {
+                q = lbl_803CC1B8->parent;
+                q->signal = 1;
             } else {
-                q = *(u8**)(lbl_803CC1B8 + 0xC);
-                *(s16*)(q + 0x10) = 2;
+                q = lbl_803CC1B8->parent;
+                q->signal = 2;
             }
             fn_800B0A14_removeQueue(q);
-            p[0x28] = 0;
+            p->step = 0;
         }
         break;
     }
@@ -2206,57 +2207,57 @@ void fn_2_391B4(void) {
 
 // fn_2_397AC, size:0x214
 void fn_2_397AC(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
     u16 btn;
-    switch (*(s8*)(p + 0x28)) {
+    switch (p->step) {
     case 0:
-        *(s16*)(p + 0x14) = 0x1E;
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DC) = 0;
-        p[0x28] = 1;
+        p->counter = 0x1E;
+        lbl_2_bss_1A824C->_1976DC = 0;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        btn = ((u16*)((u8*)&lbl_803C77B8 + 4))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10];
-        if ((btn & 1) && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DC) == 1) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DC) = 0;
-        } else if ((btn & 2) && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DC) == 0) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DC) = 1;
+        btn = MENUPAD_U16(repeat, lbl_2_bss_1A824C->port);
+        if ((btn & 1) && lbl_2_bss_1A824C->_1976DC == 1) {
+            lbl_2_bss_1A824C->_1976DC = 0;
+        } else if ((btn & 2) && lbl_2_bss_1A824C->_1976DC == 0) {
+            lbl_2_bss_1A824C->_1976DC = 1;
         }
-        btn = ((u16*)((u8*)&lbl_803C77B8 + 2))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10];
+        btn = MENUPAD_U16(down, lbl_2_bss_1A824C->port);
         if (btn & 0x100) {
-            p[0x28] = 3;
+            p->step = 3;
         } else if (btn & 0x200) {
-            if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DC) == 0) {
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DC) = 1;
+            if (lbl_2_bss_1A824C->_1976DC == 0) {
+                lbl_2_bss_1A824C->_1976DC = 1;
             } else {
-                p[0x28] = 3;
+                p->step = 3;
             }
         }
         fn_8000FF04(4, 0x2DF, 0x64, 0xC8, 9, -1, 0);
         break;
     case 3:
-        *(s16*)(p + 0x14) = 0x10;
-        p[0x28] = 4;
+        p->counter = 0x10;
+        p->step = 4;
         break;
     case 4: {
-        if ((*(s16*)(p + 0x14))-- == 0) {
-            if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DC) == 0) {
-                q = *(u8**)(lbl_803CC1B8 + 0xC);
-                *(s16*)(q + 0x10) = 1;
+        if ((p->counter)-- == 0) {
+            if (lbl_2_bss_1A824C->_1976DC == 0) {
+                q = lbl_803CC1B8->parent;
+                q->signal = 1;
             } else {
-                q = *(u8**)(lbl_803CC1B8 + 0xC);
-                *(s16*)(q + 0x10) = 2;
+                q = lbl_803CC1B8->parent;
+                q->signal = 2;
             }
             fn_800B0A14_removeQueue(q);
-            p[0x28] = 0;
+            p->step = 0;
         }
         break;
     }
@@ -2274,18 +2275,18 @@ extern MovieCue lbl_2_data_34E0[2][8];
 extern void fn_800AD830(void*);
 extern s32 fn_800AED24(void);
 
-#define MOVIE_FRAME (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976B0))
-#define MOVIE_TICK (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976B4))
-#define MOVIE_CUE (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976B8))
-#define MOVIE_CUE_ON (*(s32*)(lbl_2_bss_1A824C[0] + 0x1976BC))
+#define MOVIE_FRAME (lbl_2_bss_1A824C->_1976B0)
+#define MOVIE_TICK (lbl_2_bss_1A824C->_1976B4)
+#define MOVIE_CUE (lbl_2_bss_1A824C->_1976B8)
+#define MOVIE_CUE_ON (lbl_2_bss_1A824C->_1976BC)
 
 // fn_2_37630, size:0x3A0
 void fn_2_37630(void) {
     Fn37460Data* d = &lbl_2_bss_15A0;
-    u8* o = lbl_803CC1B8;
+    MenuScreenTask* o = lbl_803CC1B8;
     void* p;
     s32 sz;
-    switch ((s8)o[0x28]) {
+    switch ((s8)o->step) {
     case 0:
         MOVIE_FRAME = 0;
         MOVIE_TICK = 0;
@@ -2299,12 +2300,12 @@ void fn_2_37630(void) {
         p = _OSAllocFromHeap(0x20, 0x400000);
         d->alt = p;
         fn_800ADC40(p, d->size);
-        o[0x28]++;
+        o->step++;
         return;
     case 1:
         if (fn_800ADB04(lbl_2_data_12170, d->heap, 1, 0) != 0) {
             fn_80009018(d->heap);
-            o[0x28]++;
+            o->step++;
         }
         break;
     case 2:
@@ -2314,17 +2315,17 @@ void fn_2_37630(void) {
             d->buf = p;
             fn_800AD500(d->heap, p);
             fn_800AD95C(d->heap, 1);
-            o[0x28]++;
+            o->step++;
             return;
         }
         break;
     case 3: {
-        u8* e = (u8*)&lbl_803C77B8;
-        e += *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
-        if (*(u16*)(e + 2) & 0x1000) {
+        MenuPad* e = (MenuPad*)&lbl_803C77B8;
+        e += lbl_2_bss_1A824C->port;
+        if (e->down & 0x1000) {
             d->skipped = 1;
             fn_800AD830(d->heap);
-            o[0x28]++;
+            o->step++;
             return;
         }
         MOVIE_TICK++;
@@ -2332,21 +2333,21 @@ void fn_2_37630(void) {
         if (fn_800AED24() == 1) {
             s32 sel;
             MOVIE_FRAME++;
-            sel = lbl_2_bss_1A8248[0][0x441C] == 5;
+            sel = lbl_2_bss_1A8248->_441C == 5;
             if (MOVIE_FRAME == lbl_2_data_34E0[sel][MOVIE_CUE].start && MOVIE_CUE_ON == 0 &&
                 lbl_2_data_34E0[sel][MOVIE_CUE].start != -1) {
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x19774C) = lbl_2_data_34E0[sel][MOVIE_CUE].text;
+                lbl_2_bss_1A824C->_19774C = lbl_2_data_34E0[sel][MOVIE_CUE].text;
                 MOVIE_CUE_ON = 1;
-                lbl_2_bss_1A8234[0][0x160000 + 0x264E] = 1;
+                lbl_2_bss_1A8234->layerFlags[1][4] = 1;
             } else if (MOVIE_FRAME == lbl_2_data_34E0[sel][MOVIE_CUE].end && MOVIE_CUE_ON == 1 &&
                        lbl_2_data_34E0[sel][MOVIE_CUE].start != -1) {
-                lbl_2_bss_1A8234[0][0x160000 + 0x2838] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][4] = 1;
                 MOVIE_CUE++;
                 MOVIE_CUE_ON = 0;
             }
         }
         if (fn_800AD780(d->heap) != 0) {
-            o[0x28]++;
+            o->step++;
             return;
         }
         break;
@@ -2356,21 +2357,21 @@ void fn_2_37630(void) {
             fn_80009018(NULL);
             fn_800AD9F4(d->heap);
             fn_800ADBFC();
-            o[0x28]++;
+            o->step++;
             return;
         }
         break;
     case 5:
         fn_2_4E7EC();
-        p = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)((u8*)p + 0x10) = 1;
+        p = lbl_803CC1B8->parent;
+        ((MenuScreenTask*)p)->signal = 1;
         fn_800B0A14_removeQueue(p);
-        o[0x28] = 0;
+        o->step = 0;
         return;
     }
 }
 
-extern u8* lbl_2_bss_1A8230[];
+extern MenuDrawArea* lbl_2_bss_1A8230;
 extern GXColor lbl_2_data_12270;
 extern void fn_2_54474(void);
 extern BOOL fn_80068514(u32 frames, u8 target);
@@ -2379,12 +2380,12 @@ extern void fn_800A86B4(s32 cmd);
 
 // fn_2_379D0, size:0x3A0
 void fn_2_379D0(void) {
-    u8* o = lbl_803CC1B8;
-    u8* q;
-    switch ((s8)o[0x28]) {
+    MenuScreenTask* o = lbl_803CC1B8;
+    MenuScreenTask* q;
+    switch ((s8)o->step) {
     case 0:
         if (fn_2_4EABC() == 1) {
-            o[0x28] = 1;
+            o->step = 1;
         }
         break;
     case 1: {
@@ -2392,87 +2393,87 @@ void fn_2_379D0(void) {
         GXSetCopyClear(clear, 0xFFFFFF);
         changeScene(1, 6);
         fn_2_515DC(4);
-        lbl_2_bss_1A8234[0][0x160000 + 0x2992] = 0;
-        lbl_2_bss_1A8230[0][0x32A86] = 0;
+        lbl_2_bss_1A8234->done = 0;
+        lbl_2_bss_1A8230->_32A86 = 0;
         fn_2_54474();
         fn_2_245C8();
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1976E4) = 0x168;
+        lbl_2_bss_1A824C->_1976E4 = 0x168;
         lbl_2_bss_15A0.skipped = 0;
-        o[0x28] = 2;
+        o->step = 2;
         break;
     }
     case 2:
-        o[0x28] = 3;
+        o->step = 3;
         break;
     case 3:
-        if (lbl_8037169C[0x12] != 0) {
+        if (lbl_8037169C.done != 0) {
             q = fn_800B0A5C_insertQueue(fn_2_37630, 2);
-            q[0x28] = 0;
-            *(s16*)(o + 0x10) = 0;
-            o[0x28] = 4;
+            q->step = 0;
+            o->signal = 0;
+            o->step = 4;
         }
         break;
     case 4:
-        if (*(s16*)(o + 0x10) != 0) {
+        if (o->signal != 0) {
             if (lbl_2_bss_15A0.skipped) {
                 changeScene(3, 6);
-                lbl_2_bss_1A8234[0][0x160000 + 0x2838] = 1;
-                lbl_2_bss_1A8234[0][0x160000 + 0x2839] = 1;
-                lbl_2_bss_1A8234[0][0x160000 + 0x2835] = 1;
-                lbl_2_bss_1A8234[0][0x160000 + 0x2837] = 1;
-                o[0x28] = 7;
+                lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][5] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][1] = 1;
+                lbl_2_bss_1A8234->layerFlags[8][3] = 1;
+                o->step = 7;
             } else {
                 fn_8006877C(0xB);
-                if (lbl_2_bss_1A8248[0][0x441C] == 5) {
+                if (lbl_2_bss_1A8248->_441C == 5) {
                     fn_2_422FC(1);
                 } else {
                     fn_2_422FC(0);
                 }
                 q = fn_800B0A5C_insertQueue(fn_2_42388, 2);
-                q[0x28] = 0;
-                *(s16*)(o + 0x10) = 0;
-                o[0x28] = 5;
+                q->step = 0;
+                o->signal = 0;
+                o->step = 5;
             }
         }
         break;
     case 5: {
         BOOL fading = fn_80068514(0x78, 0x7F);
-        if (*(s16*)(o + 0x10) == 1) {
-            lbl_2_bss_1A824C[0][0x19783F] = 0;
+        if (o->signal == 1) {
+            lbl_2_bss_1A824C->_19783F = 0;
             changeScene(3, 6);
-            lbl_2_bss_1A8234[0][0x160000 + 0x2838] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2839] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2835] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2837] = 1;
-            o[0x28] = 6;
+            lbl_2_bss_1A8234->layerFlags[8][4] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][5] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][1] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][3] = 1;
+            o->step = 6;
         }
-        if ((((u16*)((u8*)&lbl_803C77B8 + 2))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10] & 0x1000) && (u8)fading == 0) {
-            lbl_2_bss_1A824C[0][0x19783F] = 1;
+        if ((MENUPAD_U16(down, lbl_2_bss_1A824C->port) & 0x1000) && (u8)fading == 0) {
+            lbl_2_bss_1A824C->_19783F = 1;
         }
         break;
     }
     case 6:
         if (fn_8006862C(0x78, 0) == 0) {
-            o[0x28] = 7;
+            o->step = 7;
         }
         break;
     case 7:
-        if (lbl_8037169C[0x13] != 0) {
+        if (lbl_8037169C._13 != 0) {
             GXColor clear;
             fn_800A86B4(3);
             clear = lbl_2_data_12270;
             GXSetCopyClear(clear, 0xFFFFFF);
-            lbl_2_bss_1A8234[0][0x160000 + 0x2992] = 1;
-            lbl_2_bss_1A8230[0][0x32A86] = 1;
-            o[0x28] = 8;
+            lbl_2_bss_1A8234->done = 1;
+            lbl_2_bss_1A8230->_32A86 = 1;
+            o->step = 8;
         }
         break;
     case 8:
         fn_2_4E8E0();
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        o[0x28] = 0;
+        o->step = 0;
         break;
     }
 }
@@ -2482,87 +2483,87 @@ extern int sndFXStartEx(int, int, int, int);
 
 // fn_2_39408, size:0x3A4
 void fn_2_39408(void) {
-    u8* p = lbl_803CC1B8;
-    u8* q;
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
     u16 btn;
-    switch (*(s8*)(p + 0x28)) {
+    switch (p->step) {
     case 0:
-        switch (lbl_2_bss_1A824C[0][0x1972B6]) {
+        switch (lbl_2_bss_1A824C->_1972B6) {
         case 0:
-            lbl_2_bss_1A8234[0][0x160000 + 0x266E] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][36] = 1;
             break;
         case 1:
-            lbl_2_bss_1A8234[0][0x160000 + 0x266F] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][37] = 1;
             break;
         case 2:
-            lbl_2_bss_1A8234[0][0x160000 + 0x2670] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][38] = 1;
             break;
         }
-        *(s16*)(p + 0x14) = 0xA;
-        *(s16*)(p + 0x16) = 0;
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) = lbl_2_bss_1A824C[0][0x1972B7];
-        p[0x28] = 1;
+        p->counter = 0xA;
+        p->arg = 0;
+        lbl_2_bss_1A824C->_1976DE = lbl_2_bss_1A824C->_1972B7;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        btn = ((u16*)((u8*)&lbl_803C77B8 + 4))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10];
-        if ((btn & 1) && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 1) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) = 0;
+        btn = MENUPAD_U16(repeat, lbl_2_bss_1A824C->port);
+        if ((btn & 1) && lbl_2_bss_1A824C->_1976DE == 1) {
+            lbl_2_bss_1A824C->_1976DE = 0;
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
-        } else if ((btn & 2) && *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) = 1;
+        } else if ((btn & 2) && lbl_2_bss_1A824C->_1976DE == 0) {
+            lbl_2_bss_1A824C->_1976DE = 1;
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        btn = ((u16*)((u8*)&lbl_803C77B8 + 2))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10];
+        btn = MENUPAD_U16(down, lbl_2_bss_1A824C->port);
         if (btn & 0x100) {
             sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-            p[0x28] = 3;
+            p->step = 3;
         } else if (btn & 0x200) {
-            if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
-                *(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) = 1;
+            if (lbl_2_bss_1A824C->_1976DE == 0) {
+                lbl_2_bss_1A824C->_1976DE = 1;
             } else {
-                *(s16*)(p + 0x16) = 1;
-                p[0x28] = 3;
+                p->arg = 1;
+                p->step = 3;
             }
             sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
         }
         break;
     case 3:
-        switch (lbl_2_bss_1A824C[0][0x1972B6]) {
+        switch (lbl_2_bss_1A824C->_1972B6) {
         case 0:
-            lbl_2_bss_1A8234[0][0x160000 + 0x2858] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][36] = 1;
             break;
         case 1:
-            lbl_2_bss_1A8234[0][0x160000 + 0x2859] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][37] = 1;
             break;
         case 2:
-            lbl_2_bss_1A8234[0][0x160000 + 0x285A] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][38] = 1;
             break;
         }
-        *(s16*)(p + 0x14) = 0xA;
-        p[0x28] = 4;
+        p->counter = 0xA;
+        p->step = 4;
         break;
     case 4:
-        if ((*(s16*)(p + 0x14))-- == 0) {
-            if (*(s16*)(lbl_2_bss_1A824C[0] + 0x1976DE) == 0) {
-                q = *(u8**)(lbl_803CC1B8 + 0xC);
-                *(s16*)(q + 0x10) = 1;
-            } else if (*(s16*)(p + 0x16) == 0) {
-                q = *(u8**)(lbl_803CC1B8 + 0xC);
-                *(s16*)(q + 0x10) = 2;
+        if ((p->counter)-- == 0) {
+            if (lbl_2_bss_1A824C->_1976DE == 0) {
+                q = lbl_803CC1B8->parent;
+                q->signal = 1;
+            } else if (p->arg == 0) {
+                q = lbl_803CC1B8->parent;
+                q->signal = 2;
             } else {
-                q = *(u8**)(lbl_803CC1B8 + 0xC);
-                *(s16*)(q + 0x10) = 3;
+                q = lbl_803CC1B8->parent;
+                q->signal = 3;
             }
             fn_800B0A14_removeQueue(q);
-            p[0x28] = 0;
+            p->step = 0;
         }
         break;
     }
@@ -2576,42 +2577,42 @@ typedef struct GridSize {
 
 extern GridSize lbl_2_data_122A8[4];
 
-#define GRID_COL (*(s16*)(lbl_2_bss_1A824C[0] + 0x19770C))
-#define GRID_ROW (*(s16*)(lbl_2_bss_1A824C[0] + 0x19770E))
-#define GRID_SEL (*(s16*)(lbl_2_bss_1A824C[0] + 0x197710))
-#define GRID_PREV (*(s16*)(lbl_2_bss_1A824C[0] + 0x197712))
-#define GRID_LAYOUT (*(s16*)(lbl_2_bss_1A824C[0] + 0x197714))
+#define GRID_COL (lbl_2_bss_1A824C->_19770C)
+#define GRID_ROW (lbl_2_bss_1A824C->_19770E)
+#define GRID_SEL (lbl_2_bss_1A824C->_197710)
+#define GRID_PREV (lbl_2_bss_1A824C->_197712)
+#define GRID_LAYOUT (lbl_2_bss_1A824C->_197714)
 
 // fn_2_3A8FC, size:0x60C
 // NONMATCHING 99.7%: r30/r31 swapped between the task pointer and the pad pointer (see docs/patterns/regalloc.md)
 #if NONMATCHING
 void fn_2_3A8FC(void) {
     u8* repeat;
-    u8* p = lbl_803CC1B8;
-    u8* q;
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
     u16 btn;
     s32 pad;
-    switch (*(s8*)(p + 0x28)) {
+    switch (p->step) {
     case 0:
-        if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x267F] = 1;
+        if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+            lbl_2_bss_1A8234->layerFlags[1][53] = 1;
         } else {
-            lbl_2_bss_1A8234[0][0x160000 + 0x2651] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][7] = 1;
         }
-        *(s16*)(p + 0x14) = 0xC;
-        p[0x28] = 1;
+        p->counter = 0xC;
+        p->step = 1;
         break;
     case 1: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 2;
+            p->step = 2;
         }
         break;
     }
     case 2:
-        repeat = (u8*)&lbl_803C77B8 + 4;
-        btn = *(u16*)(repeat + *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20);
+        repeat = (u8*)&((MenuPad*)&lbl_803C77B8)->repeat;
+        btn = *(u16*)(repeat + lbl_2_bss_1A824C->port * sizeof(MenuPad));
         if (btn & 1) {
             GRID_PREV = GRID_SEL;
             GRID_COL--;
@@ -2627,7 +2628,7 @@ void fn_2_3A8FC(void) {
             }
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        btn = *(u16*)(repeat + *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20);
+        btn = *(u16*)(repeat + lbl_2_bss_1A824C->port * sizeof(MenuPad));
         if (btn & 8) {
             if (lbl_2_data_122A8[GRID_LAYOUT].maxRow != 0) {
                 GRID_PREV = GRID_SEL;
@@ -2648,72 +2649,72 @@ void fn_2_3A8FC(void) {
             }
         }
         GRID_SEL = GRID_COL + GRID_ROW * (lbl_2_data_122A8[GRID_LAYOUT].maxCol + 1);
-        pad = *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+        pad = lbl_2_bss_1A824C->port * sizeof(MenuPad);
         btn = *(u16*)(repeat + pad);
         if ((btn & 8) || (btn & 4)) {
             if (lbl_2_data_122A8[GRID_LAYOUT].maxRow == 0) {
                 goto check_confirm;
             }
-            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-                lbl_2_bss_1A8234[0][0x160000 + 0x270B] = 1;
+            if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+                lbl_2_bss_1A8234->layerFlags[3][53] = 1;
             } else {
-                lbl_2_bss_1A8234[0][0x160000 + 0x26DD] = 1;
+                lbl_2_bss_1A8234->layerFlags[3][7] = 1;
             }
-            p[0x28] = 3;
+            p->step = 3;
         } else if ((btn & 1) || (btn & 2)) {
-            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-                lbl_2_bss_1A8234[0][0x160000 + 0x270B] = 1;
+            if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+                lbl_2_bss_1A8234->layerFlags[3][53] = 1;
             } else {
-                lbl_2_bss_1A8234[0][0x160000 + 0x26DD] = 1;
+                lbl_2_bss_1A8234->layerFlags[3][7] = 1;
             }
-            p[0x28] = 3;
+            p->step = 3;
         } else {
         check_confirm:
-            btn = *(u16*)((u8*)&lbl_803C77B8 + pad + 2);
+            btn = *(u16*)((u8*)&((MenuPad*)&lbl_803C77B8)->down + pad);
             if (btn & 0x100) {
-                if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-                    lbl_2_bss_1A8234[0][0x160000 + 0x2869] = 1;
+                if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+                    lbl_2_bss_1A8234->layerFlags[8][53] = 1;
                 } else {
-                    lbl_2_bss_1A8234[0][0x160000 + 0x283B] = 1;
+                    lbl_2_bss_1A8234->layerFlags[8][7] = 1;
                 }
-                *(s16*)(p + 0x14) = 0xC;
+                p->counter = 0xC;
                 sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-                p[0x28] = 4;
+                p->step = 4;
             } else if (btn & 0x200) {
-                if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-                    lbl_2_bss_1A8234[0][0x160000 + 0x2869] = 1;
+                if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+                    lbl_2_bss_1A8234->layerFlags[8][53] = 1;
                 } else {
-                    lbl_2_bss_1A8234[0][0x160000 + 0x283B] = 1;
+                    lbl_2_bss_1A8234->layerFlags[8][7] = 1;
                 }
-                *(s16*)(p + 0x14) = 0xC;
+                p->counter = 0xC;
                 sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
-                p[0x28] = 4;
+                p->step = 4;
             }
         }
         break;
     case 3:
-        p[0x28] = 2;
+        p->step = 2;
         break;
     case 4: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 5;
+            p->step = 5;
         }
         break;
     }
     case 5:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 #endif
@@ -2726,80 +2727,79 @@ typedef struct Unk8010B42C {
     s16 gridLayout[1]; // TODO type: indexed by fn_2_44F14
 } Unk8010B42C;
 extern Unk8010B42C lbl_8010B42C;
-extern u8 lbl_8034E978[];
-extern u8 lbl_800FEF70[];
+extern MenuDef lbl_800FEF70[];
 extern void fn_80053FE8(void);
 extern s32 fn_8006C79C(u8);
 
-#define PICK_ID (*(s16*)(lbl_2_bss_1A824C[0] + 0x197706))
-#define PICK_COL (*(s16*)(lbl_2_bss_1A824C[0] + 0x197708))
-#define PICK_ROW (*(s16*)(lbl_2_bss_1A824C[0] + 0x19770A))
+#define PICK_ID (lbl_2_bss_1A824C->_197706)
+#define PICK_COL (lbl_2_bss_1A824C->_197708)
+#define PICK_ROW (lbl_2_bss_1A824C->_19770A)
 
 // fn_2_3AF08, size:0xB38
 // NONMATCHING 98%: r30/r31 swapped (task vs pad pointer), dead `cmpwi 0x14` before the loop, lbl_8010B42C+0xC lhax folded
 #if NONMATCHING
 void fn_2_3AF08(void) {
     u8* repeat;
-    u8* p = lbl_803CC1B8;
-    u8* q;
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
     u16 btn;
     s32 i;
     s32 n;
-    switch (*(s8*)(p + 0x28)) {
+    switch (p->step) {
     case 0:
         n = 0;
         for (i = 0; i < 20; i++) {
-            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x43C2 + i) == 1 && lbl_2_data_373C[i] == 0) {
-                lbl_2_bss_1A824C[0][0x1978B3 + n++] = 1;
+            if ((s8)lbl_2_bss_1A8248->_43C2[i] == 1 && lbl_2_data_373C[i] == 0) {
+                lbl_2_bss_1A824C->_1978B3[n++] = 1;
             }
         }
         changeScene(3, 6);
-        p[0x28] = 1;
+        p->step = 1;
         break;
     case 1:
-        if (lbl_8037169C[0x13] != 0) {
-            p[0x28] = 2;
+        if (lbl_8037169C._13 != 0) {
+            p->step = 2;
         }
         break;
     case 2:
-        *(s16*)(lbl_2_bss_1A824C[0] + 0x197730) = 6;
-        lbl_2_bss_1A8248[0][0x44F2] = 2;
+        lbl_2_bss_1A824C->_197730 = 6;
+        lbl_2_bss_1A8248->_44F2 = 2;
         PICK_ID = 0;
         PICK_COL = 1;
         PICK_ROW = 0;
-        lbl_2_bss_1A8234[0][0x160000 + 0x267B] = 1;
-        lbl_2_bss_1A8234[0][0x160000 + 0x267E] = 1;
-        lbl_8034E978[3] = lbl_2_bss_1A8248[0][0x4415];
+        lbl_2_bss_1A8234->layerFlags[1][49] = 1;
+        lbl_2_bss_1A8234->layerFlags[1][52] = 1;
+        lbl_8034E978._03 = lbl_2_bss_1A8248->_4415;
         fn_800B0A5C_insertQueue(fn_80053FE8, 0);
-        lbl_8034E978[0] = 0xE;
-        lbl_8034E978[0] = 0xE;
-        lbl_8034E978[9] = lbl_8034E978[8];
-        lbl_8034E978[8] = *(u16*)(lbl_800FEF70 + 0xE * 0x10 + 8);
+        lbl_8034E978.menu = 0xE;
+        lbl_8034E978.menu = 0xE;
+        lbl_8034E978.prevTrack = lbl_8034E978.track;
+        lbl_8034E978.track = lbl_800FEF70[0xE].track;
         changeScene(1, 6);
-        p[0x28] = 3;
+        p->step = 3;
         break;
     case 3:
-        (*(s16*)(p + 0x14))--;
-        if (lbl_8037169C[0x12] != 0) {
-            p[0x28] = 4;
+        (p->counter)--;
+        if (lbl_8037169C.done != 0) {
+            p->step = 4;
         }
         break;
     case 4:
-        *(s16*)(p + 0x14) = 0x28;
-        lbl_2_bss_1A8234[0][0x160000 + 0x267C] = 1;
-        p[0x28] = 5;
+        p->counter = 0x28;
+        lbl_2_bss_1A8234->layerFlags[1][50] = 1;
+        p->step = 5;
         break;
     case 5: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t <= 0) {
-            p[0x28] = 6;
+            p->step = 6;
         }
         break;
     }
     case 6:
-        repeat = (u8*)&lbl_803C77B8 + 4;
-        btn = *(u16*)(repeat + *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20);
+        repeat = (u8*)&((MenuPad*)&lbl_803C77B8)->repeat;
+        btn = *(u16*)(repeat + lbl_2_bss_1A824C->port * sizeof(MenuPad));
         if (btn & 1) {
             PICK_COL--;
             if (PICK_COL == 0 && (PICK_ROW == 0 || PICK_ROW == 5)) {
@@ -2817,7 +2817,7 @@ void fn_2_3AF08(void) {
             }
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        btn = *(u16*)(repeat + *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20);
+        btn = *(u16*)(repeat + lbl_2_bss_1A824C->port * sizeof(MenuPad));
         if (btn & 8) {
             PICK_ROW--;
             if (PICK_ROW == 0 && (PICK_COL == 0 || PICK_COL == 5)) {
@@ -2836,21 +2836,21 @@ void fn_2_3AF08(void) {
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
         PICK_ID = lbl_2_data_296B8[PICK_COL + PICK_ROW * 6];
-        btn = ((u16*)((u8*)&lbl_803C77B8 + 2))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10];
+        btn = MENUPAD_U16(down, lbl_2_bss_1A824C->port);
         if (btn & 0x40) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x197730) = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x293A] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2866] = 1;
+            lbl_2_bss_1A824C->_197730 = 1;
+            lbl_2_bss_1A8234->layerFlags[11][52] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][50] = 1;
             sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-            *(s16*)(p + 0x14) = 0x32;
-            p[0x28] = 7;
+            p->counter = 0x32;
+            p->step = 7;
         } else if (btn & 0x20) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x197730) = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2980] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2866] = 1;
+            lbl_2_bss_1A824C->_197730 = 1;
+            lbl_2_bss_1A8234->layerFlags[12][52] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][50] = 1;
             sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-            *(s16*)(p + 0x14) = 0x32;
-            p[0x28] = 7;
+            p->counter = 0x32;
+            p->step = 7;
         } else if (btn & 0x100) {
             if (fn_8006C79C(lbl_800E869C[PICK_ID]) == 1) {
                 GRID_PREV = 0;
@@ -2859,130 +2859,130 @@ void fn_2_3AF08(void) {
                 GRID_ROW = 0;
                 GRID_LAYOUT = lbl_8010B42C.gridLayout[fn_2_44F14(lbl_800E869C[PICK_ID])];
                 sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
-                p[0x28] = 8;
+                p->step = 8;
             } else {
                 sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
             }
         } else if (btn & 0x200) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x2866] = 1;
-            *(s16*)(p + 0x14) = 0x28;
-            p[0x28] = 0xE;
+            lbl_2_bss_1A8234->layerFlags[8][50] = 1;
+            p->counter = 0x28;
+            p->step = 0xE;
             sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
         }
         break;
     case 7: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 0xA;
+            p->step = 0xA;
         }
         break;
     }
     case 8:
         q = fn_800B0A5C_insertQueue(fn_2_3A8FC, 2);
-        q[0x28] = 0;
-        *(s16*)(p + 0x10) = 0;
-        p[0x28] = 9;
+        q->step = 0;
+        p->signal = 0;
+        p->step = 9;
         break;
     case 9:
-        if (*(s16*)(p + 0x10) == 1) {
-            p[0x28] = 6;
+        if (p->signal == 1) {
+            p->step = 6;
         }
         break;
     case 10:
-        *(s16*)(p + 0x14) = 0x1E;
-        lbl_8034E978[0] = 0xF;
-        lbl_8034E978[9] = lbl_8034E978[8];
-        lbl_8034E978[8] = *(u16*)(lbl_800FEF70 + 0xF * 0x10 + 8);
-        lbl_2_bss_1A8234[0][0x160000 + 0x267D] = 1;
-        p[0x28] = 0xB;
+        p->counter = 0x1E;
+        lbl_8034E978.menu = 0xF;
+        lbl_8034E978.prevTrack = lbl_8034E978.track;
+        lbl_8034E978.track = lbl_800FEF70[0xF].track;
+        lbl_2_bss_1A8234->layerFlags[1][51] = 1;
+        p->step = 0xB;
         break;
     case 11: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t <= 0) {
-            p[0x28] = 0xC;
+            p->step = 0xC;
         }
         break;
     }
     case 12:
-        btn = ((u16*)((u8*)&lbl_803C77B8 + 2))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10];
+        btn = MENUPAD_U16(down, lbl_2_bss_1A824C->port);
         if (btn & 0x40) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x197730) = 6;
-            lbl_2_bss_1A8234[0][0x160000 + 0x293A] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2867] = 1;
+            lbl_2_bss_1A824C->_197730 = 6;
+            lbl_2_bss_1A8234->layerFlags[11][52] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][51] = 1;
             sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-            *(s16*)(p + 0x14) = 0x1E;
-            lbl_8034E978[0] = 0xE;
-            lbl_8034E978[9] = lbl_8034E978[8];
-            lbl_8034E978[8] = *(u16*)(lbl_800FEF70 + 0xE * 0x10 + 8);
-            p[0x28] = 0xD;
+            p->counter = 0x1E;
+            lbl_8034E978.menu = 0xE;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = lbl_800FEF70[0xE].track;
+            p->step = 0xD;
         } else if (btn & 0x20) {
-            *(s16*)(lbl_2_bss_1A824C[0] + 0x197730) = 6;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2980] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2867] = 1;
+            lbl_2_bss_1A824C->_197730 = 6;
+            lbl_2_bss_1A8234->layerFlags[12][52] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][51] = 1;
             sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-            *(s16*)(p + 0x14) = 0x1E;
-            lbl_8034E978[0] = 0xE;
-            lbl_8034E978[9] = lbl_8034E978[8];
-            lbl_8034E978[8] = *(u16*)(lbl_800FEF70 + 0xE * 0x10 + 8);
-            p[0x28] = 0xD;
+            p->counter = 0x1E;
+            lbl_8034E978.menu = 0xE;
+            lbl_8034E978.prevTrack = lbl_8034E978.track;
+            lbl_8034E978.track = lbl_800FEF70[0xE].track;
+            p->step = 0xD;
         } else if (btn & 0x200) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x2867] = 1;
-            *(s16*)(p + 0x14) = 0x1E;
+            lbl_2_bss_1A8234->layerFlags[8][51] = 1;
+            p->counter = 0x1E;
             sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
-            p[0x28] = 0xE;
+            p->step = 0xE;
         }
         break;
     case 13: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 4;
+            p->step = 4;
         }
         break;
     }
     case 14: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
             changeScene(3, 6);
-            p[0x28] = 0xF;
+            p->step = 0xF;
         }
         break;
     }
     case 15:
-        if (lbl_8037169C[0x13] != 0) {
-            p[0x28] = 0x10;
+        if (lbl_8037169C._13 != 0) {
+            p->step = 0x10;
         }
         break;
     case 16:
-        lbl_2_bss_1A8248[0][0x44F2] = 0;
-        lbl_8034E978[0x26] = 1;
-        lbl_2_bss_1A8234[0][0x160000 + 0x2865] = 1;
-        lbl_2_bss_1A8234[0][0x160000 + 0x2868] = 1;
-        *(s16*)(p + 0x14) = 0x32;
+        lbl_2_bss_1A8248->_44F2 = 0;
+        lbl_8034E978._26 = 1;
+        lbl_2_bss_1A8234->layerFlags[8][49] = 1;
+        lbl_2_bss_1A8234->layerFlags[8][52] = 1;
+        p->counter = 0x32;
         changeScene(1, 6);
-        p[0x28] = 0x11;
+        p->step = 0x11;
         break;
     case 17:
-        (*(s16*)(p + 0x14))--;
-        if (lbl_8037169C[0x12] != 0) {
-            p[0x28] = 0x12;
+        (p->counter)--;
+        if (lbl_8037169C.done != 0) {
+            p->step = 0x12;
         }
         break;
     case 18:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 #endif
@@ -2993,9 +2993,9 @@ extern void fn_2_72054(s32 index, s8 value);
 // Switch the menu screen: remember the current track and take the new menu's track.
 #define SET_MENU_SCREEN(m)                                         \
     do {                                                           \
-        lbl_8034E978[0] = (m);                                     \
-        lbl_8034E978[9] = lbl_8034E978[8];                         \
-        lbl_8034E978[8] = *(u16*)(lbl_800FEF70 + (m) * 0x10 + 8); \
+        lbl_8034E978.menu = (m);                                   \
+        lbl_8034E978.prevTrack = lbl_8034E978.track;               \
+        lbl_8034E978.track = lbl_800FEF70[m].track;                \
     } while (0)
 
 // fn_2_399C0, size:0xF3C
@@ -3003,69 +3003,69 @@ extern void fn_2_72054(s32 index, s8 value);
 #if NONMATCHING
 void fn_2_399C0(void) {
     u8* repeat;
-    u8* p = lbl_803CC1B8;
-    u8* q;
+    MenuScreenTask* p = lbl_803CC1B8;
+    MenuScreenTask* q;
     u16 btn;
     s32 pad;
     s32 i;
-    switch (*(s8*)(p + 0x28)) {
+    switch (p->step) {
     case 0:
         fn_2_45204();
         fn_2_45A84();
         for (i = 0; i < 54; i++) {
-            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x444D + i) == 1) {
-                lbl_2_bss_1A824C[0][0x1978F8] = 1;
+            if ((s8)lbl_2_bss_1A8248->_444D[i] == 1) {
+                lbl_2_bss_1A824C->_1978F8 = 1;
             }
-            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44B9 + i) == 1) {
-                lbl_2_bss_1A824C[0][0x1978F9] = 1;
+            if ((s8)lbl_2_bss_1A8248->_44B9[i] == 1) {
+                lbl_2_bss_1A824C->_1978F9 = 1;
             }
         }
-        if (lbl_2_bss_1A824C[0][0x1978F7] == 2) {
-            p[0x28] = 0x11;
+        if (lbl_2_bss_1A824C->_1978F7 == 2) {
+            p->step = 0x11;
         } else {
             changeScene(3, 6);
-            p[0x28] = 1;
+            p->step = 1;
         }
         break;
     case 1:
-        if (lbl_8037169C[0x13] != 0) {
-            p[0x28] = 2;
+        if (lbl_8037169C._13 != 0) {
+            p->step = 2;
         }
         break;
     case 2:
-        lbl_2_bss_1A8248[0][0x44F2] = 2;
-        lbl_2_bss_1A824C[0][0x1978F6] = 0;
+        lbl_2_bss_1A8248->_44F2 = 2;
+        lbl_2_bss_1A824C->_1978F6 = 0;
         PICK_ID = 0;
         PICK_COL = 1;
         PICK_ROW = 0;
-        if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x2681] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2682] = 1;
+        if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+            lbl_2_bss_1A8234->layerFlags[1][55] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][56] = 1;
         } else {
-            lbl_2_bss_1A8234[0][0x160000 + 0x2652] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x2653] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][8] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][9] = 1;
         }
-        if (lbl_2_bss_1A824C[0][0x1978F7] == 0) {
-            lbl_2_bss_1A824C[0][0x1978F6] = 0;
+        if (lbl_2_bss_1A824C->_1978F7 == 0) {
+            lbl_2_bss_1A824C->_1978F6 = 0;
         } else {
-            lbl_2_bss_1A824C[0][0x1978F6] = 1;
+            lbl_2_bss_1A824C->_1978F6 = 1;
         }
         changeScene(1, 6);
-        p[0x28] = 3;
+        p->step = 3;
         break;
     case 3:
-        (*(s16*)(p + 0x14))--;
-        if (lbl_8037169C[0x12] != 0) {
-            p[0x28] = 4;
+        (p->counter)--;
+        if (lbl_8037169C.done != 0) {
+            p->step = 4;
         }
         break;
     case 4:
-        *(s16*)(p + 0x14) = 0x28;
-        if (lbl_2_bss_1A824C[0][0x1978F7] == 0) {
-            lbl_8034E978[3] = lbl_2_bss_1A8248[0][0x4415];
+        p->counter = 0x28;
+        if (lbl_2_bss_1A824C->_1978F7 == 0) {
+            lbl_8034E978._03 = lbl_2_bss_1A8248->_4415;
             fn_800B0A5C_insertQueue(fn_80053FE8, 0);
-            if (lbl_2_bss_1A824C[0][0x1978F8] == 1) {
-                if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 0) {
+            if (lbl_2_bss_1A824C->_1978F8 == 1) {
+                if (lbl_2_bss_1A824C->_197843 == 0) {
                     if (g_d_GameSettings.someChallengeModeFlag == 1) {
                         SET_MENU_SCREEN(0x28);
                     } else {
@@ -3073,85 +3073,85 @@ void fn_2_399C0(void) {
                     }
                 }
                 fn_80062890(0x39);
-            } else if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 0) {
+            } else if (lbl_2_bss_1A824C->_197843 == 0) {
                 SET_MENU_SCREEN(0x29);
-            } else if (*(s8*)(lbl_2_bss_1A824C[0] + 0x197843) == 1) {
+            } else if (lbl_2_bss_1A824C->_197843 == 1) {
                 SET_MENU_SCREEN(0x2A);
             } else {
                 SET_MENU_SCREEN(0x2A);
             }
-            lbl_2_bss_1A824C[0][0x1978F6] = 0;
+            lbl_2_bss_1A824C->_1978F6 = 0;
         } else {
-            lbl_8034E978[3] = lbl_2_bss_1A8248[0][0x4415];
+            lbl_8034E978._03 = lbl_2_bss_1A8248->_4415;
             fn_800B0A5C_insertQueue(fn_80053FE8, 0);
-            if (lbl_2_bss_1A824C[0][0x1978F9] == 1) {
+            if (lbl_2_bss_1A824C->_1978F9 == 1) {
                 SET_MENU_SCREEN(0x2B);
                 fn_80062890(0x3F);
             } else {
                 SET_MENU_SCREEN(0x2C);
             }
-            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-                lbl_2_bss_1A8234[0][0x160000 + 0x2685] = 1;
-                lbl_2_bss_1A8234[0][0x160000 + 0x270E] = 1;
+            if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+                lbl_2_bss_1A8234->layerFlags[1][59] = 1;
+                lbl_2_bss_1A8234->layerFlags[3][56] = 1;
             } else {
-                lbl_2_bss_1A8234[0][0x160000 + 0x2656] = 1;
-                lbl_2_bss_1A8234[0][0x160000 + 0x26DF] = 1;
+                lbl_2_bss_1A8234->layerFlags[1][12] = 1;
+                lbl_2_bss_1A8234->layerFlags[3][9] = 1;
             }
-            lbl_2_bss_1A824C[0][0x1978F6] = 1;
+            lbl_2_bss_1A824C->_1978F6 = 1;
         }
-        if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x2684] = 1;
+        if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+            lbl_2_bss_1A8234->layerFlags[1][58] = 1;
         } else {
-            lbl_2_bss_1A8234[0][0x160000 + 0x2655] = 1;
+            lbl_2_bss_1A8234->layerFlags[1][11] = 1;
         }
-        p[0x28] = 5;
+        p->step = 5;
         break;
     case 5: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t <= 0) {
-            if (lbl_2_bss_1A824C[0][0x1978F7] == 0) {
-                p[0x28] = 6;
+            if (lbl_2_bss_1A824C->_1978F7 == 0) {
+                p->step = 6;
             } else {
-                p[0x28] = 8;
+                p->step = 8;
             }
         }
         break;
     }
     case 6:
-        if (((u16*)((u8*)&lbl_803C77B8 + 2))[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x10] & 0x100) {
-            *(s16*)(p + 0x14) = 0xA;
+        if (MENUPAD_U16(down, lbl_2_bss_1A824C->port) & 0x100) {
+            p->counter = 0xA;
             sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-            p[0x28] = 7;
+            p->step = 7;
         }
         break;
     case 7: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            lbl_2_bss_1A824C[0][0x1978F6] = 1;
-            if (lbl_2_bss_1A824C[0][0x1978F9] == 1) {
+            lbl_2_bss_1A824C->_1978F6 = 1;
+            if (lbl_2_bss_1A824C->_1978F9 == 1) {
                 SET_MENU_SCREEN(0x2B);
                 fn_80062890(0x3F);
             } else {
                 SET_MENU_SCREEN(0x2C);
             }
-            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-                lbl_2_bss_1A8234[0][0x160000 + 0x2685] = 1;
-                lbl_2_bss_1A8234[0][0x160000 + 0x270E] = 1;
-                lbl_2_bss_1A8234[0][0x160000 + 0x2710] = 1;
+            if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+                lbl_2_bss_1A8234->layerFlags[1][59] = 1;
+                lbl_2_bss_1A8234->layerFlags[3][56] = 1;
+                lbl_2_bss_1A8234->layerFlags[3][58] = 1;
             } else {
-                lbl_2_bss_1A8234[0][0x160000 + 0x2656] = 1;
-                lbl_2_bss_1A8234[0][0x160000 + 0x26DF] = 1;
-                lbl_2_bss_1A8234[0][0x160000 + 0x26E1] = 1;
+                lbl_2_bss_1A8234->layerFlags[1][12] = 1;
+                lbl_2_bss_1A8234->layerFlags[3][9] = 1;
+                lbl_2_bss_1A8234->layerFlags[3][11] = 1;
             }
-            p[0x28] = 8;
+            p->step = 8;
         }
         break;
     }
     case 8:
-        repeat = (u8*)&lbl_803C77B8 + 4;
-        btn = *(u16*)(repeat + *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20);
+        repeat = (u8*)&((MenuPad*)&lbl_803C77B8)->repeat;
+        btn = *(u16*)(repeat + lbl_2_bss_1A824C->port * sizeof(MenuPad));
         if (btn & 1) {
             PICK_COL--;
             if (PICK_COL == 0 && PICK_ROW == 0) {
@@ -3173,7 +3173,7 @@ void fn_2_399C0(void) {
             }
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        btn = *(u16*)(repeat + *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20);
+        btn = *(u16*)(repeat + lbl_2_bss_1A824C->port * sizeof(MenuPad));
         if (btn & 8) {
             PICK_ROW--;
             if (PICK_ROW == 0 && PICK_COL == 0) {
@@ -3196,21 +3196,21 @@ void fn_2_399C0(void) {
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
         PICK_ID = lbl_2_data_29700[PICK_COL + PICK_ROW * 6];
-        pad = *(s8*)(lbl_2_bss_1A824C[0] + 0x197863) * 0x20;
+        pad = lbl_2_bss_1A824C->port * sizeof(MenuPad);
         btn = *(u16*)(repeat + pad);
         if ((btn & 8) || (btn & 4) || (btn & 1) || (btn & 2)) {
-            if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-                lbl_2_bss_1A8234[0][0x160000 + 0x27E3] = 1;
+            if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+                lbl_2_bss_1A8234->layerFlags[6][59] = 1;
             } else {
-                lbl_2_bss_1A8234[0][0x160000 + 0x27B4] = 1;
+                lbl_2_bss_1A8234->layerFlags[6][12] = 1;
             }
-            p[0x28] = 9;
+            p->step = 9;
         } else {
-            btn = *(u16*)((u8*)&lbl_803C77B8 + pad + 2);
+            btn = *(u16*)((u8*)&((MenuPad*)&lbl_803C77B8)->down + pad);
             if (btn & 0x100) {
                 if (PICK_ROW == 0 && PICK_COL == 5) {
                     sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
-                    p[0x28] = 0xC;
+                    p->step = 0xC;
                 } else if (fn_8006C79C(lbl_800E869C[PICK_ID]) == 1) {
                     GRID_PREV = 0;
                     GRID_SEL = 0;
@@ -3218,7 +3218,7 @@ void fn_2_399C0(void) {
                     GRID_ROW = 0;
                     GRID_LAYOUT = lbl_8010B42C.gridLayout[fn_2_44F14(lbl_800E869C[PICK_ID])];
                     sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
-                    p[0x28] = 0xA;
+                    p->step = 0xA;
                 } else {
                     sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
                 }
@@ -3226,95 +3226,95 @@ void fn_2_399C0(void) {
                 PICK_ROW = 0;
                 PICK_COL = 5;
                 PICK_ID = lbl_2_data_29700[PICK_COL + PICK_ROW * 6];
-                if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-                    lbl_2_bss_1A8234[0][0x160000 + 0x27E3] = 1;
+                if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+                    lbl_2_bss_1A8234->layerFlags[6][59] = 1;
                 } else {
-                    lbl_2_bss_1A8234[0][0x160000 + 0x27B4] = 1;
+                    lbl_2_bss_1A8234->layerFlags[6][12] = 1;
                 }
-                p[0x28] = 9;
+                p->step = 9;
                 sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
             }
         }
         break;
     case 9:
-        p[0x28] = 8;
+        p->step = 8;
         break;
     case 10:
         q = fn_800B0A5C_insertQueue(fn_2_3A8FC, 2);
-        q[0x28] = 0;
-        *(s16*)(p + 0x10) = 0;
-        p[0x28] = 0xB;
+        q->step = 0;
+        p->signal = 0;
+        p->step = 0xB;
         break;
     case 11:
-        if (*(s16*)(p + 0x10) == 1) {
-            p[0x28] = 8;
+        if (p->signal == 1) {
+            p->step = 8;
         }
         break;
     case 12:
-        if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x286F] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x286E] = 1;
-            *(s16*)(p + 0x14) = 0x28;
-            p[0x28] = 0xD;
+        if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+            lbl_2_bss_1A8234->layerFlags[8][59] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][58] = 1;
+            p->counter = 0x28;
+            p->step = 0xD;
         } else {
-            *(s16*)(p + 0x14) = 0xA;
-            p[0x28] = 0x12;
+            p->counter = 0xA;
+            p->step = 0x12;
         }
         break;
     case 13: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
             changeScene(3, 6);
-            p[0x28] = 0xE;
+            p->step = 0xE;
         }
         break;
     }
     case 14:
-        if (lbl_8037169C[0x13] != 0) {
-            p[0x28] = 0xF;
+        if (lbl_8037169C._13 != 0) {
+            p->step = 0xF;
         }
         break;
     case 15:
-        lbl_8034E978[0x26] = 1;
-        lbl_2_bss_1A8248[0][0x44F2] = 0;
-        if (*(s8*)(lbl_2_bss_1A8248[0] + 0x44F4) == 0) {
-            lbl_2_bss_1A8234[0][0x160000 + 0x286B] = 1;
-            lbl_2_bss_1A8234[0][0x160000 + 0x286C] = 1;
-            *(s16*)(p + 0x14) = 0x32;
+        lbl_8034E978._26 = 1;
+        lbl_2_bss_1A8248->_44F2 = 0;
+        if ((s8)lbl_2_bss_1A8248->_44F4 == 0) {
+            lbl_2_bss_1A8234->layerFlags[8][55] = 1;
+            lbl_2_bss_1A8234->layerFlags[8][56] = 1;
+            p->counter = 0x32;
         } else {
-            *(s16*)(p + 0x14) = 1;
+            p->counter = 1;
         }
         changeScene(1, 6);
         fn_2_72054(0, 4);
-        p[0x28] = 0x10;
+        p->step = 0x10;
         break;
     case 16:
-        (*(s16*)(p + 0x14))--;
-        if (lbl_8037169C[0x12] != 0) {
-            p[0x28] = 0x11;
+        (p->counter)--;
+        if (lbl_8037169C.done != 0) {
+            p->step = 0x11;
         }
         break;
     case 17:
-        q = *(u8**)(p + 0xC);
-        *(s16*)(q + 0x10) = 1;
+        q = p->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
         break;
     case 18: {
-        s16 t = *(s16*)(p + 0x14);
-        *(s16*)(p + 0x14) = t - 1;
+        s16 t = p->counter;
+        p->counter = t - 1;
         if (t == 0) {
-            p[0x28] = 0x11;
+            p->step = 0x11;
         }
         break;
     }
     }
-    if (lbl_2_bss_1A824C[0][0x19783F] == 1) {
-        q = *(u8**)(lbl_803CC1B8 + 0xC);
-        *(s16*)(q + 0x10) = 1;
+    if (lbl_2_bss_1A824C->_19783F == 1) {
+        q = lbl_803CC1B8->parent;
+        q->signal = 1;
         fn_800B0A14_removeQueue(q);
-        p[0x28] = 0;
+        p->step = 0;
     }
 }
 #endif

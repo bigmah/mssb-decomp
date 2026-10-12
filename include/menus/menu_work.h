@@ -7,6 +7,31 @@
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
 
+// One controller entry of lbl_803C77B8 (PadState in main/file_800A7C08.h,
+// which can't be included next to UnknownHomes_Static.h).
+typedef struct MenuPad {
+    /*0x00*/ u16 held;
+    /*0x02*/ u16 down;
+    /*0x04*/ u16 repeat;
+    /*0x06*/ u16 prev;
+    /*0x08*/ s8 err;
+    /*0x09*/ u8 _09[0x10 - 0x09];
+    /*0x10*/ s8 stickX;
+    /*0x11*/ s8 stickY;
+    /*0x12*/ s8 substickX;
+    /*0x13*/ s8 substickY;
+    /*0x14*/ u8 _14[0xC];
+} MenuPad; // size: 0x20
+
+#ifndef offsetof
+#define offsetof(type, field) ((u32)&((type*)0)->field)
+#endif
+
+// A u16 field of controller `port`, addressed as ((u16*)(pads + offset))[port * 16]:
+// the original indexes the pad array this way (MenuPad holds no pointers).
+#define MENUPAD_U16(field, port) \
+    ((u16*)((u8*)&lbl_803C77B8 + offsetof(MenuPad, field)))[(port) * (s32)(sizeof(MenuPad) / sizeof(u16))]
+
 // Menu task (queue item) that owns a run of sprites in lbl_80371C30 starting
 // at baseIdx. Only the fields used here.
 typedef struct MenuTask {
@@ -42,6 +67,39 @@ typedef struct MenuItem {
     /*0x12*/ s16 _12;
     /*0x14*/ s16 _14;
 } MenuItem;
+
+// A menu screen task (lbl_803CC1B8 while one of the screens runs): a MenuTask whose
+// 0x14.. fields are screen state instead of a sprite run.
+typedef struct MenuScreenTask {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ struct MenuScreenTask* prev;
+    /*0x08*/ struct MenuScreenTask* next;
+    /*0x0C*/ struct MenuScreenTask* parent;
+    /*0x10*/ s16 signal; // set to 1 by a child task when it is done
+    /*0x12*/ u16 priority;
+    /*0x14*/ s16 counter;
+    /*0x16*/ s16 arg;
+    /*0x18*/ s16 timer;
+    /*0x1A*/ s16 _1A;
+    /*0x1C*/ u16 state;
+    /*0x1E*/ u16 subState;
+    /*0x20*/ u8 _20[8];
+    /*0x28*/ s8 step;
+} MenuScreenTask;
+
+// One animated element of a menu screen (rep_0788 naming); same object as MenuItem.
+typedef struct MenuItemState {
+    /*0x00*/ void (*func)(MenuTask* menu, struct MenuItemState* item);
+    /*0x04*/ s16 state;
+    /*0x06*/ s16 timer;
+    /*0x08*/ u8 _08[2];
+    /*0x0A*/ s16 index;
+    /*0x0C*/ u8 _0C[2];
+    /*0x0E*/ s16 offset; // sprite index relative to menu->baseIdx
+    /*0x10*/ s16 unk10;
+    /*0x12*/ s16 unk12;
+    /*0x14*/ s16 unk14;
+} MenuItemState;
 
 #define MENU_SPRITE(task, item) (lbl_80371C30[(task)->baseIdx + (item)->sprite].obj)
 
@@ -260,10 +318,17 @@ typedef struct MenuData {
     /*0x195420*/ u8 _195420[0x196FB8 - 0x195420];
     /*0x196FB8*/ s32 _196FB8;
     /*0x196FBC*/ s32 _196FBC;
-    /*0x196FC0*/ u8 _196FC0[0x1972A0 - 0x196FC0];
+    /*0x196FC0*/ u8 _196FC0[0x197298 - 0x196FC0];
+    /*0x197298*/ s16 _197298[2]; // indexed
+    /*0x19729C*/ s16 _19729C;
+    /*0x19729E*/ s16 _19729E;
     /*0x1972A0*/ s16 _1972A0;
     /*0x1972A2*/ s16 _1972A2;
-    /*0x1972A4*/ u8 _1972A4[0x1972B0 - 0x1972A4];
+    /*0x1972A4*/ s16 _1972A4;
+    /*0x1972A6*/ s16 _1972A6;
+    /*0x1972A8*/ u8 _1972A8[0x1972AA - 0x1972A8];
+    /*0x1972AA*/ s16 _1972AA;
+    /*0x1972AC*/ s16 _1972AC[2]; // indexed
     /*0x1972B0*/ s16 _1972B0;
     /*0x1972B2*/ u8 _1972B2[0x1972B4 - 0x1972B2];
     /*0x1972B4*/ s16 _1972B4;
@@ -289,13 +354,19 @@ typedef struct MenuData {
     /*0x1976A0*/ s32 selection;
     /*0x1976A4*/ s32 secondarySelection;
     /*0x1976A8*/ u32 _1976A8;
-    /*0x1976AC*/ u8 _1976AC[0x1976C0 - 0x1976AC];
+    /*0x1976AC*/ u8 _1976AC[0x1976B0 - 0x1976AC];
+    /*0x1976B0*/ s32 _1976B0;
+    /*0x1976B4*/ s32 _1976B4;
+    /*0x1976B8*/ s32 _1976B8;
+    /*0x1976BC*/ s32 _1976BC;
     /*0x1976C0*/ s32 _1976C0;
     /*0x1976C4*/ u8 _1976C4[0x1976D8 - 0x1976C4];
     /*0x1976D8*/ s16 _1976D8;
-    /*0x1976DA*/ u8 _1976DA[0x1976DE - 0x1976DA];
+    /*0x1976DA*/ s16 _1976DA;
+    /*0x1976DC*/ s16 _1976DC;
     /*0x1976DE*/ s16 _1976DE;
-    /*0x1976E0*/ u8 _1976E0[0x1976E4 - 0x1976E0];
+    /*0x1976E0*/ s16 _1976E0;
+    /*0x1976E2*/ u8 _1976E2[0x1976E4 - 0x1976E2];
     /*0x1976E4*/ s16 _1976E4;
     /*0x1976E6*/ u8 _1976E6[0x1976F2 - 0x1976E6];
     /*0x1976F2*/ s16 _1976F2;
@@ -305,7 +376,10 @@ typedef struct MenuData {
     /*0x1976FE*/ s16 _1976FE;
     /*0x197700*/ u8 _197700[6];
     /*0x197706*/ s16 _197706; // character (index into lbl_800E869C)
-    /*0x197708*/ u8 _197708[0x197710 - 0x197708];
+    /*0x197708*/ s16 _197708;
+    /*0x19770A*/ s16 _19770A;
+    /*0x19770C*/ s16 _19770C;
+    /*0x19770E*/ s16 _19770E;
     /*0x197710*/ s16 _197710;
     /*0x197712*/ s16 _197712;
     /*0x197714*/ s16 _197714;
@@ -363,7 +437,8 @@ typedef struct MenuData {
     /*0x197857*/ s8 _197857;
     /*0x197858*/ u8 _197858;
     /*0x197859*/ u8 _197859;
-    /*0x19785A*/ u8 _19785A[0x19785C - 0x19785A];
+    /*0x19785A*/ u8 _19785A;
+    /*0x19785B*/ u8 _19785B;
     /*0x19785C*/ u8 _19785C;
     /*0x19785D*/ u8 _19785D[0x197862 - 0x19785D];
     /*0x197862*/ u8 _197862;
@@ -385,7 +460,8 @@ typedef struct MenuData {
     /*0x1978F4*/ u8 _1978F4[0x1978F6 - 0x1978F4];
     /*0x1978F6*/ u8 _1978F6;
     /*0x1978F7*/ u8 _1978F7;
-    /*0x1978F8*/ u8 _1978F8[0x1978FA - 0x1978F8];
+    /*0x1978F8*/ u8 _1978F8;
+    /*0x1978F9*/ u8 _1978F9;
     /*0x1978FA*/ u8 _1978FA;
     /*0x1978FB*/ u8 _1978FB;
     /*0x1978FC*/ u8 _1978FC[0x197900 - 0x1978FC];
@@ -416,9 +492,11 @@ typedef struct MenuRecords {
 typedef struct MenuProgress {
     /*0x00*/ u8 _00[0xC6]; // indexed by lbl_800E869C[character]
     /*0xC6*/ u8 _C6[5][4];
-    /*0xDA*/ u8 _DA[0xE4 - 0xDA];
+    /*0xDA*/ u8 _DA[0xDE - 0xDA];
+    /*0xDE*/ u8 _DE[6]; // indexed by stadium (MenuCtx._441C)
     /*0xE4*/ u8 _E4[4]; // indexed by level
-    /*0xE8*/ u8 _E8[0xF4 - 0xE8];
+    /*0xE8*/ u8 _E8[6]; // indexed by stadium (MenuCtx._441C)
+    /*0xEE*/ u8 _EE[0xF4 - 0xEE];
     /*0xF4*/ u8 _F4;
     /*0xF5*/ u8 _F5;
     /*0xF6*/ u8 _F6[0xF8 - 0xF6];

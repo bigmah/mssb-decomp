@@ -2113,20 +2113,6 @@ extern void fn_2_243BC(void);
 extern void fn_2_24488(void);
 
 extern s16 lbl_2_data_3D30[][4];
-// One controller entry of lbl_803C77B8 (PadState in main/file_800A7C08.h,
-// which can't be included next to UnknownHomes_Static.h).
-typedef struct MenuPad {
-    /* 0x00 */ u16 held;
-    /* 0x02 */ u16 down;
-    /* 0x04 */ u16 repeat;
-    /* 0x06 */ u8 pad06[0xA];
-    /* 0x10 */ s8 stickX;
-    /* 0x11 */ s8 stickY;
-    /* 0x12 */ s8 substickX;
-    /* 0x13 */ s8 substickY;
-    /* 0x14 */ u8 pad14[0xC];
-} MenuPad; // size: 0x20
-
 // The running scene task (lbl_803CC1B8, a SceneTask) seen as a menu task.
 #define MENU_TASK ((MenuTask*)lbl_803CC1B8)
 extern void fn_2_68E68(void);

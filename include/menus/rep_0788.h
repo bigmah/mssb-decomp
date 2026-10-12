@@ -9,18 +9,6 @@
 typedef MenuTask MenuTableContext;
 typedef MenuTask MenuQueueState;
 
-typedef struct MenuItemState {
-    void (*func)(MenuTask* menu, struct MenuItemState* item);
-    s16 state;
-    s16 timer;
-    u8 padding08[2];
-    s16 index;
-    u8 padding0C[2];
-    s16 offset;
-    s16 unk10;
-    s16 unk12;
-    s16 unk14;
-} MenuItemState;
 
 void fn_2_24724(void);
 

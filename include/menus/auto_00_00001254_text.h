@@ -2,6 +2,7 @@
 #define __AUTO_00_00001254_TEXT_MENUS_H__
 
 #include "mssbTypes.h"
+#include "menus/menu_work.h"
 
 // Character table entry (lbl_800E8558); CharTableEntry in main/file_8004C5F8.h,
 // which declares fn_800506E8 with an s8 owner while menus calls it with an int.
@@ -93,17 +94,6 @@ typedef struct MenuButtons {
     u16 down;
     u16 repeat;
 } MenuButtons;
-
-// Per-port controller state (lbl_803C77B8); same layout as PadState in main/file_800A7C08.h,
-// which can't be included next to UnknownHomes_Static.h.
-typedef struct MenuPad {
-    /*0x00*/ u16 held;
-    /*0x02*/ u16 down;
-    /*0x04*/ u16 repeat;
-    /*0x06*/ u16 prev;
-    /*0x08*/ s8 err;
-    /*0x09*/ u8 _09[0x20 - 0x09];
-} MenuPad;
 
 u32 fn_2_1258(const void* base, u32 offset, s32 size);
 
