@@ -231,6 +231,11 @@ static inline void LoadParticleTex(TexArchive* arc, s32 idx, GXTexWrapMode wrapS
     GXLoadTexObj(&texObj, GX_TEXMAP1);
 }
 
+// Bind particle p's texture from arc.
+static inline void LoadParticleTexOf(Particle* p, TexArchive* arc) {
+    LoadParticleTex(arc, p->texIndex, GX_CLAMP, GX_CLAMP);
+}
+
 static inline void DrawParticleQuad(Particle* p, TexArchive* arc, Vec* corner) {
     s32 i;
 
@@ -661,7 +666,7 @@ void fn_80027918(u8 type, f32 v) {
 #endif
 
 // .text:0x80027968 size:0xBC4
-// NONMATCHING 64%: register allocation; the scratch arrays are addressed off the file-static bss base in the original
+// NONMATCHING 88%: register allocation; the scratch arrays are addressed off the file-static bss base (lbl_8017EC00 + offset) in the original
 #if NONMATCHING
 s32 fn_80027968(Emitter* e) {
     MtxBox ident;
@@ -1024,7 +1029,7 @@ void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u3
 #endif
 
 // .text:0x80028F48 size:0x614
-// NONMATCHING 79%: register allocation
+// NONMATCHING 96%: register allocation
 #if NONMATCHING
 s32 fn_80028F48(Emitter* e) {
     MtxBox ident;
@@ -1253,7 +1258,7 @@ void fn_800297F0(Emitter* e, Vec* pos, Vec* axis, ParticleParamsC* prm) {
 #endif
 
 // .text:0x80029CC8 size:0x504
-// NONMATCHING 62%: register allocation; the original copies the identity matrix word by word
+// NONMATCHING 93%: register allocation and stack layout; the original copies the identity matrix word by word
 #if NONMATCHING
 s32 fn_80029CC8(Emitter* e) {
     MtxBox ident;
@@ -1438,27 +1443,35 @@ u8 fn_8002A85C(Emitter* e, Particle* p) {
 #endif
 
 // .text:0x8002AC68 size:0x3AC
-// NONMATCHING 83%: register allocation
+// NONMATCHING 99%: float register allocation of the corner setup
 #if NONMATCHING
 u8 fn_8002AC68(Emitter* e, Particle* p) {
     Vec c[4];
     s32 a;
     s32 i;
+    f32 x0;
+    f32 x1;
+    f32 z0;
+    f32 z1;
 
     // flat quad on the ground (XZ plane)
+    x0 = 0.5f * -p->sizeX;
+    x1 = 0.5f * p->sizeX;
+    z0 = 0.5f * -p->sizeY;
+    z1 = 0.5f * p->sizeY;
     c[3].y = 0.0f;
-    c[0].x = -p->sizeX * 0.5f;
-    c[0].z = p->sizeY * 0.5f;
-    c[1].x = p->sizeX * 0.5f;
-    c[1].z = p->sizeY * 0.5f;
-    c[2].x = p->sizeX * 0.5f;
-    c[2].z = -p->sizeY * 0.5f;
-    c[3].x = -p->sizeX * 0.5f;
-    c[3].z = -p->sizeY * 0.5f;
+    c[0].x = x0;
+    c[0].z = z1;
+    c[1].x = x1;
+    c[1].z = z1;
+    c[2].x = x1;
+    c[2].z = z0;
+    c[3].x = x0;
+    c[3].z = z0;
     c[2].y = 0.0f;
     c[1].y = 0.0f;
     c[0].y = 0.0f;
-    LoadParticleTex(e->tex, p->texIndex, GX_CLAMP, GX_CLAMP);
+    LoadParticleTexOf(p, e->tex);
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -1808,7 +1821,7 @@ void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm) {
 #endif
 
 // .text:0x8002C56C size:0x864
-// NONMATCHING 54%: register allocation and float scheduling
+// NONMATCHING 94%: register allocation and float scheduling
 #if NONMATCHING
 s32 fn_8002C56C(Emitter* e) {
     Mtx ident;
@@ -2243,24 +2256,24 @@ s32 fn_8002E828(Emitter* e) {
 #endif
 
 // .text:0x8002ECA0 size:0x50C
-// NONMATCHING 75%: register allocation; same calls and stores
+// NONMATCHING 99%: float load order and the fcmpu operand order of the PSVECMag test
 #if NONMATCHING
 s32 fn_8002ECA0(Emitter* e) {
     Vec d;
-    s32 alive = 0;
     Particle* p = e->particles;
-    Particle** link = &e->particles;
-    Particle* lastDead = NULL;
-    Particle* deadHead = NULL;
+    s32 alive = 0;
     GXPrimitive prim;
+    Particle* deadHead = NULL;
+    Particle* lastDead = NULL;
+    Particle** link = &e->particles;
     s32 a;
 
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     do {
         PSVECSubtract(&p->pos, &p->u.trail.prev, &d);
-        LoadParticleTex(e->tex, p->texIndex, GX_CLAMP, GX_CLAMP);
-        if (PSVECMag(&d) != 0.0f) {
+        LoadParticleTexOf(p, e->tex);
+        if (0.0f != PSVECMag(&d)) {
             PSVECNormalize(&d, &d);
             PSVECScale(&d, p->u.trail.width * 0.5f, &d);
             prim = GX_TRIANGLESTRIP;
@@ -2546,7 +2559,7 @@ void fn_8002FDB8(Emitter* e, Vec* pos, Vec* dir, Vec* velScale, ParticleParams5*
             }
         }
         PSVECSubtract(&sp, &d, &d);
-        if (PSVECMag(&d) != 0.0f) {
+        if (0.0f != PSVECMag(&d)) {
             PSVECNormalize(&d, &d);
         } else {
             d.x = 0.0f;
@@ -2611,7 +2624,7 @@ void fn_80030470(Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm, u8 typ
 #endif
 
 // .text:0x80030720 size:0x668
-// NONMATCHING 60%: float register allocation and scheduling
+// NONMATCHING 96%: float register allocation and scheduling
 #if NONMATCHING
 void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm) {
     Mtx rot;
@@ -3518,7 +3531,7 @@ void fn_80034120(Mtx m) {
 }
 
 // .text:0x8003414C size:0xD4
-// NONMATCHING 43%: the original addresses these file-static bss objects off one base (lbl_8017EC00 + offset); needs the .bss split into this unit
+// NONMATCHING 74%: the original addresses these file-static bss objects off one base (lbl_8017EC00 + offset); needs the .bss split into this unit
 #if NONMATCHING
 void fn_8003414C(Mtx view) {
     s32 i;
