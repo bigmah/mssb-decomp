@@ -35,14 +35,11 @@ extern u8 lbl_800EFBA4[];
 extern s32 sndFXStartEx(s32, u8, u8, u8);
 extern s16 lbl_3_data_21E68[26]; // timings in frames
 #define MG ((Mg37A8*)g_Minigame)
-#ifndef offsetof
-#define offsetof(type, memb) ((u32) & ((type*)0)->memb)
-#endif
 // Some matched functions need the original byte-array address arithmetic (`base + (i + offset)`,
 // `base + i * stride`), which MG->field[i] / g_Fielders[i] reschedule. These keep it with named fields.
-#define MG_B(field, i) (g_Minigame[(i) + (s32)offsetof(Mg37A8, field)]) // u8 field element
-#define MG_BALL_USED(i) (g_Minigame[(i) * (s32)sizeof(MgBall) + (s32)offsetof(Mg37A8, ball[0].used)])
-#define MG_H(field) ((s16*)(g_Minigame + (s32)offsetof(Mg37A8, field))) // s16 array field
+#define MG_B(field, i) (g_Minigame[(i) + (s32)OFFSET_OF(Mg37A8, field)]) // u8 field element
+#define MG_BALL_USED(i) (g_Minigame[(i) * (s32)sizeof(MgBall) + (s32)OFFSET_OF(Mg37A8, ball[0].used)])
+#define MG_H(field) ((s16*)(g_Minigame + (s32)OFFSET_OF(Mg37A8, field))) // s16 array field
 #define FLD(i) ((InMemFielderType*)((u8*)g_Fielders + (i) * (s32)sizeof(InMemFielderType)))
 typedef struct { s16 lo; s16 hi; } MgRange;
 typedef struct { s16 lo; s16 hi; s16 lim; } MgWin;
@@ -837,7 +834,7 @@ void fn_3_14402C(s32 idx) {
             q = g_Minigame;
             c = cand;
             for (i = 0; i < 4; i++, q++) {
-                if (q[(s32)offsetof(Mg37A8, kindUsed)] == 0) {
+                if (q[(s32)OFFSET_OF(Mg37A8, kindUsed)] == 0) {
                     *c++ = i;
                     n++;
                 }
@@ -1465,14 +1462,14 @@ void fn_3_145AD0(s32 p) {
     t = MG->objOwner[p];
     m = (s8*)g_Minigame + t * 3;
     for (; k < 3; k++, m++) {
-        if (m[(s32)offsetof(Mg37A8, held)] == p) {
+        if (m[(s32)OFFSET_OF(Mg37A8, held)] == p) {
             break;
         }
     }
     g = g_Minigame + p * 0xC;
-    ((Vec*)(g + (s32)offsetof(Mg37A8, objPos)))->x = lbl_3_data_21D34[MG_B(home, t)][k].x;
-    ((Vec*)(g + (s32)offsetof(Mg37A8, objPos)))->y = lbl_3_data_21D34[MG_B(home, t)][k].y;
-    ((Vec*)(g + (s32)offsetof(Mg37A8, objPos)))->z = lbl_3_data_21D34[MG_B(home, t)][k].z;
+    ((Vec*)(g + (s32)OFFSET_OF(Mg37A8, objPos)))->x = lbl_3_data_21D34[MG_B(home, t)][k].x;
+    ((Vec*)(g + (s32)OFFSET_OF(Mg37A8, objPos)))->y = lbl_3_data_21D34[MG_B(home, t)][k].y;
+    ((Vec*)(g + (s32)OFFSET_OF(Mg37A8, objPos)))->z = lbl_3_data_21D34[MG_B(home, t)][k].z;
 }
 
 // .text:0x00145B98 size:0x320 mapped:0x80784C2C
