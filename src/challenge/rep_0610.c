@@ -4957,7 +4957,6 @@ void fn_1_16978(void) {
         }
         break;
     case 21:
-    case 25:
         if (CH_ARAM_DONE()) {
             queue->h.result = step + 1;
         }
@@ -4980,6 +4979,11 @@ void fn_1_16978(void) {
     case 24:
         lbl_8036E548.stadiumFiles = (void*)ARAMTransfer(lbl_1_data_A3D8, 0, 0, 0);
         CH_TASK->result += 1;
+        break;
+    case 25:
+        if (CH_ARAM_DONE()) {
+            queue->h.result = step + 1;
+        }
         break;
     case 26: {
         u32* offsets;

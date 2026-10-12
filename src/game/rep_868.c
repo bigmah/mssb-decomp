@@ -172,14 +172,14 @@ done:
         for (i = 0; i < 4; i++) {
             g_FieldingLogic._077[i]._1 = 0;
             g_FieldingLogic._077[i]._0 = 0;
-            if (RandomInt_Game(100) < lbl_3_data_1C30[g_Fielders[g_Minigame.minigameFielderIndex[i]]._1C4]) {
+            if (RandomInt_Game(100) < lbl_3_data_1C30[g_Fielders[g_Minigame.minigameFielderIndex[i]].aiLevel]) {
                 g_FieldingLogic._077[i]._1 = 1;
             }
         }
     } else {
         g_FieldingLogic._077[0]._1 = 0;
         g_FieldingLogic._077[0]._0 = 0;
-        if (RandomInt_Game(100) < lbl_3_data_1C30[g_Fielders[0]._1C4]) {
+        if (RandomInt_Game(100) < lbl_3_data_1C30[g_Fielders[0].aiLevel]) {
             g_FieldingLogic._077[0]._1 = 1;
         }
     }

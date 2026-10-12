@@ -762,12 +762,12 @@ void fn_2_1DC8(void) {
         lbl_8034E9A0._4708 = 1;
         ((u8*)&g_d_GameSettings)[7] = 5;
         break;
-    case 2:
+    case 3:
         lbl_8034E9A0._4708 = 3;
         ((u8*)&g_d_GameSettings)[7] = 7;
         changeScene(4, 6);
         break;
-    case 3:
+    case 2:
         lbl_8034E9A0._4708 = 2;
         ((u8*)&g_d_GameSettings)[7] = 6;
         changeScene(4, 6);
@@ -779,10 +779,10 @@ void fn_2_1DC8(void) {
         ((u8*)&g_d_GameSettings)[0xA] = 2;
         changeScene(4, 6);
         break;
-    case 5:
+    case 6:
         lbl_8034E9A0._4708 = 6;
         break;
-    case 6:
+    case 5:
         lbl_8034E9A0._4708 = 5;
         break;
     }

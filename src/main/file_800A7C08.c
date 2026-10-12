@@ -1348,6 +1348,7 @@ void fn_800A9E34(u8 chan, u8 mode, u64 serial) {
 
 // .text:0x800A9ECC size:0x480
 // NONMATCHING 84%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// jtcheck: steps 0-3 share one arm (the CardMountSteps helper switches on them itself)
 // nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800A9ECC(void) {
@@ -1477,6 +1478,7 @@ void fn_800AA34C(u8 chan, u8 mode, char* fileName, u64 serial, u8 setSerial) {
 
 // .text:0x800AA44C size:0x4E4
 // NONMATCHING 80%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// jtcheck: all steps 0-8 present; with 0-3 sharing the CardMountSteps arm mwcc picks compares, not a table
 // nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AA44C(void) {
@@ -1585,6 +1587,7 @@ void fn_800AA930(CardRequest* req, u64 serial) {
 
 // .text:0x800AAA70 size:0x474
 // NONMATCHING 76%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// jtcheck: steps 0-3 share one arm (the CardMountSteps helper switches on them itself)
 // nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AAA70(void) {
@@ -1673,6 +1676,7 @@ void fn_800AAEE4(CardRequest* req, u64 serial) {
 
 // .text:0x800AAFEC size:0x488
 // NONMATCHING 78%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// jtcheck: steps 0-3 share one arm (the CardMountSteps helper switches on them itself)
 // nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AAFEC(void) {
@@ -1751,6 +1755,7 @@ void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial) {
 
 // .text:0x800AB534 size:0x5E0
 // NONMATCHING 84%: switch jump table lives in unsplit .data (reloc names differ); steps 0-5 are written as shared inline helpers, which lay out differently
+// jtcheck: steps 0-3 share one arm (the CardMountSteps helper switches on them itself)
 // nmverify: fn_800ACD64 inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_800AB534(void) {

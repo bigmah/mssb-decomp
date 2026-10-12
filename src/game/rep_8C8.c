@@ -789,13 +789,13 @@ void fn_3_1EAA8(void) {
     if (g_d_GameSettings.GameModeSelected == 6) {
         f1 = g_Minigame.minigameFielderIndex[g_Minigame.minigameControlStruct[0].fieldOrder[1]];
         f2 = g_Minigame.minigameFielderIndex[g_Minigame.minigameControlStruct[0].fieldOrder[2]];
-        if (g_Fielders[f1].x < 0.0f && g_Fielders[f2].x < 0.0f) {
+        if (g_Fielders[f1].pos.x < 0.0f && g_Fielders[f2].pos.x < 0.0f) {
             if (g_Batter.batterHand != 0) {
                 g_AiLogic.batterAILeftRightInput = 0;
             } else {
                 g_AiLogic.batterAILeftRightInput = 2;
             }
-        } else if (g_Fielders[f1].x > 0.0f && g_Fielders[f2].x > 0.0f) {
+        } else if (g_Fielders[f1].pos.x > 0.0f && g_Fielders[f2].pos.x > 0.0f) {
             if (g_Batter.batterHand != 0) {
                 g_AiLogic.batterAILeftRightInput = 2;
             } else {

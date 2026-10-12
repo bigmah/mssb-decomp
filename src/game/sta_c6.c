@@ -814,10 +814,10 @@ void fn_3_E7388(MtxPtr unused, E7388Pair* out) {
 void fn_3_E7424(void) {
     if (g_GameLogic.gameStatus == 1 || g_GameLogic.gameStatus == 0) {
         lbl_3_bss_AE88[0]++;
-        lbl_3_bss_AE80[0] = g_Minigame._1914 != 0;
-        lbl_3_bss_AE80[1] = g_Minigame._1915 != 0;
-        lbl_3_bss_AE80[2] = g_Minigame._1916 != 0;
-        lbl_3_bss_AE80[3] = g_Minigame._1917 != 0;
+        lbl_3_bss_AE80[0] = g_Minigame._1914[0] != 0;
+        lbl_3_bss_AE80[1] = g_Minigame._1914[1] != 0;
+        lbl_3_bss_AE80[2] = g_Minigame._1914[2] != 0;
+        lbl_3_bss_AE80[3] = g_Minigame._1914[3] != 0;
         lbl_3_data_1963F = -1;
         lbl_3_data_19640 = -1;
     }

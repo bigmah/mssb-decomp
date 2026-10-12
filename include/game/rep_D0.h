@@ -23,7 +23,8 @@ typedef struct _CollisionBox {
 
 typedef struct _UNK_StadiumCollision {
     void* _00;
-    artificial_padding(0, 0x70a, void*);
+    void* _04; // effect texture archive (fn_3_BC6D8)
+    artificial_padding(0x4, 0x70a, void*);
     s16 numCollisionBoxes;
     CollisionBox* pCollisionBoxes;
     artificial_padding(0x70c, 0x774, void*);

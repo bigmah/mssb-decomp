@@ -76,9 +76,12 @@ extern GameHudFlags lbl_3_common_bss_32724;
 // Pause / in-game menu state (lbl_3_common_bss_34C90, 0x264 bytes); only the fields used here.
 typedef struct GamePauseState {
     /*0x000*/ s32 team; // team that opened the menu
-    /*0x004*/ u8 _004[0xA - 0x4];
+    /*0x004*/ u16 _004;
+    /*0x006*/ u16 _006;
+    /*0x008*/ u16 _008;
     /*0x00A*/ s16 _00A;
-    /*0x00C*/ u8 _00C[0x12 - 0xC];
+    /*0x00C*/ s16 _00C;
+    /*0x00E*/ u8 _00E[0x012 - 0x00E];
     /*0x012*/ s16 _012;
     /*0x014*/ u8 _014[0x1D0 - 0x14];
     /*0x1D0*/ u8 layout;  // index into the item layout table (lbl_3_data_D860)
@@ -91,7 +94,8 @@ typedef struct GamePauseState {
     /*0x1D8*/ u8 _1D8;
     /*0x1D9*/ u8 itemsState; // 0: opening, 2: closed, 3: done
     /*0x1DA*/ s8 cursor;
-    /*0x1DB*/ u8 _1DB[0x221 - 0x1DB];
+    /*0x1DB*/ u8 _1DB[0x220 - 0x1DB];
+    /*0x220*/ u8 _220;
     /*0x221*/ u8 _221;
     /*0x222*/ u8 _222[0x23F - 0x222];
     /*0x23F*/ u8 _23F[2]; // per team
@@ -165,7 +169,9 @@ extern void fn_80034E20(void* group, void* descs);
 extern void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, u16 value);
 extern void fn_8004D0F0(void);
 extern void fn_800486E0(s32 priority, s8 a, u8 b);
-extern void sndFXKeyOff(u32);
+#ifndef _MUSYX_MUSYX
+extern void sndFXKeyOff(u32); // musyx.h has the real prototype
+#endif
 
 void fn_3_97144(void);
 void fn_3_972A0(void* owner, s32 idx, s32 track, u32 frame);
