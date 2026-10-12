@@ -19,6 +19,7 @@ extern f32 lbl_3_rodata_2278;
 extern f32 lbl_3_rodata_227C;
 extern f32 lbl_3_rodata_2280;
 // .bss (laid out last-defined-first)
+static u8 lbl_3_bss_9F35[0x3]; // unused (alignment gap in the original)
 u8 lbl_3_bss_9F34;
 u8 lbl_3_bss_9F20[0x14];
 typedef struct {
