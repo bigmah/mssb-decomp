@@ -6,6 +6,7 @@
 #include "game/auto_00_00097144_text.h" // LayoutSlot lbl_80371C30, GameHudFlags, GamePauseState
 #include "game/auto_00_0009C578_text.h" // GameLineScore lbl_80353A90
 #include "main/file_80069BDC.h"         // SceneTask lbl_803CC1B8
+#include "main/SpaniDesc.h"
 
 // Scorebook / result-banner task (lbl_803CC1B8 while one of this unit's tasks runs).
 typedef struct ScoreBookTask {
@@ -69,10 +70,10 @@ typedef struct PitcherRecord {
 extern PitcherRecord lbl_803535C8[2][9];
 
 // Sprite descriptor tables handed to fn_80034E20.
-extern u8 lbl_3_data_273E0[0x40];
-extern u8 lbl_3_data_27420[0xC0];
-extern u8 lbl_3_data_274E0[0x760];
-extern u8 lbl_3_data_27C54[0x44];
+extern SpaniDesc lbl_3_data_273E0[2];
+extern SpaniDesc lbl_3_data_27420[6];
+extern SpaniDesc lbl_3_data_274E0[59];
+extern SpaniDesc lbl_3_data_27C54[2];
 
 extern u8 lbl_3_data_F430[][2];    // per captain: logo frames
 extern u8 lbl_3_data_27C40[2][6];  // column-header frames per page

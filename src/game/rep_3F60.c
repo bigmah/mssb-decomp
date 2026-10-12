@@ -8,11 +8,6 @@
 
 extern EffectTask* lbl_803CC1B8; // running scene task
 extern EffectAnims lbl_3_common_bss_35154;
-extern EffectData lbl_3_data_285A8;
-extern s32 lbl_3_data_28680[]; // fixed point (/100000): [1 + 3 * i] model offsets, [0xD..0x11] sizes/frames
-extern u8 lbl_3_data_28914[];
-extern u16 lbl_3_data_2891E;
-extern u16 lbl_3_data_28920;
 extern u8 lbl_803CBBC0; // current frame buffer (0/1)
 extern s32 fn_8005268C(void);
 extern void* fn_80052734(s32 index);
@@ -21,6 +16,32 @@ extern void fn_800B4C04(GameActor* actor, f32 speed);
 extern void fn_800B4CA0(GameActor* actor, f32 time);
 
 #define FIXED(x) ((f32)(x) / 100000.0f)
+
+// .data (0x285A8..0x28928), in address order.
+s32 lbl_3_data_285A8[0x36] = { // per character kind: y offset of the effect, fixed point (/100000)
+    -250000, -250000, -250000, -200000, -200000, -200000, -250000, -240000, -240000,
+    -250000, -200000, -150000, -200000, -200000, -250000, -350000, -200000, -250000,
+    -200000, -200000, -250000, -200000, -200000, -200000, -180000, -180000, -180000,
+    -250000, -200000, -200000, -200000, -200000, -200000, -250000, -250000, -250000,
+    -250000, -180000, -280000, -200000, -200000, -200000, -250000, -250000, -200000,
+    -200000, -200000, -200000, -250000, -250000, -250000, -250000, -250000, -250000,
+};
+s32 lbl_3_data_28680[0x12] = {0, 50000, 0, 0, 50000, 0, 0, 50000, 0, 0, 0, 0, 0, 300000, 100000, 300000, 100000, 300000}; // [1 + 3 * i] model offsets, [0xD..0x11] sizes/frames
+EffectNode lbl_3_data_286C8[9][2] = { // per actor, per frame buffer
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+    {{NULL, fn_3_168A6C}, {NULL, fn_3_168A6C}},
+};
+u8 lbl_3_data_28908[0xC] = {0}; // set while an actor's effect node is queued this frame
+u8 lbl_3_data_28914[0xA] = {0};
+u16 lbl_3_data_2891E = 9;
+u16 lbl_3_data_28920[4] = {9, 9, 0, 0};
 
 // NONMATCHING 99%: only scratch registers for the two index loads and the bone pointer (r27 vs r24) differ
 #if NONMATCHING
@@ -86,7 +107,6 @@ void fn_3_168414(EffectNode* node) {
 // Queues the effect node of the task's actor (at its joint) while flag bit 1 stays set.
 void fn_3_168704(void) {
     EffectTask* task = lbl_803CC1B8;
-    EffectData* d = &lbl_3_data_285A8;
     EffectNode* node;
     CharActor* actor;
     u8 idx;
@@ -96,27 +116,27 @@ void fn_3_168704(void) {
         REMOVE_QUEUE_NOARG();
         return;
     }
-    if (d->shown[task->actor] != 0) {
+    if (lbl_3_data_28908[task->actor] != 0) {
         if (lbl_80366158._28 != 0) {
-            d->flags[task->actor] &= ~1;
+            lbl_3_data_28914[task->actor] &= ~1;
         }
         REMOVE_QUEUE_NOARG();
         return;
     }
-    if (!(d->flags[task->actor] & 2)) {
-        d->flags[task->actor] &= ~1;
+    if (!(lbl_3_data_28914[task->actor] & 2)) {
+        lbl_3_data_28914[task->actor] &= ~1;
         REMOVE_QUEUE_NOARG();
         return;
     }
-    d->shown[task->actor] = 1;
+    lbl_3_data_28908[task->actor] = 1;
     idx = task->actor;
-    node = &d->nodes[idx][lbl_803CBBC0];
+    node = &lbl_3_data_286C8[idx][lbl_803CBBC0];
     node->draw = fn_3_168414;
     actor = lbl_8036E548.active[idx];
     node->frame = task->frame;
-    getAnimRelatedCoordinates(task->actor, d->joints[1], &node->pos);
-    node->pos.y += FIXED(d->kindYOfs[actor->kind]);
-    node->scale = FIXED(d->params[0x34 / 4]);
+    getAnimRelatedCoordinates(task->actor, lbl_3_data_28920[1], &node->pos);
+    node->pos.y += FIXED(lbl_3_data_285A8[actor->kind]);
+    node->scale = FIXED(lbl_3_data_28680[0x34 / 4]);
     node->objIdx = task->objIdx;
     node->animIdx = task->animIdx;
     node->animIdx2 = task->animIdx2;
@@ -206,7 +226,7 @@ void fn_3_168CD8(CharActor* actor, f32 frame, s32 unused0, s32 unused1) {
         task->actor = a;
         task->frame = 0;
         task->scale = FIXED(lbl_3_data_28680[0x3C / 4]);
-        getAnimRelatedCoordinates(a, lbl_3_data_28920, &task->pos);
+        getAnimRelatedCoordinates(a, lbl_3_data_28920[0], &task->pos);
         task->ofsIdx = 2;
         task->objIdx = 4;
         task->animIdx = 7;
@@ -219,7 +239,6 @@ void fn_3_168CD8(CharActor* actor, f32 frame, s32 unused0, s32 unused1) {
 // Queues the task's effect node at a fixed position until its animation has run once.
 void fn_3_168DFC(void) {
     EffectTask* task = lbl_803CC1B8;
-    EffectData* d = &lbl_3_data_285A8;
     EffectNode* node;
     u8* shown;
     u8 idx;
@@ -229,18 +248,18 @@ void fn_3_168DFC(void) {
         REMOVE_QUEUE_NOARG();
         return;
     }
-    shown = d->shown;
+    shown = lbl_3_data_28908;
     if (shown[task->actor] != 0) {
         REMOVE_QUEUE_NOARG();
         return;
     }
     shown[task->actor] = 1;
     idx = task->actor;
-    node = &d->nodes[idx][lbl_803CBBC0];
+    node = &lbl_3_data_286C8[idx][lbl_803CBBC0];
     node->draw = fn_3_168A6C;
     node->frame = task->frame;
     node->pos.x = task->pos.x;
-    node->pos.y = task->pos.y + FIXED(d->kindYOfs[lbl_8036E548.active[idx]->kind]);
+    node->pos.y = task->pos.y + FIXED(lbl_3_data_285A8[lbl_8036E548.active[idx]->kind]);
     node->pos.z = task->pos.z;
     node->scale = task->scale;
     node->objIdx = task->objIdx;

@@ -1,5 +1,6 @@
 #include "game/rep_21F8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_21F8
+#include "header_rep_inline.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/GX/GXPixel.h"
 
@@ -20,8 +21,8 @@ extern f32 lbl_3_rodata_227C;
 extern f32 lbl_3_rodata_2280;
 // .bss (laid out last-defined-first)
 static u8 lbl_3_bss_9F35[0x3]; // unused (alignment gap in the original)
-u8 lbl_3_bss_9F34;
-u8 lbl_3_bss_9F20[0x14];
+static u8 lbl_3_bss_9F34;
+static u8 lbl_3_bss_9F20[0x14];
 typedef struct {
     u8 pad0[0x26C];
     E21F8 ents[2];

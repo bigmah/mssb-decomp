@@ -98,6 +98,15 @@ menus.rel's `.bss` ends with a common block from `0xB644` to `0x340DDC` (~3.3 MB
   `lbl_2_bss_33FBF8` are unreferenced block starts, and the last block (`0x340234`) is assigned to `rep_1028.c`
   (not linked) so that the linked `rep_0FD8.c` needs no common definitions.
 
+## In this project (game.rel)
+
+game.rel's common block runs from `0xD714` to `0x3744E` (~171 KB, 42 globals such as `g_Stats`, `g_Minigame`,
+`g_Camera`). No inflation gap appears: every symbol's address gap equals its real size (checked against the struct
+sizes in `UnknownHomes_Game.h`; `inMemCamera` was 4 bytes short and is now 0x28B0). So each original object owned at
+most one common, and the split gives every global its own unit, `src/game/common/<name>.c`, with `order:N` in
+`splits.txt` to keep them in address order (dtk otherwise places bss-only units at the front in reverse order).
+The module compiles with `-common on`, so the linked units' own uninitialised globals are `static`.
+
 ## In this project (challenge.rel)
 
 challenge.rel's `.bss` ends with a common region `0x472B4`-`0x4C720` (after rep_7BF0's `.bss`). It links byte-for-byte

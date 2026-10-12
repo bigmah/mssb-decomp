@@ -6,6 +6,132 @@ Sections:
 	.data       type:data align:32
 	.bss        type:bss align:32
 
+game/common/g_UNK_StadiumDetails.c: order:1
+	.bss        start:0x0000D714 end:0x0000DE94 align:4 common
+
+game/common/lbl_3_common_bss_DE94.c: order:2
+	.bss        start:0x0000DE94 end:0x00010988 align:4 common
+
+game/common/g_pCamera.c: order:3
+	.bss        start:0x00010988 end:0x0001098C align:4 common
+
+game/common/g_Camera.c: order:4
+	.bss        start:0x0001098C end:0x0001323C align:4 common
+
+game/common/lbl_3_common_bss_1323C.c: order:5
+	.bss        start:0x0001323C end:0x000134C4 align:4 common
+
+game/common/lbl_3_common_bss_134C4.c: order:6
+	.bss        start:0x000134C4 end:0x00013748 align:4 common
+
+game/common/g_ReplayCopies.c: order:7
+	.bss        start:0x00013748 end:0x00024C04 align:4 common
+
+game/common/g_ReplayLogic.c: order:8
+	.bss        start:0x00024C04 end:0x00029704 align:4 common
+
+game/common/g_Stats.c: order:9
+	.bss        start:0x00029704 end:0x0002DD38 align:4 common
+
+game/common/g_Runners.c: order:10
+	.bss        start:0x0002DD38 end:0x0002E288 align:4 common
+
+game/common/g_Fielders.c: order:11
+	.bss        start:0x0002E288 end:0x0002F830 align:4 common
+
+game/common/g_Batter.c: order:12
+	.bss        start:0x0002F830 end:0x0002F8E0 align:4 common
+
+game/common/g_Pitcher.c: order:13
+	.bss        start:0x0002F8E0 end:0x0002FA58 align:4 common
+
+game/common/g_Ball.c: order:14
+	.bss        start:0x0002FA58 end:0x00031650 align:4 common
+
+game/common/g_RunningLogic.c: order:15
+	.bss        start:0x00031650 end:0x00031670 align:4 common
+
+game/common/g_FieldingLogic.c: order:16
+	.bss        start:0x00031670 end:0x000317C0 align:4 common
+
+game/common/g_Scores.c: order:17
+	.bss        start:0x000317C0 end:0x00031888 align:4 common
+
+game/common/g_Strikes.c: order:18
+	.bss        start:0x00031888 end:0x000318AC align:4 common
+
+game/common/g_GameLogic.c: order:19
+	.bss        start:0x000318AC end:0x00031A04 align:4 common
+
+game/common/g_AiLogic.c: order:20
+	.bss        start:0x00031A04 end:0x00031AC0 align:4 common
+
+game/common/unkSimulationRelatedStruct.c: order:21
+	.bss        start:0x00031AC0 end:0x00031ACC align:4 common
+
+game/common/g_UnkThrowing_31ACC.c: order:22
+	.bss        start:0x00031ACC end:0x00031EAC align:4 common
+
+game/common/g_UnkAnimation_31EAC.c: order:23
+	.bss        start:0x00031EAC end:0x000321A0 align:4 common
+
+game/common/lbl_3_common_bss_321A0.c: order:24
+	.bss        start:0x000321A0 end:0x00032220 align:4 common
+
+game/common/lbl_3_common_bss_32220.c: order:25
+	.bss        start:0x00032220 end:0x00032230 align:4 common
+
+game/common/lbl_3_common_bss_32230.c: order:26
+	.bss        start:0x00032230 end:0x00032234 align:4 common
+
+game/common/lbl_3_common_bss_32234.c: order:27
+	.bss        start:0x00032234 end:0x0003223C align:4 common
+
+game/common/lbl_3_common_bss_3223C.c: order:28
+	.bss        start:0x0003223C end:0x00032718 align:4 common
+
+game/common/g_UnkSound_32718.c: order:29
+	.bss        start:0x00032718 end:0x00032724 align:4 common
+
+game/common/lbl_3_common_bss_32724.c: order:30
+	.bss        start:0x00032724 end:0x00032848 align:4 common
+
+game/common/g_Controls.c: order:31
+	.bss        start:0x00032848 end:0x00032888 align:4 common
+
+game/common/lbl_3_common_bss_32888.c: order:32
+	.bss        start:0x00032888 end:0x00032A38 align:4 common
+
+game/common/lbl_3_common_bss_32A38.c: order:33
+	.bss        start:0x00032A38 end:0x00032A94 align:4 common
+
+game/common/lbl_3_common_bss_32A94.c: order:34
+	.bss        start:0x00032A94 end:0x00032B20 align:4 common
+
+game/common/lbl_3_common_bss_32B20.c: order:35
+	.bss        start:0x00032B20 end:0x00034C58 align:4 common
+
+game/common/lbl_3_common_bss_34C58.c: order:36
+	.bss        start:0x00034C58 end:0x00034C90 align:4 common
+
+game/common/lbl_3_common_bss_34C90.c: order:37
+	.bss        start:0x00034C90 end:0x00034EF4 align:4 common
+
+game/common/g_Practice.c: order:38
+	.bss        start:0x00034EF4 end:0x000350E4 align:4 common
+
+game/common/lbl_3_common_bss_350E4.c: order:39
+	.bss        start:0x000350E4 end:0x00035154 align:4 common
+
+game/common/lbl_3_common_bss_35154.c: order:40
+	.bss        start:0x00035154 end:0x000355D4 align:4 common
+
+game/common/g_Minigame.c: order:41
+	.bss        start:0x000355D4 end:0x00037400 align:4 common
+
+game/common/lbl_3_common_bss_37400.c: order:42
+	.bss        start:0x00037400 end:0x0003744E align:4 common
+
 game/rep_0.c:
 	.text       start:0x00000000 end:0x000004F4
 	.rodata     start:0x00000000 end:0x00000060
@@ -14,8 +140,8 @@ game/rep_0.c:
 
 game/rep_60.c:
 	.text       start:0x000004F4 end:0x000008D4
-	.rodata     start:0x00000060 end:0x000000D0
-	.data       start:0x000001D0 end:0x000001F8
+	.rodata     start:0x00000060 end:0x000000CD
+	.data       start:0x000001D0 end:0x000001F4
 
 game/rep_D0.c:
 	.text       start:0x000008D4 end:0x000014A4
@@ -110,11 +236,11 @@ game/rep_FE0.c:
 
 game/rep_1038.c:
 	.text       start:0x0006BEA4 end:0x0006C410
-	.rodata     start:0x00001038 end:0x00001090
+	.rodata     start:0x00001038 end:0x0000108C
 
 game/rep_1090.c:
 	.text       start:0x0006C4D0 end:0x0006C854
-	.rodata     start:0x00001090 end:0x000010E8
+	.rodata     start:0x00001090 end:0x000010E4
 
 game/rep_10E8.c:
 	.text       start:0x0006CD88 end:0x0006D4A0
@@ -151,7 +277,7 @@ game/m_sound.c:
 
 game/rep_1610.c:
 	.text       start:0x000912B4 end:0x0009143C
-	.rodata     start:0x00001610 end:0x00001668
+	.rodata     start:0x00001610 end:0x00001664
 
 game/rep_1668.c:
 	.rodata     start:0x00001668 end:0x000016B8
@@ -170,11 +296,11 @@ game/rep_1770.c:
 
 game/rep_17E0.c:
 	.text       start:0x0009CAF0 end:0x0009CD90
-	.rodata     start:0x000017E0 end:0x00001838
+	.rodata     start:0x000017E0 end:0x00001834
 
 game/rep_1838.c:
 	.text       start:0x0009EAE4 end:0x000A009C
-	.rodata     start:0x00001838 end:0x000018E8
+	.rodata     start:0x00001838 end:0x000018E4
 
 game/rep_18E8.c:
 	.text       start:0x000A009C end:0x000AC9F8
@@ -193,7 +319,7 @@ game/rep_1B20.c:
 
 game/rep_1B70.c:
 	.text       start:0x000B3A4C end:0x000B3B70
-	.rodata     start:0x00001B70 end:0x00001BC8
+	.rodata     start:0x00001B70 end:0x00001BC4
 
 game/rep_1BC8.c:
 	.rodata     start:0x00001BC8 end:0x00001C18
@@ -210,14 +336,14 @@ game/rep_1CB8.c:
 
 game/rep_1D58.c:
 	.text       start:0x000B7FC8 end:0x000BA150
-	.rodata     start:0x00001D58 end:0x00001E08
+	.rodata     start:0x00001D58 end:0x00001E04
 	.data       start:0x00010AB0 end:0x000111A8
 	.bss        start:0x00001900 end:0x00009950
 
 game/rep_1E08.c:
 	.text       start:0x000BA538 end:0x000C0810
 	.rodata     start:0x00001E08 end:0x00001F58
-	.data       start:0x000170F0 end:0x00017248
+	.data       start:0x000111A8 end:0x000170F0
 	.bss        start:0x00009950 end:0x00009D20
 
 game/rep_1F58.c:
@@ -228,6 +354,7 @@ game/rep_1F58.c:
 game/rep_1FD8.c:
 	.text       start:0x000C1964 end:0x000C937C
 	.rodata     start:0x00001FD8 end:0x000021F8
+	.data       start:0x00017508 end:0x00017898
 	.bss        start:0x00009D80 end:0x00009F20
 
 game/rep_21F8.c:
@@ -238,23 +365,31 @@ game/rep_21F8.c:
 game/sta_c0.c:
 	.text       start:0x000C9744 end:0x000CABB4
 	.rodata     start:0x00002288 end:0x00002308
+	.data       start:0x00017B98 end:0x00017D08
 	.bss        start:0x00009F38 end:0x00009FDC
 
 game/rep_2308.c:
 	.text       start:0x000CABF0 end:0x000CB344
-	.rodata     start:0x00002308 end:0x00002390
+	.rodata     start:0x00002308 end:0x0000238C
+	.data       start:0x00017D08 end:0x00017DC0
 
 game/rep_2390.c:
 	.text       start:0x000CB3AC end:0x000CB6B4
 	.rodata     start:0x00002390 end:0x000023E8
+	.data       start:0x00017DC0 end:0x00018268
+
+auto_00_000CB6B4_text:
+	.text       start:0x000CB6B4 end:0x000CB738
+	.data       start:0x00018268 end:0x000182BC
 
 game/rep_23E8.c:
 	.text       start:0x000CB738 end:0x000CB8A8
-	.rodata     start:0x000023E8 end:0x00002448
+	.rodata     start:0x000023E8 end:0x00002444
 
 game/sta_c2.c:
 	.text       start:0x000CB8A8 end:0x000D8A10
 	.rodata     start:0x00002448 end:0x000028A8
+	.data       start:0x000182C0 end:0x000188E8
 	.bss        start:0x0000A018 end:0x0000AE00
 
 game/rep_28A8.c:
@@ -264,16 +399,18 @@ game/rep_28A8.c:
 
 game/rep_2940.c:
 	.text       start:0x000E11E0 end:0x000E1964
-	.rodata     start:0x00002940 end:0x00002998
+	.rodata     start:0x00002940 end:0x00002994
 
 game/rep_2998.c:
 	.text       start:0x000E1DB8 end:0x000E587C
 	.rodata     start:0x00002998 end:0x00002B40
+	.data       start:0x00018D98 end:0x00019018
 	.bss        start:0x0000AE00 end:0x0000AE50
 
 game/sta_c6.c:
 	.text       start:0x000E59B4 end:0x000E911C
 	.rodata     start:0x00002B40 end:0x00002BF8
+	.data       start:0x00019018 end:0x00019770
 	.bss        start:0x0000AE50 end:0x0000AEE0
 
 game/rep_2BF8.c:
@@ -288,6 +425,7 @@ game/sta_c5.c:
 game/sta_c4.c:
 	.text       start:0x000F8444 end:0x000FBCD0
 	.rodata     start:0x00002F68 end:0x00003090
+	.data       start:0x0001BA88 end:0x0001C0A8
 	.bss        start:0x0000B570 end:0x0000B678
 
 auto_00_000FBCD0_text:
@@ -317,12 +455,13 @@ game/rep_3290.c:
 game/rep_3310.c:
 	.text       start:0x00116840 end:0x0011D3AC
 	.rodata     start:0x00003310 end:0x00003448
+	.data       start:0x000225F0 end:0x000226E0
 	.bss        start:0x0000B6B8 end:0x0000B700
 
 game/rep_3448.c:
 	.text       start:0x0011EC28 end:0x001293D0
 	.rodata     start:0x00003448 end:0x000034B0
-	.data       start:0x000264D0 end:0x0002650C
+	.data       start:0x000226E0 end:0x0002650C
 
 game/rep_34B0.c:
 	.text       start:0x0012E8FC end:0x00132EDC
@@ -344,6 +483,7 @@ game/rep_36D8.c:
 game/rep_37A8.c:
 	.text       start:0x00141C44 end:0x001471C0
 	.rodata     start:0x000037A8 end:0x00003880
+	.data       start:0x00026698 end:0x000266A8
 	.bss        start:0x0000B7C0 end:0x0000B850
 
 game/rep_3880.c:
@@ -360,21 +500,29 @@ game/rep_3A98.c:
 game/rep_3AE8.c:
 	.text       start:0x0015B79C end:0x0015C230
 	.rodata     start:0x00003AE8 end:0x00003B70
+	.data       start:0x00026F78 end:0x000271A4
 
 game/rep_3B70.c:
 	.text       start:0x0015C3F8 end:0x0015C5F4
 	.rodata     start:0x00003B70 end:0x00003BD8
+	.data       start:0x000271A8 end:0x000273E0
 
 game/rep_3BD8.c:
 	.rodata     start:0x00003BD8 end:0x00003C28
 
+auto_00_0015C5F4_text:
+	.text       start:0x0015C5F4 end:0x0015F574
+	.data       start:0x000273E0 end:0x00027C94
+
 game/rep_3C28.c:
 	.text       start:0x0015F574 end:0x0015F648
-	.rodata     start:0x00003C28 end:0x00003C80
+	.rodata     start:0x00003C28 end:0x00003C7C
+	.data       start:0x00027C98 end:0x00027D58
 
 game/rep_3C80.c:
 	.text       start:0x0015F648 end:0x0015F874
 	.rodata     start:0x00003C80 end:0x00003CE0
+	.data       start:0x00027D58 end:0x00027EC0
 
 game/rep_3CE0.c:
 	.text       start:0x0015FB84 end:0x00160578
@@ -382,7 +530,8 @@ game/rep_3CE0.c:
 
 game/rep_3D50.c:
 	.text       start:0x00160578 end:0x001608F0
-	.rodata     start:0x00003D50 end:0x00003DA8
+	.rodata     start:0x00003D50 end:0x00003DA4
+	.data       start:0x000281F0 end:0x00028418
 	.bss        start:0x0000B9B8 end:0x0000B9E0
 
 game/rep_3DA8.c:
@@ -394,9 +543,14 @@ game/rep_3E00.c:
 	.text       start:0x00166448 end:0x001665E4
 	.rodata     start:0x00003E00 end:0x00003E58
 
+auto_00_001665E4_text:
+	.text       start:0x001665E4 end:0x001666B0
+	.data       start:0x000284E8 end:0x00028508
+
 game/rep_3E58.c:
 	.text       start:0x001666B0 end:0x00167CC4
-	.rodata     start:0x00003E58 end:0x00003F60
+	.rodata     start:0x00003E58 end:0x00003F5C
+	.data       start:0x00028508 end:0x0002856F
 	.bss        start:0x0000B9E0 end:0x0000BA00
 
 auto_00_00167CC4_text:
@@ -406,6 +560,7 @@ auto_00_00167CC4_text:
 game/rep_3F60.c:
 	.text       start:0x00168414 end:0x001690C0
 	.rodata     start:0x00003F60 end:0x00003FD8
+	.data       start:0x000285A8 end:0x00028928
 
 game/kinoko.c:
 	.text       start:0x0016917C end:0x0016C410
@@ -420,4 +575,5 @@ game/rep_4090.c:
 game/rep_4138.c:
 	.text       start:0x0016D810 end:0x0016E3A4
 	.rodata     start:0x00004138 end:0x000041B8
+	.data       start:0x0002A448 end:0x0002A4A8
 	.bss        start:0x0000D6E0 end:0x0000D714

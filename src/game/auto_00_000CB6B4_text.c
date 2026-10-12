@@ -9,11 +9,11 @@ typedef struct CB6B4State {
 
 extern CB6B4State lbl_3_common_bss_35154;
 extern void* lbl_3_bss_9FDC;
-// Completes the forward declaration from UnknownHomes_Static.h with the one field used here
-// (full layout: ParticleParamsC in main/file_800263FC.h).
+// Completes the forward declaration from UnknownHomes_Static.h (same layout as ParticleParamsC in
+// main/file_800263FC.h, which conflicts with UnknownHomes_Static.h here).
 struct ParticleParamsC {
-    void* tex; // 0x00: TexArchive*
-    u8 pad4[0x54 - 0x4];
+    /* 0x00 */ void* tex; // TexArchive*
+    /* 0x04 */ s32 prm[20];
 };
 extern struct ParticleParamsC lbl_3_data_18268;
 
@@ -35,3 +35,5 @@ void fn_3_CB6B4(void** file) {
     convertTextureHeader(lbl_3_bss_9FDC = *file);
 }
 
+// .data 0x18268: particle burst parameters (tex is filled in by fn_3_CB6EC).
+struct ParticleParamsC lbl_3_data_18268 = {NULL, {25, 100, 40, 60, 18000, 20000, -2000000, 2000000, 80000, 100000, 200, -1, 0, 0, 1, 0, 0, 0, 0, 0}};

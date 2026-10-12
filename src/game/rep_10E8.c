@@ -1,5 +1,6 @@
 #include "game/rep_10E8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_10E8
+#include "header_rep_inline.h"
 #include "static/Pad.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/rep_1838.h"

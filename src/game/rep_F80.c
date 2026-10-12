@@ -1,5 +1,6 @@
 #include "game/rep_F80.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_F80
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/GameSettings.h"
 #include "main/file_80011640.h" // lbl_8036E548 (CharMgr), getAnimRelatedCoordinates

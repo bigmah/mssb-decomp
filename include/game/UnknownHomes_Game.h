@@ -2738,7 +2738,8 @@ typedef struct {
     /* 0x28A7 */ u8 _28A7;
     /* 0x28A8 */ u8 _28A8;
     /* 0x28A9 */ u8 _28A9; // 1: restart the view loop (fn_3_1CE90)
-} inMemCamera;
+    /* 0x28AA */ u8 _28AA[0x28B0 - 0x28AA];
+} inMemCamera; // size: 0x28B0 (g_Camera)
 
 extern inMemCamera *g_pCamera;
 extern inMemCamera g_Camera;
@@ -3088,5 +3089,7 @@ extern int RandomIndexFromWeights(u8* weights, int count);
 extern void fn_3_FBDAC(int);
 extern void fn_3_FBE24(void);
 extern BOOL checkFieldingStat(int, int, E(int, FIELDING_ABILITY));
+
+#include "game/BurstParams.h"
 
 #endif // !__UNKNOWN_HOMES_H_

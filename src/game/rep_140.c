@@ -1,5 +1,6 @@
 #include "game/rep_140.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_140
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "main/file_80022DAC.h"
 

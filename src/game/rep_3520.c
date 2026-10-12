@@ -6,7 +6,8 @@
 #include "Dolphin/mtx.h"
 #include "Dolphin/stl.h"
 #include "game/UnknownHomes_Game.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3520
+#include "header_rep_inline.h"
 #include "stl/math.h"
 #pragma dont_inline on
 

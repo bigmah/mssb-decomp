@@ -1,5 +1,6 @@
 #include "game/rep_3C80.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3C80
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/GameSettings.h"
 #include "main/file_800263FC.h"
@@ -23,6 +24,36 @@ extern struct {
 } lbl_3_common_bss_35154;
 extern BatFxTables lbl_800FC0FC;
 void fn_80064344(Vec* pos, Vec* v);
+
+// .data 0x00027D58..0x00027EC0
+HitFxParams lbl_3_data_27D58 = {
+    {NULL, 4, 10, 70000, 30000, 78000, 30, 10, 109000, 101000, 0, 30, 12800000, 0, 0, 0, 0, -256, 0, 75000},
+    {NULL, 2, 30, 20, 40, 10000, 20000, 0, 0, 50000, 60000, 10, -16777088, 16, 16, 1, 0, 0, 0, 0, 0},
+    {
+        NULL,
+        4,
+        10,
+        80000,
+        90000,
+        50000,
+        30,
+        10,
+        104000,
+        105999,
+        0,
+        60,
+        12800000,
+        10000000,
+        1000000,
+        6000000,
+        0x3C3C3C00,
+        0,
+        0,
+        0,
+    },
+    {NULL, 29, 15, 20, 30, 13000, 15000, -3000000, 3000000, 50000, 60000, 0, -1, 5, 10, 0, 0, 0, 0, 0, 1},
+    {30000, 30000, 24000, 0, 0, 0, 0, 0},
+};
 
 // NONMATCHING 79%: orig reaches minMag[1]/[2] and the int->float double via addi base; lwz 4(rX) (unfolded),
 // and passes kind to fn_8004AD54 without clrlwi (its game-side prototype likely took an int); rest is scheduling

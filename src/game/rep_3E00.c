@@ -1,5 +1,6 @@
 #include "game/rep_3E00.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3E00
+#include "header_rep_inline.h"
 
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_common_bss_32724[];

@@ -1,5 +1,6 @@
 #include "game/rep_34B0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_34B0
+#include "header_rep_inline.h"
 
 #include "game/UnknownHomes_Game.h"
 #include "musyx/musyx.h"

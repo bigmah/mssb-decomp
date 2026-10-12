@@ -1,5 +1,6 @@
 #include "game/rep_3090.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3090
+#include "header_rep_inline.h"
 #include "Dolphin/mtxext.h"
 #include "Dolphin/GX.h"
 
@@ -52,7 +53,7 @@ extern u32 lbl_3_rodata_30EC[];
 extern u8 g_Camera[];
 // .bss (laid out last-defined-first)
 static u8 lbl_3_bss_B67C[0x1C]; // unused
-s16 lbl_3_bss_B67A;
+static s16 lbl_3_bss_B67A;
 static u8 lbl_3_bss_B678[0x2]; // unused
 extern void* memset(void*, s32, u32);
 extern void* memcpy(void*, const void*, u32);

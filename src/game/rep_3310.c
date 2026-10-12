@@ -1,7 +1,9 @@
 #include "game/rep_3310.h"
+#include "Unknown/File_0x800a64e0.h"
 #include "game/rep_1D58.h"
 #include "game/rep_1C0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3310
+#include "header_rep_inline.h"
 #include "C3/geoPalette.h"
 #include "C3/anim.h"
 #include "Dolphin/GX.h"
@@ -23,9 +25,10 @@ extern camera_803c639c_s* fn_80052768_getCamera(int index);
 
 // The unit's .data (0x225F0-0x226E0). Defined here: the original reaches these through one pooled
 // base. Address order (initialized data keeps declaration order).
-u32 lbl_3_data_225F0[12] = { // ARAM load records (auto_00_0011D3AC reads +0x10)
-    0x0000040B, 0x40001640, 0x08EB4800, 0x00000C38, 0x0000040B, 0x400B2D00,
-    0x08EB5800, 0x0006A948, 0x00000000, 0x00000686, 0x08F20800, 0x00000688,
+AssetLoadInstructions lbl_3_data_225F0[3] = { // ARAM load records (auto_00_0011D3AC reads [1])
+    {1035, {0x40001640}, {0x8EB4800}, 3128},
+    {1035, {0x400B2D00}, {0x8EB5800}, 436552},
+    {0, {1670}, {0x8F20800}, 1672},
 };
 f32 lbl_3_data_22620[3] = { 0.0f, -0.15f, 18.5f };
 f32 lbl_3_data_2262C = 0.45f;
@@ -90,6 +93,7 @@ extern void fn_800B0A14_removeQueue(void*);
 extern void fn_80024FA4(void* model, void* data, void* state, s32 frame);
 extern void* _OSAllocFromHeap(int, int);
 extern void fn_80025C58(void*, void*);
+
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
 // Places the 3 runners (sprites 0x82..0x84); a runner that just started (state 0x1C == 1)
@@ -1792,4 +1796,5 @@ void fn_3_11D2C8(s32 idx, s32 start, s32 count, void* animBank, struct sHdr* skH
         CTRLSetRotation(&lbl_8036E548.objs->objects[k].worldControl.base, 0.0f, 0.0f, 0.0f);
     }
 }
+
 

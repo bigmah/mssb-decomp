@@ -1,5 +1,6 @@
 #include "game/rep_1C0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1C0
+#include "header_rep_inline.h"
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
@@ -207,7 +208,7 @@ StadiumDrawData lbl_3_data_7EC = {
 
 StadiumDrawFn lbl_3_data_A10[2] = {NULL, NULL}; // per camera set: deferred draw callback
 
-void (*lbl_3_bss_18[6])(void); // extra stadium draw hook (fn_3_35E4); only [0] is used
+static void (*lbl_3_bss_18[6])(void); // extra stadium draw hook (fn_3_35E4); only [0] is used
 extern f32 lbl_3_rodata_504;
 extern f32 lbl_3_rodata_524;
 extern f32 lbl_3_rodata_528;

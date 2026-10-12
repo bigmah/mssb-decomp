@@ -1,5 +1,6 @@
 #include "game/rep_1D58.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1D58
+#include "header_rep_inline.h"
 #include "C3/control.h"
 #include "C3/light.h"
 #include "main/file_800BD8C4.h"
@@ -216,15 +217,15 @@ f32 lbl_3_data_11178[5] = {
 
 // .bss (laid out last-defined-first)
 static u32 lbl_3_bss_9944[3]; // unused
-void* lbl_3_bss_9940; // one-shot callback run by fn_3_B95EC
-u8 lbl_3_bss_1940[0x8000]; // texture buffer handed out once by fn_3_B9534
-f32 lbl_3_bss_1910[12]; // bounding box: min xyz, max xyz
-StadiumObj* lbl_3_bss_190C;
-f32 lbl_3_bss_1908; // depth fade floor
-void* lbl_3_bss_1904; // saved copy of the stadium objects
+static void* lbl_3_bss_9940; // one-shot callback run by fn_3_B95EC
+static u8 lbl_3_bss_1940[0x8000]; // texture buffer handed out once by fn_3_B9534
+static f32 lbl_3_bss_1910[12]; // bounding box: min xyz, max xyz
+static StadiumObj* lbl_3_bss_190C;
+static f32 lbl_3_bss_1908; // depth fade floor
+static void* lbl_3_bss_1904; // saved copy of the stadium objects
 static u8 lbl_3_bss_1903; // unused
-u8 lbl_3_bss_1902;
-u8 lbl_3_bss_1901;
+static u8 lbl_3_bss_1902;
+static u8 lbl_3_bss_1901;
 static u8 lbl_3_bss_1900; // unused
 
 typedef struct DspObj DspObj;
