@@ -1103,7 +1103,6 @@ void fn_3_BA7F4(Emitter* a) {
     f32 c;
     f32 x;
     f64 ax;
-    u16 w;
     s32 v;
     up = lbl_3_rodata_1E58;
     GXSetZMode(1, 7, 1);
@@ -1124,9 +1123,8 @@ void fn_3_BA7F4(Emitter* a) {
     GXSetTevColorOp(0, 0, 0, 0, 0, 0);
     GXSetTevAlphaOp(0, 0, 0, 0, 0, 0);
     n = a->particles;
-    w = *(u16*)((u8*)a + 0x14); // the unk14:4 / count:12 halfword, read whole
-    cnt = w & 0xFFF;
-    arr = _OSAllocFromHeap(0x20, (w & 0xFFF) << 3);
+    cnt = a->count;
+    arr = _OSAllocFromHeap(0x20, a->count << 3);
     q = arr;
     while (n != NULL) {
         q->node = n;
