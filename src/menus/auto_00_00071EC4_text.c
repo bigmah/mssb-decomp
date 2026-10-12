@@ -1008,7 +1008,7 @@ void fn_2_83974(MenuTask* o) {
     }
 }
 
-extern u8 lbl_8037169C[];
+#include "main/file_8001FE00.h" // SceneFade lbl_8037169C
 extern void changeScene(s32 a, s32 b);
 
 // fn_2_7463C, size:0x1C0
@@ -1030,7 +1030,7 @@ s32 fn_2_7463C(MenuTask* o) {
                 MENU_SLOT_OBJ(lbl_80371C30, 3 + o->baseIdx + i)->flags &= ~2;
             }
         }
-        if (lbl_8037169C[0x10] != 0) {
+        if (lbl_8037169C.state != 0) {
             changeScene(1, 6);
         }
         MENU_SLOT_OBJ(&lbl_80371C30[32], o->baseIdx)->_5C = 0;
@@ -2463,7 +2463,7 @@ void fn_2_747FC(void) {
                     MN_SLOT(3 + BASE(o) + i)->flags &= ~2;
                 }
             }
-            if (lbl_8037169C[0x10] != 0) {
+            if (lbl_8037169C.state != 0) {
                 changeScene(1, 6);
             }
             MN_SLOT(0x20 + BASE(o))->_5C = 0;
@@ -3193,16 +3193,29 @@ void fn_2_82EC0(void) {
 }
 
 extern u8 lbl_2_data_2D998[];
+extern u8 lbl_2_data_2E2ED[3];
+// The original reaches lbl_2_data_2DC84 (icon per selection, 8 bytes), lbl_2_data_2E2EC
+// (current selection) and lbl_2_data_2E2ED (previous selection) from the pooled base
+// lbl_2_data_2D998; the matching build keeps that addressing, other builds name them.
+#if NONMATCHING
+#define SEL_ICON(i) (lbl_2_data_2DC84[i])
+#define SEL_CUR (*(u8*)&lbl_2_data_2E2EC)
+#define SEL_PREV (lbl_2_data_2E2ED[0])
+#else
+#define SEL_ICON(i) (lbl_2_data_2D998[0x2EC + (i)])
+#define SEL_CUR (lbl_2_data_2D998[0x954])
+#define SEL_PREV (lbl_2_data_2D998[0x955])
+#endif
 
 // NONMATCHING 75%: SelIcon inline expands with extra loads/extensions; register allocation
 #if NONMATCHING
-// lbl_2_data_2D998 + 0x2EC: icon per selection; icon 1 is swapped for `alt` when lbl_80361B20._F5 == 0.
+// SEL_ICON: icon per selection; icon 1 is swapped for `alt` when lbl_80361B20._F5 == 0.
 static inline s16 SelIcon(s8 v, u8 alt) {
     s32 swap = 0;
-    if (lbl_2_data_2D998[0x2EC + lbl_2_bss_F410._44] == 1 && lbl_80361B20._F5 == 0) {
+    if (SEL_ICON(lbl_2_bss_F410._44) == 1 && lbl_80361B20._F5 == 0) {
         swap = 1;
     }
-    return swap ? alt : lbl_2_data_2D998[0x2EC + v];
+    return swap ? alt : SEL_ICON(v);
 }
 
 // fn_2_83B34, size:0x660
@@ -3221,15 +3234,15 @@ void fn_2_83B34(MenuTask* o, s8 sel) {
                 MN_SLOT(1 + BASE(o))->color = (MN_SLOT(1 + BASE(o))->color & ~0xFF) | 0xFF;
                 MN_SLOT(BASE(o))->_5C = 0;
                 MN_SLOT(1 + BASE(o))->_5C = 0xA0000;
-                fn_800363D8(o, 0, 1, 0x20, lbl_2_data_2D998[0x2EC + sel]);
-                if ((s8)lbl_2_data_2D998[0x954] == -1) {
-                    fn_800363D8(o, 1, 1, 0x20, lbl_2_data_2D998[0x2EC + sel]);
+                fn_800363D8(o, 0, 1, 0x20, SEL_ICON(sel));
+                if ((s8)SEL_CUR == -1) {
+                    fn_800363D8(o, 1, 1, 0x20, SEL_ICON(sel));
                 } else {
-                    fn_800363D8(o, 1, 1, 0x20, lbl_2_data_2D998[0x2EC + (s8)lbl_2_data_2D998[0x954]]);
+                    fn_800363D8(o, 1, 1, 0x20, SEL_ICON((s8)SEL_CUR));
                 }
                 MN_SLOT(BASE(o))->_68 = 1;
                 MN_SLOT(1 + BASE(o))->_68 = 1;
-                sel = lbl_2_data_2D998[0x954];
+                sel = SEL_CUR;
             }
         } else {
             MN_SLOT(BASE(o))->color = (MN_SLOT(BASE(o))->color & ~0xFF) | 0xFF;
@@ -3237,10 +3250,10 @@ void fn_2_83B34(MenuTask* o, s8 sel) {
             MN_SLOT(BASE(o))->_5C = 0;
             MN_SLOT(1 + BASE(o))->_5C = 0xA0000;
             fn_800363D8(o, 0, 1, 0x20, SelIcon(sel, 0x12));
-            if ((s8)lbl_2_data_2D998[0x954] == -1) {
+            if ((s8)SEL_CUR == -1) {
                 fn_800363D8(o, 1, 1, 0x20, SelIcon(sel, 0x12));
             } else {
-                u8 t = lbl_2_data_2D998[0x2EC + (s8)lbl_2_data_2D998[0x954]];
+                u8 t = SEL_ICON((s8)SEL_CUR);
                 fn_800363D8(o, 1, 1, 0x20, (s16)((t == 1 && lbl_80361B20._F5 == 0) ? 0x12 : t));
             }
             MN_SLOT(BASE(o))->_68 = 1;
@@ -3274,8 +3287,8 @@ void fn_2_83B34(MenuTask* o, s8 sel) {
             n += fn_80042DA8(o, sel + 6, 4) != 0;
         }
         if (n == k) {
-            lbl_2_data_2D998[0x955] = lbl_2_data_2D998[0x954];
-            lbl_2_data_2D998[0x954] = sel;
+            SEL_PREV = SEL_CUR;
+            SEL_CUR = sel;
             o->timerA = 0;
             if ((s8)lbl_803CBCD8[1] < 0) {
                 lbl_803CBCD8[1] = 0;
@@ -3879,12 +3892,12 @@ void fn_2_845A8(void) {
     s32 k;
     if (lbl_803CBCD8[4] != 0) {
         lbl_803CBCD8[4] = 0;
-        lbl_2_data_2D998[0x954] = -1;
+        SEL_CUR = -1;
         fn_80034CEC(o);
         REMOVE_QUEUE_NOARG();
         return;
     }
-    lbl_2_data_2D998[0x955] = -1;
+    SEL_PREV = -1;
     switch (lbl_803C66B0.step[0]) {
     case 39:
         if ((lbl_803C66B0.steps[7][1] == 0) ? 1 : 0) {
@@ -3904,7 +3917,7 @@ void fn_2_845A8(void) {
             n = fn_80042DA8(o, 0, 0xA) != 0;
             n += fn_80042DA8(o, 4, 0x14) != 0;
             if (n == 2) {
-                lbl_2_data_2D998[0x954] = lbl_2_bss_F410._44;
+                SEL_CUR = lbl_2_bss_F410._44;
                 fn_80062674(0);
                 lbl_803C66B0.steps[7][1] = 2;
             }
@@ -3930,10 +3943,10 @@ void fn_2_845A8(void) {
             n += fn_80042DA8(o, 3, 0) != 0;
             n += fn_80042DA8(o, 5, 0) != 0;
             if (n == 5) {
-                lbl_2_data_2D998[0x954] = lbl_2_bss_F410._44;
+                SEL_CUR = lbl_2_bss_F410._44;
                 fn_80062674(0);
                 lbl_803C66B0.steps[7][1] = 2;
-                lbl_2_data_2D998[0x954] = -1;
+                SEL_CUR = -1;
                 fn_80034CEC(o);
                 REMOVE_QUEUE_NOARG();
             }
@@ -3960,7 +3973,7 @@ void fn_2_845A8(void) {
                 if (lbl_80361B20._F5 == 0 && sel != 0) {
                     sel--;
                 }
-                lbl_2_data_2D998[0x954] = sel;
+                SEL_CUR = sel;
                 fn_80062674(0);
                 lbl_803C66B0.steps[7][1] = 2;
             }
@@ -3985,7 +3998,7 @@ void fn_2_845A8(void) {
             n += fn_80042DA8(o, 5, 0) != 0;
             n += fn_80042DA8(o, 3, 0) != 0;
             if (n == 4) {
-                lbl_2_data_2D998[0x954] = lbl_2_bss_F410._44;
+                SEL_CUR = lbl_2_bss_F410._44;
                 fn_80062674(0);
                 lbl_803C66B0.steps[7][1] = 2;
             }
@@ -4008,12 +4021,12 @@ void fn_2_845A8(void) {
     if (lbl_803CBCD8[4] == 0 && lbl_803C66B0.step[0] != 0x25 && lbl_803C66B0.step[0] != 0x24) {
         s32 sel = lbl_2_bss_F410._44;
         if (lbl_803CBBCC->scene != 0xD && lbl_2_bss_F468._58 == 0 &&
-            (s8)lbl_2_data_2D998[0x954] == sel && (s8)lbl_2_data_2D998[0x955] == -1) {
+            (s8)SEL_CUR == sel && (s8)SEL_PREV == -1) {
             s32 t;
             s32 off;
             u8 icon;
             u8 icon2;
-            if (lbl_80361B20._F5 == 0 && lbl_2_data_2D998[0x2EC + sel] == 1) {
+            if (lbl_80361B20._F5 == 0 && SEL_ICON(sel) == 1) {
                 fn_800363D8(o, 0, 1, 0x20, 0x12);
                 fn_800363D8(o, 1, 1, 0x20, 0x12);
                 return;
@@ -4021,7 +4034,7 @@ void fn_2_845A8(void) {
             // Cycle the icon animation every 100 frames.
             for (t = 0, off = 0, i = 0; i < 3; i++, off += 6, t += 100) {
                 if (o->timerA == t) {
-                    icon = lbl_2_data_2D998[0x2EC + sel];
+                    icon = SEL_ICON(sel);
                     if (lbl_2_bss_ABC0 != 0) {
                         icon2 = icon + 0xC;
                         lbl_2_bss_ABC0 = 0;
