@@ -44,6 +44,19 @@ typedef struct SceneTask {
     /*0x3C*/ s8 volStep;
 } SceneTask;
 
+// For views of SceneTask that skip the queue links: covers 0x04..0x14 (prev,
+// next, parent, _10, priority) and, on PC, puts the next field where
+// SceneTask.u14 is (8-byte aligned: the union holds pointers).
+#ifdef TARGET_PC
+#define SCENE_TASK_VIEW_LINKS \
+    void* _links[3];          \
+    s16 _hdr10;               \
+    u16 _hdrPriority;         \
+    void* _u14align[0];
+#else
+#define SCENE_TASK_VIEW_LINKS u8 _04[0x10];
+#endif
+
 // Owners of sprite (spani) and layout object runs are scene tasks.
 typedef SceneTask SpaniOwner;
 typedef SceneTask SpaniGroup;

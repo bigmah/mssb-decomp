@@ -2,6 +2,7 @@
 #define __GAME_AUTO_00_0015C5F4_TEXT_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_LINKS
 #include "game/UnknownHomes_Game.h"
 #include "game/auto_00_00097144_text.h" // LayoutSlot lbl_80371C30, GameHudFlags, GamePauseState
 #include "game/auto_00_0009C578_text.h" // GameLineScore lbl_80353A90
@@ -11,7 +12,7 @@
 // Scorebook / result-banner task (lbl_803CC1B8 while one of this unit's tasks runs).
 typedef struct ScoreBookTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x14 - 0x4];
+    /*0x04*/ SCENE_TASK_VIEW_LINKS
     /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
     /*0x16*/ u16 _16;
     /*0x18*/ u16 timer;   // frames in the current state (saturates at 0xFFFF)

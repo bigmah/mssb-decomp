@@ -433,7 +433,7 @@ typedef struct EaSlot {
 // Minigame HUD task (queue item).
 typedef struct EaTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x10];
+    /*0x04*/ SCENE_TASK_VIEW_LINKS
     /*0x14*/ u16 baseIdx;
     /*0x16*/ u16 _16;
     /*0x18*/ u16 param; // set by the creator

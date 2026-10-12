@@ -3,10 +3,11 @@
 #include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_LINKS
 
 typedef struct {
     void (*func)(void);
-    u8 _04[0x10];
+    SCENE_TASK_VIEW_LINKS
     u16 _14;
     u8 _16[2];
     u16 _18;

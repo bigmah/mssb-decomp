@@ -2,6 +2,7 @@
 #define __GAME_rep_16B8_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_LINKS
 #include "game/UnknownHomes_Game.h"
 #include "main/file_8000F150.h" // LayoutSlot lbl_80371C30
 
@@ -9,7 +10,7 @@
 // Sprite-layout task (lbl_803CC1B8[0] while one of this unit's tasks runs); only the fields used here.
 typedef struct RepTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x14 - 0x4];
+    /*0x04*/ SCENE_TASK_VIEW_LINKS
     /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
     /*0x16*/ u16 _16;
     /*0x18*/ u16 timer;
@@ -83,7 +84,7 @@ typedef struct RepSoundParams {
 // Score-tally task (fn_3_93544 / fn_3_933CC / fn_3_92CD8): counts each team's shown score up to its target.
 typedef struct RepScoreTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x14 - 0x4];
+    /*0x04*/ SCENE_TASK_VIEW_LINKS
     /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
     /*0x16*/ u16 _16;
     /*0x18*/ u16 timer;
@@ -94,7 +95,7 @@ typedef struct RepScoreTask {
 // Field-HUD task (fn_3_9669C / fn_3_959BC); only the fields used here.
 typedef struct RepFieldHudTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x14 - 0x4];
+    /*0x04*/ SCENE_TASK_VIEW_LINKS
     /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
     /*0x16*/ u16 _16;
     /*0x18*/ u16 timer;
