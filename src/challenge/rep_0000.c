@@ -502,38 +502,38 @@ void fn_1_58C(void) {
 }
 
 void fn_1_568(void) {
-    u8* queue = lbl_803CC1B8;
-    if (*(s16*)(queue + 0x10) == 1) {
-        *(void**)queue = (void*)fn_1_16A0;
+    ChLoaderTask* queue = lbl_803CC1B8;
+    if (queue->h.result == 1) {
+        queue->h.func = fn_1_16A0;
     }
 }
 
 void fn_1_1E0(void) {
-    u8* queue = lbl_803CC1B8;
-    switch (*(s16*)(queue + 0x10)) {
+    ChLoaderTask* queue = lbl_803CC1B8;
+    switch (queue->h.result) {
     case 0:
         LoadFile(lbl_1_data_AC, lbl_1_bss_4, 0, NULL, 1);
-        *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
+        ((ChTaskHeader*)lbl_803CC1B8)->result += 1;
     case 1:
         if (fn_800A8518(1) != 0) {
-            *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
+            ((ChTaskHeader*)lbl_803CC1B8)->result += 1;
         }
         break;
     case 2:
-        if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 0x100) {
-            *(void**)(queue + 0x14) = ARAMTransfer(lbl_800F1D78 + queue[0x18] * 16, 0, 0, 0);
-            *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
+        if (lbl_803C77B8._04 & 0x100) {
+            queue->data = ARAMTransfer(lbl_800F1D78 + queue->index * 16, 0, 0, 0);
+            ((ChTaskHeader*)lbl_803CC1B8)->result += 1;
         }
         break;
     case 3:
         if ((s32)lbl_803C6CF8[0x715] == 1) {
-            s32 v = queue[0x18] % 19;
+            s32 v = queue->index % 19;
             switch (v) {
             case 0:
-                fn_1_20(*(ChallengeModelHeader**)(queue + 0x14));
+                fn_1_20((ChallengeModelHeader*)queue->data);
                 break;
             case 1:
-                fn_1_E8(*(ChallengeModelHeader**)(queue + 0x14));
+                fn_1_E8((ChallengeModelHeader*)queue->data);
                 break;
             case 2:
             case 3:
@@ -552,33 +552,33 @@ void fn_1_1E0(void) {
             case 16:
             case 17:
             case 18:
-                ANIMGet(*(void**)(queue + 0x14));
+                ANIMGet(queue->data);
                 break;
             }
-            fn_800ACFB0(*(void**)(queue + 0x14));
-            if (*(u16*)&lbl_803C77B8 & 0x200) {
-                *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
+            fn_800ACFB0(queue->data);
+            if (lbl_803C77B8._00 & 0x200) {
+                ((ChTaskHeader*)lbl_803CC1B8)->result += 1;
             } else {
-                s32 n = queue[0x18] + 1;
-                queue[0x18] = n;
-                *(void**)(queue + 0x14) = ARAMTransfer(lbl_800F1D78 + (u8)n * 16, 0, 0, 0);
+                s32 n = queue->index + 1;
+                queue->index = n;
+                queue->data = ARAMTransfer(lbl_800F1D78 + (u8)n * 16, 0, 0, 0);
             }
         }
         break;
     case 4:
         if (fn_800A8518(3) != 0) {
-            *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
+            ((ChTaskHeader*)lbl_803CC1B8)->result += 1;
         }
         break;
     case 5:
         if (fn_800A88C8() == 0) {
             fn_800A8B78(lbl_1_bss_4);
-            *(s16*)((u8*)lbl_803CC1B8 + 0x10) += 1;
+            ((ChTaskHeader*)lbl_803CC1B8)->result += 1;
         }
         break;
     case 6: {
-        u8* object = *(u8**)(queue + 4);
-        *(s16*)(object + 0x10) = 1;
+        ChTaskHeader* object = queue->h.prev;
+        object->result = 1;
         fn_800B0A14_removeQueue(object);
         break;
     }

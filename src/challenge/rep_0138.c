@@ -407,7 +407,7 @@ void fn_1_7FF8(void) {
 
 // .text:0x00007EF8 size:0x100
 void fn_1_7EF8(void) {
-    switch ((s32)*(u16*)((u8*)&lbl_803C77B8 + 4)) {
+    switch ((s32)lbl_803C77B8._04) {
     case 4:
     case 8:
         lbl_1_bss_C2 = !lbl_1_bss_C2;
