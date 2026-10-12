@@ -206,7 +206,7 @@ _TARGETS = {}
 
 def target_asm(unit: dict, workdir: str):
     """(path to target disassembly, literal names) for an objdiff unit."""
-    if unit["name"] not in _TARGETS:
+    if unit["name"] not in _TARGETS or not _TARGETS[unit["name"]][0].exists():
         p = Path(workdir) / (unit["name"].replace("/", "_") + ".target.s")
         fndiff.disasm(ROOT / unit["target_path"], p)
         _TARGETS[unit["name"]] = (p, fndiff.literal_names(p))
@@ -323,11 +323,11 @@ def promote(src: str, fn: str, whole: bool = False, names=None, commit: bool = T
     lines = original.split("\n")
     block = next((b for b in parse_blocks(lines) if not b["has_else"]
                   and any(f[0] == fn for f in b["funcs"])), None)
-    if not block:
-        return "not in a NONMATCHING block"
     unit = units_by_source()[src]["name"]
     before = report_pcts()
-    path.write_text("\n".join(promote_lines(lines, block, None if whole else fn)))
+    if block:
+        path.write_text("\n".join(promote_lines(lines, block, None if whole else fn)))
+    # else: already outside any block (e.g. permute.py rewrote a plain function); just verify
     why = None
     if not ninja_ok():
         why = "build failed"

@@ -21,7 +21,7 @@ the match into the source and runs nmpromote's checks (full ninja: 100% in
 report.json, no regressions, litcheck) and commits `match <fn>`. Without it, review
 build/permute/<fn>.c and paste it in yourself (then check with fndiff).
 """
-import argparse, multiprocessing as mp, os, random, re, sys, tempfile, time
+import argparse, json, multiprocessing as mp, os, random, re, sys, tempfile, time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -453,9 +453,51 @@ def preprocess(src: str, text: str):
         return None
     out = r.stdout.decode("cp932", errors="replace").replace("\r", "")
     out = re.sub(r"^#pragma simple_prepdump on\n", "", out, flags=re.M)
+    # pycparser does not know MWCC's __declspec / __attribute__ (they only matter for data
+    # placement, which the one-function comparison does not see)
+    out = re.sub(r"__declspec\s*\((?:[^()]|\([^()]*\))*\)", "", out)
+    out = re.sub(r"__attribute__\s*\(\((?:[^()]|\([^()]*\))*\)\)", "", out)
+    out, blocks = hide_asm(out)
     # MWCC's `T var : 0xADDR;` -> permuter's FIXEDADDR spelling
     out = re.sub(r"^([^=;\n]*[\w\]]) : (0x[0-9A-Fa-f]+);", r"\1 = FIXEDADDR(\2);", out, flags=re.M)
-    return out
+    return out, blocks
+
+
+ASM_CALL = "__permute_asm"
+
+
+def hide_asm(text: str):
+    """Replace MWCC inline `asm { ... }` blocks with `__permute_asm(N);` (and whole
+    `asm` function definitions with a placeholder declaration) so pycparser can parse
+    the file; restore_asm puts them back before compiling."""
+    blocks, out, i = [], [], 0
+    pat = re.compile(r"^(?:[^\n;{}]*\basm\b[^\n;{}]*\([^;{}]*\)\s*\{)|\basm\s*\{", re.M)
+    while True:
+        m = pat.search(text, i)
+        if not m:
+            out.append(text[i:])
+            break
+        close = nmp.brace_end(text, m.end() - 1)
+        if close < 0:
+            out.append(text[i:])
+            break
+        out.append(text[i:m.start()])
+        blocks.append(text[m.start():close + 1])
+        n = len(blocks) - 1
+        if m.group(0).lstrip().startswith("asm") and m.group(0).rstrip().endswith("{") and "(" not in m.group(0):
+            out.append(f"{ASM_CALL}({n});")
+        else:
+            out.append(f"extern int {ASM_CALL}_def{n};")
+        i = close + 1
+    if blocks:
+        out.insert(0, f"void {ASM_CALL}(int);\n")
+    return "".join(out), blocks
+
+
+def restore_asm(text: str, blocks: list) -> str:
+    text = text.replace(f"void {ASM_CALL}(int);", "", 1)
+    text = re.sub(rf"\b{ASM_CALL}\(\s*(\d+)\s*\);", lambda m: blocks[int(m.group(1))], text)
+    return re.sub(rf"extern int {ASM_CALL}_def(\d+);", lambda m: blocks[int(m.group(1))], text)
 
 
 def cc_main(src: str, fn: str, d: str, c_in: str, o_out: str) -> int:
@@ -463,6 +505,11 @@ def cc_main(src: str, fn: str, d: str, c_in: str, o_out: str) -> int:
     import subprocess as sp
     cmd = nmp.compile_cmd(src)
     with tempfile.TemporaryDirectory() as wd:
+        blocks = json.loads((Path(d) / "asm_blocks.json").read_text())
+        if blocks:
+            restored = Path(wd) / "in.c"
+            restored.write_text(restore_asm(Path(c_in).read_text(), blocks))
+            c_in = str(restored)
         c = re.sub(r" -o \S+", f" -o {wd}", cmd).replace(f" -c {src}", f" -c {c_in}")
         if sp.run(c, shell=True, cwd=ROOT, capture_output=True).returncode != 0:
             return 1
@@ -484,6 +531,8 @@ def setup_permuter_dir(src: str, fn: str):
         print(f"{fn}: not found")
         return None
     pp = preprocess(src, text)
+    if pp is not None:
+        pp, blocks = pp
     if pp is None:
         print(f"{fn}: preprocessing failed")
         return None
@@ -491,6 +540,7 @@ def setup_permuter_dir(src: str, fn: str):
     shutil.rmtree(d, ignore_errors=True)
     d.mkdir(parents=True)
     (d / "base.c").write_text(pp)
+    (d / "asm_blocks.json").write_text(json.dumps(blocks))
     with tempfile.TemporaryDirectory() as wd:
         ts, lits = nmp.target_asm(unit, wd)
         (d / "literals.txt").write_text("\n".join(sorted(lits)) + "\n")
@@ -540,11 +590,43 @@ def permute_ext(src: str, fn: str, budget: float, jobs: int):
         cand = (o / "source.c").read_text()
         span = find_fn(cand, fn)
         if span:
-            match = cand[span[0]:span[1]]
+            match = tidy(cand[span[0]:span[1]])
             break
     print(f"{fn}: permuter base {base} -> best {best}"
           + (f"; MATCH in {outs[0][1]}" if match else ""), flush=True)
     return best, match
+
+
+def tidy(fn_text: str) -> str:
+    """Re-indent pycparser output in the project's style (K&R braces, 4 spaces)."""
+    raw = [l.strip() for l in fn_text.split("\n") if l.strip()]
+    lines = []
+    for l in raw:
+        if l == "{" and lines and not lines[-1].endswith((";", "{", "}")):
+            lines[-1] += " {"
+        elif lines and lines[-1] == "}" and (l.startswith("else") or l.startswith("while")):
+            lines[-1] += " " + l
+        else:
+            lines.append(l)
+    out, depth = [], 0
+    for l in lines:
+        if l.startswith("}"):
+            depth -= 1
+        label = re.match(r"(case\b.*|default\s*):$", l)
+        out.append("    " * (depth - 1 if label else depth) + l)  # labels at the switch's level
+        if l.endswith("{"):
+            depth += 1
+    # blank line after the declarations
+    k = 1
+    while k < len(out) and re.match(r"^    [A-Za-z_][\w\s\*]*\b\w+(\[[^\]]*\])*( = [^;]*)?;$", out[k]) \
+            and not re.match(r"^    (return|goto|break|continue)\b", out[k]):
+        k += 1
+    if 1 < k < len(out):
+        out.insert(k, "")
+    text = "\n".join(out)
+    text = re.sub(r"\((\+\+|--)(\w+)\)", r"\1\2", text)          # (++i) -> ++i
+    text = re.sub(r"^(\s+[A-Za-z_][\w ]*?) (\*+)(\w+)", r"\1\2 \3", text, flags=re.M)  # T *x -> T* x
+    return text
 
 
 def apply_match(src: str, fn: str, new_fn_text: str) -> str:
