@@ -37,7 +37,6 @@ def blocks_of(lines):
                 start -= 1
             else:
                 break
-        in_if = any(lines[k].strip().startswith("#if NONMATCHING") for k in range(start, i + 1))
         j = i + 1
         depth = 0
         seen = False
@@ -57,6 +56,8 @@ def blocks_of(lines):
                     header_inline = None
                     continue
                 break
+        first_brace = next(k for k in range(i, j) if "{" in lines[k])
+        in_if = any(lines[k].strip().startswith("#if NONMATCHING") for k in range(start, first_brace))
         if in_if:
             while j < n and not lines[j].strip().startswith("#endif"):
                 j += 1
