@@ -321,7 +321,7 @@ void convertGeometryAndSknHeader(void* geometry, void* sknHeader);
 void ANIMGet(void* animBank);
 void fn_800BDC88(ChallengeDrawCollection* table, u16 index, u16 id, void* layout, void* animBank, void* sknHeader);
 void fn_800BD548(ChallengeDrawNode* entry, u8 numArgs, ...);
-void fn_800B2C08(ChallengeDrawActor* actor, u16 bone);
+void fn_800B2C08(GameActor* actor, u16 bone);
 
 extern const GXColor lbl_1_rodata_74F0; // black
 extern void* lbl_80366158[];
@@ -543,7 +543,7 @@ void fn_1_1C8C0(u8* object) {
         CTRLSetRotation(&mgr->collection->nodes[i].worldControl, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
         mgr->collection->nodes[i].scale = lbl_1_rodata_751C;
         mgr->collection->nodes[i].setSpeed = 1;
-        mgr->collection->nodes[i].drawing.actor->flags98 |= 4;
+        mgr->collection->nodes[i].drawing.actor->flags |= 4;
         if (i == 1) {
             fn_800B2C08(mgr->collection->nodes[i].drawing.actor, 0);
         } else {
@@ -1015,8 +1015,8 @@ void fn_1_1A774(void) {
     u8 blue;
     u8 alpha;
 
-    if (lbl_1_bss_69F0 < lbl_8036E548.collection->nodes[sSelectedActor].drawing.actor->boneCount) {
-        for (index = 0; index < lbl_8036E548.collection->nodes[sSelectedActor].drawing.actor->boneCount; index++) {
+    if (lbl_1_bss_69F0 < lbl_8036E548.collection->nodes[sSelectedActor].drawing.actor->totalBones) {
+        for (index = 0; index < lbl_8036E548.collection->nodes[sSelectedActor].drawing.actor->totalBones; index++) {
             if (index == lbl_1_bss_69F0) {
                 red = 0;
                 green = 0xFF;
@@ -1028,7 +1028,7 @@ void fn_1_1A774(void) {
                 blue = 0x80;
                 alpha = 0x40;
             }
-            fn_800B2C88((struct GameActor *)lbl_8036E548.collection->nodes[sSelectedActor].drawing.actor, index, matrix); // TODO type
+            fn_800B2C88(lbl_8036E548.collection->nodes[sSelectedActor].drawing.actor, index, matrix);
             fn_1_1A850(matrix, lbl_1_bss_6B7C.view, red, green, blue, alpha);
         }
     }
@@ -1129,20 +1129,21 @@ void fn_1_1A290(ChallengeDrawCollection* collection, MtxPtr camera) {
 
 // .text:0x0001A1EC size:0xA4
 void fn_1_1A1EC(ChallengeActorDrawing* drawing, MtxPtr camera) {
-    ChallengeDrawActor* actor = drawing->actor;
+    GameActor* actor = drawing->actor;
+    GameBone* bone;
     if (drawing->prepare != NULL) {
         drawing->prepare(drawing);
     }
-    if (actor->display != NULL) {
-        fn_800B2D5C((struct GameActor *)actor); // TODO type
+    if (actor->skinObject != NULL) {
+        fn_800B2D5C(actor);
         GXInvalidateVtxCache();
-        fn_1_19D60(actor->display, camera);
+        fn_1_19D60(actor->skinObject, camera);
     } else {
-        for (actor = actor->children; actor != NULL; actor = actor->next) {
-            if (actor->display != NULL) {
-                DOSetWorldMatrix(actor->display, actor->worldMatrix);
+        for (bone = (GameBone*)actor->drawPriorityList.Head; bone != NULL; bone = (GameBone*)bone->drawPriorityLink.Next) {
+            if (bone->dispObj != NULL) {
+                DOSetWorldMatrix(bone->dispObj, bone->forwardMtx);
             }
-            fn_1_19D60(actor->display, camera);
+            fn_1_19D60(bone->dispObj, camera);
         }
     }
 }
