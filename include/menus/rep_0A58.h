@@ -31,7 +31,7 @@ typedef struct MenuSceneTask0A58 {
 // Menu draw slot (MenuData.cells, menus/menu_work.h).
 typedef MenuDrawEntry MenuDrawEntry0A58;
 
-// Initial draw slot table (lbl_2_data_1F8F0 + 0xCE4, 43 entries).
+// Initial draw slot table (lbl_2_data_205D4, 43 entries; InitEntry in menus/menu_asset.h).
 typedef struct Menu0A58Seed {
     /*0x00*/ void* draw;
     /*0x04*/ s16 column;

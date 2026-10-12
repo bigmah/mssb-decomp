@@ -28,7 +28,8 @@ extern u8 lbl_800EFBA4[];
 #include "main/file_80021308.h" // SoundManager
 extern SoundManager lbl_800EF808;
 extern MenuDef lbl_800FEF70[];
-extern Menu0A58Seed lbl_2_data_1F8F0[];
+extern Menu0A58Seed lbl_2_data_205D4[43]; // initial draw slots
+extern s16 lbl_2_data_1FD84[0x100];      // [0..]: per menu entry; [0xE8..]: per page
 extern const f32 lbl_2_rodata_AA8;
 
 extern void fn_2_549B4(void);
@@ -113,7 +114,7 @@ void fn_2_54BB0(void) {
         task = fn_800B0A5C_insertQueue(fn_2_5389C, 0);
         task->_1C = 0;
         task->_1E = 0;
-        seed = (Menu0A58Seed*)((u8*)lbl_2_data_1F8F0 + 0xCE4); // TODO type
+        seed = lbl_2_data_205D4;
         i = 43;
         do {
             entry = &lbl_2_bss_1A8234[0]->cells[seed->row][seed->column];
@@ -194,7 +195,7 @@ void fn_2_54BB0(void) {
     case 9:
         fn_2_72054(0, 0x11);
         (lbl_2_bss_1A824C[0]->_19772E) = 0xE7;
-        n = ((s16*)((u8*)lbl_2_data_1F8F0 + 0x664))[(lbl_2_bss_1A824C[0]->_1976F4)]; // TODO type
+        n = lbl_2_data_1FD84[0xE8 + (lbl_2_bss_1A824C[0]->_1976F4)];
         (lbl_2_bss_1A824C[0]->_197700) = n;
         (lbl_2_bss_1A824C[0]->_1976FE) = n;
         (lbl_2_bss_1A824C[0]->_1976FC) = 0;
@@ -220,7 +221,7 @@ void fn_2_54BB0(void) {
             (lbl_2_bss_1A824C[0]->_1976F4) = ((lbl_2_bss_1A824C[0]->_1976F4) + 10) % 11;
             (lbl_2_bss_1A824C[0]->_197700) = (lbl_2_bss_1A824C[0]->_1976FE);
             (lbl_2_bss_1A824C[0]->_1976FC) = (lbl_2_bss_1A824C[0]->_1976FA);
-            (lbl_2_bss_1A824C[0]->_1976FE) = ((s16*)((u8*)lbl_2_data_1F8F0 + 0x664))[(lbl_2_bss_1A824C[0]->_1976F4)];
+            (lbl_2_bss_1A824C[0]->_1976FE) = lbl_2_data_1FD84[0xE8 + (lbl_2_bss_1A824C[0]->_1976F4)];
             (lbl_2_bss_1A824C[0]->_1976FA) = 0;
             lbl_2_bss_1A824C[0]->_197822 = 0;
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
@@ -231,7 +232,7 @@ void fn_2_54BB0(void) {
             (lbl_2_bss_1A824C[0]->_1976F4) = ((lbl_2_bss_1A824C[0]->_1976F4) + 1) % 11;
             (lbl_2_bss_1A824C[0]->_197700) = (lbl_2_bss_1A824C[0]->_1976FE);
             (lbl_2_bss_1A824C[0]->_1976FC) = (lbl_2_bss_1A824C[0]->_1976FA);
-            (lbl_2_bss_1A824C[0]->_1976FE) = ((s16*)((u8*)lbl_2_data_1F8F0 + 0x664))[(lbl_2_bss_1A824C[0]->_1976F4)];
+            (lbl_2_bss_1A824C[0]->_1976FE) = lbl_2_data_1FD84[0xE8 + (lbl_2_bss_1A824C[0]->_1976F4)];
             (lbl_2_bss_1A824C[0]->_1976FA) = 0;
             lbl_2_bss_1A824C[0]->_197822 = 0;
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
@@ -248,7 +249,7 @@ void fn_2_54BB0(void) {
         } else {
             down = pad->down;
             if ((down & 0x100) &&
-                (n = ((s16*)((u8*)lbl_2_data_1F8F0 + 0x494))[(lbl_2_bss_1A824C[0]->_1976FA) + (lbl_2_bss_1A824C[0]->_1976FE)]) >= 2) {
+                (n = lbl_2_data_1FD84[(lbl_2_bss_1A824C[0]->_1976FA) + (lbl_2_bss_1A824C[0]->_1976FE)]) >= 2) {
                 *(u8*)&lbl_2_bss_1A8250._197822 = ((s8)lbl_2_bss_1A8250._197822 + 1) % n;
                 sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
                 (lbl_2_bss_1A8234[0]->layerFlags[6][6]) = 1;
