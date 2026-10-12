@@ -644,15 +644,10 @@ typedef struct SpaniSlot {
     /* 0x4 */ SpaniGroup* owner;
 } SpaniSlot;
 
-// Something that drives attached sprites (fn_80034BCC).
-typedef struct SpaniAttach {
-    /* 0x00 */ u8 unk0[0x64];
-    /* 0x64 */ MtxPtr mtx;
-    /* 0x68 */ u8 color[4];
-    /* 0x6C */ s16* key; // [0]: anim id, [1]: tag
-} SpaniAttach;
-
-s32 fn_80034BCC(SpaniAttach* a, Mtx unused); // a QuadCallback
+struct QuadState;
+// QuadCallback (main/file_8000BA3C.h): copies the quad's matrix and colour to the attached sprites
+// whose parent anim id and tag match q->path[0] and q->path[1].
+s32 fn_80034BCC(struct QuadState* q, Mtx unused);
 void fn_80034CEC(SpaniGroup* g);
 void fn_80034E20(SpaniGroup* g, SpaniDesc* descs);
 

@@ -79,7 +79,9 @@ typedef struct ChallengeState {
     /*0x444B*/ s8 _444B; // -1: none
     /*0x444C*/ u8 _444C;
     /*0x444D*/ u8 _444D[54];
-    /*0x4483*/ u8 _4483[0x44F1 - 0x4483];
+    /*0x4483*/ u8 _4483[0x44EF - 0x4483];
+    /*0x44EF*/ s8 _44EF;
+    /*0x44F0*/ s8 _44F0;
     /*0x44F1*/ u8 _44F1;
 } ChallengeState;
 

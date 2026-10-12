@@ -171,7 +171,7 @@ void fn_80052188(void);
 
 s32 fn_8005268C(void);
 
-void* fn_80052734(s32 index);
+camera_803c639c_s* fn_80052734(s32 index); // the 2D/sprite cameras, lbl_803C639C[2 + index]
 
 camera_803c639c_s* fn_80052768_getCamera(int index);
 

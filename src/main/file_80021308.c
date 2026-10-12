@@ -1,5 +1,6 @@
 #include "main/file_80021308.h"
 #include "main/file_800B0724.h"
+#include "main/aram_loader.h" // lbl_803C6CF8
 
 // Sound heap, disc/ARAM loader queue and sound group management.
 
@@ -22,7 +23,6 @@ extern u16 lbl_803CB7E0[4];
 extern SND_HOOKS lbl_803CB7D8;
 extern u8* lbl_803CBC40;
 extern SoundLoadTask* lbl_803CC1B8;
-extern u8 lbl_803C6CF8[];           // TODO type: DVD/ARAM transfer state
 
 // TODO: these belong in their own units' headers.
 void* ARAMTransfer(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr);
@@ -44,7 +44,7 @@ u32 OSGetSoundMode(void);
 void OSSetSoundMode(u32 mode);
 void* memset(void* dst, int c, u32 n);
 
-#define DVD_STATE_IDLE (*(s8*)(lbl_803C6CF8 + 0x715)) // TODO type
+#define DVD_STATE_IDLE (lbl_803C6CF8.idle) // dvdsys loader idle flag
 
 // .data is defined before the code so mwcc can address it through one pooled base.
 DiskFileEntry lbl_800EFBE8[21] = {

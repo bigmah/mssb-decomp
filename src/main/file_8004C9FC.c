@@ -2385,7 +2385,7 @@ void fn_80052694(s32 index) {
 }
 
 // fn_80052734, size:0x34
-void* fn_80052734(s32 index) {
+camera_803c639c_s* fn_80052734(s32 index) {
     if (index < 0) {
         index = 0;
     } else if (index >= 2) {
