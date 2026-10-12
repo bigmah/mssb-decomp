@@ -2175,7 +2175,17 @@ typedef struct _MiniGameStruct {
     /*0x1A0E*/ u8 _1A0E;
     /*0x1A0F*/ s8 _1A0F[4];
     /*0x1A13*/ u8 _1A13[4];
-    /*0x1A17*/ u8 battingHandedness[9];
+    union {
+        /*0x1A17*/ u8 battingHandedness[9];
+        struct {
+            /*0x1A17*/ u8 _1A17[4]; // battingHandedness[0..3]: per player
+            /*0x1A1B*/ u8 _1A1B;    // the rest are menu state (auto_00_00106DFC_text)
+            /*0x1A1C*/ u8 _1A1C;
+            /*0x1A1D*/ u8 _1A1D;
+            /*0x1A1E*/ u8 _1A1E;
+            /*0x1A1F*/ u8 _1A1F;
+        };
+    };
     /*0x1A20*/ u8 _1A20;
     /*0x1A21*/ u8 _1A21;
     /*0x1A22*/ u8 _1A22;
@@ -2436,7 +2446,8 @@ typedef struct _MiniGameStruct {
     /*0x1E03*/ u8 _1E03;
     /*0x1E04*/ void* _1E04; // minigame task (fn_800B0A5C_insertQueue result)
     /*0x1E08*/ MiniGameResultSlot resultSlot[4];
-    /*0x1E10*/ u8 _1E10[0x1E22 - 0x1E10];
+    /*0x1E10*/ s16 _1E10[6]; // per minigame mode (1..6): last score
+    /*0x1E1C*/ u8 _1E1C[6];  // queued minigame modes, indexed by _1E2A
     /*0x1E22*/ u8 _1E22[4]; // per-player score (fn_3_E911C)
     /*0x1E26*/ u8 _1E26[4];
     /*0x1E2A*/ u8 _1E2A;    // round counter
@@ -2613,6 +2624,8 @@ typedef struct {
     u32 _10;
 } trajOptions_s;
 
+#include "game/replay_camera.h"
+
 typedef struct {
     /* 0x000 */ s16 _0000;
     /* 0x002 */ u16 _0002;
@@ -2646,8 +2659,12 @@ typedef struct {
     /* 0x114 */ f32 _114;
     /* 0x118 */ s16 _118;
     /* 0x11A */ s16 _11A;
+    union {
+    struct {
     /* 0x11C */ u8 _11C;
-    artificial_padding(0x11C, 0xa50, u8);
+    artificial_padding(0x11C, 0x1b4, u8);
+    /* 0x1B4 */ void* _1B4; // minigame ARAM data (fn_3_106E50)
+    artificial_padding(0x1b4, 0xa50, void*);
     /* 0xA50 */ int _A50;
     artificial_padding(0xa50, 0xa74, int);
     /* 0xA74 */ s16 _A74;
@@ -2674,7 +2691,7 @@ typedef struct {
     /* 0xAAA */ u16 _AAA; // fade-in active (fn_3_21DE4)
     /* 0xAAC */ u16 _AAC; // fade-out length in frames
     /* 0xAAE */ u16 _AAE; // fade-in length in frames
-    artificial_padding(0xaae, 0xab4, u16);
+    /* 0xAB0 */ void* _AB0; // 0x8000-byte heap buffer (fn_3_106DFC)
     /* 0xAB5 */ u8 _AB4;
     /* 0xAB5 */ u8 _AB5;
     /* 0xAB6 */ u8 _AB6;
@@ -2694,7 +2711,15 @@ typedef struct {
     /* 0xAC8 */ u8 _ACA;
     artificial_padding(0xaca, 0xad8, u8);
     /* 0xAD8 */ u8 _AD8;
-    artificial_padding(0xad8, 0x2810, u8);
+    artificial_padding(0xad8, 0x146c, u8);
+    /* 0x146C */ void* _146C; // 0x8000-byte heap buffer (fn_3_106DFC)
+    artificial_padding(0x146c, 0x2810, void*);
+    };
+    struct {
+        u8 _11C_[4];
+        /* 0x120 */ lbl_3_common_bss_DE94_s2 views[4]; // replay camera views (game/replay_camera.h)
+    };
+    };
     /* 0x2810 */ s16 _2810;
     /* 0x2812 */ s16 _2812;
     /* 0x2814 */ s16 _2814;
@@ -3056,31 +3081,7 @@ typedef struct GameScores {
     /* 0xC7 */ u8 _C7;
 } GameScores; // size: 0xC8
 
-typedef struct {
-    /* 0x0000 */ s32 _0000; // from lbl_3_data_20E0C[_092C]
-    /* 0x0004 */ u8 _0004[4];
-    /* 0x0008 */ s32 _0008;
-    /* 0x000C */ u8 _000C[8];
-    /* 0x0014 */ s32 _0014;
-    /* 0x0018 */ s32 _0018;
-    /* 0x001C */ u8 _001C[0xa0 - 0x1c];
-    /* 0x00A0 */ f32 _00A0;
-    /* 0x00A4 */ u8 _00A4[0x118 - 0xa4];
-    /* 0x0118 */ s32 _0118;
-    /* 0x011C */ u8 _011C[0x92c - 0x11c];
-    /* 0x092C */ s32 _092C; // scene index
-    /* 0x0930 */ u8 _0930[0x944 - 0x930];
-    /* 0x0944 */ s16 _0944;
-    /* 0x0946 */ u8 _0946[0x9ab - 0x946];
-    /* 0x09AB */ u8 _09AB;
-    /* 0x09AC */ u8 _09AC;
-    /* 0x09AD */ u8 _09AD;
-    /* 0x09AE */ u8 _09AE;
-    /* 0x09AF */ u8 _09AF;
-    /* 0x09B0 */ u8 _09B0;
-    /* 0x09B1 */ u8 _09B1[5];
-    /* 0x09B6 */ u8 _09B6;
-} lbl_3_common_bss_DE94_s2;
+// lbl_3_common_bss_DE94_s2 (replay camera view): game/replay_camera.h
 
 typedef struct {
     lbl_3_common_bss_DE94_s2* _0000;

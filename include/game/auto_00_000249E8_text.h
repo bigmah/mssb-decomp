@@ -83,9 +83,10 @@ typedef struct SceneActorState {
     /*0x0C*/ f32 rotY;
     /*0x10*/ f32 targetRotY; // facing toward the destination
     /*0x14*/ f32 speed;      // forward step per frame
-    /*0x18*/ u8 _18[0x1C - 0x18];
+    /*0x18*/ f32 _18; // distance to the destination (rep_3090 command 0x66)
     /*0x1C*/ f32 _1C; // compared with the actor's _068
-    /*0x20*/ u8 _20[0x28 - 0x20];
+    /*0x20*/ f32 _20; // frames to walk it
+    /*0x24*/ u8 _24[0x28 - 0x24];
     /*0x28*/ u8 arrived;
     /*0x29*/ u8 moving;
     /*0x2A*/ u8 _2A[0x2C - 0x2A];
