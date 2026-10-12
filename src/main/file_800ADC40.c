@@ -139,7 +139,10 @@ static inline void MOV_SWAP_RECORD(MovPlayer* mov) {
     mov->recSize = be32(mov->recSize);
 }
 #define MOV_READ_U32(p) read_be32(p)
+// Busy waits must give the CPU up on PC (no preemption by interrupts).
+#define MOV_YIELD() OSYieldThread()
 #else
+#define MOV_YIELD()
 #define MOV_SWAP_HEADER(mov)
 #define MOV_SWAP_BLOCK(mov)
 #define MOV_SWAP_RECORD(mov)
@@ -208,7 +211,11 @@ void fn_800ADD70(void) {
         z = lbl_803CC184;
         v[2] = v[5] = v[8] = v[11] = z;
         DCFlushRange(v, 0x18);
+#ifdef TARGET_PC
+        (GXSetArray)(GX_VA_POS, v, 0x18, 6, true); // native s16 positions
+#else
         GXSetArray(GX_VA_POS, v, 6);
+#endif
         GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
         GXSetNumChans(1);
         GXSetNumTexGens(1);
@@ -225,6 +232,12 @@ void fn_800ADD70(void) {
     }
 }
 
+// GX texture data is big-endian (aurora reads it as the GameCube does).
+#ifdef TARGET_PC
+#define YUV_TEXEL(x) be32((u32)(x))
+#else
+#define YUV_TEXEL(x) (x)
+#endif
 #define YUV_CLAMP(t, y, c) (((y) + (c))[0xA00]) // y: table base + luma offset; 0xA00 = clamp
 
 // NONMATCHING 58%: the compiler folds the 0xA00 clamp offset into the shared chroma terms (lbzx) where the
@@ -275,12 +288,12 @@ void YUV2RGB(u8* src, u8* dst, s32 width, s32 height) {
                 uB = t->uB[cu];
                 ya = t->y[y0[0]];
                 yb = t->y[y0[1]];
-                out[0] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
-                out[8] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
+                out[0] = YUV_TEXEL((t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR]);
+                out[8] = YUV_TEXEL((t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB]);
                 ya = t->y[y1[0]];
                 yb = t->y[y1[1]];
-                out[2] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
-                out[10] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
+                out[2] = YUV_TEXEL((t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR]);
+                out[10] = YUV_TEXEL((t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB]);
 
                 cv = v[1];
                 cu = u[1];
@@ -289,12 +302,12 @@ void YUV2RGB(u8* src, u8* dst, s32 width, s32 height) {
                 uB = t->uB[cu];
                 ya = t->y[y0[2]];
                 yb = t->y[y0[3]];
-                out[1] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
-                out[9] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
+                out[1] = YUV_TEXEL((t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR]);
+                out[9] = YUV_TEXEL((t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB]);
                 ya = t->y[y1[2]];
                 yb = t->y[y1[3]];
-                out[3] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
-                out[11] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
+                out[3] = YUV_TEXEL((t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR]);
+                out[11] = YUV_TEXEL((t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB]);
 
                 v += 2;
                 u += 2;
@@ -360,24 +373,24 @@ void YUV2RGB_(u8* src, u8* dst, s32 width, s32 height) {
                 uB = t->uB[u[0]];
                 ya = (u8*)t + t->y[y0[0]];
                 yb = (u8*)t + t->y[y0[1]];
-                out[0] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
-                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
+                out[0] = YUV_TEXEL((RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
+                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB)));
                 ya = (u8*)t + t->y[y1[0]];
                 yb = (u8*)t + t->y[y1[1]];
-                out[2] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
-                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
+                out[2] = YUV_TEXEL((RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
+                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB)));
 
                 vR = t->vR[v[1]];
                 g = t->vG[v[1]] + t->uG[u[1]];
                 uB = t->uB[u[1]];
                 ya = (u8*)t + t->y[y0[2]];
                 yb = (u8*)t + t->y[y0[3]];
-                out[1] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
-                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
+                out[1] = YUV_TEXEL((RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
+                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB)));
                 ya = (u8*)t + t->y[y1[2]];
                 yb = (u8*)t + t->y[y1[3]];
-                out[3] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
-                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
+                out[3] = YUV_TEXEL((RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
+                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB)));
 
                 v += 2;
                 u += 2;
@@ -657,6 +670,7 @@ void* MovDecodeThread(void* arg) {
         lbl_803CC19C = fn_800AF1A8(mov);
         switch (lbl_803CC19C) {
         case 1: // waiting for data
+            MOV_YIELD();
             break;
         case 2:
             OSPanic(lbl_803CCF00, 0x27D, MOV_STR_DECODE_BROKEN);
@@ -670,6 +684,7 @@ void* MovDecodeThread(void* arg) {
                     if (lbl_803CC17C) {
                         goto exit;
                     }
+                    MOV_YIELD();
                 } while (mov->curFrame < mov->numFrames);
                 MovResetFrames(mov);
                 lbl_803CC1A0 = 0;
@@ -695,6 +710,7 @@ void* MovDecodeThread(void* arg) {
                     if (lbl_803CC17C) {
                         goto exit;
                     }
+                    MOV_YIELD();
                 } while (mov->curFrame < mov->numFrames);
                 lbl_803CC170 = NULL;
                 mov->state = MOV_STATE_STOP;
@@ -838,6 +854,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
                 if (end >= mov->audioEnd) {
                     end -= mov->audioEnd - mov->audioRead;
                 }
+                MOV_YIELD(); // waits for the audio interrupt to consume (and reload audioRead)
             } while (mov->audioWrite < mov->audioRead && end >= mov->audioRead);
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
