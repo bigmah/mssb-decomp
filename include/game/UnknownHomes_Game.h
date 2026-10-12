@@ -2175,7 +2175,17 @@ typedef struct _MiniGameStruct {
     /*0x1A0E*/ u8 _1A0E;
     /*0x1A0F*/ s8 _1A0F[4];
     /*0x1A13*/ u8 _1A13[4];
-    /*0x1A17*/ u8 battingHandedness[9];
+    union {
+        /*0x1A17*/ u8 battingHandedness[9];
+        struct {
+            /*0x1A17*/ u8 _1A17[4]; // battingHandedness[0..3]: per player
+            /*0x1A1B*/ u8 _1A1B;    // the rest are menu state (auto_00_00106DFC_text)
+            /*0x1A1C*/ u8 _1A1C;
+            /*0x1A1D*/ u8 _1A1D;
+            /*0x1A1E*/ u8 _1A1E;
+            /*0x1A1F*/ u8 _1A1F;
+        };
+    };
     /*0x1A20*/ u8 _1A20;
     /*0x1A21*/ u8 _1A21;
     /*0x1A22*/ u8 _1A22;
@@ -2436,7 +2446,8 @@ typedef struct _MiniGameStruct {
     /*0x1E03*/ u8 _1E03;
     /*0x1E04*/ void* _1E04; // minigame task (fn_800B0A5C_insertQueue result)
     /*0x1E08*/ MiniGameResultSlot resultSlot[4];
-    /*0x1E10*/ u8 _1E10[0x1E22 - 0x1E10];
+    /*0x1E10*/ s16 _1E10[6]; // per minigame mode (1..6): last score
+    /*0x1E1C*/ u8 _1E1C[6];  // queued minigame modes, indexed by _1E2A
     /*0x1E22*/ u8 _1E22[4]; // per-player score (fn_3_E911C)
     /*0x1E26*/ u8 _1E26[4];
     /*0x1E2A*/ u8 _1E2A;    // round counter
@@ -2647,7 +2658,9 @@ typedef struct {
     /* 0x118 */ s16 _118;
     /* 0x11A */ s16 _11A;
     /* 0x11C */ u8 _11C;
-    artificial_padding(0x11C, 0xa50, u8);
+    artificial_padding(0x11C, 0x1b4, u8);
+    /* 0x1B4 */ void* _1B4; // minigame ARAM data (fn_3_106E50)
+    artificial_padding(0x1b4, 0xa50, void*);
     /* 0xA50 */ int _A50;
     artificial_padding(0xa50, 0xa74, int);
     /* 0xA74 */ s16 _A74;
@@ -2674,7 +2687,7 @@ typedef struct {
     /* 0xAAA */ u16 _AAA; // fade-in active (fn_3_21DE4)
     /* 0xAAC */ u16 _AAC; // fade-out length in frames
     /* 0xAAE */ u16 _AAE; // fade-in length in frames
-    artificial_padding(0xaae, 0xab4, u16);
+    /* 0xAB0 */ void* _AB0; // 0x8000-byte heap buffer (fn_3_106DFC)
     /* 0xAB5 */ u8 _AB4;
     /* 0xAB5 */ u8 _AB5;
     /* 0xAB6 */ u8 _AB6;
@@ -2694,7 +2707,9 @@ typedef struct {
     /* 0xAC8 */ u8 _ACA;
     artificial_padding(0xaca, 0xad8, u8);
     /* 0xAD8 */ u8 _AD8;
-    artificial_padding(0xad8, 0x2810, u8);
+    artificial_padding(0xad8, 0x146c, u8);
+    /* 0x146C */ void* _146C; // 0x8000-byte heap buffer (fn_3_106DFC)
+    artificial_padding(0x146c, 0x2810, void*);
     /* 0x2810 */ s16 _2810;
     /* 0x2812 */ s16 _2812;
     /* 0x2814 */ s16 _2814;
