@@ -97,8 +97,6 @@ void fn_2_5EB78(void) {
 #endif
 
 // .text:0x0005ED3C size:0xF8
-// NONMATCHING 98%: the original called fn_80035838 without its u8 return prototype (cmpwi, no clrlwi.)
-#if NONMATCHING
 void fn_2_5ED3C(void) {
     MenuTask* task = lbl_803CC1B8;
     MenuTask* parent;
@@ -126,7 +124,6 @@ void fn_2_5ED3C(void) {
         break;
     }
 }
-#endif
 
 // .text:0x0005EE34 size:0x88
 void fn_2_5EE34(void) {
