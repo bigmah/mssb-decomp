@@ -489,9 +489,7 @@ void fn_8000FEE8(s32 index) {
     lbl_80366B18.entries[index].state = 0;
 }
 
-// NONMATCHING 99%: two address computations (table/msg slwi) scheduled in the other order
 // .text:0x8000FF04 size:0x1A0
-#if NONMATCHING
 s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSize) {
     s32 i;
     TextEntry* e;
@@ -529,7 +527,6 @@ s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSi
     e->_36 = 0;
     return i;
 }
-#endif
 
 // NONMATCHING 99%: f2/f3 swapped for the 0.0f constant, and two extra clrlwi on the u16 s+w sum
 // .text:0x800100A4 size:0x3F4
