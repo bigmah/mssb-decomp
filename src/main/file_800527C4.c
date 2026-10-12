@@ -1810,8 +1810,6 @@ void fn_80058E0C(SceneTask* task, u8 port) {
 
 // .text:0x80059458 size:0x27C
 // Shows the two set bits of mask (bit 0 also skips bit 1) as frames on two objects.
-// NONMATCHING 98%: li r0,12 hoisted above the first compare in the original; register swaps in the store tail
-#if NONMATCHING
 void fn_80059458(SceneTask* task, u8 port, u32 mask) {
     s32 digits[2];
     s32 i;
@@ -1868,21 +1866,19 @@ void fn_80059458(SceneTask* task, u8 port, u32 mask) {
     }
     digits[0]--;
     digits[1]--;
-    if (digits[0] < 0) {
-        digits[0] = 12;
-    }
-    if (digits[1] < 0) {
-        digits[1] = 12;
+    for (i = 0; i < 2; i++) {
+        if (digits[i] < 0) {
+            digits[i] = 12;
+        }
     }
     if (g_d_GameSettings._06 != 2) {
-        TASK_OBJ(task, port + 0x1B4)->_5C = digits[0] << 16;
-        TASK_OBJ(task, port + 0x1B6)->_5C = digits[1] << 16;
+        lbl_80371C30[port + (task->u14.objIdx + 0x1B4)].obj->_5C = digits[0] << 16;
+        lbl_80371C30[port + (task->u14.objIdx + 0x1B6)].obj->_5C = digits[1] << 16;
     } else {
         TASK_OBJ(task, 0x125)->_5C = digits[0] << 16;
         TASK_OBJ(task, 0x126)->_5C = digits[1] << 16;
     }
 }
-#endif
 
 // .text:0x800596D4 size:0x464
 // NONMATCHING 92%: register numbering and index-sum order differ
