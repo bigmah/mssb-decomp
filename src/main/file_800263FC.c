@@ -3033,8 +3033,6 @@ void fn_80032064(Vec* pos, ParticleParamsB* prm) {
 }
 
 // .text:0x80032284 size:0x268
-// NONMATCHING 98%: r6/r7 swapped and one store scheduled differently in the inlined emitter allocation
-#if NONMATCHING
 void fn_80032284(Vec* pos) {
     ParticleParams prm;
     Emitter* e;
@@ -3042,8 +3040,8 @@ void fn_80032284(Vec* pos) {
     f32 size;
 
     memcpy(&prm, &lbl_800F787C, sizeof(ParticleParams));
-    prm.unk10 = 0xFF;
     prm.tex = lbl_803CBD0C;
+    prm.unk10 = 0xFF;
     prm.size = 500000;
     prm.unkC = 700000;
     prm.life = 0x20;
@@ -3067,7 +3065,6 @@ void fn_80032284(Vec* pos) {
         p->texIndex = prm.texIndex;
     }
 }
-#endif
 
 // .text:0x800324EC size:0x3F4
 void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
