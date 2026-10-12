@@ -1615,7 +1615,8 @@ void convertTextureHeader(TexArchive* hdr) {
 }
 
 // .text:0x800C07BC size:0x2D0
-// NONMATCHING 61%: original keeps half*size and the second-half pointers live across the self-inlined recursion
+// NONMATCHING 72%: the original keeps half*size and the second-half pointers live across the self-inlined
+// recursion and recomputes the memcpy addresses with mullw instead of strength-reducing them
 #if NONMATCHING
 void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(const void*, const void*)) {
     u32 half;
@@ -1623,25 +1624,26 @@ void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(cons
     u32 j;
     u32 k;
     void* src;
+    u32 hs;
 
     if (count > 1) {
         half = count >> 1;
+        hs = half * size;
         fn_800C07BC(base, tmp, half, size, compare);
-        fn_800C07BC((u8*)base + half * size, (u8*)tmp + half * size, count - half, size, compare);
-        memcpy(tmp, base, half * size);
-        k = 0;
+        fn_800C07BC((u8*)base + hs, (u8*)tmp + hs, count - half, size, compare);
+        memcpy(tmp, base, hs);
         j = half;
         i = 0;
+        k = 0;
         while (i < half && j < count) {
-            if (compare((u8*)tmp + i * size, (u8*)base + j * size) <= 0) {
+            if (compare((u8*)tmp + size * i, (u8*)base + size * j) <= 0) {
                 src = (u8*)tmp + i * size;
                 i++;
             } else {
                 src = (u8*)base + j * size;
                 j++;
             }
-            memcpy((u8*)base + k * size, src, size);
-            k++;
+            memcpy((u8*)base + size * k++, src, size);
         }
         if (i < half) {
             memcpy((u8*)base + k * size, (u8*)tmp + i * size, size * (half - i));

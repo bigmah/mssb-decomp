@@ -3265,7 +3265,8 @@ void fn_8001A25C(void) {
 #endif
 
 // .text:0x8001A3FC size:0x2B4
-// NONMATCHING 62%: unrolled init loops and the 13-actor reset loop are laid out differently
+// NONMATCHING 73%: the original keeps count in a register (not folded) and unrolls the 13-actor reset
+// loop 3x with four peeled iterations; as a for loop it unrolls 6x, as a do-while not at all
 #if NONMATCHING
 void fn_8001A3FC(s32 arg) {
     s32 count;
@@ -3300,19 +3301,19 @@ void fn_8001A3FC(s32 arg) {
         p = _OSAllocFromHeap(0x20, (max + 0x1F) & ~0x1F);
         lbl_80118220[0].files = p;
         lbl_803CBC30 = p;
-        lbl_80118220[0]._61 = -1;
-        lbl_80118220[0].slot = 0xFF;
+        lbl_80118220[0].slot = lbl_80118220[0]._61 = -1;
     }
     fn_800145F8(arg);
     lbl_8036E548.partSlots = fn_80023AA4();
     fn_80018DEC(arg);
     fn_80023B04(0xD);
-    for (i = 0; i < 13; i++) {
+    i = 0;
+    do {
         lbl_8036E548.actors[i].modelIndex = i;
         lbl_8036E548.active[i] = NULL;
-        lbl_8036E548._2D6A[i] = -1;
-        lbl_8036E548.actors[i].roster = -1;
-    }
+        lbl_8036E548.actors[i].roster = lbl_8036E548._2D6A[i] = -1;
+        i++;
+    } while (i < 13);
     for (i = 0; i < 9; i++) {
         lbl_8036E548._2D7F[i] = -1;
     }
@@ -4797,12 +4798,12 @@ void fn_8001E474(void) {
 }
 
 // .text:0x8001E488 size:0x2FC
-// NONMATCHING 99%: slot/loop-counter registers swapped
+// NONMATCHING 99%: r25/r26 (view, slot->actor) swapped in the inlined drawSlot
 #if NONMATCHING
 void fn_8001E488(void) {
-    s32 i;
     CharActor* actor;
     ActorObject* slot;
+    s32 i;
     f32 x;
     f32 y;
     Mtx44 proj;
@@ -4852,7 +4853,8 @@ static inline void drawMinigameLayer(void) {
     minigamesGXStuff();
 }
 
-// NONMATCHING 64%: the original inlines fn_8001E488 (not compiled in the matching build since it is NONMATCHING); otherwise register allocation
+// NONMATCHING 93%: register allocation (measured with fn_8001E488 compiled, as in the NONMATCHING build;
+// the original inlines it, so this function only reaches 64% while fn_8001E488 is left out)
 #if NONMATCHING
 void fn_8001E784(void) {
     LightPos* lp;

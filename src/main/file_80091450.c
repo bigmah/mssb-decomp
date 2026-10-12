@@ -6,18 +6,13 @@ TEXDescriptorPtr TEXGet(TEXPalettePtr pal, u32 id) {
 }
 
 // .text:0x80091460 size:0x18
-// NONMATCHING 67%: same instructions, subf scheduled before the first stw
-#if NONMATCHING
 void DSInitList(DSListPtr list, Ptr obj, DSLinkPtr link) {
     list->Head = NULL;
     list->Tail = NULL;
     list->Offset = (u8*)link - (u8*)obj;
 }
-#endif
 
 // .text:0x80091478 size:0x94
-// NONMATCHING 86%: cursor+Offset folded into lwzx/stwx instead of a shared add
-#if NONMATCHING
 void DSInsertListObject(DSListPtr list, Ptr cursor, Ptr obj) {
     DSLinkPtr link = (DSLinkPtr)(obj + list->Offset);
     DSLinkPtr cursorLink;
@@ -50,7 +45,6 @@ void DSInsertListObject(DSListPtr list, Ptr cursor, Ptr obj) {
     link->Prev = NULL;
     link->Next = NULL;
 }
-#endif
 
 // .text:0x8009150C size:0x50
 s8 Strcmp(char* str1, char* str2) {
