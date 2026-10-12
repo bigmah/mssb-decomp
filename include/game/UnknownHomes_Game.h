@@ -2619,7 +2619,10 @@ typedef struct _MiniGameStruct {
     /*0x1DD1*/ u8 bB_cpuSwingPlanned;
     /*0x1DD2*/ s8 bB_cpuPreferLow;    // sort order for the CPU's target choice (fn_3_12E084)
     /*0x1DD3*/ u8 _1DD3[0x1DF4 - 0x1DD3];
-    /*0x1DF4*/ s16 _1DF4[7]; // cleared before HUD updates (fn_3_12C514)
+    union {
+        /*0x1DF4*/ s16 _1DF4[7]; // cleared before HUD updates (fn_3_12C514)
+        /*0x1DF4*/ u8 hudFlags[14]; // per-byte HUD requests (rep_31F0: [3], [4])
+    };
     /*0x1E02*/ u8 _1E02;
     /*0x1E03*/ u8 _1E03;
     /*0x1E04*/ void* _1E04; // minigame task (fn_800B0A5C_insertQueue result)
