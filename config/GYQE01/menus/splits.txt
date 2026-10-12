@@ -46,6 +46,10 @@ menus/rep_0398.c:
 menus/rep_03E8.c:
 	.rodata     start:0x000003E8 end:0x00000438
 
+auto_00_00001254_text:
+	.text       start:0x00001254 end:0x00012238
+	.bss        start:0x00000020 end:0x00000758
+
 menus/rep_0438.c:
 	.text       start:0x00012238 end:0x00013BA4
 	.rodata     start:0x00000438 end:0x000004B0
