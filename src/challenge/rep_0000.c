@@ -357,8 +357,6 @@ void fn_1_F2C(GXTevMode tevMode, s32 texFrac, s32 hasNormal) {
 
 // .text:0x00000AF4 size:0x438
 // Draws a white line grid on the y = 0 plane, centred on the origin.
-// NONMATCHING 99%: f1/f2 swapped for the 0.5f constant and the (f32)rows temp
-#if NONMATCHING
 void fn_1_AF4(s32 rows, s32 cols, f32 spacing) {
     f32 x;
     f32 z;
@@ -407,7 +405,6 @@ void fn_1_AF4(s32 rows, s32 cols, f32 spacing) {
         z += spacing;
     }
 }
-#endif
 
 // .text:0x000005EC size:0x508
 // Draws a test pattern: a grey backdrop and four additive diamonds.
