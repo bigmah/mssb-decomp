@@ -21,7 +21,12 @@ extern u8 lbl_803C66B0[];
 extern u8 lbl_8034E978[];
 extern void* lbl_2_data_2A1E8[];
 extern void* lbl_2_data_2A2EC[];
-extern s32 lbl_2_bss_A840;
+// .bss 0xA840..0xB29C (mwcc emits file statics in reverse order of definition).
+static u8 lbl_2_bss_ABC4[0x6D8]; // unreferenced
+static u8 lbl_2_bss_ABC0;
+static u8 lbl_2_bss_A848[0x378]; // unreferenced
+static s32 lbl_2_bss_A844;
+static s32 lbl_2_bss_A840;
 extern s32 lbl_2_bss_F410;
 extern u8 lbl_2_data_2D33C[];
 extern u8 lbl_803C50E8[];
@@ -1852,7 +1857,6 @@ void fn_2_76650(u8* o, u8 k, u32 mask) {
     *(s32*)(((u8**)lbl_80371C30)[(0xD0 + *(u16*)(o + 0x14) + k) * 2] + 0x5C) = buf[1] << 16;
 }
 
-extern s32 lbl_2_bss_A844;
 
 // fn_2_73CBC, size:0x240
 void fn_2_73CBC(u8* o) {
@@ -1991,10 +1995,8 @@ typedef struct MnOwner {
 extern u8 lbl_80108EC4[];
 extern u8 lbl_2_data_2AF08[];
 
-// fn_2_72E54, size:0x1D4
-// NONMATCHING 80%: zero kept in r30/slot base in r31 swapped vs ours, search loop uses lbz not lbzu
-#if NONMATCHING
-void fn_2_72E54(u8* o) {
+// Body of fn_2_72E54; also inlined into fn_2_7308C.
+static inline void setupHeaderSlots(u8* o) {
     s32 j;
     s32 found = -1;
     u8 v;
@@ -2024,6 +2026,13 @@ void fn_2_72E54(u8* o) {
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
     }
+}
+
+// fn_2_72E54, size:0x1D4
+// NONMATCHING 83%: zero kept in r30/slot base in r31 swapped vs ours, search loop uses lbz not lbzu
+#if NONMATCHING
+void fn_2_72E54(u8* o) {
+    setupHeaderSlots(o);
 }
 #endif
 
@@ -2078,10 +2087,8 @@ void fn_2_7E194(u8* o, s32 index) {
 }
 #endif
 
-// fn_2_72A88, size:0x22C
-// NONMATCHING 88%: character search loop uses lbz instead of the original lbzu walker; register order differs
-#if NONMATCHING
-void fn_2_72A88(u8* o) {
+// Body of fn_2_72A88; also inlined into fn_2_7308C.
+static inline void setupHeaderRoster(u8* o) {
     s32 j;
     s32 found = -1;
     u8 v;
@@ -2102,11 +2109,16 @@ void fn_2_72A88(u8* o) {
         lbl_803CBBC4[3] = 1;
     }
 }
+
+// fn_2_72A88, size:0x22C
+// NONMATCHING 94%: character search loop uses lbz instead of the original lbzu walker; register order differs
+#if NONMATCHING
+void fn_2_72A88(u8* o) {
+    setupHeaderRoster(o);
+}
 #endif
 
 // fn_2_7F8BC, size:0x240
-// NONMATCHING 99%: the loaded roster byte x lands in r4 instead of r11 (see docs/patterns/loops.md)
-#if NONMATCHING
 void fn_2_7F8BC(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
@@ -2122,7 +2134,7 @@ void fn_2_7F8BC(u8* o, s32 index) {
                 break;
             }
         }
-        x = (s8)(lbl_803C6724 + index * 9)[found + 2];
+        x = ((s8*)lbl_803C6724 + index * 9)[found + 2];
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->flags |= 2;
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->frame = 0;
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->state = 1;
@@ -2133,7 +2145,6 @@ void fn_2_7F8BC(u8* o, s32 index) {
         *e = 1;
     }
 }
-#endif
 
 // fn_2_808D8, size:0x284
 // NONMATCHING 85%: original hoists the five slot pointers (base+0x78..0x8B) into registers before the stores; frame/stack layout differs
@@ -2268,8 +2279,6 @@ void fn_2_7630C(u8* o, u8 index) {
 #define F468_S32(off) (*(s32*)(lbl_2_bss_F468 + (off)))
 
 // fn_2_7F2BC, size:0x458
-// NONMATCHING 99%: one add has its operands swapped (add r4,r3,r31 vs r31,r3) when forming &F468[index*4] for the lwzu
-#if NONMATCHING
 void fn_2_7F2BC(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
@@ -2278,8 +2287,8 @@ void fn_2_7F2BC(u8* o, s32 index) {
         s32 cur;
         s32 j;
         s32 fs;
-        cur = F468_S32(8 + index * 4);
-        sel = F468_S32(index * 4);
+        sel = ((s32*)lbl_2_bss_F468)[index];
+        cur = ((s32*)(lbl_2_bss_F468 + 8))[index];
         for (j = 0; j < 9; j++) {
             s8 t = lbl_803C6724[index * 9 + j + 0x14];
             if (t == sel) {
@@ -2299,7 +2308,7 @@ void fn_2_7F2BC(u8* o, s32 index) {
             MN_SLOT(0x22 + BASE(o) + sel + index * 9)->flags |= 2;
         }
         if (cur != 9 && cur != 10) {
-            if (F468_S32(8 + index * 4) != F468_S32(index * 4)) {
+            if (((s32*)(lbl_2_bss_F468 + 8))[index] != ((s32*)lbl_2_bss_F468)[index]) {
                 MN_SLOT(0x46 + BASE(o) + cur + index * 9)->frame = 0xF0000;
                 MN_SLOT(0x46 + BASE(o) + cur + index * 9)->state = 4;
                 if (*(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4) == (s8)(lbl_803C6724 + index * 9)[fc + 2]) {
@@ -2329,7 +2338,6 @@ void fn_2_7F2BC(u8* o, s32 index) {
         *e = 1;
     }
 }
-#endif
 
 // fn_2_75BE4, size:0x4B4
 // Average a stat over the team's non-captain players and show it as 0-5 stars.
@@ -3389,13 +3397,14 @@ void fn_2_80F5C(u8* o, s32 index) {
 
 // fn_2_7308C, size:0x6CC
 // Team-select header state machine; each case is a pair of the small helpers above.
-// NONMATCHING 45%: structure is right (CW inlines the matched helpers); fn_2_72E54/fn_2_72A88 must match and be defined above it to inline too
+// NONMATCHING 94%: the inlined fn_2_72E54/fn_2_72A88 bodies keep their own mismatches (lbz instead of the
+// original lbzu search walker, register order)
 #if NONMATCHING
 void fn_2_7308C(void) {
     u8* o = lbl_803CC1B8;
     switch (lbl_803CBBC4[0]) {
     case 1:
-        fn_2_72E54(o);
+        setupHeaderSlots(o);
         fn_2_72DDC(o);
         break;
     case 2:
@@ -3403,7 +3412,7 @@ void fn_2_7308C(void) {
         fn_2_72814(o);
         break;
     case 3:
-        fn_2_72A88(o);
+        setupHeaderRoster(o);
         fn_2_72A58();
         break;
     case 0x47:
@@ -3890,7 +3899,6 @@ void fn_2_776A0(u8* o, s32 port) {
 }
 #endif
 
-extern u8 lbl_2_bss_ABC0;
 
 // fn_2_845A8, size:0xA00
 // NONMATCHING 85%: switch arms schedule slot loads differently; register allocation
@@ -4164,7 +4172,8 @@ void fn_2_74F40(u8* o, s32 index) {
 
 // fn_2_81628, size:0x1174
 // Per-frame driver of the team/field-position menu: runs each player's state handler.
-// NONMATCHING 40%: logic matches; CW auto-inlines the matched per-state handlers defined above it (original calls them), so sizes differ
+// NONMATCHING 89%: the per-state handlers are called through casts so CW keeps them out of line (the
+// original calls them); the frame is 0x10 bigger (four spills) and the saved registers are coloured differently
 #if NONMATCHING
 void fn_2_81628(void) {
     u8* o = *(u8**)(lbl_8034E9A0 + 0x474C); // TODO type
@@ -4204,7 +4213,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 2:
-                fn_2_80C2C(o, i);
+                ((void (*)(u8*, s32))fn_2_80C2C)(o, i);
                 if (st[0xD] == 1) {
                     n = fn_80042DA8(o, i, 0) != 0;
                     n += fn_80042DA8(o, i + 2, 0) != 0;
@@ -4227,7 +4236,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 4:
-                fn_2_805DC(o, i);
+                ((void (*)(u8*, s32))fn_2_805DC)(o, i);
                 break;
             case 5:
                 if (st[0xD] == 0) {
@@ -4243,10 +4252,10 @@ void fn_2_81628(void) {
                 }
                 break;
             case 6:
-                fn_2_802EC(o);
+                ((void (*)(u8*))fn_2_802EC)(o);
                 break;
             case 7:
-                fn_2_800B0(o, i);
+                ((void (*)(u8*, s32))fn_2_800B0)(o, i);
                 break;
             case 8:
                 fn_2_7FAFC(o, i);
@@ -4266,11 +4275,11 @@ void fn_2_81628(void) {
                 break;
             case 10:
                 fn_2_7AE3C(o, i);
-                fn_2_7AC64(o, i);
+                ((void (*)(u8*, s32))fn_2_7AC64)(o, i);
                 break;
             case 11:
                 fn_2_7A9D8(o, i);
-                fn_2_7A748(o, i);
+                ((void (*)(u8*, s32))fn_2_7A748)(o, i);
                 break;
             case 14:
                 fn_2_7DAB8(o, i);
@@ -4352,7 +4361,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 19:
-                fn_2_7A5B8(o, i);
+                ((void (*)(u8*, s32))fn_2_7A5B8)(o, i);
                 if (st[0xD] == 1) {
                     n = fn_80042DA8(o, i, 0x28) != 0;
                     n += fn_80042DA8(o, i + 2, 0x28) != 0;
@@ -4368,7 +4377,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 20:
-                fn_2_7A194(o, i);
+                ((void (*)(u8*, s32))fn_2_7A194)(o, i);
                 if (st[0xD] == 1) {
                     s32 cur = F468_S32(8 + i * 4);
                     n = 0;
@@ -4390,7 +4399,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 21:
-                fn_2_79CF8(o, i);
+                ((void (*)(u8*, s32))fn_2_79CF8)(o, i);
                 if (st[0xD] == 1) {
                     s32 sel = F468_S32(i * 4);
                     n = 0;
@@ -4412,7 +4421,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 22:
-                fn_2_79930(o, i);
+                ((void (*)(u8*, s32))fn_2_79930)(o, i);
                 if (st[0xD] == 1) {
                     s32 hits = 0;
                     s32 total = 0;
@@ -4451,7 +4460,7 @@ void fn_2_81628(void) {
                 fn_2_7912C(o, i);
                 break;
             case 26:
-                fn_2_78F78(o, i);
+                ((void (*)(u8*, s32))fn_2_78F78)(o, i);
                 break;
             case 27:
                 fn_2_78AC0(o, i);

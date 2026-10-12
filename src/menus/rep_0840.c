@@ -1,5 +1,10 @@
 #include "menus/rep_0840.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_menus_0840
+#include "header_rep_inline.h"
+// math.h first with dolsqrtf2 static: UnknownHomes_Game.h makes it extern inline,
+// which would emit its _half/_three statics into this unit's .rodata.
+#include "math.h"
+#undef SQRT2_LINKAGE
 
 #include <string.h>
 #include "Dolphin/vec.h"

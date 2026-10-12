@@ -47,3 +47,4 @@ if/else vs switch, early returns, bool/int returns, compare and branch shapes. O
 - **Constants loaded before a branch that picks two unrolled loops (fn_8004D990):** write one loop with the `if/else` inside the body; CW unswitches it and hoists the constants.
 - **A constant hoisted once for two clamps (fn_80059458):** `for (i = 0; i < 2; i++) if (d[i] < 0) d[i] = 12;` (unrolled) instead of two `if`s.
 - **`fadds` with 0.0f that our build folds (fn_8001FE00):** derive the values from the stored zero: `p[0].x = 0.0f; p[1].x = 640.0f + p[0].x; p[3].x = p[1].x;`.
+- **Check "equivalent" if/else nesting against the branch targets (fn_2_110B0):** the original `bne` of the inner `x == 0 && y == 0` tests jumped to the outer `else` (decrement), i.e. one `if (a < 0 && x == 0 && y == 0) {...} else {...}`; the nested form was wrong and also cost the match. `button = alt ? altButton : button;` with `pos = 0` in its declaration fixed the `li r3,0` placement in fn_2_895F8.

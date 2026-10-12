@@ -17,8 +17,6 @@ extern u8 lbl_803CBBC0; // frame buffer index (0/1)
 // .text:0x0001D590 size:0x104
 // Clears `dst` and fills it with cellW x cellH tiles of `src`; map[row * cols + col] picks the tile.
 // Only columns with (col & lbl_803CBBC0) set are drawn.
-// NONMATCHING 99%: r29/r30 swapped for the inner-loop x and map pointer induction variables
-#if NONMATCHING
 void fn_1_1D590(struct TexImage* src, struct TexImage* dst, u8* map, s32 cellW, s32 cellH) {
     ChTexImage* img = (ChTexImage*)dst;
     s32 row;
@@ -26,19 +24,20 @@ void fn_1_1D590(struct TexImage* src, struct TexImage* dst, u8* map, s32 cellW, 
     s32 rows;
     s32 cols;
     s32 tile;
+    s32 x;
 
     memset(img->data, 0, img->width * img->height);
     rows = img->height / cellH;
     cols = img->width / cellW;
     for (row = 0; row < rows; row++) {
         for (col = 0; col < cols; col++) {
+            x = col * cellW;
             if (col & lbl_803CBBC0) {
                 tile = map[row * cols + col];
                 fn_80023F0C(src, dst, cellW * (tile % cols), cellH * (tile / cols), cellW, cellH,
-                            col * cellW, row * cellH);
+                            x, row * cellH);
             }
         }
     }
     DCStoreRange(img->data, img->width * img->height);
 }
-#endif
