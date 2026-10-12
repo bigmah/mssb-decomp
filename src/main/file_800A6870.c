@@ -379,6 +379,14 @@ void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAd
         t = size * 180;
         lbl_803C6CF8.retryCount = lbl_803C6CF8.retryLimit = ((t >> 21) < 180) ? 180 : (t >> 22);
     }
+#ifdef TARGET_PC
+    // Remember the file size so format fixups can byte-swap the whole file.
+    if (mode == DVDSYS_MODE_DISC_LZ_TO_RAM || mode == DVDSYS_MODE_ARAM_LZ_TO_RAM) {
+        port_blob_note(result, instr->sizeFlags & 0x0FFFFFFF);
+    } else if (mode != DVDSYS_MODE_DISC_TO_ARAM) {
+        port_blob_note(result, instr->compressedSize);
+    }
+#endif
     return result;
 }
 #endif

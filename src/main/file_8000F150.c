@@ -298,7 +298,7 @@ s32 fn_8000F988(LayoutGroup* group, s32 index, u16 arg2, s32 table, s32 msg, s32
 // .text:0x8000FA9C size:0x2B8
 #if NONMATCHING
 s32 fn_8000FA9C(s32 index) {
-    u16** msgs;
+    PTR32(u16)* msgs;
     u16* base;
     u16* sub;
     TextEntry* e;
@@ -385,7 +385,7 @@ s32 fn_8000FA9C(s32 index) {
                 } else {
                     n = e->strings[n] + 8;
                 }
-                sub = msgs[n];
+                sub = PTR32_GET(u16, msgs[n]);
                 inSub = 1;
                 break;
             case 45:
@@ -466,7 +466,7 @@ void fn_8000FD9C(s32 index, s32 speed, s32 limit) {
 // .text:0x8000FE08 size:0x4C
 void fn_8000FE08(s32 index, s32 table, s32 msg) {
     TextEntry* e;
-    u16* text = lbl_80366B18.tables[table]->msgs[msg];
+    u16* text = PTR32_GET(u16, lbl_80366B18.tables[table]->msgs[msg]);
     e = &lbl_80366B18.entries[index];
     e->text = text;
     if (e->charLimit >= 0) {
@@ -502,7 +502,7 @@ s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSi
         return 0;
     }
     e = &lbl_80366B18.entries[i];
-    e->text = lbl_80366B18.tables[table]->msgs[msg];
+    e->text = PTR32_GET(u16, lbl_80366B18.tables[table]->msgs[msg]);
     e->x = x;
     e->y = y;
     e->layer = layer;
@@ -892,7 +892,7 @@ void DrawText(s32 index) {
                     n = e->strings[n] + 8;
                 }
                 inSub = 1;
-                sub = lbl_80366B18.tables[0]->msgs[n];
+                sub = PTR32_GET(u16, lbl_80366B18.tables[0]->msgs[n]);
                 break;
             case 45:
             case 46:
@@ -1027,11 +1027,11 @@ void fn_80010FA0(void) {
     u16* dst = lbl_80366218;
     u16* src;
     lbl_80366B18.msgs = t->msgs;
-    lbl_80366B18._7EC = t->msgs[1];
-    lbl_80366B18._7F0 = t->msgs[2];
-    lbl_80366B18._7F8 = t->msgs[6];
-    lbl_80366B18._7F4 = t->msgs[5];
-    src = lbl_80366B18.msgs[7];
+    lbl_80366B18._7EC = PTR32_GET(u16, t->msgs[1]);
+    lbl_80366B18._7F0 = PTR32_GET(u16, t->msgs[2]);
+    lbl_80366B18._7F8 = PTR32_GET(u16, t->msgs[6]);
+    lbl_80366B18._7F4 = PTR32_GET(u16, t->msgs[5]);
+    src = PTR32_GET(u16, lbl_80366B18.msgs[7]);
     for (;;) {
         u16 c = *src;
         if (c == 0x4001) {
@@ -1078,12 +1078,18 @@ void fn_80011140(void) {
 
 // .text:0x800111B4 size:0x24
 void fn_800111B4(MsgTable* table) {
+#ifdef TARGET_PC
+    port_swap_msg_table(table);
+#endif
     s32 n = table->count;
-    u16** p = table->msgs;
+    PTR32(u16)* p = table->msgs;
     do {
-        // file offset -> pointer. TODO(port): msgs[] are 4-byte disc fields; MsgTable
-        // needs PTR32 entries (or a native copy) on PC.
+        // file offset -> pointer
+#ifdef TARGET_PC
+        *p += PTR_TO_U32(table);
+#else
         *p = (u16*)((uintptr_t)*p + (uintptr_t)table);
+#endif
         p++;
     } while (--n);
 }

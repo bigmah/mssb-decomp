@@ -106,6 +106,8 @@ static inline uint32_t port_rlwimi(uint32_t a, uint32_t b, int sh, int mb, int m
 
 #include "port/endian.h"
 #include "port/ptr32.h"
+#include "port/blob.h"
+#include "port/formats.h"
 
 // Pointers kept in 32-bit integers (fields of disc formats relocated in place,
 // handles, callback arguments): stored as offsets into the game heap, the same

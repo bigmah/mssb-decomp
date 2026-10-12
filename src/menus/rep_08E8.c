@@ -922,6 +922,10 @@ void fn_2_4906C(void) {
     s32 i;
     s32 j;
     for (i = 0; i < 15; i++) {
+#ifdef TARGET_PC
+        lbl_2_bss_1A824C[0]->msgs[i] = PTR32_GET(u16, lbl_80366B18.tables[lbl_2_bss_1A824C[0]->_1972B8]->msgs[i]);
+        continue;
+#endif
         // = msgs[i] = tables[_1972B8]->msgs[i], spelled so that it matches
         ((u16**)lbl_2_bss_1A824C[0])[i + (s32)(offsetof(MenuData, msgs) / sizeof(u16*))] =
             ((u16**)((u8*)lbl_80366B18.tables[lbl_2_bss_1A824C[0]->_1972B8] + offsetof(MsgTable, msgs)))[i];

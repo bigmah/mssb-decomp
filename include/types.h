@@ -81,6 +81,16 @@ typedef u16 wchar_t;
 #define U32_TO_PTR(v) ((void*)(v))
 #endif
 
+// A pointer field of a struct that keeps its 32-bit disc layout (data loaded
+// and relocated in place). On GameCube it is a plain pointer; on PC a u32
+// offset into the game heap (port/include/port/ptr32.h), read and written
+// through PTR32_GET/PTR32_SET.
+#ifndef TARGET_PC
+#define PTR32(T) T*
+#define PTR32_GET(T, field) (field)
+#define PTR32_SET(field, p) ((field) = (p))
+#endif
+
 // Sets specific flag to 1
 #define SET_FLAG(x, val) (x |= (val))
 

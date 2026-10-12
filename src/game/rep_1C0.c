@@ -329,7 +329,7 @@ void fn_3_3904(s16 x, s16 y, s32 msg, GXColor color0, GXColor color1, u8 flags) 
     f32 height;
 
     startX = x;
-    text = lbl_80366B18.tables[0]->msgs[msg];
+    text = PTR32_GET(u16, lbl_80366B18.tables[0]->msgs[msg]);
 
     for (;;) {
         c = *text++;
@@ -705,7 +705,7 @@ void fn_3_4A38(u8 stadium) {
 // NONMATCHING 95%: saved-register allocation; right/bottom kept unextended in the original
 #if NONMATCHING
 void fn_3_4F90(GXTexObj* tex, s16 x, s16 y, s16 value, u8 width, GXColor color0, GXColor color1, u8 boxed) {
-    u16** digitMsgs = lbl_80366B18.tables[0]->msgs;
+    PTR32(u16)* digitMsgs = lbl_80366B18.tables[0]->msgs;
     s16 digits;
     s16 cellW;
     s16 n;
@@ -770,7 +770,7 @@ void fn_3_4F90(GXTexObj* tex, s16 x, s16 y, s16 value, u8 width, GXColor color0,
     bottom = y + 18;
     count = digits;
     for (i = 0; i < count; i++) {
-        DecodeGlyph(digitMsgs[(s16)(n % 10)], &sx, &sy, &sw, &sh, &page);
+        DecodeGlyph(PTR32_GET(u16, digitMsgs[(s16)(n % 10)]), &sx, &sy, &sw, &sh, &page);
         fn_3_42CC(tex, x, y, right, bottom, sx, sy, sw, sh, color0, color1, 0);
         right -= cellW;
         x -= cellW;

@@ -42,12 +42,12 @@ typedef struct TextEntry {
 
 
 
-// Message table as loaded from disc; msgs[] hold file offsets until
-// fn_800111B4 relocates them.
+// Message table as loaded from disc (big-endian): msgs[] hold file offsets
+// until fn_800111B4 relocates them (and, on PC, byte-swaps the file).
 typedef struct MsgTable {
     /*0x0*/ u16 count;
     /*0x2*/ u16 _02;
-    /*0x4*/ u16* msgs[1]; // [count]
+    /*0x4*/ PTR32(u16) msgs[1]; // [count]
 } MsgTable;
 
 // Layout (2D scene) object; owned by another unit, only the fields used here.
@@ -112,7 +112,7 @@ typedef struct TextSystem {
     /*0x784*/ TexArchive* fontTex[4];
     /*0x794*/ TexArchive* iconArchive;
     /*0x798*/ MsgTable* tables[7];
-    /*0x7B4*/ u16** msgs;
+    /*0x7B4*/ PTR32(u16)* msgs; // tables[0]->msgs
     /*0x7B8*/ TexImage* fontTexObj[4];
     /*0x7C8*/ TexImage* iconTexObj[9];
     /*0x7EC*/ u16* _7EC;

@@ -1810,11 +1810,11 @@ void fn_2_515DC(u8 mode) {
 u16* fn_2_5156C(s32 index, u16 font) {
     if (font == 0) {
         MenuData* menu = (*(MenuData**)&lbl_2_bss_1A824C);
-        return lbl_80366B18.tables[menu->_1972B8]->msgs[index];
+        return PTR32_GET(u16, lbl_80366B18.tables[menu->_1972B8]->msgs[index]);
     }
     {
         MenuData* menu = (*(MenuData**)&lbl_2_bss_1A824C);
-        return lbl_80366B18.tables[menu->_1972B8]->msgs[index];
+        return PTR32_GET(u16, lbl_80366B18.tables[menu->_1972B8]->msgs[index]);
     }
 }
 
@@ -2311,11 +2311,11 @@ void fn_2_50DB4(s32 ch, s32 idx, u16* src) {
     MenuData* menu = (*(MenuData**)&lbl_2_bss_1A824C);
     MsgTable* table = lbl_80366B18.tables[menu->_1972B8];
     u16 v;
-    u16** q = table->msgs;
+    PTR32(u16)* q = table->msgs;
     if (lbl_2_bss_9600[ch] != 0) {
         lbl_2_bss_9600[ch]--;
     }
-    src = (idx == -1) ? src : q[idx];
+    src = (idx == -1) ? src : PTR32_GET(u16, q[idx]);
     do {
         s32 k = lbl_2_bss_9600[ch];
         v = *src++;
@@ -2332,11 +2332,11 @@ void fn_2_50F20(s32 ch, s32 idx, u16* src) {
     MenuData* menu = (*(MenuData**)&lbl_2_bss_1A824C);
     MsgTable* table = lbl_80366B18.tables[menu->_1972B8];
     u16 v;
-    u16** q = table->msgs;
+    PTR32(u16)* q = table->msgs;
     if (lbl_2_bss_9604[ch] != 0) {
         lbl_2_bss_9604[ch]--;
     }
-    src = (idx == -1) ? src : q[idx];
+    src = (idx == -1) ? src : PTR32_GET(u16, q[idx]);
     do {
         s32 k = lbl_2_bss_9604[ch];
         v = *src++;
