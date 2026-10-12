@@ -215,8 +215,6 @@ void fn_1_15CC(void) {
 
 // .text:0x00001538 size:0x94
 // Queues this frame's texture draw node.
-// NONMATCHING: needs the .data objects of this file (pooled base kept across the call)
-#if NONMATCHING
 void fn_1_1538(void) {
     ChTexViewTask* task = lbl_803CC1B8;
 
@@ -226,7 +224,6 @@ void fn_1_1538(void) {
     lbl_1_data_70[lbl_803CBBC0].mode = lbl_1_data_A0;
     lbl_1_data_70[lbl_803CBBC0].color = lbl_1_data_A4;
 }
-#endif
 
 // .text:0x00001240 size:0x2F8
 // Draws texture node->texIdx of node->tex as a 256x256 quad in the top-left corner.
