@@ -125,6 +125,17 @@ extern char lbl_803CCF00[8]; // lbl_803CCF00
 #define MOV_STATE_STOP 4
 #define MOV_DVD_DONE() ((s32)*(volatile u8*)&lbl_803C6CF8.idle)
 
+#ifdef TARGET_PC
+static int port_skip_movies(void) {
+    static int s_skip = -1;
+    if (s_skip < 0) {
+        const char* env = getenv("MSSB_SKIP_MOVIES");
+        s_skip = env != NULL && env[0] != '\0' && env[0] != '0';
+    }
+    return s_skip;
+}
+#endif
+
 // The HVQM4 stream is big-endian: on PC the headers are swapped into native
 // fields as they are read (exactly once each).
 #ifdef TARGET_PC
@@ -667,6 +678,14 @@ void* MovDecodeThread(void* arg) {
             continue;
         }
         mov->decoding = 1;
+#ifdef TARGET_PC
+        // MSSB_SKIP_MOVIES=1: one-shot movies end at once, through the
+        // normal end-of-movie path (looping ones keep playing).
+        if (port_skip_movies() && !(mov->flags & 2)) {
+            mov->numFrames = 0;
+            lbl_803CC19C = 3;
+        } else
+#endif
         lbl_803CC19C = fn_800AF1A8(mov);
         switch (lbl_803CC19C) {
         case 1: // waiting for data
