@@ -133,13 +133,12 @@ void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x80052968 size:0x408
-// NONMATCHING 99%: r29/r30 swapped for the view matrix pointer in the two-camera branch
-#if NONMATCHING
 void fn_80052968(void) {
     MtxPtr view;
     camera_803c639c_s* cam;
     MtxPtr view2;
     f32 scale;
+    MtxPtr view3;
 
     if (lbl_803CB880 == 1) {
         if (lbl_803CBD10 != NULL) {
@@ -173,12 +172,12 @@ void fn_80052968(void) {
             lbl_803CBD10(&lbl_803C639C[0]);
         }
         cam = &lbl_803C639C[0];
-        view = cam->view;
-        makeLookAtMatrix(view, &cam->eye, &cam->Up, &cam->target);
+        view3 = cam->view;
+        makeLookAtMatrix(view3, &cam->eye, &cam->Up, &cam->target);
         scale = 1.0f / lbl_803C639C[0].zoom;
         C_MTXFrustum(lbl_803C639C[0].proj, -0.175f * scale, 0.175f * scale, 0.25f * scale, -0.25f * scale, 1.0f, 512.0f);
         fn_800B806C(0, -240.0f * scale, 240.0f * scale, -320.0f * scale, 320.0f * scale, -512.0f, -1.0f, 1280.0f);
-        fn_80011640(view, view);
+        fn_80011640(view3, view3);
         scale = 1.0f / lbl_803C639C[0].zoom;
         C_MTXFrustum(lbl_803C639C[0].proj, -0.175f * scale, 0.175f * scale, 0.125f * scale, -0.375f * scale, 1.0f, 512.0f);
         fn_800B806C(0, -240.0f * scale, 240.0f * scale, -160.0f * scale, 160.0f * scale, -512.0f, -1.0f, 1280.0f);
@@ -186,7 +185,6 @@ void fn_80052968(void) {
     memcpy(&lbl_803C639C[2], &lbl_803C639C[0], sizeof(camera_803c639c_s) * 2);
     fn_800369DC(lbl_803C639C[0].zoom);
 }
-#endif
 
 static inline void InitCameras(void) {
     s32 i;
