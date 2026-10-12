@@ -3,6 +3,7 @@
 // is what aurora's GXInitTexObj/GXInitTlutObj take.
 #include "port/formats.h"
 #include "port/endian.h"
+#include "port/ptr32.h"
 
 // pad[1] of a converted archive; zero on disc.
 #define TEX_ARCHIVE_SWAPPED 0x50
@@ -97,4 +98,15 @@ void port_swap_tex_palette(void* pal)
             }
         }
     }
+}
+
+// A file that starts with `count` big-endian u32 offsets from its start,
+// relocated in place: entries become PTR32s (all of them, as the game adds
+// the base to every entry).
+void port_relocate_offset_table(void* table, uint32_t count)
+{
+    uint32_t* t = (uint32_t*)table;
+    swap32_array(t, count);
+    for (uint32_t i = 0; i < count; i++)
+        t[i] = port_ptr32_encode((uint8_t*)table + t[i]);
 }

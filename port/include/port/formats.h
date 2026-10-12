@@ -52,6 +52,8 @@ void port_swap_tex_palette(void* pal);
 // archive, ...). Call it exactly once per load (values can't tell native
 // from big-endian reliably).
 void port_swap_offset_table(void* table, uint32_t count);
+// Swaps such a table and relocates it in place to PTR32s.
+void port_relocate_offset_table(void* table, uint32_t count);
 
 // Character stats records (0xA0 bytes each), port/src/formats_game.c.
 void port_swap_char_stats(void* data, uint32_t count);

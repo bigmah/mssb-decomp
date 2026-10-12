@@ -132,17 +132,18 @@ typedef struct LightPos {
 } LightPos;
 
 // Stadium object files (ARAMTransfer'd into lbl_8036E548.stadiumFiles).
+// A table of 80 32-bit file offsets, relocated in place (PTR32 entries).
 typedef struct StadiumFiles {
     /*0x000*/ struct {
-        void* layout;
-        void* geo;
-        void* tex;
+        PTR32(void) layout;
+        PTR32(void) geo;
+        PTR32(void) tex;
     } obj[24];
-    /*0x120*/ void* bank;
+    /*0x120*/ PTR32(void) bank;
     /*0x124*/ u8 _124[0xC];
     /*0x130*/ struct {
-        void* shape;
-        ShapeAnimSet* set;
+        PTR32(void) shape;
+        PTR32(ShapeAnimSet) set;
     } anim[2];
 } StadiumFiles;
 
