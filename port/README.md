@@ -1,0 +1,68 @@
+# MSSB PC port
+
+Native macOS (arm64) build of Mario Superstar Baseball on
+[aurora](https://github.com/encounter/aurora), following `~/dev/strikers`.
+Plan: `docs/PORT_PLAN.md`. Progress and known problems: `port/STATUS.md`.
+
+## Build
+
+```sh
+git submodule update --init port/extern/aurora
+cmake -S port -B build/port -G Ninja
+ninja -C build/port
+```
+
+The default target compiles every game source (`mssb_game`, an object
+library). The `mssb` executable does not link yet (Phase 2):
+`ninja -C build/port mssb` shows the undefined symbols.
+
+Options:
+
+- `-DMSSB_WERROR_64=OFF`: report the 64-bit pointer/int warnings instead of
+  failing on them (they are errors by default).
+- `-DMSSB_AURORA=OFF`: skip configuring aurora (no Dawn/SDL3/nod download).
+  The game still compiles against aurora's headers.
+
+Configuring applies `port/patches/aurora/*.patch` to the submodule once (see
+below).
+
+## Layout
+
+- `port/CMakeLists.txt`, `port/sources.cmake`: the PC build. The sources are
+  the decomp's own `src/main`, `src/game`, `src/menus`, `src/challenge`,
+  `src/C3` and `src/Unknown`, compiled with `TARGET_PC`, `NONMATCHING=1` (so
+  equivalent functions are built) and `VERSION=0`. Not compiled:
+  `src/Dolphin` (SDK, MSL, runtime: aurora and the host libc replace them),
+  `src/Musyx`, `src/executor.c` (REL prolog).
+- `port/include/port/prelude.h`: force-included into every game file. Pulls in
+  the host libc and aurora's whole SDK, defines the Metrowerks/PowerPC
+  intrinsics, MSL's `rand`, `PTR_TO_U32`/`U32_TO_PTR` and `PTR32`.
+- `port/include/port/sdk_compat.h`: decomp-only SDK names (`Mtx43`,
+  `GXTevClampMode`, ...), the decomp's argument order for `PSVECScale`, the
+  3-argument `GXSetArray`, 4x4 matrix helpers.
+- `port/include/math.h`, `port/include/Dolphin/gd.h`: shadow headers (the
+  decomp's `"math.h"` is its own `include/stl/math.h`; GD is the game's own).
+- `port/src/`: PC-only code (entry point stub, MSL bits, 4x4 matrices).
+- `port/extern/aurora`: aurora, `bigmah/aurora` branch `strikers-port`
+  (4acfc6a). `port/patches/aurora/0001-*.patch` is strikers' local commit
+  3fbe54a (GX fixes and the Emscripten/WebGPU support), which isn't pushed;
+  with it the tree is identical to what strikers builds with.
+
+## Rules for game sources
+
+- PC-only code goes under `#ifdef TARGET_PC`, keeping the original in `#else`
+  when it is more than a line. Prefer portable C that compiles the same under
+  MWCC (no `#ifdef` needed). The matching build must stay byte-identical:
+  after touching `src/` or `include/`, run
+  `find src -name '*.c' -exec touch {} +; ninja`,
+  `./build/tools/dtk shasum -c config/GYQE01/build.sha1` (4 OK) and
+  `python3 tools/nmcheck.py --all`.
+- The decomp's SDK headers (`include/Dolphin`, `include/stl`, MSL) forward to
+  aurora/the host libc under `TARGET_PC`. On macOS's case-insensitive
+  filesystem `"Dolphin/gx.h"` can also resolve straight to aurora's
+  `dolphin/gx.h`, which is why the prelude includes the whole SDK first.
+- `s32`/`u32` are 32-bit (`int`) on PC; never write `long`.
+- Pointers never live in `u32`. Use pointer types, `uintptr_t`/`intptr_t`
+  (typedef'd for MWCC in `include/types.h`) for address math, and
+  `PTR_TO_U32()`/`U32_TO_PTR()` only where a 32-bit field must keep its disc
+  layout (in-place relocated files). Mark open problems `TODO(port)`.
