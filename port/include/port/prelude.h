@@ -107,15 +107,10 @@ static inline uint32_t port_rlwimi(uint32_t a, uint32_t b, int sh, int mb, int m
 #include "port/endian.h"
 #include "port/ptr32.h"
 
-// Pointer <-> 32-bit conversions in code that still assumes 32-bit pointers
-// (file formats with in-place relocation, serialized pointers). These abort if
-// the pointer doesn't fit, which pinpoints the spots needing a real 64-bit fix.
-void port_ptr_trunc_fail(const char* file, int line);
-static inline uint32_t port_ptr_to_u32(const void* p, const char* file, int line)
-{
-    uintptr_t v = (uintptr_t)p;
-    if (v > 0xFFFFFFFFu)
-        port_ptr_trunc_fail(file, line);
-    return (uint32_t)v;
-}
-#define PORT_PTR_TO_U32(p) port_ptr_to_u32((const void*)(p), __FILE__, __LINE__)
+// Pointers kept in 32-bit integers (fields of disc formats relocated in place,
+// handles, callback arguments): stored as offsets into the game heap, the same
+// encoding as PTR32 (port/ptr32.h). Encoding a pointer outside the game heap
+// aborts, which pinpoints the spots needing a real 64-bit fix. The decomp
+// spells these PTR_TO_U32/U32_TO_PTR (include/types.h).
+#define PORT_PTR_TO_U32(p) port_ptr32_encode((const void*)(p))
+#define PORT_U32_TO_PTR(v) port_ptr32_decode((uint32_t)(v))

@@ -374,7 +374,7 @@ void CombineTEVStages(SHDRInfo *shader);
 
 // shaderFlattenTree.c
 void FlattenTEVTree(void);
-void CopyCompiledTEVStages(SHDRStage *compiled, struct ShaderTEVStage * instructions, unsigned long numStages, SHDRRas *resources);
+void CopyCompiledTEVStages(SHDRStage *compiled, struct ShaderTEVStage * instructions, u32 numStages, SHDRRas *resources);
 
 // shaderPrint.c
 void PrintTEVTree(SHDRInfo *shader);

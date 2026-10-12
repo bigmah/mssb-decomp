@@ -31,7 +31,7 @@ typedef double f64;
 #endif
 #endif
 
-typedef unsigned long bool32;
+typedef u32 bool32;
 typedef unsigned char bool8;
 
 #define SND_STUDIO_MAXNUM 8
@@ -482,22 +482,22 @@ void sndGet3DParameters(SND_3DINFO* info, SND_FVECTOR* pos, SND_FVECTOR* dir, f3
                         u8 maxVol, u8 minVol, SND_ROOM* room);
 
 typedef struct SND_PROFILE_DATA {
-  unsigned long loadStores;
-  unsigned long missCycles;
-  unsigned long cycles;
-  unsigned long instructions;
-  unsigned long lastLoadStores;
-  unsigned long lastMissCycles;
-  unsigned long lastCycles;
-  unsigned long lastInstructions;
-  unsigned long peekLoadStores;
-  unsigned long peekMissCycles;
-  unsigned long peekCycles;
-  unsigned long peekInstructions;
-  unsigned long _loadStores;
-  unsigned long _missCycles;
-  unsigned long _cycles;
-  unsigned long _instructions;
+  u32 loadStores;
+  u32 missCycles;
+  u32 cycles;
+  u32 instructions;
+  u32 lastLoadStores;
+  u32 lastMissCycles;
+  u32 lastCycles;
+  u32 lastInstructions;
+  u32 peekLoadStores;
+  u32 peekMissCycles;
+  u32 peekCycles;
+  u32 peekInstructions;
+  u32 _loadStores;
+  u32 _missCycles;
+  u32 _cycles;
+  u32 _instructions;
   float avgLoadStores;
   float avgMissCycles;
   float avgCycles;
@@ -506,8 +506,8 @@ typedef struct SND_PROFILE_DATA {
   float sumMissCycles;
   float sumCycles;
   float sumInstructions;
-  unsigned long cnt;
-  unsigned long paused;
+  u32 cnt;
+  u32 paused;
 } SND_PROFILE_DATA;
 
 typedef struct SND_PROFILE_INFO {

@@ -65,6 +65,18 @@ typedef u16 wchar_t;
 #define nullptr 0
 #endif
 
+// A pointer kept in a 32-bit integer (in-place relocated disc data, handles).
+// Plain casts on GameCube; on PC the value is an offset into the game heap
+// (port/include/port/prelude.h). Prefer real pointer types where the layout
+// allows it; these mark the places that can't.
+#ifdef TARGET_PC
+#define PTR_TO_U32(p) PORT_PTR_TO_U32(p)
+#define U32_TO_PTR(v) PORT_U32_TO_PTR(v)
+#else
+#define PTR_TO_U32(p) ((u32)(p))
+#define U32_TO_PTR(v) ((void*)(v))
+#endif
+
 // Sets specific flag to 1
 #define SET_FLAG(x, val) (x |= (val))
 
