@@ -731,6 +731,8 @@ def tidy(fn_text: str) -> str:
     text = "\n".join(out)
     text = re.sub(r"\((\+\+|--)(\w+)\)", r"\1\2", text)          # (++i) -> ++i
     text = re.sub(r"\(\(void \*\) 0\)|\(void \*\) 0\b", "NULL", text)
+    if not re.search(r"\btmp\d*\b", text):  # permuter's temps: new_var, new_var2 -> tmp, tmp2
+        text = re.sub(r"\bnew_var(\d*)\b", r"tmp\1", text)
     text = re.sub(r"\(((?:const |unsigned |struct )*\w+) (\*+)\)", r"(\1\2)", text)  # (T *) -> (T*)
     text = re.sub(r"\((\w+(?:\*+)?)\) (?=[\w(*&])", r"(\1)", text)  # (T) x -> (T)x
     text = re.sub(r"^(\s+[A-Za-z_][\w ]*?) (\*+)(\w+)", r"\1\2 \3", text, flags=re.M)  # T *x -> T* x
