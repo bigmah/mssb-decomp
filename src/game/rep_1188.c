@@ -5,6 +5,10 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 #include "main/file_800639BC.h"
+#include "main/menu_globals.h" // SavedSettings
+
+// The saved match settings (gameInitOptions has no symbol: it is this object).
+extern SavedSettings lbl_800E8754;
 
 extern u8 aILevel[4];
 extern f32 runnerVelocityLookup[];
@@ -104,7 +108,7 @@ void setInMemBatterConstants(int rosterID) {
         char_stats = &inMemRoster[0][rosterID];
     } else {
         g_Batter.easyBatting =
-            gameInitOptions.controlOptions[g_d_GameSettings.PlayerPorts[g_GameLogic.teamBatting] % 4].easyBatting;
+            lbl_800E8754.port[g_d_GameSettings.PlayerPorts[g_GameLogic.teamBatting] % 4]._6; // easy batting
     }
 
     g_Batter.rosterID = rosterID;

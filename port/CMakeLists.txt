@@ -172,6 +172,19 @@ if (MSSB_AURORA)
     target_link_libraries(mssb_audio PRIVATE aurora::core)
 endif ()
 
+# ---- Generated data (port/gen, from port/tools/gen_data.py) ----
+# Definitions of the data objects no game source defines yet, generated from
+# orig/ with the C types the game sources declare. Same flags as the game,
+# minus the 64-bit errors: initializers take addresses of functions declared
+# without prototypes.
+include(${CMAKE_SOURCE_DIR}/gen/sources.cmake)
+add_library(mssb_gen OBJECT ${MSSB_GEN_SOURCES})
+target_include_directories(mssb_gen PRIVATE ${MSSB_INCLUDES})
+target_compile_definitions(mssb_gen PRIVATE ${MSSB_DEFS})
+target_compile_options(mssb_gen PRIVATE ${MSSB_COMMON_FLAGS} -Wno-everything
+    -include ${CMAKE_SOURCE_DIR}/include/port/prelude.h)
+# ---- end generated data ----
+
 # The game's main() becomes game_main(); port/src/main.cpp owns the entry point.
 set_source_files_properties(${MSSB_ROOT}/src/main/file_80008E00.c PROPERTIES COMPILE_DEFINITIONS main=game_main)
 
@@ -187,7 +200,7 @@ endforeach ()
 # PC-only code (port/src) and the executable.
 file(GLOB_RECURSE PORT_SOURCES CONFIGURE_DEPENDS src/*.c src/*.cpp)
 list(FILTER PORT_SOURCES EXCLUDE REGEX "/src/audio/")
-add_executable(mssb ${PORT_SOURCES} $<TARGET_OBJECTS:mssb_game>)
+add_executable(mssb ${PORT_SOURCES} $<TARGET_OBJECTS:mssb_game> $<TARGET_OBJECTS:mssb_gen>)
 # port/src sees aurora and port/include, not the game's shadow headers.
 target_include_directories(mssb PRIVATE ${CMAKE_SOURCE_DIR}/include ${AURORA_DIR}/include)
 target_compile_definitions(mssb PRIVATE ${MSSB_DEFS} MSSB_REPO_DIR="${MSSB_ROOT}")
