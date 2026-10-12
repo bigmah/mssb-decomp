@@ -815,6 +815,9 @@ void fn_3_AE770(void) {
 }
 #pragma dont_inline on
 
+// The tables it reads (0xFAA8..) belong to the second TU in this gap, so the original addresses them
+// as externs, not through this file's pooled .data base.
+#pragma pool_data off
 // fn_3_B0B5C, size:0x198
 void fn_3_B0B5C(void) {
     if (g_Practice.hitVariablesSetIndicator == 0) {
@@ -850,6 +853,7 @@ void fn_3_B0B5C(void) {
         }
     }
 }
+#pragma pool_data reset
 
 // fn_3_B1A30, size:0x19C
 void fn_3_B1A30(void) {

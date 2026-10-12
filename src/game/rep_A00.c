@@ -60,8 +60,7 @@ static u8 lbl_3_data_1F30[8] = {18, 26, 12, 15, 17, 2, 9, 254};
 static u8 lbl_3_data_1F38[8] = {18, 25, 13, 14, 17, 4, 10, 254};
 u8* lbl_3_data_1F40[4] = {lbl_3_data_1F20, lbl_3_data_1F28, lbl_3_data_1F30, lbl_3_data_1F38};
 // Scene events that are blocked outside exhibition matches.
-static s8 lbl_3_data_1F50[0x21] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1};
-u8 lbl_3_data_1F71[3] = {0}; // alignment padding (unused)
+static s8 lbl_3_data_1F50[0x21 + 3] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1}; // 0x21 flags, padded to 4
 // Scene ids, indexed by SCENE->_260.
 static s32 lbl_3_data_1F74[0x21] = {
     85, 86, 87, 88, 85, 86, 87, 88,
