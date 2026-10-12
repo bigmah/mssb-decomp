@@ -188,19 +188,20 @@ menus/rep_0F60.c:
 	.bss        start:0x0000B2B8 end:0x0000B2C0
 	.bss        start:0x00340140 end:0x00340234 align:4 common
 
-menus/rep_0FD8.c:
-	.rodata     start:0x00000FD8 end:0x00001028
-
 auto_00_0008E6A4_text:
-	.text       start:0x0008E6A4 end:0x0008F0F4
-	.bss        start:0x0000B2C0 end:0x0000B640
-	.bss        start:0x00340234 end:0x00340DDC align:4 common
+	.text       start:0x0008E6A4 end:0x0008ED4C
+
+menus/rep_0FD8.c:
+	.text       start:0x0008ED4C end:0x0008F0F4
+	.rodata     start:0x00000FD8 end:0x00001028
+	.bss        start:0x0000B2C0 end:0x0000B2C4
 
 menus/rep_1028.c:
 	.text       start:0x0008F0F4 end:0x000927C8
 	.rodata     start:0x00001028 end:0x000010C0
 	.data       start:0x0002FFF8 end:0x000312A4
-	.bss        start:0x0000B640 end:0x0000B644
+	.bss        start:0x0000B2C8 end:0x0000B644
+	.bss        start:0x00340234 end:0x00340DDC align:4 common
 
 menus/rep_10C0.c:
 	.text       start:0x000927C8 end:0x00094854
