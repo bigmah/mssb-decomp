@@ -1081,7 +1081,9 @@ void fn_800111B4(MsgTable* table) {
     s32 n = table->count;
     u16** p = table->msgs;
     do {
-        *p = (u16*)((u32)*p + (u32)table); // file offset -> pointer (32-bit data)
+        // file offset -> pointer. TODO(port): msgs[] are 4-byte disc fields; MsgTable
+        // needs PTR32 entries (or a native copy) on PC.
+        *p = (u16*)((uintptr_t)*p + (uintptr_t)table);
         p++;
     } while (--n);
 }

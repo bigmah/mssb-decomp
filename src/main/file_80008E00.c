@@ -94,7 +94,11 @@ s32 OSWaitSemaphore(volatile OSSemaphore* sem);
 #endif
 
 extern u8 lbl_803CBBC0; // index of the display list buffer in use
+#ifdef TARGET_PC
+extern uintptr_t lbl_801181A0[2][0x10]; // DrawLink lists (pointer-sized on PC)
+#else
 extern u8 lbl_801181A0[2][0x40];
+#endif
 extern s32 lbl_803CBBA8;
 extern const GXColor lbl_803CD300;
 
@@ -596,7 +600,8 @@ void fn_800097A0(void) {
             OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
             ICInvalidateRange(task->module, task->moduleSize);
             lbl_80366158.arenaAfterDll = lbl_803C7898.lo;
-            ((void (*)(void))module->prolog)(); // TODO type: relocated by OSLink
+            // TODO(port): REL prolog/epilog become a static module table (Phase 2).
+            ((void (*)(void))U32_TO_PTR(module->prolog))(); // relocated by OSLink
             task->_10 = 0;
             OSReport(lbl_800E65A0);
             task->state = 10;
@@ -608,7 +613,7 @@ void fn_800097A0(void) {
             resetAllDrawingStructs();
             fn_80009144();
             module = task->module;
-            ((void (*)(void))module->epilog)();
+            ((void (*)(void))U32_TO_PTR(module->epilog))(); // TODO(port): see above
             OSUnlink(&module->info);
             switch (task->_10) {
             case 1:
@@ -635,7 +640,7 @@ void fn_800097A0(void) {
             OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
             ICInvalidateRange(task->module, task->moduleSize);
             lbl_80366158.arenaAfterDll = lbl_803C7898.lo;
-            ((void (*)(void))module->prolog)();
+            ((void (*)(void))U32_TO_PTR(module->prolog))(); // TODO(port): see above
             task->_10 = 0;
             OSReport(lbl_800E65A0);
             task->state = 13;
@@ -655,7 +660,7 @@ void fn_800097A0(void) {
             resetAllDrawingStructs();
             fn_80009144();
             module = task->module;
-            ((void (*)(void))module->epilog)();
+            ((void (*)(void))U32_TO_PTR(module->epilog))(); // TODO(port): see above
             OSUnlink(&module->info);
             task->state = 8;
             g_d_GameSettings.miniGameStadiumIndicator = 0;
@@ -734,7 +739,11 @@ QuadCallback fn_8000A094(QuadCallback value) {
 
 
 // .bss 0x801181A0..0x80118220 (MWCC lays these out in reverse definition order)
+#ifdef TARGET_PC
+uintptr_t lbl_801181A0[2][0x10];
+#else
 u8 lbl_801181A0[2][0x40];
+#endif
 
 // .sbss 0x803CBBA0..0x803CBBD8 (MWCC lays these out in reverse definition order)
 s32 lbl_803CBBD4;

@@ -256,7 +256,7 @@ void fn_80035168(void) {
                 SpaniAnim* anim = lbl_803C4BE0[obj->texSlot].anim;
                 SpaniTrack* track = anim->seqList->seqs[obj->animId]->tracks[k];
                 SpaniKey* keys = track->keys;
-                fn_8000CC4C(anim, track, &obj->texOverride[k], (u8*)&keys->texIdx - (u8*)keys, sizeof(u16));
+                fn_8000CC4C(anim, track, &obj->texOverride[k], (u32)((u8*)&keys->texIdx - (u8*)keys), sizeof(u16));
             }
             k++;
         } while (k < SPANI_TEX_OVERRIDE_COUNT);
@@ -574,7 +574,7 @@ void fn_8003649C(SpaniOwner* owner, s32 idx, s32 track, u16 animId, u32 frame) {
     }
     tr = s->anim->seqList->seqs[curAnim]->tracks[track];
     keys = tr->keys;
-    fn_8000CC4C(s->anim, tr, &texIdx, (u8*)&keys->texIdx - (u8*)keys, sizeof(u16));
+    fn_8000CC4C(s->anim, tr, &texIdx, (u32)((u8*)&keys->texIdx - (u8*)keys), sizeof(u16));
 }
 #endif
 
@@ -597,7 +597,7 @@ void fn_8003656C(SpaniOwner* owner, s32 idx, s32 track, u16 animId, u32 frame) {
         val = 0;
     }
     tr = s->anim->seqList->seqs[curAnim]->tracks[track];
-    fn_8000CC4C(anim, tr, &val, (u8*)&tr->keys[0].unk1C - (u8*)&tr->keys[0], sizeof(s32));
+    fn_8000CC4C(anim, tr, &val, (u32)((u8*)&tr->keys[0].unk1C - (u8*)&tr->keys[0]), sizeof(s32));
 }
 #endif
 

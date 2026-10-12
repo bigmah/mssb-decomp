@@ -2043,12 +2043,13 @@ s8 lbl_800F743C[0x3C] = { // [0x36] used, zero tail
 
 
 // The on-disc group data stores its pointers as offsets from the start of the block.
-// TODO port: these 32-bit offset fields can't hold 64-bit pointers.
+// TODO(port): these are 4-byte pointer fields on disc; SoundGroupData needs
+// PTR32 fields on PC (Phase 3).
 static inline void relocateSoundGroup(SoundGroupData* data) {
-    data->proj = (u8*)data->proj + (u32)data;
-    data->sdir = (u8*)data->sdir + (u32)data;
-    data->pool = (u8*)data->pool + (u32)data;
-    data->samp = (u8*)data->samp + (u32)data;
+    data->proj = (u8*)data->proj + (uintptr_t)data;
+    data->sdir = (u8*)data->sdir + (uintptr_t)data;
+    data->pool = (u8*)data->pool + (uintptr_t)data;
+    data->samp = (u8*)data->samp + (uintptr_t)data;
 }
 
 // Advance the ARAM/disc transfer queue; returns 1 once it is empty (inlined into callers).
@@ -2192,7 +2193,7 @@ void fn_80021650(DiskFileEntry* entry, void* dst, void* user) {
     relocateSoundGroup(data);
     req->onLoaded(req, data);
     data = lbl_800EF808.groups[group];
-    fn_800ACF78(data, (u8*)data->samp - (u8*)data);
+    fn_800ACF78(data, (u32)((u8*)data->samp - (u8*)data));
     req->task->done = 1;
 }
 
@@ -2235,7 +2236,7 @@ void fn_80021758(void) {
     case 2:
         if (task->callback(&task->callbackState) == 0) {
             SoundGroupData** slot = &lbl_800EF808.groups[task->group];
-            fn_800ACF78(*slot, (u8*)(*slot)->samp - (u8*)*slot);
+            fn_800ACF78(*slot, (u32)((u8*)(*slot)->samp - (u8*)*slot));
             parent = task->parent;
             parent->done = 1;
             fn_800B0A14_removeQueue(parent);
@@ -2247,7 +2248,7 @@ void fn_80021758(void) {
 // .text:0x80021954 size:0x2C
 void fn_80021954(SoundGroupData** slot) {
     SoundGroupData* data = *slot;
-    fn_800ACF78(data, (u8*)data->samp - (u8*)data);
+    fn_800ACF78(data, (u32)((u8*)data->samp - (u8*)data));
 }
 
 // .text:0x80021980 size:0x34
@@ -2352,7 +2353,7 @@ void* fn_80021CA4(s32 index, s32 variant, void* dst) {
     }
     if (lbl_803716B8.loadedFlags & 2) {
         aramQueuePush(&lbl_800EFD38[first + 0x36], dst, 3, lbl_803716B8.aramAddrs[1][first],
-                      (AramQueueCallback)fn_8002244C, (void*)((first << 16) | second));
+                      (AramQueueCallback)fn_8002244C, (void*)(uintptr_t)((first << 16) | second));
     } else {
         index = variant + index * 6;
         aramQueuePush(&lbl_800F5D98[index], dst, 0, 0, fn_80022620, NULL);
@@ -2381,7 +2382,7 @@ void* fn_8002204C(s32 index, void* dst) {
             aramQueuePush(&lbl_800EFD38[entry], dst, 3, lbl_803716B8.aramAddrs[0][entry], fn_80022620, NULL);
         } else {
             aramQueuePush(&lbl_800EFD38[entry], dst, 3, lbl_803716B8.aramAddrs[0][entry], (AramQueueCallback)fn_8002254C,
-                          (void*)(s32)sub);
+                          (void*)(intptr_t)(s32)sub);
         }
     } else {
         aramQueuePush(&lbl_800F1D78[index * 0x13], dst, 0, 0, fn_80022620, NULL);
@@ -2400,7 +2401,7 @@ void fn_8002244C(s32 unused, s32* hdr, s32 arg) {
     s32 len = DISK_FILE_SIZE(DISK_FILE_ENTRY(lbl_800EFD38, (arg >> 16) + 0x36));
     len = (len + 0x1F) & ~0x1F;
     hdr[3] = len;
-    hdr = (s32*)(len + (u32)hdr); // TODO port: pointer through u32 (needed to match)
+    hdr = (s32*)(len + (uintptr_t)hdr); // pointer through an integer (needed to match)
     v = *(s32*)((u8*)lbl_803716B8.aramAddrs[1] + (u16)arg * 4);
     h = lbl_803716B8.head;
     next = (h + 1) % 18;
@@ -2492,7 +2493,7 @@ void fn_800227E4(void) {
             lbl_803716B8.aramAddrs[i][j] = lbl_803716B8.aramBase + lbl_800EFD38[k].aramOffset;
         }
     }
-    aramQueuePush(&lbl_800F1D68, (void*)lbl_803716B8.aramBase, 2, 0, fn_800227A0, NULL);
+    aramQueuePush(&lbl_800F1D68, (void*)(uintptr_t)lbl_803716B8.aramBase, 2, 0, fn_800227A0, NULL);
 }
 
 // .text:0x800229CC size:0x58
@@ -2522,7 +2523,7 @@ s32 fn_80022A24(s32 stadium, s32 variant) {
         }
     }
     lbl_803716B8.stadiumAram = 0;
-    ARAMTransfer(&lbl_800EFBE8[variant + stadium * 3], (void*)lbl_803716B8.stadiumAramPending, 2, 0);
+    ARAMTransfer(&lbl_800EFBE8[variant + stadium * 3], (void*)(uintptr_t)lbl_803716B8.stadiumAramPending, 2, 0);
     fn_800B0A5C_insertQueue(fn_80022B14, lbl_803CC1B8->priority + 1);
     return 1;
 }

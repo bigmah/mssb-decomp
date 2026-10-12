@@ -765,22 +765,23 @@ u8 LoadModel(CharActor* actor) {
     if (lbl_803716B8._1E8 == 0) {
         part = lbl_803CBC10;
         tex = actor->parts->tex;
-        // TODO type: the file header holds offsets that are relocated in place.
+        // TODO(port): the file header holds 32-bit offsets relocated in place; on PC
+    // void* entries are 8 bytes, so these tables need PTR32 entries (Phase 3).
         files = part->files;
         if (files[0] != NULL) {
-            files[0] = (u8*)files + (u32)files[0];
+            files[0] = (u8*)files + (uintptr_t)files[0];
         }
         files = part->files;
         if (files[1] != NULL) {
-            files[1] = (u8*)files + (u32)files[1];
+            files[1] = (u8*)files + (uintptr_t)files[1];
         }
         files = part->files;
         if (files[2] != NULL) {
-            files[2] = (u8*)files + (u32)files[2];
+            files[2] = (u8*)files + (uintptr_t)files[2];
         }
         files = part->files;
         if (files[3] != NULL) {
-            files[3] = (u8*)files + (u32)files[3];
+            files[3] = (u8*)files + (uintptr_t)files[3];
         }
         fn_800126EC(part, tex, lbl_803CB7C4);
         copyPartJointData(lbl_8036E548.active[actor->index], lbl_803CBC15);
@@ -803,22 +804,23 @@ static inline BOOL loadPartModel(CharPart* part, s8 kind, s32 mode, void* tex) {
     if (lbl_803716B8._1E8 == 0) {
         part = lbl_803CBC1C;
         lbl_803CBC0C = 0;
-        // TODO type: the file header holds offsets that are relocated in place.
+        // TODO(port): the file header holds 32-bit offsets relocated in place; on PC
+    // void* entries are 8 bytes, so these tables need PTR32 entries (Phase 3).
         files = part->files;
         if (files[0] != NULL) {
-            files[0] = (u8*)files + (u32)files[0];
+            files[0] = (u8*)files + (uintptr_t)files[0];
         }
         files = part->files;
         if (files[1] != NULL) {
-            files[1] = (u8*)files + (u32)files[1];
+            files[1] = (u8*)files + (uintptr_t)files[1];
         }
         files = part->files;
         if (files[2] != NULL) {
-            files[2] = (u8*)files + (u32)files[2];
+            files[2] = (u8*)files + (uintptr_t)files[2];
         }
         files = part->files;
         if (files[3] != NULL) {
-            files[3] = (u8*)files + (u32)files[3];
+            files[3] = (u8*)files + (uintptr_t)files[3];
         }
         fn_800126EC(part, tex, lbl_803CB7C4);
         lbl_803CBC1C = NULL;
@@ -2332,17 +2334,18 @@ void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(A
     s32 i;
     s32 j;
 
-    // TODO type: the file header holds offsets that are relocated in place.
+    // TODO(port): the file header holds 32-bit offsets relocated in place; on PC
+    // void* entries are 8 bytes, so these tables need PTR32 entries (Phase 3).
     if (files[0] != NULL) {
-        actor->files[0] = (u8*)files + (u32)files[0];
+        actor->files[0] = (u8*)files + (uintptr_t)files[0];
         if (actor->files[1] != NULL) {
-            actor->files[1] = (u8*)files + (u32)files[1];
+            actor->files[1] = (u8*)files + (uintptr_t)files[1];
             if (actor->files[2] != NULL) {
-                actor->files[2] = (u8*)files + (u32)files[2];
+                actor->files[2] = (u8*)files + (uintptr_t)files[2];
                 if (actor->files[3] != NULL) {
-                    actor->files[3] = (u8*)files + (u32)files[3];
+                    actor->files[3] = (u8*)files + (uintptr_t)files[3];
                     if (actor->files[4] != NULL) {
-                        actor->files[4] = (u8*)files + (u32)files[4];
+                        actor->files[4] = (u8*)files + (uintptr_t)files[4];
                     }
                 }
             }
@@ -3112,11 +3115,12 @@ void fn_800196D8(void) {
         fn_800BEBCC(0, VEC_ARG(dir2));
         fn_800BF048(fn_8001AAF0);
         fn_800BF058(fn_8001AB10);
-        // TODO type: the stadium file header holds offsets, relocated in place.
+        // TODO(port): the stadium file header holds 32-bit offsets relocated in place
+        // (PTR32 table on PC, Phase 3).
         base = (u8*)lbl_8036E548.stadiumFiles;
         raw = (void**)base;
         for (i = 0; i < 80; i++) {
-            ((void**)lbl_8036E548.stadiumFiles)[i] = base + (u32)raw[i];
+            ((void**)lbl_8036E548.stadiumFiles)[i] = base + (uintptr_t)raw[i];
         }
         lbl_8036E548._307C = 0;
         lbl_8036E548._307D = 0;
@@ -3281,11 +3285,12 @@ void fn_80019C00(void) {
         fn_800BEBCC(0, VEC_ARG(dir2));
         fn_800BF048(fn_8001AAF0);
         fn_800BF058(fn_8001AB10);
-        // TODO type: the stadium file header holds offsets, relocated in place.
+        // TODO(port): the stadium file header holds 32-bit offsets relocated in place
+        // (PTR32 table on PC, Phase 3).
         base = (u8*)lbl_8036E548.stadiumFiles;
         raw = (void**)base;
         for (i = 0; i < 80; i++) {
-            ((void**)lbl_8036E548.stadiumFiles)[i] = base + (u32)raw[i];
+            ((void**)lbl_8036E548.stadiumFiles)[i] = base + (uintptr_t)raw[i];
         }
         lbl_8036E548._307C = 0;
         lbl_8036E548._307D = 0;
@@ -3471,11 +3476,12 @@ void challengeMapRelated(void) {
         fn_800BEBCC(0, VEC_ARG(dir2));
         fn_800BF048(fn_8001AAF0);
         fn_800BF058(fn_8001AB10);
-        // TODO type: the stadium file header holds offsets, relocated in place.
+        // TODO(port): the stadium file header holds 32-bit offsets relocated in place
+        // (PTR32 table on PC, Phase 3).
         base = (u8*)lbl_8036E548.stadiumFiles;
         raw = (void**)base;
         for (i = 0; i < 80; i++) {
-            ((void**)lbl_8036E548.stadiumFiles)[i] = base + (u32)raw[i];
+            ((void**)lbl_8036E548.stadiumFiles)[i] = base + (uintptr_t)raw[i];
         }
         lbl_8036E548._3082 = 0;
         lbl_8036E548._307C = 0;

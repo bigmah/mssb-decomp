@@ -140,9 +140,9 @@ void fn_800AFFC0(u32 count);
 BOOL fn_800B0008(u32 len);
 BOOL fn_800B0134(u32 len);
 void fn_800B0230(u8* dst, u32 len);
-void fn_800B0390(u32 request);
+void fn_800B0390(uintptr_t request); // ARQCallback
 void fn_800B03F4(u8* src, u32 len);
-void fn_800B0580(u32 request);
+void fn_800B0580(uintptr_t request); // ARQCallback
 void fn_800B05E4(s32 aramSize, u32 mramSize);
 
 #endif

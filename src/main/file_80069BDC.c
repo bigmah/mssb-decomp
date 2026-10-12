@@ -91,7 +91,7 @@ typedef struct RelocPair {
 } RelocPair;
 
 // TODO port: file data stores 32-bit offsets that are turned into pointers in place.
-#define RELOCATE(base, field) ((field) = (void*)((u8*)(base) + (u32)(field)))
+#define RELOCATE(base, field) ((field) = (void*)((u8*)(base) + (uintptr_t)(field)))
 
 extern void* fn_800ACF34(s32 heap, u32 size);
 extern void fn_80035750(void* a, void* b, s32 c);

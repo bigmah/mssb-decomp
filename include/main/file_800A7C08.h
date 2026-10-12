@@ -10,12 +10,18 @@
 // Entry in the per-frame draw callback list. `next` holds the next entry's address with
 // flags in the low two bits: bit 0 = disabled, bit 1 = field the callback runs on.
 typedef union DrawLink {
-    u32 raw; // TODO type: tagged pointer (DrawCallbackNode* | flags)
+#ifdef TARGET_PC
+    // Pointer-sized on PC. TODO(port): every game node struct that starts with
+    // a `u32 link` word (rather than DrawCallbackNode/void*) must follow.
+    uintptr_t raw; // DrawCallbackNode* | field (bit 1) | disabled (bit 0)
+#else
+    u32 raw; // tagged pointer (DrawCallbackNode* | flags)
     struct {
         u32 addr : 30;
         u32 field : 1;
         u32 disabled : 1;
     } bits;
+#endif
 } DrawLink;
 
 typedef struct DrawCallbackNode {
