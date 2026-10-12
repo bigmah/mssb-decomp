@@ -583,8 +583,6 @@ void fn_3_142CA8(void) {
 // .text:0x00142DB4 size:0x31C mapped:0x80781E48
 extern f32 lbl_3_data_21BC4[][12];
 
-// NONMATCHING 69.1%: same velocity math as fn_3_1430D0 (which matches) but the original uses 4 non-lmw saved regs and a different schedule
-#if NONMATCHING
 void fn_3_142DB4(s32 idx) {
     MgRunner* r = (MgRunner*)g_Minigame + idx;
     MgBall* b;
@@ -613,8 +611,8 @@ void fn_3_142DB4(s32 idx) {
             b->pos.z = lbl_3_data_21BC4[idx][8];
         }
         b->_22 = r->player;
-        b->owner = r->player;
         ch = *(s16*)(g_Fielders + r->fielder * 0x268 + 0x17A);
+        b->owner = r->player;
         k = g_Minigame[r->player + 0x1CAD];
         h = lbl_3_rodata_385C * ((f32)lbl_3_data_7F10[ch] * charSizeMultipliers[ch][0]);
         dx = lbl_3_data_21B94[k].x - b->pos.x;
@@ -630,7 +628,6 @@ void fn_3_142DB4(s32 idx) {
         fn_3_15730C(i, b->pos.x, -b->pos.y, b->pos.z);
     }
 }
-#endif
 
 // .text:0x001430D0 size:0x288 mapped:0x80782164
 

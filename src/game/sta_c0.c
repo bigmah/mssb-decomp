@@ -253,8 +253,9 @@ void fn_3_C9C94(void) {
 
 // Sets up the stadium objects. files: the stadium's file table.
 // .text:0x000C9DB4 size:0xE00 mapped:0x80708E48
-// NONMATCHING 89%: register allocation and the inlined fn_3_C9C94 reaching lbl_3_bss_9F48/9F4C through
+// NONMATCHING 92%: register allocation and the inlined fn_3_C9C94 reaching lbl_3_bss_9F48/9F4C through
 // the pooled lbl_3_bss_9F38 base (expected nmverify difference); same calls, stores and control flow
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 void fn_3_C9DB4(void** files) {
     StaC0ObjList* list = &lbl_3_common_bss_350E4;
@@ -570,3 +571,4 @@ void fn_3_C9DB4(void** files) {
     fn_3_C9C94();
 }
 #endif
+#pragma pool_data reset
