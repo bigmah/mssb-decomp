@@ -95,12 +95,35 @@ typedef struct _ChemistryTable {
     /*0x035*/ u8 BoomerangBro;
 } ChemistryTable; // size: 0x36
 
+// StatTable holds 0x3B bytes of data, but its u32 FieldingStats gives it 4-byte alignment,
+// so sizeof(StatTable) is 0x3C. In the game the chemistry table starts right after the
+// stats, at 0x3B (inside StatTable's tail padding), so the two are overlaid in a union.
+// Never copy sizeof(StatTable) bytes out of a CharacterStats: it would include chemistry[0].
 typedef struct _CharacterStats {
+    union {
+        /*0x000*/ StatTable stats;
+        struct {
+            /*0x000*/ u8 statBytes[0x3B]; // = stats
+            union {
+                /*0x03B*/ ChemistryTable chemistry;
+                /*0x03B*/ u8 chem[0x36]; // chemistry indexed by character id
+            };
+            /*0x071*/ u8 BytesAfterChemistry[3];
+            /*0x074*/ u16 UnusedShorts[21];
+        };
+    };
+} CharacterStats; // size: 0xA0
 
-    /*0x000*/ StatTable stats;
-    /*0x03B*/ ChemistryTable chemistry;
-    /*0x071*/ u8 BytesAfterChemistry[3];
-    /*0x074*/ u16 UnusedShorts[21];
-} CharacterStats;
+CHECK_OFFSET(StatTable, FieldingStats, 0x20);
+CHECK_OFFSET(StatTable, CharID, 0x24);
+CHECK_OFFSET(StatTable, FieldingStatBar, 0x3A);
+CHECK_SIZE(StatTable, 0x3C);
+CHECK_OFFSET(ChemistryTable, BoomerangBro, 0x35);
+CHECK_SIZE(ChemistryTable, 0x36);
+CHECK_OFFSET(CharacterStats, chemistry, 0x3B);
+CHECK_OFFSET(CharacterStats, chem, 0x3B);
+CHECK_OFFSET(CharacterStats, BytesAfterChemistry, 0x71);
+CHECK_OFFSET(CharacterStats, UnusedShorts, 0x74);
+CHECK_SIZE(CharacterStats, 0xA0);
 
 #endif

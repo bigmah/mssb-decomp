@@ -6,6 +6,17 @@
 #define ARRAY_COUNT(x) (sizeof(x) / (*(x)))
 #define OFFSET_OF(structName, field) (size_t)(&(((structName*)NULL)->field))
 
+// Compile-time struct layout checks. A failing check is a negative array size, which every
+// compiler (MWCC included) rejects; the typedefs emit no code or data.
+#if defined(__GNUC__) || defined(__clang__)
+#define LAYOUT_OFFSETOF(T, field) __builtin_offsetof(T, field)
+#else
+#define LAYOUT_OFFSETOF(T, field) ((unsigned long)&((T*)0)->field)
+#endif
+#define STATIC_CHECK(name, cond) typedef char static_check_##name[(cond) ? 1 : -1]
+#define CHECK_OFFSET(T, field, off) STATIC_CHECK(T##_##field, LAYOUT_OFFSETOF(T, field) == (off))
+#define CHECK_SIZE(T, size) STATIC_CHECK(T##_size, sizeof(T) == (size))
+
 // used to pad structs when there are unused variables/still filling out the struct
 #define artificial_padding(lastOffset, currentOffset, typeOfLastMember) \
 u8 __##currentOffset##padding[((currentOffset) - (lastOffset) - sizeof(typeOfLastMember)) * (((currentOffset) - (lastOffset) - sizeof(typeOfLastMember)) > 0)]
