@@ -72,8 +72,8 @@ static u32 lbl_2_bss_0;
 
 // Common block 0xB644..0xFC68: lbl_2_bss_B644 is used here, the rest by other units.
 // mwcc lists unreferenced commons in reverse order of definition.
-u8 lbl_2_bss_F468[0x800];
-u8 lbl_2_bss_F410[0x58];
+MenuTeamSel lbl_2_bss_F468;
+MenuSelVars lbl_2_bss_F410;
 u8 lbl_2_bss_E8CC[0xB44];
 u8 lbl_2_bss_DCE8[0xBE4];
 u8 lbl_2_bss_D988[0x360]; // unreferenced

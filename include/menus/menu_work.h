@@ -664,6 +664,55 @@ typedef struct MenuSelVars {
     /*0x54*/ u32 _54;
 } MenuSelVars; // size: 0x58
 
+// Team setup / field-position selection state (lbl_2_bss_F468, 0x800 bytes, defined in
+// rep_0010.c). The [2] arrays are per team.
+typedef struct MenuTeamSel {
+    /*0x00*/ s32 cursor[2];     // selected field position (9, 10: off the field)
+    /*0x08*/ s32 prevCursor[2];
+    /*0x10*/ s32 _10[4];        // indexed by _2F[team]
+    /*0x20*/ s32 _20[2];
+    /*0x28*/ u8 _28;
+    /*0x29*/ u8 _29;
+    /*0x2A*/ u8 _2A;
+    /*0x2B*/ u8 _2B;
+    /*0x2C*/ u8 _2C;
+    /*0x2D*/ u8 _2D;
+    /*0x2E*/ u8 _2E;
+    /*0x2F*/ u8 _2F[2];
+    /*0x31*/ u8 _31[2];
+    /*0x33*/ u8 _33;
+    /*0x34*/ u8 _34;
+    /*0x35*/ u8 _35;
+    /*0x36*/ u8 _36;
+    /*0x37*/ u8 _37[2];
+    /*0x39*/ u8 _39[2];
+    /*0x3B*/ u8 _3B[2];
+    /*0x3D*/ u8 _3D[2];
+    /*0x3F*/ u8 _3F;
+    /*0x40*/ u8 _40;
+    /*0x41*/ u8 _41[2];
+    /*0x43*/ u8 _43[2];
+    /*0x45*/ u8 _45[2];
+    /*0x47*/ u8 _47[2];
+    /*0x49*/ u8 _49[2];
+    /*0x4B*/ u8 _4B[2];
+    /*0x4D*/ u8 _4D[2];
+    /*0x4F*/ u8 _4F;
+    /*0x50*/ u8 _50[2];
+    /*0x52*/ u8 _52[2];
+    /*0x54*/ u8 _54[2];
+    /*0x56*/ u8 _56;
+    /*0x57*/ u8 _57;
+    /*0x58*/ u8 _58;
+    /*0x59*/ u8 _59[2];
+    /*0x5B*/ u8 _5B[4];
+    /*0x5F*/ u8 _5F[2];
+    /*0x61*/ u8 _61[2];
+    /*0x63*/ u8 _63[2];
+    /*0x65*/ u8 _65[2];
+    /*0x67*/ u8 _67[0x800 - 0x67];
+} MenuTeamSel; // size: 0x800
+
 // Team/captain select screen state (lbl_2_bss_100B8; the debug options menu reuses
 // it, see DebugMenuState in menus/auto_00_00013BA4_text.h).
 typedef struct CaptainSelMenu {
@@ -683,7 +732,8 @@ typedef struct CaptainSelMenu {
     /*0x1E*/ u8 _1E[0x27 - 0x1E];
     /*0x27*/ s8 _27[6]; // indexed by model slot
     /*0x2D*/ u8 count;
-    /*0x2E*/ u8 _2E[0x32 - 0x2E];
+    /*0x2E*/ u8 _2E[2];      // per team
+    /*0x30*/ u8 _30[2];      // per team
     /*0x32*/ u8 _32;
     /*0x33*/ u8 _33[0x40 - 0x33];
     /*0x40*/ u8 animState[2];
