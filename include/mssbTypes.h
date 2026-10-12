@@ -28,11 +28,6 @@ u8 __##currentOffset##padding[((currentOffset) - (lastOffset) - sizeof(typeOfLas
 // Enum macro to help debug types
 #define E(storage, enumType) storage
 
-// Byte offset of a struct member, for code that steps a byte pointer the way the original does.
-#ifndef offsetof
-#define offsetof(type, member) ((unsigned long)&((type*)0)->member)
-#endif
-
 typedef enum _CHAR_ID {
     /* -1   -1 */ CHAR_ID_NONE = -1,
     /* 0  0x00 */ CHAR_ID_MARIO,            

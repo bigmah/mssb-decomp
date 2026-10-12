@@ -4216,10 +4216,10 @@ void fn_3_88228(void) {
         // byte offsets into g_Runners, as the original addresses it
         off = ri * sizeof(InMemRunnerType);
         q = (u8*)g_Runners + off;
-        if (*(s16*)(q += offsetof(InMemRunnerType, forceOutCd)) == 1) {
+        if (*(s16*)(q += OFFSET_OF(InMemRunnerType, forceOutCd)) == 1) {
             fn_3_88D88(ri);
             *(s16*)q = 2;
-            ((u8*)g_Runners)[off + offsetof(InMemRunnerType, outType)] = 2;
+            ((u8*)g_Runners)[off + OFFSET_OF(InMemRunnerType, outType)] = 2;
             if (g_Ball.fielderWhoGotLastOut < 0) {
                 t = g_Ball.throwingFielder;
                 if (t < 0) {
