@@ -84,7 +84,7 @@ void fn_800A7DB0(void) {
 
 // .text:0x800A7E00 size:0x110
 void fn_800A7E00(void) {
-    GXBool new_var;
+    GXBool filterOn;
     GXRenderModeObj* rmode = &lbl_803C7420.renderModeCopy;
 
     GXAdjustForOverscan(&GXNtsc480Int, rmode, 0, 16);
@@ -96,10 +96,11 @@ void fn_800A7E00(void) {
     GXSetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
     GXSetDispCopySrc(0, 0, lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->efbHeight);
     GXSetDispCopyDst(lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->xfbHeight);
-    GXSetDispCopyYScale(((f32) lbl_803C7420.renderMode->xfbHeight) / ((f32) lbl_803C7420.renderMode->efbHeight));
+    GXSetDispCopyYScale((f32)lbl_803C7420.renderMode->xfbHeight / (f32)lbl_803C7420.renderMode->efbHeight);
     GXSetScissor(0, 0, lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->efbHeight);
-    new_var = (GXBool) 1;
-    GXSetCopyFilter(lbl_803C7420.renderMode->aa, lbl_803C7420.renderMode->sample_pattern, new_var, lbl_803C7420.renderMode->vfilter);
+    filterOn = GX_TRUE;
+    GXSetCopyFilter(lbl_803C7420.renderMode->aa, lbl_803C7420.renderMode->sample_pattern, filterOn,
+                    lbl_803C7420.renderMode->vfilter);
 }
 
 // .text:0x800A7F10 size:0x1D8
@@ -139,10 +140,10 @@ extern char lbl_800E77C8[];
 extern char lbl_800E77D4[];
 
 // .text:0x800A80E8 size:0x3DC
-void initRenderMode(GXRenderModeObj *rmode, u32 fifoSize, u32 overscan) {
+void initRenderMode(GXRenderModeObj* rmode, u32 fifoSize, u32 overscan) {
     OSThread* thread = &lbl_803C7420.drawThread;
     u8* arenaLo;
-    int new_var;
+    int xfbSize;
     u8* arenaHi;
     u8* fifoBase;
     u8* heapLo;
@@ -150,23 +151,23 @@ void initRenderMode(GXRenderModeObj *rmode, u32 fifoSize, u32 overscan) {
 
     lbl_803C7420.retraceInterval = 0;
     lbl_803C7420.retraceCounter = 0;
-    OSCreateThread(thread, fn_800A7C08, (void *) 0, lbl_802ED140 + (sizeof(lbl_802ED140)), sizeof(lbl_802ED140), 12, 1);
+    OSCreateThread(thread, fn_800A7C08, NULL, lbl_802ED140 + sizeof(lbl_802ED140), sizeof(lbl_802ED140), 12, 1);
     OSInitThreadQueue(&lbl_803C7420.drawQueue);
     OSInitSemaphore(&lbl_803C7420.drawDone, 0);
     OSResumeThread(thread);
     OSInitThreadQueue(&lbl_803C7420.retraceQueue);
     VIInit();
-    if (rmode != ((void *) 0)) {
+    if (rmode != NULL) {
         lbl_803C7420.renderMode = rmode;
     } else {
         switch (VIGetTvFormat()) {
-        case 0:
+        case VI_NTSC:
             lbl_803C7420.renderMode = &GXNtsc480IntDf;
             break;
-        case 1:
+        case VI_PAL:
             lbl_803C7420.renderMode = &GXPal528IntDf;
             break;
-        case 2:
+        case VI_MPAL:
             lbl_803C7420.renderMode = &GXMpal480IntDf;
             break;
         default:
@@ -176,19 +177,21 @@ void initRenderMode(GXRenderModeObj *rmode, u32 fifoSize, u32 overscan) {
         GXAdjustForOverscan(lbl_803C7420.renderMode, &lbl_803C7420.renderModeCopy, 0, overscan);
         lbl_803C7420.renderMode = &lbl_803C7420.renderModeCopy;
     }
+
     arenaLo = OSGetArenaLo();
     arenaHi = OSGetArenaHi();
-    new_var = ((u16) ((lbl_803C7420.renderMode->fbWidth + 15) & (~15))) * lbl_803C7420.renderMode->xfbHeight;
-    lbl_803C7420.xfb = (void *) ((((u32) arenaLo) + 0x1F) & (~0x1F));
-    fifoBase = (u8 *) ((((u32) (((u8 *) lbl_803C7420.xfb) + (new_var * 2))) + 0x1F) & (~0x1F));
+    xfbSize = (u16)((lbl_803C7420.renderMode->fbWidth + 15) & ~15) * lbl_803C7420.renderMode->xfbHeight;
+    lbl_803C7420.xfb = (void*)OSRoundUp32B(arenaLo);
+    fifoBase = (u8*)OSRoundUp32B((u8*)lbl_803C7420.xfb + xfbSize * 2);
     lbl_803C7420.fifoBase = fifoBase;
     lbl_803C7420.fifo = GXInit(fifoBase, fifoSize);
     heapLo = fifoBase + fifoSize;
     fn_800AD054(heapLo, arenaHi);
     lbl_803C7420.heapLo = heapLo;
     lbl_803C7420.heapHi = arenaHi;
-    lbl_803C7420.heapSize = (((u32) (arenaHi - heapLo)) + 0x1F) & (~0x1F);
+    lbl_803C7420.heapSize = OSRoundUp32B(arenaHi - heapLo);
     OSSetArenaLo(arenaHi);
+
     VIConfigure(lbl_803C7420.renderMode);
     VISetPreRetraceCallback(fn_800A84C4);
     if (lbl_803C7420.renderMode->aa) {
@@ -198,10 +201,11 @@ void initRenderMode(GXRenderModeObj *rmode, u32 fifoSize, u32 overscan) {
     }
     GXSetDispCopySrc(0, 0, lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->efbHeight);
     GXSetDispCopyDst(lbl_803C7420.renderMode->fbWidth, lbl_803C7420.renderMode->xfbHeight);
-    GXSetDispCopyYScale(((f32) lbl_803C7420.renderMode->xfbHeight) / ((f32) lbl_803C7420.renderMode->efbHeight));
-    GXSetCopyFilter(lbl_803C7420.renderMode->aa, lbl_803C7420.renderMode->sample_pattern, (GXBool) 1, lbl_803C7420.renderMode->vfilter);
+    GXSetDispCopyYScale((f32)lbl_803C7420.renderMode->xfbHeight / (f32)lbl_803C7420.renderMode->efbHeight);
+    GXSetCopyFilter(lbl_803C7420.renderMode->aa, lbl_803C7420.renderMode->sample_pattern, GX_TRUE,
+                    lbl_803C7420.renderMode->vfilter);
     GXSetDispCopyGamma(GX_GM_1_0);
-    GXCopyDisp(lbl_803C7420.xfb, (GXBool) 1);
+    GXCopyDisp(lbl_803C7420.xfb, GX_TRUE);
     VISetNextFrameBuffer(lbl_803C7420.xfb);
     VIFlush();
     VIWaitForRetrace();
@@ -214,7 +218,7 @@ void initRenderMode(GXRenderModeObj *rmode, u32 fifoSize, u32 overscan) {
     clearColor = lbl_803CBAD0;
     GXSetCopyClear(clearColor, 0xFFFFFF);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-    VISetBlack(0);
+    VISetBlack(FALSE);
 }
 
 // .text:0x800A84C4 size:0x54

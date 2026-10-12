@@ -690,10 +690,10 @@ void fn_80027674(Vec* center, Vec* target, ParticleParamsAttract* prm, u8 type, 
 // .text:0x80027918 size:0x50
 void fn_80027918(u8 type, f32 v) {
     Emitter* e;
-    Emitter* new_var;
-    Emitter* f = (void *) 0;
+    Emitter* prev;
+    Emitter* f = NULL;
 
-    while (e = FindEmitter(f, type), new_var = (f = e), e != ((void *) 0)) {
+    while (e = FindEmitter(f, type), prev = (f = e), e != NULL) {
         f->u.f[1] = v;
     }
 }

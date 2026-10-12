@@ -216,38 +216,37 @@ s32 fn_800247E4(s32 x, s32 y, s32 width, s32 bytesPerTexel) {
 
 // .text:0x80024840 size:0x134
 s32 challengeStarRelatedInd(s32 team, s32 mission) {
-    unsigned char new_var;
+    u8 bit0;
     u8 status = starMissionCompletionTracker[team].inGameMissionTracker[mission].starMissionStatus;
     u8 row = lbl_800E8558[team].missionRow;
-    unsigned long long new_var2;
+    u64 wide; // a 64-bit copy of status: matches the original's register use
     s16 flags;
 
-    new_var2 = status;
-    if (((s8) new_var2) == (-2)) {
+    wide = status;
+    if ((s8)wide == -2) {
         return 1;
     }
-    if ((g_d_GameSettings.GameModeSelected == 5) && (((s8) new_var2) == (-1))) {
+    if (g_d_GameSettings.GameModeSelected == 5 && (s8)wide == -1) {
         flags = lbl_80109AE8[row][mission].flags;
-        new_var = flags & 1;
-        if (new_var) {
+        bit0 = flags & 1;
+        if (bit0) {
             return 0;
         }
         if (flags & 2) {
             if (g_d_GameSettings.challengeDifficulty < 1) {
                 return 0;
             }
-        } else
-        if (flags & 4) {
+        } else if (flags & 4) {
             if (g_d_GameSettings.challengeDifficulty < 2) {
                 return 0;
             }
-        } else
-        if (flags & 8) {
+        } else if (flags & 8) {
             if (g_d_GameSettings.challengeDifficulty < 3) {
                 return 0;
             }
         }
-        if ((((flags & 0x800) && ((*((s8 *) (((u8 *) starMissionCompletionTracker) + 0x44EF))) == 0)) && ((*((s8 *) (((u8 *) starMissionCompletionTracker) + 0x44F0))) == 0)) && ((*((s32 *) (lbl_8034E9A0 + 0x46E4))) != 9)) {
+        if ((flags & 0x800) && *(s8*)((u8*)starMissionCompletionTracker + 0x44EF) == 0 && // TODO type
+            *(s8*)((u8*)starMissionCompletionTracker + 0x44F0) == 0 && *(s32*)(lbl_8034E9A0 + 0x46E4) != 9) {
             return 0;
         }
         return 1;
