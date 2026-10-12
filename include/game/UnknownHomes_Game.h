@@ -2613,6 +2613,8 @@ typedef struct {
     u32 _10;
 } trajOptions_s;
 
+#include "game/replay_camera.h"
+
 typedef struct {
     /* 0x000 */ s16 _0000;
     /* 0x002 */ u16 _0002;
@@ -2646,6 +2648,8 @@ typedef struct {
     /* 0x114 */ f32 _114;
     /* 0x118 */ s16 _118;
     /* 0x11A */ s16 _11A;
+    union {
+    struct {
     /* 0x11C */ u8 _11C;
     artificial_padding(0x11C, 0xa50, u8);
     /* 0xA50 */ int _A50;
@@ -2695,6 +2699,12 @@ typedef struct {
     artificial_padding(0xaca, 0xad8, u8);
     /* 0xAD8 */ u8 _AD8;
     artificial_padding(0xad8, 0x2810, u8);
+    };
+    struct {
+        u8 _11C_[4];
+        /* 0x120 */ lbl_3_common_bss_DE94_s2 views[4]; // replay camera views (game/replay_camera.h)
+    };
+    };
     /* 0x2810 */ s16 _2810;
     /* 0x2812 */ s16 _2812;
     /* 0x2814 */ s16 _2814;
@@ -3056,31 +3066,7 @@ typedef struct GameScores {
     /* 0xC7 */ u8 _C7;
 } GameScores; // size: 0xC8
 
-typedef struct {
-    /* 0x0000 */ s32 _0000; // from lbl_3_data_20E0C[_092C]
-    /* 0x0004 */ u8 _0004[4];
-    /* 0x0008 */ s32 _0008;
-    /* 0x000C */ u8 _000C[8];
-    /* 0x0014 */ s32 _0014;
-    /* 0x0018 */ s32 _0018;
-    /* 0x001C */ u8 _001C[0xa0 - 0x1c];
-    /* 0x00A0 */ f32 _00A0;
-    /* 0x00A4 */ u8 _00A4[0x118 - 0xa4];
-    /* 0x0118 */ s32 _0118;
-    /* 0x011C */ u8 _011C[0x92c - 0x11c];
-    /* 0x092C */ s32 _092C; // scene index
-    /* 0x0930 */ u8 _0930[0x944 - 0x930];
-    /* 0x0944 */ s16 _0944;
-    /* 0x0946 */ u8 _0946[0x9ab - 0x946];
-    /* 0x09AB */ u8 _09AB;
-    /* 0x09AC */ u8 _09AC;
-    /* 0x09AD */ u8 _09AD;
-    /* 0x09AE */ u8 _09AE;
-    /* 0x09AF */ u8 _09AF;
-    /* 0x09B0 */ u8 _09B0;
-    /* 0x09B1 */ u8 _09B1[5];
-    /* 0x09B6 */ u8 _09B6;
-} lbl_3_common_bss_DE94_s2;
+// lbl_3_common_bss_DE94_s2 (replay camera view): game/replay_camera.h
 
 typedef struct {
     lbl_3_common_bss_DE94_s2* _0000;
