@@ -7,6 +7,13 @@
 
 // dvdsys.c
 
+#ifdef TARGET_PC
+// lbl_803C7420 is the VideoSystem; on PC its layout differs from the
+// GameCube offsets below (pointers are 8 bytes), so use the real struct.
+#include "main/video_system.h"
+#define queue380 drawQueue
+#define _397 field
+#else
 // Same object as lbl_803C7420_s in file_80008E00.c; only the fields used here.
 typedef struct {
     /*0x000*/ u8 _000[0x5C];
@@ -17,6 +24,7 @@ typedef struct {
     /*0x397*/ u8 _397;
 } SysBlock_803C7420; // size: 0x398
 extern SysBlock_803C7420 lbl_803C7420;
+#endif
 
 typedef struct {
     /*0x0000*/ u8 stacks[2][0x1000]; // [0]: read thread, [1]: monitor thread

@@ -41,10 +41,16 @@ typedef struct YuvTable {
     /*0xA00*/ u8 clamp[0x600];
 } YuvTable;
 
+#ifdef TARGET_PC
+// lbl_803C7420 is the VideoSystem (its retrace queue); use the real layout.
+#include "main/video_system.h"
+#define sleepQueue retraceQueue
+#else
 typedef struct MovSync {
     /*0x00*/ u8 _00[0x5C];
     /*0x5C*/ OSThreadQueue sleepQueue;
 } MovSync; // lbl_803C7420
+#endif
 
 // movie.c bss (not split into this unit yet)
 extern s16 lbl_802F93A0[16];       // quad vertices, buffer 0
@@ -59,7 +65,9 @@ extern ARQRequest lbl_803C78C4[2]; // ARAM -> MRAM
 extern ARQRequest lbl_803C7994[2]; // MRAM -> ARAM
 extern MovAramRing lbl_803C79D4;
 extern MovMramRing lbl_803C7A00;
+#ifndef TARGET_PC
 extern MovSync lbl_803C7420;
+#endif
 
 extern u16 lbl_801101C0[128]; // volume table
 extern YuvTable lbl_801102C0;

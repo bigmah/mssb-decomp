@@ -51,7 +51,12 @@ typedef struct ShadowHeapInfo {
     /* 0x54 */ void* arenaEnd;
     /* 0x58 */ u32 arenaSize;
 } ShadowHeapInfo;
+#ifdef TARGET_PC
+// lbl_803C7420 is the VideoSystem (heapLo/heapHi/heapSize); use the real layout.
+#include "main/video_system.h"
+#else
 extern ShadowHeapInfo lbl_803C7420;
+#endif
 
 typedef struct ShadowDirTable {
     Vec dirs[4];
@@ -454,9 +459,15 @@ void fn_800BEC30(u8 numCameras) {
     lbl_803009F8.cameras = (ShadowCamera*)OSRoundUp32B(cur);
     end = (u8*)OSRoundUp32B((u8*)lbl_803009F8.cameras + numCameras * sizeof(ShadowCamera));
     fn_800AD054(end, arenaEnd);
+#ifdef TARGET_PC
+    lbl_803C7420.heapLo = end;
+    lbl_803C7420.heapHi = arenaEnd;
+    lbl_803C7420.heapSize = (u32)OSRoundUp32B(arenaEnd - end);
+#else
     lbl_803C7420.arenaStart = end;
     lbl_803C7420.arenaEnd = arenaEnd;
     lbl_803C7420.arenaSize = (u32)OSRoundUp32B(arenaEnd - end);
+#endif
     OSSetArenaLo(arenaEnd);
 
     for (i = 0; i < numCameras; i++) {
