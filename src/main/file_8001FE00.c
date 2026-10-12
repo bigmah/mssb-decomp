@@ -67,17 +67,13 @@ extern int rand(void);
 extern void* fn_800ACF34(s32 heap, s32 size);
 extern void fn_800ACF14(void* p);
 
-// NONMATCHING 99%: original adds 0.0f + 640.0f / 256.0f at runtime (fadds); ours folds the constants
 // .text:0x8001FE00 size:0x248
-#if NONMATCHING
 void fn_8001FE00(LayoutGroup* group) {
     QuadVtx quad[4];
     PaddedVec p[4];
     Mtx trans;
     Mtx m;
     f32 scale;
-    f32 right;
-    f32 bottom;
     s32 a;
     LayoutObj* obj;
 
@@ -99,16 +95,14 @@ void fn_8001FE00(LayoutGroup* group) {
     fn_800B2160(1);
     PSMTXTrans(trans, -320.0f, -224.0f, 0.0f);
     scale = lbl_803CBBE0 / lbl_803CBBDC;
-    right = 640.0f;
-    bottom = 256.0f;
     p[0].v.x = 0.0f;
     p[0].v.y = 0.0f;
-    p[1].v.x = right;
-    p[1].v.y = 0.0f;
-    p[2].v.x = 0.0f;
-    p[2].v.y = bottom;
-    p[3].v.x = right;
-    p[3].v.y = bottom;
+    p[1].v.x = 640.0f + p[0].v.x;
+    p[1].v.y = p[0].v.y;
+    p[2].v.x = p[0].v.x;
+    p[2].v.y = 256.0f + p[0].v.y;
+    p[3].v.x = p[1].v.x;
+    p[3].v.y = p[2].v.y;
     p[3].v.z = 0.0f;
     p[2].v.z = 0.0f;
     p[1].v.z = 0.0f;
@@ -139,7 +133,6 @@ void fn_8001FE00(LayoutGroup* group) {
     quad[1].t = 0x400;
     DrawSprite_TexObj(quad, lbl_8037169C.texObj);
 }
-#endif
 
 // .text:0x80020048 size:0x1D0
 s32 calledWhenStartingMatch(void) {
