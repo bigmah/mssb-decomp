@@ -1,5 +1,10 @@
 #include "main/file_80024D2C.h"
 #include "Dolphin/stl.h"
+#ifdef TARGET_PC
+#include "main/file_80063028.h" // GameActor
+#include "main/file_800BDEA0.h" // SKNHeader
+#include "C3/geoPalette.h"
+#endif
 
 extern u8 lbl_803CBBC0; // current frame buffer (0/1)
 extern s32 lbl_803CBC68;
@@ -143,6 +148,7 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
         }
     }
 
+#ifndef TARGET_PC // only for the cache flushes below
     m = *model;
     geo = m->geo;
     vd = m->vtxDesc;
@@ -159,6 +165,7 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
         }
         arrays = geo->arrays;
     }
+#endif
 
     keys = seq->keys;
     frame0 = keys[(u16)k].frame;
@@ -215,8 +222,8 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
     inv = 1.0f - blend;
 
     for (g = 0; g < shape->groupCount; g++) {
-        ShapeGroup* grp = &shape->groups[g];
-        ShapeEntry* e = grp->entries;
+        ShapeGroup* grp = &PTR32_GET(ShapeGroup, shape->groups)[g];
+        ShapeEntry* e = PTR32_GET(ShapeEntry, grp->entries);
         s32 ti = 0;
         s32 ei;
 
@@ -245,8 +252,8 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
 
             tgt = NULL;
             do {
-                if (e->id == shape->targets[ti].idx && e->type == shape->targets[ti].type) {
-                    tgt = &shape->targets[ti];
+                if (e->id == PTR32_GET(ShapeTarget, shape->targets)[ti].idx && e->type == PTR32_GET(ShapeTarget, shape->targets)[ti].type) {
+                    tgt = &PTR32_GET(ShapeTarget, shape->targets)[ti];
                     break;
                 }
                 ti++;
@@ -257,24 +264,24 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
 
             compCount = e->compCount;
             compSize = e->compSize;
-            dst = tgt->buf[tgt->useBuf1];
+            dst = PTR32_GET(u8, tgt->buf[tgt->useBuf1]);
             off = 0;
-            s0 = e->src[src0];
-            s1 = e->src[src1];
+            s0 = PTR32_GET(u8, e->src[src0]);
+            s1 = PTR32_GET(u8, e->src[src1]);
             if (copyOnly || hold || mode == 0) {
                 s32 stride = compSize * compCount;
-                for (ri = 0; e->ranges[ri].count != 0; ri++) {
-                    count = e->ranges[ri].count * stride;
-                    memcpy(dst + e->ranges[ri].start * stride, s0 + off, count);
+                for (ri = 0; PTR32_GET(ShapeRange, e->ranges)[ri].count != 0; ri++) {
+                    count = PTR32_GET(ShapeRange, e->ranges)[ri].count * stride;
+                    memcpy(dst + PTR32_GET(ShapeRange, e->ranges)[ri].start * stride, s0 + off, count);
                     off += count;
                 }
             } else {
                 switch (mode) {
                 case 1: {
                 s32 stride = compSize * compCount;
-                for (ri = 0; e->ranges[ri].count != 0; ri++) {
-                    count = e->ranges[ri].count * stride;
-                    memcpy(dst + e->ranges[ri].start * stride, s1 + off, count);
+                for (ri = 0; PTR32_GET(ShapeRange, e->ranges)[ri].count != 0; ri++) {
+                    count = PTR32_GET(ShapeRange, e->ranges)[ri].count * stride;
+                    memcpy(dst + PTR32_GET(ShapeRange, e->ranges)[ri].start * stride, s1 + off, count);
                     off += count;
                 }
                 break;
@@ -283,9 +290,9 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
                 if (e->type == 3) {
                     // packed 4:4:4:4 values
                     u32 stride = compSize * compCount;
-                    for (ri = 0; e->ranges[ri].count != 0; ri++) {
-                        u16 start = e->ranges[ri].start;
-                        for (v = 0; v < e->ranges[ri].count; v++) {
+                    for (ri = 0; PTR32_GET(ShapeRange, e->ranges)[ri].count != 0; ri++) {
+                        u16 start = PTR32_GET(ShapeRange, e->ranges)[ri].start;
+                        for (v = 0; v < PTR32_GET(ShapeRange, e->ranges)[ri].count; v++) {
                             u16* d = (u16*)dst + compCount * (start + v);
                             *d = (s32)((s32)(*(u16*)(s0 + off) & 0xF) * inv + (s32)(*(u16*)(s1 + off) & 0xF) * blend) & 0xF;
                             *d |= (s32)((s32)(*(u16*)(s0 + off) & 0xF0) * inv + (s32)(*(u16*)(s1 + off) & 0xF0) * blend) & 0xF0;
@@ -300,9 +307,9 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
                     }
                 } else if (compSize == 1) {
                     u32 stride = compCount * compSize;
-                    for (ri = 0; e->ranges[ri].count != 0; ri++) {
-                        u16 start = e->ranges[ri].start;
-                        for (v = 0; v < e->ranges[ri].count; v++) {
+                    for (ri = 0; PTR32_GET(ShapeRange, e->ranges)[ri].count != 0; ri++) {
+                        u16 start = PTR32_GET(ShapeRange, e->ranges)[ri].start;
+                        for (v = 0; v < PTR32_GET(ShapeRange, e->ranges)[ri].count; v++) {
                             s8* d = (s8*)(dst + (start + v) * stride);
                             s32 c;
                             for (c = compCount; c > 0; c--) {
@@ -314,9 +321,9 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
                         }
                     }
                 } else if (compSize == 2) {
-                    for (ri = 0; e->ranges[ri].count != 0; ri++) {
-                        u16 start = e->ranges[ri].start;
-                        for (v = 0; v < e->ranges[ri].count; v++) {
+                    for (ri = 0; PTR32_GET(ShapeRange, e->ranges)[ri].count != 0; ri++) {
+                        u16 start = PTR32_GET(ShapeRange, e->ranges)[ri].start;
+                        for (v = 0; v < PTR32_GET(ShapeRange, e->ranges)[ri].count; v++) {
                             s32 di = compCount * (start + v);
                             s16* a = (s16*)(s1 + off);
                             s16* b = (s16*)(s0 + off);
@@ -335,6 +342,10 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
                 }
             }
 
+#ifdef TARGET_PC
+            // No data cache to flush (and ShapeModel is a GameCube-layout view).
+            e = (ShapeEntry*)((u8*)e + grp->entryStride);
+#else
             {
                 u32 elemSize = tgt->fmtHi * tgt->fmtLo;
                 e = (ShapeEntry*)((u8*)e + grp->entryStride);
@@ -371,6 +382,7 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
                 }
                 DCFlushRangeNoSync(flushAddr, flushSize);
             }
+#endif
         }
     }
     if (st != NULL) {
@@ -385,7 +397,84 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
 // .text:0x80025C58 size:0x184
 // Binds the shape data to a model: caches each target's vertex array slot and data pointer.
 // NONMATCHING 96.3%: r5/r6 swapped for geo/arrays vs posSlot; original copies the zero with mr
-#if NONMATCHING
+#ifdef TARGET_PC
+// PC: ShapeModel/ModelGeo/ModelVtxDesc are GameCube-layout views of the
+// GameActor (geo = skHeader, vtxDesc = pal); use the real structs. The slots
+// are the PTR32 array fields of the skin lists and geometry layouts.
+void fn_80025C58(ShapeData* shape, ShapeModel** model) {
+    GameActor* actor;
+    SKNHeader* skin;
+    DODisplayData* pal;
+    DODescriptor* desc;
+    PTR32(void)* posSlot = NULL;
+    PTR32(void)* slot = NULL;
+    ShapeTarget* t;
+    BOOL objs;
+    s32 i;
+
+    if (shape->targets == 0) {
+        return;
+    }
+    PTR32_SET(shape->owner, model);
+    actor = *(GameActor**)model;
+    skin = actor->skHeader;
+    pal = actor->pal;
+    desc = pal != NULL ? PTR32_GET(DODescriptor, pal->descriptorArray) : NULL;
+    objs = pal != NULL && GeoPaletteHasDispObjs(pal);
+    if (skin != NULL) {
+        if (skin->sk1ListArray != 0) {
+            posSlot = &PTR32_GET(SKN1List, skin->sk1ListArray)->vertSrc;
+        } else if (skin->sk2ListArray != 0) {
+            posSlot = &PTR32_GET(SKN2List, skin->sk2ListArray)->vertSrc;
+        }
+    }
+    t = PTR32_GET(ShapeTarget, shape->targets);
+    for (i = 0; i < shape->targetCount; i++, t++) {
+        u32 type = t->type;
+        PositionData* pos = NULL;
+        ColorData* col = NULL;
+        TextureData* tex = NULL;
+        LightingData* lit = NULL;
+        if (type != 0 && desc != NULL) {
+            if (objs) {
+                struct DODisplayObj* obj = PTR32_GET(struct DODisplayObj, desc[t->idx].dispObj);
+                pos = obj->positionData;
+                col = obj->colorData;
+                tex = obj->textureData;
+                lit = obj->lightingData;
+            } else {
+                DODisplayLayout* layout = PTR32_GET(DODisplayLayout, desc[t->idx].layout);
+                pos = PTR32_GET(PositionData, layout->positionData);
+                col = PTR32_GET(ColorData, layout->colorData);
+                tex = PTR32_GET(TextureData, layout->textureData);
+                lit = PTR32_GET(LightingData, layout->lightingData);
+            }
+        }
+        switch (type) {
+        case 0:
+            slot = &PTR32_GET(SKNAccList, skin->skAccListArray)[t->idx].vertSrc;
+            break;
+        case 1:
+            slot = t->fmtHi == 6 ? posSlot : (PTR32(void)*)&pos->positionArray;
+            break;
+        case 2: // the field at 0xC of the layout: lighting data
+            slot = (PTR32(void)*)&lit->normalArray;
+            break;
+        case 3: // the field at 0x4: color data
+            slot = (PTR32(void)*)&col->colorArray;
+            break;
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+            slot = (PTR32(void)*)&tex[type - 4].textureCoordArray;
+            break;
+        }
+        PTR32_SET(t->dataSlot, slot);
+        t->buf[0] = slot != NULL ? *slot : 0;
+    }
+}
+#elif NONMATCHING
 void fn_80025C58(ShapeData* shape, ShapeModel** model) {
     ShapeModel* m;
     ModelGeo* geo;
@@ -476,6 +565,9 @@ void fn_80025DDC(u8* h) {
     s32 i;
     s32 j;
     s32 k;
+#ifdef TARGET_PC
+    port_swap_shape(h);
+#endif
     *(u32*)(h + 0x10) = 0;
     if (*(u32*)(h + 0xC) != 0) {
         *(u32*)(h + 0xC) = PTR_TO_U32(h) + *(u32*)(h + 0xC);
@@ -523,7 +615,7 @@ void fn_80025EEC(ShapeAnimPlayer* p, s32 table, s32 entry) {
     }
     st->active = (idx > -1);
     if (st->active) {
-        ShapeSeqData* d = p->seqs[idx];
+        ShapeSeqData* d = PTR32_GET(ShapeSeqData, p->seqs[idx]);
         st->seqIdx = 0;
         st->seqs[0].hdr.length = d->hdr.length;
         st->seqs[0].hdr.keyCount = d->hdr.keyCount;
@@ -553,6 +645,21 @@ void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
         return;
     }
     p->model = model;
+#ifdef TARGET_PC
+    // The set keeps its disc layout (PTR32 tables); swap it once, here.
+    port_swap_shape_anim_set(p->set);
+    p->set->seqs += PTR_TO_U32(p->set);
+    p->set->tables += PTR_TO_U32(p->set);
+    p->seqs = PTR32_GET(PTR32(ShapeSeqData), p->set->seqs);
+    for (i = 0; i < p->set->seqCount; i++) {
+        p->seqs[i] += PTR_TO_U32(p->set);
+    }
+    p->tableList = PTR32_GET(PTR32(s8), p->set->tables);
+    for (i = 0; i < p->set->tableCount; i++) {
+        p->tableList[i] += PTR_TO_U32(p->set);
+        p->tables[i] = PTR32_GET(s8, p->tableList[i]);
+    }
+#else
     p->set->seqs = (ShapeSeqData**)((u8*)p->set + (size_t)p->set->seqs);
     p->set->tables = (s8**)((u8*)p->set + (size_t)p->set->tables);
     p->seqs = p->set->seqs;
@@ -564,6 +671,7 @@ void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
         p->tableList[i] = (s8*)((u8*)p->set + (size_t)p->tableList[i]);
         p->tables[i] = p->tableList[i];
     }
+#endif
     st = &p->state;
     shapeStateReset(st);
     st->seqs[0].hdr = lbl_803CB7F0;
@@ -576,7 +684,11 @@ void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
 // ---- Data (initialisers generated from the original DOL) ----
 
 // .sdata 0x803CB7E8..0x803CB7F8
+#ifdef TARGET_PC
+ShapeKey lbl_803CB7E8[2] = {{.frame = 0, .weight = 100}, {.frame = 100, .weight = 100}}; // bitfields reversed on PC
+#else
 ShapeKey lbl_803CB7E8[2] = {{0, 0, 0, 0, 0, 100, 0}, {0, 0, 0, 0, 100, 100, 0}}; // default sequence keys
+#endif
 ShapeSeqHdr lbl_803CB7F0 = {100, 2};
 ShapeKey* lbl_803CB7F4 = lbl_803CB7E8;
 

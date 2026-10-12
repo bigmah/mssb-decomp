@@ -98,6 +98,12 @@ typedef struct DODisplayData {
     /* 0x10 */ PTR32(DODescriptor) descriptorArray;
 } DODisplayData, *DODisplayDataPtr;
 
+#ifdef TARGET_PC
+// Whether the palette's descriptors hold display objects (fn_800BCE38)
+// rather than layouts (LoadGeoPalette); file_800B9974.c.
+BOOL GeoPaletteHasDispObjs(const void* pal);
+#endif
+
 // displayObject.c
 extern u32 HackTevState;
 extern int CPEnableMultiTexture;

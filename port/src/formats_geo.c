@@ -18,8 +18,8 @@
 //                        u32 primitiveList, u32 listSize
 //
 // Position, texture coordinate and normal arrays are swapped to native (the
-// game reads them on the CPU, e.g. skinning; GXSetArray gets le=true). Color
-// arrays, display lists and names stay as they are.
+// game reads them on the CPU, e.g. skinning; GXSetArray gets le=true), and
+// so are 16-bit color arrays. Byte colors, display lists and names stay.
 #include "port/formats.h"
 #include "port/endian.h"
 
@@ -119,7 +119,16 @@ void port_swap_geo_palette(void* palette)
                 swap_comps(layout + arr, (uint32_t)*(uint16_t*)(h + 4) * h[7], comp_size(h[6]));
         }
         if (lp[1] != 0)
-            swap_attr(pal, layout, layout + lp[1], 0, 0, &set); // colors stay big-endian
+        {
+            // 16-bit colors (RGB565, RGBA4) to native (the game blends RGBA4
+            // morph targets on the CPU); 24/32-bit colors are bytes.
+            uint8_t* h = layout + lp[1];
+            swap_attr(pal, layout, h, 0, 0, &set);
+            uint32_t arr = *(uint32_t*)h;
+            uint8_t fmt = h[6] >> 4;
+            if (arr != 0 && (fmt == 0 || fmt == 3) && swap_set_add(&set, (uint32_t)(layout + arr - pal)))
+                swap16_array(layout + arr, *(uint16_t*)(h + 4));
+        }
         if (lp[2] != 0)
         {
             for (uint32_t t = 0; t < numTex; t++)
@@ -387,4 +396,104 @@ void port_swap_skin(void* skinFile, uint32_t compSize)
     }
     if (h32[5] != 0)
         swap16_array(hdr + h32[5], h32[6]);
+}
+
+// Shape (morph target) data (ShapeData, include/main/file_80024D2C.h):
+//   header 0x14: u16 unk0, groupCount, targetCount, unk6; u32 groups,
+//                targets, owner
+//   ShapeGroup 0x0C: u16 srcCount, entryCount; u32 entryStride, entries
+//   ShapeEntry (entryStride bytes): u8 unk[4], id, bits, compCount, compSize;
+//                u32 ranges, src[srcCount]
+//   ShapeRange: u16 start, count; a 0 count ends the list
+//   ShapeTarget 0x10: u16 idx; u8 bits, fmt; u32 dataSlot, buf[2]
+// Source data: for each range, count vertices of compCount components of
+// compSize bytes; swapped to native like the vertex arrays they patch.
+void port_swap_shape(void* shapeFile)
+{
+    uint8_t* h = (uint8_t*)shapeFile;
+    static SwapSet set;
+    set.count = 0;
+
+    swap16_array(h, 4);
+    swap32_array(h + 8, 3);
+    uint16_t groupCount = ((uint16_t*)h)[1];
+    uint16_t targetCount = ((uint16_t*)h)[2];
+    uint32_t groups = ((uint32_t*)(h + 8))[0];
+    uint32_t targets = ((uint32_t*)(h + 8))[1];
+
+    for (uint32_t g = 0; g < groupCount && groups != 0; g++)
+    {
+        uint8_t* grp = h + groups + g * 0xC;
+        swap16_array(grp, 2);
+        swap32_array(grp + 4, 2);
+        uint16_t srcCount = ((uint16_t*)grp)[0];
+        uint16_t entryCount = ((uint16_t*)grp)[1];
+        uint32_t stride = *(uint32_t*)(grp + 4);
+        uint32_t entries = *(uint32_t*)(grp + 8);
+        for (uint32_t i = 0; i < entryCount && entries != 0; i++)
+        {
+            uint8_t* e = h + entries + i * stride;
+            swap32_array(e + 8, 1u + srcCount);
+            uint32_t compCount = e[6], compSize = e[7];
+            uint32_t ranges = *(uint32_t*)(e + 8);
+            uint32_t verts = 0;
+            if (ranges != 0)
+            {
+                uint16_t* r = (uint16_t*)(h + ranges);
+                int fresh = swap_set_add(&set, ranges);
+                for (;; r += 2)
+                {
+                    if (fresh)
+                        swap16_array(r, 2);
+                    if (r[1] == 0)
+                        break;
+                    verts += r[1];
+                }
+            }
+            for (uint32_t s = 0; s < srcCount; s++)
+            {
+                uint32_t src = ((uint32_t*)(e + 0xC))[s];
+                if (src != 0 && swap_set_add(&set, src | 0x80000000u))
+                    swap_comps(h + src, verts * compCount, compSize);
+            }
+        }
+    }
+    for (uint32_t t = 0; t < targetCount && targets != 0; t++)
+    {
+        uint8_t* tg = h + targets + t * 0x10;
+        swap16_inplace(tg);
+        swap32_array(tg + 4, 3);
+    }
+}
+
+// Shape animation set (ShapeAnimSet): u32 seqCount, seqs, tables, tableCount;
+// seqs -> u32 offsets[seqCount] -> {u16 length, keyCount; keys[keyCount]
+// {u16 bits, u8 weight, u8 target}}; tables -> u32 offsets[tableCount] -> s8[].
+void port_swap_shape_anim_set(void* setFile)
+{
+    uint8_t* s = (uint8_t*)setFile;
+    static SwapSet set;
+    set.count = 0;
+    swap32_array(s, 4);
+    uint32_t seqCount = ((uint32_t*)s)[0];
+    uint32_t seqs = ((uint32_t*)s)[1];
+    uint32_t tables = ((uint32_t*)s)[2];
+    uint32_t tableCount = ((uint32_t*)s)[3];
+    if (seqs != 0)
+    {
+        uint32_t* offs = (uint32_t*)(s + seqs);
+        swap32_array(offs, seqCount);
+        for (uint32_t i = 0; i < seqCount; i++)
+        {
+            if (offs[i] == 0 || !swap_set_add(&set, offs[i]))
+                continue;
+            uint8_t* seq = s + offs[i];
+            swap16_array(seq, 2);
+            uint16_t keyCount = ((uint16_t*)seq)[1];
+            for (uint32_t k = 0; k < keyCount; k++)
+                swap16_inplace(seq + 4 + k * 4);
+        }
+    }
+    if (tables != 0)
+        swap32_array(s + tables, tableCount);
 }

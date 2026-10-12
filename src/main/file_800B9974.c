@@ -928,10 +928,18 @@ void GetColorFromQuant(u8* color, u8 quantizeInfo, u8* r, u8* g, u8* b, u8* a) {
         *a = *a | (*a << 4);
         break;
     case GX_RGBA8:
+#ifdef TARGET_PC
+        // 32-bit colors stay big-endian bytes (port/src/formats_geo.c).
+        *r = color[0];
+        *g = color[1];
+        *b = color[2];
+        *a = color[3];
+#else
         *r = *(u32*)color >> 24;
         *g = (*(u32*)color >> 16) & 0xFF;
         *b = (*(u32*)color >> 8) & 0xFF;
         *a = *(u32*)color & 0xFF;
+#endif
         break;
     case GX_RGB8:
     case GX_RGBX8:
@@ -1024,7 +1032,7 @@ void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_li
                 break;
             }
             GEO_SET_ARRAY(GX_VA_CLR0, PTR32_GET(char, dispObj->colorData->colorArray), dispObj->colorData->numColors,
-                          colorSize, FALSE);
+                          colorSize, colorSize == 2); // 16-bit colors are native (port/src/formats_geo.c)
             GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, dispObj->colorData->compCount == 3 ? GX_CLR_RGB : GX_CLR_RGBA,
                             dispObj->colorData->quantizeInfo >> 4, 0);
         }
@@ -1364,7 +1372,7 @@ static void GeoPaletteMarkDispObjs(const void* pal, BOOL dispObjs) {
     }
 }
 
-static BOOL GeoPaletteHasDispObjs(const void* pal) {
+BOOL GeoPaletteHasDispObjs(const void* pal) {
     s32 i;
     for (i = 0; i < 256; i++) {
         if (s_dispObjPalettes[i] == pal) {

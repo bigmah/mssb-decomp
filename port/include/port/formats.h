@@ -26,6 +26,10 @@ void port_swap_anim_bank(void* bank);
 // vertex and flush indices.
 void port_swap_skin(void* skin, uint32_t compSize);
 
+// Shape (morph target) data and shape animation sets (file_80024D2C.h).
+void port_swap_shape(void* shape);
+void port_swap_shape_anim_set(void* set);
+
 // 2D keyframe animation (Anim/SpaniAnim): port/src/formats_spani.c.
 void port_swap_spani_anim(void* anim);
 
