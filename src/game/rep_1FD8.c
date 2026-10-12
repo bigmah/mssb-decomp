@@ -218,8 +218,6 @@ Rep1FD8Ent lbl_3_data_17804[2] = {{NULL, fn_3_C1C18}, {NULL, fn_3_C1C18}};
 f32 lbl_3_data_1787C = 0.7f;
 s16 lbl_3_data_17880[12] = {106, -98, 220, 94, -87, 230, 120, -80, 212, 0, 0, 0};
 
-// NONMATCHING 99%: mullw operands swapped (rand() * a; both operand orders give r27,r3)
-#if NONMATCHING
 void fn_3_C19C8(void) {
     s32 i;
     s32 a;
@@ -242,7 +240,8 @@ void fn_3_C19C8(void) {
     i = 2;
     while (i-- != 0) {
         a = ((0x1FFF - rand() * 0x3FFF / 0x7FFF) >> (1 - i)) + 0x1FFF;
-        t = rand() * a / 0x7FFF;
+        t = rand();
+        t = t * a / 0x7FFF;
         o = lbl_3_bss_9D90;
         o->f20[i] = t;
         o = lbl_3_bss_9D90;
@@ -252,7 +251,6 @@ void fn_3_C19C8(void) {
         o->f27[i] = t;
     }
 }
-#endif
 
 // .text:0x000C1C18 size:0x62C mapped:0x80700CAC
 typedef struct { Mtx m; } C1C18Mtx;

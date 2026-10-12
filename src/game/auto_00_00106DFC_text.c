@@ -1615,13 +1615,9 @@ static inline void setupMinigamePlayersInline(void) {
     fn_3_5A6D4(0x21);
 }
 
-// NONMATCHING 97%: loop induction registers (i/roster/g+9i/g+i) rotated, increments scheduled differently
-#if NONMATCHING
-// fn_3_10F91C, size:0x258
 void fn_3_10F91C(void) {
     setupMinigamePlayersInline();
 }
-#endif
 
 extern u8 lbl_3_data_21EC4[];
 extern void fn_3_15F998(void);
