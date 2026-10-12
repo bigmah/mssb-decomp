@@ -1613,8 +1613,7 @@ void fn_3_27738(s32 i) {
     g_Ball[0x1BF0] = 0;
 }
 
-// .text:0x00027764 size:0xFC mapped:0x806667F8
-void fn_3_27764(int i) {
+static inline void Inl27764(int i) {
     u8* f = g_Fielders + i * 0x268;
     if (g_d_GameSettings[7] != 6 && i != *(s16*)(g_FieldingLogic + 0xB0) && i != -1) {
         f[0x1D3] = 0xC;
@@ -1645,10 +1644,13 @@ void fn_3_27764(int i) {
     }
 }
 
+// .text:0x00027764 size:0xFC mapped:0x806667F8
+void fn_3_27764(int i) {
+    Inl27764(i);
+}
+
 // .text:0x00027860 size:0x508 mapped:0x806668F4
-// NONMATCHING 65%: the original inlines fn_3_27764 in both cancel branches; we call it (same behaviour)
-// nmverify: fn_3_27764 inlined on one side (calls match once expanded)
-#if NONMATCHING
+// The original inlines fn_3_27764 in both cancel branches (Inl27764 is its body)
 void fn_3_27860(int i) {
     u8* f = g_Fielders + i * 0x268;
     u8* m;
@@ -1660,9 +1662,9 @@ void fn_3_27860(int i) {
             f[0x252] = 0;
         }
     } else if (*(s16*)(g_Ball + 0x1B78) >= 0) {
-        fn_3_27764(i);
+        Inl27764(i);
     } else if (g_Ball[0x1BD1] != 0) {
-        fn_3_27764(i);
+        Inl27764(i);
     } else if (*(s16*)(f + 0x24C) > 0) {
         if (f[0x264] != 0) {
             d = DIST2_XZ(*(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C), *(f32*)f, *(f32*)(f + 8));
@@ -1704,7 +1706,6 @@ void fn_3_27860(int i) {
         }
     }
 }
-#endif
 
 // .text:0x00027D68 size:0x28C mapped:0x80666DFC
 // NONMATCHING 92%: registers only; the loop-invariant height window lo/hi gets f5/f4 instead of f0/f1, shifting every float reg
