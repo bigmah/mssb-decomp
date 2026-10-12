@@ -454,7 +454,7 @@ config.libs = [
             Object(Matching, "Dolphin/os/OSCache.c"),
             Object(Matching, "Dolphin/os/OSContext.c"),
             Object(Matching, "Dolphin/os/OSError.c"),
-            Object(NonMatching, "Dolphin/os/OSExec.c"),
+            Object(Matching, "Dolphin/os/OSExec.c"),
             Object(Matching, "Dolphin/os/OSFont.c"),
             Object(Matching, "Dolphin/os/OSInterrupt.c"),
             Object(Matching, "Dolphin/os/OSLink.c"),
