@@ -458,7 +458,7 @@ game/rep_3310.c:
 game/rep_3448.c:
 	.text       start:0x0011EC28 end:0x001293D0
 	.rodata     start:0x00003448 end:0x000034B0
-	.data       start:0x000264D0 end:0x0002650C
+	.data       start:0x000226E0 end:0x0002650C
 
 game/rep_34B0.c:
 	.text       start:0x0012E8FC end:0x00132EDC

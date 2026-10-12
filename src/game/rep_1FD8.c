@@ -1598,7 +1598,7 @@ typedef struct {
     u8 visible;
     u8 f12;
     u8 pad13;
-} StadPlace14; // ((u8*)lbl_3_data_17514) / ((u8*)lbl_3_data_17704)
+} StadPlace14; // lbl_3_data_17514 / lbl_3_data_17704
 typedef struct {
     f32 x, y, z;
     f32 rotY;
@@ -1918,7 +1918,7 @@ void fn_3_C77AC(void* hv, u8* b) {
     while (p != NULL) {
         p->f38 = p->f3C = lbl_3_rodata_213C;
         p->f1C = lbl_3_rodata_21AC - (f32)(rand() % 3);
-        fa = (f32)ang + *(f32*)(lbl_3_data_17514 + b[0xA8] * 0x14 + 0xC);
+        fa = (f32)ang + *(f32*)((u8*)lbl_3_data_17514 + b[0xA8] * 0x14 + 0xC);
         a = (fa * lbl_3_rodata_2158) / lbl_3_rodata_215C;
         p->vx = 0.3499999940395355 * cos(a);
         p->vy = (f32)-(rand() % 3);
@@ -1953,7 +1953,7 @@ typedef struct C7A0CEnt {
     u8 placed; // 0x99
     u8 pad9A[0x9C - 0x9A];
     Vec pos; // 0x9C
-    u8 idx;  // 0xA8: entry in ((u8*)lbl_3_data_17514)
+    u8 idx;  // 0xA8: entry in lbl_3_data_17514
     u8 padA9[0xAC - 0xA9];
     f32 speed; // 0xAC
     u8 state;  // 0xB0
@@ -1964,7 +1964,7 @@ typedef struct {
     f32 x, y, z;
     f32 ang;
     u8 pad10[4];
-} C7A0CTbl; // ((u8*)lbl_3_data_17514)
+} C7A0CTbl; // lbl_3_data_17514
 #define C7A0C_TBL ((C7A0CTbl*)((u8*)lbl_3_data_17514))
 extern f32 lbl_3_data_17508[];
 extern s16 fn_3_B7F70(s16 range);
@@ -2211,7 +2211,7 @@ void fn_3_C8650(void** files) {
     g->f18 = fn_3_B939C;
     idx = _OSAllocFromHeap(4, 0x40);
     g->fileIdx = idx;
-    fn_3_B9D68(lbl_3_data_17704 + 0xDC, 16, files, idx);
+    fn_3_B9D68((u8*)lbl_3_data_17704 + 0xDC, 16, files, idx);
     bss->tex = files[0];
 
     for (nB = 0; nB < 10; nB++) {

@@ -84,9 +84,9 @@ for name, addr, size, rest in objs:
     # rewrite uses (not in extern declarations)
     out = []
     for line in s.split("\n"):
-        if re.match(r"^extern\b", line):
+        if re.match(r"^\s*(extern\b|//)", line):
             out.append(line); continue
-        out.append(re.sub(r"(?<![\w(])\b" + name + r"\b", "((u8*)%s)" % name, line))
+        out.append(re.sub(r"(?<!\(u8\*\))(?<!\w)" + name + r"\b", "((u8*)%s)" % name, line))
     s = "\n".join(out)
     changed.append((name, t, n))
 for c in changed:
