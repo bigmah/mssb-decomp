@@ -37,7 +37,7 @@ static u32 lbl_3_bss_8[2]; // unused
 static u8* lbl_3_bss_4;    // team/roster file loaded from ARAM
 static u32 lbl_3_bss_0;    // unused
 extern u8 lbl_80354720[];
-extern u8 lbl_803C6CF8[];
+#include "main/aramloader.h" // lbl_803C6CF8
 extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void** lbl_803CC1B8;
 #define PAD_BTN (*(u16*)((u8*)&lbl_803C77B8 + 4))
@@ -136,7 +136,7 @@ void maybeProcessTeamData(void) {
         lbl_3_bss_10[0]++;
         break;
     case 1:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             lbl_3_bss_10[0]++;
         }
         break;

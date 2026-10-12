@@ -24,7 +24,7 @@ extern SpaniRef lbl_80371C30[];                    // owner-indexed sprite refer
 extern SpaniTexSlot lbl_803C4BE0[SPANI_TEX_SLOT_COUNT]; // loaded texture/anim banks
 extern s16 lbl_8023D6C0[SPANI_OBJ_COUNT];          // texture slot -> id
 extern SpaniPad lbl_803C77B8[4];
-extern u8 lbl_803C6CF8[];
+#include "main/aramloader.h" // lbl_803C6CF8
 extern SpaniDrawState lbl_80366188;
 extern Mtx lbl_800F78E0[4];
 extern Mtx44 lbl_801F8640;
@@ -372,7 +372,7 @@ s32 fn_80035838(void* aramAddr, u8 id) {
         lbl_803CBC90++;
         break;
     case 1:
-        if ((s8)lbl_803C6CF8[0x715] == 1) {
+        if ((s8)lbl_803C6CF8.idle == 1) {
             SpaniTexSlot* s = lbl_803C4BE0;
             SpaniAnim** pa;
             s32* hdr;
