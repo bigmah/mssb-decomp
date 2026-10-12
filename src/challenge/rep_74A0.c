@@ -119,11 +119,11 @@ extern const GXColor lbl_1_rodata_7508;
 
 // Shared by fn_1_1B038 and its inlined copy in fn_1_1D110.
 static inline void initViewerLights(MtxPtr view) {
+    GXColor color;
     s32 i;
     GXColor white = lbl_1_rodata_7508;
 
     for (i = 0; i < 3; i++) {
-        GXColor color;
         LITInitAttn(((ChallengeActorMgr*)lbl_8036E548)->lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
         LITInitPos(((ChallengeActorMgr*)lbl_8036E548)->lights[i], lbl_80367318[i].pos.x, lbl_80367318[i].pos.y, lbl_80367318[i].pos.z);
         color = white;
@@ -818,9 +818,10 @@ void fn_1_1B0FC(void) {
 }
 #endif
 
-// NONMATCHING 95%: prologue scheduling of the GXColor stack copy (same as fn_2_48DB4, docs/patterns/unsolved.md)
-#if NONMATCHING
 // .text:0x0001B038 size:0xC4
+// NONMATCHING 95%: stack slots now match (color declared before white); saved GPRs rotated (orig i=r25, ours r28) and the
+// white load scheduled before the base pointers (decomp-permuter found nothing in 40 min)
+#if NONMATCHING
 void fn_1_1B038(void) {
     initViewerLights((MtxPtr)(lbl_1_bss_69FC + 0x10)); // TODO type
 }
