@@ -617,6 +617,11 @@ void* MovDecodeThread(void* arg) {
             break;
         }
         if ((mov = lbl_803CC170) == NULL || !(mov->state & 1)) {
+#ifdef TARGET_PC
+            // Busy wait: on the GameCube the retrace interrupt preempts this
+            // thread; on PC it must give the CPU up.
+            OSYieldThread();
+#endif
             continue;
         }
         mov->decoding = 1;
