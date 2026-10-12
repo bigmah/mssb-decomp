@@ -2,7 +2,7 @@
 #include "Dolphin/os.h"
 
 
-DataVars gDataDecompressorValues;
+// gDataDecompressorValues (DataVars) is a common global defined in src/main/common/gDataDecompressorValues.c.
 
 #define LZSS_FLAG_SIZE 1
 #define LZSS_BYTE_SIZE 8
@@ -52,11 +52,11 @@ void SetReadParameters(AssetLoadInstructions *instructions, void *pCompressedDat
 
 /*================================================================================*/
 
-extern u8 myStack[2][0x1000];
+static u8 sReadThreadStack[0x1000];
 
 void StartThreadForReadingFromDisk()
 {
-    OSCreateThread(&gDataDecompressorValues.t, ReadDataFromDisk, NULL, myStack[1], sizeof(myStack[1]), 0x1f, 1);
+    OSCreateThread(&gDataDecompressorValues.t, ReadDataFromDisk, NULL, sReadThreadStack + sizeof(sReadThreadStack), sizeof(sReadThreadStack), 0x1f, 1);
     OSResumeThread(&gDataDecompressorValues.t);
 }
 

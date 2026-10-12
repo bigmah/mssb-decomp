@@ -1,6 +1,7 @@
 #include "main/file_80034F50.h"
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
+#include "main/file_8004C5F8.h" // lbl_803C5F74, fn_80052734
 
 // spani_default.c
 
@@ -29,7 +30,6 @@ extern Mtx lbl_800F78E0[4];
 extern Mtx44 lbl_801F8640;
 extern Mtx44 lbl_801F8680;
 extern u8 lbl_801F86C0[];
-extern u8 lbl_803C5F74[]; // TODO type: ConfirmDialog (main/file_8004C5F8.h)
 
 typedef struct SpaniStrings {
     char noSlot[0x1C];  // " SabNo = %d not to add  \n"
@@ -55,13 +55,11 @@ extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void convertTextureHeader(void* textures);
 extern void fn_800B24D4(u32);
 extern void fn_800ACFB0(void* object);
-extern void* fn_80052734(s32 index);
 extern void fn_800B0D38(s32 index, s32 value);
 extern s32 fn_800B216C(u8 flag, u32 mode, u8 index);
 extern void fn_800B21A8(s32 mode);
 struct QuadState;
-struct SpaniAttach;
-extern s32 fn_80034BCC(struct SpaniAttach* a, Mtx unused); // main/file_800263FC.h
+extern s32 fn_80034BCC(struct QuadState* q, Mtx unused); // main/file_800263FC.h
 extern s32 (*fn_8000A094(s32 (*callback)(struct QuadState*, Mtx)))(struct QuadState*, Mtx); // TODO: main/file_80008E00.h (Anim/Spani types clash)
 extern void fn_8000B9C8(SpaniAnim* anim);
 extern void fn_8000CC4C(SpaniAnim* anim, SpaniTrack* track, void* src, u32 offset, u32 size);
@@ -187,7 +185,7 @@ void fn_80035168(void) {
             lbl_803CBC98++;
         }
     }
-    fn_8000A094((s32 (*)(struct QuadState*, Mtx))fn_80034BCC); // TODO type: SpaniAttach is the QuadState (lbl_80366188)
+    fn_8000A094(fn_80034BCC);
     for (i = lbl_803CBC98, obj = &lbl_8039C3E0[i]; i < lbl_803CB814; i++, obj++) {
         u32 flags = obj->flags;
         if (flags == 0) {
@@ -232,12 +230,12 @@ void fn_80035168(void) {
         obj->posZ = obj->baseZ;
         if (obj->is3D) {
             PSMTXScale(obj->mtx, -obj->scale, obj->scale, 1.0f);
-            PSMTXInverse((MtxPtr)((u8*)fn_80052734(0) + 0x40), inv); // TODO type: camera view matrix
+            PSMTXInverse(fn_80052734(0)->view, inv);
             inv[0][3] = inv[1][3] = inv[2][3] = 0.0f;
             PSMTXConcat(inv, obj->mtx, obj->mtx);
             PSMTXTrans(inv, obj->posX, obj->posY, obj->posZ);
             PSMTXConcat(inv, obj->mtx, obj->mtx);
-            PSMTXConcat((MtxPtr)((u8*)fn_80052734(0) + 0x40), obj->mtx, obj->mtx); // TODO type
+            PSMTXConcat(fn_80052734(0)->view, obj->mtx, obj->mtx);
             obj->unk74 = obj->unk58;
         } else {
             if (obj->parent == NULL) {
@@ -323,7 +321,7 @@ void fn_800356B8(void) {
         lbl_80371C30[i].unk4 = 0;
     }
     fn_80011140();
-    lbl_803C5F74[0] = 0;
+    lbl_803C5F74.active = 0;
 }
 
 // .text:0x80035750 size:0xE8
@@ -504,19 +502,19 @@ void fn_80036134(SpaniOwner* owner, s32 srcIdx, u32 track, s32 dstIdx) {
     SpaniKey key;
     s16 x;
     s16 y;
-    SpaniObj* obj = lbl_80371C30[owner->baseIdx + srcIdx].obj;
+    SpaniObj* obj = lbl_80371C30[owner->u14.objIdx + srcIdx].obj;
 
     fn_8000CEF0(lbl_803C4BE0[obj->texSlot].anim, obj->animId, track, obj->frame >> 16, &key);
     x = key.x;
     y = key.y;
-    lbl_80371C30[owner->baseIdx + dstIdx].obj->baseX = x;
-    lbl_80371C30[owner->baseIdx + dstIdx].obj->baseY = y;
+    lbl_80371C30[owner->u14.objIdx + dstIdx].obj->baseX = x;
+    lbl_80371C30[owner->u14.objIdx + dstIdx].obj->baseY = y;
 }
 
 // .text:0x80036214 size:0x5C
 s32 fn_80036214(SpaniOwner* owner, s32 idx, u32 track, u32 frame) {
     SpaniKey key;
-    SpaniObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+    SpaniObj* obj = lbl_80371C30[owner->u14.objIdx + idx].obj;
 
     fn_8000CEF0(lbl_803C4BE0[obj->texSlot].anim, obj->animId, track, frame, &key);
     return key.unk1C;
@@ -525,7 +523,7 @@ s32 fn_80036214(SpaniOwner* owner, s32 idx, u32 track, u32 frame) {
 // .text:0x80036270 size:0x80
 void fn_80036270(SpaniOwner* owner, s32 idx, u32 track, u32 frame, s16* outX, s16* outY) {
     SpaniKey key;
-    SpaniObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+    SpaniObj* obj = lbl_80371C30[owner->u14.objIdx + idx].obj;
 
     fn_8000CEF0(lbl_803C4BE0[obj->texSlot].anim, obj->animId, track, frame, &key);
     *outX = key.x;
@@ -537,7 +535,7 @@ void fn_800362F0(SpaniOwner* owner, s32 idx) {
     s32 i;
 
     for (i = 0; i < SPANI_TEX_OVERRIDE_COUNT; i++) {
-        lbl_80371C30[owner->baseIdx + idx].obj->texOverride[i] = 0xFFFF;
+        lbl_80371C30[owner->u14.objIdx + idx].obj->texOverride[i] = 0xFFFF;
     }
 }
 
@@ -547,13 +545,13 @@ void fn_800363D8(SpaniOwner* owner, s32 idx, u32 slot, u16 animId, u32 frame) {
     u16 texIdx;
 
     if (slot < SPANI_TEX_OVERRIDE_COUNT) {
-        SpaniObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+        SpaniObj* obj = lbl_80371C30[owner->u14.objIdx + idx].obj;
         if (fn_8000CEF0(lbl_803C4BE0[obj->texSlot].anim, animId, 0, frame, &key)) {
             texIdx = key.texIdx;
         } else {
             texIdx = 0;
         }
-        lbl_80371C30[owner->baseIdx + idx].obj->texOverride[slot] = texIdx;
+        lbl_80371C30[owner->u14.objIdx + idx].obj->texOverride[slot] = texIdx;
     }
 }
 
@@ -563,7 +561,7 @@ void fn_800363D8(SpaniOwner* owner, s32 idx, u32 slot, u16 animId, u32 frame) {
 void fn_8003649C(SpaniOwner* owner, s32 idx, s32 track, u16 animId, u32 frame) {
     u16 texIdx;
     SpaniKey key;
-    SpaniObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+    SpaniObj* obj = lbl_80371C30[owner->u14.objIdx + idx].obj;
     u16 curAnim = obj->animId;
     SpaniTexSlot* s = &lbl_803C4BE0[obj->texSlot];
     SpaniTrack* tr;
@@ -587,7 +585,7 @@ void fn_8003649C(SpaniOwner* owner, s32 idx, s32 track, u16 animId, u32 frame) {
 void fn_8003656C(SpaniOwner* owner, s32 idx, s32 track, u16 animId, u32 frame) {
     s32 val;
     SpaniKey key;
-    SpaniObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+    SpaniObj* obj = lbl_80371C30[owner->u14.objIdx + idx].obj;
     u16 curAnim = obj->animId;
     SpaniTexSlot* s = &lbl_803C4BE0[obj->texSlot];
     SpaniAnim* anim = s->anim;

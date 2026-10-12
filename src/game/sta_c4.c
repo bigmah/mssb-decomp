@@ -383,14 +383,14 @@ void fn_3_F8E20(void) {
         switch (*state) {
             case 1:
                 fn_3_F9088(pos, i);
-                lbl_80371C30[st->baseIdx + i].obj->_5C = 0;
-                lbl_80371C30[st->baseIdx + i].obj->flags |= 2;
+                lbl_80371C30[st->u14.objIdx + i].obj->_5C = 0;
+                lbl_80371C30[st->u14.objIdx + i].obj->flags |= 2;
                 *state = 2;
                 break;
             case 2: {
                 LayoutObj* o;
                 fn_3_F9088(pos, i);
-                o = lbl_80371C30[st->baseIdx + i].obj;
+                o = lbl_80371C30[st->u14.objIdx + i].obj;
                 if ((u32)__cntlzw(2 - o->_69) >> 5) {
                     o->flags &= ~2;
                     *state = 0;
@@ -412,9 +412,9 @@ void fn_3_F9088(Vec* pos, s32 idx) {
     s16 x;
     s16 y;
     fn_800528C0_xyz(pos->x, pos->y, pos->z, &x, &y);
-    lbl_80371C30[lbl_3_bss_B628[0]->baseIdx + idx].obj->x = x;
-    lbl_80371C30[lbl_3_bss_B628[0]->baseIdx + idx].obj->y = y;
-    lbl_80371C30[lbl_3_bss_B628[0]->baseIdx + idx].obj->z = 0.0f;
+    lbl_80371C30[lbl_3_bss_B628[0]->u14.objIdx + idx].obj->x = x;
+    lbl_80371C30[lbl_3_bss_B628[0]->u14.objIdx + idx].obj->y = y;
+    lbl_80371C30[lbl_3_bss_B628[0]->u14.objIdx + idx].obj->z = 0.0f;
 }
 #pragma dont_inline on
 

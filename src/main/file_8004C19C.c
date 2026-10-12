@@ -95,7 +95,7 @@ void fn_8004C19C(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
                     lbl_800FC7A0[2].rgb = (lbl_800FC0FC.colors[colorIdx].r << 24) |
                                         ((lbl_800FC0FC.colors[colorIdx].g & 0xFF) << 16) |
                                         (lbl_800FC0FC.colors[colorIdx].b << 8);
-                    fn_80031CA4(&pos, (ParticleParams5 *)(u32*)&lbl_800FC7A0[2]); // TODO type
+                    fn_80031CA4(&pos, (ParticleParams5 *)&lbl_800FC7A0[2]);
                 }
             }
         }
@@ -128,7 +128,7 @@ void fn_8004C19C(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
             pos.y = 0.0f;
             lbl_800FC7A0[i].stamp = lbl_803CBD0C;
             lbl_800FC7A0[i].rgb = (lbl_800FC0FC.colors[colorIdx].r << 24) | ((lbl_800FC0FC.colors[colorIdx].g & 0xFF) << 16) | (lbl_800FC0FC.colors[colorIdx].b << 8);
-            fn_80031CA4(&pos, (ParticleParams5 *)(u32*)&lbl_800FC7A0[i]); // TODO type
+            fn_80031CA4(&pos, (ParticleParams5 *)&lbl_800FC7A0[i]);
         }
     }
 }
@@ -151,6 +151,6 @@ void fn_8004C510(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
         lbl_803CB860->rgb = (lbl_800FC0FC.colors[colorIdx].r << 24) |
                             ((lbl_800FC0FC.colors[colorIdx].g & 0xFF) << 16) |
                             (lbl_800FC0FC.colors[colorIdx].b << 8);
-        fn_80031CA4(&pos, (ParticleParams5 *)(u32*)lbl_803CB860); // TODO type
+        fn_80031CA4(&pos, (ParticleParams5 *)lbl_803CB860);
     }
 }

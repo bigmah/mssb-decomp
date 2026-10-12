@@ -9,6 +9,13 @@
 
 // Split out of main/file_800A6870.h so that REL code can use the loader state without that
 // header's prototypes (several units still declare ARAMTransfer with a void* argument).
+// Transfer modes (ARAMLoader.mode / ARAMTransfer's mode argument).
+#define DVDSYS_MODE_DISC_LZ_TO_RAM  0 // disc -> RAM, decompressed
+#define DVDSYS_MODE_DISC_TO_RAM     1 // disc -> RAM
+#define DVDSYS_MODE_DISC_TO_ARAM    2 // disc -> ARAM (dest is an ARAM address)
+#define DVDSYS_MODE_ARAM_LZ_TO_RAM  3 // ARAM -> RAM, decompressed
+#define DVDSYS_MODE_ARAM_TO_RAM     4 // ARAM -> RAM
+
 // ARAMLoader.state
 #define DVDSYS_STATE_NONE    0
 #define DVDSYS_STATE_START   1 // (re)start the transfer from the beginning
@@ -54,7 +61,7 @@ typedef struct ARAMLoader {
     /*0x720*/ u16 compression;
     /*0x722*/ s8 driveStatus; // DVDGetDriveStatus() result (-1: none)
     /*0x723*/ u8 ringFull;
-} ARAMLoader; // size: 0x724
+} ARAMLoader; // size: 0x728 (fields end at 0x724; OSThread makes it 8-aligned)
 
 extern ARAMLoader lbl_803C6CF8;
 

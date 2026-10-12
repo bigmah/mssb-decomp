@@ -131,3 +131,32 @@ with four blocks (`config/GYQE01/challenge/splits.txt`, `.bss ... common` lines)
   commons in its object; one 0x21B8 common reproduces it.
 - challenge compiles with `-common on` (`Rel()` in `configure.py`); the linked units' uninitialised globals
   (rep_7920 `lbl_1_bss_47050/47052`, rep_7BA0 `lbl_1_bss_47058`) became `static`, otherwise they turn into commons.
+
+## In this project (main.dol)
+
+main.dol's game code (the `unk` lib in `configure.py`) was built with `-common on`: its large uninitialised
+globals sit after all other `.bss` (after MusyX and HVQM4), `0x803297E0`-`0x803CB734`, in link order. (Globals of
+8 bytes or less still go to `.sbss` under `-common on`, and every regular `.bss` object of these units is only
+referenced from its own unit, i.e. was `static`.) The DOL link shows the inflation rule too, so each block's first
+symbol is its real size and the gap holds the rest of the object's commons:
+
+| block | first symbol (real size) | rest of the object | evidence |
+|---|---|---|---|
+| `0x803297E0` | MenuWork `0xCFB8` | 16 menu/game globals up to `starMissionCompletionTracker` | used up to `0xCFA3`; ending one symbol later would leave `0xCF88` |
+| `0x80366218` | glyph map `u16[0x80]` | TextSystem (`0x800`) | both only used by file_8000F150 |
+| `0x80367318` | stadium lights `0x44` | CharActor[13], CharMgr | four `LightPos` + one word; `0x51E4 = 0x44 + 0x204C + 0x3154` |
+| `0x80371C30` | SpaniSlot[0x360] `0x1B00` | SpaniObj[0x360], SpaniTexSlot[20] | `0x2A7B0 = 0x1B00 + 0x28800 + 0x4B0` |
+| `0x803C50B0` | GXTexObj `0x20` | GXTlutObj | |
+| `0x803C663C` | `u32[4]` | TutorialSteps (`0x64`) | |
+| `0x803C78C4` | ARQRequest[2] `0x40` | ARQRequest[2], MovAramRing, MovMramRing | `0xD0 = 0x40 + 0x40 + 0x2C + 0x24` |
+| `0x803CB49C` | GXTlutObj[8] `0x60` | GXTexObj[8] | |
+| `0x803CB6FC` | SKAccBuffer[2] `0x18` | `void*[4]` | used up to `0x17` |
+
+Every other common has a gap equal to its type's size, i.e. it was alone in its object or not its object's first
+common (when an object's first common was already defined by an earlier object, its own ones are not inflated).
+Since dtk gives each split one block, those are one unit each. The 37 blocks are `src/main/common/<first symbol>.c`
+(`order:1..37` in `splits.txt`, linked, `-common on`); the original owners (file_8000F150, file_80011640,
+Unknown/File_0x800a6304 (`data_803C6780`), File_0x800a64e0 (`gDataDecompressorValues`), C3/control (`sFrustums`), ...)
+now only declare them `extern`. Labels inside these objects (`0x803C7400`, `0x803C7A10`, ...) were removed from
+`symbols.txt`, so references become `symbol+offset`. `DataVars` is `0x368` (8-aligned, not 16: `ARAMLoader`
+follows at `+0x368`).
