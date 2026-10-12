@@ -3194,79 +3194,124 @@ void fn_2_11698(void) {
     }
 }
 
-// NONMATCHING 50%: written as plain C; the original unrolls the per-class candidate scan four
-// times (one copy per class) and keeps every counter in its own register.
+// NONMATCHING 87%: the original strength-reduces the roster index into a walking pointer
+// (ours indexes) and its prologue/register order differs.
 #if NONMATCHING
 #define CHAR_CLASS(id) (lbl_8034E9A0[((id) / 9) * 0x5A0 + ((id) % 9) * 0xA0 + 0x31])
 
-// Collects up to 32 unused character ids of one class from lbl_80108DB8; returns count - 1.
-static s32 fn_2_F200_collect(s8* cand, u8 cls) {
+// Collects the unused character ids of one class from lbl_80108DB8 into cand; returns count - 1.
+// cand is only 8 bytes in the original; a longer run spills into the next stack array.
+static inline s32 collectClass(s8* cand, u8 cls, s32 last) {
     s32 i;
-    s32 last = -1;
+    s8* p = cand;
     for (i = 0; i < 32; i++) {
-        s8 id = lbl_80108DB8[i];
+        s16 id = (u8)lbl_80108DB8[i];
         if (CHAR_CLASS(id) == cls && lbl_8034E9A0[id + 0x4757] == 0) {
-            cand[++last] = id;
+            *p++ = id;
+            last++;
         }
     }
     return last;
 }
 
-// nmverify: randRange_FUN_80042bf0 original has one pick per unrolled class copy (4) plus the fallback
 // fn_2_F200, size:0x8A0
-// nmverify:  inlined on one side (calls match once expanded)
+// Fills the empty roster slots of a team with random unused characters, preferring a class
+// (lbl_8034E9A0 +0x31) the team has fewer than two of.
 void fn_2_F200(u8 team) {
-    u8 count[4];
-    u8 full[4];
+    s8 cand[8];
     s8 classes[9];
-    s8 cand[32];
+    u8 n1 = 0;
+    u8 n2 = 0;
+    u8 n3 = 0;
+    u8 n0 = 0;
+    u8 full1 = 0;
+    u8 full2 = 0;
+    u8 full3 = 0;
+    u8 full0 = 0;
     s32 cap = *(s32*)(lbl_8034E9A0 + team * 4 + 0x46E0);
-    u8* row = lbl_803C6724 + team * 9;
+    s8* row;
     s32 i;
-    s32 c;
     s32 g;
     s32 k;
     s32 last;
-    s8 id;
-    for (c = 0; c < 4; c++) {
-        count[c] = 0;
-        full[c] = 0;
-    }
+    s16 id;
+
     memset(classes, -1, 9);
+    row = (s8*)lbl_803C6724 + team * 9;
     for (i = 0; i < 9; i++) {
-        s32 v = (s8)row[i + 2];
+        s32 v = row[i + 2];
         if (v != -1 && v != 0x36) {
-            classes[i] = CHAR_CLASS((s8)row[i + 2]);
-            c = classes[i];
-            if (c >= 0 && c < 4) {
-                if (++count[c] >= 2) {
-                    full[c] = 1;
+            classes[i] = CHAR_CLASS(v);
+            switch (classes[i]) {
+            case 0:
+                if (++n0 >= 2) {
+                    full0 = 1;
                 }
+                break;
+            case 1:
+                if (++n1 >= 2) {
+                    full1 = 1;
+                }
+                break;
+            case 2:
+                if (++n2 >= 2) {
+                    full2 = 1;
+                }
+                break;
+            case 3:
+                if (++n3 >= 2) {
+                    full3 = 1;
+                }
+                break;
             }
         }
     }
     for (i = 0; i < 9; i++) {
-        s32 v = (s8)row[i + 2];
+        s32 v = row[i + 2];
         if (v != -1 && v != 0x36) {
             continue;
         }
         memset(cand, -1, 8);
-        id = -1;
-        for (c = 0; c < 4; c++) {
-            if (full[c] == 0) {
-                break;
+        last = -1;
+        if (full0 == 0) {
+            last = collectClass(cand, 0, last);
+            if (cand[0] == -1) {
+                goto random;
             }
-        }
-        if (c < 4) {
-            last = fn_2_F200_collect(cand, c);
-            if (cand[0] != -1) {
-                if (++count[c] >= 2) {
-                    full[c] = 1;
-                }
-                id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            if (++n0 >= 2) {
+                full0 = 1;
             }
-        }
-        if (id == -1) {
+        } else if (full1 == 0) {
+            last = collectClass(cand, 1, last);
+            if (cand[0] == -1) {
+                goto random;
+            }
+            id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            if (++n1 >= 2) {
+                full1 = 1;
+            }
+        } else if (full2 == 0) {
+            last = collectClass(cand, 2, last);
+            if (cand[0] == -1) {
+                goto random;
+            }
+            id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            if (++n2 >= 2) {
+                full2 = 1;
+            }
+        } else if (full3 == 0) {
+            last = collectClass(cand, 3, last);
+            if (cand[0] == -1) {
+                goto random;
+            }
+            id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            if (++n3 >= 2) {
+                full3 = 1;
+            }
+        } else {
+        random:
+            // no class short of two, or none of its characters left: any unused character
             do {
                 id = randRange_FUN_80042bf0(0, 0x35);
             } while (lbl_8034E9A0[id + 0x4757] != 0);
