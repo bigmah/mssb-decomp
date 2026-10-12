@@ -332,7 +332,7 @@ config.libs = [
         Object(Matching, "auto_00_00009EA0_text", source="challenge/auto_00_00009EA0_text.c"),
         Object(Matching, "auto_00_0000C2A4_text", source="challenge/auto_00_0000C2A4_text.c"),
         Object(Matching, "auto_00_00017EFC_text", source="challenge/auto_00_00017EFC_text.c"),
-        Object(NonMatching, "auto_00_0001D590_text", source="challenge/auto_00_0001D590_text.c"),
+        Object(Matching, "auto_00_0001D590_text", source="challenge/auto_00_0001D590_text.c"),
         Object(Matching, "auto_00_00026AF8_text", source="challenge/auto_00_00026AF8_text.c"),
     ]),
     Rel(
