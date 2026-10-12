@@ -3505,9 +3505,11 @@ int fn_3_AABF8(void) {
 }
 
 // .text:0x000AAC84 size:0x36C mapped:0x806E9D18
-// NONMATCHING 89%: receiver position loads use lfsx/lfsu in the original, register allocation differs; fn_3_A6ABC is inlined
+// NONMATCHING 88%: receiver position loads use lfsx/lfsu in the original, register allocation differs; fn_3_A6ABC is inlined (body in InlAAC84, shared with fn_3_ABDD0)
 #if NONMATCHING
-void fn_3_AAC84(f32* x, f32* z) {
+// fn_3_ABDD0 inlines this whole body; CW needs a raised inline limit for that
+#pragma inline_max_size(600)
+static inline void InlAAC84(f32* x, f32* z) {
     RepFielder* f;
     RepFielder* t;
     s32 idx;
@@ -3565,6 +3567,10 @@ void fn_3_AAC84(f32* x, f32* z) {
         *z = (f32)n * t->velZ + g_Fielders[idx].pos.z;
     }
     g_Ball.fielderBeingThrownTo = idx;
+}
+
+void fn_3_AAC84(f32* x, f32* z) {
+    InlAAC84(x, z);
 }
 #endif
 
@@ -3893,7 +3899,7 @@ void fn_3_AB5B0(s32 maxFrames, f32* outAngle, f32* speedPtr) {
 
 // .text:0x000ABDD0 size:0xC28 mapped:0x806EAE64
 // Releases the throw by fielder fi toward the chosen target.
-// NONMATCHING 66%: the original inlines fn_3_AAC84 (with fn_3_A6ABC) for the default target; here it is called
+// NONMATCHING 90%: fn_3_AAC84 (with fn_3_A6ABC) inlined for the default target via InlAAC84; register allocation differs
 #if NONMATCHING
 void fn_3_ABDD0(s32 fi) {
     RepFielder* f;
@@ -3962,7 +3968,7 @@ void fn_3_ABDD0(s32 fi) {
     } else if (g_FieldingLogic._0C4 == 6 && g_FieldingLogic._0BE >= 0 && g_FieldingLogic._0BE != fi) {
         fn_3_AAFF0(&tx, &tz);
     } else {
-        fn_3_AAC84(&tx, &tz);
+        InlAAC84(&tx, &tz);
     }
     g_Ball.throwTarget.x = tx;
     g_Ball.throwTarget.z = tz;
