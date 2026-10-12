@@ -39,41 +39,71 @@ typedef struct ChFileMenu {
 
 extern ChFileMenu lbl_1_common_bss_49A78;
 
-// .text:0x00009EA0 size:0x64
-// Same as fn_800216F8: queues fn_1_9F04 to load sound group `group` from lbl_1_data_196C.
-void fn_1_9EA0(u8 group, s32 (*callback)(u8* state)) {
-    ChSoundLoadTask* task = fn_800B0A5C_insertQueue(fn_1_9F04, 1);
-    task->step = 0;
-    task->group = group;
-    task->callback = callback;
-    ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
+// .text:0x0000A250 size:0x94
+void fn_1_A250(void) {
+    s32 i;
+
+    for (i = 0; i < 11; i++) {
+        lbl_1_common_bss_49A78._24[i] = -1;
+    }
+    lbl_1_common_bss_49A78._0C = -1;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A348;
 }
 
-// .text:0x00009F04 size:0x120
-void fn_1_9F04(void) {
-    ChSoundLoadTask* task = lbl_803CC1B8;
-    ChTaskHeader* parent;
+// .text:0x0000A210 size:0x40
+// Returns the part of `path` after the last '/'.
+char* fn_1_A210(char* path) {
+    char c;
+    char* name = path;
 
-    switch (task->step) {
-    case 0:
-        lbl_800EF808.groups[task->group] = (struct SoundGroupData*)ARAMTransfer(&lbl_1_data_196C[task->group], 0, 1, 0);
-        task->step = 1;
-        break;
-    case 1:
-        if ((s32)lbl_803C6CF8[0x715] != 1) {
-            break;
+    if (path == NULL) {
+        return NULL;
+    }
+    while ((c = *path++) != '\0') {
+        if (c == '/') {
+            name = path;
         }
-        fn_80021980(lbl_800EF808.groups[task->group]);
-        task->step = 2;
-        task->callbackState = 0;
-    case 2:
-        if (task->callback(&task->callbackState) == 0) {
-            fn_80021954(&lbl_800EF808.groups[task->group]);
-            parent = task->h.parent;
-            parent->result = 1;
-            fn_800B0A14_removeQueue(parent);
+    }
+    return name;
+}
+
+// .text:0x0000A1F4 size:0x1C
+void fn_1_A1F4(ChListCursor* list, ChListItem* items, s32 count, s32 visible) {
+    list->items = items;
+    list->count = count;
+    list->visible = visible;
+    list->top = 0;
+    list->cursor = 0;
+}
+
+// .text:0x0000A184 size:0x70
+// Walks the visible item names (the debug print that used them is compiled out).
+static inline s32 ch_strlen(const char* s) {
+    s32 n = 0;
+    while (*s++ != '\0') {
+        n++;
+    }
+    return n;
+}
+
+void fn_1_A184(ChListCursor* list) {
+    s32 rows;
+    ChListItem* item;
+    s32 i;
+
+    if (list->top + list->visible < list->count) {
+        rows = list->visible;
+    } else if (list->count < list->visible) {
+        rows = list->count;
+    } else {
+        rows = list->count - list->top;
+    }
+
+    item = &list->items[list->top];
+    for (i = 0; i < rows; i++, item++) {
+        if (item->name != NULL) {
+            ch_strlen(item->name);
         }
-        break;
     }
 }
 
@@ -135,70 +165,40 @@ void fn_1_A024(ChListCursor* list, s32 dir) {
     }
 }
 
-// .text:0x0000A184 size:0x70
-// Walks the visible item names (the debug print that used them is compiled out).
-static inline s32 ch_strlen(const char* s) {
-    s32 n = 0;
-    while (*s++ != '\0') {
-        n++;
-    }
-    return n;
-}
+// .text:0x00009F04 size:0x120
+void fn_1_9F04(void) {
+    ChSoundLoadTask* task = lbl_803CC1B8;
+    ChTaskHeader* parent;
 
-void fn_1_A184(ChListCursor* list) {
-    s32 rows;
-    ChListItem* item;
-    s32 i;
-
-    if (list->top + list->visible < list->count) {
-        rows = list->visible;
-    } else if (list->count < list->visible) {
-        rows = list->count;
-    } else {
-        rows = list->count - list->top;
-    }
-
-    item = &list->items[list->top];
-    for (i = 0; i < rows; i++, item++) {
-        if (item->name != NULL) {
-            ch_strlen(item->name);
+    switch (task->step) {
+    case 0:
+        lbl_800EF808.groups[task->group] = (struct SoundGroupData*)ARAMTransfer(&lbl_1_data_196C[task->group], 0, 1, 0);
+        task->step = 1;
+        break;
+    case 1:
+        if ((s32)lbl_803C6CF8[0x715] != 1) {
+            break;
         }
-    }
-}
-
-// .text:0x0000A1F4 size:0x1C
-void fn_1_A1F4(ChListCursor* list, ChListItem* items, s32 count, s32 visible) {
-    list->items = items;
-    list->count = count;
-    list->visible = visible;
-    list->top = 0;
-    list->cursor = 0;
-}
-
-// .text:0x0000A210 size:0x40
-// Returns the part of `path` after the last '/'.
-char* fn_1_A210(char* path) {
-    char c;
-    char* name = path;
-
-    if (path == NULL) {
-        return NULL;
-    }
-    while ((c = *path++) != '\0') {
-        if (c == '/') {
-            name = path;
+        fn_80021980(lbl_800EF808.groups[task->group]);
+        task->step = 2;
+        task->callbackState = 0;
+    case 2:
+        if (task->callback(&task->callbackState) == 0) {
+            fn_80021954(&lbl_800EF808.groups[task->group]);
+            parent = task->h.parent;
+            parent->result = 1;
+            fn_800B0A14_removeQueue(parent);
         }
+        break;
     }
-    return name;
 }
 
-// .text:0x0000A250 size:0x94
-void fn_1_A250(void) {
-    s32 i;
-
-    for (i = 0; i < 11; i++) {
-        lbl_1_common_bss_49A78._24[i] = -1;
-    }
-    lbl_1_common_bss_49A78._0C = -1;
-    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A348;
+// .text:0x00009EA0 size:0x64
+// Same as fn_800216F8: queues fn_1_9F04 to load sound group `group` from lbl_1_data_196C.
+void fn_1_9EA0(u8 group, s32 (*callback)(u8* state)) {
+    ChSoundLoadTask* task = fn_800B0A5C_insertQueue(fn_1_9F04, 1);
+    task->step = 0;
+    task->group = group;
+    task->callback = callback;
+    ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
 }

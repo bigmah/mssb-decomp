@@ -41,12 +41,21 @@ def blocks_of(lines):
         j = i + 1
         depth = 0
         seen = False
+        header_inline = None
         while j < n:
+            if depth == 0 and not seen and lines[j].strip() and not lines[j].lstrip().startswith(("//", "/*", "*", "#")):
+                header_inline = "inline" in lines[j].split("(")[0]
             depth += lines[j].count("{") - lines[j].count("}")
             if "{" in lines[j]:
                 seen = True
             j += 1
             if seen and depth == 0:
+                if header_inline:
+                    # A static inline helper sits between the marker and the
+                    # function: keep going to the function itself.
+                    seen = False
+                    header_inline = None
+                    continue
                 break
         if in_if:
             while j < n and not lines[j].strip().startswith("#endif"):
