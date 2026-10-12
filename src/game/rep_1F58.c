@@ -439,28 +439,29 @@ void fn_3_C1344(s32 who, s32 track, f32 t, f32 t2) {
 #endif
 
 // .text:0x000C1770 size:0x1C0 mapped:0x80700804
-// NONMATCHING 99.5%: j and the slot offset j << 5 get swapped saved registers (r30/r29)
-#if NONMATCHING
 void fn_3_C1770(s32 who) {
     CharActor* t = lbl_8036E548.active[who];
+    int tmp;
     s32 j;
     s16* q;
     s32 k;
+
     if (t != NULL) {
         j = 1;
         q = &lbl_3_data_17260[1].id;
         do {
-            if (*q == -1) {
+            if ((*q) == (-1)) {
                 break;
             }
             q -= 0x10;
-        } while (j-- != 0);
+        } while ((j--) != 0);
         if (j >= 0) {
             lbl_3_data_172AC.tex = lbl_3_common_bss_35154.tex;
+            tmp = 1;
             lbl_3_data_17260[j].id = who;
             lbl_3_data_17260[j].p[0] = t->pos.x;
             lbl_3_data_17260[j].p[2] = t->pos.z;
-            lbl_3_data_17260[j].p[1] = -((f32)lbl_3_data_172EC[t->kind].v / lbl_3_rodata_1FD4);
+            lbl_3_data_17260[j].p[tmp] = -(((f32)lbl_3_data_172EC[t->kind].v) / lbl_3_rodata_1FD4);
             memcpy(lbl_3_data_17260[j].v, lbl_3_data_17260[j].p, 0xC);
             lbl_3_data_17260[j].s2 = 0;
             k = 0x18;
@@ -474,7 +475,6 @@ void fn_3_C1770(s32 who) {
         }
     }
 }
-#endif
 
 // Returns the slot index whose id equals `id`, or -1.
 // .text:0x000C1930 size:0x34 mapped:0x807009C4
