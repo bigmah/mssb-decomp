@@ -15,13 +15,13 @@ typedef AssetLoadInstructions DiskFileEntry;
 // Musyx sound group data as loaded from disc. The pointers are stored as
 // offsets from the start of the block and relocated after loading.
 typedef struct SoundGroupData {
-    /* 0x00 */ void* proj;
+    /* 0x00 */ PTR32(void) proj;
     /* 0x04 */ u32 projSize;
-    /* 0x08 */ void* sdir;
+    /* 0x08 */ PTR32(void) sdir;
     /* 0x0C */ u32 sdirSize;
-    /* 0x10 */ void* pool;
+    /* 0x10 */ PTR32(void) pool;
     /* 0x14 */ u32 poolSize;
-    /* 0x18 */ void* samp; // also the end of the data kept in main memory
+    /* 0x18 */ PTR32(void) samp; // also the end of the data kept in main memory
 } SoundGroupData;
 
 typedef struct SoundManager {

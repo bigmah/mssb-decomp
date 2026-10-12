@@ -105,7 +105,7 @@ extern const GXColor lbl_803CD300;
 // Entry of the current draw/process queue (see fn_800B0A5C_insertQueue).
 typedef struct {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0xC];
+    /*0x04*/ void* _04[3]; // SceneTask prev/next/parent
     /*0x10*/ s16 _10;
     /*0x12*/ u16 priority;
     /*0x14*/ OSModuleHeader* module;
