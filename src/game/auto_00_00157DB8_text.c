@@ -20,11 +20,31 @@ extern s16 lbl_3_data_FC1C;
 extern u8 lbl_3_data_BD90[];
 extern u8 lbl_3_data_BD50[];
 extern u8 lbl_3_data_B3F4[];
-extern u8 lbl_800EF808[];
+// SoundManager (main/file_80021308.h, which clashes with this file's MusyX prototypes): only the field used here.
+typedef struct PracticeSoundView {
+    /*0x000*/ u8 _000[0x398];
+    /*0x398*/ u8 unk398;
+} PracticeSoundView;
+extern PracticeSoundView lbl_800EF808;
 extern void fn_80034E20(void*, void*);
-extern void* fn_80033A24(void*, int, int, int, int, int);
 extern void fn_3_6B870(void);
-extern u32 fn_3_157AC4(u8* o);
+// Emitter / Particle (main/file_800263FC.h, which can't be included next to
+// UnknownHomes_Static.h): only the fields used here.
+typedef struct PracticeParticle {
+    /*0x00*/ u8 _00[0x40];
+    /*0x40*/ u32 color;
+    /*0x44*/ u8 _44[0x4D - 0x44];
+    /*0x4D*/ u8 texIndex;
+} PracticeParticle;
+typedef struct PracticeEmitter {
+    /*0x00*/ u8 _00[0xC];
+    /*0x0C*/ PracticeParticle* particles;
+    /*0x10*/ u8 _10[0x18 - 0x10];
+    /*0x18*/ s32 index; // u.seq
+    /*0x1C*/ s32 count;
+} PracticeEmitter;
+extern PracticeEmitter* fn_80033A24(void* update, int priority, int unk14, int n, int strict, int type);
+extern u32 fn_3_157AC4(PracticeEmitter* o);
 extern void fn_3_5F154(void);
 extern void fn_3_5EFEC(void);
 extern void fn_3_5EDD8(void);
@@ -59,12 +79,12 @@ extern u8 lbl_3_data_FAC4[8];
 
 // fn_3_157DB8, size:0x70
 void fn_3_157DB8(s32 arg0) {
-    u8* p = fn_80033A24(fn_3_157AC4, 0x80, 0, 1, 1, 0x16);
-    if (p != NULL) {
-        *(s32*)(p + 0x18) = 0;
-        *(s32*)(p + 0x1C) = arg0;
-        (*(u8**)(p + 0xC))[0x4D] = 0;
-        *(s32*)(*(u8**)(p + 0xC) + 0x40) = -1;
+    PracticeEmitter* e = fn_80033A24(fn_3_157AC4, 0x80, 0, 1, 1, 0x16);
+    if (e != NULL) {
+        e->index = 0;
+        e->count = arg0;
+        e->particles->texIndex = 0;
+        e->particles->color = -1;
     }
 }
 
@@ -105,7 +125,7 @@ void fn_3_15810C(void) {
 // fn_3_1581FC, size:0x68
 void fn_3_1581FC(void) {
     fn_80034E20(lbl_803CC1B8, lbl_3_data_BD50);
-    if (lbl_800EF808[0x398] == 1) {
+    if (lbl_800EF808.unk398 == 1) {
         playSoundEffect(0x1AD);
     }
     lbl_803CC1B8->func = fn_3_15810C;
