@@ -123,6 +123,10 @@ static GXTexObj lbl_3_bss_B7C4;                     // texture object
 static u8 lbl_3_bss_B7C1;                           // hook frame counter
 static u8 lbl_3_bss_B7C0;
 
+// .data 0x00026698..0x000266A8
+f32 lbl_3_data_26698[3] = {0.5f, 0.0f, -0.5f};
+s8 lbl_3_data_266A4 = -1;
+
 // .text:0x00141C44 size:0x48
 void fn_3_141C44(void) {
     lbl_3_bss_B7C1++;
@@ -1913,9 +1917,3 @@ void fn_3_146A90(void) {
     fn_3_142088();
 }
 #endif
-
-
-// .data 0x00026698..0x000266A8
-f32 lbl_3_data_26698[3] = {0.5f, 0.0f, -0.5f};
-s8 lbl_3_data_266A4 = -1;
-
