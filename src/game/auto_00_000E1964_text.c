@@ -15,7 +15,7 @@
 #include "game/auto_00_0006A160_text.h"
 #include "game/auto_00_0006B4C8_text.h"
 #include "game/auto_00_000DEB90_text.h"
-#include "game/auto_00_000EA340_text.h"
+#include "game/rep_2BF8.h"
 
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h; that header can't be
 // included next to the game headers).

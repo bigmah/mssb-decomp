@@ -18,4 +18,14 @@ void fn_3_20064(void);
 void fn_3_20188(void);
 void fn_3_20224(void);
 
+void fn_3_1E154(void);
+void fn_3_1E178(void);
+void fn_3_1E328(void);
+void fn_3_1E3EC(void);
+void fn_3_20A60(void);
+void fn_3_20AB0(void);
+void fn_3_20AE0(void);
+s32 fn_3_20B30(void);
+void fn_3_20C34(void);
+
 #endif // !__GAME_rep_8C8_H_
