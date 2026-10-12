@@ -2,8 +2,6 @@
 extern void fn_800ACFB0(void* object); // free
 #include "charPipeline/structures/dolphinString.h"
 
-extern f32 lbl_803CCF78; // 0.0f
-extern f32 lbl_803CCF7C; // 1.0f
 
 // .text:0x800B4A44 size:0x50
 f32 fn_800B4A44(GameActor* actor, u16 boneIndex) {
@@ -17,7 +15,7 @@ f32 fn_800B4A44(GameActor* actor, u16 boneIndex) {
             return bone->animPipe->currentTrack->animTime - bone->animPipe->time;
         }
     }
-    return lbl_803CCF78;
+    return 0.0f;
 }
 
 // .text:0x800B4A94 size:0x68
@@ -36,7 +34,7 @@ f32 fn_800B4A94(GameActor* actor) {
             }
         }
     }
-    return lbl_803CCF78;
+    return 0.0f;
 }
 
 // .text:0x800B4AFC size:0x3C
@@ -102,7 +100,7 @@ f32 fn_800B4C40(GameActor* actor) {
             return actor->boneArray[i]->animPipe->time;
         }
     }
-    return lbl_803CCF78;
+    return 0.0f;
 }
 
 // .text:0x800B4CA0 size:0x3C
@@ -154,17 +152,15 @@ void ACTSetAnimation(GameActor* actor, ANIMBank* animBank, char* sequenceName, u
             actor->boneArray[i]->flags &= 0xFFDF;
         }
     }
-    actor->blend = (blendSpeed != lbl_803CCF78) ? lbl_803CCF78 : lbl_803CCF7C;
+    actor->blend = blendSpeed ? 0.0f : 1.0f;
     actor->blendSpeed = blendSpeed;
 }
 
 // .text:0x800B4E9C size:0x100
-// NONMATCHING 98%: r8/r9 swapped between (u16)i and total - 1 (see docs/patterns/regalloc.md)
-#if NONMATCHING
 void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack* animTrack, f32 time, KeyFrame** currentFrame, KeyFrame** nextFrame, u16* frameIndex) {
     KeyFrame* keyFrames;
     u32 start;
-    u16 total;
+    s32 total;
     KeyFrame* frame;
     u16 i;
     u16 count;
@@ -202,7 +198,6 @@ void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack* animTrack, f32 time, KeyFram
         i = (i + 1) % total;
     }
 }
-#endif
 
 // .text:0x800B4F9C size:0x50
 struct ANIMAnimTrack* ANIMGetTrackFromSequence(ANIMSequences* animSeq, u16 animTrackID) {

@@ -13,14 +13,15 @@
 #include "menus/auto_00_00000D08_text.h"
 #include "menus/rep_0200.h"
 #include "menus/auto_00_00001254_text.h"
-#include "menus/auto_00_000194BC_text.h"
+#include "menus/rep_05F0.h"
+#include "menus/rep_0640.h"
 #include "menus/rep_0A58.h"
 #include "menus/rep_0AB0.h"
 #include "menus/rep_0438.h"
 #include "menus/auto_00_0004B1AC_text.h"
 #include "menus/auto_00_0001B1BC_text.h"
 #include "menus/auto_00_00071EC4_text.h"
-#include "menus/auto_00_0008E6A4_text.h"
+#include "menus/rep_0FD8.h"
 
 // Menu music sequences (used by fn_2_D88/fn_2_E84).
 SeqEnt lbl_2_data_128[2] = {

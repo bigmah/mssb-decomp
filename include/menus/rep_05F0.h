@@ -1,5 +1,5 @@
-#ifndef __AUTO_00_000194BC_TEXT_MENUS_H__
-#define __AUTO_00_000194BC_TEXT_MENUS_H__
+#ifndef __MENUS_REP_05F0_H__
+#define __MENUS_REP_05F0_H__
 
 #include "mssbTypes.h"
 
@@ -20,6 +20,8 @@ typedef struct OptionsMenu {
     /*0x0F*/ u8 _0F;
 } OptionsMenu;
 
+extern OptionsMenu lbl_2_bss_1033C;
+
 void fn_2_194BC(u8* object);
 void fn_2_194E8(void);
 void fn_2_19520(void);
@@ -29,7 +31,5 @@ void fn_2_195DC(void);
 void fn_2_19778(void);
 void fn_2_197AC(u8 port);
 void fn_2_19D04(void);
-void fn_2_19F2C(void);
-void fn_2_1A1B4(void);
 
 #endif

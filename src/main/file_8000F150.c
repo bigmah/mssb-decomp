@@ -171,7 +171,7 @@ void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d) {
     }
 }
 
-// NONMATCHING 99%: original loads the anim pointer with lwzu (keeps &slot->anim in r31); ours uses addi+lwz
+// NONMATCHING 98.4%: original loads the anim pointer with lwzu (keeps &slot->anim in r31); ours uses addi+lwz
 // .text:0x8000F534 size:0x3C0
 #if NONMATCHING
 void fn_8000F534(LayoutObj* obj, s32 visible) {
@@ -294,7 +294,7 @@ s32 fn_8000F988(LayoutGroup* group, s32 index, u16 arg2, s32 table, s32 msg, s32
     return -1;
 }
 
-// NONMATCHING 97%: register allocation differs, and an extra branch after the end-of-substring continue
+// NONMATCHING 97.1%: register allocation differs, and an extra branch after the end-of-substring continue
 // .text:0x8000FA9C size:0x2B8
 #if NONMATCHING
 s32 fn_8000FA9C(s32 index) {
@@ -489,9 +489,7 @@ void fn_8000FEE8(s32 index) {
     lbl_80366B18.entries[index].state = 0;
 }
 
-// NONMATCHING 99%: two address computations (table/msg slwi) scheduled in the other order
 // .text:0x8000FF04 size:0x1A0
-#if NONMATCHING
 s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSize) {
     s32 i;
     TextEntry* e;
@@ -529,9 +527,8 @@ s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSi
     e->_36 = 0;
     return i;
 }
-#endif
 
-// NONMATCHING 99%: f2/f3 swapped for the 0.0f constant, and two extra clrlwi on the u16 s+w sum
+// NONMATCHING 98.6%: f2/f3 swapped for the 0.0f constant, and two extra clrlwi on the u16 s+w sum
 // .text:0x800100A4 size:0x3F4
 #if NONMATCHING
 void fn_800100A4(s32 x, s32 y, u16 s, u16 t, u16 w, u32 color, s32 kind, MtxPtr mtx) {
@@ -1022,7 +1019,7 @@ void DrawTextOnCondition(s32 layer) {
     }
 }
 
-// NONMATCHING 96%: extra `mr` when setting up dst before the copy loop
+// NONMATCHING 92.9%: extra `mr` when setting up dst before the copy loop
 // .text:0x80010FA0 size:0x60
 #if NONMATCHING
 void fn_80010FA0(void) {
@@ -1047,7 +1044,7 @@ void fn_80010FA0(void) {
 }
 #endif
 
-// NONMATCHING 96%: saved regs r30/r31 swapped (loop counter vs. lbl_80366B18 base)
+// NONMATCHING 96.4%: saved regs r30/r31 swapped (loop counter vs. lbl_80366B18 base)
 // .text:0x80011000 size:0x140
 #if NONMATCHING
 void fn_80011000(void) {
@@ -1094,9 +1091,7 @@ GameActor** fn_800111D8(CharActor* actor) {
     return &lbl_8036E548.slots->objects[actor->modelIndex].actor;
 }
 
-// NONMATCHING 99%: original keeps &actors[i] (addi 0xc04) in r5 and copies it to r31; ours folds the offset
 // .text:0x800111FC size:0x15C
-#if NONMATCHING
 CharActor* fn_800111FC(CharActor* actor, s32 second) {
     s32 slot;
     CharActor* next;
@@ -1106,8 +1101,7 @@ CharActor* fn_800111FC(CharActor* actor, s32 second) {
     slot = actor->modelIndex % 4;
     lbl_8036E548.actors[slot + 4].mode[0] = 0;
     lbl_8036E548.actors[slot].mode[0] = 0;
-    next = &lbl_8036E548.actors[slot + ((second != 0) << 2)];
-    lbl_8036E548.active[slot] = next;
+    next = lbl_8036E548.active[slot] = &lbl_8036E548.actors[slot + ((second != 0) << 2)];
     if (next->modelIndex != actor->modelIndex) {
         fn_8001BA44(slot, actor->anim[0], actor->_25F[0], actor->_262[0], 0, actor->_265[0], actor->_269[0]);
         next->anim[1] = actor->anim[1];
@@ -1128,7 +1122,6 @@ CharActor* fn_800111FC(CharActor* actor, s32 second) {
     }
     return next;
 }
-#endif
 
 // .text:0x80011358 size:0x110
 void fn_80011358(s32 index, s32 kind) {
@@ -1164,94 +1157,6 @@ void fn_80011358(s32 index, s32 kind) {
             fn_800B2BA8(*target, anim, model, i);
             return;
         }
-    }
-}
-
-// .text:0x80011468 size:0x108
-void fn_80011468(void) {
-    s32 i;
-    for (i = 0; i < 13; i++) {
-        CharActor* actor = lbl_8036E548.active[i];
-        if (actor != NULL) {
-            ActorObject* obj = &lbl_8036E548.slots->objects[actor->modelIndex];
-            switch (actor->kind) {
-            case 19:
-                fn_8004B6EC(actor, obj);
-                break;
-            case 40:
-            case 41:
-                fn_8004B7F4(actor, obj);
-                break;
-            case 38:
-                obj->actor->tickFlag = 1;
-            case 18:
-                fn_8004BAEC(actor, obj);
-                break;
-            case 14:
-            case 37:
-                fn_8005240C(actor, obj);
-                break;
-            case 6:
-            case 10:
-            case 12:
-            case 24:
-            case 25:
-            case 26:
-            case 42:
-                obj->actor->tickFlag = 1;
-                break;
-            case 20:
-            case 43:
-                if (actor->anim[0] == 0x40) {
-                    obj->actor->tickFlag = 0;
-                } else {
-                    obj->actor->tickFlag = 1;
-                }
-                break;
-            }
-        }
-    }
-}
-
-// fn_80011578, size:0x50
-void fn_80011578(void) {
-    s8 i = 0;
-    s32 n;
-    for (n = 13; n != 0; n--) {
-        if (i >= 0 && i < 13) {
-            CharActor* actor = lbl_8036E548.active[(u32)i];
-            if (actor != NULL) {
-                actor->tevHook = NULL;
-            }
-        }
-        i++;
-    }
-}
-
-// fn_800115C8, size:0x3C
-void fn_800115C8(s8 index) {
-    if (index >= 0 && index < 13) {
-        CharActor* actor = lbl_8036E548.active[index];
-        if (actor != NULL) {
-            actor->tevHook = NULL;
-        }
-    }
-}
-
-// fn_80011570, size:0x8
-CharActor* fn_80011570(void) {
-    return lbl_803CBC18;
-}
-
-// fn_80011604, size:0x3C
-void fn_80011604(s8 index, DOTevHook value) {
-    CharActor* actor;
-    if (index < 0 || index >= 13) {
-        return;
-    }
-    actor = lbl_8036E548.active[index];
-    if (actor != NULL) {
-        actor->tevHook = value;
     }
 }
 

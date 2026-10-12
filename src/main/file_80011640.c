@@ -341,6 +341,94 @@ static inline void drawSlot(ActorObject* slot, s32 pass, MtxPtr view) {
     }
 }
 
+// .text:0x80011468 size:0x108
+void fn_80011468(void) {
+    s32 i;
+    for (i = 0; i < 13; i++) {
+        CharActor* actor = lbl_8036E548.active[i];
+        if (actor != NULL) {
+            ActorObject* obj = &lbl_8036E548.slots->objects[actor->modelIndex];
+            switch (actor->kind) {
+            case 19:
+                fn_8004B6EC(actor, obj);
+                break;
+            case 40:
+            case 41:
+                fn_8004B7F4(actor, obj);
+                break;
+            case 38:
+                obj->actor->tickFlag = 1;
+            case 18:
+                fn_8004BAEC(actor, obj);
+                break;
+            case 14:
+            case 37:
+                fn_8005240C(actor, obj);
+                break;
+            case 6:
+            case 10:
+            case 12:
+            case 24:
+            case 25:
+            case 26:
+            case 42:
+                obj->actor->tickFlag = 1;
+                break;
+            case 20:
+            case 43:
+                if (actor->anim[0] == 0x40) {
+                    obj->actor->tickFlag = 0;
+                } else {
+                    obj->actor->tickFlag = 1;
+                }
+                break;
+            }
+        }
+    }
+}
+
+// .text:0x80011570 size:0x8
+CharActor* fn_80011570(void) {
+    return lbl_803CBC18;
+}
+
+// .text:0x80011578 size:0x50
+void fn_80011578(void) {
+    s8 i = 0;
+    s32 n;
+    for (n = 13; n != 0; n--) {
+        if (i >= 0 && i < 13) {
+            CharActor* actor = lbl_8036E548.active[(u32)i];
+            if (actor != NULL) {
+                actor->tevHook = NULL;
+            }
+        }
+        i++;
+    }
+}
+
+// .text:0x800115C8 size:0x3C
+void fn_800115C8(s8 index) {
+    if (index >= 0 && index < 13) {
+        CharActor* actor = lbl_8036E548.active[index];
+        if (actor != NULL) {
+            actor->tevHook = NULL;
+        }
+    }
+}
+
+// .text:0x80011604 size:0x3C
+void fn_80011604(s8 index, DOTevHook value) {
+    CharActor* actor;
+    if (index < 0 || index >= 13) {
+        return;
+    }
+    actor = lbl_8036E548.active[index];
+    if (actor != NULL) {
+        actor->tevHook = value;
+    }
+}
+
 // .text:0x80011640 size:0x9C
 void fn_80011640(Mtx a, Mtx out) {
     Mtx scale = {
@@ -445,7 +533,7 @@ static inline void detachOwnedParts(s32 index) {
     }
 }
 
-// NONMATCHING 97%: r7/r8 swapped (active[i] pointer vs parts)
+// NONMATCHING 98.6%: r7/r8 swapped (active[i] pointer vs parts)
 #if NONMATCHING
 void fn_8001196C(void) {
     s32 i;
@@ -461,7 +549,7 @@ void fn_8001196C(void) {
 #endif
 
 // .text:0x80011A60 size:0x104
-// NONMATCHING 97%: register allocation only
+// NONMATCHING 99.0%: register allocation only
 #if NONMATCHING
 void fn_80011A60(void) {
     s32 i;
@@ -643,7 +731,7 @@ void fn_800126EC(CharPart* part, void* tex, u8* fileIdx) {
 
 // .text:0x800127F8 size:0x398
 
-// NONMATCHING 99%: register allocation only (actor/tex, joint-copy temps)
+// NONMATCHING 98.9%: register allocation only (actor/tex, joint-copy temps)
 #if NONMATCHING
 u8 LoadModel(CharActor* actor) {
     CharParts* parts;
@@ -2168,7 +2256,7 @@ s32 fn_80017340(s32 actorIdx) {
 #endif
 
 // .text:0x8001758C size:0x228
-// NONMATCHING 99%: actor->kind reload scheduled later, r9/r11 swap
+// NONMATCHING 98.2%: actor->kind reload scheduled later, r9/r11 swap
 #if NONMATCHING
 s32 fn_8001758C(u8* state, s32 actorIdx, u8 kind, u8 team, u8 roster, s8 arg5, u8 index, u8 arg7) {
     CharActor* actor = &lbl_8036E548.actors[actorIdx];
@@ -2219,20 +2307,17 @@ s32 fn_8001758C(u8* state, s32 actorIdx, u8 kind, u8 team, u8 roster, s8 arg5, u
 #endif
 
 // .text:0x800177B4 size:0x60
-// NONMATCHING 96%: argument load order (0x1A loaded first in original)
-#if NONMATCHING
 void fn_800177B4(void) {
     CharLoadTask* task = lbl_803CC1B8;
 
-    if (fn_8001758C(&task->state, task->actor, task->kind, task->team, task->roster, task->_1B, task->index, task->_1D) != 0) {
+    if (fn_8001758C(&task->state, task->actor, task->kind, task->team, (s32)task->roster, task->_1B, task->index, task->_1D) != 0) {
         lbl_8036E548.state = 2;
         fn_800B0A14_removeQueue(&lbl_8036E548);
     }
 }
-#endif
 
 // .text:0x80017814 size:0x514
-// NONMATCHING 95%: register allocation (joint temps, relocation base)
+// NONMATCHING 93.2%: register allocation (joint temps, relocation base)
 #if NONMATCHING
 void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(ActorObject*)) {
     ActorObject* slot = &lbl_8036E548.slots->objects[modelIndex];
@@ -2435,7 +2520,7 @@ void fn_80017D28(CharActor* src) {
 }
 
 // .text:0x80017DBC size:0x268
-// NONMATCHING 97%: argument load order around fn_800B2B74
+// NONMATCHING 97.4%: argument load order around fn_800B2B74
 #if NONMATCHING
 void fn_80017DBC(CharActor* actor, s32 modelIndex) {
     ActorObject* slot = &lbl_8036E548.slots->objects[modelIndex];
@@ -2704,7 +2789,7 @@ void fn_80018B38(void) {
 }
 
 // .text:0x80018B74 size:0x278
-// NONMATCHING 96%: size temporaries register allocation
+// NONMATCHING 95.7%: size temporaries register allocation
 #if NONMATCHING
 void fn_80018B74(void) {
     u32 max0 = 0;
@@ -2984,7 +3069,7 @@ void fn_80018DEC(s32 mode) {
 #endif
 
 // .text:0x800196D8 size:0x388
-// NONMATCHING 99%: relocation loop counter register
+// NONMATCHING 99.5%: relocation loop counter register
 #if NONMATCHING
 void fn_800196D8(void) {
     CharLoadTask* task = lbl_803CC1B8;
@@ -3049,7 +3134,7 @@ void fn_800196D8(void) {
 #endif
 
 // .text:0x80019A60 size:0x1A0
-// NONMATCHING 97%: light-table base register and colour temp stack slots
+// NONMATCHING 99.0%: light-table base register and colour temp stack slots
 #if NONMATCHING
 void fn_80019A60(void) {
     LightPos* lights = lbl_80367318;
@@ -3224,7 +3309,7 @@ void fn_80019C00(void) {
 #endif
 
 // .text:0x8001A25C size:0x1A0
-// NONMATCHING 99%: light-table base register and colour temp stack slots
+// NONMATCHING 99.0%: light-table base register and colour temp stack slots
 #if NONMATCHING
 void fn_8001A25C(void) {
     LightPos* lights = lbl_80367318;
@@ -3325,7 +3410,7 @@ void fn_8001A3FC(s32 arg) {
 #endif
 
 // .text:0x8001A6B0 size:0x3F4
-// NONMATCHING 95%: mixed saved/rematerialised lbl_8036E548 base registers
+// NONMATCHING 99.5%: mixed saved/rematerialised lbl_8036E548 base registers
 #if NONMATCHING
 void challengeMapRelated(void) {
     CharLoadTask* task = lbl_803CC1B8;
@@ -3426,7 +3511,7 @@ void fn_8001AAF0(void) {
 }
 
 // .text:0x8001AB10 size:0x488
-// NONMATCHING 98%: early-return branch layout and register allocation
+// NONMATCHING 98.4%: early-return branch layout and register allocation
 #if NONMATCHING
 void fn_8001AB10(ActorObject* slot, Mtx view) {
     CharActor* actor = &lbl_8036E548.actors[slot->id];
@@ -3938,7 +4023,7 @@ void fn_8001BA44(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
 #endif
 
 // .text:0x8001BE50 size:0x3E4
-// NONMATCHING 96%: register allocation and joint-lookup scheduling
+// NONMATCHING 95.8%: register allocation and joint-lookup scheduling
 #if NONMATCHING
 void fn_8001BE50(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
     CharActor* actor = lbl_8036E548.active[index];
@@ -3992,15 +4077,13 @@ void fn_8001BE50(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
 #endif
 
 // .text:0x8001C234 size:0x2F4
-// NONMATCHING 98%: register allocation
-#if NONMATCHING
 void fn_8001C234(u32* doneMask) {
-    s32 i;
     CharActor* actor;
-    s32 j;
-    s32 n;
     f32 frames;
+    s32 i;
     f32 t;
+    s32 n;
+    s32 j;
 
     *doneMask = 0;
     for (i = 0; i < 13; i++) {
@@ -4064,7 +4147,6 @@ void fn_8001C234(u32* doneMask) {
         }
     }
 }
-#endif
 
 // .text:0x8001C528 size:0x60
 void fn_8001C528(void) {
@@ -4112,7 +4194,7 @@ fail:
 }
 
 // .text:0x8001C67C size:0x2A4
-// NONMATCHING 99%: joint offset/list registers swapped, mfcr scheduling
+// NONMATCHING 99.7%: joint offset/list registers swapped, mfcr scheduling
 #if NONMATCHING
 int fn_8001C67C_animation(int id, int index) {
     ActorObjectTable* list;
@@ -4265,7 +4347,7 @@ void fn_8001CBD4(void) {
 }
 
 // .text:0x8001CCC8 size:0x1AC
-// NONMATCHING 98%: scheduling of the stadium light setup
+// NONMATCHING 98.7%: scheduling of the stadium light setup
 #if NONMATCHING
 void fn_8001CCC8(void) {
     LightPos* lights = lbl_80367318;
@@ -4296,7 +4378,7 @@ void fn_8001CCC8(void) {
 #endif
 
 // .text:0x8001CE74 size:0x200
-// NONMATCHING 96%: light-table base register and scheduling
+// NONMATCHING 96.1%: light-table base register and scheduling
 #if NONMATCHING
 void fn_8001CE74(void) {
     LightPos* lp = lbl_80367318;
@@ -4360,7 +4442,7 @@ void fn_8001D148(s32 index, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x8001D180 size:0x154
-// NONMATCHING 98%: register allocation only
+// NONMATCHING 96.2%: register allocation only
 #if NONMATCHING
 void fn_8001D180(s32 index, s32 which, s32 enable) {
     CharActor* actor = lbl_8036E548.active[index];
@@ -4645,7 +4727,7 @@ void fn_8001D2D4(void) {
 #endif
 
 // .text:0x8001DB74 size:0x1E4
-// NONMATCHING 95%: register allocation of the slot/camera loops
+// NONMATCHING 96.2%: register allocation of the slot/camera loops
 #if NONMATCHING
 void fn_8001DB74(ActorObjectTable* list) {
     u16 i;
@@ -4705,9 +4787,7 @@ void fn_8001DB74(ActorObjectTable* list) {
 #endif
 
 // .text:0x8001DD58 size:0x14C
-// NONMATCHING 98%: register allocation only
-#if NONMATCHING
-void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, s32 n, ...) {
+void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, u8 n, ...) {
     va_list args;
     GameBone* joint;
 
@@ -4730,7 +4810,6 @@ void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, s32 n, ...) {
         }
     }
 }
-#endif
 
 // .text:0x8001DEA4 size:0x234
 void fn_8001DEA4(ActorObject* slot, s32 pass, MtxPtr view) {
@@ -4738,7 +4817,7 @@ void fn_8001DEA4(ActorObject* slot, s32 pass, MtxPtr view) {
 }
 
 // .text:0x8001E0D8 size:0x388
-// NONMATCHING 99%: slot/loop-counter registers swapped
+// NONMATCHING 98.9%: slot/loop-counter registers swapped
 #if NONMATCHING
 void fn_8001E0D8(ActorObjectTable* list, s32 pass, Mtx view) {
     u8 last = 0xFF;
@@ -4798,7 +4877,7 @@ void fn_8001E474(void) {
 }
 
 // .text:0x8001E488 size:0x2FC
-// NONMATCHING 99%: r25/r26 (view, slot->actor) swapped in the inlined drawSlot
+// NONMATCHING 99.4%: r25/r26 (view, slot->actor) swapped in the inlined drawSlot
 #if NONMATCHING
 void fn_8001E488(void) {
     CharActor* actor;
@@ -4950,7 +5029,7 @@ void fn_8001E784(void) {
 #endif
 
 // .text:0x8001F16C size:0xBC
-// NONMATCHING 96%: loop counter and active[] walker swap r28/r30
+// NONMATCHING 99.1%: loop counter and active[] walker swap r28/r30
 #if NONMATCHING
 void fn_8001F16C(void) {
     ActorObjectTable* list;

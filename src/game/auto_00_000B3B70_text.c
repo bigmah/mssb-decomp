@@ -1287,16 +1287,46 @@ void fn_3_B3FE8(void) {
     }
 }
 
+// Inline copies of fn_3_B42A8 and fn_3_B3CAC (defined above the file's dont_inline region; the
+// original expands them in fn_3_B43E8, while other callers keep the call).
+static inline void fn_3_B42A8_inline(void) {
+    s32 k;
+    s32 t;
+
+    g_GameLogic.battingOrderAndPositionMapping[0][0][0] = lbl_3_data_FAA8.pitcher;
+    g_GameLogic.battingOrderAndPositionMapping[1][0][0] = lbl_3_data_FAA8.pitcher;
+    for (t = 0; t < 2; t++) {
+        for (k = 0; k < 9; k++) {
+            g_GameLogic.battingOrderAndPositionMapping[t][k + 1][0] = lbl_3_data_FAA8.batters[k];
+            g_GameLogic.battingOrderAndPositionMapping[t][k + 1][1] = lbl_3_data_FAA8.batters[k];
+            lbl_80354720[t][k]._0 = k;
+            lbl_80354720[t][k]._1 = k;
+            lbl_80354720[t][k].slot = k;
+        }
+    }
+    for (t = 0; t < 2; t++) {
+        for (k = 0; k < 9; k++) {
+            memcpy(&inMemRoster[t][k], &lbl_8034E9A0[g_GameLogic.battingOrderAndPositionMapping[t][k + 1][0]], sizeof(CharacterStats));
+        }
+    }
+}
+
+static inline void fn_3_B3CAC_inline(u8 mode) {
+    g_GameLogic.secondaryGameMode = mode;
+    g_Practice.totalFrames = 0;
+    g_Practice.framesInCurrTransitionState = 0;
+    g_Practice.practiceState = 0;
+}
+
 // .text:0x000B43E8 size:0x444
-// NONMATCHING 60%: the original inlines fn_3_B42A8, fn_3_B3CAC and fn_3_B3FE8 (calls here; same effects).
-// Matching needs fn_3_B3FE8 to match first (then define all three after `dont_inline off`).
+// NONMATCHING 91%: only the inlined fn_3_B3FE8 differs (its row copy loads are hoisted, see there).
 #if NONMATCHING
 void fn_3_B43E8(void) {
     switch (g_GameLogic._125) {
     case 0:
-        fn_3_B42A8();
-        g_GameLogic._000 = 0;
+        fn_3_B42A8_inline();
         g_Practice.homeAway = lbl_80366158.practiceChar;
+        g_GameLogic._000 = 0;
         g_Practice._192 = lbl_80366158.practiceChar;
         g_GameLogic.teamBatting = 1;
         g_GameLogic.teamFielding = 0;
@@ -1313,7 +1343,7 @@ void fn_3_B43E8(void) {
         g_GameLogic._125++;
         break;
     case 2:
-        if (lbl_803C6CF8.done == 1) {
+        if ((s32)lbl_803C6CF8.done == 1) {
             fn_800111B4(lbl_80366B18.msgTable);
             lbl_3_common_bss_34C58._2C = 0;
             g_GameLogic._125++;
@@ -1339,7 +1369,7 @@ void fn_3_B43E8(void) {
         g_Practice._1B1 = 0;
         g_Practice._1DA = 1;
         fn_3_5A6D4(5);
-        fn_3_B3CAC(0xA);
+        fn_3_B3CAC_inline(0xA);
         ((void (*)(u8))fn_3_B5D4C)(0); // cast: not inlined in the original
         fn_3_B3FE8();
         break;

@@ -280,7 +280,7 @@ void fn_800A6F94(s32 result, DVDFileInfo* fileInfo) {
 }
 
 // .text:0x800A70DC size:0x430
-// NONMATCHING 97%: modes 0/3 schedule the fn_800ACF34 result through r25 instead of r4 (same code otherwise)
+// NONMATCHING 98.0%: modes 0/3 schedule the fn_800ACF34 result through r25 instead of r4 (same code otherwise)
 #if NONMATCHING
 void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAddr) {
     u32 size;
@@ -520,7 +520,7 @@ void fn_800A7AD4(void) {
 }
 
 // .text:0x800A7AD8 size:0xD4
-// NONMATCHING 96%: original computes the grid pointer as base+0 then +0xEE (extra addi); 0.0f should be lbl_803CCEC8
+// NONMATCHING 95.8%: original computes the grid pointer as base+0 then +0xEE (extra addi); 0.0f should be lbl_803CCEC8
 #if NONMATCHING
 void fn_800A7AD8(void) {
     Grid_802ECFC0* w = &lbl_802ECFC0;

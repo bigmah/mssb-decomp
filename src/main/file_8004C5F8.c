@@ -647,7 +647,7 @@ void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, u16 value) {
 }
 
 // .text:0x8004CCC0 size:0x430
-// NONMATCHING 99%: scheduling of the lbl_803C5F74/lbl_80366B18 address loads after fn_8000F988
+// NONMATCHING 97.9%: scheduling of the lbl_803C5F74/lbl_80366B18 address loads after fn_8000F988
 #if NONMATCHING
 void fn_8004CCC0(void) {
     LayoutGroup* task = lbl_803CC1B8;
@@ -951,21 +951,15 @@ s32 fn_8004D93C(s32 arg) {
 }
 
 // .text:0x8004D990 size:0x200
-// NONMATCHING 97%: the -1/-2 constants are loaded before the arg1 branch in the original
-#if NONMATCHING
 void fn_8004D990(s8 arg0, s32 arg1, u8 table) {
     RosterSelect* rs = &lbl_803C6028;
     s32 i;
-    if (arg1 != 0) {
-        for (i = 0; i < 4; i++) {
-            rs->_78[i] = 0;
-            rs->cursor[i] = -1;
+    for (i = 0; i < 4; i++) {
+        rs->_78[i] = 0;
+        rs->cursor[i] = -1;
+        if (arg1 != 0) {
             rs->_7F[i] = -1;
-        }
-    } else {
-        for (i = 0; i < 4; i++) {
-            rs->_78[i] = 0;
-            rs->cursor[i] = -1;
+        } else {
             rs->_7F[i] = -2;
         }
     }
@@ -984,7 +978,6 @@ void fn_8004D990(s8 arg0, s32 arg1, u8 table) {
         rs->slotOwner[i] = -1;
     }
 }
-#endif
 
 // .text:0x8004DB90 size:0x75C
 // NONMATCHING 91%: register allocation and frame size differ
@@ -1420,7 +1413,7 @@ void fn_8004EEF4(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4) {
 #endif
 
 // .text:0x8004F10C size:0x858
-// NONMATCHING 99%: register allocation in the prologue
+// NONMATCHING 98.4%: register allocation in the prologue
 #if NONMATCHING
 void fn_8004F10C(void) {
     LayoutGroup* task;
@@ -2062,7 +2055,7 @@ s32 fn_80050F78(s32 arg) {
 }
 
 // .text:0x80050FE8 size:0x3A4
-// NONMATCHING 95%: same cursor-reset constant hoisting issue as fn_8004D990
+// NONMATCHING 94.8%: same cursor-reset constant hoisting issue as fn_8004D990
 #if NONMATCHING
 void fn_80050FE8(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4, s32 lockMode) {
     RosterSelect* rs;
@@ -2133,7 +2126,7 @@ void fn_80050FE8(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4, s32 lockMode) {
 #endif
 
 // .text:0x8005138C size:0x974
-// NONMATCHING 95%: register allocation; state-3 block addressing differs
+// NONMATCHING 94.7%: register allocation; state-3 block addressing differs
 #if NONMATCHING
 void fn_8005138C(void) {
     LayoutGroup* task;

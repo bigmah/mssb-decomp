@@ -132,7 +132,22 @@ void fn_3_1695A4(s32 a, u8 flag) {
     fn_80011604(a, fn_3_16917C);
 }
 
-extern u8 lbl_3_data_28928[];
+// The ribbon state (6 ribbons of 25 segments of 0x2C bytes, stride 0x44C; +0x19D4 frame counter,
+// +0x19DC character id, +0x19DD enabled), the colour table and the two draw nodes. Defined here:
+// the original addresses them through one pooled base.
+u8 lbl_3_data_28928[0x19E0] = { 0 };
+u8 lbl_3_data_2A308[6][4] = {
+    { 0xFF, 0x00, 0x00, 0xC8 }, { 0xFF, 0xFF, 0x00, 0xC8 }, { 0x00, 0xFF, 0x00, 0xC8 },
+    { 0x00, 0xFF, 0xFF, 0xC8 }, { 0x00, 0x00, 0xFF, 0xC8 }, { 0xFF, 0x00, 0xFF, 0xC8 },
+};
+typedef struct KinokoNode {
+    /*0x0*/ u32 link; // set by fn_800A7D4C
+    /*0x4*/ void (*draw)(void);
+} KinokoNode;
+KinokoNode lbl_3_data_2A320[2] = {
+    { 0, fn_3_169984 },
+    { 0, fn_3_169984 },
+};
 typedef struct {
     void* p[8];
     f32 v[3];
@@ -499,6 +514,9 @@ void fn_3_169E70(u8* base) {
     } while (i < 0x19);
 }
 
+// The original inlines fn_3_16B5B4 and copies of fn_3_169D00 into fn_3_16A07C and fn_3_16B884:
+// inlining stays on from here to the end of the file (deferred inlining reads the final state).
+#pragma dont_inline off
 // .text:0x0016A07C size:0x140C mapped:0x807A9110
 extern u8 lbl_803CBBC0; // index of the display list buffer in use
 extern void fn_800A7D4C(s32 list, void* node);
@@ -518,13 +536,45 @@ extern u8 g_Minigame[];
 #define KINOKO_RIBBON(r) (lbl_3_data_28928 + (r) * 0x44C)   // 6 ribbons of 25 segments (0x2C each)
 #define KINOKO_TICK (*(s32*)(lbl_3_data_28928 + 0x19D4))
 
+// Advances a ribbon colour index (0..5).
+#define KINOKO_NEXT_COLOR(c)      \
+    do {                          \
+        v = ++(c);                \
+        if (v >= 6) {             \
+            (c) = v - 6;          \
+        }                         \
+    } while (0)
+
+// Inline copy of fn_3_169D00 (the original expands it once per ribbon in fn_3_16A07C).
+static inline void fn_3_169D00_inline(u8* base, u32* cnt) {
+    u8* p = base + 0x420;
+    u8* q;
+    u32 i = 0x18;
+    while (i != 0 && *cnt < 0x95) {
+        if (p[0x2A] != 0) {
+            q = base + (i - 1) * 0x2C;
+            PSVECAdd(p, q, lbl_3_bss_BAE0[*cnt].v);
+            PSVECScale(lbl_3_bss_BAE0[*cnt].v, lbl_3_bss_BAE0[*cnt].v, 0.5f);
+            lbl_3_bss_BAE0[*cnt].p[0] = q + 0xC;
+            lbl_3_bss_BAE0[*cnt].p[1] = q + 0x24;
+            lbl_3_bss_BAE0[*cnt].p[2] = q + 0x18;
+            lbl_3_bss_BAE0[*cnt].p[3] = q + 0x24;
+            lbl_3_bss_BAE0[*cnt].p[4] = p + 0x18;
+            lbl_3_bss_BAE0[*cnt].p[5] = p + 0x24;
+            lbl_3_bss_BAE0[*cnt].p[6] = p + 0xC;
+            lbl_3_bss_BAE0[*cnt].p[7] = p + 0x24;
+            lbl_3_bss_BAE0[*cnt].flag = 1;
+            *cnt += 1;
+        }
+        p -= 0x2C;
+        i--;
+    }
+}
+
 // Per-frame task of the mushroom ribbon effect: trails the ribbon segments,
 // cycles their colours, rebuilds the quad list and queues the draw.
-// NONMATCHING 22%: the original inlines fn_3_16B5B4 and fn_3_169D00 for each ribbon and unrolls the
-// per-ribbon loops (this file is built with dont_inline; with inlining enabled this C scores 59%)
-// nmverify: fn_3_16B5B4 fn_3_169D00 OSPanic memset fn_8001B728 PSVECAdd PSVECScale fn_3_169E70 memcpy: original inlines
-// fn_3_16B5B4 x6 (constant id folds the switch: 6+5 fn_8001B728) and fn_3_169D00 x6, and unrolls the per-ribbon
-// memcpy/fn_3_169E70 loops; counts checked by hand
+// NONMATCHING 97%: register allocation; the original also keeps the ribbon pointers of the
+// fn_3_169E70 calls in saved registers and reuses them in the inlined fn_3_169D00 loops.
 #if NONMATCHING
 void fn_3_16A07C(void) {
     u8* dst;
@@ -532,7 +582,6 @@ void fn_3_16A07C(void) {
     u32 i;
     u32 count;
     u8 alpha;
-    s32 r;
     u8 v;
 
     if (g_d_GameSettings._55 != 0 || g_Minigame[0x1A40] != 0) { // TODO type: g_Minigame._1A40
@@ -552,23 +601,33 @@ void fn_3_16A07C(void) {
         for (i = 24; i != 0; i--) {
             alpha = (24 - i) * 8;
             src = lbl_3_data_28928 + (i - 1) * 0x2C;
-            for (r = 0; r < 6; r++) {
-                memcpy(dst + r * 0x44C, src + r * 0x44C, 0x2C);
-                dst[r * 0x44C + 0x27] = alpha;
-            }
+            memcpy(dst, src, 0x2C);
+            dst[0x27] = alpha;
+            memcpy(dst + 0x44C, src + 0x44C, 0x2C);
+            dst[0x44C + 0x27] = alpha;
+            memcpy(dst + 0x898, src + 0x898, 0x2C);
+            dst[0x898 + 0x27] = alpha;
+            memcpy(dst + 0xCE4, src + 0xCE4, 0x2C);
+            dst[0xCE4 + 0x27] = alpha;
+            memcpy(dst + 0x1130, src + 0x1130, 0x2C);
+            dst[0x1130 + 0x27] = alpha;
+            memcpy(dst + 0x157C, src + 0x157C, 0x2C);
+            dst[0x157C + 0x27] = alpha;
             dst -= 0x2C;
         }
         if (KINOKO_TICK % 5 == 0) {
-            for (r = 0; r < 6; r++) {
-                v = ++KINOKO_RIBBON(r)[0x28];
-                if (v >= 6) {
-                    KINOKO_RIBBON(r)[0x28] = v - 6;
-                }
-                v = ++KINOKO_RIBBON(r)[0x29];
-                if (v >= 6) {
-                    KINOKO_RIBBON(r)[0x29] = v - 6;
-                }
-            }
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(0)[0x28]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(0)[0x29]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(1)[0x28]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(1)[0x29]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(2)[0x28]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(2)[0x29]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(3)[0x28]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(3)[0x29]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(4)[0x28]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(4)[0x29]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(5)[0x28]);
+            KINOKO_NEXT_COLOR(KINOKO_RIBBON(5)[0x29]);
         }
         fn_3_16B5B4(KINOKO_RIBBON(0), 0x1C, KINOKO_TICK % 5);
         fn_3_16B5B4(KINOKO_RIBBON(1), 0x20, KINOKO_TICK % 5);
@@ -578,21 +637,26 @@ void fn_3_16A07C(void) {
         fn_3_16B5B4(KINOKO_RIBBON(5), 0x18, KINOKO_TICK % 5);
     }
 
-    for (r = 0; r < 6; r++) {
-        fn_3_169E70(KINOKO_RIBBON(r));
-    }
+    fn_3_169E70(KINOKO_RIBBON(0));
+    fn_3_169E70(KINOKO_RIBBON(1));
+    fn_3_169E70(KINOKO_RIBBON(2));
+    fn_3_169E70(KINOKO_RIBBON(3));
+    fn_3_169E70(KINOKO_RIBBON(4));
+    fn_3_169E70(KINOKO_RIBBON(5));
     count = 0;
     memset(lbl_3_bss_BAE0, 0, 0x1BF0);
-    for (r = 0; r < 6; r++) {
-        fn_3_169D00(KINOKO_RIBBON(r), &count);
-    }
-    fn_800A7D4C(1, lbl_3_data_28928 + 0x19F8 + lbl_803CBBC0 * 8);
+    fn_3_169D00_inline(KINOKO_RIBBON(0), &count);
+    fn_3_169D00_inline(KINOKO_RIBBON(1), &count);
+    fn_3_169D00_inline(KINOKO_RIBBON(2), &count);
+    fn_3_169D00_inline(KINOKO_RIBBON(3), &count);
+    fn_3_169D00_inline(KINOKO_RIBBON(4), &count);
+    fn_3_169D00_inline(KINOKO_RIBBON(5), &count);
+    fn_800A7D4C(1, &lbl_3_data_2A320[lbl_803CBBC0]);
 }
 #endif
 
 extern const f32 lbl_3_rodata_4040;
 extern const f64 lbl_3_rodata_4048;
-extern u8 lbl_3_data_2A308[][4];
 
 // .text:0x0016B5B4 size:0x2D0 mapped:0x807AA648
 void fn_3_16B5B4(u8* out, s8 id, int t) {
@@ -629,12 +693,48 @@ void fn_3_16B5B4(u8* out, s8 id, int t) {
     }
 }
 
+// Inline copy of fn_3_16B5B4 for fn_3_16B884 (the original inlines it there with t = 0; the 5.0f
+// literal lets k fold to a 0.0f constant).
+static inline void fn_3_16B5B4_inline(u8* out, s8 id, int t) {
+    f64 k1;
+    f32 k = (f32)t / 5.0f;
+    k1 = lbl_3_rodata_4048 - k;
+    out[0x24] = k1 * lbl_3_data_2A308[out[0x28]][0] + k * lbl_3_data_2A308[out[0x29]][0];
+    out[0x25] = k1 * lbl_3_data_2A308[out[0x28]][1] + k * lbl_3_data_2A308[out[0x29]][1];
+    out[0x26] = k1 * lbl_3_data_2A308[out[0x28]][2] + k * lbl_3_data_2A308[out[0x29]][2];
+    out[0x27] = k1 * lbl_3_data_2A308[out[0x28]][3] + k * lbl_3_data_2A308[out[0x29]][3];
+    out[0x2A] = 1;
+    if (out == NULL) {
+        OSPanic(lbl_3_rodata_4050, 0x11C, lbl_3_rodata_405C);
+    }
+    memset(out, 0, 0xC);
+    if (fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], id, out) == 0) {
+        switch (id) {
+        case 28:
+            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x1E, out);
+            break;
+        case 32:
+            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x22, out);
+            break;
+        case 7:
+            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 5, out);
+            break;
+        case 18:
+            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x13, out);
+            break;
+        case 24:
+            fn_8001B728(((s8*)lbl_3_data_28928)[0x19DC], 0x19, out);
+            break;
+        }
+    }
+}
+
 // .text:0x0016B884 size:0xB10 mapped:0x807AA918
 // Resets the six mushroom ribbons: each ribbon is 25 segments of 0x2C bytes
 // (stride 0x44C); segment +0x24 is the RGBA colour, +0x27 its alpha,
 // +0x28/+0x29 the from/to colour indices into lbl_3_data_2A308.
-// NONMATCHING 13%: the original inlines fn_3_16B5B4 (with t = 0, so k folds to 0.0f) for every ribbon;
-// this file is built with dont_inline. With inlining enabled this C scores 63% (diff: k not folded)
+// NONMATCHING 72%: the original computes 1.0 - k once (f31) for all six inlined copies and re-reads
+// the stored from/to indices with clrlslwi; register allocation differs throughout.
 #if NONMATCHING
 void fn_3_16B884(void) {
     u8* src;
@@ -644,22 +744,22 @@ void fn_3_16B884(void) {
 
     lbl_3_data_28928[0x28] = 0;
     lbl_3_data_28928[0x29] = 1;
-    fn_3_16B5B4(lbl_3_data_28928, 0x1C, 0);
+    fn_3_16B5B4_inline(lbl_3_data_28928, 0x1C, 0);
     lbl_3_data_28928[0x44C + 0x28] = 1;
     lbl_3_data_28928[0x44C + 0x29] = 2;
-    fn_3_16B5B4(lbl_3_data_28928 + 0x44C, 0x20, 0);
+    fn_3_16B5B4_inline(lbl_3_data_28928 + 0x44C, 0x20, 0);
     lbl_3_data_28928[0x898 + 0x28] = 2;
     lbl_3_data_28928[0x898 + 0x29] = 3;
-    fn_3_16B5B4(lbl_3_data_28928 + 0x898, 4, 0);
+    fn_3_16B5B4_inline(lbl_3_data_28928 + 0x898, 4, 0);
     lbl_3_data_28928[0xCE4 + 0x28] = 3;
     lbl_3_data_28928[0xCE4 + 0x29] = 4;
-    fn_3_16B5B4(lbl_3_data_28928 + 0xCE4, 7, 0);
+    fn_3_16B5B4_inline(lbl_3_data_28928 + 0xCE4, 7, 0);
     lbl_3_data_28928[0x1130 + 0x28] = 4;
     lbl_3_data_28928[0x1130 + 0x29] = 5;
-    fn_3_16B5B4(lbl_3_data_28928 + 0x1130, 0x12, 0);
+    fn_3_16B5B4_inline(lbl_3_data_28928 + 0x1130, 0x12, 0);
     lbl_3_data_28928[0x157C + 0x28] = 5;
     lbl_3_data_28928[0x157C + 0x29] = 0;
-    fn_3_16B5B4(lbl_3_data_28928 + 0x157C, 0x18, 0);
+    fn_3_16B5B4_inline(lbl_3_data_28928 + 0x157C, 0x18, 0);
 
     dst = lbl_3_data_28928 + 0x2C;
     for (i = 1; i < 25; i++) {

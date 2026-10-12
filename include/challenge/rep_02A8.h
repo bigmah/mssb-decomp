@@ -55,7 +55,7 @@ s32 fn_1_A718(void);
 
 void fn_1_A2E4(void);
 
-u32 fn_1_BF34(u32 effect);
+u32 fn_1_BF34(s16 effect);
 
 void fn_1_A634(void);
 
