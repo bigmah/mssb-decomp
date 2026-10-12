@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/gx.h>
+#else
 #ifndef _DOLPHIN_GXPERF_H
 #define _DOLPHIN_GXPERF_H
 
@@ -37,3 +41,4 @@ extern u32 GXReadClksPerVtx();
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

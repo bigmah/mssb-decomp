@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/gba.h>
+#else
 #ifndef _DOLPHIN_GBA_H
 #define _DOLPHIN_GBA_H
 
@@ -99,3 +103,4 @@ extern BOOL __GBAReset;
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <wchar.h>
+#else
 #ifndef _WCHAR_H
 #define _WCHAR_H
 
@@ -14,3 +18,4 @@ extern "C" {
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

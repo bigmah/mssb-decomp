@@ -79,6 +79,8 @@ set(MSSB_COMMON_FLAGS
     -fno-finite-loops
     -fno-common
     -ferror-limit=0
+    # Game sources declare memcpy/memset themselves: no fortify macros.
+    -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
 )
 
 # 64-bit problems: pointers must not be stored in 32-bit integers.

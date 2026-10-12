@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/gx.h>
+#else
 #ifndef _DOLPHIN_GXHARDWARE_H
 #define _DOLPHIN_GXHARDWARE_H
 
@@ -127,3 +131,4 @@ extern "C" {
 }
 #endif
 #endif
+#endif // TARGET_PC

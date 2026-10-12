@@ -857,27 +857,27 @@ void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr came
         GXClearVtxDesc();
         n = 0;
         if (setting & 3) {
-            vcd[n].mAttr = GX_VA_PNMTXIDX;
-            vcd[n].mType = setting & 3;
+            vcd[n].attr = GX_VA_PNMTXIDX;
+            vcd[n].type = setting & 3;
             n++;
         }
         desc = &vcd[n];
         for (shift = 2, attr = GX_VA_POS; attr <= GX_VA_TEX7; attr++, shift += 2) {
             type = (setting >> shift) & 3;
             if (type != 0) {
-                desc->mAttr = attr;
-                desc->mType = type;
+                desc->attr = attr;
+                desc->type = type;
                 n++;
                 desc++;
             }
         }
         type = (setting >> 26) & 3;
         if (type != 0) {
-            vcd[n].mAttr = GX_VA_NBT;
-            vcd[n].mType = type;
+            vcd[n].attr = GX_VA_NBT;
+            vcd[n].type = type;
             n++;
         }
-        vcd[n].mAttr = GX_VA_NULL;
+        vcd[n].attr = GX_VA_NULL;
         GXSetVtxDescv(vcd);
         break;
     case 3:

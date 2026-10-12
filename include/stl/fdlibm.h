@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <math.h>
+#else
 #ifndef _FDLIBM_H
 #define _FDLIBM_H
 
@@ -228,3 +232,4 @@ extern int __kernel_rem_pio2 __P((f64*, f64*, int, int, int, const int*));
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

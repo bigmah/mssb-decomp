@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/os.h>
+#else
 #ifndef _DOLPHIN_OS_OSEXCEPTION_H
 #define _DOLPHIN_OS_OSEXCEPTION_H
 
@@ -76,3 +80,4 @@ void OSSwitchFPUContext(__OSException exception, OSContext* context);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

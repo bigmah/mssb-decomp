@@ -131,10 +131,10 @@ void GXSetVtxDescv(GXVtxDescList* attrPtr)
 	GXAttrType type;
 	GXAttr attr;
 
-	for (attrPtr; attrPtr->mAttr != GX_VA_NULL; attrPtr++)
+	for (attrPtr; attrPtr->attr != GX_VA_NULL; attrPtr++)
 	{
-		type = attrPtr->mType;
-		attr = attrPtr->mAttr;
+		type = attrPtr->type;
+		attr = attrPtr->attr;
 		switch (attr)
 		{
 		case GX_VA_PNMTXIDX:
@@ -402,16 +402,16 @@ void GXGetVtxDescv(GXVtxDescList* list)
 {
 	GXAttr attr = GX_VA_PNMTXIDX;
 	do {
-		list[attr].mAttr = attr;
-		GXGetVtxDesc(attr, &list[attr].mType);
+		list[attr].attr = attr;
+		GXGetVtxDesc(attr, &list[attr].type);
 		attr++;
 	} while (attr <= GX_VA_TEX7);
 	
-	list[attr].mAttr = GX_VA_NBT;
-	GXGetVtxDesc(GX_VA_NBT, &list[attr].mType);
+	list[attr].attr = GX_VA_NBT;
+	GXGetVtxDesc(GX_VA_NBT, &list[attr].type);
 
 	attr++;
-	list[attr].mAttr = GX_VA_NULL;
+	list[attr].attr = GX_VA_NULL;
 }
 
 /**
@@ -529,8 +529,8 @@ void GXSetVtxAttrFmtv(GXVtxFmt format, GXVtxAttrFmtList* list)
 	vatB = &gx->vatB[format];
 	vatC = &gx->vatC[format];
 
-	for (; list->mAttr != GX_VA_NULL; list++) {
-		SETVAT(vatA, vatB, vatC, list->mAttr, list->mCount, list->mType, list->mFrac);
+	for (; list->attr != GX_VA_NULL; list++) {
+		SETVAT(vatA, vatB, vatC, list->attr, list->cnt, list->type, list->frac);
 	}
 
 	gx->dirtyState |= GX_DIRTY_VAT;
@@ -661,12 +661,12 @@ void GXGetVtxAttrFmtv(GXVtxFmt format, GXVtxAttrFmtList* list)
 {
 	GXAttr attr = GX_VA_POS;
 	do {
-		list->mAttr = attr;
-		GXGetVtxAttrFmt(format, attr, &list->mCount, &list->mType, &list->mFrac);
+		list->attr = attr;
+		GXGetVtxAttrFmt(format, attr, &list->cnt, &list->type, &list->frac);
 		attr += 1;
 		list++;
 	} while(attr <= GX_VA_TEX7);
-	list->mAttr = GX_VA_NULL;
+	list->attr = GX_VA_NULL;
 }
 
 /**

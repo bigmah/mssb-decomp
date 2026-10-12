@@ -3,6 +3,21 @@
 
 #include "BuildSettings.h"
 
+#ifdef TARGET_PC
+// PC build: the SDK base types come from aurora (s32/u32 are 32-bit ints,
+// size_t/NULL/bool come from the host C library).
+#include <stddef.h>
+#include <dolphin/types.h>
+typedef unsigned int uint;
+typedef long double f128;
+typedef volatile f128 vf128;
+typedef u32 unknown;
+#ifndef __cplusplus
+// The decomp's bool is a byte that can hold any value (not _Bool).
+#undef bool
+typedef unsigned char bool;
+#endif
+#else
 typedef int BOOL;
 #ifndef __cplusplus
 typedef unsigned char bool;
@@ -48,6 +63,7 @@ typedef u16 wchar_t;
 #define FALSE 0
 #define NULL  ((void*)0)
 #define nullptr 0
+#endif
 
 // Sets specific flag to 1
 #define SET_FLAG(x, val) (x |= (val))

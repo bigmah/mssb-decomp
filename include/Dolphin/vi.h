@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/vi.h>
+#else
 #ifndef _DOLPHIN_VI_H
 #define _DOLPHIN_VI_H
 
@@ -208,3 +212,4 @@ void VISet3D(); // unsure on arguments
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

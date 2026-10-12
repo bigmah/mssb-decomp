@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <math.h>
+#else
 #ifndef _MSL_MATH_API_H
 #define _MSL_MATH_API_H
 
@@ -63,3 +67,4 @@ inline int __fpclassifyd(f64 x)
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

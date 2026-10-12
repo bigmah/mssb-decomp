@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <string.h>
+#else
 #ifndef _MEM_H
 #define _MEM_H
 
@@ -19,3 +23,4 @@ void* memset(void* dest, int val, size_t count);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

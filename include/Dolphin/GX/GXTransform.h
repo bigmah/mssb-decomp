@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/gx.h>
+#else
 #ifndef _DOLPHIN_GXTRANSFORM_H
 #define _DOLPHIN_GXTRANSFORM_H
 
@@ -57,3 +61,4 @@ static inline void GXSetViewportv(f32* port) { GXSetViewport(port[0], port[1], p
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

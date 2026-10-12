@@ -1,3 +1,8 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/ar.h>
+#include <dolphin/arq.h>
+#else
 #ifndef _DOLPHIN_AR_H
 #define _DOLPHIN_AR_H
 
@@ -90,3 +95,4 @@ u16 __ARGetInterruptStatus();
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

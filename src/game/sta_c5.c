@@ -555,27 +555,27 @@ void fn_3_EE67C(struct DODisplayObj* a, f32 (*m)[4]) {
             n = 0;
             v = node->setting & 3;
             if (v != 0) {
-                list[0].mAttr = 0;
-                list[0].mType = v;
+                list[0].attr = 0;
+                list[0].type = v;
                 n = 1;
             }
             attr = 9;
             for (k = 2; k < 26; k += 2) {
                 v = (node->setting >> k) & 3;
                 if (v != 0) {
-                    list[n].mAttr = attr;
-                    list[n].mType = v;
+                    list[n].attr = attr;
+                    list[n].type = v;
                     n++;
                 }
                 attr++;
             }
             v = (node->setting >> 26) & 3;
             if (v != 0) {
-                list[n].mAttr = attr;
-                list[n].mType = v;
+                list[n].attr = attr;
+                list[n].type = v;
                 n++;
             }
-            list[n].mAttr = 0xFF;
+            list[n].attr = 0xFF;
             GXSetVtxDescv(list);
             break;
         case 3:

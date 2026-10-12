@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/gx.h>
+#else
 #ifndef _DOLPHIN_GXPIXEL_H
 #define _DOLPHIN_GXPIXEL_H
 
@@ -40,3 +44,4 @@ extern void GXSetFieldMode(GXBool doFieldMode, GXBool doHalfAspectRatio);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

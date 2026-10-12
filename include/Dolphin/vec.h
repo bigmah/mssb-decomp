@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/mtx.h>
+#else
 #ifndef _DOLPHIN_VEC_H
 #define _DOLPHIN_VEC_H
 
@@ -44,3 +48,4 @@ f32 PSVECDistance(const Vec *, const Vec *);
 #endif
 
 #endif
+#endif // TARGET_PC

@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/os.h>
+#else
 #ifndef _DOLPHIN_OS_OSMEMORY_H
 #define _DOLPHIN_OS_OSMEMORY_H
 
@@ -38,3 +42,4 @@ void OSProtectRange(u32 channel, void* addr, u32 numBytes, u32 control);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

@@ -2,7 +2,11 @@
 #define _MATH_H
 
 #include "types.h"
+#ifdef TARGET_PC
+#include <math.h> // host libm
+#else
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,12 +17,17 @@ extern "C" {
 #define IS_WITHIN_CIRCLE(x, z, radius) ((SQUARE(x) + SQUARE(z)) < SQUARE(radius))
 #define VECTOR_SQUARE_MAG(v)           (SQUARE(v.x) + SQUARE(v.y) + SQUARE(v.z))
 
+#ifdef TARGET_PC
+// Sign bit set (reads the big-endian first byte on GameCube).
+#define ispositive(x) (signbit(x) != 0)
+#else
 #define signbit(x)    ((int)(__HI(x) & 0x80000000))
 #define ispositive(x) ((((u8*)&x)[0] & 0x80) != 0)
 
 #define INFINITY (*(f32*)__float_huge)
 #define NAN      (*(f32*)__float_nan)
 #define HUGE_VAL (*(f64*)__double_huge)
+#endif
 
 #define LONG_TAU   6.2831854820251465
 #define TAU        6.2831855f
@@ -34,6 +43,12 @@ extern "C" {
 #define RAD2DEG            (57.295776f)
 #define TORADIANS(degrees) (PI * (DEG2RAD * degrees))
 
+#ifdef TARGET_PC
+static inline f32 tanf_kludge(f32 __x) { return tan((f64)__x); }
+static inline f32 sinf_kludge(f32 __x) { return sin((f64)__x); }
+static inline f32 cosf_kludge(f32 __x) { return cos((f64)__x); }
+#define FABS(x) (f32) fabs(x)
+#else
 extern int __float_nan[];
 extern int __float_huge[];
 extern int __double_huge[];
@@ -120,6 +135,7 @@ inline f32 fabsf(f32 x) { return __fabsf(x); }
 inline f32 tanf_kludge(f32 __x) { return tan((f64)__x); }
 inline f32 sinf_kludge(f32 __x) { return sin((f64)__x); }
 inline f32 cosf_kludge(f32 __x) { return cos((f64)__x); }
+#endif // TARGET_PC
 
 #ifdef __cplusplus
 };

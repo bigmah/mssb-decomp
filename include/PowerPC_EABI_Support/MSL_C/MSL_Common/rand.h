@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <stdlib.h>
+#else
 #ifndef _MSL_RAND_H
 #define _MSL_RAND_H
 
@@ -15,3 +19,4 @@ void srand(u32 seed);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

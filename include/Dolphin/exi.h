@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/exi.h>
+#else
 #ifndef _DOLPHIN_EXI_H
 #define _DOLPHIN_EXI_H
 
@@ -77,3 +81,4 @@ s32 EXIGetID(s32 channel, u32 device, u32* id);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

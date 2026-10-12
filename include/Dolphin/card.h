@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/card.h>
+#else
 #ifndef _DOLPHIN_CARD_H
 #define _DOLPHIN_CARD_H
 
@@ -410,3 +414,4 @@ CARDFatBlock* __CARDGetFatBlock(CARDControl* card);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

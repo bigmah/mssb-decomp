@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/gx.h>
+#else
 #ifndef _DOLPHIN_GXGEOMETRY_H
 #define _DOLPHIN_GXGEOMETRY_H
 
@@ -54,3 +58,4 @@ extern void GXGetCullMode(GXCullMode* mode);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

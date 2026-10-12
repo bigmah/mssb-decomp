@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <ctype.h>
+#else
 #ifndef _CTYPE_H
 #define _CTYPE_H
 
@@ -24,3 +28,4 @@ inline int toupper(int c) { return (c == -1 ? -1 : (int)__upper_map[(u8)c]); }
 }
 #endif
 #endif
+#endif // TARGET_PC

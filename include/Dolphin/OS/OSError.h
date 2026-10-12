@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/os.h>
+#else
 #ifndef _DOLPHIN_OS_OSERROR_H
 #define _DOLPHIN_OS_OSERROR_H
 
@@ -51,3 +55,4 @@ extern OSErrorHandler __OSErrorTable[16];
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

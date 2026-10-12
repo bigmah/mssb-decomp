@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/pad.h>
+#else
 #ifndef _DOLPHIN_PAD_H
 #define _DOLPHIN_PAD_H
 
@@ -111,3 +115,4 @@ extern u32 __PADFixBits;
 #endif
 
 #endif
+#endif // TARGET_PC

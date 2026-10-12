@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/db.h>
+#else
 #ifndef _DOLPHIN_DB_H
 #define _DOLPHIN_DB_H
 
@@ -32,3 +36,4 @@ static void __DBExceptionDestination(void);
 void DBPrintf(const char* format, ...);
 
 #endif
+#endif // TARGET_PC

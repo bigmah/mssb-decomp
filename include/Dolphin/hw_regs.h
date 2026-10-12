@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/hw_regs.h>
+#else
 #ifndef _DOLPHIN_HW_REGS_H
 #define _DOLPHIN_HW_REGS_H
 
@@ -247,3 +251,4 @@ extern volatile u8 BOOT_REGION_UNK AT_ADDRESS(0x800030e2);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

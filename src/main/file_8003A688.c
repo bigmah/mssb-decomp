@@ -1080,25 +1080,25 @@ void fn_8003A8A0(Model* model, Mtx viewMtx, s32 unused) {
             n = 0;
             type = cmd->param & 3;
             if (type != 0) {
-                desc[0].mType = type;
+                desc[0].type = type;
                 n = 1;
-                desc[0].mAttr = GX_VA_PNMTXIDX;
+                desc[0].attr = GX_VA_PNMTXIDX;
             }
             for (attr = GX_VA_POS, shift = 2; attr < GX_VA_TEX7 + 1; attr++, shift += 2) {
                 type = (cmd->param >> shift) & 3;
                 if (type != 0) {
-                    desc[n].mAttr = attr;
+                    desc[n].attr = attr;
                     n++;
-                    desc[n - 1].mType = type;
+                    desc[n - 1].type = type;
                 }
             }
             type = (cmd->param >> 26) & 3;
             if (type != 0) {
-                desc[n].mAttr = attr;
-                desc[n].mType = type;
+                desc[n].attr = attr;
+                desc[n].type = type;
                 n++;
             }
-            desc[n].mAttr = GX_VA_NULL;
+            desc[n].attr = GX_VA_NULL;
             GXSetVtxDescv(desc);
             break;
         case MODEL_CMD_CALLBACK:

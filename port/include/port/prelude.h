@@ -29,8 +29,6 @@ typedef va_list __va_list;
 #define __frsqrte(x) (1.0 / sqrt(x))
 #define __fres(x) (1.0f / (x))
 #define __fsel(a, b, c) ((a) >= 0 ? (b) : (c))
-#define __float_nan (__builtin_nanf(""))
-#define __float_huge (__builtin_huge_valf())
 #define __float_max (FLT_MAX)
 #define __float_epsilon (FLT_EPSILON)
 #define __cntlzw(x) ((x) == 0 ? 32 : __builtin_clz((unsigned int)(x)))
@@ -47,7 +45,7 @@ typedef va_list __va_list;
 #define stricmp strcasecmp
 
 // The game links against MSL's rand()/srand() (15-bit LCG); use the same
-// generator on PC (port/src/msl_rand.c) so RAND_MAX-based math is unchanged.
+// generator on PC (port/src/msl.c) so RAND_MAX-based math is unchanged.
 int msl_rand(void);
 void msl_srand(unsigned int seed);
 #define rand msl_rand
@@ -61,6 +59,26 @@ static inline uint32_t port_rlwimi(uint32_t a, uint32_t b, int sh, int mb, int m
                                : ((0xFFFFFFFFu >> mb) | (0xFFFFFFFFu << (31 - me)));
     return (a & ~mask) | (rot & mask);
 }
+
+// The SDK is aurora's. The decomp's include/Dolphin headers forward here under
+// TARGET_PC; on case-insensitive filesystems "Dolphin/x.h" may even resolve
+// to aurora's header directly, so include the whole SDK up front.
+#include <dolphin/types.h>
+#include <dolphin/os.h>
+#include <dolphin/gx.h>
+#include <dolphin/mtx.h>
+#include <dolphin/vi.h>
+#include <dolphin/pad.h>
+#include <dolphin/dvd.h>
+#include <dolphin/card.h>
+#include <dolphin/ar.h>
+#include <dolphin/arq.h>
+#include <dolphin/ai.h>
+#include <dolphin/dsp.h>
+#include <dolphin/si.h>
+#include <dolphin/exi.h>
+#include <dolphin/base/PPCArch.h>
+#include "port/sdk_compat.h"
 
 #include "port/endian.h"
 #include "port/ptr32.h"

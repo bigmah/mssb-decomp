@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/gx.h>
+#else
 #ifndef _DOLPHIN_GXMISC_H
 #define _DOLPHIN_GXMISC_H
 
@@ -86,3 +90,4 @@ extern u32 GXDecompressZ16(u32 z16, GXZFmt16 zFormat);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

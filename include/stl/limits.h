@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <limits.h>
+#else
 #ifndef _LIMITS_H
 #define _LIMITS_H
 #include "types.h"
@@ -102,3 +106,4 @@ public:
 } // namespace std
 #endif
 #endif
+#endif // TARGET_PC

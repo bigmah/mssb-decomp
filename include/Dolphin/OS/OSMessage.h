@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/os.h>
+#else
 #ifndef _DOLPHIN_OS_OSMESSAGE_H
 #define _DOLPHIN_OS_OSMESSAGE_H
 
@@ -49,3 +53,4 @@ BOOL OSReceiveMessage(OSMessageQueue* queue, OSMessage* msgPtr, s32 flags);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

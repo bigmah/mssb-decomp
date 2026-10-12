@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/os.h>
+#else
 #ifndef _DOLPHIN_OS_OSEXPANSION_H
 #define _DOLPHIN_OS_OSEXPANSION_H
 
@@ -91,3 +95,4 @@ void __OSEnableBarnacle(s32 chan, u32 dev);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

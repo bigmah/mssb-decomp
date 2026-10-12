@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <float.h>
+#else
 #ifndef _FLOAT_H
 #define _FLOAT_H
 
@@ -59,3 +63,4 @@ extern int __float_epsilon[];
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

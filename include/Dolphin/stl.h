@@ -5,6 +5,11 @@
 extern "C" {
 #endif // ifdef __cplusplus
 
+#ifdef TARGET_PC
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+#else
 #ifndef size_t
 typedef u32 size_t;
 #endif
@@ -27,6 +32,7 @@ DECL_SECT(".init") void* memset(void*, int, size_t);
 // #define va_arg(VA_LIST, ARG_TYPE) (*(ARG_TYPE*)) __va_arg(VA_LIST, _var_arg_typeof(ARG_TYPE))
 
 #include "stdarg.h" // va_list (shared with stl/stdarg.h)
+#endif // TARGET_PC
 
 /**
  * @note Address: N/A
@@ -35,6 +41,7 @@ DECL_SECT(".init") void* memset(void*, int, size_t);
 #define DEFINE__PRINT(unit) \
 	inline static void _Print(char*, ...) { printf(unit); }
 
+#ifndef TARGET_PC
 int printf(const char*, ...);
 int vprintf(const char*, va_list);
 int sprintf(char*, char*, ...);
@@ -45,6 +52,7 @@ int vsprintf(char* s, const char* format, va_list arg);
 void* memcpy(void* dest, const void* src, size_t n);
 int memcmp(const void* a, const void* b, size_t n);
 void* memset(void* str, int c, size_t n);
+#endif // TARGET_PC
 
 #ifdef __cplusplus
 };

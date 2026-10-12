@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/base/PPCArch.h>
+#else
 #ifndef _DOLPHIN_PPCARCH_H
 #define _DOLPHIN_PPCARCH_H
 
@@ -102,3 +106,4 @@ DECL_SECT(".dtors") extern voidfunctionptr _dtors[];
 #endif
 
 #endif
+#endif // TARGET_PC

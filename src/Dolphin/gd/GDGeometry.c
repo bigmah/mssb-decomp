@@ -25,89 +25,89 @@ void GDSetVtxDescv(GXVtxDescList* lists)
 	u32 v16 = 0; // r16
 	u32 v17 = 0; // r15
 
-	while (lists->mAttr != GX_VA_NULL) {
-		switch (lists->mAttr) {
+	while (lists->attr != GX_VA_NULL) {
+		switch (lists->attr) {
 		case GX_VA_PNMTXIDX:
-			v4 = lists->mType;
+			v4 = lists->type;
 			break;
 		case GX_VA_TEX0MTXIDX:
-			v5 = v5 & ~0x1 | lists->mType;
+			v5 = v5 & ~0x1 | lists->type;
 			break;
 		case GX_VA_TEX1MTXIDX:
-			v5 = v5 & ~0x2 | lists->mType << 1;
+			v5 = v5 & ~0x2 | lists->type << 1;
 			break;
 		case GX_VA_TEX2MTXIDX:
-			v5 = v5 & ~0x4 | lists->mType << 2;
+			v5 = v5 & ~0x4 | lists->type << 2;
 			break;
 		case GX_VA_TEX3MTXIDX:
-			v5 = v5 & ~0x8 | lists->mType << 3;
+			v5 = v5 & ~0x8 | lists->type << 3;
 			break;
 		case GX_VA_TEX4MTXIDX:
-			v5 = v5 & ~0x10 | lists->mType << 4;
+			v5 = v5 & ~0x10 | lists->type << 4;
 			break;
 		case GX_VA_TEX5MTXIDX:
-			v5 = v5 & ~0x20 | lists->mType << 5;
+			v5 = v5 & ~0x20 | lists->type << 5;
 			break;
 		case GX_VA_TEX6MTXIDX:
-			v5 = v5 & ~0x40 | lists->mType << 6;
+			v5 = v5 & ~0x40 | lists->type << 6;
 			break;
 		case GX_VA_TEX7MTXIDX:
-			v5 = v5 & ~0x80 | lists->mType << 7;
+			v5 = v5 & ~0x80 | lists->type << 7;
 			break;
 
 		case GX_VA_POS:
-			v6 = lists->mType;
+			v6 = lists->type;
 			break;
 		case GX_VA_NRM:
-			if (lists->mType != GX_NONE) {
+			if (lists->type != GX_NONE) {
 				v1 = 1;
-				v7 = lists->mType;
+				v7 = lists->type;
 			}
 			break;
 		case GX_VA_NBT:
-			if (lists->mType != GX_NONE) {
+			if (lists->type != GX_NONE) {
 				v1 = 2;
-				v7 = lists->mType;
+				v7 = lists->type;
 			}
 			break;
 		case GX_VA_CLR0:
-			v8 = lists->mType;
+			v8 = lists->type;
 			v2 += (v8 != 0);
 			break;
 		case GX_VA_CLR1:
-			v9 = lists->mType;
+			v9 = lists->type;
 			v2 += (v9 != 0);
 			break;
 		case GX_VA_TEX0:
-			v10 = lists->mType;
+			v10 = lists->type;
 			v3 += (v10 != 0);
 			break;
 		case GX_VA_TEX1:
-			v11 = lists->mType;
+			v11 = lists->type;
 			v3 += (v11 != 0);
 			break;
 		case GX_VA_TEX2:
-			v12 = lists->mType;
+			v12 = lists->type;
 			v3 += (v12 != 0);
 			break;
 		case GX_VA_TEX3:
-			v13 = lists->mType;
+			v13 = lists->type;
 			v3 += (v13 != 0);
 			break;
 		case GX_VA_TEX4:
-			v14 = lists->mType;
+			v14 = lists->type;
 			v3 += (v14 != 0);
 			break;
 		case GX_VA_TEX5:
-			v15 = lists->mType;
+			v15 = lists->type;
 			v3 += (v15 != 0);
 			break;
 		case GX_VA_TEX6:
-			v16 = lists->mType;
+			v16 = lists->type;
 			v3 += (v16 != 0);
 			break;
 		case GX_VA_TEX7:
-			v17 = lists->mType;
+			v17 = lists->type;
 			v3 += (v17 != 0);
 			break;
 

@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/si.h>
+#else
 #ifndef _DOLPHIN_SI_H
 #define _DOLPHIN_SI_H
 
@@ -85,3 +89,4 @@ u32 SIProbe(s32 chan);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

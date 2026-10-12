@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/mtx.h>
+#else
 #ifndef _DOLPHIN_MTX_H
 #define _DOLPHIN_MTX_H
 
@@ -120,3 +124,4 @@ static inline void MTXSetPosition(Mtx mtx, const Vec* pos)
 #endif
 
 #endif
+#endif // TARGET_PC

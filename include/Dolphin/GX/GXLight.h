@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: the SDK comes from aurora.
+#include <dolphin/gx.h>
+#else
 #ifndef _DOLPHIN_GXLIGHT_H
 #define _DOLPHIN_GXLIGHT_H
 
@@ -65,3 +69,4 @@ extern void GXLoadLightObjIndx(u32 objIndex, GXLightID light);
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC

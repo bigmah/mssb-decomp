@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <string.h>
+#else
 #ifndef _RUNTIME_MEM_H
 #define _RUNTIME_MEM_H
 #include "types.h"
@@ -13,3 +17,4 @@ DECL_SECT(".init") void* memset(void* dest, int val, size_t count);
 }
 #endif
 #endif
+#endif // TARGET_PC

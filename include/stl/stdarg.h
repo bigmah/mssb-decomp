@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <stdarg.h>
+#else
 
 #ifndef _STDARG_H_
 #define _STDARG_H_
@@ -37,3 +41,4 @@ typedef __builtin_va_list va_list;
 }
 #endif
 #endif
+#endif // TARGET_PC

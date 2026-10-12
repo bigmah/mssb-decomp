@@ -1,3 +1,7 @@
+#ifdef TARGET_PC
+// PC build: use the host/aurora headers instead.
+#include <stdlib.h>
+#else
 #ifndef _STDLIB_H
 #define _STDLIB_H
 
@@ -18,3 +22,4 @@ extern "C" {
 #endif // ifdef __cplusplus
 
 #endif
+#endif // TARGET_PC
