@@ -958,7 +958,6 @@ config.libs = [
             Object(NonMatching, "auto_00_00001254_text", source="menus/auto_00_00001254_text.c"),
             Object(NonMatching, "auto_00_0004B1AC_text", source="menus/auto_00_0004B1AC_text.c"),
             Object(Matching, "auto_00_00016870_text", source="menus/auto_00_00016870_text.c"),
-            Object(NonMatching, "auto_00_000194BC_text", source="menus/auto_00_000194BC_text.c"),
             Object(NonMatching, "auto_00_00000D08_text", source="menus/auto_00_00000D08_text.c"),
             Object(NonMatching, "auto_00_0001B1BC_text", source="menus/auto_00_0001B1BC_text.c"),
             Object(NonMatching, "auto_00_00000000_text", source="menus/auto_00_00000000_text.c"),
