@@ -497,6 +497,7 @@ game/rep_3BD8.c:
 game/rep_3C28.c:
 	.text       start:0x0015F574 end:0x0015F648
 	.rodata     start:0x00003C28 end:0x00003C7C
+	.data       start:0x00027C98 end:0x00027D58
 
 game/rep_3C80.c:
 	.text       start:0x0015F648 end:0x0015F874
