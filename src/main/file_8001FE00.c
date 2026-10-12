@@ -141,9 +141,7 @@ void fn_8001FE00(LayoutGroup* group) {
 }
 #endif
 
-// NONMATCHING 99%: the li r9,0 / li r29,0 initialisations are scheduled in the other order
 // .text:0x80020048 size:0x1D0
-#if NONMATCHING
 s32 calledWhenStartingMatch(void) {
     WeightedPick picks[10];
     s32 i;
@@ -159,9 +157,10 @@ s32 calledWhenStartingMatch(void) {
         picks[i].weight = 0;
         picks[i].index = -1;
     }
-    total = 0;
+    i = 0;
     count = 0;
-    for (i = 0; i < 17; i++) {
+    total = 0;
+    for (; i < 17; i++) {
         if ((lbl_800E86BC[i].stadium < 0 || g_d_GameSettings.StadiumID == lbl_800E86BC[i].stadium) &&
             lbl_8037169C.lastPick != i) {
             if (g_d_GameSettings._00 & (1 << i)) {
@@ -184,7 +183,6 @@ s32 calledWhenStartingMatch(void) {
     }
     return 0;
 }
-#endif
 
 // .text:0x80020218 size:0x34
 s32 fn_80020218(void) {
