@@ -8,8 +8,8 @@
 // MSSB texture image header: one 0x20 entry of a texture archive (TexArchive),
 // used for GXInitTexObj and texture blits.
 typedef struct TexImage {
-    /* 0x00 */ u8* data;
-    /* 0x04 */ void* tlut;       // non-NULL: color-indexed texture
+    /* 0x00 */ PTR32(u8) data;
+    /* 0x04 */ PTR32(void) tlut; // non-NULL: color-indexed texture
     /* 0x08 */ u16 height;
     /* 0x0A */ u16 width;
     /* 0x0C */ u8 wrapS;

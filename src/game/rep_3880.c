@@ -3829,11 +3829,11 @@ void fn_3_156970(Vec* pos, u32 color, TexImage* tex) {
     GXSetCurrentMtx(GX_PNMTX0);
     if (lbl_3_bss_B854 != tex) {
         if (tex->tlut != NULL) {
-            GXInitTexObjCI(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
-            GXInitTlutObj(&tlutObj, tex->tlut, tex->tlutFormat, tex->tlutEntries);
+            GXInitTexObjCI(&texObj, PTR32_GET(u8, tex->data), tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
+            GXInitTlutObj(&tlutObj, PTR32_GET(void, tex->tlut), tex->tlutFormat, tex->tlutEntries);
             GXLoadTlut(&tlutObj, 0);
         } else {
-            GXInitTexObj(&texObj, tex->data, tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+            GXInitTexObj(&texObj, PTR32_GET(u8, tex->data), tex->width, tex->height, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
         }
         GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, tex->minLOD, tex->maxLOD, tex->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
         GXLoadTexObj(&texObj, GX_TEXMAP0);

@@ -13,7 +13,13 @@ extern void fn_800A7D4C(s32 list, void* node);
 extern u8 lbl_8023DD80[];
 
 // .data 0x800F7A40..0x800F7AB0 (file_8003A688's 32-byte aligned TLUT follows at 0x800F7AC0)
+#ifdef TARGET_PC
+// PTR32 fields can't hold a static address at compile time: set at startup.
+TexImage lbl_800F7A40 = {0, 0, 448, 640, 0, 0, 1, 1, 0.0f, 0, 0, 0, 4, 0, 0, 0, 0, {0, 0}};
+__attribute__((constructor)) static void port_init_800F7A40(void) { PTR32_SET(lbl_800F7A40.data, lbl_8023DD80); }
+#else
 TexImage lbl_800F7A40 = {lbl_8023DD80, NULL, 448, 640, 0, 0, 1, 1, 0.0f, 0, 0, 0, 4, 0, 0, 0, 0, {0, 0}};
+#endif
 ScreenFxNode lbl_800F7A60[2] = {
     {0, fn_80039FF8, {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {0, 0}}},
     {0, fn_80039FF8, {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {0, 0}}},
