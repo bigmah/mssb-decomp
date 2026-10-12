@@ -7,8 +7,14 @@ extern u8 lbl_3_data_28908[12];
 extern u8 lbl_3_data_28914[10];
 extern Bss35154View lbl_3_common_bss_35154;
 
-// .text:0x001690C0 size:0x90 mapped:0x807A8154
 // One-shot scene task: resets lbl_3_data_28908 and clears bit 1 of each lbl_3_data_28914 entry.
+
+// .text:0x00169150 size:0x2C mapped:0x807A81E4
+void fn_3_169150(void) {
+    fn_800B0A5C_insertQueue(fn_3_1690C0, 0);
+}
+
+// .text:0x001690C0 size:0x90 mapped:0x807A8154
 void fn_3_1690C0(void) {
     s32 i;
     u8* p;
@@ -28,7 +34,3 @@ void fn_3_1690C0(void) {
     fn_800B0A14_removeQueue(p);
 }
 
-// .text:0x00169150 size:0x2C mapped:0x807A81E4
-void fn_3_169150(void) {
-    fn_800B0A5C_insertQueue(fn_3_1690C0, 0);
-}

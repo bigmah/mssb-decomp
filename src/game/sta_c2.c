@@ -28,7 +28,35 @@ extern f32 lbl_3_rodata_26A8;
 extern f32 lbl_3_rodata_26AC;
 extern f32 lbl_3_rodata_26B0;
 extern f32 lbl_3_rodata_26B8;
-extern u8 lbl_3_bss_A8D0[];
+// .bss (laid out last-defined-first)
+void* lbl_3_bss_ADD0[0xC];
+u8 lbl_3_bss_A8D0[0x500];
+u8 lbl_3_bss_A8A8[0x28];
+u8* lbl_3_bss_A8A4;
+u8 lbl_3_bss_A898[0xC];
+Vec lbl_3_bss_A820[0xA];
+u8 lbl_3_bss_A81C;
+u8 lbl_3_bss_A034[0x7E8];
+f32 lbl_3_bss_A030;
+u8 lbl_3_bss_A02D;
+u8 lbl_3_bss_A02C;
+u8 lbl_3_bss_A02B;
+u8 lbl_3_bss_A02A;
+static u8 lbl_3_bss_A029; // unused (alignment gap in the original)
+static u8 lbl_3_bss_A028; // unused (alignment gap in the original)
+u8 lbl_3_bss_A027;
+u8 lbl_3_bss_A026;
+u8 lbl_3_bss_A025;
+u8 lbl_3_bss_A024;
+u8 lbl_3_bss_A023;
+u8 lbl_3_bss_A022;
+static u8 lbl_3_bss_A021; // unused (alignment gap in the original)
+u8 lbl_3_bss_A020;
+u8* lbl_3_bss_A01C;
+static u8 lbl_3_bss_A01B; // unused (alignment gap in the original)
+static u8 lbl_3_bss_A01A; // unused (alignment gap in the original)
+static u8 lbl_3_bss_A019; // unused (alignment gap in the original)
+u8 lbl_3_bss_A018[0x1];
 typedef struct { f32 f0, f4, f8, f0C[6], f24[3], f30[3]; s32 n3C; } CC438Ent;
 extern void fn_3_8B890(s32);
 extern s32 lbl_3_data_182C4;
@@ -38,7 +66,6 @@ extern f32 lbl_3_rodata_26A8;
 extern f32 lbl_3_rodata_26AC;
 extern f32 lbl_3_rodata_26B0;
 extern f32 lbl_3_rodata_26B8;
-extern u8 lbl_3_bss_A8D0[];
 extern f32 shortAngleToRad(s16);
 extern u8 g_Minigame[];
 extern f32 lbl_3_rodata_26B4;
@@ -78,13 +105,11 @@ extern const f32 lbl_3_rodata_275C;
 extern const f32 lbl_3_rodata_2760;
 extern const f64 lbl_3_rodata_2768;
 extern const Vec lbl_3_rodata_24A0[];
-extern void* lbl_3_bss_ADD0[];
 extern const f32 lbl_3_rodata_2730;
 extern const f64 lbl_3_rodata_2788;
 extern const f64 lbl_3_rodata_2790;
 extern const f32 lbl_3_rodata_2798;
 extern const f32 lbl_3_rodata_279C;
-extern f32 lbl_3_bss_A030;
 extern s32 lbl_3_data_182C0;
 extern const f32 lbl_3_rodata_27B8;
 extern void fn_3_65F4(void);
@@ -109,7 +134,6 @@ typedef struct PEnt {
     s16 s48, s4A;
     u8 c4C, c4D, c4E, c4F;
 } PEnt;
-extern u8 lbl_3_bss_A018[];
 extern u8* lbl_803CC1B8;
 extern void fn_800528C0(s16* sx, s16* sy, f32 x, f32 y, f32 z);
 // Matched callers evaluate the floats first; the matching build calls through a
@@ -140,7 +164,6 @@ extern void fn_80033620(void* e);
 extern void GXSetBlendMode(s32, s32, s32, s32);
 extern void GXSetZMode(s32, s32, s32);
 extern u8 lbl_800E8754[];
-extern u8 lbl_3_bss_A034[];
 typedef struct { u8 a, b, b2, b3; u8 pad[0x1A]; } S1E;
 extern S1E lbl_3_data_8404[];
 typedef struct { u8 a, b, b2, b3; } S2;
@@ -169,7 +192,6 @@ extern const f32 lbl_3_rodata_2698;
 extern const f32 lbl_3_rodata_26C8;
 extern const f32 lbl_3_rodata_2678;
 extern u8 lbl_3_data_81DC[];
-extern Vec lbl_3_bss_A820[];
 extern u8 g_FieldingLogic[];
 extern u8 g_GameLogic[];
 extern u8 g_d_GameSettings[];
@@ -180,7 +202,6 @@ extern s32 fn_3_8BBC4(s32, f32*, f32*, s32);
 extern Vec lbl_3_rodata_25B0;
 extern Vec lbl_3_rodata_25BC;
 extern Vec lbl_3_rodata_24E8[];
-extern u8 lbl_3_bss_A8A8[];
 typedef struct { u8 b[9]; } B9;
 extern B9 lbl_3_rodata_2544;
 extern B9 lbl_3_rodata_255C;
@@ -205,8 +226,6 @@ extern f32 lbl_3_data_188E0;
 extern f32 lbl_3_rodata_2694;
 extern const f32 lbl_3_rodata_2698;
 extern u8 lbl_80371C30[];
-extern u8 lbl_3_bss_A898[];
-extern u8* lbl_3_bss_A8A4;
 extern s32 fn_3_9FB8C(f32, f32);
 extern int fn_3_253A4(s8, s16);
 extern void AnimateActorBones(void*);
@@ -835,7 +854,6 @@ void fn_3_CCC24(void** files, u32* idx) {
 #endif
 
 // .text:0x000CD958 size:0x10 mapped:0x8070C9EC
-extern u8 lbl_3_bss_A81C;
 
 void fn_3_CD958(void) {
     lbl_3_bss_A81C = 1;
@@ -936,7 +954,6 @@ void fn_3_CDB48(void* pv, u8* h) {
 }
 
 // .text:0x000CDD90 size:0x214 mapped:0x8070CE24
-extern u8* lbl_3_bss_A01C;
 extern const f64 lbl_3_rodata_2710;
 extern const f64 lbl_3_rodata_2718;
 extern const f32 lbl_3_rodata_2720;
@@ -3297,8 +3314,6 @@ typedef struct C2SortMgr {
     /*0x6C*/ u8 sortByDepth;
 } C2SortMgr;
 
-extern u8 lbl_3_bss_A026;
-extern u8 lbl_3_bss_A027;
 
 extern void* fn_800ACF34(s32 align, s32 size);
 extern void fn_800ACF14(void* block);
@@ -3424,7 +3439,6 @@ void fn_3_D55EC(MtxPtr view, C2SortEnt* out) {
 typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } D5B6CCtl;
 typedef struct { D5B6CCtl* arr; u8 pad0[0x3C - 4]; u32* p3C; u16* p40; u32* p44; u8* p48; } D5B6CBss;
 typedef struct { u32 w[17]; } D5B6CCpy;
-extern u8 lbl_3_bss_A020;
 extern void fn_3_B8414(void*, void*);
 extern void fn_3_B8464(void*, void*);
 void fn_3_D5B6C(s32* a) {
@@ -3450,8 +3464,6 @@ typedef struct { u8 pad[0xC]; u8 fC; u8 padD; u8 fE; u8 padF; } D5C8CEnt;
 typedef struct { u8 pad[0x78]; u32 f78; u8 pad2[0xE8 - 0x7C]; } D5C8CCtl;
 typedef struct { D5C8CCtl* arr; u8 pad0[0x3C - 4]; u32* p3C; u16* p40; u32* p44; u8* p48; } D5C8CBss;
 extern const f32 lbl_3_rodata_2758;
-extern u8 lbl_3_bss_A022;
-extern u8 lbl_3_bss_A023;
 extern void fn_3_B8574(void);
 void fn_3_D5C8C(s32* a) {
     Mtx m2;
@@ -3501,8 +3513,6 @@ void fn_3_D5C8C(s32* a) {
 // .text:0x000D5E80 size:0x240 mapped:0x80714F14
 typedef struct { f32 x, y, z; u8 fC; u8 padD; u8 fE; u8 padF; u8 pad[0xC]; } D5E80Ent;
 extern D5E80Ent lbl_3_data_1849C[];
-extern u8 lbl_3_bss_A024;
-extern u8 lbl_3_bss_A025;
 extern const f32 lbl_3_rodata_2664;
 void fn_3_D5E80(s32* a) {
     Mtx m2;
@@ -3550,8 +3560,6 @@ void fn_3_D5E80(s32* a) {
 }
 
 // .text:0x000D60C0 size:0x230 mapped:0x80715154
-extern u8 lbl_3_bss_A02A;
-extern u8 lbl_3_bss_A02B;
 extern const f64 lbl_3_rodata_27D0;
 void fn_3_D60C0(s32* a) {
     Mtx m2;
@@ -3596,8 +3604,6 @@ void fn_3_D60C0(s32* a) {
 }
 
 // .text:0x000D62F0 size:0x224 mapped:0x80715384
-extern u8 lbl_3_bss_A02C;
-extern u8 lbl_3_bss_A02D;
 extern const f32 lbl_3_rodata_28A4;
 #pragma dont_inline off
 // Adds one draw group (with its shadow at +-14.25) per object lbl_3_bss_A02C..+A02D.
@@ -3696,10 +3702,6 @@ void fn_3_D6514(void) {
 #if NONMATCHING
 extern void fn_3_B939C(void);
 extern void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx);
-extern u8 lbl_3_bss_A022;
-extern u8 lbl_3_bss_A023;
-extern u8 lbl_3_bss_A02A;
-extern u8 lbl_3_bss_A02B;
 
 // Stadium objects of this file, in lbl_3_data_182C0 (lists end at type 0xD):
 //   +0x008 T52 mains[2]     (chained creatures)        +0x0A4 T34 spinners[5]

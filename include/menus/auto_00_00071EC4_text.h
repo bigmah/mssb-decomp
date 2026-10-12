@@ -94,5 +94,6 @@ void fn_2_776A0(u8* o, s32 port);
 void fn_2_845A8(void);
 void fn_2_7AE3C(u8* o, s32 index);
 void fn_2_7BFF8(u8* o, s32 index);
+void fn_2_854B0(void);
 
 #endif

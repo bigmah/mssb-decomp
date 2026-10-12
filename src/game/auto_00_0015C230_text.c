@@ -56,3 +56,4 @@ void fn_3_15C230(BallQuad* q) {
     GXTexCoord2s16(0, 1);
     (*q->counter)--;
 }
+
