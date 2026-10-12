@@ -2190,11 +2190,9 @@ void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm) {
 #endif
 
 // .text:0x8002E3DC size:0x44C
-// NONMATCHING 99%: register allocation only (same instructions)
-#if NONMATCHING
 s32 fn_8002E3DC(Emitter* e) {
-    s32 alive = 0;
     Particle* p = e->particles;
+    s32 alive = 0;
     f32 size;
 
     GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
@@ -2214,7 +2212,6 @@ s32 fn_8002E3DC(Emitter* e) {
     } while (p != NULL);
     return alive == 0;
 }
-#endif
 
 // .text:0x8002E828 size:0x478
 // NONMATCHING 99%: float register allocation of the inlined corner setup
