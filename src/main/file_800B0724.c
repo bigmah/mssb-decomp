@@ -1135,3 +1135,138 @@ void fn_800B2C08(GameActor* actor, u16 bone) {
 void fn_800B2C10(GameActor* actor, u16 index, Vec* v) {
     PSMTXMultVec(actor->forwardMtxArray[index], v, v);
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x801112F0..0x80111640
+SoundConfig lbl_801112F0 = {64, 48, 16, 1, 0, 0x800000}; // NOTE: type size 0xC != symbol size 0x10
+void PrepFilesToBeLoaded(void);
+SceneTask lbl_80111300 = {
+    PrepFilesToBeLoaded,
+    NULL,
+    NULL,
+    NULL,
+    0,
+    0,
+    {NULL},
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    {0, 0, 0, 0},
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+};
+SpriteDrawCmd lbl_80111340[2][24] = {
+    {
+        {0, fn_800B2240, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+    },
+    {
+        {0, fn_800B2240, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+        {0, NULL, NULL},
+    },
+};
+u8 lbl_80111580[32] = {
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+};
+s16 lbl_801115A0[4][2] = {{0, 0}, {0, 1}, {1, 1}, {1, 0}};
+Mtx44 lbl_801115B0 = {
+    {0.003125f, 0.0f, 0.0f, -1.0f},
+    {0.0f, -0.004464286f, 0.0f, 1.0f},
+    {0.0f, 0.0f, -5.9604645e-08f, -1.0f},
+    {0.0f, 0.0f, 0.0f, 1.0f},
+};
+QuadVtx lbl_801115F0[4] = {
+    {{0.0f, 0.0f, -16777215.0f}, 0, 0, 0},
+    {{0.0f, 448.0f, -16777215.0f}, 0, 0, 1},
+    {{640.0f, 448.0f, -16777215.0f}, 0, 1, 1},
+    {{640.0f, 0.0f, -16777215.0f}, 0, 1, 0},
+};
+
+// .bss 0x802FE8A0..0x803009F8 (MWCC lays these out in reverse definition order)
+// lbl_802FE918 (.proj), lbl_802FEBF8 (.wanted) and lbl_802FF978 (.committed) are
+// inside lbl_802FE8B8. TODO port: fn_800B24D4 still names lbl_802FEBF8/lbl_802FE918
+// (the original references them as separate symbols).
+SpriteWork lbl_802FE8B8;
+SndHeap lbl_802FE8A0[2];
+
+// .sdata 0x803CBB10..0x803CBB48
+SndHeap* lbl_803CBB10 = lbl_802FE8A0;
+u8 lbl_803CBB18[8] = {97, 40, 59, 240, 64, 0, 0, 0};
+u8 lbl_803CBB20[8] = {97, 40, 59, 240, 65, 0, 0, 0};
+s32 lbl_803CBB28 = 640;
+s32 lbl_803CBB2C = 480;
+s32 lbl_803CBB30 = 1;
+SpriteState* lbl_803CBB34 = lbl_802FE8B8.wanted;
+SpriteState* lbl_803CBB38 = lbl_802FE8B8.committed;
+s32 lbl_803CBB3C = 1024;
+SpriteProj* lbl_803CBB40 = lbl_802FE8B8.proj;
+
+// .sbss 0x803CC1B0..0x803CC1E8 (MWCC lays these out in reverse definition order)
+GDCurrentDL* lbl_803CC1E4;
+s32 lbl_803CC1E0;
+s32* lbl_803CC1D8[2];
+s32 lbl_803CC1D4;
+s32 lbl_803CC1D0;
+s32 lbl_803CC1CC;
+s32 lbl_803CC1C8;
+s32 lbl_803CC1C4;
+GDCurrentDL* lbl_803CC1C0;
+SceneTask* lbl_803CC1B8;
+u16 lbl_803CC1B4;
+u16 lbl_803CC1B2;
+u16 lbl_803CC1B0;
+
