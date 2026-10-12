@@ -1,4 +1,6 @@
 #include "challenge/rep_02A8.h"
+#define REP_HEADER_FN repHeader_02A8
+#include "header_rep_inline.h"
 #include "challenge/rep_0010.h"
 
 
@@ -77,63 +79,24 @@ extern u32 sndRemoveListener(SND_LISTENER* li);
 extern u32 sndUpdateListener(SND_LISTENER* li, SND_FVECTOR* pos, SND_FVECTOR* dir, SND_FVECTOR* heading,
                              SND_FVECTOR* up, u8 vol, SND_ROOM* room);
 
-// fn_1_A464, size:0x1D0
-void fn_1_A464(void) {
-    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
-    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
-    if (pressed & 0x100) {
-        fn_1_BEF4((s16)lbl_1_data_1CA8);
-        lbl_1_data_1CA8 = fn_1_BF34(lbl_1_data_1CA4);
-    } else if (pressed & 0x1200) {
-        fn_1_A718();
-        fn_800ACFB0(lbl_800EF808[4]);
-        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
-    } else if (held & 1) {
-        if (held & 0x800) {
-            lbl_1_data_1CA4 -= 10;
-        } else {
-            lbl_1_data_1CA4--;
-        }
-        if (lbl_1_data_1CA4 < 0x1AD) {
-            lbl_1_data_1CA4 = 0x1B6;
-        }
-    } else if (held & 2) {
-        s16 next = lbl_1_data_1CA4 + 1;
-        if (held & 0x800) {
-            next = lbl_1_data_1CA4 + 10;
-        }
-        lbl_1_data_1CA4 = next;
-        if (next > 0x1B6) {
-            lbl_1_data_1CA4 = 0x151;
-        }
-    }
+extern const char lbl_1_rodata_5C8[];
+extern const char lbl_1_rodata_5C0[];
+extern const char lbl_1_rodata_5D0[];
+
+static inline struct SoundGroupData* SoundOptionValue(s32 index) {
+    return lbl_800EF808[index + 1];
 }
 
-// fn_1_A348, size:0x11C
-void fn_1_A348(void) {
-    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
-    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
-    if (held & 8) {
-        lbl_1_common_bss_49A78[0] = (lbl_1_common_bss_49A78[0] + 4) % 5;
-        return;
-    }
-    if (held & 4) {
-        lbl_1_common_bss_49A78[0] = (lbl_1_common_bss_49A78[0] + 6) % 5;
-        return;
-    }
-    if (pressed & 0x100) {
-        *(void (**)(void))((u8*)lbl_803CC1B8) = lbl_1_data_1C8C[lbl_1_common_bss_49A78[0]];
-        lbl_1_common_bss_49A78[1] = 0;
-        return;
-    }
-    if (pressed & 0x1200) {
-        lbl_1_bss_2FDA[0] = 0;
-        lbl_1_bss_2FD9[0] = 0;
-        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_C2A4;
-    }
-}
+extern const f32 lbl_1_rodata_5E8; // 127.0f
+extern const f32 lbl_1_rodata_5EC; // 0.0f
+extern const f32 lbl_1_rodata_5F0; // 100.0f
+extern const f32 lbl_1_rodata_5F4; // 10.0f
+extern const f32 lbl_1_rodata_5F8; // 1.0f
+extern const f32 lbl_1_rodata_5FC; // -1.0f
+extern const f64 lbl_1_rodata_600; // 0.1
+extern const f64 lbl_1_rodata_608; // 10.0
 
-// fn_1_C188, size:0x11C
+// .text:0x0000C188 size:0x11C
 void fn_1_C188(void) {
     u8* queue = ((u8*)lbl_803CC1B8);
     switch ((s32)lbl_1_bss_2FDD[0]) {
@@ -168,70 +131,38 @@ void fn_1_C188(void) {
     }
 }
 
-// fn_1_B4A4, size:0x114
-void fn_1_B4A4(void) {
-    u8* queue = ((u8*)lbl_803CC1B8);
-    switch ((s32)lbl_1_bss_2FE8[0]) {
-    case 0: {
-        u8* child;
-        *(s16*)(queue + 0x10) = 0;
-        child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
-        child[0x18] = 0;
-        child[0x19] = 0x2A;
-        *(s32 (**)(void))(child + 0x14) = fn_1_A7E4;
-        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
-        lbl_1_bss_2FE8[0]++;
-        break;
-    }
-    case 1:
-        if (*(s16*)(queue + 0x10) != 0) {
-            ((u8*)lbl_800EF808)[0x396] = 2;
-            sndOutputMode(SND_OUTPUTMODE_SURROUND);
-            *(s16*)(queue + 0x10) = 0;
-            lbl_1_bss_2FE8[0]++;
+// .text:0x0000BFB0 size:0x1D8
+void fn_1_BFB0(void) {
+    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
+    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (pressed & 0x100) {
+        u16 effect = lbl_1_bss_3056[0] % 13 + lbl_1_data_17C4[lbl_1_bss_3056[0] / 13];
+        fn_1_BF34(effect);
+    } else if (pressed & 0x1200) {
+        fn_1_A718();
+        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
+    } else if (held & 1) {
+        if (held & 0x800) {
+            lbl_1_bss_3056[0] -= 10;
+        } else {
+            lbl_1_bss_3056[0]--;
         }
-        break;
-    case 2:
-        *(void (**)(void))queue = fn_1_A95C;
-        lbl_1_common_bss_49994.active = 0;
-        lbl_1_bss_2FE8[0] = 0;
-        break;
+        if (lbl_1_bss_3056[0] < 0) {
+            lbl_1_bss_3056[0] = 0xE9;
+        }
+    } else if (held & 2) {
+        s16 next = lbl_1_bss_3056[0] + 1;
+        if (held & 0x800) {
+            next = lbl_1_bss_3056[0] + 10;
+        }
+        lbl_1_bss_3056[0] = next;
+        if (next > 0xE9) {
+            lbl_1_bss_3056[0] = 0;
+        }
     }
 }
 
-// fn_1_A634, size:0xE0
-void fn_1_A634(void) {
-    u8* queue = ((u8*)lbl_803CC1B8);
-    switch ((s32)lbl_1_bss_2FEE[0]) {
-    case 0: {
-        u8* child;
-        *(s16*)(queue + 0x10) = 0;
-        child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
-        child[0x18] = 0;
-        child[0x19] = 3;
-        *(s32 (**)(void))(child + 0x14) = fn_1_A838;
-        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
-        lbl_1_bss_2FEE[0]++;
-        break;
-    }
-    case 1:
-        if (*(s16*)(queue + 0x10) != 0) {
-            *(s16*)(queue + 0x10) = 0;
-            lbl_1_bss_2FEE[0]++;
-        }
-        break;
-    case 2:
-        *(void (**)(void))queue = fn_1_A464;
-        lbl_1_bss_2FEE[0] = 0;
-        break;
-    }
-}
-
-extern const char lbl_1_rodata_5C8[];
-extern const char lbl_1_rodata_5C0[];
-extern const char lbl_1_rodata_5D0[];
-
-// fn_1_BF34, size:0x7C
+// .text:0x0000BF34 size:0x7C
 static inline const char* ReverbStatusName(u32 success) {
     const char* status = lbl_1_rodata_5C8;
     if (success != 0) {
@@ -247,95 +178,13 @@ u32 fn_1_BF34(u32 effect) {
     return voice;
 }
 
-// fn_1_A2E4, size:0x64
-void fn_1_A2E4(void) {
-    switch ((s32)lbl_1_bss_2FDA[0]) {
-    case 0:
-        lbl_1_bss_2FDA[0]++;
-        break;
-    case 1:
-        lbl_1_bss_2FDA[0]++;
-        break;
-    case 2:
-        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A250;
-        break;
-    }
-}
-
-// fn_1_A718, size:0x64
-s32 fn_1_A718(void) {
-    s16 count = *(s8*)((u8*)lbl_800EF808 + 0x390);
-    s8 remaining = count - 1;
-    while (remaining > 0) {
-        if (fn_800214D0() == 0) {
-            return 0;
-        }
-        remaining--;
-    }
-    return 1;
-}
-
-static inline struct SoundGroupData* SoundOptionValue(s32 index) {
-    return lbl_800EF808[index + 1];
-}
-
-// fn_1_A908, size:0x54
-s32 fn_1_A908(void) {
-    s32 index = lbl_1_bss_2FD9[0];
-    fn_80021518(lbl_1_data_17A4[index], SoundOptionValue(index + 5));
-    return 0;
-}
-
-// fn_1_A8B4, size:0x54
-s32 fn_1_A8B4(void) {
-    s32 index = lbl_1_data_1CA0[0];
-    fn_80021518(lbl_1_data_17A4[index], SoundOptionValue(index + 5));
-    return 0;
-}
-
-// fn_1_A7E4, size:0x54
-s32 fn_1_A7E4(void) {
-    s32 index = lbl_1_bss_2FDB[0];
-    fn_80021518(lbl_1_data_1884[index], SoundOptionValue(index + 0x2A));
-    return 0;
-}
-
-// .text:0xA714 size:0x4
-void fn_1_A714(void) {
-}
-
-// fn_1_A77C, size:0x34
-s32 fn_1_A77C(void) {
-    fn_80021518(0x31, lbl_800EF808[0x2A]);
-    return 0;
-}
-
-// fn_1_A7B0, size:0x34
-s32 fn_1_A7B0(void) {
-    fn_80021518(0x33, lbl_800EF808[0x32]);
-    return 0;
-}
-
-// fn_1_A880, size:0x34
-s32 fn_1_A880(void) {
-    fn_80021518(0x1C, lbl_800EF808[0x2]);
-    return 0;
-}
-
-// fn_1_A838, size:0x48
-s32 fn_1_A838(void) {
-    fn_80021518(0x1C, lbl_800EF808[4]);
-    fn_80021518(0x36, lbl_800EF808[4]);
-    return 0;
-}
-
-// fn_1_BEF4, size:0x40
+// .text:0x0000BEF4 size:0x40
 void fn_1_BEF4(s16 voice) {
     sndFXKeyOff(voice);
     sndFXCtrl(voice, 7, 0);
 }
 
-// fn_1_BDD8, size:0x11C
+// .text:0x0000BDD8 size:0x11C
 void fn_1_BDD8(void) {
     u8* queue = ((u8*)lbl_803CC1B8);
     switch ((s32)lbl_1_bss_2FDE[0]) {
@@ -370,38 +219,7 @@ void fn_1_BDD8(void) {
     }
 }
 
-// fn_1_BFB0, size:0x1D8
-void fn_1_BFB0(void) {
-    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
-    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
-    if (pressed & 0x100) {
-        u16 effect = lbl_1_bss_3056[0] % 13 + lbl_1_data_17C4[lbl_1_bss_3056[0] / 13];
-        fn_1_BF34(effect);
-    } else if (pressed & 0x1200) {
-        fn_1_A718();
-        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
-    } else if (held & 1) {
-        if (held & 0x800) {
-            lbl_1_bss_3056[0] -= 10;
-        } else {
-            lbl_1_bss_3056[0]--;
-        }
-        if (lbl_1_bss_3056[0] < 0) {
-            lbl_1_bss_3056[0] = 0xE9;
-        }
-    } else if (held & 2) {
-        s16 next = lbl_1_bss_3056[0] + 1;
-        if (held & 0x800) {
-            next = lbl_1_bss_3056[0] + 10;
-        }
-        lbl_1_bss_3056[0] = next;
-        if (next > 0xE9) {
-            lbl_1_bss_3056[0] = 0;
-        }
-    }
-}
-
-// fn_1_BC00, size:0x1D8
+// .text:0x0000BC00 size:0x1D8
 void fn_1_BC00(void) {
     u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
     u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
@@ -581,14 +399,36 @@ void fn_1_B5B8(void) {
 }
 #endif
 
-extern const f32 lbl_1_rodata_5E8; // 127.0f
-extern const f32 lbl_1_rodata_5EC; // 0.0f
-extern const f32 lbl_1_rodata_5F0; // 100.0f
-extern const f32 lbl_1_rodata_5F4; // 10.0f
-extern const f32 lbl_1_rodata_5F8; // 1.0f
-extern const f32 lbl_1_rodata_5FC; // -1.0f
-extern const f64 lbl_1_rodata_600; // 0.1
-extern const f64 lbl_1_rodata_608; // 10.0
+// .text:0x0000B4A4 size:0x114
+void fn_1_B4A4(void) {
+    u8* queue = ((u8*)lbl_803CC1B8);
+    switch ((s32)lbl_1_bss_2FE8[0]) {
+    case 0: {
+        u8* child;
+        *(s16*)(queue + 0x10) = 0;
+        child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
+        child[0x18] = 0;
+        child[0x19] = 0x2A;
+        *(s32 (**)(void))(child + 0x14) = fn_1_A7E4;
+        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
+        lbl_1_bss_2FE8[0]++;
+        break;
+    }
+    case 1:
+        if (*(s16*)(queue + 0x10) != 0) {
+            ((u8*)lbl_800EF808)[0x396] = 2;
+            sndOutputMode(SND_OUTPUTMODE_SURROUND);
+            *(s16*)(queue + 0x10) = 0;
+            lbl_1_bss_2FE8[0]++;
+        }
+        break;
+    case 2:
+        *(void (**)(void))queue = fn_1_A95C;
+        lbl_1_common_bss_49994.active = 0;
+        lbl_1_bss_2FE8[0] = 0;
+        break;
+    }
+}
 
 // .text:0x0000A95C size:0xB48
 // 3D sound test: A starts an emitter + listener, Y/X + left/right edits listener/emitter values.
@@ -756,3 +596,165 @@ void fn_1_A95C(void) {
     }
 }
 #endif
+
+// .text:0x0000A908 size:0x54
+s32 fn_1_A908(void) {
+    s32 index = lbl_1_bss_2FD9[0];
+    fn_80021518(lbl_1_data_17A4[index], SoundOptionValue(index + 5));
+    return 0;
+}
+
+// .text:0x0000A8B4 size:0x54
+s32 fn_1_A8B4(void) {
+    s32 index = lbl_1_data_1CA0[0];
+    fn_80021518(lbl_1_data_17A4[index], SoundOptionValue(index + 5));
+    return 0;
+}
+
+// .text:0x0000A880 size:0x34
+s32 fn_1_A880(void) {
+    fn_80021518(0x1C, lbl_800EF808[0x2]);
+    return 0;
+}
+
+// .text:0x0000A838 size:0x48
+s32 fn_1_A838(void) {
+    fn_80021518(0x1C, lbl_800EF808[4]);
+    fn_80021518(0x36, lbl_800EF808[4]);
+    return 0;
+}
+
+// .text:0x0000A7E4 size:0x54
+s32 fn_1_A7E4(void) {
+    s32 index = lbl_1_bss_2FDB[0];
+    fn_80021518(lbl_1_data_1884[index], SoundOptionValue(index + 0x2A));
+    return 0;
+}
+
+// .text:0x0000A7B0 size:0x34
+s32 fn_1_A7B0(void) {
+    fn_80021518(0x33, lbl_800EF808[0x32]);
+    return 0;
+}
+
+// .text:0x0000A77C size:0x34
+s32 fn_1_A77C(void) {
+    fn_80021518(0x31, lbl_800EF808[0x2A]);
+    return 0;
+}
+
+// .text:0x0000A718 size:0x64
+s32 fn_1_A718(void) {
+    s16 count = *(s8*)((u8*)lbl_800EF808 + 0x390);
+    s8 remaining = count - 1;
+    while (remaining > 0) {
+        if (fn_800214D0() == 0) {
+            return 0;
+        }
+        remaining--;
+    }
+    return 1;
+}
+
+// .text:0xA714 size:0x4
+void fn_1_A714(void) {
+}
+
+// .text:0x0000A634 size:0xE0
+void fn_1_A634(void) {
+    u8* queue = ((u8*)lbl_803CC1B8);
+    switch ((s32)lbl_1_bss_2FEE[0]) {
+    case 0: {
+        u8* child;
+        *(s16*)(queue + 0x10) = 0;
+        child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
+        child[0x18] = 0;
+        child[0x19] = 3;
+        *(s32 (**)(void))(child + 0x14) = fn_1_A838;
+        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
+        lbl_1_bss_2FEE[0]++;
+        break;
+    }
+    case 1:
+        if (*(s16*)(queue + 0x10) != 0) {
+            *(s16*)(queue + 0x10) = 0;
+            lbl_1_bss_2FEE[0]++;
+        }
+        break;
+    case 2:
+        *(void (**)(void))queue = fn_1_A464;
+        lbl_1_bss_2FEE[0] = 0;
+        break;
+    }
+}
+
+// .text:0x0000A464 size:0x1D0
+void fn_1_A464(void) {
+    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
+    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    if (pressed & 0x100) {
+        fn_1_BEF4((s16)lbl_1_data_1CA8);
+        lbl_1_data_1CA8 = fn_1_BF34(lbl_1_data_1CA4);
+    } else if (pressed & 0x1200) {
+        fn_1_A718();
+        fn_800ACFB0(lbl_800EF808[4]);
+        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
+    } else if (held & 1) {
+        if (held & 0x800) {
+            lbl_1_data_1CA4 -= 10;
+        } else {
+            lbl_1_data_1CA4--;
+        }
+        if (lbl_1_data_1CA4 < 0x1AD) {
+            lbl_1_data_1CA4 = 0x1B6;
+        }
+    } else if (held & 2) {
+        s16 next = lbl_1_data_1CA4 + 1;
+        if (held & 0x800) {
+            next = lbl_1_data_1CA4 + 10;
+        }
+        lbl_1_data_1CA4 = next;
+        if (next > 0x1B6) {
+            lbl_1_data_1CA4 = 0x151;
+        }
+    }
+}
+
+// .text:0x0000A348 size:0x11C
+void fn_1_A348(void) {
+    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
+    if (held & 8) {
+        lbl_1_common_bss_49A78[0] = (lbl_1_common_bss_49A78[0] + 4) % 5;
+        return;
+    }
+    if (held & 4) {
+        lbl_1_common_bss_49A78[0] = (lbl_1_common_bss_49A78[0] + 6) % 5;
+        return;
+    }
+    if (pressed & 0x100) {
+        *(void (**)(void))((u8*)lbl_803CC1B8) = lbl_1_data_1C8C[lbl_1_common_bss_49A78[0]];
+        lbl_1_common_bss_49A78[1] = 0;
+        return;
+    }
+    if (pressed & 0x1200) {
+        lbl_1_bss_2FDA[0] = 0;
+        lbl_1_bss_2FD9[0] = 0;
+        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_C2A4;
+    }
+}
+
+// .text:0x0000A2E4 size:0x64
+void fn_1_A2E4(void) {
+    switch ((s32)lbl_1_bss_2FDA[0]) {
+    case 0:
+        lbl_1_bss_2FDA[0]++;
+        break;
+    case 1:
+        lbl_1_bss_2FDA[0]++;
+        break;
+    case 2:
+        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A250;
+        break;
+    }
+}
