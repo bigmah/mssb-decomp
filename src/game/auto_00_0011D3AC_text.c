@@ -3,7 +3,7 @@
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 #include "static/GameSettings.h"
-#include "game/auto_00_000E911C_text.h"
+#include "game/rep_2BF8.h"
 #include "game/rep_1838.h"
 
 extern MinigameAssets lbl_3_common_bss_32724;
