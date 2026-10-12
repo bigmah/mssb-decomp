@@ -36,33 +36,39 @@ Mirror strikers' structure: a separate repo (or `port/` directory) that vendors 
 - **"Done" for a function becomes two levels:** *equivalent*, which is enough for the port, and *matching*, which proves it. Agents should never leave a function as a stub or asm just because it won't match.
 - **Linking units (`Matching` in `configure.py`) still matters** because it proves data and code are complete. But it's no longer the headline metric. The headline is "functions with C (any level)", and `next_targets.py` should report it.
 
-## Where we are (2026-10-11)
+## Where we are (2026-10-12)
 
-**Every function has C.** `python3 tools/c_coverage.py`:
+**Every function has C**, and most of the port-readiness work is done. `python3 tools/c_coverage.py` / `ninja`:
 
-| Module | Functions | Matched | Equivalent (`#if NONMATCHING` or unwrapped near-match) | No C |
-|---|---|---|---|---|
-| `main.dol` (SDK, MusyX, game code) | 2491 | 2136 | 355 | 0 |
-| `game.rel` | 2406 | 1822 | 584 | 0 |
-| `menus.rel` | 1233 | 1064 | 169 | 0 |
-| `challenge.rel` | 349 | 274 | 75 | 0 |
-| **all** | **6479** | **5296 (81.7%)** | **1183** | **0** |
+| Module | Functions | Matched | Equivalent | No C | Files linked | Data in C |
+|---|---|---|---|---|---|---|
+| `main.dol` | 2491 | 2190 | 301 | 0 | 253 / 295 | 25.5% |
+| `game.rel` | 2406 | 1857 | 549 | 0 | 107 / 191 | 64.7% |
+| `menus.rel` | 1233 | 1078 | 155 | 0 | 31 / 60 | 83.3% |
+| `challenge.rel` | 349 | 283 | 66 | 0 | 14 / 21 | 75.2% |
+| **all** | **6479** | **5408 (83.5%)** | **1071** | **0** | **405 / 567** | **38.8%** |
 
-How it got here: 71 REL units that had no source got stub files; `main.dol` game code got `.sdata2`/`.rodata` (and some `.data`) splits; then parallel agents (one worktree and one unit each, see `AGENTS.md`) wrote C for every stub.
+(Data % excludes common .bss, which objdiff doesn't count; common .bss is reproduced byte-for-byte in all four modules, see `docs/common_bss.md`.)
 
-Checks that pass on `main` (run them all before declaring a unit done):
-- `ninja` + `dtk shasum -c config/GYQE01/build.sha1`: the matching build is still byte-identical.
-- `tools/nmcheck.py --all`: every `#if NONMATCHING` body compiles with MWCC.
-- `tools/nmverify.py --all`: every equivalent function makes the same calls and touches the same `lbl_*` globals as the original (expected differences carry `// nmverify:` notes). 0 flagged.
-- `tools/litcheck.py --all`: every function (matched or equivalent) loads the same float/string constant values as the original (`report.json` does **not** check these; 17 wrong constants were found this way, 15 in "100%" functions). 0 flagged.
-- `tools/jtcheck.py --all`: every switch jump table (matched: entry by entry; equivalent: case count and which cases share a target) is the original's (`report.json` does **not** compare table contents: 3 "100%" menus functions had swapped case labels). 0 flagged.
-- `tools/protocheck.py`: clang over every unit (as the port builds it, `-DNONMATCHING=1`) compares each declaration with its definition. Game code has 0 ABI mismatches; what remains is SDK/MSL/MusyX (replaced by aurora) and same-ABI integer-width differences.
+**Checks that pass on `main`** (run all of them after any change; force a full rebuild first with `find src -name '*.c' -exec touch {} +; ninja`, because ninja can miss header changes):
+- `ninja` + `dtk shasum -c config/GYQE01/build.sha1`: byte-identical build.
+- `tools/nmcheck.py --all`: every `#if NONMATCHING` body compiles.
+- `tools/nmverify.py --all`: equivalent functions make the same calls and touch the same globals as the original.
+- `tools/litcheck.py --all`: every function loads the same float/string constants as the original (report.json doesn't check this).
+- `tools/jtcheck.py --all`: switch jump tables have the same case→target structure as the original (report.json doesn't check this either).
+- `tools/protocheck.py`: one consistent prototype per function (game code: 0 ABI mismatches).
+- `tools/offcheck.py`: `/*0xNNN*/` offset comments and `CHECK_OFFSET`/`CHECK_SIZE` asserts match the real struct layout.
 
-Known gaps for the port:
-- **Equivalent C quality varies.** Most equivalents are 85–99% similar to the original, but some are far lower (down to ~10–30%) where the original inlined helpers or reached data through a pooled base; their behaviour was checked by hand and by `nmverify`/`litcheck`, not by byte match. `grep -rn "NONMATCHING [0-9]%\|NONMATCHING [1-5][0-9]%" src` lists the weakest.
-- **Data is still mostly unsplit** (no REL unit is linked; fully matched units such as `menus/rep_01A0` fail to link because their `.data`/`.bss` sit in `auto_*` units). Pointer-holding tables still need hand-written C.
-- **Aliased globals:** several units model one data object as both a struct and separate `lbl_*` externs, or as file statics next to externs (e.g. `rep_0138`, `rep_0250`, `rep_EA0`, `auto_00_0004B1AC`). On 64-bit these become separate storage; unify them when the data is split.
-- Raw byte-offset access remains in some older units (`m_sound`, `rep_E08`, `rep_3880`, parts of `auto_00_00106DFC`), marked `TODO type` where known.
+Each of these found real bugs that a "100% matched" score hid: wrong globals, wrong constants (17), missing/swapped switch cases (5), a wrong struct layout (CharacterStats), wrong callees.
+
+**Portability:** raw offset accesses (`*(T*)(p + 0x..)`) are down from ~9,900 to about 10; `TODO type`/`TODO port` markers to ~76 (most remaining ones need the port layer, e.g. in-place 32-bit file-offset relocation of loaded data, or are documented match blockers).
+
+**Tools for the remaining work:** `tools/gendata.py` (data initialisers from the binary), `tools/reverse_fn_order.py` and `include/header_rep_inline.h` (REL linking rules), `tools/nmpromote.py` and `tools/permute.py` (CPU-time promotion of near-matches), plus decomp-permuter setup notes in `docs/patterns/unsolved.md`.
+
+**What's left:**
+- 1071 equivalent functions don't byte-match yet (about 450 at ≥95%, mostly register allocation/scheduling; agent effort has diminishing returns here, use the permuter tools).
+- 162 files are not linked yet: mostly units with one or more equivalent functions, plus data ranges listed in `docs/data_status.md` (multi-TU auto units that need splitting first).
+- A handful of aliased globals and port-layer items (`grep -rn 'TODO port' src`).
 
 ## What "progress" means here
 
