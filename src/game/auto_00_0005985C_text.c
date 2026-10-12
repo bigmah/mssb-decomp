@@ -1857,8 +1857,6 @@ void fn_3_5A28C(void) {
 #endif
 
 // fn_3_5F3FC, size:0x324
-// NONMATCHING 99%: register allocation only in the practice CharID lookup (case 3)
-#if NONMATCHING
 void fn_3_5F3FC(void) {
     GameControlsStruct* game = &g_GameLogic;
     switch (game->_125) {
@@ -1907,11 +1905,11 @@ void fn_3_5F3FC(void) {
         if (g_d_GameSettings.GameModeSelected == 2 && g_Practice.practiceLevel == 7) {
             if (g_GameLogic.FrameCountOfCurrentAtBat_Copy == 0) {
                 fn_3_90AB0(g_Practice.someCharID2);
-                lbl_3_common_bss_34C58._2C = 0;
                 g_Practice.someCharID2 =
                     inMemRoster[g_GameLogic.teamBatting]
                                [g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam] - 1]
                                    .stats.CharID;
+                lbl_3_common_bss_34C58._2C = 0;
             }
             if (fn_3_90C14(g_Practice.someCharID2) == 0) {
                 break;
@@ -1939,7 +1937,6 @@ void fn_3_5F3FC(void) {
         break;
     }
 }
-#endif
 
 // fn_3_5D094, size:0x368
 // NONMATCHING 96%: original jumps straight to the shared tail after each END_GAME (we re-test the flag); regalloc
