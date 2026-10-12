@@ -1550,6 +1550,47 @@ void fn_3_14D318(u8* a) {
 
 #pragma dont_inline off
 // .text:0x0014D44C size:0x288 mapped:0x8078C4E0
+// fn_3_14D44C body for fn_3_14D710, which inlines it twice (CW will not auto-inline the real one)
+static inline void Inl14D44C(u8* a, u8 kind) {
+    u8* p = *(u8**)(a + 0xC);
+    s32 n = 0;
+    do {
+        if (p[0x44] == 0 && *(s16*)(p + 0x4A) == 0) {
+            if (n < 3) {
+                f32* d = (f32*)lbl_3_data_21770;
+                f32* q;
+                f32 h = 0.5f;
+                p[0x44] = 1;
+                p[0x45] = kind;
+                p[0x46] = 0xFF;
+                p[0x4D] = lbl_3_data_26D00[0];
+                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)lbl_3_data_26D00[4];
+                p[0x43] = lbl_3_data_26D00[7];
+                q = (f32*)(g_Minigame + p[0x45] * 0x34 + 0x860);
+                *(f32*)(p + 4) = q[0];
+                *(f32*)(p + 8) = -(d[3] * h + q[1]);
+                *(f32*)(p + 0xC) = q[2];
+                *(f32*)(p + 4) = *(f32*)(p + 4) + (rand() % 100 - 50) / 100.0;
+                *(f32*)(p + 8) = *(f32*)(p + 8) + (rand() % 100 - 50) / 100.0;
+                *(s16*)(p + 0x4A) = lbl_3_data_26D00[17];
+                *(s16*)(p + 0x48) = 0;
+            } else {
+                p[0x44] = 2;
+                p[0x45] = kind;
+                p[0x46] = (n - 3) / 5;
+                p[0x4D] = lbl_3_data_26D00[1];
+                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)lbl_3_data_26D00[11];
+                p[0x43] = lbl_3_data_26D00[14];
+                *(s16*)(p + 0x48) = (n - 3) % 5 * 4 + 1;
+                *(s16*)(p + 0x4A) = lbl_3_data_26D00[18];
+            }
+            n++;
+            p[0x40] = p[0x41] = p[0x42] = 0xFF;
+        }
+        p = *(u8**)p;
+    } while (p != NULL && n < 0x2B);
+}
+
 void fn_3_14D44C(u8* a, u32 kind0) {
     u8 kind = kind0;
     u8* p = *(u8**)(a + 0xC);
@@ -1606,22 +1647,19 @@ void fn_3_14D6D4(u8* p) {
     } while (p != NULL);
 }
 
-// NONMATCHING 13%: the original inlines fn_3_14D44C (twice) and fn_3_14D6D4; CW here inlines 14D6D4 but refuses 14D44C, so this calls it (nmverify call diff expected)
 // .text:0x0014D710 size:0x570 mapped:0x8078C7A4
-#if NONMATCHING
 void fn_3_14D710(s8 a) {
     u8* e = fn_800339F0(NULL, 0x20);
     if (e != NULL) {
-        fn_3_14D44C(e, a);
+        Inl14D44C(e, a);
     } else {
         e = fn_80033A24(fn_3_14CECC, 0xF0, 0, lbl_3_data_26D00[2], 1, 0x20);
         if (e != NULL) {
             fn_3_14D6D4(e);
-            fn_3_14D44C(e, a);
+            Inl14D44C(e, a);
         }
     }
 }
-#endif
 #pragma dont_inline on
 
 // .text:0x0014DC80 size:0x60 mapped:0x8078CD14
