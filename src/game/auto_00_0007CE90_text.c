@@ -40,25 +40,19 @@ static inline s32 replayCanSkip(void) {
 
 // Records both controllers' input for the current replay frame.
 static inline void recordReplayFrame(void) {
-    ReplayFrame* frame;
-    InputStruct* in;
+    s32 i;
 
     if (g_Stats.playFrameCounter >= REPLAY_MAX_FRAMES) {
         g_Stats.endFrame = REPLAY_MAX_FRAMES - 1;
     } else {
-        in = &g_Controls[g_Stats.controller[0]];
-        frame = &g_ReplayLogic[g_Stats.playFrameCounter];
-        frame->input[0].controlStickAngle = g_Controls[g_Stats.controller[0]].controlStickAngle;
-        frame->input[0].buttonInput = in->buttonInput & 0xEFFF;
-        frame->input[0].newButtonInput = in->newButtonInput & 0xEFFF;
-        frame->input[0].right_left = in->right_left;
-        frame->input[0].up_down = in->up_down;
-        in = &g_Controls[g_Stats.controller[1]];
-        frame->input[1].controlStickAngle = g_Controls[g_Stats.controller[1]].controlStickAngle;
-        frame->input[1].buttonInput = in->buttonInput & 0xEFFF;
-        frame->input[1].newButtonInput = in->newButtonInput & 0xEFFF;
-        frame->input[1].right_left = in->right_left;
-        frame->input[1].up_down = in->up_down;
+        for (i = 0; i < 2; i++) {
+            g_ReplayLogic[g_Stats.playFrameCounter].input[i].controlStickAngle = g_Controls[g_Stats.controller[i]].controlStickAngle;
+            g_ReplayLogic[g_Stats.playFrameCounter].input[i].buttonInput = g_Controls[g_Stats.controller[i]].buttonInput & 0xEFFF;
+            g_ReplayLogic[g_Stats.playFrameCounter].input[i].newButtonInput =
+                g_Controls[g_Stats.controller[i]].newButtonInput & 0xEFFF;
+            g_ReplayLogic[g_Stats.playFrameCounter].input[i].right_left = g_Controls[g_Stats.controller[i]].right_left;
+            g_ReplayLogic[g_Stats.playFrameCounter].input[i].up_down = g_Controls[g_Stats.controller[i]].up_down;
+        }
         g_Stats.playFrameCounter++;
     }
 }
@@ -90,8 +84,6 @@ void fn_3_7CE90(void) {
 }
 
 // .text:0x0007CF88 size:0x358 mapped:0x806BC01C
-// NONMATCHING 90%: inlined recordReplayFrame differs (see fn_3_7D2E0); original also re-reads the stored counter/controllers
-#if NONMATCHING
 void fn_3_7CF88(void) {
     memcpy(g_Stats.gameLogic, &g_GameLogic, 0x158);
     memcpy(g_Stats.strikes, &g_Strikes, 0x24);
@@ -131,26 +123,19 @@ void fn_3_7CF88(void) {
     fn_3_B9124();
     fn_3_15D90();
 }
-#endif
 
 // .text:0x0007D2E0 size:0xBC mapped:0x806BC374
-// NONMATCHING 65%: original loads controlStickAngle with lhax off g_Controls and schedules differently
-#if NONMATCHING
 void fn_3_7D2E0(void) {
     recordReplayFrame();
 }
-#endif
 
 // .text:0x0007D39C size:0xBC mapped:0x806BC430
-// NONMATCHING 65%: original loads controlStickAngle with lhax off g_Controls and schedules differently
-#if NONMATCHING
 void fn_3_7D39C(void) {
     recordReplayFrame();
 }
-#endif
 
 // .text:0x0007D458 size:0x328 mapped:0x806BC4EC
-// NONMATCHING 84%: inlined recordReplayFrame differs (see fn_3_7D2E0) and g_Stats base register reloads differ
+// NONMATCHING 92%: the original keeps g_d_GameSettings in a saved register and g_Stats in r31 throughout
 #if NONMATCHING
 void fn_3_7D458(void) {
     if (g_Stats.replayInd != 0) {
