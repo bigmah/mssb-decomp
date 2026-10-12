@@ -526,9 +526,14 @@ game/rep_3E00.c:
 	.text       start:0x00166448 end:0x001665E4
 	.rodata     start:0x00003E00 end:0x00003E58
 
+auto_00_001665E4_text:
+	.text       start:0x001665E4 end:0x001666B0
+	.data       start:0x000284E8 end:0x00028508
+
 game/rep_3E58.c:
 	.text       start:0x001666B0 end:0x00167CC4
 	.rodata     start:0x00003E58 end:0x00003F5C
+	.data       start:0x00028508 end:0x0002856F
 	.bss        start:0x0000B9E0 end:0x0000BA00
 
 auto_00_00167CC4_text:
