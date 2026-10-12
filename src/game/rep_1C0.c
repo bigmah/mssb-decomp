@@ -212,12 +212,12 @@ void fn_3_3638(StadiumSkyObj* obj) {
     pA = obj->model;
     pB = obj->view;
     hdr = obj->layout;
-    tbl = hdr->header.geoPalette;
+    tbl = PTR32_GET(DODisplayData, hdr->header.geoPalette);
     for (i = 0; i < hdr->header.totalBones; i++) {
         u16 idx = hdr->bones[i].geoFileID;
         if (idx != 0xFFFF) {
-            m26 = tbl->descriptorArray[idx].dispObj;
-            CTRLBuildMatrix(hdr->bones[i].orientationCtrl, m26->worldMatrix);
+            m26 = PTR32_GET(struct DODisplayObj, PTR32_GET(DODescriptor, tbl->descriptorArray)[idx].dispObj);
+            CTRLBuildMatrix(PTR32_GET(Control, hdr->bones[i].orientationCtrl), m26->worldMatrix);
             PSMTXConcat(pA, m26->worldMatrix, m26->worldMatrix);
             PSMTXConcat(pB, m26->worldMatrix, m);
 #define F(o) (m26->bounds[o])

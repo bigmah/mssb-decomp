@@ -221,7 +221,7 @@ void fn_3_11741C(s32 i) {
     s32 k;
     s32 v = g_Minigame._CCE[0] == 1 ? 0 : 2;
     for (k = 0; k < t->totalBones; k++) {
-        t->boneArray[k]->dispObj->textureData->texturePalette->tex[0].texIndex = v;
+        PTR32_GET(DOTexBank, t->boneArray[k]->dispObj->textureData->texturePalette)->tex[0].texIndex = v;
     }
 }
 
@@ -326,7 +326,7 @@ void fn_3_117588(s32 idx) {
         tex = 1;
     }
     for (k = 0; k < actor->totalBones; k++) {
-        actor->boneArray[k]->dispObj->textureData->texturePalette->tex[0].texIndex = tex;
+        PTR32_GET(DOTexBank, actor->boneArray[k]->dispObj->textureData->texturePalette)->tex[0].texIndex = tex;
     }
 }
 #endif
@@ -651,7 +651,7 @@ void fn_3_11881C(s32 i) {
     } else {
         tex = lbl_3_data_226BC[4];
     }
-    lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData->texturePalette->tex[0].texIndex = tex;
+    PTR32_GET(DOTexBank, lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData->texturePalette)->tex[0].texIndex = tex;
 }
 #endif
 
@@ -692,7 +692,7 @@ void fn_3_11887C(void) {
 #if NONMATCHING
 // Sets the skin texture of player-ball sprite i (0x82..0x84) from its state byte.
 void fn_3_11897C(s32 i) {
-    lbl_8036E548.objs->objects[i].actor->skinObject->textureData->texturePalette->tex[0].texIndex =
+    PTR32_GET(DOTexBank, lbl_8036E548.objs->objects[i].actor->skinObject->textureData->texturePalette)->tex[0].texIndex =
         lbl_3_data_22670[MG3310.racers[i - 0x82].skin];
 }
 #endif
@@ -844,7 +844,7 @@ void fn_3_119468(s32 i) {
 // NONMATCHING 90%: objs[i].actor: base+0x34 is folded into the load (add; lwz 0x34) where the original does addi r0,base,0x34; lwzx (docs/patterns/unsolved.md)
 #if NONMATCHING
 void fn_3_1194AC(s32 i) {
-    lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData->texturePalette->tex[0].texIndex =
+    PTR32_GET(DOTexBank, lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData->texturePalette)->tex[0].texIndex =
         lbl_3_data_2265C.tex[g_Minigame._1AFE[i + 1]];
 }
 #endif
@@ -1131,9 +1131,9 @@ void fn_3_119E30(s32 i) {
     TextureData* td;
     if (g_Minigame.barrels[g_Minigame.bB_bombBarrelID].animationCounter % lbl_3_data_2263E == 0) {
         td = lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData;
-        td->texturePalette->tex[0].texIndex = lbl_3_data_2263C[td->texturePalette->tex[0].texIndex] == 0;
-        td->texturePalette->tex[1].texIndex = lbl_3_data_2263C[td->texturePalette->tex[1].texIndex] == 0;
-        td->texturePalette->tex[2].texIndex = lbl_3_data_2263C[td->texturePalette->tex[2].texIndex] == 0;
+        PTR32_GET(DOTexBank, td->texturePalette)->tex[0].texIndex = lbl_3_data_2263C[PTR32_GET(DOTexBank, td->texturePalette)->tex[0].texIndex] == 0;
+        PTR32_GET(DOTexBank, td->texturePalette)->tex[1].texIndex = lbl_3_data_2263C[PTR32_GET(DOTexBank, td->texturePalette)->tex[1].texIndex] == 0;
+        PTR32_GET(DOTexBank, td->texturePalette)->tex[2].texIndex = lbl_3_data_2263C[PTR32_GET(DOTexBank, td->texturePalette)->tex[2].texIndex] == 0;
     }
 }
 #endif
@@ -1145,9 +1145,9 @@ extern u8 lbl_3_data_22638[];
 void fn_3_119EE0(s32 i) {
     BB_barrelStruct* g = &g_Minigame.barrels[i];
     TextureData* td = lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData;
-    td->texturePalette->tex[0].texIndex = lbl_3_data_22638[g->barrelColour] * 3;
-    td->texturePalette->tex[1].texIndex = lbl_3_data_22638[g->barrelColour] * 3 + 1;
-    td->texturePalette->tex[2].texIndex = lbl_3_data_22638[g->barrelColour] * 3 + 2;
+    PTR32_GET(DOTexBank, td->texturePalette)->tex[0].texIndex = lbl_3_data_22638[g->barrelColour] * 3;
+    PTR32_GET(DOTexBank, td->texturePalette)->tex[1].texIndex = lbl_3_data_22638[g->barrelColour] * 3 + 1;
+    PTR32_GET(DOTexBank, td->texturePalette)->tex[2].texIndex = lbl_3_data_22638[g->barrelColour] * 3 + 2;
 }
 #endif
 

@@ -50,6 +50,16 @@ extern void fn_800ACFB0(void* ptr); // heap free
 // (32-bit pointer fields); on PC they need a byte swap and native structs.
 #define GEO_RELOC(a, b) ((void*)((uintptr_t)(a) + (uintptr_t)(b)))
 
+// GXSetArray for geometry arrays: aurora needs the array's byte size and
+// endianness. Position/texcoord/normal arrays are swapped to native at load
+// (le), color arrays stay big-endian.
+#ifdef TARGET_PC
+#define GEO_SET_ARRAY(attr, data, count, stride, le) \
+    (GXSetArray)((attr), (data), (u32)(count) * (u32)(stride), (stride), (le))
+#else
+#define GEO_SET_ARRAY(attr, data, count, stride, le) GXSetArray((attr), (data), (stride))
+#endif
+
 // .text:0x800B9974 size:0x50
 void SetFogNone(void) {
     GXColor color;
@@ -809,7 +819,7 @@ void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr came
     switch (state->id) {
     case 1: // texture
         texMap = (state->setting >> 13) & 7;
-        bank = dispObj->textureData[texMap].texturePalette;
+        bank = PTR32_GET(DOTexBank, dispObj->textureData[texMap].texturePalette);
         tex = &bank->tex[bank->tex[state->setting & 0x1FFF].texIndex];
         lbl_803CC210[texMap] = state->pad16;
         wrapS = (state->setting >> 16) & 0xF;
@@ -843,12 +853,12 @@ void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr came
         magFilter = tex->magFilter;
         lodBias = tex->lodBias;
         if (tex->tlut != NULL) {
-            GXInitTexObjCI(&lbl_803CB5FC[texMap], tex->image, tex->width, tex->height, tex->format, wrapS, wrapT, mipmap,
+            GXInitTexObjCI(&lbl_803CB5FC[texMap], PTR32_GET(void, tex->image), tex->width, tex->height, tex->format, wrapS, wrapT, mipmap,
                            texMap);
-            GXInitTlutObj(&lbl_803CB49C[texMap], tex->tlut, tex->tlutFormat, tex->tlutEntries);
+            GXInitTlutObj(&lbl_803CB49C[texMap], PTR32_GET(void, tex->tlut), tex->tlutFormat, tex->tlutEntries);
             GXLoadTlut(&lbl_803CB49C[texMap], texMap);
         } else {
-            GXInitTexObj(&lbl_803CB5FC[texMap], tex->image, tex->width, tex->height, tex->format, wrapS, wrapT, mipmap);
+            GXInitTexObj(&lbl_803CB5FC[texMap], PTR32_GET(void, tex->image), tex->width, tex->height, tex->format, wrapS, wrapT, mipmap);
         }
         GXInitTexObjLOD(&lbl_803CB5FC[texMap], minFilter, magFilter, minLOD, maxLOD, lodBias, GX_FALSE, GX_FALSE,
                         GX_ANISO_1);
@@ -984,14 +994,15 @@ void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_li
         compSize = 0;
         break;
     }
-    GXSetArray(GX_VA_POS, dispObj->positionData->positionArray, dispObj->positionData->compCount * compSize);
+    GEO_SET_ARRAY(GX_VA_POS, PTR32_GET(char, dispObj->positionData->positionArray), dispObj->positionData->numPositions,
+                  dispObj->positionData->compCount * compSize, TRUE);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, dispObj->positionData->quantizeInfo >> 4,
                     dispObj->positionData->quantizeInfo & 0xF);
 
     if (dispObj->colorData != NULL) {
         if (dispObj->colorData->numColors == 1) {
             matSrc = GX_SRC_REG;
-            GetColorFromQuant((u8*)dispObj->colorData->colorArray, dispObj->colorData->quantizeInfo, &matColor.r,
+            GetColorFromQuant((u8*)PTR32_GET(char, dispObj->colorData->colorArray), dispObj->colorData->quantizeInfo, &matColor.r,
                               &matColor.g, &matColor.b, &matColor.a);
             GXSetChanMatColor(GX_COLOR0A0, matColor);
         } else {
@@ -1012,7 +1023,8 @@ void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_li
                 colorSize = 0;
                 break;
             }
-            GXSetArray(GX_VA_CLR0, dispObj->colorData->colorArray, colorSize);
+            GEO_SET_ARRAY(GX_VA_CLR0, PTR32_GET(char, dispObj->colorData->colorArray), dispObj->colorData->numColors,
+                          colorSize, FALSE);
             GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, dispObj->colorData->compCount == 3 ? GX_CLR_RGB : GX_CLR_RGBA,
                             dispObj->colorData->quantizeInfo >> 4, 0);
         }
@@ -1045,8 +1057,8 @@ void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_li
                 compSize = 0;
                 break;
             }
-            GXSetArray(GX_VA_TEX0 + i, dispObj->textureData[i].textureCoordArray,
-                       compSize * dispObj->textureData[i].compCount);
+            GEO_SET_ARRAY(GX_VA_TEX0 + i, PTR32_GET(char, dispObj->textureData[i].textureCoordArray),
+                          dispObj->textureData[i].numTextureCoords, compSize * dispObj->textureData[i].compCount, TRUE);
             GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0 + i, GX_TEX_ST, dispObj->textureData[i].quantizeInfo >> 4,
                             dispObj->textureData[i].quantizeInfo & 0xF);
             GXSetTexCoordGen2(GX_TEXCOORD0 + i, GX_TG_MTX2X4, GX_TG_TEX0 + i, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
@@ -1072,8 +1084,8 @@ void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_li
                     compSize = 0;
                     break;
                 }
-                GXSetArray(GX_VA_NRM, dispObj->lightingData->normalArray,
-                           dispObj->lightingData->compCount * compSize);
+                GEO_SET_ARRAY(GX_VA_NRM, PTR32_GET(char, dispObj->lightingData->normalArray),
+                              dispObj->lightingData->numNormals, dispObj->lightingData->compCount * compSize, TRUE);
                 GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, dispObj->lightingData->quantizeInfo >> 4,
                                 dispObj->lightingData->quantizeInfo & 0xF);
             } else if (dispObj->lightingData->compCount == 2) {
@@ -1093,7 +1105,8 @@ void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_li
                     compSize = 0;
                     break;
                 }
-                GXSetArray(GX_VA_NBT, dispObj->lightingData->normalArray, compSize * 3);
+                GEO_SET_ARRAY(GX_VA_NBT, PTR32_GET(char, dispObj->lightingData->normalArray),
+                              dispObj->lightingData->numNormals, compSize * 3, TRUE);
                 GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_NBT, GX_NRM_NBT3, dispObj->lightingData->quantizeInfo >> 4,
                                 dispObj->lightingData->quantizeInfo & 0xF);
             } else {
@@ -1116,7 +1129,7 @@ void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_li
                 compSize = 0;
                 break;
             }
-            GXSetArray(GX_VA_NRM, lbl_80111750, compSize * 3);
+            GEO_SET_ARRAY(GX_VA_NRM, lbl_80111750, 252, compSize * 3, TRUE); // built-in table: 252 normals
             GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_NRM_XYZ, lbl_803CBB60 >> 4, lbl_803CBB60 & 0xF);
         }
         if (lbl_803CC204 == NULL) {
@@ -1153,11 +1166,11 @@ void DOVARender(struct DODisplayObj* dispObj, MtxPtr camera, u8 numLights, va_li
         GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, matSrc, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
     }
 
-    state = dispObj->displayData->displayStateList;
+    state = PTR32_GET(DisplayStateList, dispObj->displayData->displayStateList);
     for (j = 0; j < dispObj->displayData->numStateEntries; j++, state++) {
         SetState(state, dispObj, camera);
         if (state->primitiveList != NULL) {
-            GXCallDisplayList(state->primitiveList, state->listSize);
+            GXCallDisplayList(PTR32_GET(char, state->primitiveList), state->listSize);
         }
     }
 }
@@ -1190,13 +1203,13 @@ void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* lay
 
     if (layout->positionData != NULL) {
         dispObj->positionData = _OSAllocFromHeap(0x20, sizeof(PositionData));
-        *dispObj->positionData = *layout->positionData;
+        *dispObj->positionData = *PTR32_GET(PositionData, layout->positionData);
     } else {
         dispObj->positionData = NULL;
     }
     if (layout->colorData != NULL) {
         dispObj->colorData = _OSAllocFromHeap(0x20, sizeof(ColorData));
-        *dispObj->colorData = *layout->colorData;
+        *dispObj->colorData = *PTR32_GET(ColorData, layout->colorData);
     } else {
         dispObj->colorData = NULL;
     }
@@ -1204,7 +1217,7 @@ void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* lay
         dispObj->textureData = _OSAllocFromHeap(0x20, layout->numTextureChannels * sizeof(TextureData));
         dispObj->numTextureChannels = layout->numTextureChannels;
         for (i = 0; i < layout->numTextureChannels; i++) {
-            dispObj->textureData[i] = layout->textureData[i];
+            dispObj->textureData[i] = PTR32_GET(TextureData, layout->textureData)[i];
         }
     } else {
         dispObj->textureData = NULL;
@@ -1212,13 +1225,13 @@ void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* lay
     }
     if (layout->lightingData != NULL) {
         dispObj->lightingData = _OSAllocFromHeap(0x20, sizeof(LightingData));
-        *dispObj->lightingData = *layout->lightingData;
+        *dispObj->lightingData = *PTR32_GET(LightingData, layout->lightingData);
     } else {
         dispObj->lightingData = NULL;
     }
     if (layout->displayData != NULL) {
         dispObj->displayData = _OSAllocFromHeap(0x20, sizeof(DisplayData));
-        *dispObj->displayData = *layout->displayData;
+        *dispObj->displayData = *PTR32_GET(DisplayData, layout->displayData);
     } else {
         dispObj->displayData = NULL;
     }
@@ -1244,12 +1257,142 @@ void DOGet(struct DODisplayObj** dispObj, DODisplayDataPtr pal, u16 id) {
         *dispObj = NULL;
         return;
     }
-    layout = pal->descriptorArray[id].layout;
+    layout = PTR32_GET(DODisplayLayout, PTR32_GET(DODescriptor, pal->descriptorArray)[id].layout);
     *dispObj = _OSAllocFromHeap(0x20, sizeof(struct DODisplayObj));
     InitDisplayObjWithLayout(*dispObj, layout);
 }
 
 // .text:0x800BCB44 size:0x21C
+#ifdef TARGET_PC
+// PC: the palette keeps its disc layout with PTR32 pointer fields. Swap it to
+// native once (port/src/formats_geo.c), then relocate the offsets against the
+// palette (descriptors) or the layout (everything below a layout).
+static void* GeoPaletteRelocateLayout(DODisplayLayout* layout) {
+    u32 base = PTR_TO_U32(layout);
+    void* skinPositions = NULL;
+    u16 j;
+
+    if (layout->positionData != 0) {
+        PositionData* pos;
+        layout->positionData += base;
+        pos = PTR32_GET(PositionData, layout->positionData);
+        if (pos->positionArray != 0) {
+            pos->positionArray += base;
+        }
+        if (pos->compCount == 6) {
+            skinPositions = PTR32_GET(char, pos->positionArray);
+        }
+    }
+    if (layout->colorData != 0) {
+        ColorData* col;
+        layout->colorData += base;
+        col = PTR32_GET(ColorData, layout->colorData);
+        if (col->colorArray != 0) {
+            col->colorArray += base;
+        }
+    }
+    if (layout->textureData != 0) {
+        TextureData* tex;
+        layout->textureData += base;
+        tex = PTR32_GET(TextureData, layout->textureData);
+        for (j = 0; j < layout->numTextureChannels; j++) {
+            if (tex[j].textureCoordArray != 0) {
+                tex[j].textureCoordArray += base;
+            }
+            if (tex[j].texturePaletteName != 0) {
+                tex[j].texturePaletteName += base;
+            }
+        }
+    }
+    if (layout->lightingData != 0) {
+        LightingData* lit;
+        layout->lightingData += base;
+        lit = PTR32_GET(LightingData, layout->lightingData);
+        if (lit->normalArray != 0) {
+            lit->normalArray += base;
+        }
+    }
+    if (layout->displayData != 0) {
+        DisplayData* dd;
+        DisplayStateList* st;
+        layout->displayData += base;
+        dd = PTR32_GET(DisplayData, layout->displayData);
+        if (dd->primitiveBank != 0) {
+            dd->primitiveBank += base;
+        }
+        if (dd->displayStateList != 0) {
+            dd->displayStateList += base;
+        }
+        st = PTR32_GET(DisplayStateList, dd->displayStateList);
+        for (j = 0; j < dd->numStateEntries; j++) {
+            if (st[j].primitiveList != 0) {
+                st[j].primitiveList += base;
+            }
+        }
+    }
+    if (layout->unk18 != 0) {
+        layout->unk18 += base;
+    }
+    return skinPositions;
+}
+
+// Palettes whose descriptors hold display objects (fn_800BCE38) rather than
+// layouts (LoadGeoPalette): the two have different layouts on PC.
+static const void* s_dispObjPalettes[256];
+
+static void GeoPaletteMarkDispObjs(const void* pal, BOOL dispObjs) {
+    s32 i;
+    s32 freeSlot = -1;
+    for (i = 0; i < 256; i++) {
+        if (s_dispObjPalettes[i] == pal) {
+            if (!dispObjs) {
+                s_dispObjPalettes[i] = NULL;
+            }
+            return;
+        }
+        if (s_dispObjPalettes[i] == NULL && freeSlot < 0) {
+            freeSlot = i;
+        }
+    }
+    if (dispObjs && freeSlot >= 0) {
+        s_dispObjPalettes[freeSlot] = pal;
+    }
+}
+
+static BOOL GeoPaletteHasDispObjs(const void* pal) {
+    s32 i;
+    for (i = 0; i < 256; i++) {
+        if (s_dispObjPalettes[i] == pal) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+void* LoadGeoPalette(DODisplayDataPtr pal) {
+    void* skinPositions = NULL;
+    void* sp;
+    DODescriptor* desc;
+    u32 i;
+
+    port_swap_geo_palette(pal);
+    GeoPaletteMarkDispObjs(pal, FALSE);
+    if (pal->userDataSize != 0 && pal->userData != 0) {
+        pal->userData += PTR_TO_U32(pal);
+    }
+    pal->descriptorArray += PTR_TO_U32(pal);
+    desc = PTR32_GET(DODescriptor, pal->descriptorArray);
+    for (i = 0; i < pal->numDescriptors; i++) {
+        desc[i].layout += PTR_TO_U32(pal);
+        desc[i].name += PTR_TO_U32(pal);
+        sp = GeoPaletteRelocateLayout(PTR32_GET(DODisplayLayout, desc[i].layout));
+        if (sp != NULL) {
+            skinPositions = sp;
+        }
+    }
+    return skinPositions;
+}
+#else
 void* LoadGeoPalette(DODisplayDataPtr pal) {
     u16 j;
     void* skinPositions;
@@ -1318,6 +1461,7 @@ void* LoadGeoPalette(DODisplayDataPtr pal) {
     }
     return skinPositions;
 }
+#endif
 
 // .text:0x800BCD60 size:0x5C
 void convertGeometryAndSknHeader(DODisplayDataPtr pal, void* sknHeader) {
@@ -1326,9 +1470,79 @@ void convertGeometryAndSknHeader(DODisplayDataPtr pal, void* sknHeader) {
     if (sknHeader != NULL) {
         SKNLoadFile(sknHeader, skinPositions);
     }
+#ifdef TARGET_PC
+    PTR32_SET(pal->skinPositions, skinPositions);
+#else
     pal->skinPositions = skinPositions;
+#endif
 }
 
+#ifdef TARGET_PC
+// .text:0x800BCDBC size:0x7C
+void fn_800BCDBC(DODisplayDataPtr pal) {
+    DODescriptor* desc = PTR32_GET(DODescriptor, pal->descriptorArray);
+    s32 i;
+
+    for (i = pal->numDescriptors - 1; i >= 0; i--) {
+        struct DODisplayObj* obj = PTR32_GET(struct DODisplayObj, desc[i].dispObj);
+        if (obj->textureData != NULL) {
+            fn_800ACFB0(obj->textureData);
+        }
+    }
+    fn_800ACFB0(PTR32_GET(struct DODisplayObj, desc[0].dispObj));
+    GeoPaletteMarkDispObjs(pal, FALSE);
+}
+
+// .text:0x800BCEF8 size:0x298
+// PC: relocates the layout in place, then points the display object at it.
+void* fn_800BCEF8(DODisplayLayout* layout, struct DODisplayObj* dispObj) {
+    void* skinPositions = GeoPaletteRelocateLayout(layout);
+    s32 i;
+
+    dispObj->positionData = PTR32_GET(PositionData, layout->positionData);
+    dispObj->colorData = PTR32_GET(ColorData, layout->colorData);
+    if (layout->textureData != 0 && layout->numTextureChannels != 0) {
+        TextureData* tex = PTR32_GET(TextureData, layout->textureData);
+        dispObj->textureData = _OSAllocFromHeap(0x20, layout->numTextureChannels * sizeof(TextureData));
+        dispObj->numTextureChannels = layout->numTextureChannels;
+        for (i = 0; i < layout->numTextureChannels; i++) {
+            dispObj->textureData[i] = tex[i];
+        }
+    } else {
+        dispObj->textureData = NULL;
+        dispObj->numTextureChannels = 0;
+    }
+    dispObj->lightingData = PTR32_GET(LightingData, layout->lightingData);
+    dispObj->displayData = PTR32_GET(DisplayData, layout->displayData);
+    dispObj->unk15 = layout->unk15;
+    dispObj->visibility = 1;
+    dispObj->unk17 = 0;
+    dispObj->tevCallback = fn_800BA44C;
+    dispObj->shaderFunc = NULL;
+    dispObj->shaderData = NULL;
+    memcpy(dispObj->bounds, layout->bounds, sizeof(dispObj->bounds));
+    return skinPositions;
+}
+
+// .text:0x800BCE38 size:0xC0
+void fn_800BCE38(DODisplayDataPtr pal) {
+    struct DODisplayObj* dispObjs;
+    DODescriptor* desc;
+    u32 i;
+
+    port_swap_geo_palette(pal);
+    pal->userData += PTR_TO_U32(pal);
+    pal->descriptorArray += PTR_TO_U32(pal);
+    desc = PTR32_GET(DODescriptor, pal->descriptorArray);
+    dispObjs = _OSAllocFromHeap(0x20, pal->numDescriptors * sizeof(struct DODisplayObj));
+    for (i = 0; i < pal->numDescriptors; i++) {
+        fn_800BCEF8((DODisplayLayout*)((u8*)pal + desc[i].layout), &dispObjs[i]);
+        PTR32_SET(desc[i].dispObj, &dispObjs[i]);
+        desc[i].name += PTR_TO_U32(pal);
+    }
+    GeoPaletteMarkDispObjs(pal, TRUE);
+}
+#else
 // .text:0x800BCDBC size:0x7C
 void fn_800BCDBC(DODisplayDataPtr pal) {
     s32 i;
@@ -1422,10 +1636,36 @@ void* fn_800BCEF8(DODisplayLayout* layout, struct DODisplayObj* dispObj) {
     return skinPositions;
 }
 
+#endif
+
 extern DOShadowTevCallback lbl_803CC20C;
 
 // fn_800BD190, size:0x58
 void fn_800BD190(GQRValueGroups* groups, void* value) {
+#ifdef TARGET_PC
+    // Sets textureData[*].texturePalette of every layout (LoadGeoPalette) or
+    // display object (fn_800BCE38) of the palette.
+    DODisplayDataPtr pal = (DODisplayDataPtr)groups;
+    DODescriptor* desc = PTR32_GET(DODescriptor, pal->descriptorArray);
+    BOOL objs = GeoPaletteHasDispObjs(pal);
+    u32 n;
+    s32 k;
+    for (n = 0; n < pal->numDescriptors; n++) {
+        if (objs) {
+            struct DODisplayObj* obj = PTR32_GET(struct DODisplayObj, desc[n].dispObj);
+            for (k = 0; k < obj->numTextureChannels; k++) {
+                PTR32_SET(obj->textureData[k].texturePalette, value);
+            }
+        } else {
+            DODisplayLayout* layout = PTR32_GET(DODisplayLayout, desc[n].layout);
+            TextureData* tex = PTR32_GET(TextureData, layout->textureData);
+            for (k = 0; k < layout->numTextureChannels; k++) {
+                PTR32_SET(tex[k].texturePalette, value);
+            }
+        }
+    }
+    return;
+#endif
     u32 i;
     s32 j;
     for (i = 0; i < groups->count; i++) {

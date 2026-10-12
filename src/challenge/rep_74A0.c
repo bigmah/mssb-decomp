@@ -1053,16 +1053,16 @@ void fn_1_1A3B4(void) {
 
     if (rec->tlut != NULL) {
         for (i = 0; i < count; i++) {
-            GXInitTlutObj(&tlutObj, rec->tlut, rec->tlutFormat, rec->tlutEntries);
+            GXInitTlutObj(&tlutObj, PTR32_GET(void, rec->tlut), rec->tlutFormat, rec->tlutEntries);
             GXLoadTlut(&tlutObj, GX_TLUT0);
-            GXInitTexObjCI(&texObj, rec->image, rec->width, rec->height, rec->format, GX_CLAMP, GX_CLAMP, GX_FALSE, GX_TLUT0);
+            GXInitTexObjCI(&texObj, PTR32_GET(void, rec->image), rec->width, rec->height, rec->format, GX_CLAMP, GX_CLAMP, GX_FALSE, GX_TLUT0);
             GXInitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
             GXLoadTexObj(&texObj, GX_TEXMAP0);
             rec++;
         }
     } else {
         for (i = 0; i < count; i++) {
-            GXInitTexObj(&texObj, rec->image, rec->width, rec->height, rec->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+            GXInitTexObj(&texObj, PTR32_GET(void, rec->image), rec->width, rec->height, rec->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
             GXInitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
             GXLoadTexObj(&texObj, GX_TEXMAP0);
             rec++;
@@ -1199,7 +1199,13 @@ void fn_1_19D60(struct DODisplayObj* dispObj, MtxPtr camera) {
         compSize = 0;
         break;
     }
+#ifdef TARGET_PC
+    (GXSetArray)(GX_VA_POS, PTR32_GET(char, dispObj->positionData->positionArray),
+                 (u32)dispObj->positionData->numPositions * dispObj->positionData->compCount * compSize,
+                 (u8)(dispObj->positionData->compCount * compSize), TRUE);
+#else
     GXSetArray(GX_VA_POS, dispObj->positionData->positionArray, (u8)(dispObj->positionData->compCount * compSize));
+#endif
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, dispObj->positionData->quantizeInfo >> 4,
                     dispObj->positionData->quantizeInfo & 0xF);
 
@@ -1222,14 +1228,19 @@ void fn_1_19D60(struct DODisplayObj* dispObj, MtxPtr camera) {
                 compSize = 0;
                 break;
             }
+#ifdef TARGET_PC
+            (GXSetArray)(GX_VA_TEX0 + i, PTR32_GET(char, tex->textureCoordArray),
+                         (u32)tex->numTextureCoords * tex->compCount * compSize, (u8)(tex->compCount * compSize), TRUE);
+#else
             GXSetArray(GX_VA_TEX0 + i, tex->textureCoordArray, (u8)(tex->compCount * compSize));
+#endif
             GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0 + i, GX_TEX_ST, dispObj->textureData[i].quantizeInfo >> 4,
                             dispObj->textureData[i].quantizeInfo & 0xF);
             GXSetTexCoordGen2(i, GX_MTX2x4, GX_TG_TEX0 + i, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
         }
     }
 
-    state = dispObj->displayData->displayStateList;
+    state = PTR32_GET(DisplayStateList, dispObj->displayData->displayStateList);
     for (j = 0; j < dispObj->displayData->numStateEntries; j++) {
         switch (state->id) {
         case 2: // vertex descriptors
@@ -1264,7 +1275,7 @@ void fn_1_19D60(struct DODisplayObj* dispObj, MtxPtr camera) {
             break;
         }
         if (state->primitiveList != NULL) {
-            GXCallDisplayList(state->primitiveList, state->listSize);
+            GXCallDisplayList(PTR32_GET(char, state->primitiveList), state->listSize);
         }
         state++;
     }

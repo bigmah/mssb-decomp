@@ -87,7 +87,7 @@ typedef u16 wchar_t;
 // through PTR32_GET/PTR32_SET.
 #ifndef TARGET_PC
 #define PTR32(T) T*
-#define PTR32_GET(T, field) (field)
+#define PTR32_GET(T, field) ((T*)(field))
 #define PTR32_SET(field, p) ((field) = (p))
 #endif
 

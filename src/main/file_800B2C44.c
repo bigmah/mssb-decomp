@@ -51,9 +51,9 @@ void fn_800B2D5C(GameActor* actor) {
     GQRSetup5(8, 4, 8, 4);
     pos = actor->skinObject->positionData;
     if (pos->quantizeInfo == 0x40) {
-        SKNIt(actor->boneArray, actor->skHeader, (u8*)pos->positionArray);
+        SKNIt(actor->boneArray, actor->skHeader, (u8*)PTR32_GET(char, pos->positionArray));
     } else {
-        fn_800BF2A8(actor->boneArray, actor->skHeader, (u8*)pos->positionArray);
+        fn_800BF2A8(actor->boneArray, actor->skHeader, (u8*)PTR32_GET(char, pos->positionArray));
     }
 }
 
@@ -558,7 +558,7 @@ s32 fn_800B4048(GameActor** actor, ActorLayout* layout, u32 actorID) {
 void fn_800B4084(GameBone* parent, ActorBone* layoutBone, GameActor* actor, u16* boneIndex, GameBone* boneMem) {
     GameBone* bone;
 
-    for (; layoutBone != NULL; layoutBone = (ActorBone*)layoutBone->branch.Next) {
+    for (; layoutBone != NULL; layoutBone = PTR32_GET(ActorBone, layoutBone->branch.Next)) {
         bone = &boneMem[*boneIndex];
         bone->branch.Children = NULL;
         DSInsertBranchBelow(&actor->hierarchy, (Ptr)parent, (Ptr)bone);
@@ -568,7 +568,7 @@ void fn_800B4084(GameBone* parent, ActorBone* layoutBone, GameActor* actor, u16*
         bone->drawingPriority = layoutBone->drawingPriority;
         bone->orientCtrl.base.type = 0;
         if (layoutBone->orientationCtrl != NULL) {
-            bone->orientCtrl = *(GameControl*)layoutBone->orientationCtrl;
+            bone->orientCtrl = *PTR32_GET(GameControl, layoutBone->orientationCtrl);
         }
         bone->dispObj = NULL;
         if (layoutBone->geoFileID != 0xFFFF) {
@@ -601,7 +601,7 @@ void fn_800B4084(GameBone* parent, ActorBone* layoutBone, GameActor* actor, u16*
         }
         (*boneIndex)++;
         if (layoutBone->branch.Children != NULL) {
-            fn_800B4084(bone, (ActorBone*)layoutBone->branch.Children, actor, boneIndex, boneMem);
+            fn_800B4084(bone, PTR32_GET(ActorBone, layoutBone->branch.Children), actor, boneIndex, boneMem);
         }
     }
 }
@@ -673,7 +673,7 @@ GameActor* fn_800B43A0(ActorLayout* layout) {
     boneArraySize = (u32)OSRoundUp32B(layout->totalBones * sizeof(GameBone*));
     forwardSize = (u32)OSRoundUp32B(layout->totalBones * sizeof(Mtx));
     if (layout->skinFileID != 0xFFFF) {
-        DOGet(&skin, layout->geoPalette, layout->skinFileID);
+        DOGet(&skin, PTR32_GET(struct DODisplayData, layout->geoPalette), layout->skinFileID);
         skinSize = orientSize = (u32)OSRoundUp32B(layout->totalBones * sizeof(Mtx));
         if (skin->lightingData != NULL) {
             invTransposeSize = skinSize;
@@ -712,7 +712,7 @@ GameActor* fn_800B43A0(ActorLayout* layout) {
     DSInitList(&actor->drawPriorityList, NULL, &((GameBone*)NULL)->drawPriorityLink);
     actor->pal = NULL;
     if (layout->geoPalette != NULL) {
-        actor->pal = layout->geoPalette;
+        actor->pal = PTR32_GET(struct DODisplayData, layout->geoPalette);
     }
 
     if (layout->skinFileID != 0xFFFF) {
@@ -723,10 +723,10 @@ GameActor* fn_800B43A0(ActorLayout* layout) {
         actor->orientationInvMtxArray = (Mtx*)((u8*)actor->skinMtxArray + skinSize);
         // Move the skin's vertex positions (and the normals right after them) into the actor block.
         normalOffset = (u32)(actor->skinObject->lightingData->normalArray - actor->skinObject->positionData->positionArray);
-        actor->skinObject->positionData->positionArray = (char*)actor->orientationInvMtxArray + orientSize;
+        PTR32_SET(actor->skinObject->positionData->positionArray, (char*)actor->orientationInvMtxArray + orientSize);
         actor->skinObject->lightingData->normalArray = actor->skinObject->positionData->positionArray + normalOffset;
         if (actor->skinObject->lightingData != NULL) {
-            actor->skinInvTransposeMtxArray = (Mtx*)(actor->skinObject->positionData->positionArray + vertexSize);
+            actor->skinInvTransposeMtxArray = (Mtx*)(PTR32_GET(char, actor->skinObject->positionData->positionArray) + vertexSize);
         } else {
             actor->skinInvTransposeMtxArray = NULL;
         }
@@ -739,7 +739,7 @@ GameActor* fn_800B43A0(ActorLayout* layout) {
 
     actor->worldControl.base.type = 0;
     if (layout->hierarchy.Root != NULL) {
-        fn_800B4084(NULL, (ActorBone*)layout->hierarchy.Root, actor, &boneCount,
+        fn_800B4084(NULL, PTR32_GET(ActorBone, layout->hierarchy.Root), actor, &boneCount,
                     (GameBone*)((u8*)actor->forwardMtxArray +
                                 (forwardSize + skinSize + orientSize + vertexSize + invTransposeSize)));
     }
@@ -783,15 +783,15 @@ void fn_800B472C(StaticModel* model) {
     world = model->world;
     camera = model->camera;
     file = (ActorLayoutFile*)model->layout;
-    pal = file->header.geoPalette;
+    pal = PTR32_GET(struct DODisplayData, file->header.geoPalette);
     for (i = 0; i < file->header.totalBones; i++) {
         layoutBone = &file->bones[i];
         if (layoutBone->geoFileID == 0xFFFF) {
             continue;
         }
         // TODO type: MSSB's descriptor entries point straight at display objects.
-        obj = (struct DODisplayObj*)pal->descriptorArray[layoutBone->geoFileID].layout;
-        CTRLBuildMatrix(layoutBone->orientationCtrl, obj->worldMatrix);
+        obj = PTR32_GET(struct DODisplayObj, PTR32_GET(DODescriptor, pal->descriptorArray)[layoutBone->geoFileID].dispObj);
+        CTRLBuildMatrix(PTR32_GET(Control, layoutBone->orientationCtrl), obj->worldMatrix);
         PSMTXConcat(world, obj->worldMatrix, obj->worldMatrix);
         PSMTXConcat(camera, obj->worldMatrix, m);
         box[0].x = obj->bounds[1];
@@ -842,9 +842,63 @@ void fn_800B472C(StaticModel* model) {
 
 // .text:0x800B4908 size:0x8
 void haveActLayoutPointToGeoHeader(ActorLayout* layout, DODisplayData* geoPalette) {
-    layout->geoPalette = geoPalette;
+    PTR32_SET(layout->geoPalette, geoPalette);
 }
 
+#ifdef TARGET_PC
+// PC: swap the layout once (port/src/formats_geo.c); pointer fields stay
+// 32-bit (PTR32) and are relocated against the layout.
+void LoadActorLayout(ActorLayout* layout) {
+    ActorBone* bone;
+    u32 base = PTR_TO_U32(layout);
+    u32 i;
+
+    port_swap_actor_layout(layout);
+    if (layout->userDataSize != 0 && layout->userData != 0) {
+        layout->userData += base;
+    }
+    if (layout->hierarchy.Root != 0) {
+        layout->hierarchy.Root += base;
+    }
+    if (layout->geoPaletteName != 0) {
+        layout->geoPaletteName += base;
+    }
+    bone = ((ActorLayoutFile*)layout)->bones;
+    for (i = 0; i < layout->totalBones; bone++, i++) {
+        if (bone->orientationCtrl != 0) {
+            bone->orientationCtrl += base;
+        }
+        if (bone->branch.Prev != 0) {
+            bone->branch.Prev += base;
+        }
+        if (bone->branch.Next != 0) {
+            bone->branch.Next += base;
+        }
+        if (bone->branch.Parent != 0) {
+            bone->branch.Parent += base;
+        }
+        if (bone->branch.Children != 0) {
+            bone->branch.Children += base;
+        }
+    }
+}
+
+// .text:0x800B49E4 size:0x60
+void fn_800B49E4(ActorLayout* layout) {
+    ActorLayoutFile* file = (ActorLayoutFile*)layout;
+    u32 base = PTR_TO_U32(layout);
+    s32 i;
+
+    port_swap_actor_layout(layout);
+    layout->hierarchy.Offset += base;
+    layout->hierarchy.Root += base;
+    layout->geoPaletteName += base;
+    layout->userData += base;
+    for (i = 0; i < layout->totalBones; i++) {
+        file->bones[i].orientationCtrl += base;
+    }
+}
+#else
 // .text:0x800B4910 size:0xD4
 // Converts an actor layout's file offsets into pointers in place.
 // TODO(port): big-endian disc data with 32-bit pointer fields; needs a byte
@@ -899,6 +953,7 @@ void fn_800B49E4(ActorLayout* layout) {
         file->bones[i].orientationCtrl = (Control*)((u8*)layout + (uintptr_t)file->bones[i].orientationCtrl);
     }
 }
+#endif
 
 // ---- Data (initialisers generated from the original DOL) ----
 

@@ -204,7 +204,7 @@ void fn_3_E22A4(PiranhaPlant* p) {
     u8 st;
     u8 v;
     DisplayStateList* r;
-    r = p->actorObj->actor->pal->descriptorArray[0].dispObj->displayData->displayStateList;
+    r = PTR32_GET(DisplayStateList, PTR32_GET(struct DODisplayObj, PTR32_GET(DODescriptor, p->actorObj->actor->pal->descriptorArray)[0].dispObj)->displayData->displayStateList);
     r->setting &= ~0x1FFF;
     st = p->state;
     if (st != 0) {

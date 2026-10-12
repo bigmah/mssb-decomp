@@ -541,11 +541,16 @@ void fn_3_EE67C(struct DODisplayObj* a, f32 (*m)[4]) {
         sz = 0;
         break;
     }
+#ifdef TARGET_PC
+    (GXSetArray)(GX_VA_POS, PTR32_GET(char, h->positionArray), (u32)h->numPositions * h->compCount * sz,
+                 (u8)(h->compCount * sz), TRUE);
+#else
     GXSetArray(GX_VA_POS, ((void*)h->positionArray), (u8)(h->compCount * sz));
+#endif
     h = a->positionData;
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_TEX_ST, h->quantizeInfo >> 4, h->quantizeInfo & 0xF);
     GXSetNumTexGens(1);
-    node = a->displayData->displayStateList;
+    node = PTR32_GET(DisplayStateList, a->displayData->displayStateList);
     for (i = 0; i < a->displayData->numStateEntries; i++) {
         switch (node->id) {
         case 1:
@@ -585,8 +590,8 @@ void fn_3_EE67C(struct DODisplayObj* a, f32 (*m)[4]) {
         case 4:
             break;
         }
-        if (((void*)node->primitiveList) != NULL) {
-            GXCallDisplayList(((void*)node->primitiveList), node->listSize);
+        if (((void*)PTR32_GET(char, node->primitiveList)) != NULL) {
+            GXCallDisplayList(((void*)PTR32_GET(char, node->primitiveList)), node->listSize);
         }
         node++;
     }
