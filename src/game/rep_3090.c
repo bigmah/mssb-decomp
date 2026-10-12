@@ -50,7 +50,10 @@ extern f64 cos(f64);
 extern f64 sin(f64);
 extern u32 lbl_3_rodata_30EC[];
 extern u8 g_Camera[];
-extern s16 lbl_3_bss_B67A;
+// .bss (laid out last-defined-first)
+static u8 lbl_3_bss_B67C[0x1C]; // unused
+s16 lbl_3_bss_B67A;
+static u8 lbl_3_bss_B678[0x2]; // unused
 extern void* memset(void*, s32, u32);
 extern void* memcpy(void*, const void*, u32);
 extern const f32 lbl_3_rodata_30FC;

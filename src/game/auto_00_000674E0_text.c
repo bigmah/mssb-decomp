@@ -13,3 +13,4 @@ void fn_3_674E0(void) {
     lbl_3_common_bss_32234[1] = 0;
     lbl_3_common_bss_32220[0xA] = 0;
 }
+

@@ -8,20 +8,9 @@
 extern ActorMgrView lbl_8036E548;
 extern Unk32724 lbl_3_common_bss_32724;
 
-// .text:0x0006C410 size:0x18 mapped:0x806AB4A4
-void fn_3_6C410(void) {
-    lbl_8036E548.stadium->_0C6 = 0;
-}
-
-// .text:0x0006C428 size:0x4 mapped:0x806AB4BC
-void fn_3_6C428(void) {
+// .text:0x0006C4CC size:0x4 mapped:0x806AB560
+void fn_3_6C4CC(void) {
     return;
-}
-
-// .text:0x0006C42C size:0x28 mapped:0x806AB4C0
-void fn_3_6C42C(void) {
-    lbl_8036E548.stadium->_0C6 = 0;
-    lbl_3_common_bss_32724._90 = -1;
 }
 
 // .text:0x0006C454 size:0x78 mapped:0x806AB4E8
@@ -37,7 +26,19 @@ void fn_3_6C454(void) {
     fn_3_6A250();
 }
 
-// .text:0x0006C4CC size:0x4 mapped:0x806AB560
-void fn_3_6C4CC(void) {
+// .text:0x0006C42C size:0x28 mapped:0x806AB4C0
+void fn_3_6C42C(void) {
+    lbl_8036E548.stadium->_0C6 = 0;
+    lbl_3_common_bss_32724._90 = -1;
+}
+
+// .text:0x0006C428 size:0x4 mapped:0x806AB4BC
+void fn_3_6C428(void) {
     return;
 }
+
+// .text:0x0006C410 size:0x18 mapped:0x806AB4A4
+void fn_3_6C410(void) {
+    lbl_8036E548.stadium->_0C6 = 0;
+}
+
