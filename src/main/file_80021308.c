@@ -2330,8 +2330,6 @@ void* fn_80021BBC(s32 index, void* dst) {
 }
 
 // .text:0x80021CA4 size:0x3A8
-// NONMATCHING 80%: the original addresses its data tables through one pooled base (lbl_800EFBE8,
-// defined in this TU); with extern data we get a separate lis/addi per table.
 void* fn_80021CA4(s32 index, s32 variant, void* dst) {
     s32 base;
     s32 first;
@@ -2364,8 +2362,6 @@ void* fn_80021CA4(s32 index, s32 variant, void* dst) {
 }
 
 // .text:0x8002204C size:0x400
-// NONMATCHING 81%: the original addresses its data tables through one pooled base (lbl_800EFBE8,
-// defined in this TU); with extern data we get a separate lis/addi per table.
 void* fn_8002204C(s32 index, void* dst) {
     s32 entry;
     s32 sub;
