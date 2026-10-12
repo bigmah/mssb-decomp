@@ -159,7 +159,7 @@ typedef struct CharMgr {
     /*0x006C*/ ActorObjectTable* slots6C;
     /*0x0070*/ u32 _0070;
     /*0x0074*/ u8 _0074[0xAC - 0x74];
-    /*0x00AC*/ void* lights[4];
+    /*0x00AC*/ struct Light* lights[4];
     /*0x00BC*/ u8 _00BC[0x13C - 0xBC];
     /*0x013C*/ ActorObjectTable* partSlots;
     /*0x0140*/ CharParts partsPool[13];
@@ -181,7 +181,8 @@ typedef struct CharMgr {
     /*0x2D77*/ u8 state;
     /*0x2D78*/ u8 _2D78;
     /*0x2D79*/ u8 _2D79;
-    /*0x2D7A*/ u8 _2D7A[0x2];
+    /*0x2D7A*/ u8 _2D7A;
+    /*0x2D7B*/ u8 _2D7B;
     /*0x2D7C*/ u8 _2D7C;
     /*0x2D7D*/ u8 _2D7D[0x2];
     /*0x2D7F*/ s8 _2D7F[9];

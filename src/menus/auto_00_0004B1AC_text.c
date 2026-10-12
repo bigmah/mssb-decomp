@@ -1717,13 +1717,13 @@ void fn_2_54848(void) {
 // fn_2_4E7EC, size:0x38
 void fn_2_4E7EC(void) {
     MenuData* data = lbl_2_bss_1A824C[0];
-    fn_800AD054(data->_195424, data->_195428);
+    fn_800AD054(data->heapLo, data->heapHi);
 }
 
 // fn_2_4E824, size:0x34
 void fn_2_4E824(void) {
-    lbl_2_bss_1A824C[0]->_195424 = lbl_803C7898.lo;
-    lbl_2_bss_1A824C[0]->_195428 = lbl_803C7898.hi;
+    lbl_2_bss_1A824C[0]->heapLo = lbl_803C7898.lo;
+    lbl_2_bss_1A824C[0]->heapHi = lbl_803C7898.hi;
 }
 
 // fn_2_54BAC, size:0x4
