@@ -555,11 +555,10 @@ void fn_3_148EF0(u8* o, f32 ang) {
 }
 #pragma dont_inline on
 
-// NONMATCHING 89%: 148EF0 inlined; orig keeps a clrlwi copy of the colour base in its own saved reg (r30), ours folds it into the stb, shifting saved regs
-// .text:0x00148FD0 size:0x370 mapped:0x80788064
-#pragma dont_inline off
-#if NONMATCHING
-void fn_3_148FD0(u8* a, u8* p) {
+// The original inlines 148FD0 into 149340 into 14975C into 149BA8; CW only inlines bodies that big with a raised limit
+// (600 is enough; 1000 also inlines fn_3_14E234 into fn_3_14E7C0, which the original does not).
+#pragma inline_max_size(600)
+static inline void Inl148FD0(u8* a, u8* p) {
     s32 base = ((s32*)lbl_3_data_26E7C)[6];
     u8* t = ((u8**)(lbl_8036E548 + 0x2C50))[(s8)a[0x18]];
     u8 lo;
@@ -570,7 +569,7 @@ void fn_3_148FD0(u8* a, u8* p) {
     *(f32*)(p + 8) = -((f32)((s32*)lbl_3_data_26E7C)[5] / lbl_3_rodata_3930 + *(f32*)(t + 0x38));
     *(f32*)(p + 0xC) = lbl_3_rodata_3934[0];
     fn_3_148EF0(p, lbl_3_rodata_39BC * ((f32)(((s32*)lbl_3_data_26E7C)[0] / 2 - *(s16*)(p + 0x4A)) / ((f32)((s32*)lbl_3_data_26E7C)[0] * lbl_3_rodata_39A8)));
-    *(f32*)(p + 0x24) = *(f32*)(p + 0x20) = *(f32*)(p + 0x1C) = 0.0f;
+    *(f32*)(p + 0x1C) = *(f32*)(p + 0x20) = *(f32*)(p + 0x24) = 0.0f;
     r = lbl_3_rodata_39C0 * ((f32)((s32*)lbl_3_data_26E7C)[2] / lbl_3_rodata_3930);
     *(f32*)(p + 0x28) = (f32)(rand() % r) / lbl_3_rodata_39C0;
     *(f32*)(p + 0x2C) = (f32)(rand() % r) / lbl_3_rodata_39C0;
@@ -585,14 +584,8 @@ void fn_3_148FD0(u8* a, u8* p) {
     p[0x46] = lo + rand() % range;
     p[0x4C] = 0;
 }
-#endif
-#pragma dont_inline on
 
-// NONMATCHING 92% (measured with 148FD0 unwrapped): 148FD0 inlined; the hoisted float constants use one more saved FPR (f22) and the saved GPRs are shifted by one
-// .text:0x00149340 size:0x41C mapped:0x807883D4
-#pragma dont_inline off
-#if NONMATCHING
-void fn_3_149340(u8* o) {
+static inline void Inl149340(u8* o) {
     u8* p;
     u32 i;
     s32 q;
@@ -602,31 +595,53 @@ void fn_3_149340(u8* o) {
         *(s16*)(p + 0x4A) = i;
         *(f32*)(p + 0x38) = (f32)*(s32*)(lbl_3_data_26E7C + 0xC) / lbl_3_rodata_3930;
         *(f32*)(p + 0x3C) = (f32)*(s32*)(lbl_3_data_26E7C + 0x10) / lbl_3_rodata_3930;
-        fn_3_148FD0(o, p);
+        Inl148FD0(o, p);
         q = *(s32*)lbl_3_data_26E7C / 5;
         *(s16*)(p + 0x48) = ((i % 5) * q + rand() % q) * 2;
         i++;
         p = *(u8**)p;
     } while (p != NULL);
 }
-#endif
-#pragma dont_inline on
 
-// NONMATCHING 7%: the original inlines fn_3_149340 (itself with 148FD0 inlined); CW here won't inline two levels deep, so this calls it (nmverify call diff expected)
-// .text:0x0014975C size:0x44C mapped:0x807887F0
-#pragma dont_inline off
-#if NONMATCHING
-void fn_3_14975C(s8 a) {
+static inline void Inl14975C(s8 a) {
     u8* e = fn_80033A24(fn_3_14841C, 0x80, 0, *(s32*)lbl_3_data_26E7C, 1, 0x25);
     if (e != NULL) {
         e[0x18] = a;
-        fn_3_149340(e);
+        Inl149340(e);
     }
+}
+
+// NONMATCHING 89%: 148EF0 inlined; orig computes the clrlwi copy of the colour base early in its own saved reg (r30), ours sinks it to the end, shifting saved regs. Body shared with the inlined copies via Inl148FD0
+// .text:0x00148FD0 size:0x370 mapped:0x80788064
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_148FD0(u8* a, u8* p) {
+    Inl148FD0(a, p);
 }
 #endif
 #pragma dont_inline on
 
-// NONMATCHING 11%: the original inlines fn_3_14975C and through it fn_3_149340/148FD0; CW here won't inline that deep, so this calls it (nmverify call diff expected)
+// NONMATCHING 92%: 148FD0 inlined (via Inl148FD0); the hoisted float constants use one more saved FPR (f22) and the saved GPRs are shifted by one
+// .text:0x00149340 size:0x41C mapped:0x807883D4
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_149340(u8* o) {
+    Inl149340(o);
+}
+#endif
+#pragma dont_inline on
+
+// NONMATCHING 92%: 149340/148FD0 inlined via the Inl* helpers; differences are the 148FD0 register shifts
+// .text:0x0014975C size:0x44C mapped:0x807887F0
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_14975C(s8 a) {
+    Inl14975C(a);
+}
+#endif
+#pragma dont_inline on
+
+// NONMATCHING 92%: 14975C/149340/148FD0 inlined via the Inl* helpers; differences are the 148FD0 register shifts
 // .text:0x00149BA8 size:0x4C8 mapped:0x80788C3C
 #pragma dont_inline off
 #if NONMATCHING
@@ -639,7 +654,7 @@ void fn_3_149BA8(void) {
     }
     for (i = 0; i < 4; i++) {
         if (lbl_3_bss_B85C[i] > -1) {
-            fn_3_14975C(lbl_3_bss_B85C[i]);
+            Inl14975C(lbl_3_bss_B85C[i]);
         }
     }
 }
