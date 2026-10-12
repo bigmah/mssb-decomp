@@ -1646,9 +1646,15 @@ s16 lbl_802F93A0[16];
 u8 lbl_803CBAE0 = 100;
 u16 lbl_803CBAE2 = 160;
 u16 lbl_803CBAE4 = 640;
+#ifdef TARGET_PC // the same fields, by name (the structs hold pointers)
+u8 **lbl_803CBAE8[2] = {&lbl_803C6CF8.readPos, &lbl_803C7A00.readPtr};
+u8 **lbl_803CBAF0[2] = {&lbl_803C6CF8.readPos, &lbl_803C7A00.writePtr};
+u32 *lbl_803CBAF8[2] = {(u32*)&lbl_803C6CF8.buffered, &lbl_803C7A00.filled};
+#else
 u8 **lbl_803CBAE8[2] = {(void*)((u8*)&lbl_803C6CF8 + 0x708), (void*)((u8*)&lbl_803C7A00 + 0x10)};
 u8 **lbl_803CBAF0[2] = {(void*)((u8*)&lbl_803C6CF8 + 0x708), (void*)((u8*)&lbl_803C7A00 + 0x14)};
 u32 *lbl_803CBAF8[2] = {(void*)((u8*)&lbl_803C6CF8 + 0x710), (void*)((u8*)&lbl_803C7A00 + 0x1C)};
+#endif
 s16 *lbl_803CBB00[2] = {lbl_802F93C0, lbl_802F93A0};
 
 // .sbss 0x803CC174..0x803CC1B0 (MWCC lays these out in reverse definition order)

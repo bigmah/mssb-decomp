@@ -1,3 +1,7 @@
+#if defined(TARGET_PC)
+#include <stdint.h>
+uintptr_t port_heap_base(void); // port/game_heap.h
+#endif
 #include "musyx/platform.h"
 
 #if MUSY_TARGET == MUSY_TARGET_DOLPHIN
@@ -569,7 +573,8 @@ void hwSaveSample(void* header, void* data
   u32 len = (*(u32**)header)[1] & 0xFFFFFF;
   u8 type = (*(u32**)header)[1] >> 0x18;
   len = convert_length(len, type);
-  *((u32*)data) = (u32)(size_t)aramStoreData((void*)(size_t)*((u32*)data), len
+  // The sample address is a 32-bit game-heap offset (see port/game_heap.h).
+  *((u32*)data) = (u32)(size_t)aramStoreData((void*)(port_heap_base() + *((u32*)data)), len
 #if MUSY_VERSION >= MUSY_VERSION_CHECK(2, 0, 1)
                                              ,
                                              aramInfo

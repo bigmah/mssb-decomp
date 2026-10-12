@@ -33,10 +33,17 @@ typedef struct PiranhaPlant {
     /*0x84*/ void (*preDraw)(struct PiranhaPlant* p);
     /*0x88*/ u8 _88[4];
     /*0x8C*/ s32 _8C;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /*0x90*/ u8 bits : 5;
+    /*0x90*/ u8 bit5 : 1;
+    /*0x90*/ u8 hasShadow : 1;
+    /*0x90*/ u8 visible : 1;
+#else
     /*0x90*/ u8 visible : 1;
     /*0x90*/ u8 hasShadow : 1;
     /*0x90*/ u8 bit5 : 1;
     /*0x90*/ u8 bits : 5;
+#endif
     /*0x91*/ u8 _91;
     /*0x92*/ u8 _92;
     /*0x93*/ u8 _93;

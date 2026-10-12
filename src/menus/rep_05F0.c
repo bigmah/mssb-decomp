@@ -50,7 +50,8 @@ typedef struct MenuPadState {
 
 // Character select work area (lbl_8034E9A0; see CharSelWork in main/file_8004207C.h).
 typedef struct CharSelPads {
-    /*0x0000*/ u8 _0000[0x46F8];
+    /*0x0000*/ u8 _0000[0x46E8];
+    /*0x46E8*/ u8* _46E8[4]; // heap marks (CharSelectState, main/charsel_state_type.h)
     /*0x46F8*/ s8 teamPort[2];
     /*0x46FA*/ u8 _46FA[0x472C - 0x46FA];
     /*0x472C*/ MenuPadState input[4];

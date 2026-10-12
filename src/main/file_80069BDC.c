@@ -10,6 +10,12 @@
 
 #include "string.h"
 #include "musyx/musyx.h"
+#ifdef TARGET_PC
+#include "main/file_800ADC40.h" // MovPlayer (0x1C0 bytes on GameCube, larger here)
+#define MOV_PLAYER_SIZE sizeof(MovPlayer)
+#else
+#define MOV_PLAYER_SIZE 0x1C0
+#endif
 
 extern AnimEventCallback lbl_803CBD38;
 extern AnimEventCallback lbl_803CBD3C;
@@ -63,13 +69,7 @@ extern void fn_8000FEE8(u8 idx);
 extern void fn_8000F8F4(void* task);
 extern void changeScene(s32 scene, s32 state);
 
-typedef struct Unk803716B8 {
-    /*0x000*/ u8 _000[0x1E9];
-    /*0x1E9*/ u8 _1E9;
-    /*0x1EA*/ u8 _1EA[0x578 - 0x1EA];
-} Unk803716B8;
-
-extern Unk803716B8 lbl_803716B8;
+extern AramLoader lbl_803716B8; // main/file_80021308.h
 extern SpaniDesc lbl_801092F8[4];
 
 extern DiskFileEntry lbl_801092C8[2]; // [0]: intro movie, [1]: logo textures
@@ -147,7 +147,7 @@ extern void fn_800A7D4C(s32 layer, DrawNode* node);
 extern void* fn_80009018(void* value);
 extern void* _OSAllocFromHeap(s32 heap, u32 size);
 extern BOOL fn_800ADAFC(void); // returns a u8 flag (lbz)
-extern void fn_800ADC40(void* work, u32 size);
+extern void fn_800ADC40(u8* streamBuf, u32 streamBufSize);
 extern BOOL fn_800ADB04(DiskFileEntry* file, void* player, s32 a, s32 b);
 extern u32 fn_800AD6BC(void* player);
 extern void fn_800AD500(void* player, void* buffer);
@@ -476,8 +476,8 @@ void fn_8006AF9C(void) {
     case 0:
         task->_38 = 0;
         task->_36 = 0;
-        task->player = _OSAllocFromHeap(0x20, 0x1C0);
-        memset(task->player, 0, 0x1C0);
+        task->player = _OSAllocFromHeap(0x20, MOV_PLAYER_SIZE);
+        memset(task->player, 0, MOV_PLAYER_SIZE);
         task->work = _OSAllocFromHeap(0x20, 0x400000);
         fn_800ADC40(task->work, 0x400000);
         task->state++;
@@ -644,7 +644,7 @@ void fn_8006B230(void) {
 void fn_8006B668(void) {
     SceneTask* task = lbl_803CC1B8;
 
-    if (lbl_803716B8._1E9 == 0 && task->state != 6) {
+    if (lbl_803716B8.loading == 0 && task->state != 6) {
         fn_80022B68();
     }
     switch (task->state) {

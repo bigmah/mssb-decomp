@@ -1920,7 +1920,13 @@ extern u8 lbl_2_data_12EA8[];
 
 // fn_2_4E9A8, size:0x114
 s32 fn_2_4E9A8(void) {
+#ifdef TARGET_PC
+    // The original reaches the load records in lbl_2_data_1326C (0x3C4 bytes
+    // further in .data) from lbl_2_data_12EA8; separate objects on PC.
+    u8* d = lbl_2_data_1326C - 0x3C4;
+#else
     u8* d = lbl_2_data_12EA8;
+#endif
     switch (lbl_2_bss_1A8248[0]->_441C) {
     case 0:
         if (fn_80035838(d + 0x3D4, 0x18) == 0) {

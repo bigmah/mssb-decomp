@@ -48,7 +48,9 @@ typedef struct MenuRosterChar {
 } MenuRosterChar; // size: 0xA0
 typedef struct MenuCharSelect {
     /*0x0000*/ MenuRosterChar roster[6][9];
-    /*0x21C0*/ u8 _21C0[0x4701 - 0x21C0];
+    /*0x21C0*/ u8 _21C0[0x46E8 - 0x21C0];
+    /*0x46E8*/ u8* _46E8[4]; // heap marks (CharSelectState, main/charsel_state_type.h)
+    /*0x46F8*/ u8 _46F8[0x4701 - 0x46F8];
     /*0x4701*/ u8 _4701;
     /*0x4702*/ u8 _4702[0x4755 - 0x4702];
     /*0x4755*/ u8 _4755;

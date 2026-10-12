@@ -20,6 +20,7 @@
 namespace fs = std::filesystem;
 
 extern "C" void game_main(void);
+extern "C" void port_data_fixups(void);
 extern "C" void port_begin_first_frame(void);
 
 static void log_callback(AuroraLogLevel level, const char* module, const char* message, unsigned int len)
@@ -132,6 +133,7 @@ int aurora_main(int argc, char** argv)
     port_os_init();
     port_pad_init_defaults();
     port_begin_first_frame();
+    port_data_fixups();
     game_main();
     port_audio_shutdown();
     aurora_shutdown();

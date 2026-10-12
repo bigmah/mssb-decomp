@@ -77,7 +77,7 @@ void fn_2_54BB0(void) {
 
     switch (lbl_803CBBCC->step) {
     case 0:
-        memset(&lbl_2_bss_1A8250, 0, 0x1978FC);
+        memset(&lbl_2_bss_1A8250, 0, sizeof(lbl_2_bss_1A8250)); // 0x1978FC
         fn_2_54474();
         lbl_2_bss_1A824C[0]->_197848 = 1;
         fn_2_94854(0);

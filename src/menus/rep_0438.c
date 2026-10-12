@@ -75,7 +75,8 @@ typedef struct Unk800E877C {
 extern Unk800E877C lbl_800E877C;
 
 typedef struct Unk800EF808 {
-    /*0x000*/ u8 _000[0x98];
+    /*0x000*/ u32 _000; // SoundManager (main/file_80021308.h): unk0, groups[48]
+    /*0x004*/ void* _004[37];
     /*0x098*/ void* _098; // block freed with fn_800ACFB0
     /*0x09C*/ u8 _09C[0x39C - 0x9C];
 } Unk800EF808; // size: 0x39C

@@ -52,10 +52,17 @@ typedef struct ShapeAnimState {
     /*0x0C*/ u16 keyIdx;
     /*0x0E*/ s16 loops; // < 0: forever
     /*0x10*/ u8 unk10;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /*0x11*/ u8 unk11_5 : 3;
+    /*0x11*/ u8 dirtyB : 2;
+    /*0x11*/ u8 dirtyA : 2; // per frame buffer (bit = lbl_803CBBC0 != 0)
+    /*0x11*/ u8 active : 1;
+#else
     /*0x11*/ u8 active : 1;
     /*0x11*/ u8 dirtyA : 2; // per frame buffer (bit = lbl_803CBBC0 != 0)
     /*0x11*/ u8 dirtyB : 2;
     /*0x11*/ u8 unk11_5 : 3;
+#endif
     /*0x14*/ u32 unk14;
     /*0x18*/ ShapeSeq seqs[1];
 } ShapeAnimState;

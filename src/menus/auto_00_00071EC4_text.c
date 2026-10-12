@@ -1923,9 +1923,9 @@ extern void fn_80051D00(void);
 
 // lbl_8034E978 is the MenuState, lbl_800FEF70 the MenuDef table (main/file_800527C4.h).
 static inline void SetMenu(s32 menu) {
-    lbl_803CBBC4[0] = menu;     // menu
-    lbl_803CBBC4[9] = lbl_803CBBC4[8];    // prevTrack = track
-    lbl_803CBBC4[8] = lbl_800FEF70[menu].track;
+    lbl_8034E978.menu = menu;
+    lbl_8034E978.prevTrack = lbl_8034E978.track;
+    lbl_8034E978.track = lbl_800FEF70[menu].track;
 }
 
 // fn_2_7265C, size:0x1B8

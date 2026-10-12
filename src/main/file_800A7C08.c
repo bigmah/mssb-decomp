@@ -45,7 +45,8 @@ void* fn_800A7C08(void* arg) {
             }
             if (!(next & 1) && (next & 2) == lbl_803C7420.field) {
                 if (node->func != NULL) {
-                    node->func();
+                    // The callbacks get their node in r3 (SpriteDrawCmd etc.).
+                    ((void (*)(DrawCallbackNode*))node->func)(node);
                 }
             }
             node = (DrawCallbackNode*)(next & ~3);

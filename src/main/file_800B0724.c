@@ -86,6 +86,32 @@ void initSound(SoundConfig* config, u8* aiStack, u8* heapStart, u32 heapSize) {
     }
 }
 
+
+// The sprite display lists are GX command streams: big-endian on PC too.
+#ifdef TARGET_PC
+#define DL_BE16(p) swap16_inplace(p)
+#define DL_BE32(p) swap32_inplace(p)
+#define DL_BE32_ARRAY(p, n) swap32_array((p), (n))
+static inline void DL_BE_QUADVTX(u8* p, s32 count) {
+    s32 i;
+    for (i = 0; i < count; i++, p += 0x14) {
+        swap32_array(p, 4); // pos, color
+        swap16_array(p + 0x10, 2); // s, t
+    }
+}
+#else
+#define DL_BE16(p)
+#define DL_BE32(p)
+#define DL_BE32_ARRAY(p, n)
+#define DL_BE_QUADVTX(p, count)
+#endif
+// GD also writes aurora's texture/TLUT bind commands on PC (file_800A1A70.c).
+#ifdef TARGET_PC
+#define DL_AURORA_TEX_BYTES 64
+#else
+#define DL_AURORA_TEX_BYTES 0
+#endif
+
 // fn_800B0934, size:0x4
 void fn_800B0934(void) {
 }
@@ -286,8 +312,14 @@ void RunDrawScripts_with_stack_variables(void) {
 // Sprite system globals (see SpriteWork / SpriteState).
 extern SpriteWork lbl_802FE8B8;
 // The same memory as lbl_802FE8B8.wanted/.committed and .proj; fn_800B24D4 addresses them by these names.
-extern SpriteState lbl_802FEBF8[SPRITE_MAX_LAYERS * 2]; // TODO port: alias of lbl_802FE8B8.wanted
-extern SpriteProj lbl_802FE918[SPRITE_MAX_LAYERS];      // TODO port: alias of lbl_802FE8B8.proj
+#ifdef TARGET_PC
+// One object on PC (the GameCube symbols are addresses inside lbl_802FE8B8).
+#define lbl_802FEBF8 (lbl_802FE8B8.wanted) // [SPRITE_MAX_LAYERS * 2]: .wanted then .committed
+#define lbl_802FE918 (lbl_802FE8B8.proj)
+#else
+extern SpriteState lbl_802FEBF8[SPRITE_MAX_LAYERS * 2]; // alias of lbl_802FE8B8.wanted
+extern SpriteProj lbl_802FE918[SPRITE_MAX_LAYERS];      // alias of lbl_802FE8B8.proj
+#endif
 extern SpriteDrawCmd lbl_80111340[2][SPRITE_MAX_LAYERS]; // per buffer, per layer
 extern GDCurrentDL* lbl_803CC0F0;  // __GDCurrentDL
 extern GDCurrentDL* lbl_803CC1C0;  // current layer's display list
@@ -361,6 +393,7 @@ static inline BOOL SpriteSyncZMode(void) {
         SpriteReserve(5);
         *lbl_803CC1C0->pDisplayListData = 0x61;
         *(u32*)(lbl_803CC1C0->pDisplayListData + 1) = lbl_803CBB38->zMode;
+        DL_BE32((lbl_803CC1C0->pDisplayListData + 1));
         lbl_803CC1C0->pDisplayListData += 5;
         return TRUE;
     }
@@ -595,21 +628,30 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, TexImage* tex, u16 width, u
         // XF load: 7 projection registers at 0x1020
         *lbl_803CC1C0->pDisplayListData = 0x10;
         *(u16*)(lbl_803CC1C0->pDisplayListData + 1) = 6;
+        DL_BE16((lbl_803CC1C0->pDisplayListData + 1));
         *(u16*)(lbl_803CC1C0->pDisplayListData + 3) = 0x1020;
+        DL_BE16((lbl_803CC1C0->pDisplayListData + 3));
         lbl_803CC1C0->pDisplayListData += 5;
         *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[0];
+        DL_BE32(lbl_803CC1C0->pDisplayListData);
         lbl_803CC1C0->pDisplayListData += 4;
         *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[1];
+        DL_BE32(lbl_803CC1C0->pDisplayListData);
         lbl_803CC1C0->pDisplayListData += 4;
         *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[2];
+        DL_BE32(lbl_803CC1C0->pDisplayListData);
         lbl_803CC1C0->pDisplayListData += 4;
         *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[3];
+        DL_BE32(lbl_803CC1C0->pDisplayListData);
         lbl_803CC1C0->pDisplayListData += 4;
         *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[4];
+        DL_BE32(lbl_803CC1C0->pDisplayListData);
         lbl_803CC1C0->pDisplayListData += 4;
         *(u32*)lbl_803CC1C0->pDisplayListData = *(u32*)&lbl_803CBB34->proj.p[5];
+        DL_BE32(lbl_803CC1C0->pDisplayListData);
         lbl_803CC1C0->pDisplayListData += 4;
         *(u32*)lbl_803CC1C0->pDisplayListData = lbl_803CBB34->proj.type;
+        DL_BE32(lbl_803CC1C0->pDisplayListData);
         lbl_803CC1C0->pDisplayListData += 4;
         changed = TRUE;
     } else {
@@ -623,9 +665,12 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, TexImage* tex, u16 width, u
         // XF load: position matrix 0 (12 registers at 0)
         *lbl_803CC1C0->pDisplayListData = 0x10;
         *(u16*)(lbl_803CC1C0->pDisplayListData + 1) = 0xB;
+        DL_BE16((lbl_803CC1C0->pDisplayListData + 1));
         *(u16*)(lbl_803CC1C0->pDisplayListData + 3) = 0;
+        DL_BE16((lbl_803CC1C0->pDisplayListData + 3));
         lbl_803CC1C0->pDisplayListData += 5;
         memcpy(lbl_803CC1C0->pDisplayListData, lbl_803CBB34->mtx, sizeof(Mtx));
+        DL_BE32_ARRAY(lbl_803CC1C0->pDisplayListData, 12);
         changed = TRUE;
         lbl_803CC1C0->pDisplayListData += sizeof(Mtx);
     } else {
@@ -671,6 +716,7 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, TexImage* tex, u16 width, u
                 SpriteReserve(5);
                 *lbl_803CC1C0->pDisplayListData = 0x61;
                 *(u32*)(lbl_803CC1C0->pDisplayListData + 1) = 0x40000013;
+                DL_BE32((lbl_803CC1C0->pDisplayListData + 1));
                 lbl_803CC1C0->pDisplayListData += 5;
             }
             SpriteReserve(5);
@@ -683,6 +729,7 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, TexImage* tex, u16 width, u
                 SpriteReserve(5);
                 *lbl_803CC1C0->pDisplayListData = 0x61;
                 *(u32*)(lbl_803CC1C0->pDisplayListData + 1) = lbl_803CBB34->zMode;
+                DL_BE32((lbl_803CC1C0->pDisplayListData + 1));
                 lbl_803CC1C0->pDisplayListData += 5;
             }
             SpriteReserve(5);
@@ -714,15 +761,26 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, TexImage* tex, u16 width, u
 
     if (lbl_803CBB34->primOffset >= 0 && !dirty) {
         u8* hdr = lbl_803CC1C0->begin + lbl_803CBB34->primOffset;
+#ifdef TARGET_PC
+        u16 n = read_be16(hdr + 1);
+#else
         u16 n = *(u16*)(hdr + 1);
+#endif
         if (hdr[0] == GX_QUADS && prim == GX_QUADS &&
             lbl_803CC1C0->pDisplayListData == hdr + n * sizeof(QuadVtx) + 3 && n < 0xFFFF - count) {
             s32 size = count * sizeof(QuadVtx);
             SpriteReserve(size);
             hdr = lbl_803CC1C0->begin + lbl_803CBB34->primOffset;
             memcpy(lbl_803CC1C0->pDisplayListData, verts, size);
+            DL_BE_QUADVTX(lbl_803CC1C0->pDisplayListData, count);
             lbl_803CC1C0->pDisplayListData += size;
+#ifdef TARGET_PC
+            swap16_inplace(hdr + 1);
             *(u16*)(hdr + 1) += count;
+            swap16_inplace(hdr + 1);
+#else
+            *(u16*)(hdr + 1) += count;
+#endif
             return;
         }
     }
@@ -732,8 +790,10 @@ void DrawSprite(s32 prim, QuadVtx* verts, s32 count, TexImage* tex, u16 width, u
         SpriteReserve(size + 3);
         *lbl_803CC1C0->pDisplayListData = prim;
         *(u16*)(lbl_803CC1C0->pDisplayListData + 1) = count;
+        DL_BE16((lbl_803CC1C0->pDisplayListData + 1));
         lbl_803CC1C0->pDisplayListData += 3;
         memcpy(lbl_803CC1C0->pDisplayListData, verts, size);
+        DL_BE_QUADVTX(lbl_803CC1C0->pDisplayListData, count);
         lbl_803CC1C0->pDisplayListData += size;
     }
 }
@@ -752,7 +812,7 @@ s32 fn_800B1EBC(TexImage* tex, s32 map, u32 width, u32 height) {
     lbl_803CBB34->serial++;
     if (lbl_803CBB34->tex[map] != tex) {
         lbl_803CBB34->tex[map] = tex;
-        SpriteReserve(((tex->tlut != NULL) * 7 + 4) * 5);
+        SpriteReserve(((tex->tlut != NULL) * 7 + 4) * 5 + DL_AURORA_TEX_BYTES);
         if (tex->tlut != NULL) {
             u32 tmem;
             u32 tlutSize = GX_TLUT_16;

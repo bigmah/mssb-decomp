@@ -102,8 +102,13 @@ typedef struct MenuFieldRecord {
 // lbl_8034E9A0 + 0x4908: three 4-byte slots.
 typedef struct MenuSlot4908 {
     /*0x0*/ u8 _0;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /*0x1*/ u8 _1_lo : 3;
+    /*0x1*/ u8 _1_hi : 5;
+#else
     /*0x1*/ u8 _1_hi : 5;
     /*0x1*/ u8 _1_lo : 3;
+#endif
     /*0x2*/ u8 _2;
     /*0x3*/ u8 _3;
 } MenuSlot4908;

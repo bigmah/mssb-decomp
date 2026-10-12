@@ -1,3 +1,6 @@
+#ifdef TARGET_PC
+#include "port/musyx_data.h"
+#endif
 #include "main/file_80021308.h"
 #include "main/file_800B0724.h"
 #include "main/aramloader.h" // lbl_803C6CF8
@@ -2043,14 +2046,26 @@ s8 lbl_800F743C[0x3C] = { // [0x36] used, zero tail
 
 
 // The on-disc group data stores its pointers as offsets from the start of the block.
-// TODO(port): these are 4-byte pointer fields on disc; SoundGroupData needs
-// PTR32 fields on PC (Phase 3). Then swap the MusyX data to native order here,
-// once per load: port_musyx_swap_proj/sdir/pool (port/include/port/musyx_data.h).
 static inline void relocateSoundGroup(SoundGroupData* data) {
+#ifdef TARGET_PC
+    // Big-endian on disc: swap the header and the MusyX project, sample
+    // directory and pool once, then relocate (the samples stay big-endian).
+    if (data->proj > 0x00FFFFFF) {
+        swap32_array(data, 7);
+        port_musyx_swap_proj((u8*)data + data->proj, data->projSize);
+        port_musyx_swap_sdir((u8*)data + data->sdir, data->sdirSize);
+        port_musyx_swap_pool((u8*)data + data->pool, data->poolSize);
+    }
+    PTR32_SET(data->proj, (u8*)data + data->proj);
+    PTR32_SET(data->sdir, (u8*)data + data->sdir);
+    PTR32_SET(data->pool, (u8*)data + data->pool);
+    PTR32_SET(data->samp, (u8*)data + data->samp);
+#else
     data->proj = (u8*)data->proj + (uintptr_t)data;
     data->sdir = (u8*)data->sdir + (uintptr_t)data;
     data->pool = (u8*)data->pool + (uintptr_t)data;
     data->samp = (u8*)data->samp + (uintptr_t)data;
+#endif
 }
 
 // Advance the ARAM/disc transfer queue; returns 1 once it is empty (inlined into callers).
@@ -2164,7 +2179,7 @@ s32 fn_800214D0(void) {
 
 // .text:0x80021518 size:0x74
 s32 fn_80021518(u16 gid, SoundGroupData* data) {
-    if (sndPushGroup(data->proj, gid, data->samp, data->sdir, data->pool) == 0) {
+    if (sndPushGroup(PTR32_GET(void, data->proj), gid, PTR32_GET(void, data->samp), PTR32_GET(void, data->sdir), PTR32_GET(void, data->pool)) == 0) {
         return 0;
     }
     lbl_800EF808.groupStack[lbl_800EF808.groupStackCount++] = gid;
@@ -2194,7 +2209,7 @@ void fn_80021650(DiskFileEntry* entry, void* dst, void* user) {
     relocateSoundGroup(data);
     req->onLoaded(req, data);
     data = lbl_800EF808.groups[group];
-    fn_800ACF78(data, (u32)((u8*)data->samp - (u8*)data));
+    fn_800ACF78(data, (u32)((u8*)PTR32_GET(void, data->samp) - (u8*)data));
     req->task->done = 1;
 }
 
@@ -2237,7 +2252,7 @@ void fn_80021758(void) {
     case 2:
         if (task->callback(&task->callbackState) == 0) {
             SoundGroupData** slot = &lbl_800EF808.groups[task->group];
-            fn_800ACF78(*slot, (u32)((u8*)(*slot)->samp - (u8*)*slot));
+            fn_800ACF78(*slot, (u32)((u8*)PTR32_GET(void, (*slot)->samp) - (u8*)*slot));
             parent = task->parent;
             parent->done = 1;
             fn_800B0A14_removeQueue(parent);
@@ -2249,7 +2264,7 @@ void fn_80021758(void) {
 // .text:0x80021954 size:0x2C
 void fn_80021954(SoundGroupData** slot) {
     SoundGroupData* data = *slot;
-    fn_800ACF78(data, (u32)((u8*)data->samp - (u8*)data));
+    fn_800ACF78(data, (u32)((u8*)PTR32_GET(void, data->samp) - (u8*)data));
 }
 
 // .text:0x80021980 size:0x34
