@@ -5,19 +5,22 @@
 #include "main/file_800263FC.h"
 #include "Dolphin/rand.h"
 
-// Pitch / hit ball trail effects (lbl_3_data_26F78).
-typedef struct BallTrailFx {
-    /*0x000*/ ParticleParams9 pitch[2]; // unk38: z where the pitch trail ends (x100000)
-    /*0x090*/ ParticleParams9 hit[2];   // unk38/unk3C: min/max trail length, percent of the hang time (x100000)
-    /*0x120*/ s32 minHitHeight;         // x100000
-} BallTrailFx;
-extern BallTrailFx lbl_3_data_26F78;
+// Pitch / hit ball trail effects (lbl_3_data_26F78..271A8). The original keeps them as separate
+// file statics that the code reaches through one pooled .data base.
+// pitch unk38: z where the pitch trail ends (x100000)
+static ParticleParams9 sPitchTrail[2] = {
+    {NULL, 22, 128, 0, 50000, 100000, 10, 32, 32, -3000000, 6000000, -4500000, 4500000, 128, -100000, 0, 0, 0},
+    {NULL, 40, 128, 0, 70000, 90000, 10, 32, 32, -3000000, 6000000, -4500000, 4500000, 128, -100000, 0, -4500000, 4500000},
+};
+// hit unk38/unk3C: min/max trail length, percent of the hang time (x100000)
+static ParticleParams9 sHitTrail[2] = {
+    {NULL, 22, 256, 0, 80000, 150000, 50, 32, 32, -6000000, 6000000, -4500000, 4500000, 32, 6000000, 9000000, 0, 0},
+    {NULL, 40, 256, 0, 80000, 150000, 50, 32, 32, -6000000, 6000000, -4500000, 4500000, 32, 6000000, 9000000, -4500000, 4500000},
+};
+static s32 sMinHitHeight = 200000; // x100000
 // Hit / pitch line effects (lbl_3_data_2709C).
-typedef struct BallLineFx {
-    /*0x000*/ ParticleParamsA hit;
-    /*0x084*/ ParticleParamsA pitch;
-} BallLineFx;
-extern BallLineFx lbl_3_data_2709C;
+static ParticleParamsA sLineHit = {NULL, 40, 256, 30, 10000, 90000, 100000, 60000, 70000, 30, 40, 32, 32, 80000, 150000, -6000000, 6000000, -4500000, 4500000, 2000000, 3000000, -4500000, 4500000, 400000, 800000, 70000, 80000, -100000, -120000, 25000, 50000, 0, 25000};
+static ParticleParamsA sLinePitch = {NULL, 40, 128, 30, 10000, 90000, 100000, 80000, 90000, 20, 30, 128, 128, 70000, 90000, -3000000, 6000000, -4500000, 4500000, 1500000, 2000000, -4500000, 4500000, 400000, 800000, 70000, 80000, -100000, -120000, 25000, 50000, 0, 25000};
 // Stadium effect state (lbl_3_common_bss_35154); only the fields used here.
 extern struct {
     /*0x000*/ u8 _000[0x4];
@@ -42,7 +45,7 @@ void fn_3_15B79C(int flag) {
     VecXYZ pos;
     VecXYZ vel;
     VecXYZ add;
-    f32 limit = (f32)lbl_3_data_26F78.pitch[flag].unk38 / 100000.0f;
+    f32 limit = (f32)sPitchTrail[flag].unk38 / 100000.0f;
     memcpy(&pos, &g_Pitcher, sizeof(VecXYZ));
     memcpy(&vel, &g_Pitcher.ballVelocity, sizeof(VecXYZ));
     memcpy(&add, &g_Pitcher.pitchCurveVeloV1, sizeof(VecXYZ));
@@ -58,11 +61,7 @@ void fn_3_15B79C(int flag) {
 }
 
 // Spawns the ball trail: flag 0 the ground trail, 1 the line trail.
-// NONMATCHING 73%: the original reaches lbl_3_data_2709C through the lbl_3_data_26F78 base (+0x124/+0x1A8,
-// same-TU data pooling), so every address computation and the register allocation differ
-// nmverify: lbl_3_data_2709C is reached via the pooled lbl_3_data_26F78 base in the original
 // .text:0x0015BAA0 size:0x560 mapped:0x8079AB34
-#if NONMATCHING
 void fn_3_15BAA0(s32 flag) {
     VecXYZ pos;
     VecXYZ end;
@@ -72,7 +71,7 @@ void fn_3_15BAA0(s32 flag) {
     f32 limit;
     f32 minLen;
     f32 lenRange;
-    ParticleParams9* trail;
+    f32 len;
 
     if (g_GameLogic.bOD_framesInLiveBallScene >= 0) {
         state = 2;
@@ -84,27 +83,26 @@ void fn_3_15BAA0(s32 flag) {
     case 0:
         // Pitch: simulate the pitch from the release point to the plate.
         if (lbl_3_common_bss_35154._464 == 0) {
-            limit = (f32)lbl_3_data_26F78.pitch[flag].unk38 / 100000.0f;
+            limit = (f32)sPitchTrail[flag].unk38 / 100000.0f;
             memcpy(&pos, &g_Pitcher.ballCurrentPosition, sizeof(VecXYZ));
             memcpy(&end, &g_Pitcher.ballVelocity, sizeof(VecXYZ));
             memcpy(&add, &g_Pitcher.pitchCurveVeloV1, sizeof(VecXYZ));
-            trail = &lbl_3_data_26F78.pitch[flag];
-            trail->life = 0;
+            sPitchTrail[flag].life = 0;
             while (pos.z > limit) {
                 fn_3_15C024(&pos, &end, &add, 0);
-                trail->life++;
+                sPitchTrail[flag].life++;
             }
             pos.y = -pos.y;
             end.x = g_Pitcher.ballCurrentPosition.x;
             end.y = -g_Pitcher.ballCurrentPosition.y;
             end.z = g_Pitcher.ballCurrentPosition.z;
             if (flag) {
-                lbl_3_data_2709C.pitch.unk10 = trail->life;
-                lbl_3_data_2709C.pitch.tex = lbl_3_common_bss_35154.tex;
-                fn_8002CE4C(&end, &pos, &lbl_3_data_2709C.pitch);
+                sLinePitch.tex = lbl_3_common_bss_35154.tex;
+                sLinePitch.unk10 = sPitchTrail[flag].life;
+                fn_8002CE4C(&end, &pos, &sLinePitch);
             } else {
-                trail->tex = lbl_3_common_bss_35154.tex;
-                fn_8002DCE4(&end, &pos, trail);
+                sPitchTrail[flag].tex = lbl_3_common_bss_35154.tex;
+                fn_8002DCE4(&end, &pos, &sPitchTrail[flag]);
             }
         }
         break;
@@ -112,50 +110,49 @@ void fn_3_15BAA0(s32 flag) {
     case 2:
         // Hit: trail along the predicted flight path.
         if (flag) {
-            lbl_3_data_2709C.hit.tex = lbl_3_common_bss_35154.tex;
+            sLineHit.tex = lbl_3_common_bss_35154.tex;
             memcpy(&pos, &g_Ball, sizeof(VecXYZ));
             i = 0;
             while (g_Ball.physicsSubstruct.futureCoordsAndDist[i + 1].pos.y >= g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.y) {
                 i++;
             }
-            limit = (f32)lbl_3_data_26F78.minHitHeight / 100000.0f;
+            limit = (f32)sMinHitHeight / 100000.0f;
             while (g_Ball.physicsSubstruct.futureCoordsAndDist[i + 1].pos.y >= limit) {
                 i++;
             }
-            lbl_3_data_2709C.hit.unk10 = i;
+            sLineHit.unk10 = i;
             memcpy(&end, &g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos, sizeof(VecXYZ));
             pos.y = -pos.y;
             end.y = -end.y;
-            fn_8002CE4C(&pos, &end, &lbl_3_data_2709C.hit);
+            fn_8002CE4C(&pos, &end, &sLineHit);
         } else {
-            trail = &lbl_3_data_26F78.hit[flag];
-            trail->tex = lbl_3_common_bss_35154.tex;
-            minLen = ((f32)trail->unk38 / 100000.0f) / 100.0f;
-            lenRange = ((f32)trail->unk3C / 100000.0f) / 100.0f - minLen;
+            sHitTrail[flag].tex = lbl_3_common_bss_35154.tex;
+            minLen = ((f32)sHitTrail[flag].unk38 / 100000.0f) / 100.0f;
+            lenRange = ((f32)sHitTrail[flag].unk3C / 100000.0f) / 100.0f - minLen;
             i = 0;
             while (g_Ball.physicsSubstruct.futureCoordsAndDist[i].pos.y < g_Ball.physicsSubstruct.futureCoordsAndDist[i + 1].pos.y) {
                 i++;
             }
-            trail->life = (minLen + (lenRange * rand()) / 32767.0f) * (f32)(g_Ball.hangtimeOfHit - i) + (f32)i;
+            len = minLen + (lenRange * rand()) / 32767.0f;
+            sHitTrail[flag].life = len * (f32)(g_Ball.hangtimeOfHit - i) + (f32)i;
             memcpy(&pos, &g_Ball, sizeof(VecXYZ));
-            memcpy(&end, &g_Ball.physicsSubstruct.futureCoordsAndDist[trail->life].pos, sizeof(VecXYZ));
+            memcpy(&end, &g_Ball.physicsSubstruct.futureCoordsAndDist[sHitTrail[flag].life].pos, sizeof(VecXYZ));
             pos.y = -pos.y;
             end.y = -end.y;
-            fn_8002DCE4(&pos, &end, trail);
+            fn_8002DCE4(&pos, &end, &sHitTrail[flag]);
         }
         break;
     }
 }
-#endif
 
 // .text:0x0015C000 size:0x14 mapped:0x8079B094
 void fn_3_15C000(void) {
-    lbl_3_data_2709C.hit.unk10 = 2;
+    sLineHit.unk10 = 2;
 }
 
 // .text:0x0015C014 size:0x10 mapped:0x8079B0A8
 u32 fn_3_15C014(void) {
-    return lbl_3_data_2709C.hit.unk10;
+    return sLineHit.unk10;
 }
 
 // .text:0x0015C024 size:0x20C mapped:0x8079B0B8
