@@ -37,3 +37,6 @@ compile_commands.json
 
 # Local Python env (m2c), created by tools/setup.py
 .venv/
+
+# nmpromote/permute temp sources
+*.nmtmp*.c
