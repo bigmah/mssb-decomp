@@ -22,6 +22,49 @@ extern const f32 lbl_803CC568; // 3.1415925f
 extern const f32 lbl_803CC56C; // 2048.0f
 #ifdef TARGET_PC
 #include "main/file_80011640.h" // CharMgr lbl_8036E548
+#include "main/file_80063028.h" // GameActor, GameBone
+#include "main/file_800BD8C4.h" // ActorObject
+
+// MActor/MBone/MDisplayObj/ActorSlot here are other views of GameActor/
+// GameBone/DODisplayObj/ActorObject: keep them interchangeable on PC.
+#define PORT_SAME_FIELD(A, fa, B, fb) _Static_assert(offsetof(A, fa) == offsetof(B, fb), #A "." #fa " vs " #B "." #fb)
+PORT_SAME_FIELD(MActor, pal, GameActor, pal);
+PORT_SAME_FIELD(MActor, skinObject, GameActor, skinObject);
+PORT_SAME_FIELD(MActor, boneArray, GameActor, boneArray);
+PORT_SAME_FIELD(MActor, forwardMtxArray, GameActor, forwardMtxArray);
+PORT_SAME_FIELD(MActor, drawPriorityList, GameActor, drawPriorityList);
+PORT_SAME_FIELD(MActor, unk7C, GameActor, skHeader);
+PORT_SAME_FIELD(MActor, unk80, GameActor, anchorBoneA);
+PORT_SAME_FIELD(MActor, unk88, GameActor, boneRemap);
+PORT_SAME_FIELD(MActor, unk8C, GameActor, blend);
+PORT_SAME_FIELD(MActor, unk94, GameActor, boneCallback);
+PORT_SAME_FIELD(MActor, unk98, GameActor, flags);
+_Static_assert(sizeof(MActor) == sizeof(GameActor), "MActor size");
+PORT_SAME_FIELD(MBone, dispObj, GameBone, dispObj);
+PORT_SAME_FIELD(MBone, orientationCtrl, GameBone, orientCtrl);
+PORT_SAME_FIELD(MBone, unk60, GameBone, animCtrl);
+PORT_SAME_FIELD(MBone, unkA4, GameBone, blendCtrl);
+PORT_SAME_FIELD(MBone, anim, GameBone, animPipe);
+PORT_SAME_FIELD(MBone, forwardMtx, GameBone, forwardMtx);
+PORT_SAME_FIELD(MBone, orientationInvMtx, GameBone, orientationInvMtx);
+PORT_SAME_FIELD(MBone, drawPriorityLink, GameBone, drawPriorityLink);
+PORT_SAME_FIELD(MBone, unk134, GameBone, flags);
+_Static_assert(sizeof(MBone) == sizeof(GameBone), "MBone size");
+PORT_SAME_FIELD(MDisplayObj, worldMatrix, struct DODisplayObj, worldMatrix);
+PORT_SAME_FIELD(MDisplayObj, tevCallback, struct DODisplayObj, tevCallback);
+PORT_SAME_FIELD(MDisplayObj, shaderData, struct DODisplayObj, shaderData);
+PORT_SAME_FIELD(MDisplayObj, colors, struct DODisplayObj, bounds);
+PORT_SAME_FIELD(ActorSlot, anim, ActorObject, animBank);
+PORT_SAME_FIELD(ActorSlot, unk8, ActorObject, callback);
+PORT_SAME_FIELD(ActorSlot, id, ActorObject, id);
+PORT_SAME_FIELD(ActorSlot, speed, ActorObject, unk54);
+PORT_SAME_FIELD(ActorSlot, unk58, ActorObject, setAnimation);
+PORT_SAME_FIELD(ActorSlot, unk60, ActorObject, speed);
+PORT_SAME_FIELD(ActorSlot, unk68, ActorObject, boneRemap);
+PORT_SAME_FIELD(ActorSlot, unk6C, ActorObject, animateBones);
+PORT_SAME_FIELD(ActorSlot, unk70, ActorObject, lights);
+_Static_assert(sizeof(ActorSlot) == sizeof(ActorObject), "ActorSlot size");
+PORT_SAME_FIELD(ActorSlotTable, slots, ActorObjectTable, objects);
 #else
 extern u8 lbl_8036E548[]; // TODO type
 #endif
@@ -155,13 +198,13 @@ u8* fn_80023078(MDisplayObj* dispObj, MDisplayLayout* layout, u8* buffer) {
     cursor.ptr = buffer;
     if (layout->positionData != NULL) {
         dispObj->positionData = (PositionData*)allocBuffer(&cursor, 0x20);
-        *dispObj->positionData = *layout->positionData;
+        *dispObj->positionData = *PTR32_GET(PositionData, layout->positionData);
     } else {
         dispObj->positionData = NULL;
     }
     if (layout->colorData != NULL) {
         dispObj->colorData = (ColorData*)allocBuffer(&cursor, 0x20);
-        *dispObj->colorData = *layout->colorData;
+        *dispObj->colorData = *PTR32_GET(ColorData, layout->colorData);
     } else {
         dispObj->colorData = NULL;
     }
@@ -172,7 +215,7 @@ u8* fn_80023078(MDisplayObj* dispObj, MDisplayLayout* layout, u8* buffer) {
         dispObj->numTextureChannels = count;
         allocBuffer(&cursor, (count * sizeof(TextureData) + 0x1F) & ~0x1F);
         for (i = 0; i < layout->numTextureChannels; i++) {
-            dispObj->textureData[i] = layout->textureData[i];
+            dispObj->textureData[i] = PTR32_GET(TextureData, layout->textureData)[i];
         }
     } else {
         dispObj->textureData = NULL;
@@ -180,13 +223,13 @@ u8* fn_80023078(MDisplayObj* dispObj, MDisplayLayout* layout, u8* buffer) {
     }
     if (layout->lightingData != NULL) {
         dispObj->lightingData = (LightingData*)allocBuffer(&cursor, 0x20);
-        *dispObj->lightingData = *layout->lightingData;
+        *dispObj->lightingData = *PTR32_GET(LightingData, layout->lightingData);
     } else {
         dispObj->lightingData = NULL;
     }
     if (layout->displayData != NULL) {
         dispObj->displayData = (DisplayData*)allocBuffer(&cursor, 0x20);
-        *dispObj->displayData = *layout->displayData;
+        *dispObj->displayData = *PTR32_GET(DisplayData, layout->displayData);
     } else {
         dispObj->displayData = NULL;
     }

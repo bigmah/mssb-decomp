@@ -29,11 +29,11 @@ typedef struct MControl {
 
 // Display object layout in a geometry palette (SDK DODisplayLayout plus colors).
 typedef struct MDisplayLayout {
-    /* 0x00 */ PositionData* positionData;
-    /* 0x04 */ ColorData* colorData;
-    /* 0x08 */ TextureData* textureData;
-    /* 0x0C */ LightingData* lightingData;
-    /* 0x10 */ DisplayData* displayData;
+    /* 0x00 */ PTR32(PositionData) positionData;
+    /* 0x04 */ PTR32(ColorData) colorData;
+    /* 0x08 */ PTR32(TextureData) textureData;
+    /* 0x0C */ PTR32(LightingData) lightingData;
+    /* 0x10 */ PTR32(DisplayData) displayData;
     /* 0x14 */ u8 numTextureChannels;
     /* 0x15 */ u8 unk15;
     /* 0x16 */ u16 pad16;
@@ -52,7 +52,7 @@ typedef struct MDisplayObj {
     /* 0x16 */ u8 visibility;
     /* 0x17 */ u8 pad17;
     /* 0x18 */ Mtx worldMatrix;
-    /* 0x48 */ u32 unk48;
+    /* 0x48 */ void* tevCallback; // DODisplayObj.tevCallback: the two are cast to each other
     /* 0x4C */ void* shaderFunc;
     /* 0x50 */ void* shaderData;
     /* 0x54 */ GXColor colors[6];
@@ -134,14 +134,14 @@ typedef struct MActor {
     /* 0x68 */ Mtx* skinInvTransposeMtxArray;
     /* 0x6C */ Mtx* orientationInvMtxArray;
     /* 0x70 */ DSList drawPriorityList;
-    /* 0x7C */ u32 unk7C;
+    /* 0x7C */ struct sHdr* unk7C; // GameActor.skHeader
     /* 0x80 */ u16 unk80;
     /* 0x82 */ u16 unk82;
     /* 0x84 */ u16 unk84;
-    /* 0x88 */ u32 unk88;
+    /* 0x88 */ u16* unk88; // GameActor.boneRemap
     /* 0x8C */ f32 unk8C;
     /* 0x90 */ f32 unk90;
-    /* 0x94 */ u32 unk94;
+    /* 0x94 */ void* unk94; // GameActor.boneCallback
     /* 0x98 */ u8 unk98;
     /* 0x99 */ u8 unk99;
     /* 0x9A */ u8 unk9A[6];
@@ -151,7 +151,7 @@ typedef struct MActor {
 typedef struct ActorSlot {
     /* 0x00 */ MActor* actor;
     /* 0x04 */ void* anim; // animation bank
-    /* 0x08 */ u32 unk8;
+    /* 0x08 */ void* unk8; // ActorObject.callback
     /* 0x0C */ s16 id;
     /* 0x0E */ s16 unkE;
     /* 0x10 */ u8 unk10[0x44];
@@ -163,11 +163,11 @@ typedef struct ActorSlot {
     /* 0x60 */ f32 unk60;
     /* 0x64 */ s16 unk64;
     /* 0x66 */ s16 unk66;
-    /* 0x68 */ u32 unk68;
+    /* 0x68 */ u16* unk68; // ActorObject.boneRemap
     /* 0x6C */ u8 unk6C;
     /* 0x6D */ u8 unk6D;
     /* 0x6E */ u8 unk6E[2];
-    /* 0x70 */ u32 unk70[8];
+    /* 0x70 */ void* unk70[8]; // ActorObject.lights
 } ActorSlot; // size: 0x90
 
 typedef struct ActorSlotTable {
