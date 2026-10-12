@@ -27,7 +27,7 @@ void fn_1_D688(void);
 
 void fn_1_D6B4(void);
 
-s32 fn_1_D6E4(void);
+const char* fn_1_D6E4(void);
 
 s32 fn_1_160D8(s8 a, s8 b);
 
