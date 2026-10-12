@@ -104,14 +104,11 @@ void fn_800A7E00(void) {
 #endif
 
 // .text:0x800A7F10 size:0x1D8
-// NONMATCHING 99%: int->float magic constant lives in unsplit .sdata2 (reloc name differs); lis order of &GXNtsc480Int vs &lbl_803C7420 swapped
-#if NONMATCHING
 void fn_800A7F10(BOOL reset) {
     if (reset) {
-        GXRenderModeObj* rmode = &lbl_803C7420.renderModeCopy;
-        GXAdjustForOverscan(&GXNtsc480Int, rmode, 0, 16);
-        lbl_803C7420.renderMode = rmode;
-        VIConfigure(rmode);
+        GXAdjustForOverscan(&GXNtsc480Int, &lbl_803C7420.renderModeCopy, 0, 16);
+        lbl_803C7420.renderMode = &lbl_803C7420.renderModeCopy;
+        VIConfigure(&lbl_803C7420.renderModeCopy);
         VIFlush();
         VIWaitForRetrace();
         VIWaitForRetrace();
@@ -136,7 +133,6 @@ void fn_800A7F10(BOOL reset) {
                         lbl_803C7420.renderMode->vfilter);
     }
 }
-#endif
 
 extern u8 lbl_802ED140[0x2000];       // draw thread stack
 extern GXColor lbl_803CBAD0;          // EFB clear color
