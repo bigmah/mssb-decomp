@@ -18,6 +18,7 @@
 #include "main/file_800A7C08.h"
 #include "static/Camera.h"
 #include "main/file_8004C5F8.h"
+#include "C3/geoPalette.h" // DODisplayObj, DisplayStateList
 #pragma dont_inline on
 extern void fn_800B0A14_removeQueue(void*);
 
@@ -32,8 +33,8 @@ extern void fn_800B0A14_removeQueue(void*);
 #endif
 #endif
 
-// TODO type: defined as (s16* sx, s16* sy, f32 x, f32 y, f32 z) in main/file_800527C4.h (same ABI);
-// the original callers evaluate the floats first, as do sta_c2 and rep_1FD8.
+// Same prototype as main/file_800527C4.h. The original callers evaluate the floats first,
+// as do sta_c2 and rep_1FD8 (see fn_800528C0_xyz below).
 extern void fn_800528C0(s16* sx, s16* sy, f32 x, f32 y, f32 z);
 // A few matched callers evaluate the floats before the out pointers. On PPC the
 // argument order makes no difference to the call, so the matching build calls
@@ -125,7 +126,7 @@ static u8 lbl_3_bss_B5D4;
 static ShapeAnimPlayer lbl_3_bss_B578;
 static s32 lbl_3_bss_B574[1];
 static u8 lbl_3_bss_B570;
-extern void (*lbl_3_data_1BA88[])(s32, s32, u8*);
+extern void (*lbl_3_data_1BA88[])(s32, s32, CollisionStruct*);
 extern void fn_3_F92FC(void);
 extern const f32 lbl_3_rodata_3060;
 extern const f32 lbl_3_rodata_3078;
@@ -133,10 +134,11 @@ extern const f32 lbl_3_rodata_3068;
 extern const f32 lbl_3_rodata_306C;
 extern const f64 lbl_3_rodata_3070;
 extern SpaniDesc lbl_3_data_10E9C[];
-extern u8 lbl_3_data_10F7C[];       // TODO type
-extern u8 lbl_3_data_10F84[];       // TODO type
-extern u8 lbl_3_data_10F88[];       // TODO type
-extern u8 lbl_3_data_11008[];       // TODO type
+// Byte tables defined in rep_1D58.c, stored in StaExtList.pC / .p8.
+extern u8 lbl_3_data_10F7C[8];
+extern u8 lbl_3_data_10F84[4];
+extern u8 lbl_3_data_10F88[0x80]; // 64 (x, y) byte pairs
+extern u8 lbl_3_data_11008[0x40]; // 32 (x, y) byte pairs
 extern const u8 lbl_3_data_110A8[]; // 32 x 3 initial entries for ext08
 extern const u8 lbl_3_data_11138[]; // 16 x 3 initial entries for ext0C
 // rep_1D58 (stadium objects); not from rep_1D58.h, where these are still (u8*, u32) / u8* tables (as in rep_2998).
@@ -317,8 +319,8 @@ void fn_3_F8B34(StaObj* o) {
 
 // .text:0x000F8BA8 size:0x158 mapped:0x80737C3C
 void fn_3_F8BA8(StaObj* o) {
-    // TODO type: actor -> +0x18 -> +0x14 -> +0x10 -> +0x4 is the texture image of the haze material
-    u32* r = *(u32**)(*(u8**)(*(u8**)(*(u8**)(*(u8**)((u8*)o->actorObj->actor + 0x18)) + 0x14) + 0x10) + 4);
+    // first display state of bone 0 (its setting holds the haze texture frame)
+    DisplayStateList* r = o->actorObj->actor->boneArray[0]->dispObj->displayData->displayStateList;
     s8 prev;
     u32 i, j;
     if (o->frame != 0 && o->frame % 3 == 0) {
@@ -327,8 +329,8 @@ void fn_3_F8BA8(StaObj* o) {
             o->state = 0xA;
             o->frame = 0;
         }
-        r[1] &= ~0x1FFF;
-        r[1] |= o->state;
+        r->setting &= ~0x1FFF;
+        r->setting |= o->state;
         for (i = 0; i < 0x80; i++) {
             for (j = 0; j < 0x80; j++) {
                 if (j == 0) {
@@ -470,7 +472,7 @@ void fn_3_F92FC(void) {
 }
 
 // .data 0x0001BA88..0x0001C0A8
-void (*lbl_3_data_1BA88[4])(s32, s32, u8*) = {fn_3_F9E78, (void (*)(s32, s32, u8*))fn_3_F99F0, fn_3_F976C, fn_3_F9B9C}; // onHit per object state
+void (*lbl_3_data_1BA88[4])(s32, s32, CollisionStruct*) = {fn_3_F9E78, (void (*)(s32, s32, CollisionStruct*))fn_3_F99F0, fn_3_F976C, fn_3_F9B9C}; // onHit per object state
 StaObjDef lbl_3_data_1BA98[51] = {
     {{-12.0f, -12.0f, 55.0f}, 350.0f, 3, 1, 1, 8},
     {{12.0f, -12.0f, 55.0f}, 10.0f, 3, 1, 1, 8},
@@ -663,7 +665,7 @@ static inline void F9164_inl(StaObj* o) {
 
 // .text:0x000F963C size:0x130 mapped:0x807386D0
 #pragma dont_inline off
-void fn_3_F963C(s32 idx, u8* v) {
+void fn_3_F963C(s32 idx, CollisionStruct* v) {
     StaBounceTask* p;
     lbl_3_common_bss_350E4.b6B = 1;
     p = fn_800B0A5C_insertQueue(fn_3_F934C, (u16)(((StaBounceTask*)lbl_803CC1B8)->priority + 1));
@@ -672,7 +674,7 @@ void fn_3_F963C(s32 idx, u8* v) {
     lbl_3_common_bss_350E4.pos.y = -lbl_3_common_bss_350E4.pos.y;
     lbl_3_common_bss_350E4.vel.y = -lbl_3_common_bss_350E4.vel.y;
     if (v != NULL) {
-        PSVECScale((Vec*)(v + 0xC), lbl_3_rodata_3060, &p->normal); // TODO type
+        PSVECScale(&v->normal, lbl_3_rodata_3060, &p->normal);
     }
     memset(&p->vel, 0, 0xC);
     p->idx = idx;
@@ -682,7 +684,7 @@ void fn_3_F963C(s32 idx, u8* v) {
 #pragma dont_inline on
 
 // .text:0x000F976C size:0x284 mapped:0x80738800
-void fn_3_F976C(s32 idx, s32 b, u8* c) {
+void fn_3_F976C(s32 idx, s32 b, CollisionStruct* c) {
     F9164_inl(&lbl_3_common_bss_350E4.objs[idx]);
     fn_3_F963C(idx, c);
 }
@@ -734,7 +736,7 @@ void fn_3_F99F0(s32 idx) {
 
 // .text:0x000F9B9C size:0x1F8 mapped:0x80738C30
 // partial: F963C inlined OK; only prologue reg order (lis r6/addi r7 base vs ours r3/r6) differs
-void fn_3_F9B9C(s32 idx, s32 b, u8* c) {
+void fn_3_F9B9C(s32 idx, s32 b, CollisionStruct* c) {
     StaObj* o = &lbl_3_common_bss_350E4.objs[idx];
     StaTimerTask* q;
     u32 t;
@@ -785,7 +787,7 @@ void fn_3_F9D94(StaObj* o) {
 
 // .text:0x000F9E78 size:0x548 mapped:0x80738F0C
 #pragma dont_inline off
-void fn_3_F9E78(s32 idx, s32 b, u8* c) {
+void fn_3_F9E78(s32 idx, s32 b, CollisionStruct* c) {
     StaObj* o = &lbl_3_common_bss_350E4.objs[idx];
     StaTimerTask* q;
     u32 t;
@@ -979,7 +981,8 @@ void fn_3_FA58C(void** files) {
     }
     if (files[idx[13]] != NULL) {
         fn_80025DDC(files[idx[13]]);
-        fn_80025C58(files[idx[13]], (ShapeModel**)&lbl_8036E548.slots6C->objects[15].actor); // TODO type: the shape model takes the actor slot
+        // ShapeModel is fn_80025C58's view of the GameActor in the actor slot.
+        fn_80025C58(files[idx[13]], (ShapeModel**)&lbl_8036E548.slots6C->objects[15].actor);
         lbl_3_bss_B578.set = files[idx[14]];
         fn_80025FFC(files[idx[13]], &lbl_3_bss_B578);
         fn_80025EEC(&lbl_3_bss_B578, 0, 0);
