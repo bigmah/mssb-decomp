@@ -20,8 +20,8 @@ extern u8 lbl_803CBBC0[];
 extern void fn_2_48D54(void);
 
 // Stadium background objects, indexed by stadium.
-MenuStageData lbl_2_data_2E608 = {
-    {
+// Stadium background objects (lbl_2_data_2E608): file statics, reached through one .data anchor.
+static MenuStageObject sStageObjects[4][30] = {
         {
             {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {1, 1, 1},
             {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {2, 2, 1}, {2, 2, 1},
@@ -50,18 +50,17 @@ MenuStageData lbl_2_data_2E608 = {
             {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, {3, 0, 0},
             {4, 0, 0}, {4, 0, 0}, {4, 0, 0}, {4, 0, 0}, {4, 0, 0}, {4, 0, 0},
         },
-    },
-    {1, 1, 1, 10, 11, 0},
-    {8, 8, 8, 4, 7, 0},
-    {
+    }; // per stadium
+static s16 sStageBoneCount[6] = {1, 1, 1, 10, 11, 0}; // per model
+static s16 sStageTexCount[6] = {8, 8, 8, 4, 7, 0}; // per model
+static s16 sStageTexIndex[5][8] = {
         {8, 9, 10, 11, 4, 12, 6, 7},
         {0, 1, 2, 3, 4, 5, 6, 7},
         {13, 14, 15, 16, 4, 17, 6, 7},
         {0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0},
-    },
-    {20, 24, 25, 30},
-};
+    }; // per texSet
+static s8 sStageObjectCount[4] = {20, 24, 25, 30}; // per stadium
 
 // Camera eye/target per stadium.
 f32 lbl_2_data_2E944[4][6] = {
@@ -352,15 +351,15 @@ extern void CTRLSetRotation(Control* control, f32 x, f32 y, f32 z);
 
 // Creates actor objects [start, start + count) for the current stadium's background.
 // .text:0x87654 size:0x1D8
-// NONMATCHING 74%: the original reaches lbl_2_data_2E608's sub-tables through one anchored .data pool base (file statics), we index a struct
+// NONMATCHING: same instructions and data anchor now; register allocation differs in the inlined texSet loop
 #if NONMATCHING
 static void menuStageApplyTexSet(s32 i, s32 model, s32 texSet) {
     s32 j;
     s32 k;
     s16* texIndex;
-    for (j = 0; j < lbl_2_data_2E608.boneCount[model]; j++) {
-        texIndex = lbl_2_data_2E608.texIndex[texSet];
-        for (k = 0; k < lbl_2_data_2E608.texCount[model]; k++) {
+    for (j = 0; j < sStageBoneCount[model]; j++) {
+        texIndex = sStageTexIndex[texSet];
+        for (k = 0; k < sStageTexCount[model]; k++) {
             lbl_2_bss_340140[0]->table->objects[i].actor->boneArray[j]->dispObj->textureData
                 ->texturePalette->tex[k].texIndex = j + *texIndex++;
         }
@@ -375,7 +374,7 @@ void fn_2_87654(s32 unused, s32 start, s32 count, void* animBank, struct sHdr* s
     MenuStageObject* object;
 
     for (i = start; i < start + count; i++) {
-        object = &lbl_2_data_2E608.objects[lbl_2_bss_33FBF5][i];
+        object = &sStageObjects[lbl_2_bss_33FBF5][i];
         model = object->model;
         texSet = object->texSet;
         hasTexSet = object->hasTexSet;
@@ -395,10 +394,10 @@ extern void* _OSAllocFromHeap(s32 align, s32 size);
 
 // Allocates the draw states and actor table for the current stadium's background objects.
 // .text:0x87118 size:0x238
-// NONMATCHING 72%: inlines fn_2_87654; same data-pool anchor difference
+// NONMATCHING: inlines fn_2_87654; same register allocation difference
 #if NONMATCHING
 void fn_2_87118(void) {
-    lbl_2_bss_340140[0]->count = lbl_2_data_2E608.objectCount[lbl_2_bss_33FBF5];
+    lbl_2_bss_340140[0]->count = sStageObjectCount[lbl_2_bss_33FBF5];
     lbl_2_bss_340140[0]->states = _OSAllocFromHeap(0x20, lbl_2_bss_340140[0]->count * sizeof(MenuDrawState));
     lbl_2_bss_340140[0]->table = ActorObjectInitTable(lbl_2_bss_340140[0]->count);
     fn_2_87654(0, 0, lbl_2_bss_340140[0]->count, NULL, 0);
@@ -407,7 +406,7 @@ void fn_2_87118(void) {
 
 // fn_2_87118, then resets every draw state and clears each object's animateBones flag.
 // .text:0x87350 size:0x304
-// NONMATCHING 79%: inlines fn_2_87118; same data-pool anchor difference
+// NONMATCHING: inlines fn_2_87118; same register allocation difference
 #if NONMATCHING
 void fn_2_87350(void) {
     s32 i;
