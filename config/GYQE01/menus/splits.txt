@@ -102,6 +102,7 @@ auto_00_0003C03C_text:
 menus/rep_08E8.c:
 	.text       start:0x00046C88 end:0x0004B1AC
 	.rodata     start:0x000008E8 end:0x000009B8
+	.bss        start:0x000055B8 end:0x000055E8
 
 menus/rep_09B8.c:
 	.rodata     start:0x000009B8 end:0x00000A08
