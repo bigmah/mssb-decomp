@@ -1,6 +1,5 @@
 #include "main/file_800ADC40.h"
 #include "main/file_800A6870.h"
-#include "Unknown/File_0x800a6304.h"
 #include "main/file_80008E00.h"
 #include "static/GameSettings.h"
 #include "static/Camera.h"
@@ -1666,3 +1665,18 @@ u8 lbl_803CC17C;
 u32 lbl_803CC178;
 u8* lbl_803CC174;
 
+// ---- Data ----
+
+// .data 0x801112E0: the two alternating frame-draw callbacks queued by file_800A7C08
+// (DrawCallbackNode in main/file_800A7C08.h: a link word, then the function).
+typedef struct MovDrawNode {
+    /*0x0*/ u32 link;
+    /*0x4*/ void (*func)(void);
+} MovDrawNode;
+MovDrawNode lbl_801112E0[2] = {
+    {0, fn_800ADD70},
+    {0, fn_800ADD70},
+};
+
+// .sdata 0x803CBB08: frame converters, indexed by the movie's pixel format.
+void (*lbl_803CBB08[2])(u8* src, u8* dst, s32 width, s32 height) = {YUV2RGB_, YUV2RGB};

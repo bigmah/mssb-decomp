@@ -18,7 +18,7 @@ extern u8 lbl_800FE5D4[];
 extern u8 lbl_800FE930[][6];
 extern camera_803c639c_s lbl_803C639C[4];
 extern s32 lbl_803CBD14;
-extern s32 lbl_803CB880;
+extern s32 lbl_803CB880; // number of active cameras (defined below)
 
 void fn_800521B0(void);
 extern f32 fn_800335BC(s32 angle);
@@ -2418,3 +2418,8 @@ void fn_80052798(s32 count) {
     }
     lbl_803CB880 = count;
 }
+
+// ---- Data ----
+
+// .sdata 0x803CB880 (last of this unit's .sdata)
+s32 lbl_803CB880 = 1; // number of active cameras

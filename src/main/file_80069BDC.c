@@ -1290,7 +1290,7 @@ void fn_80069A68(SoundGroupRequest* req, SoundGroupData* data); // file_800639BC
 
 // ---- Data (initialisers generated from the original DOL) ----
 
-// .data 0x80109250..0x8010B600
+// .data 0x80109250..0x8010B610
 GXRenderModeObj lbl_80109250 = {
     0,
     608,
@@ -2260,6 +2260,10 @@ f32 lbl_8010B590[4][7] = {
     {0.0f, 0.0f, 5.0f, 5.0f, 15.0f, 15.0f, 0.0f},
     {5.0f, 5.0f, 10.0f, 10.0f, 20.0f, 20.0f, 0.0f},
     {10.0f, 10.0f, 15.0f, 15.0f, 25.0f, 25.0f, 0.0f},
+};
+// Per challenge difficulty: final inning, final inning (alternative), mercy-rule run margin.
+u8 lbl_8010B600[5][3] = {
+    {3, 5, 10}, {3, 5, 10}, {3, 5, 10}, {3, 5, 10}, {5, 7, 10},
 };
 
 // .sdata 0x803CB8D8..0x803CB8F8

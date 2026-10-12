@@ -408,6 +408,7 @@ config.libs = [
                    extra_cflags=["-inline deferred", "-str pool"],
             ),
             Object(Matching, "Dolphin/MSL_C/MSL_Common/rand.c"),
+            Object(Matching, "Dolphin/MSL_C/MSL_Common/float.c"),
             Object(Matching, "Dolphin/MSL_C/MSL_Common/string.c"),
             Object(Matching, "Dolphin/MSL_C/MSL_Common/wchar_io.c"),
             Object(Matching, "Dolphin/MSL_C/PPC_EABI/uart_console_io_gcn.c"),
