@@ -1259,7 +1259,7 @@ void fn_8003AE5C(u8 value) {
 }
 
 // fn_8003AE64, size:0xC
-void fn_8003AE64(void) {
+void fn_8003AE64(uintptr_t request) { // ARQCallback
     lbl_803CBCB8 = 0x0;
 }
 
@@ -1808,15 +1808,15 @@ static inline void SaveImage_BackupToAram(void) {
     lbl_803CBCB8 = 1;
     lbl_803CBCBC = fn_800A6418(0x10000);
     DCFlushRange(&lbl_802D4B00, 0x10000);
-    ARQPostRequest(&lbl_802D4AC0, 0x4000, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_LOW, (u32)&lbl_802D4B00, lbl_803CBCBC,
-                   0x10000, (ARQCallback)fn_8003AE64);
+    ARQPostRequest(&lbl_802D4AC0, 0x4000, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_LOW, (uintptr_t)&lbl_802D4B00, lbl_803CBCBC,
+                   0x10000, fn_8003AE64);
 }
 
 static inline void SaveImage_RestoreFromAram(void) {
     lbl_803CBCB8 = 2;
     DCInvalidateRange(&lbl_802D4B00, 0x10000);
-    ARQPostRequest(&lbl_802D4AC0, 0x4000, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_LOW, lbl_803CBCBC, (u32)&lbl_802D4B00,
-                   0x10000, (ARQCallback)fn_8003AE64);
+    ARQPostRequest(&lbl_802D4AC0, 0x4000, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_LOW, lbl_803CBCBC, (uintptr_t)&lbl_802D4B00,
+                   0x10000, fn_8003AE64);
 }
 
 static inline void SaveTask_QueueWrite(SaveTask* task) {

@@ -237,7 +237,7 @@ MActor* f_InitActorWithLayout(MActorLayout* layout, u8* buffer) {
         actor->orientationInvMtxArray = (Mtx*)((u8*)actor->skinMtxArray + skinMtxSize);
         // The skin's normals live right after its positions in a shared array.
         positionData = actor->skinObject->positionData;
-        normalOffset = actor->skinObject->lightingData->normalArray - positionData->positionArray;
+        normalOffset = (s32)(actor->skinObject->lightingData->normalArray - positionData->positionArray);
         desc = layout->pal->descriptorArray;
         for (i = 0; i < layout->pal->numDescriptors; i++, desc++) {
             char* positions;

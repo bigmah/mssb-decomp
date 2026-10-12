@@ -596,7 +596,8 @@ void fn_800097A0(void) {
             OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
             ICInvalidateRange(task->module, task->moduleSize);
             lbl_80366158.arenaAfterDll = lbl_803C7898.lo;
-            ((void (*)(void))module->prolog)(); // TODO type: relocated by OSLink
+            // TODO(port): REL prolog/epilog become a static module table (Phase 2).
+            ((void (*)(void))U32_TO_PTR(module->prolog))(); // relocated by OSLink
             task->_10 = 0;
             OSReport(lbl_800E65A0);
             task->state = 10;
@@ -608,7 +609,7 @@ void fn_800097A0(void) {
             resetAllDrawingStructs();
             fn_80009144();
             module = task->module;
-            ((void (*)(void))module->epilog)();
+            ((void (*)(void))U32_TO_PTR(module->epilog))(); // TODO(port): see above
             OSUnlink(&module->info);
             switch (task->_10) {
             case 1:
@@ -635,7 +636,7 @@ void fn_800097A0(void) {
             OSLink(&module->info, _OSAllocFromHeap(0x20, module->bssSize));
             ICInvalidateRange(task->module, task->moduleSize);
             lbl_80366158.arenaAfterDll = lbl_803C7898.lo;
-            ((void (*)(void))module->prolog)();
+            ((void (*)(void))U32_TO_PTR(module->prolog))(); // TODO(port): see above
             task->_10 = 0;
             OSReport(lbl_800E65A0);
             task->state = 13;
@@ -655,7 +656,7 @@ void fn_800097A0(void) {
             resetAllDrawingStructs();
             fn_80009144();
             module = task->module;
-            ((void (*)(void))module->epilog)();
+            ((void (*)(void))U32_TO_PTR(module->epilog))(); // TODO(port): see above
             OSUnlink(&module->info);
             task->state = 8;
             g_d_GameSettings.miniGameStadiumIndicator = 0;

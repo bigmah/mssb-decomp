@@ -332,7 +332,8 @@ BOOL fn_8000AF1C(Mtx out, LayoutFrame* frame, LayoutKey2* a, LayoutKey2* b, void
 
 // .text:0x8000B9C8 size:0x74
 void fn_8000B9C8(void* file) {
-    // TODO port: converts 32-bit file offsets into pointers in place
+    // Converts 32-bit file offsets into pointers in place.
+    // TODO(port): the file must live in the game heap (32-bit pointer fields).
     u32* header = (u32*)file;
     u32* entry;
     u32* item;
@@ -341,20 +342,20 @@ void fn_8000B9C8(void* file) {
     u32* group;
     u32* table;
 
-    header[2] += (u32)header;
+    header[2] += PTR_TO_U32(header);
     if (((u16*)header)[3] == 0) {
-        header[3] += (u32)header;
+        header[3] += PTR_TO_U32(header);
     }
-    table = (u32*)header[2];
+    table = (u32*)U32_TO_PTR(header[2]);
     count = table[0];
     entry = table;
     do {
-        entry[2] += (u32)table;
-        group = (u32*)entry[2];
+        entry[2] += PTR_TO_U32(table);
+        group = (u32*)U32_TO_PTR(entry[2]);
         n = group[0] & 0x7FFFFFFF;
         item = group;
         do {
-            item[2] += (u32)group;
+            item[2] += PTR_TO_U32(group);
             item++;
         } while (--n != 0);
         entry++;
