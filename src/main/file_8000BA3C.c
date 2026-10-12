@@ -114,7 +114,7 @@ s32 fn_8000BA3C(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
     u32 subTime;
     u16* subLoop;
     AnimTrack* track;
-    AnimBlock** blockPtr;
+    PTR32(AnimBlock)* blockPtr;
     AnimBlock* block;
     AnimEntry* entry;
     AnimLoop* loop;
@@ -140,9 +140,9 @@ s32 fn_8000BA3C(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
     }
     t = *time;
     // TODO type: anim->table->tracks[trackIdx]
-    track = *(AnimTrack**)((u8*)anim->table + trackIdx * 4 + 8);
+    track = PTR32_GET(AnimTrack, *(PTR32(AnimTrack)*)((u8*)PTR32_GET(AnimTrackTable, anim->table) + trackIdx * 4 + 8));
     result = 0;
-    loops = track->loops;
+    loops = PTR32_GET(u16, track->loops);
     numBlocks = track->count & 0x7FFFFFFF;
     *outLoop = NULL;
 
@@ -166,7 +166,7 @@ s32 fn_8000BA3C(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
 
     numBlocks--;
     // TODO type: &track->blocks[numBlocks - 1]
-    blockPtr = (AnimBlock**)((u8*)track + numBlocks * 4 + 8);
+    blockPtr = (PTR32(AnimBlock)*)((u8*)track + numBlocks * 4 + 8);
     lbl_80366188.unk7F = 0;
     if (path != NULL) {
         path[1] = 0;
@@ -177,7 +177,7 @@ s32 fn_8000BA3C(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
     colA = color & 0xFF;
 
     do {
-        block = *blockPtr--;
+        block = PTR32_GET(AnimBlock, *blockPtr--);
         entry = block->entries;
         cur[1] = entry;
         n = block->count;
@@ -266,7 +266,7 @@ s32 fn_8000C194(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
     s32 drawOk;
     u16* subLoop;
     AnimTrack* track;
-    AnimBlock** blockPtr;
+    PTR32(AnimBlock)* blockPtr;
     AnimBlock* block;
     AnimEntry* entry;
     AnimLoop* loop;
@@ -291,9 +291,9 @@ s32 fn_8000C194(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
 
     t = *time;
     // TODO type: anim->table->tracks[trackIdx]
-    track = *(AnimTrack**)((u8*)anim->table + trackIdx * 4 + 8);
+    track = PTR32_GET(AnimTrack, *(PTR32(AnimTrack)*)((u8*)PTR32_GET(AnimTrackTable, anim->table) + trackIdx * 4 + 8));
     result = 0;
-    loops = track->loops;
+    loops = PTR32_GET(u16, track->loops);
     numBlocks = track->count & 0x7FFFFFFF;
     *outLoop = NULL;
 
@@ -319,13 +319,13 @@ s32 fn_8000C194(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
     colG = (color >> 16) & 0xFF;
     numBlocks--;
     // TODO type: &track->blocks[numBlocks - 1]
-    blockPtr = (AnimBlock**)((u8*)track + numBlocks * 4 + 8);
+    blockPtr = (PTR32(AnimBlock)*)((u8*)track + numBlocks * 4 + 8);
     colB = (color >> 8) & 0xFF;
     colA = color & 0xFF;
     lbl_80366188.unk7F = 0;
 
     do {
-        block = *blockPtr--;
+        block = PTR32_GET(AnimBlock, *blockPtr--);
         entry = block->entries;
         cur[1] = entry;
         n = block->count;
@@ -595,12 +595,12 @@ BOOL fn_8000CEF0(Anim* anim, s32 trackIdx, u32 blockIdx, s32 entryIdx, u32* out)
     s32 count;
 
     // TODO type: anim->table->tracks[trackIdx] (typed indexing folds the +8)
-    track = *(AnimTrack**)((u8*)anim->table + trackIdx * 4 + 8);
+    track = PTR32_GET(AnimTrack, *(PTR32(AnimTrack)*)((u8*)PTR32_GET(AnimTrackTable, anim->table) + trackIdx * 4 + 8));
     if (blockIdx >= (track->count & 0x7FFFFFFF) - 1) {
         return FALSE;
     }
     // TODO type: track->blocks[blockIdx]
-    block = *(AnimBlock**)((u8*)track + (blockIdx + 1) * 4 + 8);
+    block = PTR32_GET(AnimBlock, *(PTR32(AnimBlock)*)((u8*)track + (blockIdx + 1) * 4 + 8));
     n = block->count - entryIdx;
     if (n <= 0) {
         return FALSE;
@@ -659,7 +659,7 @@ s32 fn_8000D164(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
     u16* subLoop;
     void* animC;
     AnimTrack* track;
-    AnimBlockV0** blockPtr;
+    PTR32(AnimBlockV0)* blockPtr;
     AnimBlockV0* block;
     AnimKeyV0* key;
     AnimKeyV0* next;
@@ -684,11 +684,11 @@ s32 fn_8000D164(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
     f32 f;
 
     // TODO type: anim->table->tracks[trackIdx]
-    track = *(AnimTrack**)((u8*)anim->table + trackIdx * 4 + 8);
-    animC = anim->unkC;
+    track = PTR32_GET(AnimTrack, *(PTR32(AnimTrack)*)((u8*)PTR32_GET(AnimTrackTable, anim->table) + trackIdx * 4 + 8));
+    animC = PTR32_GET(void, anim->unkC);
     t = *time;
     result = 0;
-    loops = track->loops;
+    loops = PTR32_GET(u16, track->loops);
     numBlocks = track->count;
     *outLoop = NULL;
 
@@ -712,7 +712,7 @@ s32 fn_8000D164(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
 
     numBlocks--;
     // TODO type: &track->blocks[numBlocks - 1]
-    blockPtr = (AnimBlockV0**)((u8*)track + numBlocks * 4 + 8);
+    blockPtr = (PTR32(AnimBlockV0)*)((u8*)track + numBlocks * 4 + 8);
     lbl_80366188.unk7F = 0;
     colR = color >> 24;
     colG = (color >> 16) & 0xFF;
@@ -720,7 +720,7 @@ s32 fn_8000D164(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
     colA = color & 0xFF;
 
     do {
-        block = *blockPtr--;
+        block = PTR32_GET(AnimBlockV0, *blockPtr--);
         idx = block->count;
         n = idx;
         key = &block->keys[idx];
@@ -856,7 +856,7 @@ s32 fn_8000D838(u32* time, Anim* anim, s32 trackIdx, Mtx mtx, s32 flags, u32 col
         return fn_8000D164(time, anim, trackIdx, mtx, flags, color, outLoop, bank);
     }
     // TODO type: anim->table->tracks[trackIdx]->count
-    if ((*(AnimTrack**)((u8*)anim->table + trackIdx * 4 + 8))->count & 0x80000000) {
+    if ((PTR32_GET(AnimTrack, *(PTR32(AnimTrack)*)((u8*)PTR32_GET(AnimTrackTable, anim->table) + trackIdx * 4 + 8)))->count & 0x80000000) {
         path[0] = -1;
         path[1] = 0;
         return fn_8000BA3C(time, anim, trackIdx, mtx, flags, color, outLoop, &path[2]);

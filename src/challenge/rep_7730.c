@@ -611,7 +611,7 @@ void fn_1_267F4(void) {
         }
         entry = CHALLENGE_TEX_SLOTS;
         entry += index;
-        queue->trackCount = entry->anim->table->count;
+        queue->trackCount = PTR32_GET(AnimTrackTable, entry->anim->table)->count;
         fn_80034E20(queue->sprite, &lbl_1_data_10344);
         queue->track = 0;
         queue->cursor = 0;
@@ -709,7 +709,7 @@ void fn_1_25F98(void) {
                     frame.subTrack--;
                 }
                 // write the edited texture index back into the track's first entry
-                CHALLENGE_TEX_SLOTS[CHALLENGE_SPRITE_OBJ(q)->_66].anim->table->tracks[q->track]->blocks[0]->entries[0].size
+                PTR32_GET(AnimBlock, PTR32_GET(AnimTrack, PTR32_GET(AnimTrackTable, CHALLENGE_TEX_SLOTS[CHALLENGE_SPRITE_OBJ(q)->_66].anim->table)->tracks[q->track])->blocks[0])->entries[0].size
                     = frame.subTrack;
             }
             break;

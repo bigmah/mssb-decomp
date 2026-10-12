@@ -342,6 +342,9 @@ void fn_8000B9C8(void* file) {
     u32* group;
     u32* table;
 
+#ifdef TARGET_PC
+    port_swap_spani_anim(file);
+#endif
     header[2] += PTR_TO_U32(header);
     if (((u16*)header)[3] == 0) {
         header[3] += PTR_TO_U32(header);

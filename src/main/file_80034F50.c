@@ -254,7 +254,7 @@ void fn_80035168(void) {
         do {
             if (obj->texOverride[k] != 0xFFFF) {
                 SpaniAnim* anim = lbl_803C4BE0[obj->texSlot].anim;
-                SpaniTrack* track = anim->seqList->seqs[obj->animId]->tracks[k];
+                SpaniTrack* track = PTR32_GET(SpaniTrack, PTR32_GET(SpaniSeq, PTR32_GET(SpaniSeqList, anim->seqList)->seqs[obj->animId])->tracks[k]);
                 SpaniKey* keys = track->keys;
                 fn_8000CC4C(anim, track, &obj->texOverride[k], (u32)((u8*)&keys->texIdx - (u8*)keys), sizeof(u16));
             }
@@ -379,6 +379,9 @@ s32 fn_80035838(void* aramAddr, u8 id) {
             s += lbl_803CBC91;
             pa = &s->anim;
             hdr = s->data;
+#ifdef TARGET_PC
+            port_swap_spani_file(hdr);
+#endif
             s->tex = (u8*)hdr + hdr[0];
             *pa = (SpaniAnim*)((u8*)hdr + hdr[1]);
             convertTextureHeader(s->tex);
@@ -453,7 +456,7 @@ SpaniKey* fn_80035F20(s32 texId, s32 objIdx, u16 keyIdx, s16 track) {
     s32 slot;
     SpaniSeq* seq;
     u32 t;
-    SpaniTrack** pp;
+    PTR32(SpaniTrack)* pp;
     SpaniTrack* tr;
     SpaniKey* key;
     s32 n;
@@ -462,11 +465,11 @@ SpaniKey* fn_80035F20(s32 texId, s32 objIdx, u16 keyIdx, s16 track) {
     if (slot == -1) {
         OSPanic(lbl_800E68C4, 0x31C, lbl_800E68E8);
     }
-    seq = lbl_803C4BE0[slot].anim->seqList->seqs[lbl_8039C3E0[objIdx].animId];
+    seq = PTR32_GET(SpaniSeq, PTR32_GET(SpaniSeqList, lbl_803C4BE0[slot].anim->seqList)->seqs[lbl_8039C3E0[objIdx].animId]);
     t = seq->trackCount - 1;
     pp = &seq->tracks[t];
     if (track == -1) {
-        tr = *pp;
+        tr = PTR32_GET(SpaniTrack, *pp);
         n = tr->keyCount;
         key = &tr->keys[n];
         do {
@@ -476,7 +479,7 @@ SpaniKey* fn_80035F20(s32 texId, s32 objIdx, u16 keyIdx, s16 track) {
         return &key[keyIdx];
     }
     do {
-        tr = *pp--;
+        tr = PTR32_GET(SpaniTrack, *pp--);
         n = tr->keyCount;
         key = &tr->keys[n];
         if (t == track) {
@@ -572,7 +575,7 @@ void fn_8003649C(SpaniOwner* owner, s32 idx, s32 track, u16 animId, u32 frame) {
     } else {
         texIdx = 0;
     }
-    tr = s->anim->seqList->seqs[curAnim]->tracks[track];
+    tr = PTR32_GET(SpaniTrack, PTR32_GET(SpaniSeq, PTR32_GET(SpaniSeqList, s->anim->seqList)->seqs[curAnim])->tracks[track]);
     keys = tr->keys;
     fn_8000CC4C(s->anim, tr, &texIdx, (u32)((u8*)&keys->texIdx - (u8*)keys), sizeof(u16));
 }
@@ -596,7 +599,7 @@ void fn_8003656C(SpaniOwner* owner, s32 idx, s32 track, u16 animId, u32 frame) {
     } else {
         val = 0;
     }
-    tr = s->anim->seqList->seqs[curAnim]->tracks[track];
+    tr = PTR32_GET(SpaniTrack, PTR32_GET(SpaniSeq, PTR32_GET(SpaniSeqList, s->anim->seqList)->seqs[curAnim])->tracks[track]);
     fn_8000CC4C(anim, tr, &val, (u32)((u8*)&tr->keys[0].unk1C - (u8*)&tr->keys[0]), sizeof(s32));
 }
 #endif
@@ -609,7 +612,7 @@ void fn_8003664C(s32 texId, s32 objIdx, s16 texIdx, u32 track) {
     s32 slot;
     SpaniSeq* seq;
     u32 t;
-    SpaniTrack** pp;
+    PTR32(SpaniTrack)* pp;
     SpaniTrack* tr;
     SpaniKey* key;
     s32 n;
@@ -618,11 +621,11 @@ void fn_8003664C(s32 texId, s32 objIdx, s16 texIdx, u32 track) {
     if (slot == -1) {
         OSPanic(lbl_800E68C4, 0x15E, lbl_800E68E8);
     }
-    seq = lbl_803C4BE0[slot].anim->seqList->seqs[lbl_8039C3E0[objIdx].animId];
+    seq = PTR32_GET(SpaniSeq, PTR32_GET(SpaniSeqList, lbl_803C4BE0[slot].anim->seqList)->seqs[lbl_8039C3E0[objIdx].animId]);
     t = seq->trackCount - 1;
     pp = &seq->tracks[t];
     do {
-        tr = *pp--;
+        tr = PTR32_GET(SpaniTrack, *pp--);
         n = tr->keyCount;
         key = &tr->keys[n];
         do {
@@ -645,7 +648,7 @@ u16 fn_80036824(s32 texId, s32 animId, u16 keyIdx) {
     s32 slot;
     SpaniSeq* seq;
     u32 t;
-    SpaniTrack** pp;
+    PTR32(SpaniTrack)* pp;
     SpaniTrack* tr;
     SpaniKey* key;
     s32 n;
@@ -654,11 +657,11 @@ u16 fn_80036824(s32 texId, s32 animId, u16 keyIdx) {
     if (slot == -1) {
         OSPanic(lbl_800E68C4, 0x12A, lbl_800E68E8);
     }
-    seq = lbl_803C4BE0[slot].anim->seqList->seqs[animId];
+    seq = PTR32_GET(SpaniSeq, PTR32_GET(SpaniSeqList, lbl_803C4BE0[slot].anim->seqList)->seqs[animId]);
     t = seq->trackCount - 1;
-    pp = &((SpaniTrack**)seq)[t + 2];
+    pp = &((PTR32(SpaniTrack)*)seq)[t + 2];
     do {
-        tr = *pp--;
+        tr = PTR32_GET(SpaniTrack, *pp--);
         n = tr->keyCount;
         key = &tr->keys[n];
         do {

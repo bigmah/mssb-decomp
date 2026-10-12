@@ -109,8 +109,8 @@ typedef struct AnimBlock {
 typedef struct AnimTrack {
     /* 0x00 */ u32 count; // bit 31: flag, low 31 bits: number of blocks (including loops)
     /* 0x04 */ u32 unk4;
-    /* 0x08 */ u16* loops;
-    /* 0x0C */ AnimBlock* blocks[1];
+    /* 0x08 */ PTR32(u16) loops;
+    /* 0x0C */ PTR32(AnimBlock) blocks[1];
 } AnimTrack;
 
 // Loop marker in a track's loop table (count at +0, markers from +4).
@@ -141,15 +141,15 @@ typedef struct AnimFrame {
 typedef struct AnimTrackTable {
     /* 0x00 */ s32 count; // tracks
     /* 0x04 */ u8 pad4[4];
-    /* 0x08 */ AnimTrack* tracks[1];
+    /* 0x08 */ PTR32(AnimTrack) tracks[1];
 } AnimTrackTable;
 
 typedef struct Anim {
     /* 0x00 */ u8 pad0[5];
     /* 0x05 */ u8 paramCount; // words per decoded frame
     /* 0x06 */ u16 unk6; // 0: old format (fn_8000D164)
-    /* 0x08 */ AnimTrackTable* table;
-    /* 0x0C */ void* unkC; // passed to fn_8000AF1C
+    /* 0x08 */ PTR32(AnimTrackTable) table;
+    /* 0x0C */ PTR32(void) unkC; // passed to fn_8000AF1C
 } Anim;
 
 // Old-format (anim->unk6 == 0) keyframe: an uncompressed sprite element.
