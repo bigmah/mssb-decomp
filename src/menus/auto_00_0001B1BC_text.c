@@ -107,8 +107,13 @@ extern void* memset(void*, int, size_t);
 #if NONMATCHING
 // Turn the first `count` offsets of an archive into pointers; returns entry `index`.
 static inline void* relocateArchive(u32* data, s32 index, s32 count) {
-    void* entry = (u8*)data + data[index];
-    u32* p = data + count;
+    void* entry;
+    u32* p;
+#ifdef TARGET_PC
+    port_swap_offset_table(data, count);
+#endif
+    entry = (u8*)data + data[index];
+    p = data + count;
     while (count-- != 0) {
         p--;
         *p += PTR_TO_U32(data); // TODO(port): 32-bit file offsets relocated in place
