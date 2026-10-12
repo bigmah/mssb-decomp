@@ -19,10 +19,17 @@ typedef struct ChallengeAnimation {
     s16 timer;
     s16 resourceIndex;
     u8 enabled;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    u8 reserved : 3;
+    u8 vertical : 2;
+    u8 horizontal : 2;
+    u8 active : 1;
+#else
     u8 active : 1;
     u8 horizontal : 2;
     u8 vertical : 2;
     u8 reserved : 3;
+#endif
     u8 pad12[2];
     void* data;
     u16 first;

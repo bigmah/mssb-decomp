@@ -34,6 +34,13 @@ typedef struct CC438Cfg {
 struct C2Obj;
 typedef void (*C2ObjFn)(struct C2Obj* p);
 
+// Flag byte 0x90 (declared in MWCC's big-endian bit order on PC).
+#ifdef TARGET_PC
+#define C2OBJ_BITS90 u8 bits : 5; u8 bit5 : 1; u8 hasShadow : 1; u8 visible : 1;
+#else
+#define C2OBJ_BITS90 u8 visible : 1; u8 hasShadow : 1; u8 bit5 : 1; u8 bits : 5;
+#endif
+
 // Common head of the 0xE8-byte stadium objects (lbl_3_common_bss_350E4.objs; as PiranhaPlant in game/rep_2998.h).
 #define C2OBJ_HEAD \
     /*0x00*/ GameControl ctrl; \
@@ -45,10 +52,7 @@ typedef void (*C2ObjFn)(struct C2Obj* p);
     /*0x84*/ C2ObjFn preDraw; \
     /*0x88*/ u8 _88[4]; \
     /*0x8C*/ void* _8C; \
-    /*0x90*/ u8 visible : 1; \
-    /*0x90*/ u8 hasShadow : 1; \
-    /*0x90*/ u8 bit5 : 1; \
-    /*0x90*/ u8 bits : 5; \
+    C2OBJ_BITS90 \
     /*0x91*/ u8 _91; \
     /*0x92*/ u8 alpha; \
     /*0x93*/ u8 _93; \

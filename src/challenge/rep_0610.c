@@ -208,7 +208,11 @@ extern void fn_1_17B5C(void);
 
 extern void fn_1_ECF8(u8, u8, u8);
 
+#ifdef TARGET_PC
+typedef struct { u8 rest : 3; u8 mode : 2; u8 pad : 3; } ChallengeFlagBits; // MWCC bit order
+#else
 typedef struct { u8 pad : 3; u8 mode : 2; u8 rest : 3; } ChallengeFlagBits;
+#endif
 
 extern const f32 lbl_1_rodata_7480;
 extern const f32 lbl_1_rodata_7484;

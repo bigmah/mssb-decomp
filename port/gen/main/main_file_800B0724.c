@@ -177,9 +177,3 @@ void PrepFilesToBeLoaded(void);
 
 // ---- generated data ----
 
-// main .bss 0x802FE918
-struct { SpriteProj head[24]; u8 rest[0x80]; } __gen_lbl_802FE918 GEN_SYM(lbl_802FE918); // symbol is 0x2E0 bytes
-
-// main .bss 0x802FEBF8
-SpriteState __gen_lbl_802FEBF8[24 * 2] GEN_SYM(lbl_802FEBF8);
-

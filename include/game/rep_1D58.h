@@ -31,6 +31,16 @@ typedef struct StadiumObj {
     /* 0x84 */ void (*preDraw)(struct StadiumObj* obj);
     /* 0x88 */ void (*postDraw)(struct StadiumObj* obj);
     /* 0x8C */ StadiumObjShape* shapeAnim;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /* 0x90 */ u8 flag01 : 1;
+    /* 0x90 */ u8 zUpdate : 1;
+    /* 0x90 */ u8 zAlways : 1;   // GX_ALWAYS instead of GX_LEQUAL
+    /* 0x90 */ u8 zCompare : 1;
+    /* 0x90 */ u8 customZ : 1;   // use the z mode bits below
+    /* 0x90 */ u8 depthFade : 1; // sorted by depth; alpha scaled by the sort factor
+    /* 0x90 */ u8 flag40 : 1;
+    /* 0x90 */ u8 visible : 1;
+#else
     /* 0x90 */ u8 visible : 1;
     /* 0x90 */ u8 flag40 : 1;
     /* 0x90 */ u8 depthFade : 1; // sorted by depth; alpha scaled by the sort factor
@@ -39,6 +49,7 @@ typedef struct StadiumObj {
     /* 0x90 */ u8 zAlways : 1;   // GX_ALWAYS instead of GX_LEQUAL
     /* 0x90 */ u8 zUpdate : 1;
     /* 0x90 */ u8 flag01 : 1;
+#endif
     /* 0x91 */ u8 pad91;
     /* 0x92 */ u8 alpha;
     /* 0x93 */ u8 viewFlags;     // low 2 bits: fn_800B3C04 result

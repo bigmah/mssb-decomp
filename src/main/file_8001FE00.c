@@ -30,7 +30,15 @@ typedef struct WeightedPick {
 } WeightedPick;
 
 typedef struct SoundOptions {
+#ifdef TARGET_PC // SoundManager's head (main/file_80021308.h): pointers are 8 bytes here
+    /*0x000*/ u32 _000_unk0;
+    /*0x004*/ void* _004_groups[48];
+    /*0x0C4*/ SND_AUX_REVERBHI _0C4_reverb;
+    /*0x2A4*/ SND_AUX_CHORUS _2A4_chorus;
+    /*0x340*/ u8 _340[0x396 - 0x340];
+#else
     /*0x000*/ u8 _000[0x396];
+#endif
     /*0x396*/ u8 outputMode;
     /*0x397*/ u8 outputModeSet;
     /*0x398*/ u8 _398;

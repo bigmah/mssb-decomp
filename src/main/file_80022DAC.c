@@ -397,7 +397,15 @@ void fn_80023B04(s32 count) {
         p++;
     } while (i < count);
     lbl_803CBC5C = 0x86A0;
+#ifdef TARGET_PC
+    {
+        // The head of CharMgr (main/file_80011640.h, which clashes with this file's declarations).
+        typedef struct { s32 _0000; void* _0004[2]; u32 _000C[21]; ActorSlotTable* slots; } CharMgrHead;
+        ((CharMgrHead*)lbl_8036E548)->slots = ActorObjectInitTable(0xD);
+    }
+#else
     *(ActorSlotTable**)(lbl_8036E548 + 0x60) = ActorObjectInitTable(0xD); // TODO type
+#endif
 }
 
 // .text:0x80023B90 size:0x164

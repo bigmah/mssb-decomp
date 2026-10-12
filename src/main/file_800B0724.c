@@ -312,8 +312,14 @@ void RunDrawScripts_with_stack_variables(void) {
 // Sprite system globals (see SpriteWork / SpriteState).
 extern SpriteWork lbl_802FE8B8;
 // The same memory as lbl_802FE8B8.wanted/.committed and .proj; fn_800B24D4 addresses them by these names.
-extern SpriteState lbl_802FEBF8[SPRITE_MAX_LAYERS * 2]; // TODO port: alias of lbl_802FE8B8.wanted
-extern SpriteProj lbl_802FE918[SPRITE_MAX_LAYERS];      // TODO port: alias of lbl_802FE8B8.proj
+#ifdef TARGET_PC
+// One object on PC (the GameCube symbols are addresses inside lbl_802FE8B8).
+#define lbl_802FEBF8 (lbl_802FE8B8.wanted) // [SPRITE_MAX_LAYERS * 2]: .wanted then .committed
+#define lbl_802FE918 (lbl_802FE8B8.proj)
+#else
+extern SpriteState lbl_802FEBF8[SPRITE_MAX_LAYERS * 2]; // alias of lbl_802FE8B8.wanted
+extern SpriteProj lbl_802FE918[SPRITE_MAX_LAYERS];      // alias of lbl_802FE8B8.proj
+#endif
 extern SpriteDrawCmd lbl_80111340[2][SPRITE_MAX_LAYERS]; // per buffer, per layer
 extern GDCurrentDL* lbl_803CC0F0;  // __GDCurrentDL
 extern GDCurrentDL* lbl_803CC1C0;  // current layer's display list

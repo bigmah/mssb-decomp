@@ -21,10 +21,17 @@ typedef struct StadObj1FD8 {
     void* draw;         // 0x84
     void* draw2;        // 0x88
     void* animPlayer;   // 0x8C
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    u8 bits : 5;
+    u8 b5 : 1;
+    u8 animated : 1;
+    u8 visible : 1;     // 0x90
+#else
     u8 visible : 1;     // 0x90
     u8 animated : 1;
     u8 b5 : 1;
     u8 bits : 5;
+#endif
     u8 pad91;
     u8 alpha; // 0x92
     u8 pad93;

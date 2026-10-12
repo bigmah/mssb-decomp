@@ -20,10 +20,17 @@ typedef struct StaObj {
     /*0x88*/ u8 _88[4];
     /*0x8C*/ void* anim; // ShapeAnimPlayer* (lbl_3_bss_B578) for the shape-animated object
 
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /*0x90*/ u8 bits : 5;
+    /*0x90*/ u8 bit5 : 1;
+    /*0x90*/ u8 hasShadow : 1;
+    /*0x90*/ u8 visible : 1;
+#else
     /*0x90*/ u8 visible : 1;
     /*0x90*/ u8 hasShadow : 1;
     /*0x90*/ u8 bit5 : 1;
     /*0x90*/ u8 bits : 5;
+#endif
     /*0x91*/ u8 _91;
     /*0x92*/ u8 _92;
     /*0x93*/ u8 _93;

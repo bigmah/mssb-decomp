@@ -127,16 +127,34 @@ typedef struct PitcherGameStat {
 
 // lbl_803532A8 (lbl_8034E9A0 + 0x4908): play-by-play log, [2 teams][100].
 typedef struct PlayLogEntry {
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /*0x1*/ u16 rbi : 3;
+    /*0x1*/ u16 detail : 4;
+    /*0x0*/ u16 batter : 4;
+    /*0x0*/ u16 inning : 5;
+#else
     /*0x0*/ u16 inning : 5;
     /*0x0*/ u16 batter : 4;
     /*0x1*/ u16 detail : 4;
     /*0x1*/ u16 rbi : 3;
+#endif
     /*0x2*/ s8 batterSlot;
     /*0x3*/ s8 result;
 } PlayLogEntry; // size: 0x4
 
 // lbl_80353260 (lbl_8034E9A0 + 0x48C0): per-player game log, [2 teams][9].
 typedef struct RosterLogEntry {
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /*0x0*/ u8 _0 : 3;
+    /*0x0*/ u8 team : 5; // 9: unused slot
+    /*0x1*/ u8 _1b : 2;
+    /*0x1*/ u8 order : 4; // batting order 1-9, 10: pitcher not batting
+    /*0x1*/ u8 _1a : 2;
+    /*0x2*/ u8 inning : 4; // inning the player entered
+    /*0x2*/ u8 _2 : 4;
+    /*0x3*/ u8 _3 : 4;
+    /*0x3*/ u8 position : 4; // 0xA: none yet
+#else
     /*0x0*/ u8 team : 5; // 9: unused slot
     /*0x0*/ u8 _0 : 3;
     /*0x1*/ u8 _1a : 2;
@@ -146,6 +164,7 @@ typedef struct RosterLogEntry {
     /*0x2*/ u8 inning : 4; // inning the player entered
     /*0x3*/ u8 position : 4; // 0xA: none yet
     /*0x3*/ u8 _3 : 4;
+#endif
 } RosterLogEntry; // size: 0x4
 
 // lbl_80354720: [2 teams][9], only the fields used here.

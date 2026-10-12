@@ -9,6 +9,12 @@
 #include "main/menu_globals.h"
 #include "Unknown/File_0x800a64e0.h" // AssetLoadInstructions
 #include "main/file_800527C4.h"
+#ifdef TARGET_PC
+#include "main/file_800ADC40.h" // MovPlayer (0x1C0 bytes on GameCube, larger here)
+#define MOV_PLAYER_SIZE sizeof(MovPlayer)
+#else
+#define MOV_PLAYER_SIZE 0x1C0
+#endif
 extern s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSize);
 
 extern void fn_2_4E7EC(void);
@@ -1553,7 +1559,7 @@ extern void fn_800AD9F4(void*);
 extern s32 fn_800ADAFC(void);
 extern s32 fn_800ADB04(void*, void*, s32, s32);
 extern void fn_800ADBFC(void);
-extern void fn_800ADC40(void*, s32);
+extern void fn_800ADC40(u8* streamBuf, u32 streamBufSize);
 
 // fn_2_37460, size:0x1D0
 void fn_2_37460(void) {
@@ -1564,9 +1570,9 @@ void fn_2_37460(void) {
     switch ((s8)o->step) {
     case 0:
         fn_2_4E824();
-        p = _OSAllocFromHeap(0x20, 0x1C0);
+        p = _OSAllocFromHeap(0x20, MOV_PLAYER_SIZE);
         d->heap = p;
-        memset(p, 0, 0x1C0);
+        memset(p, 0, MOV_PLAYER_SIZE);
         d->size = 0x400000;
         p = _OSAllocFromHeap(0x20, 0x400000);
         d->alt = p;
@@ -2294,9 +2300,9 @@ void fn_2_37630(void) {
         MOVIE_CUE = 0;
         MOVIE_CUE_ON = 0;
         fn_2_4E824();
-        p = _OSAllocFromHeap(0x20, 0x1C0);
+        p = _OSAllocFromHeap(0x20, MOV_PLAYER_SIZE);
         d->heap = p;
-        memset(p, 0, 0x1C0);
+        memset(p, 0, MOV_PLAYER_SIZE);
         d->size = 0x400000;
         p = _OSAllocFromHeap(0x20, 0x400000);
         d->alt = p;
