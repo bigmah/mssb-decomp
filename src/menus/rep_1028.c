@@ -1426,3 +1426,188 @@ void fn_2_9007C(void) {
     }
 }
 #endif
+
+// ---- 0x92394..0x927C8: the object state handlers at the end of this unit's .text
+// (once a separate auto split; they share this unit's pooled lbl_2_data_30900
+// statics and the lbl_2_data_308B4 handler table).
+#include "menus/auto_00_00092394_text.h"
+
+typedef struct MenuObject {
+    u8 pad0[0x90];
+    s16 phase;
+    u8 pad92[0x19];
+    u8 state;
+    u8 padAC[0x10];
+} MenuObject;
+
+extern void (*lbl_2_data_308B4[])(u8* object);
+extern void (*lbl_2_data_307F0[])(u8* object);
+extern void (*lbl_2_data_307F8[])(u8* object);
+extern void (*lbl_2_data_30804[])(u8* object);
+
+// fn_2_923CC, size:0xC
+void fn_2_923CC(u8* object) {
+    *(s16*)(object + 0x90) = 2;
+}
+
+// fn_2_923D8, size:0xC
+void fn_2_923D8(u8* object) {
+    *(s16*)(object + 0x90) = 2;
+}
+
+// fn_2_923E4, size:0x88
+void fn_2_923E4(u8* object) {
+    s32 index;
+    u8* slot;
+    u8* p;
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    index = *(s32*)(object + 0x78);
+    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    p = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    if (p != NULL) {
+        *(s16*)(slot + 0xA6) = 0;
+        *(u32*)(p + index * 0x28) = *(u32*)lbl_2_data_30900;
+    }
+    *(s16*)(object + 0x90) = 1;
+}
+
+// fn_2_924A4, size:0xC
+void fn_2_924A4(u8* object) {
+    *(s16*)(object + 0x90) = 1;
+}
+
+// fn_2_92394, size:0x38
+void fn_2_92394(u8* object) {
+    lbl_2_data_30804[*(s16*)(object + 0x90)](object);
+}
+
+// fn_2_9246C, size:0x38
+void fn_2_9246C(u8* object) {
+    lbl_2_data_307F8[*(s16*)(object + 0x90)](object);
+}
+
+// fn_2_92504, size:0x38
+void fn_2_92504(u8* object) {
+    lbl_2_data_307F0[*(s16*)(object + 0x90)](object);
+}
+
+// fn_2_9253C, size:0x40
+void fn_2_9253C(u8* object) {
+    *(void (**)(u8*))(object + 0xB8) = lbl_2_data_308B4[object[0xAB]];
+    (*(void (**)(u8*))(object + 0xB8))(object);
+}
+
+// fn_2_9257C, size:0xD8
+void fn_2_9257C(void) {
+    s32 i;
+    u8* work;
+
+    // TODO type: lbl_2_bss_1A8248[0] state byte 0x44F2
+    if (((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 1 || ((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 2 ||
+        ((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 3) {
+        return;
+    }
+    for (i = 0; i < 29; i++) {
+        fn_2_9253C((u8*)lbl_2_bss_1A8248[0] + i * 0xBC + 0x21E0);
+    }
+    work = lbl_2_bss_1A824C[0];
+    if (work[0x1972C0] != 0) {
+        work[0x1972C0] = 0;
+#if NONMATCHING
+        fn_800B0A14_removeQueue(NULL); // the argument is unused
+#else
+        REMOVE_QUEUE_NOARG(); // original passes a stale r3
+#endif
+    }
+}
+
+// fn_2_92654, size:0x28
+void fn_2_92654(s32 index, u8 state) {
+    MenuObject* object = (MenuObject*)((u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0);
+    object->state = state;
+    object->phase = 0;
+}
+
+// fn_2_924B0, size:0x54
+void fn_2_924B0(u8* object) {
+    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    fn_2_8AC84(*(s32*)(object + 0x78), 0);
+    color.a = 0xFF;
+    fn_800BD2CC(0, color);
+}
+
+
+// fn_2_9267C, size:0x14C
+void fn_2_9267C(Vec* result, Vec* position, Vec* anchor, Vec* target,
+               f32 step, f32 spring, f32 damping, f32 restDistance) {
+    Vec direction;
+    Vec velocity;
+    Vec displacement;
+    f32 distance;
+    f32 force;
+    PSVECSubtract(position, anchor, &direction);
+    distance = PSVECDistance(position, anchor);
+    PSVECSubtract(target, anchor, &displacement);
+    PSVECScale(&displacement, step, &velocity);
+    force = spring * (restDistance - distance) +
+            damping * (PSVECDotProduct(&velocity, &direction) / distance);
+    PSVECNormalize(&direction, &direction);
+    PSVECScale(&direction, force * step, &direction);
+    PSVECAdd(position, &direction, position);
+    *result = *position;
+}
+
+// ---- .data 0x30D04..0x312A4: sprite layouts used by rep_11C0.c (see there).
+#include "menus/menu_asset.h"
+
+// Sprite layout (fn_80034E20).
+MenuSpriteDesc lbl_2_data_30D04[39] = {
+    {0, 0xB, 0.0f, 0.0f, -1, 0, 0x14, {0, 0xFF}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0x12, 0.0f, 0.0f, -1, 1, 0x14, {0, 0xFF}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 9, 0.0f, 0.0f, -1, 1, 0x13, {0, 1}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0x13, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xFF}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0x14, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xFF}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0xA, 0.0f, 0.0f, -1, 1, 0x14, {0, 0}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 0xD, 0.0f, 0.0f, -1, 0, 0x14, {0, 0}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0xD, 0.0f, 0.0f, -1, 0, 0x14, {0, 0}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0xD, 0.0f, 0.0f, -1, 0, 0x14, {0, 0}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0xC, 0.0f, 0.0f, -1, 1, 0x13, {0, 6}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 0xC, 0.0f, 0.0f, -1, 1, 0x13, {0, 7}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 0xC, 0.0f, 0.0f, -1, 1, 0x13, {0, 8}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0xF, 0.0f, 0.0f, -1, 1, 0x13, {0, 9}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0xF, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xA}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0xF, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xB}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0xE, 0.0f, 0.0f, -1, 1, 0x12, {0, 9}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 0xE, 0.0f, 0.0f, -1, 1, 0x12, {0, 0xA}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 0xE, 0.0f, 0.0f, -1, 1, 0x12, {0, 0xB}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 0x1A, 0.0f, 0.0f, -1, 1, 0x13, {0, 9}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 0x1A, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xA}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 0x1A, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xB}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 0x10, 0.0f, 0.0f, -1, 1, 0x13, {0, 9}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 0x10, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xA}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 0x10, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xB}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 0x15, 0.0f, 0.0f, -1, 1, 0x13, {0, 9}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 0x15, 0.0f, 0.0f, -1, 1, 0x13, {0, 9}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 0x15, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xA}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 0x15, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xA}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 0x15, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xA}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 0x15, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xB}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 0x15, 0.0f, 0.0f, -1, 1, 0x13, {0, 0xB}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 0x1C, 0.0f, 0.0f, -0x100, 1, 7, {0, 9}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 0x1C, 0.0f, 0.0f, -0x100, 1, 7, {0, 9}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 0x1C, 0.0f, 0.0f, -0x100, 1, 0x13, {0, 0xA}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 0x1C, 0.0f, 0.0f, -0x100, 1, 0x13, {0, 0xA}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 0x1C, 0.0f, 0.0f, -0x100, 1, 0x13, {0, 0xA}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 0x1C, 0.0f, 0.0f, -0x100, 1, 0x13, {0, 0xB}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 0x1C, 0.0f, 0.0f, -0x100, 1, 0x13, {0, 0xB}, 0x12, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {3, 0, 0.0f, 0.0f, 0, 0, 0, {0, 0}, 0, {0, 0, 0}, 0.0f, 0, 0, 0},
+};
+// Sprite layout (fn_80034E20).
+MenuSpriteDesc lbl_2_data_311E4[6] = {
+    {0, 0x12D, 0.0f, 0.0f, -1, 1, 0x16, {0, 0xFF}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0x12D, 0.0f, 0.0f, -1, 0, 0x16, {0, 0xFF}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0x12B, 0.0f, 0.0f, -1, 1, 0x16, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0x12B, 0.0f, 0.0f, -1, 0, 0x16, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0x12E, 0.0f, 0.0f, -1, 1, 0x15, {0, 0xFF}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {3, 0, 0.0f, 0.0f, 0, 0, 0, {0, 0}, 0, {0, 0, 0}, 0.0f, 0, 0, 0},
+};
