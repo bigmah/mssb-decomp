@@ -309,7 +309,7 @@ u8 LoadModel(CharActor* actor);
 void fn_8001B5EC(s32 index, s32 enable);
 void fn_8001D180(s32 index, s32 which, s32 enable);
 void fn_800189E4(void);
-void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, s32 n, ...);
+void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, u8 n, ...);
 
 s32 fn_8001B35C(s32 index, s32 kind);
 void fn_80019A60(void);

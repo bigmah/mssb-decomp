@@ -4699,9 +4699,7 @@ void fn_8001DB74(ActorObjectTable* list) {
 #endif
 
 // .text:0x8001DD58 size:0x14C
-// NONMATCHING 98%: register allocation only
-#if NONMATCHING
-void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, s32 n, ...) {
+void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, u8 n, ...) {
     va_list args;
     GameBone* joint;
 
@@ -4724,7 +4722,6 @@ void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, s32 n, ...) {
         }
     }
 }
-#endif
 
 // .text:0x8001DEA4 size:0x234
 void fn_8001DEA4(ActorObject* slot, s32 pass, MtxPtr view) {
