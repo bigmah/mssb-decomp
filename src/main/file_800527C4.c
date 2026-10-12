@@ -775,7 +775,7 @@ void fn_80055374(SceneTask* task, s32 port) {
         TASK_OBJ(task, 0)->_5C = 10 << 16;
         TASK_OBJ(task, 0)->_68 = 4;
         for (p = 0; p < 2; p++) {
-            if (((u8*)&g_d_GameSettings)[0x10] != 0 || p == 0) { // TODO type
+            if (g_d_GameSettings._10 != 0 || p == 0) {
                 TASK_OBJ(task, lbl_803C5F04.cursor[p] + p * 4 + 0x2B)->_68 = 1;
                 TASK_OBJ(task, lbl_803C5F04.cursor[p] * 2 + p + 0x3F)->_68 = 1;
             }
@@ -938,7 +938,7 @@ void fn_800559EC(void) {
                 TASK_OBJ(task, cur0 + 0x2B)->_5C = 10 << 16;
                 TASK_OBJ(task, cur0 + 0x2B)->_68 = 4;
                 TASK_OBJ(task, cur0 * 2 + 0x3F)->_68 = 4;
-                if (((u8*)&g_d_GameSettings)[0x10] == 1) { // TODO type
+                if (g_d_GameSettings._10 == 1) {
                     TASK_OBJ(task, cur1 + 0x2F)->_5C = 10 << 16;
                     TASK_OBJ(task, cur1 + 0x2F)->_68 = 4;
                     TASK_OBJ(task, cur1 * 2 + 0x40)->_68 = 4;
@@ -1026,7 +1026,7 @@ void fn_80056120(void) {
     TASK_OBJ(task, (lbl_803C5F04.option[4] ^ 1) + 0x15)->_64 = 0x107;
     fn_800363D8(task, 0x22, 1, 0xF9, lbl_803C5F04.option[4] ^ 1);
     for (p = 0; p < 2; p++) {
-        if (((u8*)&g_d_GameSettings)[0x10] == 0 && p != 0) { // TODO type
+        if (g_d_GameSettings._10 == 0 && p != 0) {
             fn_800363D8(task, p + 0xC, 1, 0x116, 0xD);
         } else {
             fn_800363D8(task, p + 0xC, 1, 0x116, lbl_8034E9A0.teamPort[p] + 9);
@@ -1040,7 +1040,7 @@ void fn_80056120(void) {
     TASK_OBJ(task, 0x18)->_5C = lbl_8034E9A0._470D[0] << 16;
     TASK_OBJ(task, 0x19)->_5C = lbl_8034E9A0._470D[1] << 16;
     for (p = 0; p < 2; p++) {
-        if (((u8*)&g_d_GameSettings)[0x10] == 0 && p != 0) { // TODO type
+        if (g_d_GameSettings._10 == 0 && p != 0) {
             if (lbl_8034E9A0.teamPort[0] == 0) {
                 fn_800363D8(task, p + 0x27, 1, 0x46, 5);
             } else {
@@ -1539,7 +1539,7 @@ void fn_80058394(SceneTask* task) {
             s8 idx;
             pitch = star - 1;
             idx = translateStarPitchHitIndex(pitch);
-            if (idx != -1 && ((s8*)&gChallengeState)[0x43C2 + idx] == 0) { // TODO type
+            if (idx != -1 && gChallengeState._43C2[idx] == 0) {
                 swing = lbl_8034E9A0.chars[(row) * 9 + (col)].stats.NonCaptainStarSwing + 11;
                 pitch = lbl_8034E9A0.chars[(row) * 9 + (col)].stats.NonCaptainStarPitch + 11;
             } else {
@@ -1688,7 +1688,7 @@ void fn_80058B20(SceneTask* task, u8 port) {
             s8 idx;
             pitch = star - 1;
             idx = translateStarPitchHitIndex(pitch);
-            if (idx != -1 && ((s8*)&gChallengeState)[0x43C2 + idx] == 0) { // TODO type
+            if (idx != -1 && gChallengeState._43C2[idx] == 0) {
                 swing = lbl_8034E9A0.chars[(row) * 9 + (col)].stats.NonCaptainStarSwing + 11;
                 pitch = lbl_8034E9A0.chars[(row) * 9 + (col)].stats.NonCaptainStarPitch + 11;
             } else {
@@ -2070,7 +2070,7 @@ void fn_8005A350(SceneTask* task, s32 pad) {
     s32 n;
     CharacterStats* player;
 
-    if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+    if (g_d_GameSettings._10 == 0) {
         if (pad != 0) {
             return;
         }
@@ -2272,7 +2272,7 @@ void fn_8005AF68(SceneTask* task) {
             fn_800363D8(task, pos + 0x23, 1, 0x83, player->stats.CharID);
             TASK_OBJ(task, i + 0x11)->flags &= ~2;
             if (g_d_GameSettings.GameModeSelected == 5) {
-                flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                flag = gChallengeState._43D6[player->stats.CharID];
             } else {
                 flag = lbl_8034E9A0.boosted[team][i];
             }
@@ -2291,7 +2291,7 @@ void fn_8005AF68(SceneTask* task) {
                 TASK_OBJ(task, pos + 0x47)->flags &= ~2;
             }
             TASK_OBJ(task, i + 0x35)->flags &= ~2;
-            if (((u8*)&g_d_GameSettings)[0x10] == 0 && team != 0) { // TODO type
+            if (g_d_GameSettings._10 == 0 && team != 0) {
                 TASK_OBJ(task, i + 0x1A)->_64 = (u8)(lbl_8034E9A0.teamPort[0] == 0) + 30;
             } else {
                 TASK_OBJ(task, i + 0x1A)->_64 = lbl_8034E9A0.teamPort[team] + 30;
@@ -2346,7 +2346,7 @@ void fn_8005B298(SceneTask* task) {
             TASK_OBJ(task, i + 0x99)->flags &= ~2;
         }
         if (g_d_GameSettings.GameModeSelected == 5) {
-            flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+            flag = gChallengeState._43D6[player->stats.CharID];
         } else {
             flag = lbl_8034E9A0.boosted[team][i];
         }
@@ -2438,7 +2438,7 @@ void fn_8005BB5C(SceneTask* task) {
                 TASK_OBJ(task, i + 0xAC)->_5C = (inMemRoster[0][i].stats.BattingStance + inMemRoster[0][i].stats.FieldingArm * 2) << 16;
                 TASK_OBJ(task, i + 0x64)->flags &= ~2;
                 if (g_d_GameSettings.GameModeSelected == 5) {
-                    flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                    flag = gChallengeState._43D6[player->stats.CharID];
                 } else {
                     flag = lbl_8034E9A0.boosted[team][i];
                 }
@@ -2491,7 +2491,7 @@ void fn_8005BF40(SceneTask* task) {
             fn_800363D8(task, slot->slot + base + 0x10A, 1, 0x83, player->stats.CharID);
             TASK_OBJ(task, i + base + 0xE6)->flags &= ~2;
             if (g_d_GameSettings.GameModeSelected == 5) {
-                flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                flag = gChallengeState._43D6[player->stats.CharID];
             } else {
                 flag = lbl_8034E9A0.boosted[team][i];
             }
@@ -2509,7 +2509,7 @@ void fn_8005BF40(SceneTask* task) {
                 TASK_OBJ(task, slot->slot + base + 0x152)->flags &= ~2;
             }
             TASK_OBJ(task, i + base + 0x12E)->flags &= ~2;
-            if (((u8*)&g_d_GameSettings)[0x10] == 0 && team != 0) { // TODO type
+            if (g_d_GameSettings._10 == 0 && team != 0) {
                 TASK_OBJ(task, i + base + 0xF8)->_64 = (s8)(lbl_8034E9A0.teamPort[0] == 0) + 30;
             } else {
                 TASK_OBJ(task, i + base + 0xF8)->_64 = lbl_8034E9A0.teamPort[team] + 30;
@@ -2537,7 +2537,7 @@ void fn_8005C2B0(SceneTask* task) {
             TASK_OBJ(task, i + base + 0xD0)->_5C = player->stats.CharacterClass << 16;
             TASK_OBJ(task, i + base + 0xAC)->_5C = (player->stats.BattingStance + player->stats.FieldingArm * 2) << 16;
             if (g_d_GameSettings.GameModeSelected == 5) {
-                flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                flag = gChallengeState._43D6[player->stats.CharID];
             } else {
                 flag = lbl_8034E9A0.boosted[team][i];
             }
@@ -2577,7 +2577,7 @@ void fn_8005C5C4(SceneTask* task, s32 port) {
             TASK_OBJ(task, 1)->_5C = 20 << 16;
             TASK_OBJ(task, 0)->_68 = 4;
             TASK_OBJ(task, 1)->_68 = 4;
-        } else if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+        } else if (g_d_GameSettings._10 == 0) {
             if (port != 0) {
                 TASK_OBJ(task, port)->_5C = 20 << 16;
                 TASK_OBJ(task, port)->_68 = 4;
@@ -2705,7 +2705,7 @@ void fn_8005CCE4(SceneTask* task, s32 port) {
             a = g_d_GameSettings._06 != 2 ? port * 9 + 0x76 : 0x7E;
             b = g_d_GameSettings._06 != 2 ? port * 9 + 0x88 : 0x87;
             if (g_d_GameSettings.GameModeSelected == 5) {
-                flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                flag = gChallengeState._43D6[player->stats.CharID];
             } else {
                 flag = lbl_8034E9A0.boosted[port][i];
             }
@@ -2750,7 +2750,7 @@ void fn_8005CCE4(SceneTask* task, s32 port) {
                 a = g_d_GameSettings._06 != 2 ? port * 9 + 0x140 : 0x3E;
                 b = g_d_GameSettings._06 != 2 ? port * 9 + 0x152 : 0x47;
                 if (g_d_GameSettings.GameModeSelected == 5) {
-                    flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                    flag = gChallengeState._43D6[player->stats.CharID];
                 } else {
                     flag = lbl_8034E9A0.boosted[port][i];
                 }
@@ -2787,7 +2787,7 @@ void fn_8005CCE4(SceneTask* task, s32 port) {
             for (i = 0; i < 9; i++, rs++, player++) {
                 s8 pos = rs->slot;
                 if (g_d_GameSettings.GameModeSelected == 5) {
-                    flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                    flag = gChallengeState._43D6[player->stats.CharID];
                 } else {
                     flag = lbl_8034E9A0.boosted[port][i];
                 }
@@ -3168,7 +3168,7 @@ void fn_8005F734(SceneTask* task, s32 port) {
         TASK_OBJ_AT(task, port, 10)->_68 = 1;
         TASK_OBJ_AT(task, port, 20)->_5C = 0;
         TASK_OBJ_AT(task, port, 20)->_68 = 1;
-        if (((u8*)&g_d_GameSettings)[0x10] == 0 && port == 0) { // TODO type
+        if (g_d_GameSettings._10 == 0 && port == 0) {
             TASK_OBJ_AT(task, port, 18)->_5C = 30 << 16;
             TASK_OBJ_AT(task, port, 18)->_68 = 4;
             TASK_OBJ_AT(task, port, 24)->_5C = 0;
@@ -3192,7 +3192,7 @@ void fn_8005F9D0(SceneTask* task, s32 port) {
     if ((states[port] == 1) ? TRUE : FALSE) {
         done = fn_80042DA8((LayoutOwner*)task, port + 4, 20) != 0;
         if (g_d_GameSettings.GameModeSelected != 5) {
-            if (((u8*)&g_d_GameSettings)[0x10] == 0 && port != 0) { // TODO type
+            if (g_d_GameSettings._10 == 0 && port != 0) {
                 done += fn_80042DA8((LayoutOwner*)task, port, 30) != 0;
                 done += fn_80042DA8((LayoutOwner*)task, port + 10, 10) != 0;
                 done += fn_80042DA8((LayoutOwner*)task, port + 18, 20) != 0;
@@ -3210,7 +3210,7 @@ void fn_8005F9D0(SceneTask* task, s32 port) {
             done += fn_80042DA8((LayoutOwner*)task, 20, 10) != 0;
         }
         if (done == 5) {
-            if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+            if (g_d_GameSettings._10 == 0) {
                 lbl_803297E0.ready[port] = 1;
                 if (lbl_803297E0.ready[0] != 0) {
                     if (lbl_803297E0.ready[1] == 0) {
@@ -3245,7 +3245,7 @@ void fn_8005FCA0(SceneTask* task, s32 port) {
         TASK_OBJ_AT(task, port, 6)->_5C = 14 << 16;
         TASK_OBJ_AT(task, port, 6)->_68 = 1;
         if (g_d_GameSettings.GameModeSelected != 5) {
-            if (((u8*)&g_d_GameSettings)[0x10] == 0 && port != 0) { // TODO type
+            if (g_d_GameSettings._10 == 0 && port != 0) {
                 TASK_OBJ(task, port)->_5C = 0;
                 TASK_OBJ(task, port)->_68 = 1;
                 TASK_OBJ_AT(task, port, 2)->_5C = 0;
@@ -3355,7 +3355,7 @@ void fn_80060184(void) {
                 fn_8005F734(task, port);
                 if (*st == 1) {
                     done = fn_80042DA8((LayoutOwner*)task, port + 20, 10) != 0;
-                    if (((u8*)&g_d_GameSettings)[0x10] == 0 && port == 0) { // TODO type
+                    if (g_d_GameSettings._10 == 0 && port == 0) {
                         done += fn_80042DA8((LayoutOwner*)task, port, 30) != 0;
                         done += fn_80042DA8((LayoutOwner*)task, port + 18, 20) != 0;
                     } else {
@@ -3364,7 +3364,7 @@ void fn_80060184(void) {
                     }
                     done += fn_80042DA8((LayoutOwner*)task, port + 4, 20) != 0;
                     if (done + (fn_80042DA8((LayoutOwner*)task, port + 10, 10) != 0) == 5) {
-                        if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+                        if (g_d_GameSettings._10 == 0) {
                             lbl_803297E0.ready[port] = 1;
                             if (lbl_803297E0.ready[0] != 0 && lbl_803297E0.ready[1] != 0) {
                                 lbl_803297E0.ready[1] = 0;
@@ -3384,7 +3384,7 @@ void fn_80060184(void) {
             break;
         case 0x3A:
             if (*st == 0) {
-                if (g_d_GameSettings.GameModeSelected != 5 && ((u8*)&g_d_GameSettings)[0x10] == 0 && port != 0) { // TODO type
+                if (g_d_GameSettings.GameModeSelected != 5 && g_d_GameSettings._10 == 0 && port != 0) {
                     TASK_OBJ(task, port)->_5C = 30 << 16;
                     TASK_OBJ(task, port)->_68 = 1;
                 } else {
@@ -3395,7 +3395,7 @@ void fn_80060184(void) {
                 *st = 1;
             }
             if (*st == 1) {
-                if (g_d_GameSettings.GameModeSelected != 5 && ((u8*)&g_d_GameSettings)[0x10] == 0 && port != 0) { // TODO type
+                if (g_d_GameSettings.GameModeSelected != 5 && g_d_GameSettings._10 == 0 && port != 0) {
                     done = fn_80042DA8((LayoutOwner*)task, port, 50) != 0;
                 } else {
                     done = fn_80042DA8((LayoutOwner*)task, port, 0) != 0;
@@ -3619,7 +3619,7 @@ void fn_80060184(void) {
                         done = fn_80042DA8((LayoutOwner*)task, 0, 0) != 0;
                         expected = 2;
                         done += fn_80042DA8((LayoutOwner*)task, 1, 0) != 0;
-                    } else if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+                    } else if (g_d_GameSettings._10 == 0) {
                         if (port != 0) {
                             expected = 1;
                             done = fn_80042DA8((LayoutOwner*)task, port, 0) != 0;
@@ -3735,7 +3735,7 @@ void fn_80061B9C(void) {
     if (g_d_GameSettings._06 != 2) {
         fn_80034E20(task, lbl_801000A8);
         TASK_OBJ(task, 16)->_5C = lbl_8034E9A0.teamPort[0] << 16;
-        if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
+        if (g_d_GameSettings._10 == 0) {
             TASK_OBJ(task, 17)->_5C = ((s8)(lbl_8034E9A0.teamPort[0] == 0) + 4) << 16;
         } else {
             TASK_OBJ(task, 17)->_5C = lbl_8034E9A0.teamPort[1] << 16;
@@ -3758,7 +3758,7 @@ void fn_80061B9C(void) {
                 fn_800363D8(task, pos + 0x10A, 1, 0x83, player->stats.CharID);
                 TASK_OBJ(task, i + 0xE6)->flags &= ~2;
                 if (g_d_GameSettings.GameModeSelected == 5) {
-                    flag = ((u8*)&gChallengeState)[0x43D6 + player->stats.CharID]; // TODO type
+                    flag = gChallengeState._43D6[player->stats.CharID];
                 } else {
                     flag = lbl_8034E9A0.boosted[0][i];
                 }
@@ -3799,7 +3799,7 @@ void fn_80061B9C(void) {
             TASK_OBJ(task, 6)->_5C = (lbl_8034E9A0._470D[team] % 4) << 16;
             TASK_OBJ(task, 9)->_5C = (lbl_8034E9A0._470D[team] % 4) << 16;
         }
-        if (((u8*)&g_d_GameSettings)[0x10] == 0 && team != 0) { // TODO type
+        if (g_d_GameSettings._10 == 0 && team != 0) {
             if (lbl_8034E9A0.teamPort[team] == -1) {
                 v = (team != 0) + 4;
             } else {
@@ -3883,7 +3883,7 @@ BOOL fn_80062578(void) {
 #if NONMATCHING
 void fn_800625A4(s32 index, s32 step) {
     s32 i;
-    s32 port = ((u8*)&g_d_GameSettings)[0x10] == 0 ? 0 : index; // TODO type
+    s32 port = g_d_GameSettings._10 == 0 ? 0 : index;
 
     if (lbl_803C66B0.active[port] != 0) {
         OSReport(lbl_800E6970, port, lbl_803C66B0.step[port]);

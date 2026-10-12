@@ -103,28 +103,28 @@ void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind) {
             if (lbl_803CBBC0 != 0) {
                 getAnimRelatedCoordinates(actor->index, 0x1E, &pos);
                 pos.y = 0.0f;
-                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5);
             } else {
                 getAnimRelatedCoordinates(actor->index, 0x22, &pos);
                 pos.y = 0.0f;
-                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5);
             }
         }
         if ((actor->_276 & 0xA) == 2) {
             getAnimRelatedCoordinates(actor->index, 0x1E, &pos);
             pos.y = 0.0f;
             if (hasBat && actor->_279[1] == 0) {
-                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5);
             }
-            fn_8002955C(&pos, &dir, (ParticleParamsC *)trail); // TODO type
+            fn_8002955C(&pos, &dir, (ParticleParamsC *)trail);
         }
         if ((actor->_276 & 0x14) == 4) {
             getAnimRelatedCoordinates(actor->index, 0x22, &pos);
             pos.y = 0.0f;
             if (hasBat && actor->_279[1] == 0) {
-                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5);
             }
-            fn_8002955C(&pos, &dir, (ParticleParamsC *)trail); // TODO type
+            fn_8002955C(&pos, &dir, (ParticleParamsC *)trail);
         }
         break;
     case 0:
@@ -150,23 +150,23 @@ void fn_8004C5F8(CharActor* actor, s32 unused, u32 kind) {
             if (lbl_803CBBC0 != 0) {
                 getAnimRelatedCoordinates(actor->index, 0x1E, &pos);
                 pos.y = 0.0f;
-                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5);
             } else {
                 getAnimRelatedCoordinates(actor->index, 0x22, &pos);
                 pos.y = 0.0f;
-                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
+                fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5);
             }
             break;
         }
         if ((actor->_276 & 0xA) == 2) {
             getAnimRelatedCoordinates(actor->index, 0x1E, &pos);
             pos.y = 0.0f;
-            fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
+            fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5);
         }
         if ((actor->_276 & 0x14) == 4) {
             getAnimRelatedCoordinates(actor->index, 0x22, &pos);
             pos.y = 0.0f;
-            fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5); // TODO type
+            fn_80030D88(&pos, &dir, (ParticleParams5 *)fx, 5);
         }
         break;
     }

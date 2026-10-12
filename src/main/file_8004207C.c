@@ -60,9 +60,9 @@ extern void fn_8004C510(CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 
 extern void fn_800569C8(void);
 extern void fn_800625A4(s32 port, s32 sound);
-extern u8 lbl_800FB5B0[]; // TODO type
+extern DiskFileEntry lbl_800FB5B0; // disc file loaded into a sprite slot
+extern MenuDef lbl_800FEF70[0x5D];
 extern u8 lbl_8010B600[][3]; // innings per challenge difficulty
-extern u8 lbl_800FEF70[]; // TODO type
 extern s32 lbl_803CBCF0;
 extern u8 lbl_80361B20[]; // per character: can be boosted
 extern u8 lbl_800E86F0[12]; // stat boosts
@@ -2000,7 +2000,7 @@ void startGameRelated(void) {
             lbl_803C5EA4.mode = 2;
             lbl_8034E978.menu = 5;
             lbl_8034E978.prevTrack = lbl_8034E978.track;
-            lbl_8034E978.track = *(u16*)&lbl_800FEF70[0x58]; // TODO type
+            lbl_8034E978.track = lbl_800FEF70[5].track;
             fn_80042D38(0xC);
         } else {
             lbl_803C5F04._32 = 0;
@@ -2082,11 +2082,11 @@ void fn_80049220(u8 team) {
         if (g_d_GameSettings.GameModeSelected == 5) {
             lbl_8034E978.menu = 0x14;
             lbl_8034E978.prevTrack = lbl_8034E978.track;
-            lbl_8034E978.track = lbl_800FEF70[0x148];
+            lbl_8034E978.track = lbl_800FEF70[0x14].track;
         } else {
             lbl_8034E978.menu = 6;
             lbl_8034E978.prevTrack = lbl_8034E978.track;
-            lbl_8034E978.track = lbl_800FEF70[0x68];
+            lbl_8034E978.track = lbl_800FEF70[6].track;
         }
         fn_800625A4(0, 0x2C);
         if (in.pressed & 0x200) {
@@ -2171,11 +2171,11 @@ void fn_800494CC(u8 team) {
         if (g_d_GameSettings.GameModeSelected == 5) {
             lbl_8034E978.menu = 0x15;
             lbl_8034E978.prevTrack = lbl_8034E978.track;
-            lbl_8034E978.track = lbl_800FEF70[0x158];
+            lbl_8034E978.track = lbl_800FEF70[0x15].track;
         } else {
             lbl_8034E978.menu = 7;
             lbl_8034E978.prevTrack = lbl_8034E978.track;
-            lbl_8034E978.track = lbl_800FEF70[0x78];
+            lbl_8034E978.track = lbl_800FEF70[7].track;
         }
         fn_800625A4(0, 0x2B);
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
@@ -2515,7 +2515,7 @@ void fn_8004A1BC(void) {
         }
         break;
     case 4:
-        if (fn_80035838(lbl_800FB5B0, 6) != 0) {
+        if (fn_80035838(&lbl_800FB5B0, 6) != 0) {
             lbl_803C5F04._32 = 1;
             lbl_803C5F04.state = 0;
         }
@@ -2960,7 +2960,7 @@ static inline void fn_8004AE18_inline(s32 idx) {
     dir.z = 1.0f;
     PSMTXRotRad(m, 'Y', model->rot.y);
     PSMTXMultVec(m, &dir, &dir);
-    fn_80030D88(&model->pos, &dir, (ParticleParams5 *)lbl_803CB84C, 5); // TODO type
+    fn_80030D88(&model->pos, &dir, (ParticleParams5 *)lbl_803CB84C, 5);
     if (model->kind == 0xE || model->kind == 0x25) {
         return;
     }
@@ -2988,7 +2988,7 @@ void fn_8004AE18(s32 idx) {
     dir.z = 1.0f;
     PSMTXRotRad(m, 'Y', model->rot.y);
     PSMTXMultVec(m, &dir, &dir);
-    fn_80030D88(&model->pos, &dir, (ParticleParams5 *)lbl_803CB84C, 5); // TODO type
+    fn_80030D88(&model->pos, &dir, (ParticleParams5 *)lbl_803CB84C, 5);
     if (model->kind == 0xE || model->kind == 0x25) {
         return;
     }
@@ -3072,7 +3072,7 @@ GXPerf0 lbl_800FB4C8[35] = {
     33, 34, 35,
 };
 GXPerf1 lbl_800FB554[23] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22};
-u8 lbl_800FB5B0[16] = {0, 0, 4, 11, 64, 55, 207, 92, 24, 179, 168, 0, 0, 32, 138, 240};
+DiskFileEntry lbl_800FB5B0 = {1035, {0x4037CF5C}, {0x18B3A800}, 0x208AF0};
 MsgDef lbl_800FB5C0[78] = {
     {168, 3, 10, 0, 0},
     {169, 1, 5, 0, 1},
