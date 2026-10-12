@@ -14,7 +14,8 @@ extern void fn_2_409CC(void);
 extern s32 fn_2_4EB2C(void);
 extern s32 fn_2_4EAF4(void);
 extern s32 fn_2_4E9A8(void);
-extern u8 lbl_800EF808[];
+#include "main/file_80021308.h" // SoundManager
+extern SoundManager lbl_800EF808;
 extern void fn_2_8EA80(void);
 extern void fn_2_8E478(void);
 extern void fn_2_47CFC(void);
@@ -22,7 +23,7 @@ extern void fn_2_8AEE0(void);
 extern void fn_2_8ACB0(s32, s32);
 extern void fn_2_68FBC(s32, s32);
 extern void fn_2_8CCAC(s32, u8);
-extern u8 lbl_80366B18[];
+#include "main/file_8000F150.h" // TextSystem lbl_80366B18
 extern void fn_2_68DAC(s32 index, void* result);
 extern void fn_80068720(s32);
 extern void fn_8001F228(void);
@@ -79,13 +80,14 @@ typedef struct MissionDef {
 extern MissionDef lbl_80109AE8[][10];
 
 #define MENU_PADS ((MenuPad*)&lbl_803C77B8)
-#define MENU_PAD_REPEAT(port) (*(u16*)((u8*)&lbl_803C77B8._04 + (port) * 0x20))
-#define MENU_PAD_DOWN(port) (*(u16*)((u8*)&lbl_803C77B8._02 + (port) * 0x20))
+#define MENU_PAD_REPEAT(port) (*(u16*)((u8*)&lbl_803C77B8 + offsetof(MenuPad, repeat) + (port) * sizeof(MenuPad)))
+#define MENU_PAD_DOWN(port) (*(u16*)((u8*)&lbl_803C77B8 + offsetof(MenuPad, down) + (port) * sizeof(MenuPad)))
 
 #define ROSTER (lbl_2_bss_1A8248->chars)
 #define ROSTER_LIMIT(e) ((e)->limits[lbl_2_bss_1A8248->_4415 * 6 + lbl_2_bss_1A8248->_441C + 4])
 extern void fn_8004B1B8(void* tex);
-extern u8 lbl_803C6CF8[];
+#include "main/aramloader.h"
+extern ARAMLoader lbl_803C6CF8;
 
 // Archive loaded from ARAM by fn_2_1B1BC (lbl_2_bss_1034C).
 typedef struct MenuArchive {
@@ -97,7 +99,8 @@ extern MenuArchive* lbl_2_data_4BA0;
 extern u8 lbl_2_bss_1034C[];
 extern MenuAsset lbl_2_data_4B90;
 extern MenuData lbl_2_bss_1A8250; // menu work buffer that lbl_2_bss_1A824C points at
-extern u8 lbl_8034E9A0[];
+#include "main/charsel_state_type.h"
+extern CharSelectState lbl_8034E9A0;
 extern void* memset(void*, int, unsigned long);
 
 // NONMATCHING 87%: the original keeps the relocation loop (count 1, index 0) as a real loop; CW folds and unrolls ours
@@ -124,7 +127,7 @@ void fn_2_1B1BC(void) {
         o->step = 1;
         break;
     case 1:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             o->step = 2;
         }
         break;
@@ -288,7 +291,7 @@ void fn_2_1B7B4(void) {
     case 18:
         switch (lbl_2_bss_1A823C[0]->mode) {
         case 0:
-            lbl_2_bss_1A8248->_441C = fn_2_20CB0(*(u32*)(lbl_8034E9A0 + 0x46E0));
+            lbl_2_bss_1A8248->_441C = fn_2_20CB0(lbl_8034E9A0.captain[0]);
             lbl_2_bss_1A8248->_441D = lbl_803CB8F0[lbl_2_bss_1A8248->_441C];
             if ((s8)lbl_2_bss_1A8248->_1606 == 0) {
                 lbl_2_bss_1A8248->_1605 = 0;
@@ -547,7 +550,7 @@ void fn_2_1BFD0(void) {
     }
     fn_8001F228();
     fn_80021410();
-    fn_800ACFB0(*(void**)(lbl_800EF808 + 0x9C));
+    fn_800ACFB0(lbl_800EF808.groups[38]);
     if ((s8)lbl_2_bss_1A8248->_44F4 != 0) {
         fn_2_4E8BC();
         fn_2_4E904();
@@ -556,9 +559,9 @@ void fn_2_1BFD0(void) {
         fn_2_4E928();
     }
     fn_2_4E94C();
-    if (*(u32*)(lbl_80366B18 + 0x7A8) != 0) {
-        fn_800ACFB0(*(void**)(lbl_80366B18 + 0x7A8));
-        *(u32*)(lbl_80366B18 + 0x7A8) = 0;
+    if (lbl_80366B18.tables[4] != NULL) {
+        fn_800ACFB0(lbl_80366B18.tables[4]);
+        lbl_80366B18.tables[4] = NULL;
     }
     lbl_2_bss_1A823C[0]->_34 = 0;
 }
@@ -566,7 +569,7 @@ void fn_2_1BFD0(void) {
 // fn_2_1C0D4, size:0x148
 // Reset the menu work buffer.
 void fn_2_1C0D4(void) {
-    u8* sel = lbl_8034E9A0;
+    CharSelectState* sel = &lbl_8034E9A0;
     s32 i;
     lbl_2_bss_1A823C[0]->_34 = 1;
     memset(&lbl_2_bss_1A8250, 0, sizeof(MenuData));
@@ -581,7 +584,7 @@ void fn_2_1C0D4(void) {
     lbl_2_bss_1A824C[0]->_197838 = 0;
     lbl_2_bss_1A824C[0]->_197835 = 0;
     g_d_GameSettings.StadiumID = 0;
-    *(u8*)&lbl_2_bss_1A824C[0]->port = sel[0x46F8];
+    *(u8*)&lbl_2_bss_1A824C[0]->port = sel->ports[0];
     lbl_2_bss_1A824C[0]->_197848 = 0;
 }
 
