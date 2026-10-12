@@ -166,7 +166,82 @@ SIGSEGV in `fn_800111B4` (inlined in `fn_80010FA0`, called from
 `fn_800097A0` <- `game_main`): the in-place relocation of `MsgTable.msgs`
 reads 4-byte disc offsets as 8-byte pointers (deferred item 1).
 
-## Phase 3: next
+## Phase 3: boot (in progress)
+
+How far it gets (`port/tools/run.sh 40 5` with `MSSB_INPUT="500:A,800:A"`):
+health & safety screen, Nintendo and Namco logos (rendered correctly), then
+the intro movie (HVQM4) panics on its header ("Invalid version"); skipping it
+locally, the title screen task runs but its spani animation doesn't advance
+(black screen).
+
+### Tooling
+
+- `port/tools/run.sh [secs] [shot-every]`: runs `build/port/mssb`, kills it
+  after N seconds, log in `build/port/run.log`, window screenshots in
+  `build/port/shots/tNN.png` (`port/tools/winid.swift` + `screencapture`).
+- Crash handler with backtrace, hang watchdog (`MSSB_WATCHDOG_SECS`).
+- `MSSB_INPUT="frame:BUTTON,..."` scripted pad presses (60 frames/s),
+  `MSSB_DEBUG_INPUT=1`; `MSSB_TRACE_TASKS=1` prints the scene task list
+  whenever it changes.
+- `port/tools/assetfile.py` extracts/decompresses an asset from the disc's
+  archive; `port/tools/viewcheck.py` finds struct views of one global that
+  disagree on PC; `port/tools/gen_data.py` regenerates port/gen.
+
+### Memory model
+
+Pointer fields of data loaded in place are `PTR32(T)` (plain `T*` under
+MWCC): a u32 offset from the 4GB-aligned game heap base; values from
+0xE0000000 index a table of pointers outside the heap (static data). They're
+read and written with `PTR32_GET`/`PTR32_SET`. A file's scalars are swapped
+exactly once at load (`port/src/formats*.c`, sizes from `port/src/blob.c`,
+noted by `ARAMTransfer`), then the game's own relocation runs. Texture data,
+TLUTs and display lists stay big-endian. Global structs that many units read
+through GameCube-offset views can also keep their layout with PTR32 fields
+(done for `SceneFade lbl_8037169C`).
+
+### Formats
+
+| format | where | state |
+|---|---|---|
+| message tables (MsgTable) | file_8000F150 fn_800111B4 | swapped + PTR32, works |
+| font archive (4 offsets) | file_8000F150 fn_80011000 | swapped, works |
+| texture archives (TexArchive/TexImage), DOTexInfo, challenge texture headers | file_800BDEA0 convertTextureHeader | swapped once (marker) + PTR32, works for logos |
+| TPL (TEXPalette, charPipeline) | file_800A7C08, file_80091450 | swapped + PTR32 (memory card banner/icons) |
+| spani 2D animation (SpaniAnim, tracks, blocks, keys), spani file headers | file_8000A0AC fn_8000B9C8, file_80034F50 | swapped + PTR32; title animation not advancing yet |
+| sprite elements (bitfields), RGBA colors | file_8000BA3C | PC bitfield order |
+| 2-offset resource files (RelocPair/ResHandle) | file_80069BDC | swapped + PTR32 |
+| menu song blocks, song tables, archives, model-set containers | menus, m_sound | offset tables swapped |
+| MusyX sound groups (SoundGroupData + proj/sdir/pool) | file_80021308 | swapped + PTR32, sndPushGroup works |
+| geometry palettes (+ vertex arrays native, le=true) | file_800B9974 | swapped + PTR32, untested |
+| actor layouts / bones | file_800B2C44 | swapped + PTR32, untested |
+| animation banks | file_800B4A44, file_800B516C | swapped per track type, untested |
+| skins | file_800BDEA0 | swapped, untested |
+| character file tables | file_80011640, menus rep_0F60/rep_0568 | PTR32 tables, untested |
+| shape (morph) data, shape anim sets | file_80024D2C | swapped, untested |
+| file load records in .data (u8[] objects) | port/src/data_fixups.c | swapped at startup |
+| HVQM4 movies | file_800ADC40, file_800DFDD4 | in progress (header read fails) |
+| stadium archives / sta_c* file tables, rep_1E08 assets, rep_3E00, auto_00_0011D3AC | game | not done |
+| challenge models (rep_0000, rep_0610, rep_74A0) | challenge | not done |
+
+### Fixes outside the formats (classes to watch for)
+
+- Struct views with GameCube offsets over objects that hold pointers: tasks
+  (`MainTask`, `RepTask`), `LayoutObj`, `SceneFade`, `MovPlayer`/`ThpPlayer`
+  (now one definition), `VideoSystem`, sprite work areas, CharSelectState,
+  SoundManager... (`viewcheck.py` lists the rest).
+- Raw byte offsets into structs (`lbl_803C6CF8[0x715]` -> `.idle`).
+- Tentative definitions without a size (`u8 buf[];`) are one-element arrays
+  in clang: the 0x45000-byte sprite buffer overflowed into globals.
+- Display lists built by hand (sprite system) must be written big-endian;
+  GD also emits aurora's texture bind commands (reserve room for them).
+- Draw callbacks receive their node in r3 on GameCube.
+- Busy-wait loops need `OSYieldThread()` on PC (single run token, no
+  preemption from interrupts).
+- MusyX sample addresses are 32-bit heap offsets (hwSaveSample).
+- `lbl_800E8754` is `SavedSettings` (port[4] at 0x07); `GameInitOptions` was
+  wrong (fork D, from the rep_1188 asm).
+
+## Next
 
 Disc formats: swap and relocate (or convert) each in-place format, starting
 with `MsgTable`, then the deferred list above.

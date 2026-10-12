@@ -415,9 +415,17 @@ void OSYieldThread(void)
         return;
     bool hadIrq = t_irqDisabled;
     release(self);
-    lk.unlock();
     if (hadIrq)
+    {
+        lk.unlock();
         irq_unlock();
+        lk.lock();
+    }
+    // A busy-waiting thread would otherwise take the token straight back: if
+    // the blocked main thread owes a retrace, let it present first.
+    if (std::chrono::steady_clock::now() >= port_retrace_deadline())
+        g_cv.wait_for(lk, std::chrono::milliseconds(2), [] { return std::chrono::steady_clock::now() < port_retrace_deadline(); });
+    lk.unlock();
     std::this_thread::yield();
     if (hadIrq)
         irq_lock();

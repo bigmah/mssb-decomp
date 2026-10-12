@@ -95,7 +95,7 @@ extern f32 lbl_803CC184;        // quad depth
 extern const GXColor lbl_803CCEE8; // white
 extern u32 lbl_803CC188;        // AI DMA buffer index
 extern AIDCallback lbl_803CC18C; // previous AI DMA callback
-extern u32 lbl_803CC190;
+extern void (*lbl_803CC190)(u32 frame); // per-frame callback (file_800A7C08.c)
 extern u8 lbl_803CC194;         // vertex buffer index
 extern s32 lbl_803CC19C;        // last decode result
 extern u32 lbl_803CC1A0;        // stream bytes consumed
@@ -105,6 +105,12 @@ extern u32 lbl_803CC1AC;        // movie file size
 
 // movie.c strings (rodata not split into this unit)
 extern char lbl_800E7B50[]; // "YUV->RGB Conv SrcAddr is NULL!!\n", followed by the strings below
+#ifdef TARGET_PC
+// The code reaches the strings that follow by offset (MOVSTR); on PC they are
+// separate objects, so keep the whole pool here (bytes from main.dol).
+static char s_movStrings[352] = "YUV->RGB Conv SrcAddr is NULL!!\x0a" "\x00" "\x00" "\x00" "\x00" "YUV->RGB Conv DstAddr is NULL!!\x0a" "\x00" "\x00" "\x00" "\x00" "sNp_MovDecodeThread()::ERR!! broken file.\x0a" "\x00" "\x00" "sNp_MovStreamThread()::ERR!! broken file.\x0a" "\x00" "\x00" "HVQM4 1.3\x00" "\x00" "\x00" "sNp_MovStreamThread()::ERR!! Invalid version.\x0a" "\x00" "\x00" "sNp_MovStreamThread()::ERR!! Invalid audio samples per second \x0a" "\x00" "sNp_MovStreamThread()::ERR!! failed to allocate the working buffer\x0a" "\x00" "";
+#define lbl_800E7B50 s_movStrings
+#endif
 extern char lbl_800E7B74[]; // "YUV->RGB Conv DstAddr is NULL!!\n"
 extern char lbl_800E7B98[];
 extern char lbl_803CCF00[8]; // lbl_803CCF00
@@ -118,6 +124,41 @@ extern char lbl_803CCF00[8]; // lbl_803CCF00
 
 #define MOV_STATE_STOP 4
 #define MOV_DVD_DONE() ((s32)*(volatile u8*)&lbl_803C6CF8.idle)
+
+#ifdef TARGET_PC
+static int port_skip_movies(void) {
+    static int s_skip = -1;
+    if (s_skip < 0) {
+        const char* env = getenv("MSSB_SKIP_MOVIES");
+        s_skip = env != NULL && env[0] != '\0' && env[0] != '0';
+    }
+    return s_skip;
+}
+#endif
+
+// The HVQM4 stream is big-endian: on PC the headers are swapped into native
+// fields as they are read (exactly once each).
+#ifdef TARGET_PC
+static inline void MOV_SWAP_HEADER(MovPlayer* mov) {
+    swap32_array(&mov->numBlocks - 1, 8); // 0x14..0x34; videoInfo is read bytewise
+    swap32_inplace(&mov->sampleRate);
+}
+#define MOV_SWAP_BLOCK(mov) swap32_array(&(mov)->_060, 5)
+static inline void MOV_SWAP_RECORD(MovPlayer* mov) {
+    mov->recType = be16(mov->recType);
+    mov->recFormat = be16(mov->recFormat);
+    mov->recSize = be32(mov->recSize);
+}
+#define MOV_READ_U32(p) read_be32(p)
+// Busy waits must give the CPU up on PC (no preemption by interrupts).
+#define MOV_YIELD() OSYieldThread()
+#else
+#define MOV_YIELD()
+#define MOV_SWAP_HEADER(mov)
+#define MOV_SWAP_BLOCK(mov)
+#define MOV_SWAP_RECORD(mov)
+#define MOV_READ_U32(p) (*(u32*)(p))
+#endif
 
 // NONMATCHING 73%: the movie.c bss is not split into this unit; the original addresses all of it relative to lbl_802F93A0 (also float rodata names)
 #if NONMATCHING
@@ -181,7 +222,11 @@ void fn_800ADD70(void) {
         z = lbl_803CC184;
         v[2] = v[5] = v[8] = v[11] = z;
         DCFlushRange(v, 0x18);
+#ifdef TARGET_PC
+        (GXSetArray)(GX_VA_POS, v, 0x18, 6, true); // native s16 positions
+#else
         GXSetArray(GX_VA_POS, v, 6);
+#endif
         GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
         GXSetNumChans(1);
         GXSetNumTexGens(1);
@@ -198,6 +243,12 @@ void fn_800ADD70(void) {
     }
 }
 
+// GX texture data is big-endian (aurora reads it as the GameCube does).
+#ifdef TARGET_PC
+#define YUV_TEXEL(x) be32((u32)(x))
+#else
+#define YUV_TEXEL(x) (x)
+#endif
 #define YUV_CLAMP(t, y, c) (((y) + (c))[0xA00]) // y: table base + luma offset; 0xA00 = clamp
 
 // NONMATCHING 58%: the compiler folds the 0xA00 clamp offset into the shared chroma terms (lbzx) where the
@@ -248,12 +299,12 @@ void YUV2RGB(u8* src, u8* dst, s32 width, s32 height) {
                 uB = t->uB[cu];
                 ya = t->y[y0[0]];
                 yb = t->y[y0[1]];
-                out[0] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
-                out[8] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
+                out[0] = YUV_TEXEL((t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR]);
+                out[8] = YUV_TEXEL((t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB]);
                 ya = t->y[y1[0]];
                 yb = t->y[y1[1]];
-                out[2] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
-                out[10] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
+                out[2] = YUV_TEXEL((t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR]);
+                out[10] = YUV_TEXEL((t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB]);
 
                 cv = v[1];
                 cu = u[1];
@@ -262,12 +313,12 @@ void YUV2RGB(u8* src, u8* dst, s32 width, s32 height) {
                 uB = t->uB[cu];
                 ya = t->y[y0[2]];
                 yb = t->y[y0[3]];
-                out[1] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
-                out[9] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
+                out[1] = YUV_TEXEL((t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR]);
+                out[9] = YUV_TEXEL((t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB]);
                 ya = t->y[y1[2]];
                 yb = t->y[y1[3]];
-                out[3] = (t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR];
-                out[11] = (t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB];
+                out[3] = YUV_TEXEL((t->clamp[ya + vR] << 16) | 0xFF00FF00 | t->clamp[yb + vR]);
+                out[11] = YUV_TEXEL((t->clamp[ya + g] << 24) | (t->clamp[ya + uB] << 16) | (t->clamp[yb + g] << 8) | t->clamp[yb + uB]);
 
                 v += 2;
                 u += 2;
@@ -333,24 +384,24 @@ void YUV2RGB_(u8* src, u8* dst, s32 width, s32 height) {
                 uB = t->uB[u[0]];
                 ya = (u8*)t + t->y[y0[0]];
                 yb = (u8*)t + t->y[y0[1]];
-                out[0] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
-                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
+                out[0] = YUV_TEXEL((RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
+                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB)));
                 ya = (u8*)t + t->y[y1[0]];
                 yb = (u8*)t + t->y[y1[1]];
-                out[2] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
-                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
+                out[2] = YUV_TEXEL((RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
+                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB)));
 
                 vR = t->vR[v[1]];
                 g = t->vG[v[1]] + t->uG[u[1]];
                 uB = t->uB[u[1]];
                 ya = (u8*)t + t->y[y0[2]];
                 yb = (u8*)t + t->y[y0[3]];
-                out[1] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
-                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
+                out[1] = YUV_TEXEL((RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
+                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB)));
                 ya = (u8*)t + t->y[y1[2]];
                 yb = (u8*)t + t->y[y1[3]];
-                out[3] = (RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
-                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB));
+                out[3] = YUV_TEXEL((RGB565(YUV_CLAMP(t, ya, vR), YUV_CLAMP(t, ya, g), YUV_CLAMP(t, ya, uB)) << 16) |
+                         RGB565(YUV_CLAMP(t, yb, vR), YUV_CLAMP(t, yb, g), YUV_CLAMP(t, yb, uB)));
 
                 v += 2;
                 u += 2;
@@ -445,6 +496,7 @@ static inline BOOL MovStartBlock(MovPlayer* mov) {
         OSPanic(lbl_803CCF00, 0x355, MOV_STR_DECODE_BROKEN);
         return FALSE;
     }
+    MOV_SWAP_BLOCK(mov);
     if ((mov->flags & 1) && mov->rateMode == 0xFF) {
         mov->flags &= ~1;
     }
@@ -551,6 +603,7 @@ BOOL MovStreamThread(MovPlayer* mov) {
         OSPanic(lbl_803CCF00, 0x2ED, MOVSTR(str, MOV_STR_STREAM_BROKEN));
         return FALSE;
     }
+    MOV_SWAP_HEADER(mov);
     if (strncmp(MOVSTR(str, MOV_STR_HVQM4), mov->magic, strlen(MOVSTR(str, MOV_STR_HVQM4))) != 0) {
         for (i = 0x44; i != 0; i--) {}
         OSPanic(lbl_803CCF00, 0x300, MOVSTR(str, MOV_STR_BAD_VERSION));
@@ -625,9 +678,18 @@ void* MovDecodeThread(void* arg) {
             continue;
         }
         mov->decoding = 1;
+#ifdef TARGET_PC
+        // MSSB_SKIP_MOVIES=1: one-shot movies end at once, through the
+        // normal end-of-movie path (looping ones keep playing).
+        if (port_skip_movies() && !(mov->flags & 2)) {
+            mov->numFrames = 0;
+            lbl_803CC19C = 3;
+        } else
+#endif
         lbl_803CC19C = fn_800AF1A8(mov);
         switch (lbl_803CC19C) {
         case 1: // waiting for data
+            MOV_YIELD();
             break;
         case 2:
             OSPanic(lbl_803CCF00, 0x27D, MOV_STR_DECODE_BROKEN);
@@ -641,6 +703,7 @@ void* MovDecodeThread(void* arg) {
                     if (lbl_803CC17C) {
                         goto exit;
                     }
+                    MOV_YIELD();
                 } while (mov->curFrame < mov->numFrames);
                 MovResetFrames(mov);
                 lbl_803CC1A0 = 0;
@@ -653,6 +716,7 @@ void* MovDecodeThread(void* arg) {
                 if (!fn_800AF9B4(mov, 0x44)) {
                     ok = FALSE;
                 } else {
+                    MOV_SWAP_HEADER(mov);
                     ok = MovStartBlock(mov);
                 }
                 if (!ok) {
@@ -665,6 +729,7 @@ void* MovDecodeThread(void* arg) {
                     if (lbl_803CC17C) {
                         goto exit;
                     }
+                    MOV_YIELD();
                 } while (mov->curFrame < mov->numFrames);
                 lbl_803CC170 = NULL;
                 mov->state = MOV_STATE_STOP;
@@ -704,6 +769,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
                 if (!fn_800AF9B4(&mov->_060, 0x14)) {
                     return 2;
                 }
+                MOV_SWAP_BLOCK(mov);
                 if (mov->state == MOV_STATE_STOP) {
                     return 0;
                 }
@@ -721,6 +787,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
         if (!fn_800AF9B4(&mov->recType, 8)) {
             return 2;
         }
+        MOV_SWAP_RECORD(mov);
         if (mov->state == MOV_STATE_STOP) {
             return 0;
         }
@@ -742,7 +809,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
             if (!fn_800AF9B4(mov->videoBuf, 4)) {
                 return 2;
             }
-            count = *(u32*)mov->videoBuf;
+            count = MOV_READ_U32(mov->videoBuf);
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
             }
@@ -760,6 +827,9 @@ s32 fn_800AF1A8(MovPlayer* mov) {
                 }
                 switch (fn_800AF5FC(mov, format, count)) {
                 case 2:
+#ifdef TARGET_PC
+                    OSYieldThread(); // waiting for a frame slot to be shown
+#endif
                     continue;
                 case 0:
                     if (mov->state == MOV_STATE_STOP) {
@@ -788,7 +858,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
             if (!fn_800AF9B4(mov->audioBuf, 4)) {
                 return 2;
             }
-            count = *(u32*)mov->audioBuf;
+            count = MOV_READ_U32(mov->audioBuf);
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
             }
@@ -803,6 +873,7 @@ s32 fn_800AF1A8(MovPlayer* mov) {
                 if (end >= mov->audioEnd) {
                     end -= mov->audioEnd - mov->audioRead;
                 }
+                MOV_YIELD(); // waits for the audio interrupt to consume (and reload audioRead)
             } while (mov->audioWrite < mov->audioRead && end >= mov->audioRead);
             if (mov->state == MOV_STATE_STOP) {
                 return 0;
@@ -1670,7 +1741,7 @@ u32 lbl_803CC1A0;
 s32 lbl_803CC19C;
 u32 lbl_803CC198; // type from another unit
 u8 lbl_803CC194;
-u32 lbl_803CC190;
+void (*lbl_803CC190)(u32 frame);
 AIDCallback lbl_803CC18C;
 u32 lbl_803CC188;
 f32 lbl_803CC184;
@@ -1689,7 +1760,7 @@ u8* lbl_803CC174;
 // .data 0x801112E0: the two alternating frame-draw callbacks queued by file_800A7C08
 // (DrawCallbackNode in main/file_800A7C08.h: a link word, then the function).
 typedef struct MovDrawNode {
-    /*0x0*/ u32 link;
+    /*0x0*/ uintptr_t link; // pointer-sized on PC, like DrawLink
     /*0x4*/ void (*func)(void);
 } MovDrawNode;
 MovDrawNode lbl_801112E0[2] = {
