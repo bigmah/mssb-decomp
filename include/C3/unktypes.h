@@ -31,8 +31,8 @@ typedef struct {
 
 // MSSB texture bank (same layout as the sprite banks): a u32 header then 0x20-byte texture records.
 typedef struct DOTexInfo {
-    /* 0x00 */ void * image;
-    /* 0x04 */ void * tlut; // NULL unless colour-indexed
+    /* 0x00 */ PTR32(void) image;
+    /* 0x04 */ PTR32(void) tlut; // 0 unless colour-indexed
     /* 0x08 */ u16 height;
     /* 0x0A */ u16 width;
     /* 0x0C */ u8 pad0C[2];

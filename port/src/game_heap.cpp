@@ -89,7 +89,10 @@ void quarantine_free(void* p)
 
 namespace {
 constexpr size_t kReserveSize = 4ull << 30;
-// Offset 0 is reserved so a 32-bit offset of 0 can mean null.
+// Offset 0 is reserved so a 32-bit offset of 0 can mean null. The heap stops
+// below PORT_PTR32_EXT_BASE: 32-bit values from there up name pointers outside
+// the heap (static data), see port/include/port/ptr32.h.
+constexpr size_t kUsableSize = 0xE0000000u;
 constexpr size_t kGuardSize = 1 << 20;
 
 uintptr_t s_base = 0;
@@ -297,7 +300,7 @@ void* port_heap_sbrk(ptrdiff_t increment)
     if (increment <= 0)
         return (void*)old;
     uintptr_t newTop = old + (uintptr_t)increment;
-    if (newTop > s_base + kReserveSize)
+    if (newTop > s_base + kUsableSize)
         return (void*)~(uintptr_t)0; // MFAIL
     if (newTop > s_committed)
     {

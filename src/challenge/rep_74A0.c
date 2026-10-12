@@ -1053,16 +1053,16 @@ void fn_1_1A3B4(void) {
 
     if (rec->tlut != NULL) {
         for (i = 0; i < count; i++) {
-            GXInitTlutObj(&tlutObj, rec->tlut, rec->tlutFormat, rec->tlutEntries);
+            GXInitTlutObj(&tlutObj, PTR32_GET(void, rec->tlut), rec->tlutFormat, rec->tlutEntries);
             GXLoadTlut(&tlutObj, GX_TLUT0);
-            GXInitTexObjCI(&texObj, rec->image, rec->width, rec->height, rec->format, GX_CLAMP, GX_CLAMP, GX_FALSE, GX_TLUT0);
+            GXInitTexObjCI(&texObj, PTR32_GET(void, rec->image), rec->width, rec->height, rec->format, GX_CLAMP, GX_CLAMP, GX_FALSE, GX_TLUT0);
             GXInitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
             GXLoadTexObj(&texObj, GX_TEXMAP0);
             rec++;
         }
     } else {
         for (i = 0; i < count; i++) {
-            GXInitTexObj(&texObj, rec->image, rec->width, rec->height, rec->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+            GXInitTexObj(&texObj, PTR32_GET(void, rec->image), rec->width, rec->height, rec->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
             GXInitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
             GXLoadTexObj(&texObj, GX_TEXMAP0);
             rec++;

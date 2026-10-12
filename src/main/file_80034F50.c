@@ -380,7 +380,7 @@ s32 fn_80035838(void* aramAddr, u8 id) {
             pa = &s->anim;
             hdr = s->data;
 #ifdef TARGET_PC
-            port_swap_spani_file(hdr);
+            port_swap_offset_table(hdr, 2); // texture archive, animation
 #endif
             s->tex = (u8*)hdr + hdr[0];
             *pa = (SpaniAnim*)((u8*)hdr + hdr[1]);

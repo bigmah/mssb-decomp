@@ -15,10 +15,17 @@
 
 #include <stdint.h>
 
+// 32-bit values from PORT_PTR32_EXT_BASE up index a table of pointers outside
+// the game heap (static data such as built-in texture images); the heap never
+// grows that far (port/src/game_heap.cpp).
+#define PORT_PTR32_EXT_BASE 0xE0000000u
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 void port_ptr32_fail(const void* p);
+uint32_t port_ptr32_encode_ext(const void* p);
+void* port_ptr32_decode_ext(uint32_t raw);
 #ifdef __cplusplus
 }
 #endif
@@ -28,13 +35,17 @@ static inline uint32_t port_ptr32_encode(const void* p)
     if (p == 0)
         return 0;
     if (!port_heap_contains(p))
-        port_ptr32_fail(p);
+        return port_ptr32_encode_ext(p);
     return (uint32_t)((uintptr_t)p - port_heap_base());
 }
 
 static inline void* port_ptr32_decode(uint32_t raw)
 {
-    return raw == 0 ? 0 : (void*)(port_heap_base() + raw);
+    if (raw == 0)
+        return 0;
+    if (raw >= PORT_PTR32_EXT_BASE)
+        return port_ptr32_decode_ext(raw);
+    return (void*)(port_heap_base() + raw);
 }
 
 #define PTR32(T) uint32_t

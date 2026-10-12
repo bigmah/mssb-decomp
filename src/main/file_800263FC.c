@@ -257,11 +257,11 @@ static inline void LoadParticleTex(TexArchive* arc, s32 idx, GXTexWrapMode wrapS
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
     img = &arc->entries[arc->entries[idx].index];
     if (img->tlut != NULL) {
-        GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, wrapS, wrapT, GX_FALSE, 0);
-        GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
+        GXInitTexObjCI(&texObj, PTR32_GET(u8, img->data), img->width, img->height, img->format, wrapS, wrapT, GX_FALSE, 0);
+        GXInitTlutObj(&tlutObj, PTR32_GET(void, img->tlut), img->tlutFormat, img->tlutEntries);
         GXLoadTlut(&tlutObj, GX_TLUT0);
     } else {
-        GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, wrapS, wrapT, GX_FALSE);
+        GXInitTexObj(&texObj, PTR32_GET(u8, img->data), img->width, img->height, img->format, wrapS, wrapT, GX_FALSE);
     }
     GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
     GXLoadTexObj(&texObj, GX_TEXMAP1);
@@ -2093,11 +2093,11 @@ s32 fn_8002D82C(Emitter* e) {
         GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
         img = &arc->entries[arc->entries[tex].index];
         if (img->tlut != NULL) {
-            GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
-            GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
+            GXInitTexObjCI(&texObj, PTR32_GET(u8, img->data), img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
+            GXInitTlutObj(&tlutObj, PTR32_GET(void, img->tlut), img->tlutFormat, img->tlutEntries);
             GXLoadTlut(&tlutObj, GX_TLUT0);
         } else {
-            GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+            GXInitTexObj(&texObj, PTR32_GET(u8, img->data), img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
         }
         GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
         GXLoadTexObj(&texObj, GX_TEXMAP1);
@@ -3472,11 +3472,11 @@ void fn_80033CC8(Particle* p, TexArchive* arc) {
         GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
         img = &arc->entries[arc->entries[tex].index];
         if (img->tlut != NULL) {
-            GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
-            GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
+            GXInitTexObjCI(&texObj, PTR32_GET(u8, img->data), img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
+            GXInitTlutObj(&tlutObj, PTR32_GET(void, img->tlut), img->tlutFormat, img->tlutEntries);
             GXLoadTlut(&tlutObj, GX_TLUT0);
         } else {
-            GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+            GXInitTexObj(&texObj, PTR32_GET(u8, img->data), img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
         }
         GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
         GXLoadTexObj(&texObj, GX_TEXMAP1);

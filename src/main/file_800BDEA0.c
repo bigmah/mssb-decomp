@@ -1616,19 +1616,35 @@ L_800C06B0:
 }
 #endif
 
-// TODO(port): in-place relocation of big-endian disc data with 32-bit
-// pointer fields; needs a byte swap and native structs on PC (Phase 3).
+// Relocates a texture archive in place (on PC, after byte-swapping its
+// headers; the texel and palette data stay big-endian).
 // .text:0x800C0770 size:0x4C
 void convertTextureHeader(TexArchive* hdr) {
     s32 i;
 
+#ifdef TARGET_PC
+    if (!port_swap_tex_archive(hdr)) {
+        return; // already converted
+    }
+#endif
     for (i = 0; i < hdr->count; i++) {
+#ifdef TARGET_PC
+        // File offset -> pointer. PTR32_SET also covers archives built into
+        // the executable (outside the game heap).
+        if (hdr->entries[i].data != 0) {
+            PTR32_SET(hdr->entries[i].data, (u8*)hdr + hdr->entries[i].data);
+        }
+        if (hdr->entries[i].tlut != 0) {
+            PTR32_SET(hdr->entries[i].tlut, (u8*)hdr + hdr->entries[i].tlut);
+        }
+#else
         if (hdr->entries[i].data != NULL) {
             hdr->entries[i].data = (u8*)hdr + (uintptr_t)hdr->entries[i].data;
         }
         if (hdr->entries[i].tlut != NULL) {
             hdr->entries[i].tlut = (u8*)hdr + (uintptr_t)hdr->entries[i].tlut;
         }
+#endif
         hdr->entries[i].index = i;
     }
 }

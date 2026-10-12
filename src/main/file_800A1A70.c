@@ -58,19 +58,79 @@ void GDSetTexLookupMode(GXTexMapID id, GXTexWrapMode wrap_s, GXTexWrapMode wrap_
     GDWriteBPCmd((u32)(u8)(16.0f * min_lod) << 0 | (u32)(u8)(16.0f * max_lod) << 8 | (u32)lbl_803CBAA0[id] << 24);
 }
 
+#ifdef TARGET_PC
+// aurora only binds textures and TLUTs through its own commands, which carry
+// the host address (GXLoadTexObj/GXLoadTlut emit them). Display lists built
+// with GD carry 24-bit physical addresses in BP registers instead, so the GD
+// texture calls also write the aurora commands (big-endian, like the rest of
+// the list), from what the preceding GD calls set up.
+static struct {
+    u16 width;
+    u16 height;
+    u32 format;
+    u32 tlut;
+} sPortTexMap[8];
+static struct {
+    void* data;
+    u32 entries;
+} sPortTlut[16];
+
+static void PortGDWriteU64(u64 v) {
+    GDWrite_u32((u32)(v >> 32));
+    GDWrite_u32((u32)v);
+}
+
+static u32 PortTlutIndex(u32 tmem_addr) {
+    // GXInitTlutRegion's default layout: TLUT n at 0xC0000 + n * 0x2000.
+    return ((tmem_addr - 0xC0000) >> 13) & 15;
+}
+#endif
+
 // .text:0x800A2194 size:0x100
 void GDSetTexImgAttr(GXTexMapID id, u16 width, u16 height, GXTexFmt format) {
     GDWriteBPCmd((u32)(width - 1) << 0 | (u32)(height - 1) << 10 | (u32)format << 20 | (u32)lbl_803CBAA8[id] << 24);
+#ifdef TARGET_PC
+    sPortTexMap[id & 7].width = width;
+    sPortTexMap[id & 7].height = height;
+    sPortTexMap[id & 7].format = format;
+#endif
 }
 
 // .text:0x800A2294 size:0xE8
 void GDSetTexImgPtr(GXTexMapID id, void* image_ptr) {
     GDWriteBPCmd((u32)(OSCachedToPhysical(image_ptr) >> 5) << 0 | (u32)lbl_803CBAB0[id] << 24);
+#ifdef TARGET_PC
+    GDWrite_u8(GX_AURORA);
+    GDWrite_u16(GX_AURORA_LOAD_TEXOBJ);
+    GDWrite_u8((u8)id);
+    PortGDWriteU64((u64)(uintptr_t)image_ptr);
+    GDWrite_u32(sPortTexMap[id & 7].width);
+    GDWrite_u32(sPortTexMap[id & 7].height);
+    GDWrite_u32(sPortTexMap[id & 7].format);
+    GDWrite_u32(sPortTexMap[id & 7].tlut);
+    GDWrite_u8(0); // no mipmaps
+    GDWrite_u32(0); // no GXTexObj id: aurora keys the texture by its data
+    GDWrite_u32(0);
+#endif
 }
 
 // .text:0x800A237C size:0xF0
 void GDSetTexTlut(GXTexMapID id, u32 tmem_addr, GXTlutFmt format) {
     GDWriteBPCmd((u32)((tmem_addr - 0x80000) >> 9) << 0 | (u32)format << 10 | (u32)lbl_803CBAB8[id] << 24);
+#ifdef TARGET_PC
+    {
+        u32 idx = PortTlutIndex(tmem_addr);
+        sPortTexMap[id & 7].tlut = idx;
+        GDWrite_u8(GX_AURORA);
+        GDWrite_u16(GX_AURORA_LOAD_TLUT);
+        GDWrite_u8((u8)idx);
+        PortGDWriteU64((u64)(uintptr_t)sPortTlut[idx].data);
+        GDWrite_u32(format);
+        GDWrite_u16((u16)sPortTlut[idx].entries);
+        GDWrite_u32(0); // no GXTlutObj id
+        GDWrite_u32(0);
+    }
+#endif
 }
 
 // .text:0x800A246C size:0x290
@@ -84,6 +144,10 @@ void GDSetTexCoordScale2(GXTexCoordID coord, u16 s_scale, u8 s_bias, u8 s_wrap, 
 
 // .text:0x800A26FC size:0x460
 void GDLoadTlut(void* tlut_ptr, u32 tmem_addr, GXTlutSize size) {
+#ifdef TARGET_PC
+    sPortTlut[PortTlutIndex(tmem_addr)].data = tlut_ptr;
+    sPortTlut[PortTlutIndex(tmem_addr)].entries = (u32)size * 16;
+#endif
     GDWriteBPCmd(0xFEFFFF00);
     GDWriteBPCmd(0x0F000000);
     GDWriteBPCmd((u32)(OSCachedToPhysical(tlut_ptr) >> 5) << 0 | (u32)0x64 << 24);

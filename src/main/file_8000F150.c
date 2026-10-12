@@ -1050,8 +1050,7 @@ void fn_80010FA0(void) {
 void fn_80011000(void) {
     s32 i;
 #ifdef TARGET_PC
-    // Font archive: u32 offsets of its four texture archives.
-    swap32_array(lbl_80366B18.fontArchive, 4);
+    port_swap_offset_table(lbl_80366B18.fontArchive, 4);
 #endif
     lbl_80366B18.fontTex[0] = (TexArchive*)((u8*)lbl_80366B18.fontArchive + lbl_80366B18.fontArchive[0]);
     lbl_80366B18.fontTex[1] = (TexArchive*)((u8*)lbl_80366B18.fontArchive + lbl_80366B18.fontArchive[1]);

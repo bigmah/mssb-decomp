@@ -1087,8 +1087,41 @@ static inline void CardTaskFinish(s16 result) {
 }
 
 // Turns the file offsets inside a TPL loaded into memory into pointers.
-// TODO(port): offsets are stored in 4-byte pointer fields on disc; TEXPalette
-// needs PTR32 fields (or a native copy) on PC.
+#ifdef TARGET_PC
+// The TPL keeps its disc layout (PTR32 fields); its headers are byte-swapped
+// first (port/src/formats_tex.c). Texel and CLUT data stay big-endian.
+static inline void UnpackTexPalette(TEXPalette* pal) {
+    u16 i;
+    TEXDescriptor* desc;
+    TEXHeader* tex;
+    CLUTHeader* clut;
+
+    port_swap_tex_palette(pal);
+    if (pal->versionNumber != 2142000) {
+        OSPanic(lbl_803CCEE0, 0x52F, lbl_800E7A38 + 0x2C);
+    }
+    PTR32_SET(pal->descriptorArray, (u8*)pal + pal->descriptorArray);
+    desc = PTR32_GET(TEXDescriptor, pal->descriptorArray);
+    for (i = 0; i < pal->numDescriptors; i++) {
+        if (desc[i].textureHeader != 0) {
+            PTR32_SET(desc[i].textureHeader, (u8*)pal + desc[i].textureHeader);
+            tex = PTR32_GET(TEXHeader, desc[i].textureHeader);
+            if (tex->unpacked != TRUE) {
+                PTR32_SET(tex->data, (u8*)pal + tex->data);
+                tex->unpacked = TRUE;
+            }
+        }
+        if (desc[i].CLUTHeader != 0) {
+            PTR32_SET(desc[i].CLUTHeader, (u8*)pal + desc[i].CLUTHeader);
+            clut = PTR32_GET(CLUTHeader, desc[i].CLUTHeader);
+            if (clut->unpacked != TRUE) {
+                PTR32_SET(clut->data, (u8*)pal + clut->data);
+                clut->unpacked = TRUE;
+            }
+        }
+    }
+}
+#else
 static inline void UnpackTexPalette(TEXPalette* pal) {
     u16 i;
 
@@ -1117,6 +1150,8 @@ static inline void UnpackTexPalette(TEXPalette* pal) {
         }
     }
 }
+
+#endif
 
 // Loads the default banner file ("/opening.bnr") into `buf`.
 static inline BOOL LoadDefaultBanner(void* buf) {
@@ -2243,16 +2278,16 @@ void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl,
         memcpy(pal, bannerTpl, bannerSize);
         UnpackTexPalette(pal);
         desc = TEXGet(pal, 0);
-        switch (desc->textureHeader->format) {
+        switch (PTR32_GET(TEXHeader, desc->textureHeader)->format) {
         case GX_TF_RGB5A3:
             lbl_802EF330.bannerFormat = CARD_STAT_BANNER_RGB5A3;
-            memcpy(cursor, desc->textureHeader->data, 0x1800);
+            memcpy(cursor, PTR32_GET(char, PTR32_GET(TEXHeader, desc->textureHeader)->data), 0x1800);
             cursor += 0x1800;
             break;
         case GX_TF_C8:
             lbl_802EF330.bannerFormat = CARD_STAT_BANNER_C8;
-            memcpy(cursor, desc->textureHeader->data, 0xC00);
-            memcpy(cursor + 0xC00, desc->CLUTHeader->data, 0x200);
+            memcpy(cursor, PTR32_GET(char, PTR32_GET(TEXHeader, desc->textureHeader)->data), 0xC00);
+            memcpy(cursor + 0xC00, PTR32_GET(char, PTR32_GET(CLUTHeader, desc->CLUTHeader)->data), 0x200);
             cursor += 0xE00;
             break;
         default:
@@ -2270,17 +2305,17 @@ void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl,
         UnpackTexPalette(pal);
         for (i = 0, shift = 0; (u32)i < pal->numDescriptors && i < CARD_ICON_MAX; i++, shift += 2) {
             desc = TEXGet(pal, i);
-            switch (desc->textureHeader->format) {
+            switch (PTR32_GET(TEXHeader, desc->textureHeader)->format) {
             case GX_TF_RGB5A3:
                 stat->iconFormat = (stat->iconFormat & ~(CARD_STAT_ICON_MASK << shift)) |
                                    (CARD_STAT_ICON_RGB5A3 << shift);
-                memcpy(cursor, desc->textureHeader->data, 0x800);
+                memcpy(cursor, PTR32_GET(char, PTR32_GET(TEXHeader, desc->textureHeader)->data), 0x800);
                 cursor += 0x800;
                 break;
             case GX_TF_C8:
                 stat->iconFormat = (stat->iconFormat & ~(CARD_STAT_ICON_MASK << shift)) |
                                    (CARD_STAT_ICON_C8 << shift);
-                memcpy(cursor, desc->textureHeader->data, 0x400);
+                memcpy(cursor, PTR32_GET(char, PTR32_GET(TEXHeader, desc->textureHeader)->data), 0x400);
                 hasClut = 1;
                 cursor += 0x400;
                 break;
@@ -2296,7 +2331,7 @@ void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl,
         }
         lbl_803C7838.iconCount = i;
         if (hasClut == 1) {
-            memcpy(cursor, desc->CLUTHeader->data, 0x200);
+            memcpy(cursor, PTR32_GET(char, PTR32_GET(CLUTHeader, desc->CLUTHeader)->data), 0x200);
             cursor += 0x200;
         }
         lbl_802EF330.bannerFormat |= bannerFlags & CARD_STAT_ANIM_BOUNCE;

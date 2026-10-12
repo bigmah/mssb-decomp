@@ -4,6 +4,9 @@
 #include "types.h"
 #include "Dolphin/GX/GXEnum.h"
 
+// TPL file as loaded from disc: pointer fields hold file offsets until
+// unpacked (PTR32: 32-bit on PC too).
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -13,14 +16,14 @@ typedef struct {
     /* 0x02 */ u8 unpacked;
     /* 0x03 */ u8 pad8;
     /* 0x04 */ GXTlutFmt format;
-    /* 0x08 */ Ptr data;
+    /* 0x08 */ PTR32(char) data;
 } CLUTHeader, *CLUTHeaderPtr;
 
 typedef struct {
     /* 0x00 */ u16 height;
     /* 0x02 */ u16 width;
     /* 0x04 */ u32 format;
-    /* 0x08 */ Ptr data;
+    /* 0x08 */ PTR32(char) data;
     /* 0x0C */ GXTexWrapMode wrapS;
     /* 0x10 */ GXTexWrapMode wrapT;
     /* 0x14 */ GXTexFilter minFilter;
@@ -33,14 +36,14 @@ typedef struct {
 } TEXHeader, *TEXHeaderPtr;
 
 typedef struct {
-    /* 0x00 */ TEXHeaderPtr textureHeader;
-    /* 0x04 */ CLUTHeaderPtr CLUTHeader;
+    /* 0x00 */ PTR32(TEXHeader) textureHeader;
+    /* 0x04 */ PTR32(CLUTHeader) CLUTHeader;
 } TEXDescriptor, *TEXDescriptorPtr;
 
 typedef struct {
     /* 0x00 */ u32 versionNumber;
     /* 0x04 */ u32 numDescriptors;
-    /* 0x08 */ TEXDescriptorPtr descriptorArray;
+    /* 0x08 */ PTR32(TEXDescriptor) descriptorArray;
 } TEXPalette, *TEXPalettePtr;
 
 void TEXGetPalette(TEXPalettePtr *pal, char *name);

@@ -293,8 +293,3 @@ void port_swap_spani_anim(void* animp)
     }
 }
 
-void port_swap_spani_file(void* file)
-{
-    swap32_array(file, 2);
-}
-

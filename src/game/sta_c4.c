@@ -1358,12 +1358,12 @@ void fn_3_FBBA0(TexImage* t) {
     GXTexObj tex;
     GXTlutObj tlut;
     if (t->tlut != NULL) {
-        GXInitTexObjCI(&tex, t->data, t->width, t->height, (GXCITexFmt)t->format, (GXTexWrapMode)t->wrapS, (GXTexWrapMode)t->wrapT,
+        GXInitTexObjCI(&tex, PTR32_GET(u8, t->data), t->width, t->height, (GXCITexFmt)t->format, (GXTexWrapMode)t->wrapS, (GXTexWrapMode)t->wrapT,
                        t->minLOD != t->maxLOD, 0);
-        GXInitTlutObj(&tlut, t->tlut, (GXTlutFmt)t->tlutFormat, t->tlutEntries);
+        GXInitTlutObj(&tlut, PTR32_GET(void, t->tlut), (GXTlutFmt)t->tlutFormat, t->tlutEntries);
         GXLoadTlut(&tlut, 0);
     } else {
-        GXInitTexObj(&tex, t->data, t->width, t->height, (GXTexFmt)t->format, (GXTexWrapMode)t->wrapS, (GXTexWrapMode)t->wrapT,
+        GXInitTexObj(&tex, PTR32_GET(u8, t->data), t->width, t->height, (GXTexFmt)t->format, (GXTexWrapMode)t->wrapS, (GXTexWrapMode)t->wrapT,
                      t->minLOD != t->maxLOD);
     }
     GXInitTexObjLOD(&tex, (GXTexFilter)t->minFilter, (GXTexFilter)t->magFilter, (f32)t->minLOD, (f32)t->maxLOD, t->lodBias, 0, 0, GX_ANISO_1);
