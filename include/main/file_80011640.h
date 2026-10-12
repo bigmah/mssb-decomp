@@ -150,7 +150,7 @@ typedef void (*CharDrawCallback)(MtxPtr view, s32 a, s32 b);
 
 // lbl_8036E548
 typedef struct CharMgr {
-    /*0x0000*/ u8 _0000[0x4];
+    /*0x0000*/ s32 _0000;
     /*0x0004*/ u32 _0004[2];
     /*0x000C*/ u32 _000C[21];
     /*0x0060*/ ActorObjectTable* slots;
@@ -158,9 +158,13 @@ typedef struct CharMgr {
     /*0x0068*/ ActorObjectTable* slots68;
     /*0x006C*/ ActorObjectTable* slots6C;
     /*0x0070*/ u32 _0070;
-    /*0x0074*/ u8 _0074[0xAC - 0x74];
+    /*0x0074*/ s32 _0074;
+    /*0x0078*/ s32 _0078;
+    /*0x007C*/ u8 _007C[0xAC - 0x007C];
     /*0x00AC*/ struct Light* lights[4];
-    /*0x00BC*/ u8 _00BC[0x13C - 0xBC];
+    /*0x00BC*/ u32 _00BC[0x15]; // indexed (cleared by menus fn_2_19F2C)
+    /*0x0110*/ s32 _0110;
+    /*0x0114*/ u8 _0114[0x13C - 0x0114];
     /*0x013C*/ ActorObjectTable* partSlots;
     /*0x0140*/ CharParts partsPool[13];
     /*0x0C04*/ CharActor actors[13];
