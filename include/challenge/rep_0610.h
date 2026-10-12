@@ -7,6 +7,49 @@
 #include "C3/control.h"
 #include "C3/light.h"
 #include "main/file_80011640.h" // CharPart
+#include "challenge/rep_0010.h"   // ChTaskHeader
+
+// Main challenge-viewer task (fn_1_16978 loader, fn_1_168C8, fn_1_1496C menu).
+typedef struct ChMainTask {
+    /*0x00*/ ChTaskHeader h; // h.result: loader state
+    /*0x14*/ u8 _14[8];
+    /*0x1C*/ u32 ticks; // fn_1_135C0 timing (OSGetTick)
+    /*0x20*/ u8 page;   // fn_1_1496C menu page
+} ChMainTask;
+
+// Script-step task (fn_1_DE1C / fn_1_DF14 / fn_1_E098 / fn_1_D9B8).
+typedef struct ChScriptTask {
+    /*0x00*/ ChTaskHeader h;
+    /*0x14*/ u8 index; // script step being edited / played
+    /*0x15*/ u8 step;  // read as s8 for indexing
+} ChScriptTask;
+
+// Particle burst task (fn_1_F1D8, queued by fn_1_F0D0).
+typedef struct ChBurstTask {
+    /*0x00*/ ChTaskHeader h;
+    /*0x14*/ u8 _14[0xC];
+    /*0x20*/ s32 timer; // frames left
+    /*0x24*/ s32 joint; // getAnimRelatedCoordinates joint
+} ChBurstTask;
+
+// Fireball task (fn_1_F50C, queued by fn_1_F37C).
+typedef struct ChFireballTask {
+    /*0x00*/ ChTaskHeader h;
+    /*0x14*/ Vec pos;
+    /*0x20*/ Vec vel;
+    /*0x2C*/ Vec accel;
+    /*0x38*/ s32 id;     // fn_8002F258 / fn_8002F1AC emitter id
+    /*0x3C*/ u16 timer;  // frames left
+    /*0x3E*/ u8 spawn;   // create the emitter on the next frame
+    /*0x3F*/ u8 onFeet;  // emit at both feet instead of pos
+} ChFireballTask;
+
+// Rigid-body launch task (fn_1_CCC8).
+typedef struct ChBodyTask {
+    /*0x00*/ ChTaskHeader h;
+    /*0x14*/ f32* anim;  // [0] current frame, [1] launch frame
+    /*0x18*/ u16 id;
+} ChBodyTask;
 
 // Challenge viewer player record (lbl_1_bss_6940.player).
 typedef struct ChPlayer {
