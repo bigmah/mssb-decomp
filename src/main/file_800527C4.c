@@ -74,6 +74,8 @@ extern s16 translateStarSwing(u8 star);
 
 // Layout object number n of a task's sprite run.
 #define TASK_OBJ(task, n) (lbl_80371C30[(task)->u14.objIdx + (n)].obj)
+// Same object as TASK_OBJ(task, x + k), with the index summed as k + objIdx + x.
+#define TASK_OBJ_AT(task, x, k) (lbl_80371C30[(k) + (task)->u14.objIdx + (x)].obj)
 
 // Pause-menu object index: the in-game layout puts the same object 0x69 earlier.
 #define PAUSE_OBJ(n) (g_d_GameSettings._06 == 2 ? (n) - 0x69 : (n))
@@ -133,13 +135,12 @@ void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x80052968 size:0x408
-// NONMATCHING 99%: r29/r30 swapped for the view matrix pointer in the two-camera branch
-#if NONMATCHING
 void fn_80052968(void) {
     MtxPtr view;
     camera_803c639c_s* cam;
     MtxPtr view2;
     f32 scale;
+    MtxPtr view3;
 
     if (lbl_803CB880 == 1) {
         if (lbl_803CBD10 != NULL) {
@@ -173,12 +174,12 @@ void fn_80052968(void) {
             lbl_803CBD10(&lbl_803C639C[0]);
         }
         cam = &lbl_803C639C[0];
-        view = cam->view;
-        makeLookAtMatrix(view, &cam->eye, &cam->Up, &cam->target);
+        view3 = cam->view;
+        makeLookAtMatrix(view3, &cam->eye, &cam->Up, &cam->target);
         scale = 1.0f / lbl_803C639C[0].zoom;
         C_MTXFrustum(lbl_803C639C[0].proj, -0.175f * scale, 0.175f * scale, 0.25f * scale, -0.25f * scale, 1.0f, 512.0f);
         fn_800B806C(0, -240.0f * scale, 240.0f * scale, -320.0f * scale, 320.0f * scale, -512.0f, -1.0f, 1280.0f);
-        fn_80011640(view, view);
+        fn_80011640(view3, view3);
         scale = 1.0f / lbl_803C639C[0].zoom;
         C_MTXFrustum(lbl_803C639C[0].proj, -0.175f * scale, 0.175f * scale, 0.125f * scale, -0.375f * scale, 1.0f, 512.0f);
         fn_800B806C(0, -240.0f * scale, 240.0f * scale, -160.0f * scale, 160.0f * scale, -512.0f, -1.0f, 1280.0f);
@@ -186,7 +187,6 @@ void fn_80052968(void) {
     memcpy(&lbl_803C639C[2], &lbl_803C639C[0], sizeof(camera_803c639c_s) * 2);
     fn_800369DC(lbl_803C639C[0].zoom);
 }
-#endif
 
 static inline void InitCameras(void) {
     s32 i;
@@ -236,8 +236,6 @@ void possiblyTransitionBlackScreen(void) {
 }
 
 // .text:0x800531D0 size:0x640
-// NONMATCHING 97%: only add operand order (objIdx + n) and register swaps differ
-#if NONMATCHING
 void fn_800531D0(SceneTask* task) {
     s32 i;
     u32 len;
@@ -245,7 +243,7 @@ void fn_800531D0(SceneTask* task) {
     if (lbl_800FEF70[lbl_8034E978.menu].textStart != 0xFFFF) {
         if (lbl_8034E978.descState == 0) {
             for (i = 0; i < lbl_8034E978.textCount; i++) {
-                TASK_OBJ(task, i + 0x16)->flags |= 2;
+                TASK_OBJ_AT(task, i, 0x16)->flags |= 2;
             }
             TASK_OBJ(task, 9)->flags |= 2;
             if ((TASK_OBJ(task, 9)->_5C >> 16) == 15) {
@@ -280,22 +278,22 @@ void fn_800531D0(SceneTask* task) {
             }
         } else if (lbl_8034E978.descState == 2) {
             fn_8000FA9C(lbl_8034E978.text[lbl_8034E978.textCur]);
-            if ((TASK_OBJ(task, lbl_8034E978.textCur + 10)->_5C >> 16) > fn_8000FA9C(lbl_8034E978.text[lbl_8034E978.textCur])) {
+            if ((TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->_5C >> 16) > fn_8000FA9C(lbl_8034E978.text[lbl_8034E978.textCur])) {
                 lbl_8034E978.textDone[lbl_8034E978.textCur] = lbl_8034E978.textCur;
                 if (++lbl_8034E978.textCur == lbl_8034E978.textCount) {
                     lbl_8034E978.textCur = 0;
                 }
-                TASK_OBJ(task, lbl_8034E978.textCur + 10)->flags |= 2;
-                TASK_OBJ(task, lbl_8034E978.textCur + 10)->_5C = 0;
-                TASK_OBJ(task, lbl_8034E978.textCur + 10)->_68 = 1;
+                TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->flags |= 2;
+                TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->_5C = 0;
+                TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->_68 = 1;
             }
             for (i = 0; i < 10; i++) {
                 if (lbl_8034E978.textDone[i] != 0xFF) {
-                    LayoutObj* obj = TASK_OBJ(task, lbl_8034E978.textDone[i] + 10);
+                    LayoutObj* obj = TASK_OBJ_AT(task, lbl_8034E978.textDone[i], 10);
                     if ((obj->_5C >> 16) == 0x500) {
                         obj->_5C = 0;
-                        TASK_OBJ(task, lbl_8034E978.textDone[i] + 10)->_68 = 0;
-                        TASK_OBJ(task, lbl_8034E978.textDone[i] + 10)->flags &= ~2;
+                        TASK_OBJ_AT(task, lbl_8034E978.textDone[i], 10)->_68 = 0;
+                        TASK_OBJ_AT(task, lbl_8034E978.textDone[i], 10)->flags &= ~2;
                     }
                 }
             }
@@ -303,9 +301,9 @@ void fn_800531D0(SceneTask* task) {
         }
     } else if (lbl_8034E978.descState != 0) {
         for (i = 0; i < 10; i++) {
-            TASK_OBJ(task, i + 0x16)->flags &= ~2;
-            TASK_OBJ(task, i + 10)->_5C = 0;
-            TASK_OBJ(task, i + 10)->_68 = 0;
+            TASK_OBJ_AT(task, i, 0x16)->flags &= ~2;
+            TASK_OBJ_AT(task, i, 10)->_5C = 0;
+            TASK_OBJ_AT(task, i, 10)->_68 = 0;
         }
         TASK_OBJ(task, 9)->flags &= ~2;
         TASK_OBJ(task, 21)->_5C = 0;
@@ -313,7 +311,6 @@ void fn_800531D0(SceneTask* task) {
         lbl_8034E978.descState = 0;
     }
 }
-#endif
 
 // .text:0x80053810 size:0x7D8
 // The original inlines fn_80042D68/fn_80042DA8 (frame checks) here.
@@ -438,7 +435,7 @@ void fn_80053810(void) {
 #endif
 
 // .text:0x80053FE8 size:0x2DC
-// NONMATCHING 97%: r28/r29 swapped and the loop's zero init scheduled differently
+// NONMATCHING 98.5%: r28/r29 swapped and the loop's zero init scheduled differently
 #if NONMATCHING
 void fn_80053FE8(void) {
     s32 i;
@@ -564,7 +561,7 @@ void fn_800542C4(u8 cur, u8 target, SceneTask* task) {
 #endif
 
 // .text:0x80054910 size:0x1F0
-// NONMATCHING 96%: expected=TRUE scheduled before the call args and a missing mr for done
+// NONMATCHING 86.3%: expected=TRUE scheduled before the call args and a missing mr for done
 #if NONMATCHING
 void fn_80054910(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[8][port + 1]
@@ -1237,7 +1234,7 @@ void someChallengeStarFunction(SceneTask* task) {
 #endif
 
 // .text:0x800572C0 size:0x430
-// NONMATCHING 95%: shownOnPauseMenu read as s8 in the original; register numbering differs
+// NONMATCHING 98.0%: shownOnPauseMenu read as s8 in the original; register numbering differs
 #if NONMATCHING
 void someChallengeStarFunction2(SceneTask* task) {
     u8 set;
@@ -1288,7 +1285,7 @@ void someChallengeStarFunction2(SceneTask* task) {
 #endif
 
 // .text:0x800576F0 size:0x518
-// NONMATCHING 97%: register swaps; text release written as three calls (original is a 3-iteration loop)
+// NONMATCHING 96.4%: register swaps; text release written as three calls (original is a 3-iteration loop)
 // nmverify: fn_8000FEE8 called from a 3-iteration loop in original, three calls here
 // nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
@@ -1401,7 +1398,7 @@ void starMenu(void) {
 }
 
 // .text:0x80057CAC size:0x3A4
-// NONMATCHING 96%: the scout-flag loop counters start from the any-flag register; loop registers differ
+// NONMATCHING 94.3%: the scout-flag loop counters start from the any-flag register; loop registers differ
 #if NONMATCHING
 void fn_80057CAC(void) {
     SceneTask* task = lbl_803CC1B8;
@@ -1511,7 +1508,7 @@ void fn_80058050(void) {
 #endif
 
 // .text:0x80058394 size:0x2B0
-// NONMATCHING 97%: star-1 kept untruncated in r26 in the challenge branch; ours truncates early
+// NONMATCHING 93.4%: star-1 kept untruncated in r26 in the challenge branch; ours truncates early
 #if NONMATCHING
 void fn_80058394(SceneTask* task) {
     CharacterStats* player;
@@ -1567,7 +1564,7 @@ void fn_80058394(SceneTask* task) {
 #endif
 
 // .text:0x80058644 size:0x4DC
-// NONMATCHING 99%: the roster address adds are scheduled in a different order
+// NONMATCHING 99.2%: the roster address adds are scheduled in a different order
 #if NONMATCHING
 void fn_80058644(SceneTask* task) {
     CharacterStats* player;
@@ -1660,7 +1657,7 @@ void fn_80058644(SceneTask* task) {
 #endif
 
 // .text:0x80058B20 size:0x2EC
-// NONMATCHING 95%: same star-select register differences as fn_80058394
+// NONMATCHING 79.9%: same star-select register differences as fn_80058394
 #if NONMATCHING
 void fn_80058B20(SceneTask* task, u8 port) {
     CharacterStats* player;
@@ -1812,8 +1809,6 @@ void fn_80058E0C(SceneTask* task, u8 port) {
 
 // .text:0x80059458 size:0x27C
 // Shows the two set bits of mask (bit 0 also skips bit 1) as frames on two objects.
-// NONMATCHING 98%: li r0,12 hoisted above the first compare in the original; register swaps in the store tail
-#if NONMATCHING
 void fn_80059458(SceneTask* task, u8 port, u32 mask) {
     s32 digits[2];
     s32 i;
@@ -1870,21 +1865,19 @@ void fn_80059458(SceneTask* task, u8 port, u32 mask) {
     }
     digits[0]--;
     digits[1]--;
-    if (digits[0] < 0) {
-        digits[0] = 12;
-    }
-    if (digits[1] < 0) {
-        digits[1] = 12;
+    for (i = 0; i < 2; i++) {
+        if (digits[i] < 0) {
+            digits[i] = 12;
+        }
     }
     if (g_d_GameSettings._06 != 2) {
-        TASK_OBJ(task, port + 0x1B4)->_5C = digits[0] << 16;
-        TASK_OBJ(task, port + 0x1B6)->_5C = digits[1] << 16;
+        lbl_80371C30[port + (task->u14.objIdx + 0x1B4)].obj->_5C = digits[0] << 16;
+        lbl_80371C30[port + (task->u14.objIdx + 0x1B6)].obj->_5C = digits[1] << 16;
     } else {
         TASK_OBJ(task, 0x125)->_5C = digits[0] << 16;
         TASK_OBJ(task, 0x126)->_5C = digits[1] << 16;
     }
 }
-#endif
 
 // .text:0x800596D4 size:0x464
 // NONMATCHING 92%: register numbering and index-sum order differ
@@ -2570,7 +2563,7 @@ void fn_8005C2B0(SceneTask* task) {
 #endif
 
 // .text:0x8005C5C4 size:0x26C
-// NONMATCHING 97%: r5/r7 and r0/r4 swapped in the frame-30 branch
+// NONMATCHING 99.4%: r5/r7 and r0/r4 swapped in the frame-30 branch
 #if NONMATCHING
 void fn_8005C5C4(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
@@ -3156,8 +3149,6 @@ void fn_8005F068(SceneTask* task, s32 port) {
 #endif
 
 // .text:0x8005F734 size:0x29C
-// NONMATCHING 95%: add operand order objIdx+port and r4/r8 swapped throughout
-#if NONMATCHING
 void fn_8005F734(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
 
@@ -3165,35 +3156,34 @@ void fn_8005F734(SceneTask* task, s32 port) {
         TASK_OBJ(task, port)->_64 = 0x49;
         TASK_OBJ(task, port)->_5C = 50 << 16;
         TASK_OBJ(task, port)->_68 = 4;
-        TASK_OBJ(task, port + 2)->_64 = 0x52;
-        TASK_OBJ(task, port + 2)->_5C = 0;
-        TASK_OBJ(task, port + 2)->_68 = 1;
-        TASK_OBJ(task, port + 4)->_5C = 0;
-        TASK_OBJ(task, port + 4)->_68 = 1;
-        TASK_OBJ(task, port + 6)->_5C = 14 << 16;
-        TASK_OBJ(task, port + 6)->_68 = 1;
-        TASK_OBJ(task, port + 10)->flags |= 2;
-        TASK_OBJ(task, port + 10)->_5C = 0;
-        TASK_OBJ(task, port + 10)->_68 = 1;
-        TASK_OBJ(task, port + 20)->_5C = 0;
-        TASK_OBJ(task, port + 20)->_68 = 1;
+        TASK_OBJ_AT(task, port, 2)->_64 = 0x52;
+        TASK_OBJ_AT(task, port, 2)->_5C = 0;
+        TASK_OBJ_AT(task, port, 2)->_68 = 1;
+        TASK_OBJ_AT(task, port, 4)->_5C = 0;
+        TASK_OBJ_AT(task, port, 4)->_68 = 1;
+        TASK_OBJ_AT(task, port, 6)->_5C = 14 << 16;
+        TASK_OBJ_AT(task, port, 6)->_68 = 1;
+        TASK_OBJ_AT(task, port, 10)->flags |= 2;
+        TASK_OBJ_AT(task, port, 10)->_5C = 0;
+        TASK_OBJ_AT(task, port, 10)->_68 = 1;
+        TASK_OBJ_AT(task, port, 20)->_5C = 0;
+        TASK_OBJ_AT(task, port, 20)->_68 = 1;
         if (((u8*)&g_d_GameSettings)[0x10] == 0 && port == 0) { // TODO type
-            TASK_OBJ(task, port + 18)->_5C = 30 << 16;
-            TASK_OBJ(task, port + 18)->_68 = 4;
-            TASK_OBJ(task, port + 24)->_5C = 0;
-            TASK_OBJ(task, port + 24)->_68 = 0;
+            TASK_OBJ_AT(task, port, 18)->_5C = 30 << 16;
+            TASK_OBJ_AT(task, port, 18)->_68 = 4;
+            TASK_OBJ_AT(task, port, 24)->_5C = 0;
+            TASK_OBJ_AT(task, port, 24)->_68 = 0;
         } else {
-            TASK_OBJ(task, port + 18)->_5C = 0;
-            TASK_OBJ(task, port + 18)->_68 = 1;
+            TASK_OBJ_AT(task, port, 18)->_5C = 0;
+            TASK_OBJ_AT(task, port, 18)->_68 = 1;
         }
         fn_800626EC(port);
         *state = 1;
     }
 }
-#endif
 
 // .text:0x8005F9D0 size:0x2D0
-// NONMATCHING 96%: the original keeps the constant 5 in r27 (set in each branch) and tests ready[] with bne/b
+// NONMATCHING 97.3%: the original keeps the constant 5 in r27 (set in each branch) and tests ready[] with bne/b
 #if NONMATCHING
 void fn_8005F9D0(SceneTask* task, s32 port) {
     u8* states = &lbl_803C66B0.steps[9][1];
@@ -3246,52 +3236,50 @@ void fn_8005F9D0(SceneTask* task, s32 port) {
 #endif
 
 // .text:0x8005FCA0 size:0x4E4
-// NONMATCHING 97%: r4/r7 swapped (objIdx+port operand order), as in fn_8005F734
-#if NONMATCHING
 void fn_8005FCA0(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
 
     if ((*(state += 0x37) == 0) ? TRUE : FALSE) {
-        TASK_OBJ(task, port + 4)->_5C = 0;
-        TASK_OBJ(task, port + 4)->_68 = 1;
-        TASK_OBJ(task, port + 6)->_5C = 14 << 16;
-        TASK_OBJ(task, port + 6)->_68 = 1;
+        TASK_OBJ_AT(task, port, 4)->_5C = 0;
+        TASK_OBJ_AT(task, port, 4)->_68 = 1;
+        TASK_OBJ_AT(task, port, 6)->_5C = 14 << 16;
+        TASK_OBJ_AT(task, port, 6)->_68 = 1;
         if (g_d_GameSettings.GameModeSelected != 5) {
             if (((u8*)&g_d_GameSettings)[0x10] == 0 && port != 0) { // TODO type
                 TASK_OBJ(task, port)->_5C = 0;
                 TASK_OBJ(task, port)->_68 = 1;
-                TASK_OBJ(task, port + 2)->_5C = 0;
-                TASK_OBJ(task, port + 2)->_68 = 1;
-                TASK_OBJ(task, port + 18)->_5C = 30 << 16;
-                TASK_OBJ(task, port + 18)->_68 = 4;
-                TASK_OBJ(task, port + 20)->_5C = 0;
-                TASK_OBJ(task, port + 20)->_68 = 1;
-                TASK_OBJ(task, port + 24)->_5C = 0;
-                TASK_OBJ(task, port + 24)->_68 = 0;
-                TASK_OBJ(task, port + 10)->flags |= 2;
-                TASK_OBJ(task, port + 10)->_5C = 0;
-                TASK_OBJ(task, port + 10)->_68 = 1;
+                TASK_OBJ_AT(task, port, 2)->_5C = 0;
+                TASK_OBJ_AT(task, port, 2)->_68 = 1;
+                TASK_OBJ_AT(task, port, 18)->_5C = 30 << 16;
+                TASK_OBJ_AT(task, port, 18)->_68 = 4;
+                TASK_OBJ_AT(task, port, 20)->_5C = 0;
+                TASK_OBJ_AT(task, port, 20)->_68 = 1;
+                TASK_OBJ_AT(task, port, 24)->_5C = 0;
+                TASK_OBJ_AT(task, port, 24)->_68 = 0;
+                TASK_OBJ_AT(task, port, 10)->flags |= 2;
+                TASK_OBJ_AT(task, port, 10)->_5C = 0;
+                TASK_OBJ_AT(task, port, 10)->_68 = 1;
             } else {
                 TASK_OBJ(task, port)->_5C = 0;
                 TASK_OBJ(task, port)->_68 = 1;
-                TASK_OBJ(task, port + 2)->_5C = 0;
-                TASK_OBJ(task, port + 2)->_68 = 1;
-                TASK_OBJ(task, port + 10)->flags |= 2;
-                TASK_OBJ(task, port + 10)->_5C = 0;
-                TASK_OBJ(task, port + 10)->_68 = 1;
-                TASK_OBJ(task, port + 2)->_5C = 0;
-                TASK_OBJ(task, port + 2)->_68 = 1;
-                TASK_OBJ(task, port + 18)->_5C = 0;
-                TASK_OBJ(task, port + 18)->_68 = 1;
-                TASK_OBJ(task, port + 20)->_5C = 0;
-                TASK_OBJ(task, port + 20)->_68 = 1;
+                TASK_OBJ_AT(task, port, 2)->_5C = 0;
+                TASK_OBJ_AT(task, port, 2)->_68 = 1;
+                TASK_OBJ_AT(task, port, 10)->flags |= 2;
+                TASK_OBJ_AT(task, port, 10)->_5C = 0;
+                TASK_OBJ_AT(task, port, 10)->_68 = 1;
+                TASK_OBJ_AT(task, port, 2)->_5C = 0;
+                TASK_OBJ_AT(task, port, 2)->_68 = 1;
+                TASK_OBJ_AT(task, port, 18)->_5C = 0;
+                TASK_OBJ_AT(task, port, 18)->_68 = 1;
+                TASK_OBJ_AT(task, port, 20)->_5C = 0;
+                TASK_OBJ_AT(task, port, 20)->_68 = 1;
             }
         } else {
             TASK_OBJ(task, port)->_5C = 0;
             TASK_OBJ(task, port)->_68 = 1;
-            TASK_OBJ(task, port + 10)->flags |= 2;
-            TASK_OBJ(task, port + 10)->_5C = 0;
-            TASK_OBJ(task, port + 10)->_68 = 1;
+            TASK_OBJ_AT(task, port, 10)->flags |= 2;
+            TASK_OBJ_AT(task, port, 10)->_5C = 0;
+            TASK_OBJ_AT(task, port, 10)->_68 = 1;
             TASK_OBJ(task, 18)->_5C = 0;
             TASK_OBJ(task, 18)->_68 = 1;
             TASK_OBJ(task, 20)->_5C = 0;
@@ -3310,7 +3298,6 @@ void fn_8005FCA0(SceneTask* task, s32 port) {
         *state = 1;
     }
 }
-#endif
 
 // .text:0x80060184 size:0x1A18
 // NONMATCHING 80%: tutorial step dispatcher; state tests, index sums and registers differ
@@ -3892,7 +3879,7 @@ BOOL fn_80062578(void) {
 }
 
 // .text:0x800625A4 size:0xD0
-// NONMATCHING 98%: the unrolled clear stores the loop counter's zero register (r4) instead of a fresh li r0,0
+// NONMATCHING 96.7%: the unrolled clear stores the loop counter's zero register (r4) instead of a fresh li r0,0
 #if NONMATCHING
 void fn_800625A4(s32 index, s32 step) {
     s32 i;
@@ -4109,7 +4096,7 @@ static inline void PlayCharJointSound(CharActor* obj) {
 }
 
 // .text:0x80062C60 size:0x134
-// NONMATCHING 95%: r7/r8 swapped in the inlined joint loop (see docs/patterns/regalloc.md)
+// NONMATCHING 99.5%: r7/r8 swapped in the inlined joint loop (see docs/patterns/regalloc.md)
 #if NONMATCHING
 void fn_80062C60(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     if (lbl_80366158._28 != 1) {
@@ -4122,7 +4109,7 @@ void fn_80062C60(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
 #endif
 
 // .text:0x80062D94 size:0xD8
-// NONMATCHING 95%: r7/r9/r10 rotated in the joint loop (see docs/patterns/regalloc.md)
+// NONMATCHING 98.9%: r7/r9/r10 rotated in the joint loop (see docs/patterns/regalloc.md)
 #if NONMATCHING
 void fn_80062D94(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     PlayCharJointSound(model);

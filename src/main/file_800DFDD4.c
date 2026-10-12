@@ -244,7 +244,7 @@ void fn_800E07E8(HVQM4SeqObj* seq, s32 planeIdx, u8 hSamp, u8 vSamp) {
 }
 
 // .text:0x800E0904 size:0x3C4
-// NONMATCHING 98%: original frame is 16 bytes larger (unused locals?), r5/r6 swapped; leaf shift written as a multiply (negative values)
+// NONMATCHING 98.6%: original frame is 16 bytes larger (unused locals?), r5/r6 swapped; leaf shift written as a multiply (negative values)
 #if NONMATCHING
 s16 fn_800E0904(HVQTree* tree, HVQBitBuf* buf) {
     u8 bit;
@@ -425,7 +425,7 @@ void fn_800E10B4(HVQState* state) {
 #endif
 
 // .text:0x800E11C8 size:0x3A4
-// NONMATCHING 99%: the original copies widthInBlocks into a second register before the
+// NONMATCHING 99.1%: the original copies widthInBlocks into a second register before the
 // width clamp (addi r4,r7,0); everything else matches with copy propagation off
 #pragma opt_propagation off
 #if NONMATCHING
@@ -910,7 +910,7 @@ s32 fn_800E2310(HVQState* state, s32* block, u8 count, u8* src, s32 srcStride, s
 }
 
 // .text:0x800E2580 size:0x318
-// NONMATCHING 98%: in the raw-pixel branch the original walks rows 1-3 with a copy of dst (r5)
+// NONMATCHING 98.5%: in the raw-pixel branch the original walks rows 1-3 with a copy of dst (r5)
 #if NONMATCHING
 void fn_800E2580(HVQState* state, u8* dst, s32 stride, u8 value, u8 type, s32 planeIdx) {
     u8* clip = lbl_80328DA0;
@@ -1079,7 +1079,7 @@ void fn_800E2B8C(HVQState* state, HVQMCPlane* mc, u8* dst, u8* ref0, u8* ref1) {
 }
 
 // .text:0x800E2C18 size:0x6D0
-// NONMATCHING 99%: register allocation of the row pointers
+// NONMATCHING 99.5%: register allocation of the row pointers
 #if NONMATCHING
 void fn_800E2C18(u8* dst, s32 dstStride, u8* src, s32 srcStride, s32 halfX, s32 halfY) {
     if (halfX == 0 && halfY == 0) {
@@ -1845,7 +1845,7 @@ void fn_800E4B90(HVQM4SeqObj* seq, HVQState* state) {
 }
 
 // .text:0x800E4FF4 size:0x928
-// NONMATCHING 97%: data base pointer folded into each offset; the original keeps it in a register
+// NONMATCHING 96.8%: data base pointer folded into each offset; the original keeps it in a register
 #if NONMATCHING
 void fn_800E4FF4(void* ctx, u8* src, u8* dst) {
     HVQM4SeqObj* seq = ctx;
@@ -1896,7 +1896,7 @@ void fn_800E591C(void* ctx, u8* src, u8* dst, u8* ref) {
 }
 
 // .text:0x800E5940 size:0x9F0
-// NONMATCHING 96%: data base pointer folded into each offset; the original keeps it in a register
+// NONMATCHING 95.5%: data base pointer folded into each offset; the original keeps it in a register
 #if NONMATCHING
 void fn_800E5940(void* ctx, u8* src, u8* dst, u8* ref0, u8* ref1) {
     HVQM4SeqObj* seq = ctx;

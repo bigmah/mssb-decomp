@@ -55,7 +55,7 @@ ChDrawNode lbl_1_data_298[2] = { { NULL, fn_1_19AC }, { NULL, fn_1_19AC } };
 
 
 // Corners of the selected block's bounding box.
-Vec lbl_1_bss_60[8];
+static Vec lbl_1_bss_60[8];
 
 #define CHAL_COLOR(id) (u8)(((u32)(id) >> 7) + (((u32)(id) & 0x7F) - 1) * 2)
 

@@ -13,7 +13,7 @@ extern s16 lbl_800FBD80[]; // per-character effect frame
 
 // Fires the effect at firstFrame, firstFrame + interval, ... while frame < endFrame.
 // .text:0x8004C19C size:0x374
-// NONMATCHING 95%: the original reaches fx's arrays via unfolded `addi base, 0x5C; lwz 8(base)` and
+// NONMATCHING 95.2%: the original reaches fx's arrays via unfolded `addi base, 0x5C; lwz 8(base)` and
 // keeps separate induction pointers per array; register allocation differs
 #if NONMATCHING
 void fn_8004C19C(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {

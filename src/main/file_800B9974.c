@@ -195,7 +195,7 @@ s32 fn_800B9AB0(u32 type, struct DODisplayObj* dispObj, DisplayStateList* state,
 }
 #endif
 
-// NONMATCHING 99%: type/camera registers are reused for konstArg/rasAlpha in a different order
+// NONMATCHING 99.8%: type/camera registers are reused for konstArg/rasAlpha in a different order
 #if NONMATCHING
 // .text:0x800B9EA8 size:0x5A4
 s32 fn_800B9EA8(u32 type, struct DODisplayObj* dispObj, DisplayStateList* state, s32* stage, s32* coord, s32* map,
@@ -400,7 +400,7 @@ void fn_800BA44C(s32 type, struct DODisplayObj* dispObj, MtxPtr camera, u8* numT
 }
 #pragma dont_inline on
 
-// NONMATCHING 98%: stack layout of the stage/coord/map locals and saved-register assignment differ
+// NONMATCHING 98.0%: stack layout of the stage/coord/map locals and saved-register assignment differ
 // nmverify: GXSetTexCoordGen2 original has the bump coord call in both arms of an if with identical arms
 // nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
@@ -779,7 +779,7 @@ void Custom_SetState(struct DODisplayObj* dispObj, DisplayStateList* state, MtxP
 }
 #endif
 
-// NONMATCHING 96%: saved registers for state/camera swapped (r29/r28 in the original), texture-state temps
+// NONMATCHING 96.8%: saved registers for state/camera swapped (r29/r28 in the original), texture-state temps
 // land in different volatile registers
 #if NONMATCHING
 // .text:0x800BBB2C size:0x430
@@ -939,7 +939,7 @@ void GetColorFromQuant(u8* color, u8 quantizeInfo, u8* r, u8* g, u8* b, u8* a) {
     }
 }
 
-// NONMATCHING 99%: saved-register assignment differs (dispObj r30/camera r31 in the original) and the GXColor
+// NONMATCHING 99.0%: saved-register assignment differs (dispObj r30/camera r31 in the original) and the GXColor
 // by-value temporaries sit in a different stack order
 #if NONMATCHING
 // .text:0x800BC0C4 size:0x724

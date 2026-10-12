@@ -58,7 +58,7 @@ void fn_800B2D5C(GameActor* actor) {
 }
 
 // .text:0x800B2DD0 size:0x36C
-// NONMATCHING 98%: blend switch is missing a dead `b` after case 0; `mr r30,r4` scheduled differently
+// NONMATCHING 99.0%: `mr r30,r4` (bone) scheduled before the first bone->flags load instead of after
 #if NONMATCHING
 void fn_800B2DD0(GameActor* actor, GameBone* bone) {
     Mtx world; // never initialised in the original
@@ -78,6 +78,7 @@ void fn_800B2DD0(GameActor* actor, GameBone* bone) {
         blend = 1.0f;
         break;
     case 1:
+        blend = blend;
         break;
     case 2:
         blend = blend * blend;
@@ -165,8 +166,6 @@ void fn_800B2DD0(GameActor* actor, GameBone* bone) {
 
 // .text:0x800B313C size:0x378
 // Builds every bone's forward (and skinning) matrix.
-// NONMATCHING 99%: blend switch is missing a dead `b` after case 0 (see docs/patterns/control-flow.md)
-#if NONMATCHING
 void fn_800B313C(GameActor* actor) {
     Mtx world;
     Mtx m;
@@ -192,6 +191,7 @@ void fn_800B313C(GameActor* actor) {
             blend = 1.0f;
             break;
         case 1:
+            blend = blend;
             break;
         case 2:
             blend = blend * blend;
@@ -268,11 +268,10 @@ void fn_800B313C(GameActor* actor) {
         }
     }
 }
-#endif
 
 // .text:0x800B34B4 size:0x2F0
 // Builds the forward matrix of one bone after (recursively) building its parents.
-// NONMATCHING 97%: blend switch is missing a dead `b` after case 0; prologue arg moves scheduled differently
+// NONMATCHING 97.8%: prologue arg moves (mr r28,r4 / mr r27,r3) scheduled differently
 #if NONMATCHING
 void fn_800B34B4(GameActor* actor, GameBone* bone, Mtx world) {
     Mtx m;
@@ -289,6 +288,7 @@ void fn_800B34B4(GameActor* actor, GameBone* bone, Mtx world) {
         blend = 1.0f;
         break;
     case 1:
+        blend = blend;
         break;
     case 2:
         blend = blend * blend;
@@ -847,7 +847,7 @@ void haveActLayoutPointToGeoHeader(ActorLayout* layout, DODisplayData* geoPalett
 
 // .text:0x800B4910 size:0xD4
 // Converts an actor layout's file offsets into pointers in place.
-// NONMATCHING 98%: bones pointer comes out as `addi r4` instead of `addi r0; mr r4,r0`
+// NONMATCHING 98.0%: bones pointer comes out as `addi r4` instead of `addi r0; mr r4,r0`
 #if NONMATCHING
 void LoadActorLayout(ActorLayout* layout) {
     ActorBone* bone;
