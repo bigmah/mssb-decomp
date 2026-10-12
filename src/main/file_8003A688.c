@@ -875,7 +875,7 @@ SaveBannerData lbl_800F7B00 = {
 // .sdata 0x803CB828..0x803CB838
 u8 lbl_803CB828[3] = {0, 0, 0}; // RGB colour
 f32 lbl_803CB82C = -0.001f;
-u16 lbl_803CB830[4] = {36, 36, 36, 0}; // TODO type: message ids indexed by SaveTask._1F + 3
+u16 lbl_803CB830[4] = {36, 36, 36, 0}; // message ids, indexed by SaveTask._1F + 3
 
 // .sbss 0x803CBCA8..0x803CBCC8 (reverse address order)
 u16 lbl_803CBCC0;
