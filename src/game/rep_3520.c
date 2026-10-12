@@ -1806,110 +1806,110 @@ u8 fn_3_137B10(Mg3520Obj* o) {
 
 
 // .text:0x00137CF8 size:0xEC mapped:0x80776D8C
-static inline void h137CF8(u8* o) {
+static inline void h137CF8(Mg3520Obj* o) {
     u32 t;
     s16* row;
     int lo;
-    PSVECAdd((Vec*)o, (Vec*)(o + (s32)OFFSET_OF(Mg3520Obj, _0C)), (Vec*)o);
-    if (fn_3_137B10((Mg3520Obj*)o) == 0 && *(f32*)(o + 4) >= lbl_3_data_21A64) {
-        t = *(u32*)&((u8*)&g_Minigame)[0x17C0] / 60 / 20;
+    PSVECAdd(&o->pos, &o->_0C, &o->pos);
+    if (fn_3_137B10(o) == 0 && o->pos.y >= lbl_3_data_21A64) {
+        t = MG3520->timer / 60 / 20;
         if (t > 3) {
             t = 3;
         }
-        o[(s32)OFFSET_OF(Mg3520Obj, state)] = 0;
-        *(s16*)(o + (s32)OFFSET_OF(Mg3520Obj, _3A)) = 0;
-        row = lbl_3_data_21A90 + ((u8*)&g_Minigame)[0x1A2B] * 8;
+        o->state = 0;
+        o->_3A = 0;
+        row = lbl_3_data_21A90 + g_Minigame.soloMinigameDifficulty * 8;
         lo = row[t * 2];
         t = random_fn_3_9EE24((row[t * 2 + 1] - lo) * 60);
-        *(s16*)(o + (s32)OFFSET_OF(Mg3520Obj, _38)) = t + lo * 60;
+        o->_38 = t + lo * 60;
     }
 }
 void fn_3_137CF8(Mg3520Obj* o) {
-    h137CF8((u8*)o);
+    h137CF8(o);
 }
 
 // .text:0x00137DE4 size:0x130 mapped:0x80776E78
-static inline void h137DE4(u8* o) {
+static inline void h137DE4(Mg3520Obj* o) {
     u32 t;
     s16* row;
     int lo;
-    PSVECAdd((Vec*)o, (Vec*)(o + 0xC), (Vec*)o);
-    PSVECAdd((Vec*)(o + 0x18), (Vec*)(o + 0x24), (Vec*)(o + 0x18));
-    if (*(s16*)(o + 0x3A) < 0x7FFE) {
-        (*(s16*)(o + 0x3A))++;
+    PSVECAdd(&o->pos, &o->_0C, &o->pos);
+    PSVECAdd(&o->_18, &o->_24, &o->_18);
+    if (o->_3A < 0x7FFE) {
+        o->_3A++;
     } else {
-        *(s16*)(o + 0x3A) = 0x7FFF;
+        o->_3A = 0x7FFF;
     }
-    if ((f32) * (s16*)(o + 0x3A) >= (&lbl_3_data_21A64)[7]) {
-        t = *(u32*)&((u8*)&g_Minigame)[0x17C0] / 60 / 20;
+    if ((f32)o->_3A >= (&lbl_3_data_21A64)[7]) {
+        t = MG3520->timer / 60 / 20;
         if (t > 3) {
             t = 3;
         }
-        o[0x3D] = 0;
-        *(s16*)(o + 0x3A) = 0;
-        row = lbl_3_data_21A90 + ((u8*)&g_Minigame)[0x1A2B] * 8;
+        o->state = 0;
+        o->_3A = 0;
+        row = lbl_3_data_21A90 + g_Minigame.soloMinigameDifficulty * 8;
         lo = row[t * 2];
         t = random_fn_3_9EE24((row[t * 2 + 1] - lo) * 60);
-        *(s16*)(o + 0x38) = t + lo * 60;
+        o->_38 = t + lo * 60;
     }
 }
 void fn_3_137DE4(Mg3520Obj* o) {
-    h137DE4((u8*)o);
+    h137DE4(o);
 }
 
 // .text:0x00137F14 size:0x118 mapped:0x80776FA8
-static inline void h137F14(u8* o) {
-    if (((u8*)&g_Minigame)[0x72A] != 0) {
-        *(f32*)(o + 0x10) = (&lbl_3_data_21A64)[5];
-        o[0x3D] = 5;
-        *(s16*)(o + 0x3A) = 0;
+static inline void h137F14(Mg3520Obj* o) {
+    if (g_Minigame._72A != 0) {
+        o->_0C.y = (&lbl_3_data_21A64)[5];
+        o->state = 5;
+        o->_3A = 0;
     } else {
-        if (o[0x3E] != 0) {
-            o[0x3F]++;
-            if (o[0x3F] >= 10) {
+        if (o->_3E != 0) {
+            o->_3F++;
+            if (o->_3F >= 10) {
                 fn_3_90064(0x303);
-                o[0x3E] = 0;
+                o->_3E = 0;
             }
         }
-        if (*(s16*)(o + 0x3A) < 0x7FFE) {
-            (*(s16*)(o + 0x3A))++;
+        if (o->_3A < 0x7FFE) {
+            o->_3A++;
         } else {
-            *(s16*)(o + 0x3A) = 0x7FFF;
+            o->_3A = 0x7FFF;
         }
-        if (fn_3_137B10((Mg3520Obj*)o) == 0 && (f32) * (s16*)(o + 0x3A) >= (&lbl_3_data_21A64)[6]) {
-            *(f32*)(o + 0x10) = (&lbl_3_data_21A64)[5];
-            o[0x3D] = 5;
-            *(s16*)(o + 0x3A) = 0;
+        if (fn_3_137B10(o) == 0 && (f32)o->_3A >= (&lbl_3_data_21A64)[6]) {
+            o->_0C.y = (&lbl_3_data_21A64)[5];
+            o->state = 5;
+            o->_3A = 0;
         }
     }
 }
 void fn_3_137F14(Mg3520Obj* o) {
-    h137F14((u8*)o);
+    h137F14(o);
 }
 
 // .text:0x0013802C size:0x2B4 mapped:0x807770C0
-static inline void h13802C(u8* o) {
+static inline void h13802C(Mg3520Obj* o) {
     Vec* vel;
     if (g_Minigame._72A != 0) {
-        *(f32*)(o + (s32)OFFSET_OF(Mg3520Obj, _0C.y)) = (&lbl_3_data_21A64)[5];
-        o[(s32)OFFSET_OF(Mg3520Obj, state)] = 5;
-        *(s16*)(o + (s32)OFFSET_OF(Mg3520Obj, _3A)) = 0;
+        o->_0C.y = (&lbl_3_data_21A64)[5];
+        o->state = 5;
+        o->_3A = 0;
         return;
     }
-    PSVECAdd((Vec*)o, vel = (Vec*)(o + (s32)OFFSET_OF(Mg3520Obj, _0C)), (Vec*)o);
-    if (fn_3_137B10((Mg3520Obj*)o) != 0) {
-        (&g_Minigame._1D78)[(s8)o[(s32)OFFSET_OF(Mg3520Obj, _3C)]] = 0;
+    PSVECAdd(&o->pos, vel = &o->_0C, &o->pos);
+    if (fn_3_137B10(o) != 0) {
+        (&g_Minigame._1D78)[(s8)o->_3C] = 0;
         fn_3_90064(0x30D);
         return;
     }
-    if (*(f32*)(o + 4) <= 0.0f) {
-        *(f32*)(o + 4) = 0.0f;
+    if (o->pos.y <= 0.0f) {
+        o->pos.y = 0.0f;
         memset(vel, 0, sizeof(Vec));
-        *(s16*)(o + (s32)OFFSET_OF(Mg3520Obj, _3A)) = 0;
-        o[(s32)OFFSET_OF(Mg3520Obj, state)] = 3;
+        o->_3A = 0;
+        o->state = 3;
         fn_3_1371E8();
-        fn_3_137224((Mg3520Obj*)o);
-        (&g_Minigame._1D78)[(s8)o[(s32)OFFSET_OF(Mg3520Obj, _3C)]] = 0;
+        fn_3_137224(o);
+        (&g_Minigame._1D78)[(s8)o->_3C] = 0;
         fn_3_90064(0x2F7);
     }
 }
@@ -1939,35 +1939,35 @@ void fn_3_13802C(Mg3520Obj* o) {
 }
 
 // .text:0x001382E0 size:0x168 mapped:0x80777374
-static inline void h1382E0(u8* o) {
-    u32 t0 = *(u32*)&((u8*)&g_Minigame)[0x17C0] / 60 / 20;
+static inline void h1382E0(Mg3520Obj* o) {
+    u32 t0 = MG3520->timer / 60 / 20;
     int t = t0;
     s16* row;
     int lo;
-    if (((u8*)&g_Minigame)[0x72A] != 0) {
-        o[0x3D] = 0;
-        *(s16*)(o + 0x3A) = 0;
-        row = lbl_3_data_21A90 + ((u8*)&g_Minigame)[0x1A2B] * 8;
+    if (g_Minigame._72A != 0) {
+        o->state = 0;
+        o->_3A = 0;
+        row = lbl_3_data_21A90 + g_Minigame.soloMinigameDifficulty * 8;
         lo = row[t0 * 2];
         t0 = random_fn_3_9EE24((row[t0 * 2 + 1] - lo) * 60);
-        *(s16*)(o + 0x38) = t0 + lo * 60;
+        o->_38 = t0 + lo * 60;
         return;
     }
-    if (*(s16*)(o + 0x3A) < 0x7FFE) {
-        (*(s16*)(o + 0x3A))++;
+    if (o->_3A < 0x7FFE) {
+        o->_3A++;
     } else {
-        *(s16*)(o + 0x3A) = 0x7FFF;
+        o->_3A = 0x7FFF;
     }
     if ((u32)t > 3) {
         t = 3;
     }
-    if (*(s16*)(o + 0x3A) / 60 >= lbl_3_data_21AD0[lbl_3_bss_B781][t]) {
+    if (o->_3A / 60 >= lbl_3_data_21AD0[lbl_3_bss_B781][t]) {
         f32 z = lbl_3_rodata_35D0;
-        *(f32*)(o + 0x14) = z;
-        *(f32*)(o + 0xC) = z;
-        *(f32*)(o + 0x10) = -(&lbl_3_data_21A64)[1];
-        o[0x3D] = 2;
-        *(s16*)(o + 0x3A) = 0;
+        o->_0C.z = z;
+        o->_0C.x = z;
+        o->_0C.y = -(&lbl_3_data_21A64)[1];
+        o->state = 2;
+        o->_3A = 0;
     }
 }
 // (inline copy above is used by fn_3_138AA4; the standalone copy keeps its own register shape)
@@ -2004,16 +2004,16 @@ void fn_3_1382E0(Mg3520Obj* o) {
 }
 
 // .text:0x00138448 size:0x6C mapped:0x807774DC
-static inline void h138448(u8* a) {
-    if (((u8*)&g_Minigame)[0x72A] == 0) {
-        if (*(s16*)(a + 0x3A) < 0x7FFE) {
-            (*(s16*)(a + 0x3A))++;
+static inline void h138448(Mg3520Obj* a) {
+    if (g_Minigame._72A == 0) {
+        if (a->_3A < 0x7FFE) {
+            a->_3A++;
         } else {
-            *(s16*)(a + 0x3A) = 0x7FFF;
+            a->_3A = 0x7FFF;
         }
-        if (*(s16*)(a + 0x3A) >= *(s16*)(a + 0x38)) {
-            a[0x3E] = 0;
-            fn_3_1384B4((Mg3520Obj*)a);
+        if (a->_3A >= a->_38) {
+            a->_3E = 0;
+            fn_3_1384B4(a);
         }
     }
 }
@@ -2161,24 +2161,24 @@ void fn_3_138AA4(void) {
         if (n >= 4) {
             break;
         }
-        switch ((((u8*)&g_Minigame) + n * 0x40 + 0xBB0)[0x3D]) {
+        switch (MG3520->objs[n].state) {
         case 0:
-            h138448(((u8*)&g_Minigame) + n * 0x40 + 0xBB0);
+            h138448(&MG3520->objs[n]);
             break;
         case 1:
-            h1382E0(((u8*)&g_Minigame) + n * 0x40 + 0xBB0);
+            h1382E0(&MG3520->objs[n]);
             break;
         case 2:
-            h13802C(((u8*)&g_Minigame) + n * 0x40 + 0xBB0);
+            h13802C(&MG3520->objs[n]);
             break;
         case 3:
-            h137F14(((u8*)&g_Minigame) + n * 0x40 + 0xBB0);
+            h137F14(&MG3520->objs[n]);
             break;
         case 4:
-            h137DE4(((u8*)&g_Minigame) + n * 0x40 + 0xBB0);
+            h137DE4(&MG3520->objs[n]);
             break;
         case 5:
-            h137CF8(((u8*)&g_Minigame) + n * 0x40 + 0xBB0);
+            h137CF8(&MG3520->objs[n]);
             break;
         }
     }
