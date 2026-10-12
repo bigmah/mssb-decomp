@@ -652,7 +652,9 @@ typedef struct _InMemFielderType {
     /*0x196*/ s16 _196;
     /*0x198*/ u8 _198[0x1A0 - 0x198];
     /*0x1A0*/ s16 _1A0;
-    /*0x1A2*/ u8 _1A2[0x1AA - 0x1A2];
+    /*0x1A2*/ u8 _1A2[0x1A4 - 0x1A2];
+    /*0x1A4*/ s16 _1A4;
+    /*0x1A6*/ u8 _1A6[0x1AA - 0x1A6];
     /*0x1AA*/ s16 _1AA;
     /*0x1AC*/ s16 _1AC;
     /*0x1AE*/ u8 _1AE[0x1B4 - 0x1AE];
@@ -678,7 +680,7 @@ typedef struct _InMemFielderType {
     /*0x1D0*/ u8 speedStat;
     /*0x1D1*/ u8 _1D1;
     /*0x1D2*/ u8 _1D2;
-    /*0x1D3*/ u8 _1D3[0x1D7 - 0x1D3];
+    /*0x1D3*/ u8 _1D3[0x1D7 - 0x1D3]; // [0]: lbl_3_data_3C40 state index (fn_3_5985C)
     /*0x1D7*/ u8 _1D7;
     /*0x1D8*/ u8 _1D8[0x1DF - 0x1D8];
     /*0x1DF*/ u8 throwing;
@@ -2623,7 +2625,10 @@ typedef struct _MiniGameStruct {
     /*0x1DD1*/ u8 bB_cpuSwingPlanned;
     /*0x1DD2*/ s8 bB_cpuPreferLow;    // sort order for the CPU's target choice (fn_3_12E084)
     /*0x1DD3*/ u8 _1DD3[0x1DF4 - 0x1DD3];
-    /*0x1DF4*/ s16 _1DF4[7]; // cleared before HUD updates (fn_3_12C514)
+    union {
+        /*0x1DF4*/ s16 _1DF4[7]; // cleared before HUD updates (fn_3_12C514)
+        /*0x1DF4*/ u8 hudFlags[14]; // per-byte HUD requests (rep_31F0: [3], [4])
+    };
     /*0x1E02*/ u8 _1E02;
     /*0x1E03*/ u8 _1E03;
     /*0x1E04*/ void* _1E04; // minigame task (fn_800B0A5C_insertQueue result)

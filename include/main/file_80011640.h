@@ -151,7 +151,7 @@ typedef void (*CharDrawCallback)(MtxPtr view, s32 a, s32 b);
 // lbl_8036E548
 typedef struct CharMgr {
     /*0x0000*/ u8 _0000[0x4];
-    /*0x0004*/ void* _0004[2]; // [0]: a loaded file (rep_1FD8 fn_3_C24A0)
+    /*0x0004*/ void* _0004[2]; // [0]: a loaded file (rep_1FD8 fn_3_C24A0); [1]: stadium archive being loaded (rep_1D58)
     /*0x000C*/ u32 _000C[21];
     /*0x0060*/ ActorObjectTable* slots;
     /*0x0064*/ ActorObjectTable* slots64;

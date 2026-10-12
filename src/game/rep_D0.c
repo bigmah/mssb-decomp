@@ -13,7 +13,7 @@ Vec lbl_3_data_1F8 = {0.0f, 1.0f, 0.0f};
 Vec lbl_3_data_204 = {0.0f, 0.0f, 0.0f};
 Vec lbl_3_data_210 = {0.0f, 1.0f, 0.0f};
 Vec lbl_3_data_21C = {0.0f, 0.0f, 0.0f};
-extern u8 lbl_3_common_bss_350E4[];
+extern StadiumObjMgr lbl_3_common_bss_350E4;
 extern void makeLookAtMatrix(void*, VecSrcDst*, Vec*, Vec*);
 
 // .text:0x000008D4 size:0x40
@@ -100,8 +100,8 @@ BALL_COLLISION_TYPE checkStatiumHazardCollisions(VecSrcDst* inVec, CollisionStru
     u32 c;
     u8* t;
     f32 dist;
-    memset(flags, 1, *(s16*)(lbl_3_common_bss_350E4 + 0x64));
-    n = *(s16*)(lbl_3_common_bss_350E4 + 0x64);
+    memset(flags, 1, lbl_3_common_bss_350E4.numGroups);
+    n = lbl_3_common_bss_350E4.numGroups;
     fp = flags;
     allOut = 1;
     while (n--) {
@@ -125,7 +125,7 @@ BALL_COLLISION_TYPE checkStatiumHazardCollisions(VecSrcDst* inVec, CollisionStru
     dist = sqrtLocal(PSVECSquareDistance(&inVec->dst, &inVec->src));
     tc.distance = dist;
     fp = flags;
-    n = *(s16*)(lbl_3_common_bss_350E4 + 0x64);
+    n = lbl_3_common_bss_350E4.numGroups;
     tc.collisionDistance = dist;
     tc.collisionType = 0;
     while (n--) {

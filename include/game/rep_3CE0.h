@@ -48,7 +48,19 @@ typedef struct PlayerMarkerLayout {
 typedef struct FadeState {
     /*0x000*/ u8 _000[0x4];
     /*0x004*/ u8* effectFile;
-    /*0x008*/ u8 _008[0x468 - 0x8];
+    /*0x008*/ u8 _008[0x3B0 - 0x8];
+    /*0x3B0*/ u8 _3B0; // busy (rep_60 waits for it to clear)
+    /*0x3B1*/ u8 _3B1[0x3B4 - 0x3B1];
+    /*0x3B4*/ struct TexImage* fadeImages; // entries of the stadium's fade texture archive (fn_3_5EC0)
+    /*0x3B8*/ u8 _3B8[0x3E0 - 0x3B8];
+    /*0x3E0*/ u8 _3E0; // set outside scene 1 (fn_3_567C)
+    /*0x3E1*/ u8 _3E1[0x440 - 0x3E1];
+    /*0x440*/ Vec _440; // ball position (fn_3_15C3F8 draws its quad there)
+    /*0x44C*/ Vec _44C; // previous _440
+    /*0x458*/ Vec _458; // ball position for the garlic burst (rep_3D50)
+    /*0x464*/ s16 _464; // nonzero: burst effects off
+    /*0x466*/ u8 _466;
+    /*0x467*/ u8 _467;
     /*0x468*/ s32 level;     // current fade amount (0..fadeScale), drawn as the fade colour
     /*0x46C*/ u8 _46C[4];
     /*0x470*/ u8 active;
@@ -56,7 +68,8 @@ typedef struct FadeState {
     /*0x472*/ u8 count;      // number of entries in ids
     /*0x473*/ u8 ids[6];
     /*0x479*/ u8 disabled;
-    /*0x47A*/ u8 _47A[0x480 - 0x47A];
+    /*0x47A*/ u16 garlicFrames[2]; // [currentStarSwing != 3]
+    /*0x47E*/ u8 _47E[0x480 - 0x47E];
 } FadeState; // size: 0x480
 
 extern FadeState lbl_3_common_bss_35154;

@@ -27,7 +27,16 @@ s32 fn_3_91064(u8* state);
 
 s32 fn_3_910AC(u8* state);
 
-void fn_3_910F4(u8* p);
+// Scene task that shows the outs lamps (fn_3_911A8); a SceneTask (main/scene_task.h)
+// with its own words after 0x18.
+typedef struct OutsDisplayTask {
+    /*0x00*/ u8 _00[0x18]; // SceneTask head
+    /*0x18*/ u16 frames;
+    /*0x1A*/ u16 _1A;
+    /*0x1C*/ u16 outs; // outs currently lit
+} OutsDisplayTask;
+
+void fn_3_910F4(OutsDisplayTask* p);
 
 void fn_3_911A8(void);
 
