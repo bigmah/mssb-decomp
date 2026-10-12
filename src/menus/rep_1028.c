@@ -1353,7 +1353,9 @@ void fn_2_91788(u8* object) {
 }
 
 extern f32 fn_2_4A1E8(f32 x, f32 y);
-extern f32 lbl_2_bss_B640;
+// .bss (mwcc emits file statics in reverse order of definition).
+static f32 lbl_2_bss_B640;
+static u8 lbl_2_bss_B2C8[0x378]; // unreferenced
 extern Vec lbl_2_data_308F4;
 extern const f32 lbl_2_rodata_1090;
 extern const f32 lbl_2_rodata_1094;
