@@ -7309,8 +7309,6 @@ void fn_3_3AE34(int i) {
 #endif
 
 // .text:0x0003B370 size:0x3F4 mapped:0x8067A404
-// NONMATCHING 99%: 1A2A==6 early return emitted as beq (orig bne+b); FieldingLogic+0xD0 compare operand order; r5/r6 swap
-#if NONMATCHING
 void fn_3_3B370(int i) {
     u8* f = g_Fielders + i * 0x268;
     s32 tgt;
@@ -7346,28 +7344,29 @@ void fn_3_3B370(int i) {
         fn_3_3A584(i);
         break;
     }
-    if (g_Minigame[0x1A2A] != 5) {
-        if (g_Minigame[0x1A2A] == 6) {
-            return;
-        }
-        if (g_d_GameSettings[7] != 6) {
-            if (g_Ball[0x1BC9] != 0 && g_Ball[0x1BC9] != 3) {
-                if (*(s16*)(f + 0x18C) == 6) {
-                    SetFielderAct(i, 0xB, 0x58);
-                } else {
-                    SetFielderAct(i, 0xC, 0x60);
-                }
-                if (i <= 5) {
-                    f[0x1D5] = 3;
-                } else {
-                    f[0x1D5] = 2;
-                }
-                *(s16*)(g_FieldingLogic + 0xB0) = -1;
+    if (g_Minigame[0x1A2A] == 5 || g_Minigame[0x1A2A] == 6) {
+        return;
+    }
+    if (g_d_GameSettings[7] != 6) {
+        if (g_Ball[0x1BC9] != 0 && g_Ball[0x1BC9] != 3) {
+            if (*(s16*)(f + 0x18C) == 6) {
+                SetFielderAct(i, 0xB, 0x58);
+            } else {
+                SetFielderAct(i, 0xC, 0x60);
             }
-            k = *(s16*)(f + 0x18C);
-            if (k >= 0 && k <= 3 && ((f32*)(f + 0xA8))[k] > lbl_3_rodata_B78) {
-                if (k >= 0 && k <= 3) {
-                    if (i == ((s16*)(g_FieldingLogic + 0xD0))[k]) {
+            if (i <= 5) {
+                f[0x1D5] = 3;
+            } else {
+                f[0x1D5] = 2;
+            }
+            *(s16*)(g_FieldingLogic + 0xB0) = -1;
+        }
+        k = *(s16*)(f + 0x18C);
+        if (k >= 0 && k <= 3 && ((f32*)(f + 0xA8))[k] > lbl_3_rodata_B78) {
+            if (k >= 0) {
+                if (k <= 3) {
+                    s16 owner = ((s16*)(g_FieldingLogic + 0xD0))[k];
+                    if (owner == i) {
                         ((s16*)(g_FieldingLogic + 0xD0))[k] = -1;
                         g_FieldingLogic[k + 0x101] = 0;
                     }
@@ -7377,10 +7376,10 @@ void fn_3_3B370(int i) {
                         SetFielderActP(f, i, 12, 0x60);
                     }
                 } else if (k == 5) {
-                    *(s16*)(f + 0x18C) = -1;
-                    f[0x1D7] = 0;
                     *(s16*)(g_FieldingLogic + 0xD8) = -1;
                     g_FieldingLogic[0x105] = 0;
+                    *(s16*)(f + 0x18C) = -1;
+                    f[0x1D7] = 0;
                     if (f[0x1D3] == 14) {
                         SetFielderActP(f, i, 12, 0x60);
                     }
@@ -7389,7 +7388,6 @@ void fn_3_3B370(int i) {
         }
     }
 }
-#endif
 
 // .text:0x0003B764 size:0x238 mapped:0x8067A7F8
 void fn_3_3B764(void) {
