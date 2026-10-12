@@ -43,8 +43,6 @@ void fn_2_5E84C(void) {
 }
 
 // .text:0x0005EB78 size:0x1C4
-// NONMATCHING 97%: lbl_2_bss_1A8244 is loaded one slot early and lands in r8 instead of r4
-#if NONMATCHING
 void fn_2_5EB78(void) {
     MenuFlags4 flags;
     u8* flag;
@@ -58,8 +56,8 @@ void fn_2_5EB78(void) {
     flags.b[2] = 0;
     flags.b[3] = 0;
     flag = flags.b;
-    progress = lbl_2_bss_1A8244;
     for (i = 0; i < 4; i++) {
+        progress = lbl_2_bss_1A8244;
         for (j = 0; j < 5; j++) {
             if (progress->_C6[j][i] != 0) {
                 *flag = 1;
@@ -94,7 +92,6 @@ void fn_2_5EB78(void) {
         lbl_2_bss_1A8240->lists[1][4]._6 = 4;
     }
 }
-#endif
 
 // .text:0x0005ED3C size:0xF8
 void fn_2_5ED3C(void) {
