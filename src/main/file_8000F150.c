@@ -1091,9 +1091,7 @@ GameActor** fn_800111D8(CharActor* actor) {
     return &lbl_8036E548.slots->objects[actor->modelIndex].actor;
 }
 
-// NONMATCHING 99%: original keeps &actors[i] (addi 0xc04) in r5 and copies it to r31; ours folds the offset
 // .text:0x800111FC size:0x15C
-#if NONMATCHING
 CharActor* fn_800111FC(CharActor* actor, s32 second) {
     s32 slot;
     CharActor* next;
@@ -1103,8 +1101,7 @@ CharActor* fn_800111FC(CharActor* actor, s32 second) {
     slot = actor->modelIndex % 4;
     lbl_8036E548.actors[slot + 4].mode[0] = 0;
     lbl_8036E548.actors[slot].mode[0] = 0;
-    next = &lbl_8036E548.actors[slot + ((second != 0) << 2)];
-    lbl_8036E548.active[slot] = next;
+    next = lbl_8036E548.active[slot] = &lbl_8036E548.actors[slot + ((second != 0) << 2)];
     if (next->modelIndex != actor->modelIndex) {
         fn_8001BA44(slot, actor->anim[0], actor->_25F[0], actor->_262[0], 0, actor->_265[0], actor->_269[0]);
         next->anim[1] = actor->anim[1];
@@ -1125,7 +1122,6 @@ CharActor* fn_800111FC(CharActor* actor, s32 second) {
     }
     return next;
 }
-#endif
 
 // .text:0x80011358 size:0x110
 void fn_80011358(s32 index, s32 kind) {
