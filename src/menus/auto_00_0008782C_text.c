@@ -512,17 +512,12 @@ void fn_2_89038(SceneTask* task) {
 
 // .text:0x000895F8 size:0x164
 // Maps a button id to its position in the current button layout.
-// NONMATCHING 95%: `li r3, 0` for pos is scheduled before the loads, not after them
-#if NONMATCHING
 s32 fn_2_895F8(u8 alt) {
     s32 button = lbl_2_bss_F410._54;
     s32 altButton = lbl_2_bss_33FBCC._1C;
-    s32 pos;
+    s32 pos = 0;
 
-    pos = 0;
-    if (alt) {
-        button = altButton;
-    }
+    button = alt ? altButton : button;
     switch (lbl_2_bss_33FBCC.mode) {
     case 0:
         switch (button) {
@@ -588,7 +583,6 @@ s32 fn_2_895F8(u8 alt) {
     }
     return pos;
 }
-#endif
 
 // .text:0x0008975C size:0x814
 void fn_2_8975C(void) {
