@@ -715,19 +715,19 @@ void fn_800126EC(CharPart* part, void* tex, u8* fileIdx) {
     ActorObject* slot;
 
     slot = &lbl_8036E548.partSlots->objects[part->slot];
-    layout = part->files[fileIdx[0]];
-    geo = part->files[fileIdx[1]];
+    layout = PTR32_GET(void, part->files[fileIdx[0]]);
+    geo = PTR32_GET(void, part->files[fileIdx[1]]);
     LoadActorLayout(layout);
     convertGeometryAndSknHeader(geo, NULL);
     haveActLayoutPointToGeoHeader(layout, geo);
     fn_800BD190(geo, tex);
     fn_800238E0(lbl_8036E548.partSlots, part->slot, part->slot, layout);
     if (part->files[2] != NULL) {
-        fn_80025DDC(part->files[fileIdx[2]]);
-        fn_80025C58(part->files[fileIdx[2]], (ShapeModel**)slot);
+        fn_80025DDC(PTR32_GET(void, part->files[fileIdx[2]]));
+        fn_80025C58(PTR32_GET(void, part->files[fileIdx[2]]), (ShapeModel**)slot);
     }
-    part->player.set = part->files[fileIdx[3]];
-    fn_80025FFC(part->files[fileIdx[2]], &part->player);
+    part->player.set = PTR32_GET(void, part->files[fileIdx[3]]);
+    fn_80025FFC(PTR32_GET(void, part->files[fileIdx[2]]), &part->player);
 }
 
 // .text:0x800127F8 size:0x398
@@ -765,8 +765,19 @@ u8 LoadModel(CharActor* actor) {
     if (lbl_803716B8._1E8 == 0) {
         part = lbl_803CBC10;
         tex = actor->parts->tex;
-        // TODO(port): the file header holds 32-bit offsets relocated in place; on PC
-    // void* entries are 8 bytes, so these tables need PTR32 entries (Phase 3).
+#ifdef TARGET_PC
+        // The part file starts with 4 big-endian 32-bit offsets (PTR32 entries).
+        {
+            PTR32(void)* tbl = part->files;
+            s32 k;
+            port_swap_offset_table(tbl, 4);
+            for (k = 0; k < 4; k++) {
+                if (tbl[k] != 0) {
+                    tbl[k] += PTR_TO_U32(tbl);
+                }
+            }
+        }
+#else
         files = part->files;
         if (files[0] != NULL) {
             files[0] = (u8*)files + (uintptr_t)files[0];
@@ -783,6 +794,7 @@ u8 LoadModel(CharActor* actor) {
         if (files[3] != NULL) {
             files[3] = (u8*)files + (uintptr_t)files[3];
         }
+#endif
         fn_800126EC(part, tex, lbl_803CB7C4);
         copyPartJointData(lbl_8036E548.active[actor->index], lbl_803CBC15);
         lbl_803CBC14 = 0;
@@ -804,8 +816,19 @@ static inline BOOL loadPartModel(CharPart* part, s8 kind, s32 mode, void* tex) {
     if (lbl_803716B8._1E8 == 0) {
         part = lbl_803CBC1C;
         lbl_803CBC0C = 0;
-        // TODO(port): the file header holds 32-bit offsets relocated in place; on PC
-    // void* entries are 8 bytes, so these tables need PTR32 entries (Phase 3).
+#ifdef TARGET_PC
+        // The part file starts with 4 big-endian 32-bit offsets (PTR32 entries).
+        {
+            PTR32(void)* tbl = part->files;
+            s32 k;
+            port_swap_offset_table(tbl, 4);
+            for (k = 0; k < 4; k++) {
+                if (tbl[k] != 0) {
+                    tbl[k] += PTR_TO_U32(tbl);
+                }
+            }
+        }
+#else
         files = part->files;
         if (files[0] != NULL) {
             files[0] = (u8*)files + (uintptr_t)files[0];
@@ -822,6 +845,7 @@ static inline BOOL loadPartModel(CharPart* part, s8 kind, s32 mode, void* tex) {
         if (files[3] != NULL) {
             files[3] = (u8*)files + (uintptr_t)files[3];
         }
+#endif
         fn_800126EC(part, tex, lbl_803CB7C4);
         lbl_803CBC1C = NULL;
         return TRUE;
@@ -853,7 +877,7 @@ u8 fn_80012B90(CharActor* actor) {
     case 0:
     case 3:
     case 6:
-        tex = actor->files[0];
+        tex = PTR32_GET(void, actor->files[0]);
         p->tex = tex;
         lbl_803CBC08 = tex;
         p->_CF = kind;
@@ -940,7 +964,7 @@ u8 fn_80013680(CharActor* actor) {
 
     if (lbl_803CBBFB == 0) {
         lbl_803CBBFB = 1;
-        tex = actor->files[0];
+        tex = PTR32_GET(void, actor->files[0]);
         lbl_803CBC00 = tex;
         for (i = 0; i < 13; i++) {
             p = &lbl_8036E548.partsPool[i];
@@ -1389,7 +1413,7 @@ s32 fn_8001500C(s32 team, s32 roster, s32 index) {
                     actor->part = part;
                     part->slot = kind;
                     part->_61 = index;
-                    part->player.model = actor->files[4];
+                    part->player.model = PTR32_GET(void, actor->files[4]);
                     done = TRUE;
                     goto next;
                 }
@@ -1417,7 +1441,7 @@ s32 fn_8001500C(s32 team, s32 roster, s32 index) {
                 part->slot = kind;
                 part->_61 = index;
                 part->player.set = (ShapeAnimSet*)part->files;
-                fn_80025FFC(actor->files[4], &part->player);
+                fn_80025FFC(PTR32_GET(void, actor->files[4]), &part->player);
                 actor->part = part;
                 ok = TRUE;
                 lbl_803CBBFA = 0;
@@ -1620,7 +1644,7 @@ static inline BOOL attachActorParts(void) {
                 actor->part = part;
                 part->slot = kind;
                 part->_61 = idx;
-                part->player.model = actor->files[4];
+                part->player.model = PTR32_GET(void, actor->files[4]);
                 done = TRUE;
                 goto next;
             }
@@ -1648,7 +1672,7 @@ static inline BOOL attachActorParts(void) {
             part->slot = kind;
             part->_61 = idx;
             part->player.set = (ShapeAnimSet*)part->files;
-            fn_80025FFC(actor->files[4], &part->player);
+            fn_80025FFC(PTR32_GET(void, actor->files[4]), &part->player);
             actor->part = part;
             ok = TRUE;
             lbl_803CBBFA = 0;
@@ -1847,7 +1871,7 @@ s32 fn_80016344(u8 kind, s32 index, u8 arg2, s32 roster) {
                 lbl_80118220[0].slot = kind;
                 lbl_80118220[0]._61 = index;
                 lbl_80118220[0].player.set = (ShapeAnimSet*)lbl_80118220[0].files;
-                fn_80025FFC(lbl_8036E548.actors[index].files[4], &lbl_80118220[0].player);
+                fn_80025FFC(PTR32_GET(void, lbl_8036E548.actors[index].files[4]), &lbl_80118220[0].player);
                 lbl_803CBBFA = 0;
                 lbl_8036E548.actors[index].part = &lbl_80118220[0];
                 ok = TRUE;
@@ -1932,7 +1956,7 @@ s32 fn_80016710(u8 kind, s32 index) {
                     lbl_80118220[0].slot = kind;
                     lbl_80118220[0]._61 = index;
                     lbl_80118220[0].player.set = (ShapeAnimSet*)lbl_80118220[0].files;
-                    fn_80025FFC(lbl_8036E548.actors[index].files[4], &lbl_80118220[0].player);
+                    fn_80025FFC(PTR32_GET(void, lbl_8036E548.actors[index].files[4]), &lbl_80118220[0].player);
                     lbl_803CBBFA = 0;
                     lbl_8036E548.actors[index].part = &lbl_80118220[0];
                     ok = TRUE;
@@ -1957,7 +1981,7 @@ s32 fn_80016710(u8 kind, s32 index) {
                     part->slot = kind;
                     part->_61 = index;
                     part->player.set = (ShapeAnimSet*)part->files;
-                    fn_80025FFC(lbl_8036E548.actors[index].files[4], &part->player);
+                    fn_80025FFC(PTR32_GET(void, lbl_8036E548.actors[index].files[4]), &part->player);
                     lbl_803CBBFA = 0;
                     lbl_8036E548.actors[index].part = part;
                     ok = TRUE;
@@ -2324,7 +2348,7 @@ void fn_800177B4(void) {
 #if NONMATCHING
 void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(ActorObject*)) {
     ActorObject* slot = &lbl_8036E548.slots->objects[modelIndex];
-    void** files = actor->files;
+    PTR32(void)* files = actor->files;
     void* tex;
     void* layout;
     void* geo;
@@ -2336,6 +2360,24 @@ void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(A
 
     // TODO(port): the file header holds 32-bit offsets relocated in place; on PC
     // void* entries are 8 bytes, so these tables need PTR32 entries (Phase 3).
+#ifdef TARGET_PC
+    port_swap_offset_table(files, 5);
+    if (files[0] != 0) {
+        actor->files[0] += PTR_TO_U32(files);
+        if (actor->files[1] != 0) {
+            actor->files[1] += PTR_TO_U32(files);
+            if (actor->files[2] != 0) {
+                actor->files[2] += PTR_TO_U32(files);
+                if (actor->files[3] != 0) {
+                    actor->files[3] += PTR_TO_U32(files);
+                    if (actor->files[4] != 0) {
+                        actor->files[4] += PTR_TO_U32(files);
+                    }
+                }
+            }
+        }
+    }
+#else
     if (files[0] != NULL) {
         actor->files[0] = (u8*)files + (uintptr_t)files[0];
         if (actor->files[1] != NULL) {
@@ -2351,12 +2393,13 @@ void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(A
             }
         }
     }
-    tex = actor->files[0];
+#endif
+    tex = PTR32_GET(void, actor->files[0]);
     convertTextureHeader(tex);
     if (actor->files[1] != NULL) {
-        layout = actor->files[1];
-        geo = actor->files[2];
-        skn = actor->files[3];
+        layout = PTR32_GET(void, actor->files[1]);
+        geo = PTR32_GET(void, actor->files[2]);
+        skn = PTR32_GET(void, actor->files[3]);
         LoadActorLayout(layout);
         convertGeometryAndSknHeader(geo, skn);
         haveActLayoutPointToGeoHeader(layout, geo);
@@ -2371,8 +2414,8 @@ void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(A
     }
     fn_8002399C(slot, actor->modelIndex, (u16)modelIndex, layout, bank, skn);
     if (actor->files[4] != NULL) {
-        fn_80025DDC(actor->files[4]);
-        fn_80025C58(actor->files[4], (ShapeModel**)slot);
+        fn_80025DDC(PTR32_GET(void, actor->files[4]));
+        fn_80025C58(PTR32_GET(void, actor->files[4]), (ShapeModel**)slot);
     }
     count = slot->actor->totalBones;
     memset(actor->jointIdx, 0xFF, sizeof(actor->jointIdx));

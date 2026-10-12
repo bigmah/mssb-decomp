@@ -17,7 +17,7 @@
 
 // Character parts data: a file table plus a shape animation player.
 typedef struct CharPart {
-    /*0x00*/ void** files;
+    /*0x00*/ PTR32(void)* files; // file table: 32-bit offsets, relocated in place
     /*0x04*/ ShapeAnimPlayer player; // player.curIdx at 0x5C
     /*0x60*/ u8 slot;
     /*0x61*/ s8 _61;
@@ -58,7 +58,7 @@ typedef struct CharTrail {
 typedef struct CharActor {
     /*0x000*/ GameActor* model;
     /*0x004*/ GameActor* _004; // challenge viewer: the shown model
-    /*0x008*/ void** files; // file offsets, relocated in place
+    /*0x008*/ PTR32(void)* files; // file offsets, relocated in place
     /*0x00C*/ void** _0C;
     /*0x010*/ CharAnimBanks banks;
     /*0x02C*/ CharPart* part;
