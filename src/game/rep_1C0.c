@@ -117,7 +117,7 @@ extern s32 fn_800B7D3C(s32 index, Vec* box, Mtx m);
 extern u8 lbl_803CBBC0;
 extern StadiumDrawFn lbl_3_data_A10[];
 
-extern void (*lbl_3_bss_18[])(void); // extra stadium draw hook (fn_3_35E4)
+void (*lbl_3_bss_18[6])(void); // extra stadium draw hook (fn_3_35E4); only [0] is used
 extern f32 lbl_3_rodata_504;
 extern f32 lbl_3_rodata_524;
 extern f32 lbl_3_rodata_528;
