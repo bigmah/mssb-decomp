@@ -15,17 +15,85 @@ void LITInitPos(Light* light, f32 x, f32 y, f32 z);
 void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 #include <math.h>
 
+// .data of this file (0xF888-0xFB3C); the order matters, the functions address it from one base.
+// The two switch jump tables of fn_1_1B7DC (0xFB3C-0xFB98) are left in an auto unit while it is NONMATCHING.
+// Asset table entries (lbl_1_data_F968): load instructions passed to ARAMTransfer. A debug build
+// stored a file path in the first word instead (fn_1_1B7DC still compares it against test paths).
+typedef struct ChallengeAssetEntry {
+    union {
+        u32 compression;
+        const char* path;
+    } kind;
+    u32 sizeInfo; // top 4 bits: flags, rest: size
+    u32 diskLocation;
+    u32 compressedSize;
+} ChallengeAssetEntry;
+// Minimal draw-list links (cf. DrawNode in main/file_80069BDC.h), one per frame buffer.
+typedef struct ChallengeDrawLink {
+    u32 link; // set by fn_800A7D4C
+    void (*draw)(void);
+} ChallengeDrawLink;
+static char lbl_1_data_F888[7][0x20] = { // debug view-mode labels (unreferenced)
+    "CAMERA", "MODEL", "OFF", "ON", "MIX", "BONE_ONLY", "MODEL_ONLY",
+};
+static ChallengeAssetEntry lbl_1_data_F968[24] = {
+    {{0x0000040B}, 0x40021A48, 0x0E67B800, 0x00018844},
+    {{0x0000040B}, 0x4001C1FC, 0x0E694800, 0x00016E90},
+    {{0x0000040B}, 0x4001E21C, 0x0E6AB800, 0x000146D0},
+    {{0x0000040B}, 0x4001ED7C, 0x0E6C0000, 0x00011D04},
+    {{0x0000040B}, 0x40011A3C, 0x0E6D2000, 0x0000A890},
+    {{0x0000040B}, 0x4001F938, 0x0E6DD000, 0x000158FC},
+    {{0x0000040B}, 0x4001A89C, 0x0E6F3000, 0x0001275C},
+    {{0x0000040B}, 0x4001C1FC, 0x0E705800, 0x00016E90},
+    {{0x0000040B}, 0x400347F8, 0x0E71C800, 0x0001432C},
+    {{0x0000040B}, 0x4002511C, 0x0E731000, 0x0001304C},
+    {{0x0000040B}, 0x4001A9C4, 0x0E744800, 0x000160C0},
+    {{0x0000040B}, 0x400253B4, 0x0E75B000, 0x0001CEB0},
+    {{0x0000040B}, 0x40016040, 0x0E778000, 0x0000DCBC},
+    {{0x0000040B}, 0x4001B060, 0x0E786000, 0x0001235C},
+    {{0x0000040B}, 0x4002573C, 0x0E798800, 0x0001D2B0},
+    {{0x0000040B}, 0x40021FCC, 0x0E7B6000, 0x00016FBC},
+    {{0x0000040B}, 0x4000FEAC, 0x0E7CD000, 0x0000B05C},
+    {{0x0000040B}, 0x400B0ADC, 0x0E7D8800, 0x00052EB0},
+    {{0x0000040B}, 0x400B0A88, 0x0E82B800, 0x00052E98},
+    {{0x0000040B}, 0x400B0ABC, 0x0E87E800, 0x00052EAC},
+    {{0x0000040B}, 0x400B0D7C, 0x0E8D1800, 0x00052F34},
+    {{0x0000040B}, 0x400AA97C, 0x0E924800, 0x00050DF4},
+    {{0x0000040B}, 0x4000289C, 0x0E975800, 0x00001C28},
+    {{0x0000040B}, 0x40006588, 0x0E977800, 0x00002F60},
+};
+static ChallengeDrawLink lbl_1_data_FAE8[2] = {{0, fn_1_1ADA4}, {0, NULL}}; // grid
+static ChallengeDrawLink lbl_1_data_FAF8[2] = {{0, fn_1_1A774}, {0, NULL}}; // bones
+static GXColor lbl_1_data_FB08 = {255, 255, 255, 255}; // fog colour
+static Vec lbl_1_data_FB0C = {0.0f, 1.0f, 0.0f};
+static Vec lbl_1_data_FB18 = {0.0f, 0.0f, 0.0f};
+static ChallengeConfettiConfig lbl_1_data_FB24 = {50, 2000, 1200000, 100000, 100000, 60};
+
+// .bss of this file (0x69F0-0x6BD8): separate statics, laid out in reverse definition order;
+// functions touching three or more of them address them from one pooled base.
+static ChallengeCamera lbl_1_bss_6B7C;            // debug viewer camera
+static ChallengeTexBank* lbl_1_bss_6AAC[0x34];
+static u8 lbl_1_bss_6A94[0x18];                   // 1 = actor uses a test model
+static u8 lbl_1_bss_69FC[0x98];                   // TODO type: draw node (+0x10 Mtx), [0x40 + actor] flags
+static u8 sFill69FB;
+static u8 sFill69FA;
+static u8 sMatRed;                                // material colour for fn_1_19D60
+static u8 sMatGreen;
+static u8 sMatBlue;
+static u8 sMatAlpha;
+static u8 lbl_1_bss_69F5;                         // colour edit: 0 = normal actor rendering, else flat-colour debug rendering
+static u8 sFog;                                   // viewer menu toggles
+static u8 sConfetti;
+static u8 sSelectedActor;
+static u16 lbl_1_bss_69F0;                        // selected bone
+
 extern u8 lbl_80366158[];
 extern ChallengeRosterQueue* lbl_803CC1B8;
-extern u8 lbl_1_bss_69FC[];
-extern ChallengeConfettiConfig lbl_1_data_FB24;
 extern const f32 lbl_1_rodata_7578;
 extern const f32 lbl_1_rodata_757C;
 extern const f32 lbl_1_rodata_7520;
-extern ChallengeBoneSelection lbl_1_bss_69F0;
 extern u8 lbl_8036E548[];
 
-extern ChallengeCamera lbl_1_bss_6B7C;
 extern const f32 lbl_1_rodata_75F0;
 extern const f32 lbl_1_rodata_75F4;
 extern const f32 lbl_1_rodata_752C;
@@ -64,7 +132,6 @@ static inline void initViewerLights(MtxPtr view) {
     }
 }
 
-extern Vec lbl_1_data_FB18;
 extern const f32 lbl_1_rodata_75CC;
 extern const f32 lbl_1_rodata_75D0;
 
@@ -135,7 +202,6 @@ extern const f32 lbl_1_rodata_75B0;
 extern const f32 lbl_1_rodata_75B4;
 
 void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target);
-extern Vec lbl_1_data_FB0C;
 extern const Vec lbl_1_rodata_74F4;
 extern const f32 lbl_1_rodata_75E0;
 extern const f32 lbl_1_rodata_75E4;
@@ -225,7 +291,6 @@ extern const f64 lbl_1_rodata_7570;
 // main.dol: create a task with a linked list of `count` work blocks of `size` bytes.
 extern void* fn_80033A24(void* func, int priority, int flags, int count, int arg4, int size);
 
-extern ChallengeTexBank* lbl_1_bss_6AAC[];
 extern const GXColor lbl_1_rodata_750C;
 extern const f32 lbl_1_rodata_7590;
 extern const f32 lbl_1_rodata_7594;
@@ -237,17 +302,9 @@ extern const f32 lbl_1_rodata_75A4;
 extern const f32 lbl_1_rodata_75A8;
 extern const f32 lbl_1_rodata_75AC;
 
-extern u8 lbl_1_bss_69F5; // 0 = normal actor rendering, else flat-colour debug rendering
 extern const f32 lbl_1_rodata_772C;
 void fn_800BD8C4(ChallengeDrawCollection* table, MtxPtr camera);
 
-// Asset table entries (lbl_1_data_F968): load instructions passed to ARAMTransfer.
-typedef struct ChallengeAssetEntry {
-    const char* path;
-    u8 pad04[0xC];
-} ChallengeAssetEntry;
-extern ChallengeAssetEntry lbl_1_data_F968[];
-extern u8 lbl_1_bss_6A94[]; // 1 = actor uses a test model
 extern const char lbl_1_rodata_7610[]; // "test/obj/skin/mario/model11.dat"
 extern const char lbl_1_rodata_7630[]; // "test/obj/skin/test01/model11.dat"
 extern const char lbl_1_rodata_7654[]; // ... test02 .. test07
@@ -272,31 +329,22 @@ void fn_800BD548(ChallengeDrawNode* entry, u8 numArgs, ...);
 void fn_800B2C08(ChallengeDrawActor* actor, u16 bone);
 
 extern const GXColor lbl_1_rodata_74F0; // black
-extern GXColor lbl_1_data_FB08; // fog colour
 extern u8 lbl_80366158[];
 
 extern u8 lbl_803CBBC0; // current frame buffer (0/1)
-// Minimal draw-list links (cf. DrawNode in main/file_80069BDC.h), one per frame buffer.
-typedef struct ChallengeDrawLink {
-    u32 link; // set by fn_800A7D4C
-    void (*draw)(void);
-} ChallengeDrawLink;
-extern ChallengeDrawLink lbl_1_data_FAE8[2]; // fn_1_1ADA4 (grid)
-extern ChallengeDrawLink lbl_1_data_FAF8[2]; // fn_1_1A774 (bones)
 extern void fn_800A7D4C(s32 layer, void* node);
 
 // .text:0x0001D514 size:0x7C
 void fn_1_1D514(void) {
-    u8* b = (u8*)&lbl_1_bss_69F0; // TODO type: ChallengeBoneSelection fields (typed pointer changes scheduling)
     fn_800AD038(*(void**)(lbl_80366158 + 8));
     lbl_803CC1B8->state = 0;
     lbl_803CC1B8->update = (void (*)(u8*))fn_1_1D470;
-    b[6] = 0xFF; // matAlpha
-    b[7] = 0xFF; // matBlue
-    b[8] = 0xFF; // matGreen
-    b[9] = 0xFF; // matRed
-    b[5] = 0;
-    b[3] = 0;
+    sMatAlpha = 0xFF;
+    sMatBlue = 0xFF;
+    sMatGreen = 0xFF;
+    sMatRed = 0xFF;
+    lbl_1_bss_69F5 = 0;
+    sConfetti = 0;
 }
 
 // .text:0x0001D470 size:0xA4
@@ -414,7 +462,7 @@ void fn_1_1CBE4(u8* object) {
         break;
     case 2:
         idx = task->actorIndex;
-        path = lbl_1_data_F968[idx].path;
+        path = lbl_1_data_F968[idx].kind.path;
         if (path == lbl_1_rodata_7610 || path == lbl_1_rodata_7630 || path == lbl_1_rodata_7654 ||
             path == lbl_1_rodata_7678 || path == lbl_1_rodata_769C || path == lbl_1_rodata_76C0 ||
             path == lbl_1_rodata_76E4 || path == lbl_1_rodata_7708) {
@@ -537,8 +585,8 @@ void fn_1_1C3CC(u8* object) {
     } else {
         updateViewerCamera();
     }
-    PSMTXCopy(lbl_1_bss_69F0.matrix, (MtxPtr)(lbl_1_bss_69FC + 0x10)); // TODO type
-    lbl_1_bss_69F0.selectedActor = task->actorIndex;
+    PSMTXCopy(lbl_1_bss_6B7C.view, (MtxPtr)(lbl_1_bss_69FC + 0x10)); // TODO type
+    sSelectedActor = task->actorIndex;
     fn_800A7D4C(0, &lbl_1_data_FAE8[lbl_803CBBC0]);
     if (task->viewMode != 2) {
         fn_800A7D4C(0, &lbl_1_data_FAF8[lbl_803CBBC0]);
@@ -565,7 +613,6 @@ void fn_1_1B7DC(void) {
     GXColor rightFogOn;
     GXColor rightFogOff;
     ChallengeRosterQueue* task = lbl_803CC1B8;
-    ChallengeBoneSelection* sel = &lbl_1_bss_69F0;
 
     if (pad->down & 0x200) {
         fn_800AD038(*(void**)(lbl_80366158 + 8)); // TODO type
@@ -576,14 +623,14 @@ void fn_1_1B7DC(void) {
     } else if (pad->repeat & 8) { // up
         if (task->menu != 0) {
             task->menu--;
-        } else if (sel->colorEdit != 0) {
+        } else if (lbl_1_bss_69F5 != 0) {
             task->menu = 10;
         } else {
             task->menu = 6;
         }
     } else if (pad->repeat & 4) { // down
         task->menu++;
-        if (task->menu > 6 && task->menu < 11 && sel->colorEdit == 0) {
+        if (task->menu > 6 && task->menu < 11 && lbl_1_bss_69F5 == 0) {
             task->menu = 0;
         }
         if (task->menu == 11) {
@@ -620,7 +667,7 @@ void fn_1_1B7DC(void) {
             }
             break;
         case 4:
-            if ((sel->fog = !sel->fog)) {
+            if ((sFog = !sFog)) {
                 leftFogOn = lbl_1_data_FB08;
                 SetFog(4, (GXColor *)(s32*)&leftFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540); // TODO type
             } else {
@@ -629,7 +676,7 @@ void fn_1_1B7DC(void) {
             }
             break;
         case 5:
-            if ((sel->confetti = !sel->confetti)) {
+            if ((sConfetti = !sConfetti)) {
                 ChallengeConfettiTask* confetti = fn_80033A24(fn_1_1857C, 0, 0, lbl_1_data_FB24.count, 1, 0x80);
                 if (confetti != NULL) {
                     initConfetti(confetti);
@@ -639,26 +686,26 @@ void fn_1_1B7DC(void) {
             }
             break;
         case 6:
-            sel->colorEdit = !sel->colorEdit;
+            lbl_1_bss_69F5 = !lbl_1_bss_69F5;
             break;
         case 7:
-            if (sel->colorEdit != 0) {
-                sel->matRed--;
+            if (lbl_1_bss_69F5 != 0) {
+                sMatRed--;
             }
             break;
         case 8:
-            if (sel->colorEdit != 0) {
-                sel->matGreen--;
+            if (lbl_1_bss_69F5 != 0) {
+                sMatGreen--;
             }
             break;
         case 9:
-            if (sel->colorEdit != 0) {
-                sel->matBlue--;
+            if (lbl_1_bss_69F5 != 0) {
+                sMatBlue--;
             }
             break;
         case 10:
-            if (sel->colorEdit != 0) {
-                sel->matAlpha--;
+            if (lbl_1_bss_69F5 != 0) {
+                sMatAlpha--;
             }
             break;
         }
@@ -689,7 +736,7 @@ void fn_1_1B7DC(void) {
             }
             break;
         case 4:
-            if ((sel->fog = !sel->fog)) {
+            if ((sFog = !sFog)) {
                 rightFogOn = lbl_1_data_FB08;
                 SetFog(4, (GXColor *)(s32*)&rightFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540); // TODO type
             } else {
@@ -698,7 +745,7 @@ void fn_1_1B7DC(void) {
             }
             break;
         case 5:
-            if ((sel->confetti = !sel->confetti)) {
+            if ((sConfetti = !sConfetti)) {
                 ChallengeConfettiTask* confetti = fn_80033A24(fn_1_1857C, 0, 0, lbl_1_data_FB24.count, 1, 0x80);
                 if (confetti != NULL) {
                     initConfetti(confetti);
@@ -708,26 +755,26 @@ void fn_1_1B7DC(void) {
             }
             break;
         case 6:
-            sel->colorEdit = !sel->colorEdit;
+            lbl_1_bss_69F5 = !lbl_1_bss_69F5;
             break;
         case 7:
-            if (sel->colorEdit != 0) {
-                sel->matRed++;
+            if (lbl_1_bss_69F5 != 0) {
+                sMatRed++;
             }
             break;
         case 8:
-            if (sel->colorEdit != 0) {
-                sel->matGreen++;
+            if (lbl_1_bss_69F5 != 0) {
+                sMatGreen++;
             }
             break;
         case 9:
-            if (sel->colorEdit != 0) {
-                sel->matBlue++;
+            if (lbl_1_bss_69F5 != 0) {
+                sMatBlue++;
             }
             break;
         case 10:
-            if (sel->colorEdit != 0) {
-                sel->matAlpha++;
+            if (lbl_1_bss_69F5 != 0) {
+                sMatAlpha++;
             }
             break;
         }
@@ -958,9 +1005,9 @@ void fn_1_1A774(void) {
     u8 blue;
     u8 alpha;
 
-    if (lbl_1_bss_69F0.selectedBone < (*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[lbl_1_bss_69F0.selectedActor].drawing.actor->boneCount) {
-        for (index = 0; index < (*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[lbl_1_bss_69F0.selectedActor].drawing.actor->boneCount; index++) {
-            if (index == lbl_1_bss_69F0.selectedBone) {
+    if (lbl_1_bss_69F0 < (*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[sSelectedActor].drawing.actor->boneCount) {
+        for (index = 0; index < (*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[sSelectedActor].drawing.actor->boneCount; index++) {
+            if (index == lbl_1_bss_69F0) {
                 red = 0;
                 green = 0xFF;
                 blue = 0xFF;
@@ -971,8 +1018,8 @@ void fn_1_1A774(void) {
                 blue = 0x80;
                 alpha = 0x40;
             }
-            fn_800B2C88((struct GameActor *)(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[lbl_1_bss_69F0.selectedActor].drawing.actor, index, matrix); // TODO type
-            fn_1_1A850(matrix, lbl_1_bss_69F0.matrix, red, green, blue, alpha);
+            fn_800B2C88((struct GameActor *)(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[sSelectedActor].drawing.actor, index, matrix); // TODO type
+            fn_1_1A850(matrix, lbl_1_bss_6B7C.view, red, green, blue, alpha);
         }
     }
 }
@@ -1106,10 +1153,10 @@ void fn_1_19D60(struct DODisplayObj* dispObj, MtxPtr camera) {
     s32 shift;
     u32 type;
 
-    color.r = lbl_1_bss_69F0.matRed;
-    color.g = lbl_1_bss_69F0.matGreen;
-    color.b = lbl_1_bss_69F0.matBlue;
-    color.a = lbl_1_bss_69F0.matAlpha;
+    color.r = sMatRed;
+    color.g = sMatGreen;
+    color.b = sMatBlue;
+    color.a = sMatAlpha;
     GXSetChanMatColor(GX_COLOR0A0, color);
     GXSetNumChans(1);
     GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);

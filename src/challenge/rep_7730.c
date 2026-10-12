@@ -42,11 +42,9 @@ extern void fn_1_246AC(void);
 extern u8* lbl_803CC1B8[];
 
 
-extern void (*lbl_1_data_1066C[])(s16);
 
 extern void fn_80037B18(void* rb, Vec* force, f32 unused);
 
-extern u8 lbl_1_data_10674[];
 extern void fn_1_1DA54(void);
 
 extern const f32 lbl_1_rodata_77E4;
@@ -55,7 +53,6 @@ extern void fn_1_AF4(s32, s32, f32);
 
 
 extern u8 lbl_803C6CF8[];
-extern u8 lbl_1_data_104F4[];
 extern const f32 lbl_1_rodata_77D8;
 extern const f32 lbl_1_rodata_7804;
 extern const f32 lbl_1_rodata_7858;
@@ -68,12 +65,8 @@ extern const f32 lbl_1_rodata_77DC[];
 extern const f32 lbl_1_rodata_77E0[];
 extern const f32 lbl_1_rodata_7814[];
 extern const f32 lbl_1_rodata_7820[];
-extern void (*lbl_1_data_104A8[])(void);
 extern void* lbl_80366158[];
 extern void fn_1_267F4(void);
-extern void (*lbl_1_data_10508[])(u8*);
-extern void (*lbl_1_data_10510[])(u8*);
-extern u32 lbl_1_data_104DC[];
 extern const f32 lbl_1_rodata_7810;
 extern const f64 lbl_1_rodata_7818[];
 extern const f32 lbl_1_rodata_784C[];
@@ -85,14 +78,13 @@ extern void fn_1_2004C(void);
 extern s32 fn_80035DD4(s32);
 extern void fn_80034E20(void* group, void* desc);
 extern void fn_1_267BC(void);
-extern u8 lbl_1_data_FB98[];
-extern ChallengeSpriteDesc lbl_1_data_10344;
 extern u8 lbl_803C4BE0[];
 extern char lbl_1_rodata_78F0[];
 extern char lbl_1_rodata_78F8[];
 
 typedef struct {
-    u8 pad0[8];
+    void* link;            // draw-list link (set by fn_800A7D4C)
+    void (*draw)(u8* obj);
     u32 flags;
     void* data;
     void* table;
@@ -102,8 +94,6 @@ typedef struct {
     u8 pad19[3];
 } ChallengeAnimEntry;
 
-extern ChallengeAnimEntry lbl_1_data_107E4[];
-extern u8 lbl_1_data_107C4[];
 extern u8 lbl_803CBBC0[];
 extern void fn_800A7D4C(s32, void*);
 
@@ -120,8 +110,6 @@ extern const f32 lbl_1_rodata_77F8;
 extern const f32 lbl_1_rodata_7854;
 extern void fn_80038E2C(void*);
 
-extern u32 lbl_1_data_10384[];
-extern f32 lbl_1_data_104A4;
 
 extern const f32 lbl_1_rodata_7808[];
 extern const f32 lbl_1_rodata_78C4[];
@@ -157,7 +145,6 @@ extern void fn_800BD548(ActorObject*, s32, ...);
 
 extern const f32 lbl_1_rodata_77E4_s;
 
-extern u8 lbl_1_data_10518[];
 
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memcpy(void*, const void*, u32);
@@ -184,10 +171,180 @@ extern const f32 lbl_1_rodata_7848;
 extern const f64 lbl_1_rodata_7828;
 extern const f64 lbl_1_rodata_7830;
 extern const f64 lbl_1_rodata_7838;
-extern Vec lbl_1_data_104D0;
 
 // Inline copy of fn_1_20950 (below) for fn_1_21CE8 and fn_1_21408, which the original inlines it into.
 // fn_1_20950 keeps its own body: a wrapper around this inline allocates its stack and registers differently.
+// .data of this file (0xFB98-0x1081C), in address order: the functions address it through one pooled base.
+// The five switch jump tables after it (0x1081C-0x108E0) stay in an auto unit while their functions are NONMATCHING.
+typedef struct ChAramAsset { // AssetLoadInstructions without the bitfields (CW rejects initialisers for those)
+    u32 compression;
+    u32 sizeInfo; // top 4 bits: flags, rest: size
+    u32 diskLocation;
+    u32 compressedSize;
+} ChAramAsset;
+static ChAramAsset lbl_1_data_FB98[64] = { // per-screen files loaded by fn_80035838 (last entry empty)
+    {0x0000040B, 0x4023491C, 0x19135800, 0x00082928},
+    {0x0000040B, 0x4013764C, 0x1A635000, 0x0007DB48},
+    {0x0000040B, 0x4003E3DC, 0x1A6B3000, 0x00021420},
+    {0x0000040B, 0x4002EC10, 0x1A6D4800, 0x00013108},
+    {0x0000040B, 0x400E72C0, 0x1A6E8000, 0x00060768},
+    {0x0000040B, 0x40049404, 0x1A748800, 0x00020E34},
+    {0x0000040B, 0x40076AE0, 0x18ED7000, 0x00036BC8},
+    {0x0000040B, 0x4010FD70, 0x1A769800, 0x0005E284},
+    {0x0000040B, 0x400DB738, 0x1A7C8000, 0x00049AB4},
+    {0x0000040B, 0x400E9864, 0x1A812000, 0x00059DC0},
+    {0x0000040B, 0x400B7718, 0x1A86C000, 0x00050288},
+    {0x0000040B, 0x400D87FC, 0x1A8BC800, 0x00047BC4},
+    {0x0000040B, 0x400D643C, 0x1A904800, 0x0004E3AC},
+    {0x0000040B, 0x400D5C7C, 0x1A953000, 0x00048D9C},
+    {0x0000040B, 0x400B767C, 0x1A99C000, 0x00047518},
+    {0x0000040B, 0x400441F8, 0x1A9E3800, 0x0001AA84},
+    {0x0000040B, 0x40106568, 0x1A9FE800, 0x00068C10},
+    {0x0000040B, 0x4010E5A0, 0x0E97A800, 0x0009BCAC},
+    {0x0000040B, 0x40016980, 0x0EA16800, 0x0000D6C4},
+    {0x0000040B, 0x40016980, 0x0EA24000, 0x0000C944},
+    {0x0000040B, 0x40016980, 0x0EA31000, 0x0000E700},
+    {0x0000040B, 0x40016980, 0x0EA3F800, 0x0000D64C},
+    {0x0000040B, 0x40016980, 0x0EA4D000, 0x0000C900},
+    {0x0000040B, 0x40016980, 0x0EA5A000, 0x0000CFFC},
+    {0x0000040B, 0x40016980, 0x0EA67000, 0x0000D720},
+    {0x0000040B, 0x40016980, 0x0EA74800, 0x0000D6CC},
+    {0x0000040B, 0x40016980, 0x0EA82000, 0x0000D21C},
+    {0x0000040B, 0x40016980, 0x0EA8F800, 0x0000D0BC},
+    {0x0000040B, 0x40016980, 0x0EA9D000, 0x0000B544},
+    {0x0000040B, 0x40016980, 0x0EAA8800, 0x0000C4F8},
+    {0x0000040B, 0x400ADFFC, 0x18AEE800, 0x0004BAB0},
+    {0x0000040B, 0x4037CF5C, 0x18B3A800, 0x00208AF0},
+    {0x0000040B, 0x4000A820, 0x18ED3800, 0x00003758},
+    {0x0000040B, 0x4011EC24, 0x18F0E000, 0x000D8818},
+    {0x0000040B, 0x400193E8, 0x191B8800, 0x000089D8},
+    {0x0000040B, 0x4006C850, 0x06C96000, 0x0002C884},
+    {0x0000040B, 0x4005B178, 0x06CC3000, 0x0003555C},
+    {0x0000040B, 0x401EB174, 0x18D43800, 0x000FB220},
+    {0x0000040B, 0x4001ED60, 0x1AA67800, 0x0000CFF0},
+    {0x0000040B, 0x4000BF30, 0x1AA74800, 0x000026E0},
+    {0x0000040B, 0x40003498, 0x1AA77000, 0x00000E28},
+    {0x0000040B, 0x4000BDE0, 0x1AA78000, 0x000024F4},
+    {0x0000040B, 0x40006088, 0x1AA7A800, 0x00001290},
+    {0x0000040B, 0x400049F0, 0x1AA7C000, 0x000018F4},
+    {0x0000040B, 0x40005ECC, 0x1AA7E000, 0x00001D38},
+    {0x0000040B, 0x40002670, 0x1AA80000, 0x00000BE8},
+    {0x00000000, 0x00028240, 0x1AA81000, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AAA9800, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AAD2000, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AAFA800, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AB23000, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AB4B800, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AB74000, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AB9C800, 0x00028240},
+    {0x00000000, 0x00028240, 0x1ABC5000, 0x00028240},
+    {0x00000000, 0x00028240, 0x1ABED800, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AC16000, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AC3E800, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AC67000, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AC8F800, 0x00028240},
+    {0x00000000, 0x00028240, 0x1ACB8000, 0x00028240},
+    {0x00000000, 0x00028240, 0x1ACE0800, 0x00028240},
+    {0x00000000, 0x00028240, 0x1AD09000, 0x00028240},
+    {0x00000000, 0x00000000, 0x00000000, 0x00000000},
+};
+static char sScreenNames[47][0x14] = { // names of the lbl_1_data_FB98 files (unreferenced)
+    "game_td", "result", "operation", "game_toy", "game_slot", "score",
+    "rule_toy", "rule_mini_01", "rule_mini_02", "rule_mini_03", "rule_mini_05", "rule_mini_04",
+    "rule_mini_06", "rule_mini_07", "training", "common", "logo_all", "logo_00",
+    "logo_01", "logo_02", "logo_03", "logo_04", "logo_05", "logo_06",
+    "logo_07", "logo_08", "logo_09", "logo_10", "logo_11", "chara_sel",
+    "select", "dictionary", "score", "end", "option", "logo_all",
+    "title", "comingsoon", "bg_test", "load", "fade00", "fade01",
+    "fade02", "fade03", "fade04", "fade05", "fade06",
+};
+static ChallengeSpriteDesc lbl_1_data_10344 = {0, 0, 0.0f, 0.0f, {0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x04, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
+static u32 lbl_1_data_10384[56] = { // bone axis colours (RGBA)
+    0xFF0000FF, 0x00FF00FF, 0xFFFF00FF, 0x0000FFFF, 0xFF00FFFF, 0x00FFFFFF, 0xFFFFFFFF,
+    0xFF0000FF, 0x00FF00FF, 0xFFFF00FF, 0x0000FFFF, 0xFF00FFFF, 0x00FFFFFF, 0xFFFFFFFF,
+    0xFF0000FF, 0x00FF00FF, 0xFFFF00FF, 0x0000FFFF, 0xFF00FFFF, 0x00FFFFFF, 0xFFFFFFFF,
+    0xFF0000FF, 0x00FF00FF, 0xFFFF00FF, 0x0000FFFF, 0xFF00FFFF, 0x00FFFFFF, 0xFFFFFFFF,
+    0xFF0000FF, 0x00FF00FF, 0xFFFF00FF, 0x0000FFFF, 0xFF00FFFF, 0x00FFFFFF, 0xFFFFFFFF,
+    0xFF0000FF, 0x00FF00FF, 0xFFFF00FF, 0x0000FFFF, 0xFF00FFFF, 0x00FFFFFF, 0xFFFFFFFF,
+    0xFF0000FF, 0x00FF00FF, 0xFFFF00FF, 0x0000FFFF, 0xFF00FFFF, 0x00FFFFFF, 0xFFFFFFFF,
+    0xFF0000FF, 0x00FF00FF, 0xFFFF00FF, 0x0000FFFF, 0xFF00FFFF, 0x00FFFFFF, 0xFFFFFFFF,
+};
+static s32 sCam8CC = 100;
+static f32 sCamWidth = 200.0f;  // cfg + 0x8D0
+static f32 sCamHeight = 100.0f; // cfg + 0x8D4
+static f32 sCam8D8 = 20.0f;
+static s32 sCam8DC = 10;
+static f32 sCam8E0 = 1.0f;
+static f32 sCam8E4 = 1.0f;
+static Vec sCamUp = {0.0f, -1.0f, 0.0f};
+static Vec sCamPos = {0.0f, 0.0f, -5.0f};
+static Vec sCamTarget = {0.0f, 0.0f, 0.0f};
+static f32 lbl_1_data_104A4 = 50.0f; // bone axis length
+static void (*lbl_1_data_104A8[4])(void) = {fn_1_1F2D8, fn_1_24410, fn_1_22644, fn_1_2040C};
+static f32 s104B8 = 0.3f;
+static f32 s104BC = 0.031496063f; // cfg + 0x924
+static f32 s104C0 = 1.0f; // cfg + 0x928
+static f32 s104C4 = 0.98f; // cfg + 0x92C
+static f32 s104C8 = 0.05f;
+static s32 s104CC = 0x400;
+static Vec lbl_1_data_104D0 = {0.125f, 0.125f, 0.125f};
+static u32 lbl_1_data_104DC[6] = {0xFF8080FF, 0x80FF80FF, 0x8080FFFF, 0xFFFF80FF, 0xFF80FFFF, 0x80FFFFFF};
+static ChAramAsset lbl_1_data_104F4 = {0x0000040B, 0x40000528, 0x09438800, 0x00000424};
+static f32 s10504 = 0.125f;
+static void (*lbl_1_data_10508[2])(u8*) = {(void (*)(u8*))fn_1_1FD78, fn_1_1F418};
+static void (*lbl_1_data_10510[2])(u8*) = {(void (*)(u8*))fn_1_1F900, (void (*)(u8*))fn_1_1F618};
+static ChAramAsset lbl_1_data_10518[21] = {
+    {0x0000040B, 0x40168A6C, 0x06CFD000, 0x000C69A8},
+    {0x0000040B, 0x401331E0, 0x06DC4000, 0x000B67C4},
+    {0x0000040B, 0x4011924C, 0x06E7A800, 0x000A5764},
+    {0x0000040B, 0x400FBAE0, 0x06F20000, 0x000BE038},
+    {0x0000040B, 0x400E5AC0, 0x06FDE800, 0x000B4FB8},
+    {0x0000040B, 0x40131200, 0x07093800, 0x000A317C},
+    {0x0000040B, 0x4011B660, 0x07137000, 0x000D0294},
+    {0x0000040B, 0x4011B660, 0x07137000, 0x000D0294},
+    {0x0000040B, 0x4011B660, 0x07137000, 0x000D0294},
+    {0x0000040B, 0x40141C60, 0x07207800, 0x000CE904},
+    {0x0000040B, 0x4013CA40, 0x072D6800, 0x000CA560},
+    {0x0000040B, 0x40141C60, 0x07207800, 0x000CE904},
+    {0x0000040B, 0x4016C138, 0x073A1000, 0x000ED41C},
+    {0x0000040B, 0x401157B8, 0x0748E800, 0x000CA83C},
+    {0x0000040B, 0x4016C138, 0x073A1000, 0x000ED41C},
+    {0x0000040B, 0x400EB1C0, 0x07559800, 0x000A3510},
+    {0x0000040B, 0x400EB1C0, 0x07559800, 0x000A3510},
+    {0x0000040B, 0x400EB1C0, 0x07559800, 0x000A3510},
+    {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
+    {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
+    {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
+};
+static s16 (*lbl_1_data_10668[1])(s16, u16, u16, u16) = {fn_1_1DE60};
+static void (*lbl_1_data_1066C[1])(s16) = {(void (*)(s16))fn_1_1DE5C};
+static s32 lbl_1_data_10670[1] = {4};
+static ChAramAsset lbl_1_data_10674[21] = {
+    {0x0000040B, 0x40168A6C, 0x06CFD000, 0x000C69A8},
+    {0x0000040B, 0x401331E0, 0x06DC4000, 0x000B67C4},
+    {0x0000040B, 0x4011924C, 0x06E7A800, 0x000A5764},
+    {0x0000040B, 0x400FBAE0, 0x06F20000, 0x000BE038},
+    {0x0000040B, 0x400E5AC0, 0x06FDE800, 0x000B4FB8},
+    {0x0000040B, 0x40131200, 0x07093800, 0x000A317C},
+    {0x0000040B, 0x4011B660, 0x07137000, 0x000D0294},
+    {0x0000040B, 0x4011B660, 0x07137000, 0x000D0294},
+    {0x0000040B, 0x4011B660, 0x07137000, 0x000D0294},
+    {0x0000040B, 0x40141C60, 0x07207800, 0x000CE904},
+    {0x0000040B, 0x4013CA40, 0x072D6800, 0x000CA560},
+    {0x0000040B, 0x40141C60, 0x07207800, 0x000CE904},
+    {0x0000040B, 0x4016C138, 0x073A1000, 0x000ED41C},
+    {0x0000040B, 0x401157B8, 0x0748E800, 0x000CA83C},
+    {0x0000040B, 0x4016C138, 0x073A1000, 0x000ED41C},
+    {0x0000040B, 0x400EB1C0, 0x07559800, 0x000A3510},
+    {0x0000040B, 0x400EB1C0, 0x07559800, 0x000A3510},
+    {0x0000040B, 0x400EB1C0, 0x07559800, 0x000A3510},
+    {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
+    {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
+    {0x0000040B, 0x400D04E0, 0x075FD000, 0x00087390},
+};
+static u8 lbl_1_data_107C4[32] = {0, 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7, 8, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5, 6, 7, 8, 9, 10};
+static ChallengeAnimEntry lbl_1_data_107E4[2] = {{NULL, fn_1_1D694}, {NULL, fn_1_1D694}};
+
 static inline void updateRopeObjects(ChallengeCurvePoint* points, s32 count, MtxPtr camera) {
     ActorObject* obj;
     s32 i;
@@ -299,8 +456,6 @@ static inline void fn_1_1E290_adjust(f32* value, u16 held, s32 decrease) {
     *value = v;
 }
 
-extern s16 (*lbl_1_data_10668[])(s16, u16, u16, u16);
-extern s32 lbl_1_data_10670[];
 
 #if NONMATCHING
 static inline f32 fn_1_1E90C_adjust(f32 value, u16 held, s32 decrease, f32 min, f32 max) {
@@ -457,7 +612,7 @@ void fn_1_267F4(void) {
     u8* queue = lbl_803CC1B8[0];
     switch (queue[0x1E]) {
     case 0:
-        if (fn_80035838(lbl_1_data_FB98 + queue[0x20] * 0x10, 0) != 0) {
+        if (fn_80035838(&lbl_1_data_FB98[queue[0x20]], 0) != 0) {
             queue[0x1E] = queue[0x1E] + 1;
         }
         break;
@@ -672,25 +827,23 @@ void fn_1_25F98(void) {
 #if NONMATCHING
 void fn_1_25C68(void) {
     u8* q = lbl_803CC1B8[0];
-    u8* cfg = lbl_1_data_FB98;
     GXColor clear;
 
     *(u32*)&clear = 0;
     GXSetCopyClear(clear, 0xFFFFFF);
     C_MTXFrustum(lbl_1_bss_47010, lbl_1_rodata_78D4, lbl_1_rodata_78D8, lbl_1_rodata_78DC, lbl_1_rodata_78E0,
         (&lbl_1_rodata_77E4)[0], lbl_1_rodata_7868);
-    // TODO type: lbl_1_data_FB98 is the base of this file's static .data pool
-    C_MTXLookAt(lbl_1_bss_43F38, (Vec*)(cfg + 0x8F4), (Vec*)(cfg + 0x8E8),
-        (Vec*)(cfg + 0x900));
-    *(u16*)(q + 0x18) = lbl_1_rodata_78A4 * *(f32*)(cfg + 0x8D0);
-    *(u16*)(q + 0x1C) = lbl_1_rodata_78A4 * *(f32*)(cfg + 0x8D4);
-    *(u16*)(q + 0x1A) = *(f32*)(cfg + 0x8D8);
+    C_MTXLookAt(lbl_1_bss_43F38, &sCamPos, &sCamUp,
+        &sCamTarget);
+    *(u16*)(q + 0x18) = lbl_1_rodata_78A4 * sCamWidth;
+    *(u16*)(q + 0x1C) = lbl_1_rodata_78A4 * sCamHeight;
+    *(u16*)(q + 0x1A) = sCam8D8;
     *(u16*)(q + 0x1E) = 0x20;
-    q[0x2A] = *(s32*)(cfg + 0x8DC);
+    q[0x2A] = sCam8DC;
     *(u16*)(q + 0x22) = 10;
     q[0x2B] = 20;
-    *(u16*)(q + 0x20) = lbl_1_rodata_78A4 * *(f32*)(cfg + 0x8E4);
-    *(u16*)(q + 0x24) = lbl_1_rodata_78A4 * *(f32*)(cfg + 0x8E0);
+    *(u16*)(q + 0x20) = lbl_1_rodata_78A4 * sCam8E4;
+    *(u16*)(q + 0x24) = lbl_1_rodata_78A4 * sCam8E0;
     *(f32*)(q + 0x14) = lbl_1_rodata_7814[0];
     *(u16*)(q + 0x26) = 100;
     *(u16*)(q + 0x28) = 10;
@@ -1561,7 +1714,7 @@ s32 fn_1_23098(Mtx44 proj, Mtx camera, s32 lines, s32 cols, f32 nearZ, f32 farZ)
 // .text:0x22F4C size:0x14C
 #if NONMATCHING
 void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev) {
-    f64 c = (lbl_1_rodata_7878 * *(f32*)(lbl_1_data_FB98 + 0x928)) / *(f32*)(lbl_1_data_FB98 + 0x924);
+    f64 c = (lbl_1_rodata_7878 * s104C0) / s104BC;
     f32 k;
     f32 m;
     s32 y;
@@ -1578,7 +1731,7 @@ void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev) {
                 + k * (cur[(x + 1) % w + row] + (cur[(x + (w - 1)) % w + row]
                 + (cur[x + w * ((y + (h - 1)) % h)] + cur[x + w * ((y + 1) % h)])))
                 - prev[i];
-            out[i] *= *(f32*)(lbl_1_data_FB98 + 0x92C);
+            out[i] *= s104C4;
             
         }
     }
@@ -1940,7 +2093,7 @@ void fn_1_20F8C(void) {
     switch (phase) {
     case 0:
         if ((s32)lbl_803C6CF8[0x715] == 1) {
-            transfer->data = (void*)ARAMTransfer(lbl_1_data_104F4, 0, 0, 0);
+            transfer->data = (void*)ARAMTransfer(&lbl_1_data_104F4, 0, 0, 0);
             (*(s16*)(lbl_803CC1B8[0] + 0x10))++;
         }
         break;

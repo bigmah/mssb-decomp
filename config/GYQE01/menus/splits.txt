@@ -70,20 +70,21 @@ menus/rep_0568.c:
 	.bss        start:0x000101AC end:0x0001033C align:4 common
 
 menus/rep_05F0.c:
+	.text       start:0x000194BC end:0x00019F2C
 	.rodata     start:0x000005F0 end:0x00000640
+	.data       start:0x00002798 end:0x00002B78
+	.bss        start:0x0001033C end:0x0001034C align:4 common
 
 menus/rep_0640.c:
+	.text       start:0x00019F2C end:0x0001A4C8
 	.rodata     start:0x00000640 end:0x00000690
+	.data       start:0x00002B78 end:0x00002E40
 
 menus/rep_0690.c:
 	.rodata     start:0x00000690 end:0x000006E0
 
 menus/rep_06E0.c:
 	.rodata     start:0x000006E0 end:0x00000730
-
-auto_00_000194BC_text:
-	.text       start:0x000194BC end:0x0001A4C8
-	.bss        start:0x0001033C end:0x0001034C align:4 common
 
 menus/rep_0730.c:
 	.text       start:0x0001A4C8 end:0x0001B1BC
@@ -188,24 +189,22 @@ auto_00_0008782C_text:
 	.bss        start:0x0034009C end:0x00340140 align:4 common
 
 menus/rep_0F60.c:
-	.text       start:0x0008ACE0 end:0x0008E6A4
+	.text       start:0x0008ACE0 end:0x0008ED4C
 	.rodata     start:0x00000F60 end:0x00000FD8
 	.data       start:0x0002F990 end:0x0002FEE0
 	.bss        start:0x0000B2B8 end:0x0000B2C0
 	.bss        start:0x00340140 end:0x00340234 align:4 common
 
-auto_00_0008E6A4_text:
-	.text       start:0x0008E6A4 end:0x0008ED4C
-
 menus/rep_0FD8.c:
 	.text       start:0x0008ED4C end:0x0008F0F4
 	.rodata     start:0x00000FD8 end:0x00001028
+	.data       start:0x0002FFF8 end:0x000307EC
 	.bss        start:0x0000B2C0 end:0x0000B2C4
 
 menus/rep_1028.c:
 	.text       start:0x0008F0F4 end:0x000927C8
 	.rodata     start:0x00001028 end:0x000010C0
-	.data       start:0x0002FFF8 end:0x000312A4
+	.data       start:0x000307F0 end:0x00030918
 	.bss        start:0x0000B2C8 end:0x0000B644
 	.bss        start:0x00340234 end:0x00340DDC align:4 common
 
@@ -216,3 +215,4 @@ menus/rep_10C0.c:
 menus/rep_11C0.c:
 	.text       start:0x00094854 end:0x00096D94
 	.rodata     start:0x000011C0 end:0x00001210
+	.data       start:0x00030918 end:0x000312A4

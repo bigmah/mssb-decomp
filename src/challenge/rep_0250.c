@@ -105,9 +105,6 @@ extern u8 lbl_1_common_bss_47698[]; // TODO type
 // .text:0x00009AB0 size:0x3F0
 // Score-screen task: loads the messages and 12 pages, then runs the page handlers and
 // (in mode 1) counts the displayed score down.
-// NONMATCHING 99%: only the task pointer gets r28 instead of r29 (the original gives it the
-// register of the inlined fn_1_90E4 score); declaration orders and temporaries did not help.
-#if NONMATCHING
 void fn_1_9AB0(void) {
     u8* task;
     s32 i;
@@ -135,7 +132,7 @@ void fn_1_9AB0(void) {
         break;
     case 1:
         if (sScoreLoadIdx > 11) {
-            *(s16*)(task + 0x10) = 2;
+            *(s16*)(*(u8**)lbl_803CC1B8 + 0x10) = 2;
             break;
         }
         if (fn_80035838(&lbl_1_data_F0C[sScoreLoadIdx], (u8)sScoreLoadIdx) != 0) {
@@ -203,7 +200,6 @@ void fn_1_9AB0(void) {
         break;
     }
 }
-#endif
 
 // .text:0x97E4 size:0x2CC
 void fn_1_97E4(void) {

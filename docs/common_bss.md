@@ -106,3 +106,28 @@ sizes in `UnknownHomes_Game.h`; `inMemCamera` was 4 bytes short and is now 0x28B
 most one common, and the split gives every global its own unit, `src/game/common/<name>.c`, with `order:N` in
 `splits.txt` to keep them in address order (dtk otherwise places bss-only units at the front in reverse order).
 The module compiles with `-common on`, so the linked units' own uninitialised globals are `static`.
+
+## In this project (challenge.rel)
+
+challenge.rel's `.bss` ends with a common region `0x472B4`-`0x4C720` (after rep_7BF0's `.bss`). It links byte-for-byte
+with four blocks (`config/GYQE01/challenge/splits.txt`, `.bss ... common` lines), using the same inflation rule:
+
+| block | owner (split) | commons, in order (real size) | first symbol's slot |
+|---|---|---|---|
+| `0x472B4`-`0x477F4` | rep_00B0.c | `472B4` viewer work (0x240), `47674` sound test (0x24), `47698` (0x15C) | 0x240 + 0x24 + 0x15C = 0x3C0 |
+| `0x477F4`-`0x49A78` | rep_0138.c | `477F4` (0x2074, unreferenced), `49970` (0x10), `49980` (0x14), `49994` (0xE4) | 0x2074 + 0x108 = 0x217C |
+| `0x49A78`-`0x4BC30` | rep_0610.c | `49A78` (0x21B8) | no inflation |
+| `0x4BC30`-`0x4C720` | rep_74A0.c | `4BC30` animations (0xAA0 = 85 x 0x20), `4C6F8` resources (0x28) | 0xAA0 + 0x28 = 0xAC8 |
+
+- The block sizes are pinned by the gaps: `472B4` is a 0x240 struct everywhere it is used, so its 0x3C0 gap means
+  0x180 of other commons in the same object; `4BC30` is an array of 0x20-byte records, so its 0xAC8 gap is 0xAA0 plus
+  the 0x28 of `4C6F8`; the 3D-sound-test params `49970/49980/49994` sit unpadded right after the unlabeled
+  `477F4` area, which is exactly that object's inflated first slot.
+- The owners are a choice, not evidence: any objects in link order with one block each give the same bytes. They are
+  units that are not linked yet (their `.o` comes from dtk), so no C file has to define a common today. When one of
+  these units is linked, its C must define those commons (tentative definitions, compiled `-common on`) in the same
+  symbol-table order, or the blocks must move to other units. `49A78` (0x21B8, used as a 0x50-byte struct by
+  auto_00_00009EA0 and a byte array by rep_02A8) is most likely also an inflated first symbol with already-defined
+  commons in its object; one 0x21B8 common reproduces it.
+- challenge compiles with `-common on` (`Rel()` in `configure.py`); the linked units' uninitialised globals
+  (rep_7920 `lbl_1_bss_47050/47052`, rep_7BA0 `lbl_1_bss_47058`) became `static`, otherwise they turn into commons.

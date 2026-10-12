@@ -16,7 +16,8 @@
 #include "menus/auto_00_00016870_text.h"
 #include "menus/auto_00_00000D08_text.h"
 #include "menus/auto_00_00001254_text.h"
-#include "menus/auto_00_000194BC_text.h"
+#include "menus/rep_05F0.h"
+#include "menus/rep_0640.h"
 #include "Dolphin/os.h"
 #include <string.h>
 #include "menus/auto_00_00013BA4_text.h"
