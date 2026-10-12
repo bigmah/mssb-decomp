@@ -713,7 +713,7 @@ config.libs = [
             Object(Matching, "main/file_800B79D0.c"),
             Object(Matching, "main/file_800B993C.c"),
             Object(NonMatching, "main/file_800B9974.c"),
-            Object(NonMatching, "main/file_800BD3EC.c"),
+            Object(Matching, "main/file_800BD3EC.c"),
             Object(Matching, "main/file_800BD8C4.c"),
             Object(NonMatching, "main/file_800BDEA0.c"),
             Object(NonMatching, "main/file_800DFDD4.c", mw_version="GC/1.2.5", cflags=cflags_base),  # HVQM4 library
