@@ -40,7 +40,6 @@ typedef struct ChallengeFog {
     f32 end;
 } ChallengeFog;
 
-extern ChallengeFog* lbl_1_bss_4E0[];
 
 // Per-stage viewer settings; lbl_1_bss_4E0 points at fog[variant] of the current stage.
 typedef struct ChalStageParams {
@@ -90,10 +89,8 @@ static ChalStageParams lbl_1_data_2A8[15] = {
     {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0070010A}, {80.0f, 1.0f, 1.0f, 0x004001C0}, {80.0f, 1.0f, 1.0f, 0x004001C0}}, 0x37F403C5, 0x00000000, 0x08800000},
     {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0070010A}, {80.0f, 1.0f, 1.0f, 0x004001C0}, {80.0f, 1.0f, 1.0f, 0x004001C0}}, 0x37F403C5, 0x00000000, 0x08800000},
 };
-static struct {
-    void* lights[3];
-    s32 normalMapSize;
-} lbl_1_data_848 = {{NULL, NULL, NULL}, 64};
+static void* lbl_1_data_848[3] = {NULL, NULL, NULL}; // LIT lights
+static s32 sNormalMapSize = 64;
 static ChallengeColor lbl_1_data_858[1] = {{{0xFF, 0x80, 0x80, 0x00}}};
 static u8 lbl_1_data_85C = 1; // fog on
 // Pad handler of each debug-menu item, run by fn_1_6E14 while the item is active.
@@ -158,9 +155,7 @@ extern const f32 lbl_1_rodata_23C;
 extern const f32 lbl_1_rodata_240;
 extern const f32 lbl_1_rodata_244;
 
-extern s32 lbl_1_bss_C4;
 
-extern u8 lbl_1_bss_C2[];
 
 extern ChallengeWork lbl_1_common_bss_472B4;
 extern ChalTask* lbl_803CC1B8;
@@ -181,27 +176,33 @@ extern const f32 lbl_1_rodata_1DC;
 extern const f32 lbl_1_rodata_1E0;
 extern const f64 lbl_1_rodata_1E8;
 
-typedef struct ChalTexState {
-    u8 indWarp; // lbl_1_bss_C0: use the normal map as an indirect warp (fn_1_5544)
-    u8 pad1[0x10];
-    u8 replace;
-    u8 pad12[2];
-    GXIndTexScale tScale;
-    GXIndTexScale sScale;
-    u8 flags;
-    u8 pad1d[0x420-0x1d];
-    ChallengeFog* fog;  // lbl_1_bss_4E0
-    GXTexObj obj;       // lbl_1_bss_4E4
-    u8 pad444[0x460-0x444];
-    u16 image[(0x2FA8 - 0x520) / 2]; // normal map (IA8, with mipmaps)
-} ChalTexState;
-static ChalTexState lbl_1_bss_C0;
+// .bss of this file (0xC0-0x2FA8): separate statics, laid out in reverse definition order.
+// Functions touching three or more of them address them from one pooled base.
+static u16 sNormalMap[(0x2FA8 - 0x520) / 2]; // 0x520: normal map (IA8, with mipmaps)
+static u8 sFill504[0x1C];
+static GXTexObj lbl_1_bss_4E4;               // normal-map texture object
+static ChallengeFog* lbl_1_bss_4E0;          // fog[variant] of the current stage
+static u8 lbl_1_bss_2E0[0x200];              // per-bone hide flags
+static u8 sFillE0[0x200];
+static u8 sFillDF;
+static u8 sFillDE;
+static u8 sFillDD;
+static u8 sIndFlags;                         // 0xDC: fn_1_5544 plain texture (bit 1: map - 1, bit 2: coord - 1)
+static GXIndTexScale sIndSScale;             // 0xD8
+static GXIndTexScale sIndTScale;             // 0xD4
+static u8 sFillD3;
+static u8 sFillD2;
+static u8 sIndReplace;                       // 0xD1
+static u8 sFillC8[9];
+static s32 lbl_1_bss_C4;                     // fn_1_78E4: GX_CULL_NONE when set
+static u8 lbl_1_bss_C2;
+static u8 lbl_1_bss_C1;                      // draw vertex normals (fn_1_4E98)
+static u8 lbl_1_bss_C0;                      // use the normal map as an indirect warp (fn_1_5544)
 
 extern f32 lbl_1_data_200[];
 extern const f32 lbl_1_rodata_210;
 extern const f32 lbl_1_rodata_218;
 
-extern GXTexObj lbl_1_bss_4E4;
 extern const f32 lbl_1_rodata_1AC;
 extern const f32 lbl_1_rodata_1B0;
 extern const f32 lbl_1_rodata_1B4;
@@ -220,8 +221,6 @@ extern const f32 lbl_1_rodata_1C4;
 #define DL_LOAD_INDX_D 0x38
 #define DL_LOAD_BP_REG 0x61
 
-extern u8 lbl_1_bss_C1;        // draw vertex normals (fn_1_4E98)
-extern u8 lbl_1_bss_2E0[0x200]; // per-bone hide flags
 
 // A layout file: the header followed by header.totalBones bones.
 typedef struct ChalLayoutFile {
@@ -321,40 +320,40 @@ void fn_1_7FF8(void) {
     case PAD_BUTTON_LEFT:
         switch (lbl_1_common_bss_472B4.fogItem) {
         case 0:
-            u = lbl_1_bss_4E0[0]->color.color.a - 1;
-            lbl_1_bss_4E0[0]->color.color.a = u;
+            u = lbl_1_bss_4E0->color.color.a - 1;
+            lbl_1_bss_4E0->color.color.a = u;
             switch ((u8)u) {
             case 0xFF:
-                lbl_1_bss_4E0[0]->color.color.a = 7;
+                lbl_1_bss_4E0->color.color.a = 7;
                 return;
             case 3:
-                lbl_1_bss_4E0[0]->color.color.a = 2;
+                lbl_1_bss_4E0->color.color.a = 2;
                 return;
             case 1:
-                lbl_1_bss_4E0[0]->color.color.a = 0;
+                lbl_1_bss_4E0->color.color.a = 0;
                 return;
             }
             break;
         case 1:
-            lbl_1_bss_4E0[0]->color.color.r = lbl_1_bss_4E0[0]->color.color.r - 1;
+            lbl_1_bss_4E0->color.color.r = lbl_1_bss_4E0->color.color.r - 1;
             return;
         case 2:
-            lbl_1_bss_4E0[0]->color.color.g = lbl_1_bss_4E0[0]->color.color.g - 1;
+            lbl_1_bss_4E0->color.color.g = lbl_1_bss_4E0->color.color.g - 1;
             return;
         case 3:
-            lbl_1_bss_4E0[0]->color.color.b = lbl_1_bss_4E0[0]->color.color.b - 1;
+            lbl_1_bss_4E0->color.color.b = lbl_1_bss_4E0->color.color.b - 1;
             return;
         case 4:
-            lbl_1_bss_4E0[0]->start = f = lbl_1_bss_4E0[0]->start - 1.0f;
+            lbl_1_bss_4E0->start = f = lbl_1_bss_4E0->start - 1.0f;
             if (f < 0.0f) {
-                lbl_1_bss_4E0[0]->start = 0.0f;
+                lbl_1_bss_4E0->start = 0.0f;
                 return;
             }
             break;
         case 5:
-            lbl_1_bss_4E0[0]->end = f = lbl_1_bss_4E0[0]->end - 1.0f;
+            lbl_1_bss_4E0->end = f = lbl_1_bss_4E0->end - 1.0f;
             if (f < 0.0f) {
-                lbl_1_bss_4E0[0]->end = 0.0f;
+                lbl_1_bss_4E0->end = 0.0f;
                 return;
             }
             break;
@@ -363,40 +362,40 @@ void fn_1_7FF8(void) {
     case PAD_BUTTON_RIGHT:
         switch (lbl_1_common_bss_472B4.fogItem) {
         case 0:
-            u = lbl_1_bss_4E0[0]->color.color.a + 1;
-            lbl_1_bss_4E0[0]->color.color.a = u;
+            u = lbl_1_bss_4E0->color.color.a + 1;
+            lbl_1_bss_4E0->color.color.a = u;
             switch ((u8)u) {
             case 1:
-                lbl_1_bss_4E0[0]->color.color.a = 2;
+                lbl_1_bss_4E0->color.color.a = 2;
                 return;
             case 3:
-                lbl_1_bss_4E0[0]->color.color.a = 4;
+                lbl_1_bss_4E0->color.color.a = 4;
                 return;
             case 8:
-                lbl_1_bss_4E0[0]->color.color.a = 0;
+                lbl_1_bss_4E0->color.color.a = 0;
                 return;
             }
             break;
         case 1:
-            lbl_1_bss_4E0[0]->color.color.r = lbl_1_bss_4E0[0]->color.color.r + 1;
+            lbl_1_bss_4E0->color.color.r = lbl_1_bss_4E0->color.color.r + 1;
             return;
         case 2:
-            lbl_1_bss_4E0[0]->color.color.g = lbl_1_bss_4E0[0]->color.color.g + 1;
+            lbl_1_bss_4E0->color.color.g = lbl_1_bss_4E0->color.color.g + 1;
             return;
         case 3:
-            lbl_1_bss_4E0[0]->color.color.b = lbl_1_bss_4E0[0]->color.color.b + 1;
+            lbl_1_bss_4E0->color.color.b = lbl_1_bss_4E0->color.color.b + 1;
             return;
         case 4:
-            lbl_1_bss_4E0[0]->start = f = lbl_1_bss_4E0[0]->start + 1.0f;
+            lbl_1_bss_4E0->start = f = lbl_1_bss_4E0->start + 1.0f;
             if (f > lbl_1_rodata_208) {
-                lbl_1_bss_4E0[0]->start = lbl_1_rodata_208;
+                lbl_1_bss_4E0->start = lbl_1_rodata_208;
                 return;
             }
             break;
         case 5:
-            lbl_1_bss_4E0[0]->end = f = lbl_1_bss_4E0[0]->end + 1.0f;
+            lbl_1_bss_4E0->end = f = lbl_1_bss_4E0->end + 1.0f;
             if (f > lbl_1_rodata_208) {
-                lbl_1_bss_4E0[0]->end = lbl_1_rodata_208;
+                lbl_1_bss_4E0->end = lbl_1_rodata_208;
                 return;
             }
             break;
@@ -411,16 +410,16 @@ void fn_1_7EF8(void) {
     switch ((s32)*(u16*)((u8*)&lbl_803C77B8 + 4)) {
     case 4:
     case 8:
-        lbl_1_bss_C2[0] = !lbl_1_bss_C2[0];
+        lbl_1_bss_C2 = !lbl_1_bss_C2;
         break;
     case 1: {
-        s32 value = (s32)fn_80048EA8(lbl_1_bss_C2[0]);
-        fn_80048E00(lbl_1_bss_C2[0], value - 1);
+        s32 value = (s32)fn_80048EA8(lbl_1_bss_C2);
+        fn_80048E00(lbl_1_bss_C2, value - 1);
         break;
     }
     case 2: {
-        s32 value = (s32)fn_80048EA8(lbl_1_bss_C2[0]);
-        fn_80048E00(lbl_1_bss_C2[0], value + 1);
+        s32 value = (s32)fn_80048EA8(lbl_1_bss_C2);
+        fn_80048E00(lbl_1_bss_C2, value + 1);
         break;
     }
     case 0x100: {
@@ -493,7 +492,7 @@ void fn_1_7960(void) {
     fn_1_7E04(lbl_1_common_bss_472B4.zoom);
     fn_1_54E0(lbl_1_common_bss_472B4.view);
     fn_80011640(lbl_1_common_bss_472B4.view, lbl_1_common_bss_472B4.view);
-    if (lbl_1_bss_C0.indWarp != 0) {
+    if (lbl_1_bss_C0 != 0) {
         fn_800B9950(3, (0xFFFF - lbl_1_common_bss_472B4.yaw) / 32768.0f,
                     (s16)lbl_1_common_bss_472B4.pitch / 32768.0f);
     } else {
@@ -523,7 +522,7 @@ void fn_1_786C(void) {
     fn_80048D4C();
     clear = lbl_1_data_858[0].color;
     GXSetCopyClear(clear, 0xFFFFFF);
-    fog = lbl_1_bss_4E0[0];
+    fog = lbl_1_bss_4E0;
     color = fog->color.color;
 #if NONMATCHING
     SetFog((GXFogType)fog->color.color.a, &color, fog->start, fog->end, lbl_1_rodata_1D8, lbl_1_rodata_208);
@@ -543,7 +542,7 @@ void fn_1_7848(void) {
 // .text:0x000077EC size:0x5C
 void fn_1_77EC(ChallengeModel* model) {
     GXSetCullMode(lbl_1_data_8C4[0]);
-    fn_1_73B8(model, 3, lbl_1_data_848.lights[0], lbl_1_data_848.lights[1], lbl_1_data_848.lights[2]);
+    fn_1_73B8(model, 3, lbl_1_data_848[0], lbl_1_data_848[1], lbl_1_data_848[2]);
 }
 
 // .text:0x000073B8 size:0x434
@@ -798,7 +797,7 @@ void fn_1_6E14(void) {
                 lbl_1_common_bss_472B4.menuOpen = 0;
                 break;
             case 6:
-                lbl_1_bss_C0.indWarp ^= 1;
+                lbl_1_bss_C0 ^= 1;
                 break;
             case 7:
                 lbl_1_bss_C1 ^= 1;
@@ -810,7 +809,7 @@ void fn_1_6E14(void) {
     if (lbl_1_common_bss_472B4.menuActive) {
         sDebugItemFuncs[lbl_1_common_bss_472B4.menuItem]();
     }
-    if (lbl_1_bss_C0.indWarp != 0) {
+    if (lbl_1_bss_C0 != 0) {
         fn_800B996C((DOTevPass)fn_1_5544); // GX enums vs s32: same ABI
     } else {
         fn_800B996C(0);
@@ -836,31 +835,31 @@ void fn_1_6848(void) {
     switch (task->state) {
     case 0:
         fn_800B9AA8(NULL);
-        size = lbl_1_data_848.normalMapSize;
-        fn_1_6578(&lbl_1_bss_C0.obj, lbl_1_bss_C0.image, size, size);
+        size = sNormalMapSize;
+        fn_1_6578(&lbl_1_bss_4E4, sNormalMap, size, size);
         fn_800B996C((DOTevPass)fn_1_5544); // GX enums vs s32: same ABI
-        LITAlloc(&lbl_1_data_848.lights[0]);
-        LITAlloc(&lbl_1_data_848.lights[1]);
-        LITAlloc(&lbl_1_data_848.lights[2]);
+        LITAlloc(&lbl_1_data_848[0]);
+        LITAlloc(&lbl_1_data_848[1]);
+        LITAlloc(&lbl_1_data_848[2]);
         colors = lbl_1_rodata_194;
-        LITInitAttn(lbl_1_data_848.lights[0], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
+        LITInitAttn(lbl_1_data_848[0], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
                     lbl_1_rodata_1A8, lbl_1_rodata_1A8);
-        LITInitPos(lbl_1_data_848.lights[0], lbl_1_rodata_1FC, lbl_1_rodata_200, lbl_1_rodata_1A8);
-        LITInitDir(lbl_1_data_848.lights[0], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        LITInitPos(lbl_1_data_848[0], lbl_1_rodata_1FC, lbl_1_rodata_200, lbl_1_rodata_1A8);
+        LITInitDir(lbl_1_data_848[0], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
         color = colors.c[0];
-        LITInitColor(lbl_1_data_848.lights[0], &color);
-        LITInitAttn(lbl_1_data_848.lights[1], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
+        LITInitColor(lbl_1_data_848[0], &color);
+        LITInitAttn(lbl_1_data_848[1], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
                     lbl_1_rodata_1A8, lbl_1_rodata_1A8);
-        LITInitPos(lbl_1_data_848.lights[1], lbl_1_rodata_1A8, lbl_1_rodata_200, lbl_1_rodata_1FC);
-        LITInitDir(lbl_1_data_848.lights[1], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        LITInitPos(lbl_1_data_848[1], lbl_1_rodata_1A8, lbl_1_rodata_200, lbl_1_rodata_1FC);
+        LITInitDir(lbl_1_data_848[1], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
         color = colors.c[1];
-        LITInitColor(lbl_1_data_848.lights[1], &color);
-        LITInitAttn(lbl_1_data_848.lights[2], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
+        LITInitColor(lbl_1_data_848[1], &color);
+        LITInitAttn(lbl_1_data_848[2], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
                     lbl_1_rodata_1A8, lbl_1_rodata_1A8);
-        LITInitPos(lbl_1_data_848.lights[2], lbl_1_rodata_1FC, lbl_1_rodata_200, lbl_1_rodata_1FC);
-        LITInitDir(lbl_1_data_848.lights[2], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        LITInitPos(lbl_1_data_848[2], lbl_1_rodata_1FC, lbl_1_rodata_200, lbl_1_rodata_1FC);
+        LITInitDir(lbl_1_data_848[2], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
         color = colors.c[2];
-        LITInitColor(lbl_1_data_848.lights[2], &color);
+        LITInitColor(lbl_1_data_848[2], &color);
         task->state = 1;
         // fallthrough
     case 1:
@@ -893,7 +892,7 @@ void fn_1_6848(void) {
         task->modelIdx = lbl_1_common_bss_472B4.variantSel + lbl_1_common_bss_472B4.stageSel * 3;
         task->model = (ChallengeModelOffsets*)ARAMTransfer(&lbl_1_data_8D0[task->modelIdx], 0, 0, 0);
         task->state = 3;
-        lbl_1_bss_C0.fog = &lbl_1_data_2A8[lbl_1_common_bss_472B4.stageSel].fog[lbl_1_common_bss_472B4.variantSel];
+        lbl_1_bss_4E0 = &lbl_1_data_2A8[lbl_1_common_bss_472B4.stageSel].fog[lbl_1_common_bss_472B4.variantSel];
         break;
     case 3:
         if (lbl_803C6CF8.idle == 1) {
@@ -1288,10 +1287,9 @@ void fn_1_5698(void) {
 }
 
 void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, GXTexCoordID coord, GXTexMapID map) {
-    ChalTexState* st = (ChalTexState*)((u8*)&lbl_1_bss_C0 + 0);
     u8 flags;
-    GXLoadTexObj(&st->obj, map);
-    flags = st->flags;
+    GXLoadTexObj(&lbl_1_bss_4E4, map);
+    flags = sIndFlags;
     if (flags != 0) {
         if (flags & 2) {
             map--;
@@ -1309,8 +1307,8 @@ void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, 
     GXSetNumIndStages(1);
     GXSetIndTexMtx(mtx, sIndMtx, (s8)sIndScaleExp);
     GXSetIndTexOrder(indStage, coord, map);
-    GXSetIndTexCoordScale(indStage, st->sScale, st->tScale);
-    GXSetTevIndWarp(stage, indStage, sIndSignedOffsets, st->replace, mtx);
+    GXSetIndTexCoordScale(indStage, sIndSScale, sIndTScale);
+    GXSetTevIndWarp(stage, indStage, sIndSignedOffsets, sIndReplace, mtx);
 }
 
 // .text:0x5540 size:0x4
@@ -1321,7 +1319,7 @@ void fn_1_5540(void) {
 void fn_1_54E0(MtxPtr view) {
     s32 i;
     for (i = 0; i < 3; i++) {
-        LITXForm(lbl_1_data_848.lights[i], view);
+        LITXForm(lbl_1_data_848[i], view);
     }
 }
 
