@@ -371,6 +371,7 @@ game/sta_c0.c:
 game/rep_2308.c:
 	.text       start:0x000CABF0 end:0x000CB344
 	.rodata     start:0x00002308 end:0x0000238C
+	.data       start:0x00017D08 end:0x00017DC0
 
 game/rep_2390.c:
 	.text       start:0x000CB3AC end:0x000CB6B4
