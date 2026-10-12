@@ -419,7 +419,7 @@ void fn_800AE5B8(void) {
         DCFlushRange(cur, lbl_803CBAE4);
         OSRestoreInterrupts(intr);
     } else {
-        AIInitDMA((u32)buf, lbl_803CBAE4);
+        AIInitDMA((uintptr_t)buf, lbl_803CBAE4);
         intr = OSEnableInterrupts();
         memset(buf, 0, lbl_803CBAE4);
         MovMixAudio(buf);
@@ -474,7 +474,7 @@ void* fn_800AE8B8(void* arg) {
     for (;;) {
         OSReceiveMessage(&lbl_802FB870.queue, &msg, OS_MESSAGE_BLOCK);
         mov = lbl_803CC170;
-        switch ((s32)msg) {
+        switch ((s32)(intptr_t)msg) {
         case 0:
             if (MovStreamThread(mov) == FALSE) {
                 OSSendMessage(&lbl_802FB870.queue, (OSMessage)0, OS_MESSAGE_BLOCK);
@@ -588,11 +588,11 @@ s32 fn_800AED24(void) {
 // plus the audio already played when syncing to audio.
 static inline void MovUpdateFrame(MovPlayer* mov) {
     if (mov->flags & 1) {
-        mov->curFrame = (OSTicksToMicroseconds(OSGetTime() - mov->startTime) +
+        mov->curFrame = (u32)((OSTicksToMicroseconds(OSGetTime() - mov->startTime) +
                          mov->samplesPlayed * 1000000 / (mov->sampleRate * 4)) /
-                        mov->usecPerFrame;
+                        mov->usecPerFrame);
     } else {
-        mov->curFrame = OSTicksToMicroseconds(OSGetTime() - mov->startTime) / mov->usecPerFrame;
+        mov->curFrame = (u32)(OSTicksToMicroseconds(OSGetTime() - mov->startTime) / mov->usecPerFrame);
     }
 }
 
@@ -935,11 +935,11 @@ BOOL fn_800AF9B4(void* dst, u32 len) {
     if (read < write) {
         src = read + off;
         wrap = NULL;
-        count = write - src;
+        count = (u32)(write - src);
     } else {
         src = read + off;
         wrap = lbl_803CC174;
-        count = lbl_803CC174 + lbl_803CC178 - src;
+        count = (u32)(lbl_803CC174 + lbl_803CC178 - src);
     }
     OSRestoreInterrupts(intr);
     if (len < count) {
@@ -986,12 +986,12 @@ static inline BOOL MovFillFromAram(u32 len) {
     u32 second;
     u8* wrap;
 
-    len = OSRoundUp32B(len);
+    len = (u32)OSRoundUp32B(len);
     if (mram->filled >= mram->size) {
         return TRUE;
     }
     if (mram->writePtr + len > mram->end) {
-        first = mram->end - mram->writePtr;
+        first = (u32)(mram->end - mram->writePtr);
         wrap = mram->start;
         second = len - first;
     } else {
@@ -1033,7 +1033,7 @@ static inline BOOL MovStoreToAram(u32 len) {
         first = len;
         second = 0;
     } else {
-        first = lbl_803C7A00.dvdBufStart + lbl_803C7A00.dvdBufSize - src;
+        first = (u32)(lbl_803C7A00.dvdBufStart + lbl_803C7A00.dvdBufSize - src);
         wrap = lbl_803C7A00.dvdBufStart;
         second = len - first;
     }
@@ -1116,12 +1116,12 @@ BOOL fn_800B0008(u32 len) {
     u32 second;
     u8* wrap;
 
-    len = OSRoundUp32B(len);
+    len = (u32)OSRoundUp32B(len);
     if (mram->filled >= mram->size) {
         return TRUE;
     }
     if (mram->writePtr + len > mram->end) {
-        first = mram->end - mram->writePtr;
+        first = (u32)(mram->end - mram->writePtr);
         wrap = mram->start;
         second = len - first;
     } else {
@@ -1165,7 +1165,7 @@ BOOL fn_800B0134(u32 len) {
         wrap = NULL;
         second = 0;
     } else {
-        first = lbl_803C7A00.dvdBufStart + lbl_803C7A00.dvdBufSize - cur;
+        first = (u32)(lbl_803C7A00.dvdBufStart + lbl_803C7A00.dvdBufSize - cur);
         src = cur;
         wrap = lbl_803C7A00.dvdBufStart;
         second = len - first;
@@ -1217,20 +1217,20 @@ void fn_800B0230(u8* dst, u32 len) {
     aram->readLen = len;
     aram->busy = 2;
     DCInvalidateRange(dst, first);
-    ARQPostRequest(&lbl_803C78C4[0], 0, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_HIGH, aram->readPos, (u32)dst, first, fn_800B0390);
+    ARQPostRequest(&lbl_803C78C4[0], 0, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_HIGH, aram->readPos, (uintptr_t)dst, first, fn_800B0390);
     DCInvalidateRange(dst, first);
     if (second != 0) {
         while (aram->busy) {}
         aram->busy = 2;
         DCInvalidateRange(dst + first, second);
-        ARQPostRequest(&lbl_803C78C4[1], 0, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_HIGH, aram->start, (u32)(dst + first), second, fn_800B0390);
+        ARQPostRequest(&lbl_803C78C4[1], 0, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_HIGH, aram->start, (uintptr_t)(dst + first), second, fn_800B0390);
         DCInvalidateRange(dst + first, second);
     }
 }
 #endif
 
 // .text:0x800B0390 size:0x64
-void fn_800B0390(u32 request) {
+void fn_800B0390(uintptr_t request) { // ARQCallback
     MovAramRing* aram = &lbl_803C79D4;
     u32 pos = aram->readPos + aram->readLen;
     aram->readPos = pos;
@@ -1277,17 +1277,17 @@ void fn_800B03F4(u8* src, u32 len) {
     aram->writeLen = len;
     aram->busy = 1;
     DCFlushRangeNoSync(src, first);
-    ARQPostRequest(&lbl_803C7994[0], 0, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH, (u32)src, aram->writePos, first, fn_800B0580);
+    ARQPostRequest(&lbl_803C7994[0], 0, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH, (uintptr_t)src, aram->writePos, first, fn_800B0580);
     if (second != 0) {
         while (aram->busy) {}
         aram->busy = 1;
         DCFlushRangeNoSync(src + first, second);
-        ARQPostRequest(&lbl_803C7994[1], 0, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH, (u32)src + first, aram->start, second, fn_800B0580);
+        ARQPostRequest(&lbl_803C7994[1], 0, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH, (uintptr_t)src + first, aram->start, second, fn_800B0580);
     }
 }
 
 // .text:0x800B0580 size:0x64
-void fn_800B0580(u32 request) {
+void fn_800B0580(uintptr_t request) { // ARQCallback
     MovAramRing* aram = &lbl_803C79D4;
     u32 pos = aram->writePos + aram->writeLen;
     aram->writePos = pos;
@@ -1315,13 +1315,13 @@ void fn_800B05E4(s32 aramSize, u32 mramSize) {
     } else {
         aram->size = (lbl_803CC1AC < (u32)aramSize) ? lbl_803CC1AC : (u32)aramSize;
     }
-    aram->size = OSRoundUp32B(aram->size);
+    aram->size = (u32)OSRoundUp32B(aram->size);
     aram->start = fn_800A6418(aram->size);
     aram->readPos = aram->writePos = aram->start;
     aram->end = aram->start + aram->size;
     ARQSetChunkSize(0x1000);
     ARQFlushQueue();
-    mramSize = OSRoundUp32B(mramSize);
+    mramSize = (u32)OSRoundUp32B(mramSize);
     mram->dvdBufSize = lbl_803C6CF8.ringSize;
     mram->dvdBufStart = lbl_803C6CF8.bufEnd - lbl_803C6CF8.ringSize;
     mram->dvdBufSize = lbl_803C6CF8.ringSize;
