@@ -153,7 +153,8 @@ extern void fn_800363D8(void*, s32, s32, s32, s32); // TODO type: menus/rep_0788
 
 extern void fn_8002955C(Vec* pos, Vec* axis, struct ParticleParamsC* prm);
 #ifndef __MAIN_FILE_800263FC_H__
-extern void fn_80031CA4(Vec*, u32*); // TODO type: menus/rep_08E8; (Vec*, ParticleParams5*)
+struct ParticleParams5;
+extern void fn_80031CA4(Vec* pos, struct ParticleParams5* prm);
 #endif
 
 extern void fn_80037AA0(struct RigidBody* body, s32 charIdx, void (*callback)(void), u16 joint, void* anim);

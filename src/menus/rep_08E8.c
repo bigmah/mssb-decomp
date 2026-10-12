@@ -17,9 +17,9 @@ extern void LITXForm(void* light, void* matrix);
 #include "Dolphin/vec.h"
 extern s32 fn_2_68690(s32 index);
 extern void fn_2_68DAC(s32 index, void* result);
-extern u32 lbl_803CBD0C[];
-extern u32* lbl_2_data_13374[];
-extern void fn_80031CA4(Vec*, u32*);
+#include "main/particle_params5.h"
+extern TexArchive* lbl_803CBD0C; // effect particle textures
+extern ParticleParams5* lbl_2_data_13374[];
 
 extern u16 lbl_2_data_13238[];
 
@@ -268,7 +268,7 @@ void fn_2_46C88(s32 index, s32 unused) {
     fn_2_68690(0);
     fn_2_68DAC(index, &position);
     PSVECScale(&position, 2.0f, &position);
-    *lbl_2_data_13374[0] = lbl_803CBD0C[0];
+    lbl_2_data_13374[0]->tex = lbl_803CBD0C;
     fn_80031CA4(&position, lbl_2_data_13374[0]);
 }
 
@@ -1693,12 +1693,12 @@ Vec lbl_2_data_132F8 = {0.0f, 0.0f, 0.0f};
 Vec lbl_2_data_13304 = {0.0f, 0.0f, 0.0f};
 Vec lbl_2_data_13310 = {0.0f, 0.0f, 0.0f};
 DrawCallbackNode lbl_2_data_1331C = {{2}, fn_2_481B8}; // unreferenced by code
-u32 lbl_2_data_13324[20] = {
-    0, 4, 20, 80000, 30000, 78000, 60, 10,
+ParticleParams5 lbl_2_data_13324 = {
+    NULL, 4, 20, 80000, 30000, 78000, 60, 10,
     109000, 101000, 0, 60, 12800000, 0, 0, 0,
     0xFFFFFF00, 0, 75000, 0,
-}; // particle parameters (x100000 fixed point)
-u32 *lbl_2_data_13374[1] = {lbl_2_data_13324};
+}; // particle parameters (x100000 fixed point); tex is set before use
+ParticleParams5* lbl_2_data_13374[1] = {&lbl_2_data_13324};
 
 #if !NONMATCHING
 // Switch jump table of fn_2_42708; mwcc emits it itself once the function matches.

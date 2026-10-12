@@ -7453,7 +7453,7 @@ void fn_1_F6E4(void) {
     buttons = lbl_803C77B8._04;
     if (buttons & 0x100) {
         *parameters = *(s32*)(challenge + 0x28);
-        fn_80031CA4((Vec*)&command, (u32*)parameters);
+        fn_80031CA4((Vec*)&command, (struct ParticleParams5*)parameters);
     } else if (buttons & 0x200) {
         *(s32*)(challenge + 0xC) = 0;
         challenge[0x2F01] = 10;

@@ -7,15 +7,18 @@
 #include "main/file_8000F150.h"
 #include "main/file_80011640.h"
 #include "main/menu_globals.h"
+#include "main/file_80024184.h" // StarMissionIndex, StarMission
+#include "main/challenge_mission.h" // ChallengeMission
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 
 extern MenuCtx* lbl_2_bss_1A8248[];
 extern MenuData* lbl_2_bss_1A824C[];
 extern u8 lbl_803CB8F0[];
 extern u8 lbl_2_data_3CC8[];
-extern u32 lbl_803CBD0C[];
-extern u32* lbl_2_data_13374[];
-extern void fn_80031CA4(Vec*, u32*);
-static u8 lbl_2_bss_15B8[0x4000]; // current message script (copied from lbl_2_data_12C0C)
+#include "main/particle_params5.h"
+extern TexArchive* lbl_803CBD0C; // effect particle textures
+extern ParticleParams5* lbl_2_data_13374[];
+static u32 lbl_2_bss_15B8[0x1000]; // current message script (copied from lbl_2_data_12C0C)
 // Message scripts, one per lbl_2_data_12C0C entry (u32 command words).
 // PORT: fn_2_422FC copies 0x4000 bytes from a script start (reads past its end).
 u32 lbl_2_data_124A8[44] = {
@@ -96,7 +99,7 @@ u32* lbl_2_data_12C0C[55] = {
 
 extern void* lbl_2_data_12CE8[];
 extern MenuScreenTask* lbl_803CC1B8;
-extern u8 lbl_803C6CF8[];
+extern ARAMLoader lbl_803C6CF8;
 extern u8 lbl_2_data_12298[];
 extern void fn_2_94854(u8);
 extern void fn_2_9461C(s32);
@@ -115,19 +118,15 @@ extern BOOL fn_8006862C(u32 frames, u8 target);
 extern void fn_2_1C41C(void);
 extern void fn_2_1C490(void);
 extern void fn_2_8F758(s32 index, u8 value);
-typedef struct {
-    u8 b[0x1C];
-} Rec1C;
-extern Rec1C lbl_80109420[];
-extern u8 lbl_801094E4[];
+extern s8 lbl_801094E4[][0x1C]; // per character: MenuRosterEntry.limits
 extern s32 fn_8006CDC0(s32);
-extern u8 lbl_800E8558[];
-extern u8 lbl_80109AE8[];
-extern u8 lbl_8010A768[];
+extern StarMissionIndex lbl_800E8558[54]; // per character
+extern StarMission lbl_80109AE8[][10];   // star missions [row][mission]
+extern ChallengeMission lbl_8010A768[][10]; // challenge missions [row][mission]
 extern s32 fn_2_40CB8(void);
 extern void fn_2_90428(s32);
 extern void fn_2_92654(s32, u8);
-extern u8 lbl_2_data_3198[];
+extern MenuSpot lbl_2_data_3198[];
 extern void fn_2_1BFD0(void);
 extern void fn_2_72054(s32, s8);
 extern void fn_2_44504(void);
@@ -138,8 +137,8 @@ extern int sndFXStartEx(int, int, int, int);
 extern u8 lbl_800EFBA4[];
 extern void fn_8006877C(s32);
 extern s16 lbl_2_data_1056C[4][6]; // rep_0788.c
-extern u8 lbl_2_data_3CE8[];
-extern u8 lbl_2_data_3C40[];
+extern s16 lbl_2_data_3CE8[6][6]; // per stadium
+extern s32 lbl_2_data_3C40[7];
 extern s32 fn_2_8CC88(s32);
 
 typedef MenuSortEntry SortEnt;
@@ -159,7 +158,7 @@ s32 fn_2_44F14(s32 index) {
 
 // fn_2_44F34, size:0x30
 s32 fn_2_44F34(s32 index) {
-    return ((MenuRosterEntry*)((u8*)lbl_2_bss_1A8248[0] + index * sizeof(MenuRosterEntry)))->_05 <= 3;
+    return ((MenuRosterEntry*)((u8*)lbl_2_bss_1A8248[0]->chars + index * sizeof(MenuRosterEntry)))->_05 <= 3; // = chars[index]; keeps the original addressing
 }
 
 // fn_2_46418, size:0x274
@@ -185,7 +184,7 @@ void fn_2_4668C(s32 index) {
 // fn_2_45938, size:0x40
 s32 fn_2_45938(s32 index) {
     MenuCtx* menu = lbl_2_bss_1A8248[0];
-    return (s8)((MenuRosterEntry*)((u8*)menu + lbl_803CB8F0[menu->slots[index]._5] * sizeof(MenuRosterEntry)))->_31 == 0;
+    return (s8)((MenuRosterEntry*)((u8*)menu->chars + lbl_803CB8F0[menu->slots[index]._5] * sizeof(MenuRosterEntry)))->_31 == 0; // = chars[...]
 }
 
 // fn_2_460EC, size:0x4
@@ -214,7 +213,7 @@ void fn_2_46C2C(s32 unused, Vec* src) {
     position.x = src->x;
     position.y = src->y;
     position.z = src->z;
-    *lbl_2_data_13374[0] = lbl_803CBD0C[0];
+    lbl_2_data_13374[0]->tex = lbl_803CBD0C;
     fn_80031CA4(&position, lbl_2_data_13374[0]);
 }
 
@@ -223,8 +222,8 @@ void fn_2_422FC(s32 index) {
     lbl_2_bss_1A824C[0]->_197694 = 0;
     lbl_2_bss_1A824C[0]->_19768C = 0;
     lbl_2_bss_1A824C[0]->_197690 = 0;
-    memcpy(lbl_2_bss_15B8, lbl_2_data_12C0C[index], 0x4000);
-    lbl_2_bss_1A824C[0]->scriptPc = (u32*)lbl_2_bss_15B8;
+    memcpy(lbl_2_bss_15B8, lbl_2_data_12C0C[index], sizeof(lbl_2_bss_15B8));
+    lbl_2_bss_1A824C[0]->scriptPc = lbl_2_bss_15B8;
 }
 
 // fn_2_42270, size:0x8C
@@ -232,8 +231,8 @@ void fn_2_42270(s32 index) {
     lbl_2_bss_1A824C[0]->_197694 = 0;
     lbl_2_bss_1A824C[0]->_19768C = 0;
     lbl_2_bss_1A824C[0]->_197690 = 0;
-    memcpy(lbl_2_bss_15B8, lbl_2_data_12CE8[index], 0x4000);
-    lbl_2_bss_1A824C[0]->scriptPc = (u32*)lbl_2_bss_15B8;
+    memcpy(lbl_2_bss_15B8, lbl_2_data_12CE8[index], sizeof(lbl_2_bss_15B8));
+    lbl_2_bss_1A824C[0]->scriptPc = lbl_2_bss_15B8;
 }
 
 // fn_2_44238, size:0xB0
@@ -337,7 +336,7 @@ void fn_2_409CC(void) {
         o->step = 1;
         break;
     case 1:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             fn_800111B4(lbl_80366B18.tables[4]);
             o->step = 2;
         }
@@ -893,12 +892,12 @@ void fn_2_3C168(void) {
         break;
     case 1:
         if ((o->counter)-- == 0) {
-            v = *(s16*)(lbl_2_data_3CE8 + lbl_2_bss_1A8248[0]->_441C * 0xC + lbl_2_bss_1A8248[0]->_4422 * 2 + 2);
-            ((s8**)lbl_2_bss_1A824C)[0][0x197851] = -1;
-            if (*(s16*)(lbl_2_data_3CE8 + lbl_2_bss_1A8248[0]->_441C * 0xC + lbl_2_bss_1A8248[0]->_4422 * 2) != 5) {
+            v = lbl_2_data_3CE8[lbl_2_bss_1A8248[0]->_441C][lbl_2_bss_1A8248[0]->_4422 + 1];
+            lbl_2_bss_1A824C[0]->_197851 = -1;
+            if (lbl_2_data_3CE8[lbl_2_bss_1A8248[0]->_441C][lbl_2_bss_1A8248[0]->_4422] != 5) {
                 for (i = 0; i < 51; i++) {
                     if (v == lbl_2_bss_1A8248[0]->slots[i]._2 && lbl_2_bss_1A8248[0]->slots[i]._3 == 1) {
-                        ((s8**)lbl_2_bss_1A824C)[0][0x197851] = v;
+                        lbl_2_bss_1A824C[0]->_197851 = v;
                     }
                 }
             }
@@ -946,7 +945,7 @@ void fn_2_3C3EC(void) {
         break;
     case 1:
         if ((o->counter)-- == 0) {
-            t = (u8*)lbl_2_bss_1A8248[0] + lbl_2_bss_1A8248[0]->_4420;
+            t = (u8*)lbl_2_bss_1A8248[0] + lbl_2_bss_1A8248[0]->_4420; // &_4431[_4420] - offsetof(_4431)
             if (t[offsetof(MenuCtx, _4431)] == 0) {
                 t[offsetof(MenuCtx, _4431)] = 1;
                 o->counter = 0x3C;
@@ -1153,7 +1152,7 @@ void fn_2_3D878(void) {
         break;
     case 3:
         if (o->counter == 0x32) {
-            fn_80062890(((s32*)lbl_2_data_3C40)[lbl_2_bss_1A8248[0]->_441C]);
+            fn_80062890(lbl_2_data_3C40[lbl_2_bss_1A8248[0]->_441C]);
         }
         if (o->counter == 0x32) {
             fn_8006877C(0xC);
@@ -1198,8 +1197,8 @@ void fn_2_3DAB8(void) {
     MenuPad* e;
     switch ((s8)o->step) {
     case 0:
-        gs = gsb + lbl_2_data_3CC8[lbl_2_bss_1A8248[0]->_441C];
-        if (*(gs += 0x1A) == 0) {
+        gs = gsb + lbl_2_data_3CC8[lbl_2_bss_1A8248[0]->_441C]; // &_1A[...] - offsetof(_1A)
+        if (*(gs += offsetof(GameInitVariables, _1A)) == 0) {
             *gs = 1;
             lbl_2_bss_1A8234[0]->layerFlags[1][3] = 1;
             o->counter = 0x10;
@@ -1423,7 +1422,7 @@ void fn_2_3F29C(void) {
             fn_2_92654(8, 0);
             fn_2_90428(9);
             fn_2_92654(9, 0xB);
-            ((void (*)(s32, Vec*))fn_2_46C2C)(0, (Vec*)(lbl_2_data_3198 + 0xB4));
+            ((void (*)(s32, Vec*))fn_2_46C2C)(0, &lbl_2_data_3198[9].position); // called through a cast: not inlined
             lbl_2_bss_1A8248[0]->_441A = 0;
             lbl_2_bss_1A8248[0]->slots[41]._6 = 0;
             fn_80062890(5);
@@ -1433,7 +1432,7 @@ void fn_2_3F29C(void) {
         break;
     case 2:
         if (o->counter == 0x46) {
-            ((void (*)(s32, Vec*))fn_2_46C2C)(0, (Vec*)(lbl_2_data_3198 + 0xB4));
+            ((void (*)(s32, Vec*))fn_2_46C2C)(0, &lbl_2_data_3198[9].position); // called through a cast: not inlined
         }
         if ((o->counter)-- == 0) {
             o->step = 3;
@@ -1573,7 +1572,7 @@ void fn_2_42EB0(void) {
     MenuRosterEntry* e;
     u8* m;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s8)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
@@ -1581,10 +1580,10 @@ void fn_2_42EB0(void) {
                     s32 v;
                     s32 t;
                     s32 a;
-                    row = lbl_800E8558[i * 6 + 2] * 0x64;
-                    v = *(s16*)(lbl_80109AE8 + row + j * 10);
-                    t = *(s16*)(lbl_8010A768 + row + j * 10 + 2);
-                    a = *(s16*)(lbl_8010A768 + row + j * 10 + 4);
+                    row = lbl_800E8558[i].missionRow;
+                    v = lbl_80109AE8[row][j].type;
+                    t = lbl_8010A768[row][j].type;
+                    a = lbl_8010A768[row][j].starsNeeded;
                     if (t != -1 && (s8)e->missions[j].shown == 0 && t == 0x12 &&
                         lbl_2_bss_1A8248[0]->_4415 >= a && lbl_2_bss_1A8248[0]->_442A == 1) {
                         e->missions[j].shown = 1;
@@ -1609,15 +1608,15 @@ void fn_2_432EC(void) {
     s16 b;
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s8)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
-                    row = lbl_800E8558[i * 6 + 2] * 0x64;
-                    v = *(s16*)(lbl_80109AE8 + row + j * 10);
-                    t = *(s16*)(lbl_8010A768 + row + j * 10 + 2);
-                    a = *(s16*)(lbl_8010A768 + row + j * 10 + 4);
-                    b = *(s16*)(lbl_8010A768 + row + j * 10 + 6);
+                    row = lbl_800E8558[i].missionRow;
+                    v = lbl_80109AE8[row][j].type;
+                    t = lbl_8010A768[row][j].type;
+                    a = lbl_8010A768[row][j].starsNeeded;
+                    b = lbl_8010A768[row][j]._6;
                     if (v != -1 && e->missions[j].state < 0) {
                         e->missions[j].shown = 1;
                     }
@@ -1634,15 +1633,15 @@ void fn_2_432EC(void) {
 s32 fn_2_44E2C(s32 ch) {
     s32 n;
     s32 j;
-    u8* mi = lbl_800E8558 + ch * 6;
+    StarMissionIndex* mi = &lbl_800E8558[ch];
     u8 row;
     u8* p;
-    if (mi[3] == 1) {
+    if (mi->hasMissions == 1) {
         n = 0;
-        p = mi + 2;
+        p = &mi->missionRow;
         row = *p;
         for (j = 0; j < 10; j++) {
-            if (*(s16*)(lbl_80109AE8 + row * 0x64 + j * 10) != -1) {
+            if (lbl_80109AE8[row][j].type != -1) {
                 n++;
             }
         }
@@ -1766,21 +1765,21 @@ void fn_2_45204(void) {
     s32 n;
     s32 cnt;
     s32 j;
-    u8* mi;
+    StarMissionIndex* mi;
     u8 row;
     u8* m;
     mi = lbl_800E8558;
-    for (i = 0; i < 54; i++, mi += 6) {
+    for (i = 0; i < 54; i++, mi++) {
         n = fn_8006CDC0(i);
-        if (mi[3] == 1) {
+        if (mi->hasMissions == 1) {
             cnt = 0;
-            row = mi[2];
+            row = mi->missionRow;
             for (j = 0; j < 10; j++) {
-                if (*(s16*)(lbl_80109AE8 + row * 0x64 + j * 10) != -1) {
+                if (lbl_80109AE8[row][j].type != -1) {
                     cnt++;
                 }
             }
-            mi[2] = row;
+            mi->missionRow = row;
         } else {
             cnt = 0;
         }
@@ -1806,11 +1805,11 @@ void fn_2_466AC(void) {
     for (i = 0; i < 54; i++) {
         e = &lbl_2_bss_1A8248[0]->chars[i];
         for (j = 0; j < 10; j++) {
-            row = lbl_800E8558[i * 6 + 2] * 0x64;
-            v = *(s16*)(lbl_80109AE8 + row + j * 10);
-            t = *(s16*)(lbl_8010A768 + row + j * 10 + 2);
-            a = *(s16*)(lbl_8010A768 + row + j * 10 + 4);
-            b = *(s16*)(lbl_8010A768 + row + j * 10 + 6);
+            row = lbl_800E8558[i].missionRow;
+            v = lbl_80109AE8[row][j].type;
+            t = lbl_8010A768[row][j].type;
+            a = lbl_8010A768[row][j].starsNeeded;
+            b = lbl_8010A768[row][j]._6;
             if (t == 0) {
                 e->missions[j].shown = 1;
             }
@@ -1837,7 +1836,7 @@ void fn_2_42FC8(void) {
     s32 j;
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s8)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
@@ -1846,11 +1845,11 @@ void fn_2_42FC8(void) {
                     s16 t;
                     s16 a;
                     s16 b;
-                    row = lbl_800E8558[i * 6 + 2] * 0x64;
-                    v = *(s16*)(lbl_80109AE8 + row + j * 10);
-                    t = *(s16*)(lbl_8010A768 + row + j * 10 + 2);
-                    a = *(s16*)(lbl_8010A768 + row + j * 10 + 4);
-                    b = *(s16*)(lbl_8010A768 + row + j * 10 + 6);
+                    row = lbl_800E8558[i].missionRow;
+                    v = lbl_80109AE8[row][j].type;
+                    t = lbl_8010A768[row][j].type;
+                    a = lbl_8010A768[row][j].starsNeeded;
+                    b = lbl_8010A768[row][j]._6;
                     if (t != -1 && (s8)e->missions[j].shown == 0 && t == 1 &&
                         fn_8006CDC0(i) >= a && lbl_2_bss_1A8248[0]->_4415 >= b) {
                         e->missions[j].shown = 1;
@@ -1871,7 +1870,7 @@ void fn_2_46ADC(void) {
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
         e = &lbl_2_bss_1A8248[0]->chars[i];
-        e->limits = (s8*)(lbl_801094E4 + i * 0x1C);
+        e->limits = lbl_801094E4[i];
         e->_04 = e->limits[0];
         e->_05 = e->limits[1];
         e->_07 = 0;
@@ -1898,7 +1897,7 @@ void fn_2_450E4(void) {
         t = lbl_2_bss_1A824C[0]->_197868[k];
         lbl_2_bss_1A8248[0]->_43D6[t] = 1;
         for (m = 0; m < 54; m++) {
-            s32 q = lbl_800E8558[m * 6 + 1];
+            s32 q = lbl_800E8558[m].trackerIndex;
             if (q == t) {
                 lbl_2_bss_1A8248[0]->_43D6[m] = 1;
             }
@@ -1920,7 +1919,7 @@ void fn_2_44014(void) {
     s32 j;
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s8)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
@@ -1928,10 +1927,10 @@ void fn_2_44014(void) {
                     s16 t;
                     s16 c;
                     s16 b;
-                    row = lbl_800E8558[i * 6 + 2] * 0x64;
-                    t = *(s16*)(lbl_80109AE8 + row + j * 10);
-                    c = *(s16*)(lbl_80109AE8 + row + j * 10 + 2);
-                    b = *(s16*)(lbl_80109AE8 + row + j * 10 + 6);
+                    row = lbl_800E8558[i].missionRow;
+                    t = lbl_80109AE8[row][j].type;
+                    c = lbl_80109AE8[row][j].target;
+                    b = lbl_80109AE8[row][j].minLevel;
                     if (t != -1 && e->missions[j].state == 0 && t == 0x3A &&
                         (s8)lbl_2_bss_1A8248[0]->_43C2[c] == 1 && lbl_2_bss_1A8248[0]->_4415 >= b) {
                         e->missions[j].state = -2;
@@ -1948,16 +1947,16 @@ void fn_2_43E8C(void) {
     s32 j;
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s8)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
                     s32 row;
                     s16 t;
                     s16 b;
-                    row = lbl_800E8558[i * 6 + 2] * 0x64;
-                    t = *(s16*)(lbl_80109AE8 + row + j * 10);
-                    b = *(s16*)(lbl_80109AE8 + row + j * 10 + 6);
+                    row = lbl_800E8558[i].missionRow;
+                    t = lbl_80109AE8[row][j].type;
+                    b = lbl_80109AE8[row][j].minLevel;
                     if (t != -1 && e->missions[j].state == 0 && t == 0x3B &&
                         lbl_2_bss_1A824C[0]->_1978F4 == 1 && lbl_2_bss_1A8248[0]->_4415 >= b) {
                         e->missions[j].state = -2;
@@ -1975,15 +1974,15 @@ void fn_2_43404(void) {
     s32 j;
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s8)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
-                    u8* p = lbl_80109AE8 + lbl_800E8558[i * 6 + 2] * 0x64 + j * 10;
-                    s32 t = *(s16*)p;
-                    s32 c = *(s16*)(p + 2);
-                    s32 b = *(s16*)(p + 6);
-                    s32 d = *(s16*)(p + 8);
+                    StarMission* p = &lbl_80109AE8[lbl_800E8558[i].missionRow][j];
+                    s32 t = p->type;
+                    s32 c = p->target;
+                    s32 b = p->minLevel;
+                    s32 d = p->_8;
                     if (t != -1 && e->missions[j].state == 0 && t == 0x46 &&
                         lbl_2_bss_1A8248[0]->_441C == c &&
                         lbl_2_bss_1A8248[0]->_43BC >= d * 0x64 &&
@@ -2000,7 +1999,7 @@ void fn_2_468DC(void) {
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
         e = &lbl_2_bss_1A8248[0]->chars[i];
-        e->limits = (s8*)(lbl_801094E4 + i * 0x1C);
+        e->limits = lbl_801094E4[i];
         e->_04 = e->limits[0];
         e->_05 = e->limits[1];
     }
@@ -2057,16 +2056,16 @@ void fn_2_430F4(void) {
     s32 j;
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s32)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
-                    s32 row = lbl_800E8558[i * 6 + 2] * 0x64;
-                    s32 t = *(s16*)(lbl_80109AE8 + row + j * 10);
-                    u8* p = lbl_8010A768 + row + j * 10;
-                    s32 type = *(s16*)(p + 2);
-                    s32 a = *(s16*)(p + 4);
-                    s32 b = *(s16*)(p + 6);
+                    s32 row = lbl_800E8558[i].missionRow;
+                    s32 t = lbl_80109AE8[row][j].type;
+                    ChallengeMission* p = &lbl_8010A768[row][j];
+                    s32 type = p->type;
+                    s32 a = p->starsNeeded;
+                    s32 b = p->_6;
                     if (type != -1 && (s8)e->missions[j].shown == 0) {
                         switch (type) {
                         case 2:
@@ -2098,17 +2097,17 @@ void fn_2_42BE8(void) {
     s32 j;
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s32)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
-                    s32 row = lbl_800E8558[i * 6 + 2] * 0x64;
-                    s32 t = *(s16*)(lbl_80109AE8 + row + j * 10);
-                    u8* p = lbl_8010A768 + row + j * 10;
-                    s32 type = *(s16*)(p + 2);
-                    s32 a = *(s16*)(p + 4);
-                    s32 b = *(s16*)(p + 6);
-                    s32 c = *(s16*)(p + 8);
+                    s32 row = lbl_800E8558[i].missionRow;
+                    s32 t = lbl_80109AE8[row][j].type;
+                    ChallengeMission* p = &lbl_8010A768[row][j];
+                    s32 type = p->type;
+                    s32 a = p->starsNeeded;
+                    s32 b = p->_6;
+                    s32 c = p->_8;
                     if (type != -1 && (s8)e->missions[j].shown == 0) {
                         switch (type) {
                         case 1:
@@ -2177,32 +2176,32 @@ void fn_2_454E8(void) {
     s32 cnt;
     s32 j;
     s32 k;
-    u8* mi;
+    StarMissionIndex* mi;
     u8 row;
-    u8* base;
+    StarMissionIndex* base;
     for (i = 0; i < 54; i++) {
         lbl_2_bss_1A8248[0]->_43D6[i] = 0;
     }
     base = lbl_800E8558;
     mi = base;
-    for (i = 0; i < 54; i++, mi += 6) {
+    for (i = 0; i < 54; i++, mi++) {
         n = fn_8006CDC0(i);
-        if (mi[3] == 1) {
+        if (mi->hasMissions == 1) {
             cnt = 0;
-            row = mi[2];
+            row = mi->missionRow;
             for (j = 0; j < 10; j++) {
-                if (*(s16*)(lbl_80109AE8 + row * 0x64 + j * 10) != -1) {
+                if (lbl_80109AE8[row][j].type != -1) {
                     cnt++;
                 }
             }
-            mi[2] = row;
+            mi->missionRow = row;
         } else {
             cnt = 0;
         }
         if (n == cnt && cnt != 0) {
             lbl_2_bss_1A8248[0]->_43D6[i] = 1;
             for (k = 0; k < 54; k++) {
-                if (i == base[k * 6 + 1]) {
+                if (i == base[k].trackerIndex) {
                     lbl_2_bss_1A8248[0]->_43D6[k] = 1;
                 }
             }
@@ -2473,14 +2472,14 @@ void fn_2_4358C(void) {
     s32 i;
     s32 j;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s32)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
-                    u8* p = lbl_80109AE8 + lbl_800E8558[i * 6 + 2] * 0x64 + j * 10;
-                    s32 t = *(s16*)p;
-                    s32 c = *(s16*)(p + 2);
-                    s32 b = *(s16*)(p + 6);
+                    StarMission* p = &lbl_80109AE8[lbl_800E8558[i].missionRow][j];
+                    s32 t = p->type;
+                    s32 c = p->target;
+                    s32 b = p->minLevel;
                     if (t == -1 || e->missions[j].state != 0) {
                         continue;
                     }
@@ -2591,7 +2590,7 @@ void fn_2_3E38C(void) {
         fn_2_92654(8, 0);
         fn_2_90428(9);
         fn_2_92654(9, 0xB);
-        ((void (*)(s32, Vec*))fn_2_46C2C)(0, (Vec*)(lbl_2_data_3198 + 0xB4));
+        ((void (*)(s32, Vec*))fn_2_46C2C)(0, &lbl_2_data_3198[9].position); // called through a cast: not inlined
         lbl_2_bss_1A8248[0]->_441A = 0;
         lbl_2_bss_1A8248[0]->slots[41]._6 = 0;
         fn_80062890(5);
@@ -2600,7 +2599,7 @@ void fn_2_3E38C(void) {
         break;
     case 8:
         if (o->counter == 0x46) {
-            ((void (*)(s32, Vec*))fn_2_46C2C)(0, (Vec*)(lbl_2_data_3198 + 0xB4));
+            ((void (*)(s32, Vec*))fn_2_46C2C)(0, &lbl_2_data_3198[9].position); // called through a cast: not inlined
         }
         if ((o->counter)-- == 0) {
             o->step = 9;
@@ -2693,15 +2692,15 @@ void fn_2_439D0(void) {
     s32 j;
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s32)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
-                    u8* p = lbl_80109AE8 + lbl_800E8558[i * 6 + 2] * 0x64 + j * 10;
-                    s32 t = *(s16*)p;
-                    s32 c = *(s16*)(p + 2);
-                    s32 a = *(s16*)(p + 4);
-                    s32 b = *(s16*)(p + 6);
+                    StarMission* p = &lbl_80109AE8[lbl_800E8558[i].missionRow][j];
+                    s32 t = p->type;
+                    s32 c = p->target;
+                    s32 a = p->flags;
+                    s32 b = p->minLevel;
                     if (t == -1 || e->missions[j].state != 0) {
                         continue;
                     }
@@ -2766,17 +2765,17 @@ void fn_2_42708(void) {
     s32 r;
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
-        if (lbl_800E8558[i * 6 + 3] == 1) {
+        if (lbl_800E8558[i].hasMissions == 1) {
             e = &lbl_2_bss_1A8248[0]->chars[i];
             if ((s32)e->_31 == 1) {
                 for (j = 0; j < 10; j++) {
-                    s32 row = lbl_800E8558[i * 6 + 2] * 0x64;
-                    s32 t = *(s16*)(lbl_80109AE8 + row + j * 10);
-                    u8* p = lbl_8010A768 + row + j * 10;
-                    s32 type = *(s16*)(p + 2);
-                    s32 a = *(s16*)(p + 4);
-                    s32 b = *(s16*)(p + 6);
-                    s32 c = *(s16*)(p + 8);
+                    s32 row = lbl_800E8558[i].missionRow;
+                    s32 t = lbl_80109AE8[row][j].type;
+                    ChallengeMission* p = &lbl_8010A768[row][j];
+                    s32 type = p->type;
+                    s32 a = p->starsNeeded;
+                    s32 b = p->_6;
+                    s32 c = p->_8;
                     if (type != -1 && (s8)e->missions[j].shown == 0) {
                         switch (type) {
                         case 1:
@@ -3006,13 +3005,13 @@ void fn_2_3FDE0(void) {
     switch ((s8)o->step) {
     case 0:
         o->counter = 0x46;
-        v = *(s16*)(lbl_2_data_3CE8 + lbl_2_bss_1A8248[0]->_441C * 0xC + lbl_2_bss_1A8248[0]->_4422 * 2 + 2);
-        ((s8**)lbl_2_bss_1A824C)[0][0x197851] = -1;
-        if (*(s16*)(lbl_2_data_3CE8 + lbl_2_bss_1A8248[0]->_441C * 0xC + lbl_2_bss_1A8248[0]->_4422 * 2) != 5) {
+        v = lbl_2_data_3CE8[lbl_2_bss_1A8248[0]->_441C][lbl_2_bss_1A8248[0]->_4422 + 1];
+        lbl_2_bss_1A824C[0]->_197851 = -1;
+        if (lbl_2_data_3CE8[lbl_2_bss_1A8248[0]->_441C][lbl_2_bss_1A8248[0]->_4422] != 5) {
             for (i = 0; i < 51; i++) {
                 if (v == lbl_2_bss_1A8248[0]->slots[i]._2 && lbl_2_bss_1A8248[0]->slots[i]._3 == 1) {
                     lbl_2_bss_1A8248[0]->slots[i]._3 = 0;
-                    ((s8**)lbl_2_bss_1A824C)[0][0x197851] = v;
+                    lbl_2_bss_1A824C[0]->_197851 = v;
                 }
             }
         }
@@ -3917,7 +3916,7 @@ s32 fn_2_40CB8(void) {
         case 86:
             t = fn_800B0A5C_insertQueue(fn_2_3E38C, 2);
             ((MenuScreenTask*)t)->step = 0;
-            *(s16*)(t + 0x16) = 0;
+            ((MenuScreenTask*)t)->arg = 0;
             o->signal = 0;
             SCRIPT_PC++;
             continue;
@@ -3929,7 +3928,7 @@ s32 fn_2_40CB8(void) {
         case 96:
             t = fn_800B0A5C_insertQueue(fn_2_3E058, 2);
             ((MenuScreenTask*)t)->step = 0;
-            *(s16*)(t + 0x16) = 0;
+            ((MenuScreenTask*)t)->arg = 0;
             o->signal = 0;
             SCRIPT_PC++;
             continue;
