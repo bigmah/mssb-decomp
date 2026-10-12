@@ -379,6 +379,16 @@ typedef struct MenuCtx {
     /*0x44FE*/ u8 _44FE[8]; // indexed
 } MenuCtx; // size: 0x4508
 
+// lbl_80354768 (SaveProgress in main/file_8003A688.h) with its challenge save blocks
+// as MenuCtx records.
+typedef struct MenuSaveSlots {
+    /*0x0000*/ MenuCtx challenge[3];
+    /*0xCF18*/ u8 _CF18[0x36]; // indexed by lbl_800E869C[character]
+    /*0xCF4E*/ u8 _CF4E[0x10];
+    /*0xCF5E*/ u8 _CF5E[3]; // per save slot
+    /*0xCF61*/ u8 _CF61[3];
+} MenuSaveSlots; // size: 0xCF64
+
 // Animation archive the menus load (lbl_2_bss_3401BC); the bank entries are
 // relocated in place.
 typedef struct MenuAnimArchive {
@@ -464,7 +474,9 @@ typedef struct MenuData {
     /*0x196FE0*/ s16 _196FE0;
     /*0x196FE2*/ u8 _196FE2[0x196FE4 - 0x196FE2];
     /*0x196FE4*/ s16 _196FE4;
-    /*0x196FE6*/ u8 _196FE6[0x197298 - 0x196FE6];
+    /*0x196FE6*/ u8 _196FE6[0x196FE8 - 0x196FE6];
+    /*0x196FE8*/ s16 _196FE8[0xA8]; // cleared by fn_2_51190 / fn_2_50898
+    /*0x197138*/ u8 _197138[0x197298 - 0x197138];
     /*0x197298*/ s16 _197298[2]; // indexed
     /*0x19729C*/ s16 _19729C;
     /*0x19729E*/ s16 _19729E;
