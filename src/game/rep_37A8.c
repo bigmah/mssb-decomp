@@ -1,13 +1,17 @@
+// g_Minigame stays a byte array here (the matched code's register allocation depends on it); MG is
+// its typed view.
+#define g_Minigame g_Minigame_header_decl
 #include "game/rep_37A8.h"
+#undef g_Minigame
+extern u8 g_Minigame[];
 #define REP_HEADER_FN repHeader_37A8
 #include "header_rep_inline.h"
-
-extern u8 g_Minigame[];
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/gx.h"
 #include "main/file_80011640.h"
+#include "main/file_80008E00.h"
 #include "math.h"
 extern const Vec lbl_3_rodata_3808;
 extern const f32 lbl_3_rodata_382C;
@@ -17,7 +21,6 @@ extern const f32 lbl_3_rodata_3838;
 extern const f32 lbl_3_rodata_385C;
 extern const f64 lbl_3_rodata_3868;
 extern void fn_800B993C(void);
-extern u8 g_GameLogic[];
 extern u8 lbl_3_data_21278[];
 extern void fn_3_10F550(s32, u8);
 extern void fn_3_5A6D4(s32);
@@ -25,95 +28,44 @@ extern void changeScene(s32, s32);
 extern void* memset(void*, s32, u32);
 extern s16 RandomInt_Game_Range(s16, s16);
 extern s16 lbl_3_data_21EAC[];
-extern u8 lbl_3_data_21D34[];
-extern u8 lbl_80366158[];
+extern Vec lbl_3_data_21D34[4][3]; // held-object offsets per home slot
 extern s8 lbl_3_data_266A4;
 extern void DCFlushRange(void*, u32);
 extern u8 lbl_800EFBA4[];
 extern s32 sndFXStartEx(s32, u8, u8, u8);
-extern u8 lbl_3_data_21E68[];
+extern s16 lbl_3_data_21E68[26]; // timings in frames
+#define MG ((Mg37A8*)g_Minigame)
+#ifndef offsetof
+#define offsetof(type, memb) ((u32) & ((type*)0)->memb)
+#endif
+// Some matched functions need the original byte-array address arithmetic (`base + (i + offset)`,
+// `base + i * stride`), which MG->field[i] / g_Fielders[i] reschedule. These keep it with named fields.
+#define MG_B(field, i) (g_Minigame[(i) + (s32)offsetof(Mg37A8, field)]) // u8 field element
+#define MG_BALL_USED(i) (g_Minigame[(i) * (s32)sizeof(MgBall) + (s32)offsetof(Mg37A8, ball[0].used)])
+#define MG_H(field) ((s16*)(g_Minigame + (s32)offsetof(Mg37A8, field))) // s16 array field
+#define FLD(i) ((InMemFielderType*)((u8*)g_Fielders + (i) * (s32)sizeof(InMemFielderType)))
 typedef struct { s16 lo; s16 hi; } MgRange;
-typedef struct { s16 t; u8 b; u8 c; } MgSlot;
 typedef struct { s16 lo; s16 hi; s16 lim; } MgWin;
 extern MgWin lbl_3_data_21DC8[][2];
 extern u8 lbl_3_data_21E10[];
-extern u8 lbl_3_data_21D1C[];
-extern u8 lbl_3_data_21DC4[];
-extern u8 lbl_3_data_21E04[];
+extern f32 lbl_3_data_21D1C[4];
+extern s16 lbl_3_data_21DC4[2];
+extern s16 lbl_3_data_21E04[2];
 extern f32 lbl_3_data_26698[3];
 extern int random_fn_3_9EE24(int max);
-extern u8 lbl_3_data_21D2C[];
-extern u8 g_Fielders[];
+extern f32 lbl_3_data_21D2C[2];
+extern InMemFielderType g_Fielders[9];
 extern s8 lbl_3_data_21EBC[];
 extern s8 lbl_3_data_21EC0[];
 extern int RandomInt_Game(int);
 extern s16 lbl_3_data_7F10[];
 extern Vec lbl_3_data_21B94[]; // home positions per player slot
-extern f32 charSizeMultipliers[][2];
 extern void fn_3_118358(s32, f32*);
 extern void fn_3_15730C(u32, f32, f32, f32);
-extern u8 g_Controls[];
 extern void fn_3_157570(void);
 extern void fn_3_DE4FC(void);
 extern void fn_3_154214(void);
 extern u32 fn_3_90064(s32 id);
-
-// Thrown-ball slots at g_Minigame + 0xA8 (40 of them).
-typedef struct {
-    /* 0x00 */ Vec pos;
-    /* 0x0C */ Vec vel;
-    /* 0x18 */ f32 _18;
-    /* 0x1C */ s32 owner;
-    /* 0x20 */ s16 timer;
-    /* 0x22 */ s16 _22;
-    /* 0x24 */ u8 _24[2];
-    /* 0x26 */ u8 used;
-    /* 0x27 */ u8 _27;
-} MgBall;
-typedef struct { u8 pad0[0xA8]; MgBall ball[40]; } MgBallView;
-
-// Runner slots at g_Minigame + 0x0 (3 of them, 0x38 each); see MgSpawn below.
-typedef struct MgRunner {
-    /* 0x00 */ Vec pos;
-    /* 0x0C */ f32 _C;
-    /* 0x10 */ f32 _10;
-    /* 0x14 */ f32 _14;
-    /* 0x18 */ s16 _18;
-    /* 0x1A */ s16 _1A;
-    /* 0x1C */ s16 _1C;
-    /* 0x1E */ s16 _1E;
-    /* 0x20 */ s16 throwTimer;
-    /* 0x22 */ s16 _22;
-    /* 0x24 */ s16 _24;
-    /* 0x26 */ s16 queueTimer;
-    /* 0x28 */ u8 _28[2];
-    /* 0x2A */ u8 st;
-    /* 0x2B */ u8 sel;
-    /* 0x2C */ u8 who;
-    /* 0x2D */ u8 _2D;
-    /* 0x2E */ u8 _2E;
-    /* 0x2F */ s8 queue[4];
-    /* 0x33 */ u8 _33;
-    /* 0x34 */ s8 fielder;
-    /* 0x35 */ s8 player;
-    /* 0x36 */ u8 _36[2];
-} MgRunner;
-
-// CPU state per player at g_Minigame + 0x1DCC (see fn_3_142C18).
-typedef struct {
-    /* 0x0 */ s16 timer;
-    /* 0x2 */ s8 state;
-    /* 0x3 */ u8 _3;
-} MgCpu;
-
-// Fake controller input for CPU players at g_Minigame + 0x1D7C (16 bytes per port).
-typedef struct {
-    /* 0x0 */ s16 stickX;
-    /* 0x2 */ u8 _2[2];
-    /* 0x4 */ u16 held;
-    /* 0x6 */ u16 trig;
-    /* 0x8 */ u8 _8[8];
-} MgPad;
 
 // This unit's .bss (B7C0..B850) as statics, declared in reverse address order:
 // a flashing 4x4 RGBA8 texture used by the TEV hook fn_3_141C8C.
@@ -176,7 +128,7 @@ void fn_3_141F30(void) {
     s32 n;
     s32 i;
 
-    lbl_3_bss_B7E4 = lbl_3_bss_B7E4 + (lbl_80366158[0x28] == 0);
+    lbl_3_bss_B7E4 = lbl_3_bss_B7E4 + (lbl_80366158._28 == 0);
     if (!(lbl_3_bss_B7E4 & 1)) {
         p = lbl_3_bss_B800;
         v = p[0];
@@ -249,56 +201,51 @@ extern u8 lbl_3_data_21E9C[][4];
 #if NONMATCHING
 void fn_3_142284(void) {
     s32 dist[4];
-    u8* g;
-    s16* lv;
-    MgCpu* cpu;
     s32* d;
-    MgPad* pad;
+    InputStruct* pad;
     u8 port;
     s8 i;
 
-    g = g_Minigame;
     d = dist;
-    lv = (s16*)g_Minigame;
-    cpu = (MgCpu*)(g_Minigame + 0x1DCC);
     i = 0;
     do {
-        port = g[0x18CC];
+        MgCpu* cpu = &MG->cpuIn.cpu[i];
+        port = MG->port[i];
         if ((s8)port >= 0 && (s8)port < 4) {
             *d = fn_3_142570(i);
-            if (g[0x18D8] != 0) {
-                pad = (MgPad*)(g_Minigame + 0x1D7C + (s8)port * 16);
-                memset(pad, 0, sizeof(MgPad));
+            if (MG->isCpu[i] != 0) {
+                pad = &MG->cpuIn.pad[(s8)port];
+                memset(pad, 0, sizeof(InputStruct));
                 switch (cpu->state) {
                 case 0:
                     if (*d >= 0) {
-                        switch (RandomIndexFromWeights(lbl_3_data_21E9C[g[0x18DC]], 4)) {
+                        switch (RandomIndexFromWeights(lbl_3_data_21E9C[MG->cpuLevel[i]], 4)) {
                         case 0:
-                            if (*d > LERPToNewRange_Float(lv[0xDA8], 0, *(s16*)(lbl_3_data_21E68 + 0x26),
-                                                          *(s16*)(lbl_3_data_21E68 + 0x4), *(s16*)(lbl_3_data_21E68 + 0x6)) + 3) {
+                            if (*d > LERPToNewRange_Float(MG->combo[i], 0, lbl_3_data_21E68[19], lbl_3_data_21E68[2],
+                                                          lbl_3_data_21E68[3]) + 3) {
                                 if (fn_3_1428F0(i, 0)) {
                                     cpu->state = 1;
                                 }
                             } else {
-                                pad->trig |= 4;
-                                pad->held |= 4;
+                                pad->newButtonInput |= 4;
+                                pad->buttonInput |= 4;
                                 cpu->state = 2;
                             }
                             break;
                         case 1:
-                            if (*d > *(s16*)(lbl_3_data_21E68 + 0x4) + 3) {
+                            if (*d > lbl_3_data_21E68[2] + 3) {
                                 if (fn_3_1428F0(i, 0)) {
                                     cpu->state = 1;
                                 }
                             } else {
-                                pad->trig |= 4;
-                                pad->held |= 4;
+                                pad->newButtonInput |= 4;
+                                pad->buttonInput |= 4;
                                 cpu->state = 2;
                             }
                             break;
                         case 2:
-                            pad->trig |= 4;
-                            pad->held |= 4;
+                            pad->newButtonInput |= 4;
+                            pad->buttonInput |= 4;
                             cpu->state = 2;
                             break;
                         case 3:
@@ -314,25 +261,25 @@ void fn_3_142284(void) {
                     }
                     break;
                 case 1:
-                    if ((s8)g[0x1C92] < 0) {
+                    if (MG->aim[i] < 0) {
                         cpu->state = 0;
                     }
                     break;
                 case 2:
-                    pad->held |= 4;
-                    if (g[0x1CA5] != 1) {
+                    pad->buttonInput |= 4;
+                    if (MG->jump[i] != 1) {
                         cpu->state = 3;
                     }
                     break;
                 case 3:
                     if (*d >= 0) {
-                        pad->held |= 4;
+                        pad->buttonInput |= 4;
                     } else {
                         cpu->state = 4;
                     }
                     break;
                 case 4:
-                    if (g[0x1CA5] != 3) {
+                    if (MG->jump[i] != 3) {
                         cpu->state = 0;
                     }
                     break;
@@ -342,9 +289,6 @@ void fn_3_142284(void) {
             *d = -1;
         }
         i++;
-        cpu++;
-        lv++;
-        g++;
         d++;
     } while (i < 4);
 }
@@ -380,7 +324,7 @@ static inline f32 sqrt37A8(f32 x) {
 // NONMATCHING 90.9%: one-register shift (r10->r9) throughout and the initial loop branch; logic matches
 #if NONMATCHING
 s32 fn_3_142570(s8 i) {
-    u8* f;
+    InMemFielderType* f;
     MgBall* b;
     f32 reach;
     f32 dx;
@@ -391,20 +335,18 @@ s32 fn_3_142570(s8 i) {
     s32 t;
     u8 found;
     s8 j;
-    u8* g;
-    s16* tm;
     s16 lim;
 
-    f = g_Fielders + (s8)g_Minigame[i + 0x18F8] * 0x268;
-    reach = lbl_3_data_21E24[2] + lbl_3_data_47BC[f[0x1C9]];
+    f = &g_Fielders[MG->fielder[i]];
+    reach = lbl_3_data_21E24[2] + lbl_3_data_47BC[f->weight];
     best = 10000;
     found = 0;
     j = 0;
     do {
-        b = &((MgBallView*)g_Minigame)->ball[j];
+        b = &MG->ball[j];
         if (b->used != 0) {
-            dz = *(f32*)(f + 0x8) - b->pos.z;
-            dx = *(f32*)(f + 0x0) - b->pos.x;
+            dz = f->pos.z - b->pos.z;
+            dx = f->pos.x - b->pos.x;
             d = sqrt37A8(dx * dx + dz * dz);
             if (d < reach) {
                 return 0;
@@ -422,12 +364,10 @@ s32 fn_3_142570(s8 i) {
         }
         j++;
     } while (j < 40);
-    g = g_Minigame;
-    tm = (s16*)g_Minigame;
-    lim = *(s16*)(lbl_3_data_21E68 + 0x2E);
-    for (j = 0; j < 50; j++, g++, tm++) {
-        if (g[0x193A] == 6 && g[0x1B84] == 5 && i == -1 - (s8)g[0x1BE8]) {
-            t = lim - tm[0xBE4];
+    lim = lbl_3_data_21E68[23];
+    for (j = 0; j < 50; j++) {
+        if (MG->objState[j] == 6 && MG->objKind[j] == 5 && i == -1 - MG->objTarget[j]) {
+            t = lim - MG->objTimer[j];
             if (t >= 0) {
                 if (t < best) {
                     best = t;
@@ -452,7 +392,7 @@ s32 fn_3_142570(s8 i) {
 u8 fn_3_1428F0(s8 i, s32 force) {
     MgCpu* cpu;
     MgRunner* e;
-    MgPad* pad;
+    InputStruct* pad;
     s8 idx;
     u8 hit;
     s8 cnt;
@@ -464,24 +404,24 @@ u8 fn_3_1428F0(s8 i, s32 force) {
     s8 k;
 
     idx = -1;
-    cpu = (MgCpu*)(g_Minigame + 0x1DCC) + i;
+    cpu = &MG->cpuIn.cpu[i];
     hit = 0;
     cnt = 0;
     pick = cpu->_3;
-    port = g_Minigame[i + 0x18CC];
-    diff = g_Minigame[i + 0x18DC];
+    port = MG->port[i];
+    diff = MG->cpuLevel[i];
     if (cpu->timer >= 0) {
         cpu->timer--;
     }
-    tgt = g_Minigame[i * 3 + 0x1C7E];
+    tgt = MG->held[i][0];
     if (tgt < 0) {
         return 0;
     }
-    e = (MgRunner*)g_Minigame;
+    e = MG->runner;
     for (k = 0; k < 3; k++, e++) {
         if (e->st == 2) {
             cnt++;
-            if (((MgRunner*)g_Minigame)[(s8)pick].who == 4) {
+            if (MG->runner[(s8)pick].who == 4) {
                 idx = k;
                 break;
             }
@@ -490,7 +430,7 @@ u8 fn_3_1428F0(s8 i, s32 force) {
     if (idx < 0 && cpu->timer >= 0 && (u8)force == 0) {
         return 0;
     }
-    kind = g_Minigame[tgt + 0x1B84];
+    kind = MG->objKind[tgt];
     if (kind != 5 || (cnt != 0 && RandomInt_Game(100) >= lbl_3_data_21EC0[diff])) {
         if (cnt == 0) {
             return 0;
@@ -499,13 +439,13 @@ u8 fn_3_1428F0(s8 i, s32 force) {
             hit = 1;
         }
         if (!hit) {
-            e = &((MgRunner*)g_Minigame)[(s8)pick];
+            e = &MG->runner[(s8)pick];
             if (e->st == 2 && (kind == e->who || kind == 5 || e->who == 4)) {
                 hit = 1;
             }
         }
         if (!hit) {
-            e = (MgRunner*)g_Minigame;
+            e = MG->runner;
             for (k = 0; k < 3; k++, e++) {
                 if (e->st == 2 && (kind == e->who || kind == 5 || e->who == 4)) {
                     pick = k;
@@ -518,26 +458,26 @@ u8 fn_3_1428F0(s8 i, s32 force) {
     if (hit) {
         switch ((s8)pick) {
         case 0:
-            pad = (MgPad*)(g_Minigame + 0x1D7C) + (s8)port;
-            pad->trig |= 0x102;
-            pad->held |= 0x102;
+            pad = &MG->cpuIn.pad[(s8)port];
+            pad->newButtonInput |= 0x102;
+            pad->buttonInput |= 0x102;
             break;
         case 1:
-            pad = (MgPad*)(g_Minigame + 0x1D7C) + (s8)port;
-            pad->trig |= 0x108;
-            pad->held |= 0x108;
+            pad = &MG->cpuIn.pad[(s8)port];
+            pad->newButtonInput |= 0x108;
+            pad->buttonInput |= 0x108;
             break;
         case 2:
-            pad = (MgPad*)(g_Minigame + 0x1D7C) + (s8)port;
-            pad->trig |= 0x101;
-            pad->held |= 0x101;
+            pad = &MG->cpuIn.pad[(s8)port];
+            pad->newButtonInput |= 0x101;
+            pad->buttonInput |= 0x101;
             break;
         }
         cpu->_3 = pick;
     } else {
-        pad = (MgPad*)(g_Minigame + 0x1D7C) + (s8)port;
-        pad->trig |= 0x200;
-        pad->held |= 0x200;
+        pad = &MG->cpuIn.pad[(s8)port];
+        pad->newButtonInput |= 0x200;
+        pad->buttonInput |= 0x200;
     }
     cpu->timer = RandomInt_Game_Range(((MgRange*)lbl_3_data_21EAC)[diff].lo, ((MgRange*)lbl_3_data_21EAC)[diff].hi);
     return 1;
@@ -548,35 +488,33 @@ u8 fn_3_1428F0(s8 i, s32 force) {
 
 // 97%: q/m saved registers swapped (r28/r29); this form matches the inlined copy in fn_3_146928
 void fn_3_142C18(void) {
-    u8* q;
+    MgCpu* q;
     s8 i;
     u8 idx;
 
-    q = g_Minigame + 0x1DCC;
-    memset(g_Minigame + 0x1D7C, 0, 0x78);
+    q = MG->cpuIn.cpu;
+    memset(&MG->cpuIn, 0, sizeof(MgCpuArea));
     i = 0;
     do {
-        idx = g_Minigame[0x18DC + i];
-        q[3] = 1;
-        *(s16*)q = RandomInt_Game_Range(((MgRange*)lbl_3_data_21EAC)[idx].lo, ((MgRange*)lbl_3_data_21EAC)[idx].hi);
+        idx = MG->cpuLevel[i];
+        q->_3 = 1;
+        q->timer = RandomInt_Game_Range(((MgRange*)lbl_3_data_21EAC)[idx].lo, ((MgRange*)lbl_3_data_21EAC)[idx].hi);
         i++;
-        q += 4;
+        q++;
     } while (i < 4);
 }
 
 // .text:0x00142CA8 size:0x10C mapped:0x80781D3C
-typedef struct { u8 pad0[0x1890]; s16 a[4]; u8 pad1[0x1B58 - 0x1898]; u8 b[4][10]; } MgArr2;
-
 void fn_3_142CA8(void) {
-    MgArr2* m = (MgArr2*)g_Minigame;
+    Mg37A8* m = MG;
     s32 i;
     s32 j;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 10; j++) {
-            m->a[i] += m->b[i][j];
-            m->b[i][j] = 0;
+            m->score[i] += m->hitLog[i][j];
+            m->hitLog[i][j] = 0;
         }
-        g_Minigame[0x1B80 + i] = 0;
+        MG->hitLogCount[i] = 0;
     }
 }
 
@@ -584,7 +522,7 @@ void fn_3_142CA8(void) {
 extern f32 lbl_3_data_21BC4[][12];
 
 void fn_3_142DB4(s32 idx) {
-    MgRunner* r = (MgRunner*)g_Minigame + idx;
+    MgRunner* r = &MG->runner[idx];
     MgBall* b;
     s32 i;
     s16 ch;
@@ -595,12 +533,12 @@ void fn_3_142DB4(s32 idx) {
     s32 k;
 
     for (i = 0; i < 40; i++) {
-        if (g_Minigame[i * 0x28 + 0xCE] == 0) { // ball[i].used
+        if (MG->ball[i].used == 0) {
             break;
         }
     }
     if (i < 40) {
-        b = &((MgBallView*)g_Minigame)->ball[i];
+        b = &MG->ball[i];
         if (r->sel != 0) {
             b->pos.x = lbl_3_data_21BC4[idx][9];
             b->pos.y = lbl_3_data_21BC4[idx][10];
@@ -611,17 +549,17 @@ void fn_3_142DB4(s32 idx) {
             b->pos.z = lbl_3_data_21BC4[idx][8];
         }
         b->_22 = r->player;
-        ch = *(s16*)(g_Fielders + r->fielder * 0x268 + 0x17A);
+        ch = FLD(r->fielder)->charID;
         b->owner = r->player;
-        k = g_Minigame[r->player + 0x1CAD];
+        k = MG_B(home, r->player);
         h = lbl_3_rodata_385C * ((f32)lbl_3_data_7F10[ch] * charSizeMultipliers[ch][0]);
         dx = lbl_3_data_21B94[k].x - b->pos.x;
         dy = lbl_3_data_21B94[k].y - b->pos.y;
         dz = lbl_3_data_21B94[k].z - b->pos.z;
-        dy += ((f32*)lbl_3_data_21D2C)[1] + h;
-        b->vel.x = dx / (f32)*(s16*)(lbl_3_data_21E68 + 0x2C);
-        b->vel.y = dy / (f32)*(s16*)(lbl_3_data_21E68 + 0x2C);
-        b->vel.z = dz / (f32)*(s16*)(lbl_3_data_21E68 + 0x2C);
+        dy += lbl_3_data_21D2C[1] + h;
+        b->vel.x = dx / (f32)lbl_3_data_21E68[22];
+        b->vel.y = dy / (f32)lbl_3_data_21E68[22];
+        b->vel.z = dz / (f32)lbl_3_data_21E68[22];
         b->_18 = lbl_3_rodata_3834;
         b->used = 2;
         b->timer = 0;
@@ -642,23 +580,23 @@ void fn_3_1430D0(s32 hand, s32 p) {
     s32 k;
 
     for (i = 0; i < 40; i++) {
-        if (g_Minigame[i * 0x28 + 0xCE] == 0) { // ball[i].used
+        if (MG_BALL_USED(i) == 0) {
             break;
         }
     }
     if (i < 40) {
-        b = &((MgBallView*)g_Minigame)->ball[i];
+        b = &MG->ball[i];
         fn_3_118358(hand, &b->pos.x);
-        ch = *(s16*)(g_Fielders + (s8)g_Minigame[p + 0x18F8] * 0x268 + 0x17A);
-        k = g_Minigame[p + 0x1CAD];
+        ch = FLD((s8)MG_B(fielder, p))->charID;
+        k = MG_B(home, p);
         h = lbl_3_rodata_385C * ((f32)lbl_3_data_7F10[ch] * charSizeMultipliers[ch][0]);
         dx = lbl_3_data_21B94[k].x - b->pos.x;
         dy = lbl_3_data_21B94[k].y - b->pos.y;
         dz = lbl_3_data_21B94[k].z - b->pos.z;
-        dy += ((f32*)lbl_3_data_21D2C)[1] + h;
-        b->vel.x = dx / (f32)*(s16*)(lbl_3_data_21E68 + 0x2A);
-        b->vel.y = dy / (f32)*(s16*)(lbl_3_data_21E68 + 0x2A);
-        b->vel.z = dz / (f32)*(s16*)(lbl_3_data_21E68 + 0x2A);
+        dy += lbl_3_data_21D2C[1] + h;
+        b->vel.x = dx / (f32)lbl_3_data_21E68[21];
+        b->vel.y = dy / (f32)lbl_3_data_21E68[21];
+        b->vel.z = dz / (f32)lbl_3_data_21E68[21];
         b->used = 1;
         b->timer = 0;
         b->owner = p;
@@ -674,15 +612,14 @@ extern void fn_3_6C854(int, int);
 #if NONMATCHING
 void fn_3_143358(s32 i) {
     MgBall* b;
-    u8* f;
+    InMemFielderType* f;
     s32 k;
     u8 fi;
-    u8* gp;
     Vec dir;
 
-    b = &((MgBallView*)g_Minigame)->ball[i];
+    b = &MG->ball[i];
     b->timer++;
-    if (b->timer > *(s16*)(lbl_3_data_21E68 + 0x14)) {
+    if (b->timer > lbl_3_data_21E68[10]) {
         b->used = 0;
         return;
     }
@@ -695,7 +632,7 @@ void fn_3_143358(s32 i) {
     if (b->pos.y < lbl_3_data_21E24[13]) {
         if (b->pos.z < lbl_3_rodata_3834) {
             if (b->used == 2) {
-                g_Minigame[b->owner + 0x1C9E] = 0;
+                MG->targeted[b->owner] = 0;
             }
             b->used = 0;
             return;
@@ -703,34 +640,33 @@ void fn_3_143358(s32 i) {
         b->vel.y = -b->vel.y;
     }
     for (k = 0; k < 4; k++) {
-        if ((s8)(fi = g_Minigame[k + 0x18F8]) >= 0) {
-            f = g_Fielders + (s8)fi * 0x268;
-            if (g_Minigame[k + 0x1CA5] == 0) {
-                if (lbl_3_data_21E24[2] + lbl_3_data_47BC[f[0x1C9]] >
-                    sqrt37A8((b->pos.x - *(f32*)(f + 0x0)) * (b->pos.x - *(f32*)(f + 0x0)) +
-                             (b->pos.z - *(f32*)(f + 0x8)) * (b->pos.z - *(f32*)(f + 0x8)))) {
+        if ((s8)(fi = MG->fielder[k]) >= 0) {
+            f = &g_Fielders[(s8)fi];
+            if (MG->jump[k] == 0) {
+                if (lbl_3_data_21E24[2] + lbl_3_data_47BC[f->weight] >
+                    sqrt37A8((b->pos.x - f->pos.x) * (b->pos.x - f->pos.x) +
+                             (b->pos.z - f->pos.z) * (b->pos.z - f->pos.z))) {
                     if (b->used == 2) {
-                        g_Minigame[b->owner + 0x1C9E] = 0;
+                        MG->targeted[b->owner] = 0;
                     }
                     b->used = 0;
-                    if (g_Minigame[k + 0x1C9A] == 0) {
-                        g_Minigame[k + 0x1C9A] = 1;
-                        ((s16*)(g_Minigame + 0x1B3C))[k] = *(s16*)(lbl_3_data_21E68 + 0x1C);
-                        ((s16*)(g_Minigame + 0x1B50))[k] = 0;
+                    if (MG->stun[k] == 0) {
+                        MG->stun[k] = 1;
+                        MG->stunTimer[k] = lbl_3_data_21E68[14];
+                        MG->combo[k] = 0;
                         dir.x = b->vel.x;
                         dir.y = lbl_3_rodata_3834;
                         dir.z = b->vel.z;
                         PSVECNormalize(&dir, &dir);
-                        *(f32*)(f + 0x38) = dir.x;
-                        gp = g_Minigame + k;
-                        gp[0x1DF4] = 1;
-                        *(f32*)(f + 0x3C) = dir.z;
-                        *(f32*)(f + 0x50) = lbl_3_data_21E24[15];
-                        fn_3_6C854((s8)gp[0x18CC], 2);
-                        if (g_Minigame[k + 0x1CB1] < 0xFFFE) {
-                            g_Minigame[k + 0x1CB1]++;
+                        f->_038 = dir.x;
+                        MG->knocked[k] = 1;
+                        f->_03C = dir.z;
+                        f->speed = lbl_3_data_21E24[15];
+                        fn_3_6C854(MG->port[k], 2);
+                        if (MG->hits[k] < 0xFFFE) {
+                            MG->hits[k]++;
                         } else {
-                            g_Minigame[k + 0x1CB1] = 0xFF;
+                            MG->hits[k] = 0xFF;
                         }
                     }
                     return;
@@ -745,7 +681,7 @@ void fn_3_143358(s32 i) {
 void fn_3_143714(void) {
     s32 i;
     for (i = 0; i < 0x28; i++) {
-        if (g_Minigame[0xCE + i * 0x28] != 0) {
+        if (MG->ball[i].used != 0) {
             ((void (*)(s32))fn_3_143358)(i);
         }
     }
@@ -754,7 +690,8 @@ void fn_3_143714(void) {
 // .text:0x00143770 size:0x27C mapped:0x80782804
 // 98.4%: only preheader scheduling differs (addi r6 g_Minigame / stw -1 order) and loop-end addi order (r6,r8,r9);
 // pa/pb pointer pair + local `Vec dir = {0,0,-1}` + x/r float temps are needed for the rest. Tried ~3000 decl/init/header permutations.
-s32 fn_3_143770(u8* p) {
+s32 fn_3_143770(u8* p) { // p: MgRunner (rep_3310 passes its own view)
+    MgRunner* e = (MgRunner*)p;
     s32 l1[4];
     s32 l2[4];
     Vec d;
@@ -770,7 +707,7 @@ s32 fn_3_143770(u8* p) {
     f32 x;
     f32 r;
 
-    if (p[0x2E] == 0) {
+    if (e->_2E == 0) {
         l1[0] = -1;
         l1[1] = -1;
         l1[2] = -1;
@@ -780,8 +717,8 @@ s32 fn_3_143770(u8* p) {
         pa = l1;
         pb = l2;
         for (i = 0; i < 4; i++, pb++) {
-            if (g_Minigame[0x1C9A + i] == 0) {
-                if (g_Minigame[0x1C9E + i] == 0) {
+            if (MG->stun[i] == 0) {
+                if (MG->targeted[i] == 0) {
                     *pa++ = i;
                     n1++;
                 }
@@ -801,13 +738,13 @@ s32 fn_3_143770(u8* p) {
             l = l1;
             n = &n1;
         }
-        p[0x35] = l[random_fn_3_9EE24(*n)];
-        p[0x34] = g_Minigame[*(s8*)(p + 0x35) + 0x18F8];
-        g_Minigame[*(s8*)(p + 0x35) + 0x1C9E] = 1;
+        e->player = l[random_fn_3_9EE24(*n)];
+        e->fielder = MG->fielder[e->player];
+        MG->targeted[e->player] = 1;
     } else {
-        p[0x34] = g_Minigame[*(s8*)(p + 0x2F) + 0x18F8];
+        e->fielder = MG_B(fielder, e->queue[0]);
     }
-    PSVECSubtract((Vec*)(g_Fielders + *(s8*)(p + 0x34) * 0x268), (Vec*)p, &d);
+    PSVECSubtract(&g_Fielders[e->fielder].pos, &e->pos, &d);
     d.y = lbl_3_rodata_3834;
     if (PSVECMag(&d)) {
         PSVECNormalize(&d, &d);
@@ -818,13 +755,13 @@ s32 fn_3_143770(u8* p) {
     if (x < lbl_3_rodata_3834) {
         r = lbl_3_rodata_3868 - ang;
     }
-    *(f32*)(p + 0x10) = -r;
+    e->_10 = -r;
     return 1;
 }
 
 // .text:0x001439EC size:0x5C0 mapped:0x80782A80
 void fn_3_1439EC(s32 idx) {
-    MgRunner* r = (MgRunner*)g_Minigame + idx;
+    MgRunner* r = &MG->runner[idx];
     s32 k;
 
     if (r->sel != 0) {
@@ -832,7 +769,7 @@ void fn_3_1439EC(s32 idx) {
         if (r->throwTimer == 1) {
             r->_2E = 0;
         }
-        if (r->throwTimer >= *(s16*)(lbl_3_data_21E68 + 0x18)) {
+        if (r->throwTimer >= lbl_3_data_21E68[12]) {
             r->throwTimer = 0;
             for (k = 0; k < 4; k++) {
                 fn_3_1430D0(idx, k);
@@ -842,7 +779,7 @@ void fn_3_1439EC(s32 idx) {
         }
     } else if (r->_2E != 0) {
         r->queueTimer++;
-        if (r->queueTimer == *(s16*)(lbl_3_data_21E68 + 0x1A)) {
+        if (r->queueTimer == lbl_3_data_21E68[13]) {
             fn_3_1430D0(idx, r->queue[0]);
             r->fielder = -1;
             r->queue[0] = r->queue[1];
@@ -859,15 +796,14 @@ void fn_3_1439EC(s32 idx) {
 }
 
 // .text:0x00143FAC size:0x80 mapped:0x80783040
-typedef struct { u8 pad0[0x1A]; s16 f1A; u8 pad1C[0x0E]; u8 st; u8 pad2B[0x0D]; } MgEnt;
 void fn_3_143FAC(s32 x) {
-    MgEnt *e = (MgEnt*)g_Minigame;
+    MgRunner* e = MG->runner;
     s32 i;
-    if (g_Minigame[0x1CA2] == 2) {
+    if (MG->_1CA2 == 2) {
         for (i = 0; i < 3; i++) {
             if (e->st == 2) {
                 e->st = 3;
-                e->f1A = 0;
+                e->_1A = 0;
             }
             e++;
         }
@@ -876,8 +812,9 @@ void fn_3_143FAC(s32 x) {
 }
 
 // .text:0x0014402C size:0x210 mapped:0x807830C0
-// 85.7%: original keeps only idx*0x38 in r30 and re-adds g_Minigame after each call (the first base+off is consumed by lhau on +0x1C);
-// here CSE keeps base+off in a saved reg (r30) for the s16/f32 stores (u8 stores already re-add). Decl order (cand,q,n,c,i,off) fixed the cand[] regs.
+// ~84%: original keeps only idx*0x38 in r30 and re-adds g_Minigame after each call (the first base+off is consumed by lhau on +0x1C);
+// here CSE keeps base+off in a saved reg (r30) for the s16/f32 stores. The byte-offset form (`*(s16*)(g_Minigame + off + 0x1C)`)
+// got 85.7% (it reproduces the lhau); typed fields fold +0x1C into the lha. Decl order (cand,q,n,c,i,off) fixed the cand[] regs.
 void fn_3_14402C(s32 idx) {
     s32 cand[4];
     u8* q;
@@ -886,41 +823,41 @@ void fn_3_14402C(s32 idx) {
     s32 i;
     s32 off;
 
-#define MU(K) (g_Minigame + off + (K))
-    if (g_Minigame[0x190B] != 0) {
+#define MU(K) (((MgRunner*)(g_Minigame + off))->K)
+    if (MG_B(turnOverStatus, 0) != 0) {
         return;
     }
     off = idx * 0x38;
-    if (*(s16*)MU(0x1C) < 0) {
-        *(s16*)MU(0x1C) = RandomInt_Game_Range(*(s16*)lbl_3_data_21DC4, *(s16*)(lbl_3_data_21DC4 + 2));
-    } else if (g_Minigame[0x1CA3] == 0 && g_Minigame[0x1CA2] == 0) {
-        *(s16*)MU(0x1C) = *(s16*)MU(0x1C) - 1;
-        if (*(s16*)MU(0x1C) == 0) {
+    if (MU(_1C) < 0) {
+        MU(_1C) = RandomInt_Game_Range(lbl_3_data_21DC4[0], lbl_3_data_21DC4[1]);
+    } else if (MG_B(bossActive, 0) == 0 && MG_B(_1CA2, 0) == 0) {
+        MU(_1C) = MU(_1C) - 1;
+        if (MU(_1C) == 0) {
             n = 0;
             q = g_Minigame;
             c = cand;
             for (i = 0; i < 4; i++, q++) {
-                if (q[0x1CA9] == 0) {
+                if (q[(s32)offsetof(Mg37A8, kindUsed)] == 0) {
                     *c++ = i;
                     n++;
                 }
             }
-            *MU(0x2C) = cand[random_fn_3_9EE24(n)];
-            g_Minigame[0x1CA9 + *MU(0x2C)] = 1;
-            *MU(0x2D) = lbl_3_data_21E10[*MU(0x2C)];
-            *(s16*)MU(0x1C) = *(s16*)(lbl_3_data_21E68 + 0xA);
-            *(s16*)MU(0x18) = 0;
-            *(s16*)MU(0x1A) = 0;
-            *(s16*)MU(0x1E) = 0;
-            *MU(0x2A) = 1;
-            *MU(0x2B) = 0;
-            *(f32*)MU(0x4) = *(f32*)(lbl_3_data_21D1C + 4);
-            *(s16*)MU(0x22) = *(s16*)lbl_3_data_21E04 + RandomInt_Game_Range(*(s16*)lbl_3_data_21E04, *(s16*)(lbl_3_data_21E04 + 2));
-            *(s16*)MU(0x24) = *(s16*)MU(0x22);
-            *(s8*)MU(0x34) = -1;
-            *(f32*)MU(0x14) = lbl_3_rodata_3834;
-            *(f32*)MU(0xC) = lbl_3_rodata_3834;
-            *(f32*)MU(0x10) = lbl_3_data_26698[idx];
+            MU(who) = cand[random_fn_3_9EE24(n)];
+            MG->kindUsed[MU(who)] = 1;
+            MU(_2D) = lbl_3_data_21E10[MU(who)];
+            MU(_1C) = lbl_3_data_21E68[5];
+            MU(_18) = 0;
+            MU(_1A) = 0;
+            MU(_1E) = 0;
+            MU(st) = 1;
+            MU(sel) = 0;
+            MU(pos.y) = lbl_3_data_21D1C[1];
+            MU(_22) = lbl_3_data_21E04[0] + RandomInt_Game_Range(lbl_3_data_21E04[0], lbl_3_data_21E04[1]);
+            MU(_24) = MU(_22);
+            MU(fielder) = -1;
+            MU(_14) = lbl_3_rodata_3834;
+            MU(_C) = lbl_3_rodata_3834;
+            MU(_10) = lbl_3_data_26698[idx];
         }
     }
 #undef MU
@@ -928,141 +865,139 @@ void fn_3_14402C(s32 idx) {
 
 // .text:0x0014423C size:0x200 mapped:0x807832D0
 void fn_3_14423C(void) {
-    u8* g = g_Minigame;
+    Mg37A8* g = MG;
     s32 lo;
     s32 hi;
     s32 n;
-    u8* p;
-    if (g[0x190B] != 0) {
+    MgRunner* p;
+    if (g->turnOverStatus != 0) {
         return;
     }
-    if (g[0x1CA3] != 0) {
-        if (g[0x62] == 2 && *(s16*)(g + 0x50) >= lbl_3_data_21DC8[g[0x1A2B]][g[0x1CA4] - 1].lim * 60) {
-            g[0x62] = 3;
-            g[0x66] = 0;
-            *(s16*)(g + 0x52) = 0;
+    if (g->bossActive != 0) {
+        if (g->runner[1].st == 2 && g->runner[1]._18 >= lbl_3_data_21DC8[g->difficulty][g->bossCount - 1].lim * 60) {
+            g->runner[1].st = 3;
+            g->runner[1]._2E = 0;
+            g->runner[1]._1A = 0;
         }
         return;
     }
-    if (g[0x1CA4] >= 2) {
+    if (g->bossCount >= 2) {
         return;
     }
-    if (g[0x1909] == 0) {
-        lo = lbl_3_data_21DC8[g[0x1A2B]][g[0x1CA4]].lo * 60;
-        hi = lbl_3_data_21DC8[g[0x1A2B]][g[0x1CA4]].hi * 60;
+    if (g->multiPlayerInd == 0) {
+        lo = lbl_3_data_21DC8[g->difficulty][g->bossCount].lo * 60;
+        hi = lbl_3_data_21DC8[g->difficulty][g->bossCount].hi * 60;
     } else {
-        lo = lbl_3_data_21DC8[4][g[0x1CA4]].lo * 60;
-        hi = lbl_3_data_21DC8[4][g[0x1CA4]].hi * 60;
+        lo = lbl_3_data_21DC8[4][g->bossCount].lo * 60;
+        hi = lbl_3_data_21DC8[4][g->bossCount].hi * 60;
     }
-    if (*(u32*)(g_Minigame + 0x17C0) < lo || *(u32*)(g_Minigame + 0x17C0) > hi) {
-        g_Minigame[0x1CA2] = 0;
+    if (MG->frame < lo || MG->frame > hi) {
+        MG->_1CA2 = 0;
         return;
     }
     for (n = 0; n < 3; n++) {
-        if (g_Minigame[n * 0x38 + 0x2A] != 0) {
+        if (MG->runner[n].st != 0) {
             break;
         }
     }
     if (n < 3) {
-        if (g_Minigame[0x1CA2] == 0) {
-            g_Minigame[0x1CA2] = 2;
+        if (MG->_1CA2 == 0) {
+            MG->_1CA2 = 2;
         }
         return;
     }
-    p = g_Minigame + 0x38;
-    p[0x2A] = 1;
-    p[0x2B] = 1;
-    p[0x2C] = 4;
-    p[0x2D] = lbl_3_data_21E10[g[0x1CA4] + 4];
-    *(s16*)(p + 0x18) = 0;
-    *(s16*)(p + 0x1A) = 0;
-    *(s16*)(p + 0x1C) = *(s16*)(lbl_3_data_21E68 + 0xA);
-    *(s16*)(p + 0x20) = 0;
-    p[0x2E] = 0;
-    *(f32*)(p + 0x4) = *(f32*)(lbl_3_data_21D1C + 0xC);
-    ((s8*)p)[0x2F] = -1;
-    ((s8*)p)[0x30] = -1;
-    ((s8*)p)[0x31] = -1;
-    ((s8*)p)[0x32] = -1;
-    g[0x1CA3] = 1;
-    g_Minigame[0x1CA2] = 0;
-    g[0x1CA4]++;
+    p = &MG->runner[1];
+    p->st = 1;
+    p->sel = 1;
+    p->who = 4;
+    p->_2D = lbl_3_data_21E10[g->bossCount + 4];
+    p->_18 = 0;
+    p->_1A = 0;
+    p->_1C = lbl_3_data_21E68[5];
+    p->throwTimer = 0;
+    p->_2E = 0;
+    p->pos.y = lbl_3_data_21D1C[3];
+    p->queue[0] = -1;
+    p->queue[1] = -1;
+    p->queue[2] = -1;
+    p->queue[3] = -1;
+    g->bossActive = 1;
+    MG->_1CA2 = 0;
+    g->bossCount++;
 }
 
 // .text:0x0014443C size:0x2E0 mapped:0x807834D0
-typedef struct { u8 pad0[4]; f32 x; u8 pad8[0x10]; s16 a18; s16 a1A; s16 a1C; s16 a1E; u8 pad20[0xA]; u8 st; u8 sel; u8 who; u8 pad2D[0xB]; } MgSpawn;
-
 void fn_3_14443C(void) {
-    MgSpawn* p;
+    MgRunner* p;
     s32 i;
-    u8* g;
+    Mg37A8* g;
     s16* tb;
     f32* v;
     s32 k;
 
     fn_3_14423C();
-    g = g_Minigame;
-    p = (MgSpawn*)g;
-    tb = (s16*)lbl_3_data_21E68;
+    g = MG;
+    p = g->runner;
+    tb = lbl_3_data_21E68;
     i = 0;
     do {
-        if (p->a18 < 0x7FFE) {
-            p->a18 = p->a18 + 1;
+        if (p->_18 < 0x7FFE) {
+            p->_18 = p->_18 + 1;
         } else {
-            p->a18 = 0x7FFF;
+            p->_18 = 0x7FFF;
         }
-        if (p->a1A < 0x7FFE) {
-            p->a1A = p->a1A + 1;
+        if (p->_1A < 0x7FFE) {
+            p->_1A = p->_1A + 1;
         } else {
-            p->a1A = 0x7FFF;
+            p->_1A = 0x7FFF;
         }
-        if (p->a1E != 0) {
-            if (p->a1E < 0x7FFE) {
-                p->a1E = p->a1E + 1;
+        if (p->_1E != 0) {
+            if (p->_1E < 0x7FFE) {
+                p->_1E = p->_1E + 1;
             } else {
-                p->a1E = 0x7FFF;
+                p->_1E = 0x7FFF;
             }
         }
         if (p->st == 0) {
             ((void (*)(s32))fn_3_14402C)(i);
         } else if (p->st == 1) {
-            p->a1C -= 1;
-            v = (f32*)(lbl_3_data_21D1C + p->sel * 8);
-            p->x = (v[1] - v[0]) * ((f32)p->a1A / (f32)tb[5]) + *(f32*)(lbl_3_data_21D1C + p->sel * 8);
-            if (p->a1C <= 0) {
+            p->_1C -= 1;
+            v = &lbl_3_data_21D1C[p->sel * 2];
+            p->pos.y = (v[1] - v[0]) * ((f32)p->_1A / (f32)tb[5]) + lbl_3_data_21D1C[p->sel * 2];
+            if (p->_1C <= 0) {
                 p->st = 2;
-                p->a1A = 0;
+                p->_1A = 0;
             }
         } else if (p->st == 2) {
-            if (g[0x1CA2] == 2) {
-                MgSpawn* e = (MgSpawn*)g;
+            if (g->_1CA2 == 2) {
+                MgRunner* e = g->runner;
                 for (k = 0; k < 3; k++) {
                     if (e->st == 2) {
                         e->st = 3;
-                        e->a1A = 0;
+                        e->_1A = 0;
                     }
                     e++;
                 }
             }
             ((void (*)(s32))fn_3_1439EC)(i);
         } else if (p->st == 3) {
-            v = (f32*)(lbl_3_data_21D1C + p->sel * 8);
-            p->x = (v[0] - v[1]) * ((f32)p->a1A / (f32)tb[6]) + v[0];
-            if (p->a1A >= tb[6]) {
+            v = &lbl_3_data_21D1C[p->sel * 2];
+            p->pos.y = (v[0] - v[1]) * ((f32)p->_1A / (f32)tb[6]) + v[0];
+            if (p->_1A >= tb[6]) {
                 p->st = 0;
-                p->a1A = 0;
-                g_Minigame[p->who + 0x1CA9] = 0;
-                if (g[0x1CA3] != 0) {
-                    g[0x1CA3] = 0;
+                p->_1A = 0;
+                MG->kindUsed[p->who] = 0;
+                if (g->bossActive != 0) {
+                    g->bossActive = 0;
                 }
             }
         } else if (p->st == 4) {
-            if (p->a1C != 0) {
-                p->a1C -= 1;
+            if (p->_1C != 0) {
+                p->_1C -= 1;
             }
-            if (p->a1A >= tb[8]) {
+            if (p->_1A >= tb[8]) {
                 p->st = 0;
-                p->a1A = 0;
+                p->_1A = 0;
             }
         }
         i++;
@@ -1073,15 +1008,15 @@ void fn_3_14443C(void) {
 // .text:0x0014471C size:0x3C0 mapped:0x807837B0
 extern u8 lbl_3_data_21E1C[];
 
-// Object positions / velocities at g_Minigame + 0xCD0 / + 0x1180 (50 each).
-#define MG_OBJ_POS(n) ((Vec*)(g_Minigame + 0xCD0) + (n))
-#define MG_OBJ_VEL(n) ((Vec*)(g_Minigame + 0x1180) + (n))
+// Object positions / velocities (50 used).
+#define MG_OBJ_POS(n) (&MG->objPos[n])
+#define MG_OBJ_VEL(n) (&MG->objVel[n])
 
 // Player p releases the object it is holding: place it at the hand and aim it at the fielder's target.
 // NONMATCHING 93.2%: original addresses pos/vel through g_Minigame + obj*0xC with an extra pointer to pos.z; register shifts
 #if NONMATCHING
 void fn_3_14471C(s32 p) {
-    u8* f;
+    InMemFielderType* f;
     s32 port;
     u8 obj;
     Vec* pos;
@@ -1092,12 +1027,12 @@ void fn_3_14471C(s32 p) {
     f32 t;
     Vec d;
 
-    port = (s8)g_Minigame[p + 0x18CC];
-    obj = g_Minigame[p + 0x1C8E];
-    f = g_Fielders + (s8)g_Minigame[p + 0x18F8] * 0x268;
-    if (*(s16*)(f + 0x17A) == 0x26) {
+    port = MG->port[p];
+    obj = MG->heldObj[p];
+    f = &g_Fielders[MG->fielder[p]];
+    if (f->charID == 0x26) {
         getAnimRelatedCoordinates(port, 9, &d);
-    } else if (f[0x1C7] == 0) {
+    } else if (f->handedness == 0) {
         getAnimRelatedCoordinates(port, 0x19, &d);
     } else {
         getAnimRelatedCoordinates(port, 0x13, &d);
@@ -1106,12 +1041,12 @@ void fn_3_14471C(s32 p) {
     pos->x = d.x;
     pos->y = -d.y;
     pos->z = d.z;
-    d.x = *(f32*)(f + 0x10C) - pos->x;
-    d.y = *(f32*)(f + 0x110) - pos->y;
-    d.z = *(f32*)(f + 0x114) - pos->z;
-    st = &g_Minigame[obj + 0x193A];
+    d.x = f->throwTarget.x - pos->x;
+    d.y = f->throwTarget.y - pos->y;
+    d.z = f->throwTarget.z - pos->z;
+    st = &MG->objState[obj];
     if (*st == 4) {
-        if (g_Minigame[obj + 0x1B84] != 5) {
+        if (MG->objKind[obj] != 5) {
             len = sqrt37A8(d.x * d.x + d.z * d.z);
             if (p == 0 || p == 3) {
                 k = lbl_3_data_21E24[8] / len;
@@ -1122,21 +1057,21 @@ void fn_3_14471C(s32 p) {
             MG_OBJ_VEL(obj)->z = d.z * k;
             MG_OBJ_VEL(obj)->y = lbl_3_data_21E24[10];
         } else {
-            n = *(s16*)(lbl_3_data_21E68 + 0x2E) + 10;
+            n = lbl_3_data_21E68[23] + 10;
             MG_OBJ_VEL(obj)->x = d.x / (f32)n;
-            MG_OBJ_VEL(obj)->z = (*(f32*)(f + 0x114) - pos->z) / (f32)n;
+            MG_OBJ_VEL(obj)->z = (f->throwTarget.z - pos->z) / (f32)n;
             MG_OBJ_VEL(obj)->y = -lbl_3_data_21E24[11] * (f32)n * lbl_3_rodata_382C;
         }
         *st = 6;
     } else {
-        t = LERPToNewRange_Float(f[0x1CE], 0, 100, lbl_3_data_21E1C[0], lbl_3_data_21E1C[1]);
+        t = LERPToNewRange_Float(f->throwingArm, 0, 100, lbl_3_data_21E1C[0], lbl_3_data_21E1C[1]);
         MG_OBJ_VEL(obj)->x = d.x / t;
         MG_OBJ_VEL(obj)->y = d.y / t;
         MG_OBJ_VEL(obj)->z = d.z / t;
         *st = 5;
     }
-    ((s16*)(g_Minigame + 0x17C8))[obj] = 0;
-    if (g_Minigame[obj + 0x1B84] == 5) {
+    MG->objTimer[obj] = 0;
+    if (MG->objKind[obj] == 5) {
         fn_3_90064(0x308);
     }
 }
@@ -1144,39 +1079,39 @@ void fn_3_14471C(s32 p) {
 
 // .text:0x00144ADC size:0x1DC mapped:0x80783B70
 void fn_3_144ADC(s32 p) {
-    u8* in = g_Controls + (s8)g_Minigame[p + 0x18CC] * 16;
+    InputStruct* in = &g_Controls[MG->port[p]];
     f32 d;
-    u8* f = g_Fielders + (s8)g_Minigame[p + 0x18F8] * 0x268;
+    InMemFielderType* f = &g_Fielders[MG->fielder[p]];
 
-    if (g_Minigame[p + 0x18D8] != 0) {
-        in = g_Minigame + (s8)g_Minigame[p + 0x18CC] * 16 + 0x1D7C;
+    if (MG->isCpu[p] != 0) {
+        in = &MG->cpuIn.pad[MG->port[p]];
     }
-    if (((s16*)(g_Minigame + 0x1B44))[p] < 0x7FFE) {
-        ((s16*)(g_Minigame + 0x1B44))[p]++;
+    if (MG_H(jumpTimer)[p] < 0x7FFE) {
+        MG_H(jumpTimer)[p]++;
     } else {
-        ((s16*)(g_Minigame + 0x1B44))[p] = 0x7FFF;
+        MG_H(jumpTimer)[p] = 0x7FFF;
     }
-    switch (g_Minigame[0x1CA5 + p]) {
+    switch (MG->jump[p]) {
     case 1:
-        d = ((f32*)lbl_3_data_21D2C)[0] - ((f32*)lbl_3_data_21D2C)[1];
-        *(f32*)(f+0xC) = d * ((f32)((s16*)(g_Minigame + 0x1B44))[p] / (f32)*(s16*)(lbl_3_data_21E68 + 0x20)) + ((f32*)lbl_3_data_21D2C)[1];
-        if (((s16*)(g_Minigame + 0x1B44))[p] >= *(s16*)(lbl_3_data_21E68 + 0x20)) {
-            g_Minigame[0x1CA5 + p] = 2;
-            ((s16*)(g_Minigame + 0x1B44))[p] = 0;
+        d = lbl_3_data_21D2C[0] - lbl_3_data_21D2C[1];
+        f->height = d * ((f32)MG_H(jumpTimer)[p] / (f32)lbl_3_data_21E68[16]) + lbl_3_data_21D2C[1];
+        if (MG_H(jumpTimer)[p] >= lbl_3_data_21E68[16]) {
+            MG->jump[p] = 2;
+            MG_H(jumpTimer)[p] = 0;
         }
         break;
     case 2:
-        if (!(*(u16*)(in + 4) & 4)) {
-            g_Minigame[0x1CA5 + p] = 3;
-            ((s16*)(g_Minigame + 0x1B44))[p] = 0;
+        if (!(in->buttonInput & 4)) {
+            MG->jump[p] = 3;
+            MG_H(jumpTimer)[p] = 0;
         }
         break;
     case 3:
-        d = ((f32*)lbl_3_data_21D2C)[1] - ((f32*)lbl_3_data_21D2C)[0];
-        *(f32*)(f+0xC) = d * ((f32)((s16*)(g_Minigame + 0x1B44))[p] / (f32)*(s16*)(lbl_3_data_21E68 + 0x20)) + ((f32*)lbl_3_data_21D2C)[0];
-        if (((s16*)(g_Minigame + 0x1B44))[p] >= *(s16*)(lbl_3_data_21E68 + 0x20)) {
-            g_Minigame[0x1CA5 + p] = 0;
-            ((s16*)(g_Minigame + 0x1B44))[p] = 0;
+        d = lbl_3_data_21D2C[1] - lbl_3_data_21D2C[0];
+        f->height = d * ((f32)MG_H(jumpTimer)[p] / (f32)lbl_3_data_21E68[16]) + lbl_3_data_21D2C[0];
+        if (MG_H(jumpTimer)[p] >= lbl_3_data_21E68[16]) {
+            MG->jump[p] = 0;
+            MG_H(jumpTimer)[p] = 0;
         }
         break;
     }
@@ -1196,12 +1131,9 @@ extern const f64 lbl_3_rodata_3870;
 void fn_3_144CB8(void) {
     s8 others[4];
     s32 i;
-    u8* gp;
-    s16* gs;
-    u8* gq;
-    u8* f;
-    MgPad* pad;
-    u8* o;
+    InMemFielderType* f;
+    InputStruct* pad;
+    s32 o;
     s32 a;
     s32 b;
     u8 t;
@@ -1210,87 +1142,83 @@ void fn_3_144CB8(void) {
     f32* tgt;
     s8* q;
 
-    gp = g_Minigame;
-    gs = (s16*)g_Minigame;
-    gq = g_Minigame;
-    for (i = 0; i < 4; i++, gs++, gq += 3, gp++) {
-        if ((s8)gp[0x18F8] < 0) {
+    for (i = 0; i < 4; i++) {
+        if (MG->fielder[i] < 0) {
             continue;
         }
-        f = g_Fielders + (s8)gp[0x18F8] * 0x268;
-        pad = (MgPad*)(g_Controls + (s8)gp[0x18CC] * 16);
-        if (gp[0x18D8] != 0) {
-            pad = (MgPad*)(g_Minigame + 0x1D7C) + (s8)gp[0x18CC];
+        f = &g_Fielders[MG->fielder[i]];
+        pad = &g_Controls[MG->port[i]];
+        if (MG->isCpu[i] != 0) {
+            pad = &MG->cpuIn.pad[MG->port[i]];
         }
-        if (gp[0x1CA5] != 0) {
+        if (MG->jump[i] != 0) {
             fn_3_144ADC(i);
-        } else if (gp[0x1C9A] == 1) {
-            gs[0xD9E]--;
-            if (gs[0xD9E] <= 0) {
-                gp[0x1C9A] = 2;
-                gs[0xD9E] = *(s16*)(lbl_3_data_21E68 + 0x1E);
+        } else if (MG->stun[i] == 1) {
+            MG->stunTimer[i]--;
+            if (MG->stunTimer[i] <= 0) {
+                MG->stun[i] = 2;
+                MG->stunTimer[i] = lbl_3_data_21E68[15];
             } else {
-                *(f32*)(f + 0x0) = *(f32*)(f + 0x38) * lbl_3_data_21E24[14] + *(f32*)(f + 0x0);
-                *(f32*)(f + 0x4) = *(f32*)(f + 0x4) + *(f32*)(f + 0x50);
-                *(f32*)(f + 0x8) = *(f32*)(f + 0x3C) * lbl_3_data_21E24[14] + *(f32*)(f + 0x8);
-                *(f32*)(f + 0x50) = *(f32*)(f + 0x50) - lbl_3_data_21E24[16];
+                f->pos.x = f->_038 * lbl_3_data_21E24[14] + f->pos.x;
+                f->pos.y = f->pos.y + f->speed;
+                f->pos.z = f->_03C * lbl_3_data_21E24[14] + f->pos.z;
+                f->speed = f->speed - lbl_3_data_21E24[16];
             }
             fn_3_1573AC((u8*)lbl_8036E548.active[i]);
-        } else if (gp[0x1C9A] == 2) {
-            if (g_Minigame[0x190B] == 0) {
-                gs[0xD9E]--;
-                if (gs[0xD9E] <= 0) {
-                    tgt = &lbl_3_data_21B94[gp[0x1CAD]].x;
-                    gp[0x1C9A] = 0;
-                    gp[0x1CA5] = 2;
-                    *(f32*)(f + 0x0) = tgt[0];
-                    *(f32*)(f + 0x4) = tgt[1];
-                    *(f32*)(f + 0x8) = tgt[2];
-                    *(f32*)(f + 0xC) = ((f32*)lbl_3_data_21D2C)[0];
+        } else if (MG->stun[i] == 2) {
+            if (MG->turnOverStatus == 0) {
+                MG->stunTimer[i]--;
+                if (MG->stunTimer[i] <= 0) {
+                    tgt = &lbl_3_data_21B94[MG->home[i]].x;
+                    MG->stun[i] = 0;
+                    MG->jump[i] = 2;
+                    f->pos.x = tgt[0];
+                    f->pos.y = tgt[1];
+                    f->pos.z = tgt[2];
+                    f->height = lbl_3_data_21D2C[0];
                 }
             }
-        } else if (gs[0xD9A] >= 0) {
-            gs[0xD9A]++;
-            a = LERPToNewRange_Float(gs[0xDA8], 0, *(s16*)(lbl_3_data_21E68 + 0x26), *(s16*)(lbl_3_data_21E68 + 0x4),
-                                     *(s16*)(lbl_3_data_21E68 + 0x6));
-            if (gs[0xD9A] == *(s16*)(lbl_3_data_21E68 + 0x8)) {
+        } else if (MG->throwFrame[i] >= 0) {
+            MG->throwFrame[i]++;
+            a = LERPToNewRange_Float(MG->combo[i], 0, lbl_3_data_21E68[19], lbl_3_data_21E68[2], lbl_3_data_21E68[3]);
+            if (MG->throwFrame[i] == lbl_3_data_21E68[4]) {
                 fn_3_14471C(i);
-                gq[0x1C7E] = -1;
-            } else if (gs[0xD9A] >= a) {
-                gs[0xD9A] = -1;
-                gp[0x1C92] = -1;
+                MG->held[i][0] = -1;
+            } else if (MG->throwFrame[i] >= a) {
+                MG->throwFrame[i] = -1;
+                MG->aim[i] = -1;
             }
-        } else if (pad->trig & 0x200) {
-            if (g_Minigame[0x190B] != 0) {
+        } else if (pad->newButtonInput & 0x200) {
+            if (MG->turnOverStatus != 0) {
                 continue;
             }
-            gp[0x1C92] = 3;
+            MG->aim[i] = 3;
             goto aim;
-        } else if (pad->trig & 0x100) {
-            if (g_Minigame[0x190B] != 0) {
+        } else if (pad->newButtonInput & 0x100) {
+            if (MG->turnOverStatus != 0) {
                 continue;
             }
-            if (pad->stickX >= 0xE00 || (pad->held & 2)) {
-                gp[0x1C92] = 0;
-            } else if (pad->stickX >= 0xA00) {
+            if (pad->controlStickAngle >= 0xE00 || (pad->buttonInput & 2)) {
+                MG->aim[i] = 0;
+            } else if (pad->controlStickAngle >= 0xA00) {
                 continue;
-            } else if (pad->stickX >= 0x600 || (pad->held & 1)) {
-                gp[0x1C92] = 2;
-            } else if (pad->stickX >= 0x200 || (pad->held & 8)) {
-                gp[0x1C92] = 1;
-            } else if (pad->stickX >= 0 || (pad->held & 2)) {
-                gp[0x1C92] = 0;
+            } else if (pad->controlStickAngle >= 0x600 || (pad->buttonInput & 1)) {
+                MG->aim[i] = 2;
+            } else if (pad->controlStickAngle >= 0x200 || (pad->buttonInput & 8)) {
+                MG->aim[i] = 1;
+            } else if (pad->controlStickAngle >= 0 || (pad->buttonInput & 2)) {
+                MG->aim[i] = 0;
             } else {
                 continue;
             }
         aim:
-            o = g_Minigame + (s8)gq[0x1C7E];
-            if (o[0x1B84] != 5 || gp[0x1C92] != 3) {
-                o[0x1BE8] = gp[0x1C92];
-                tgt = lbl_3_data_21BC4[(s8)o[0x1BE8]];
-                *(f32*)(f + 0x10C) = tgt[3];
-                *(f32*)(f + 0x110) = tgt[4];
-                *(f32*)(f + 0x114) = tgt[5];
+            o = MG->held[i][0];
+            if (MG->objKind[o] != 5 || MG->aim[i] != 3) {
+                MG->objTarget[o] = MG->aim[i];
+                tgt = lbl_3_data_21BC4[MG->objTarget[o]];
+                f->throwTarget.x = tgt[3];
+                f->throwTarget.y = tgt[4];
+                f->throwTarget.z = tgt[5];
             } else {
                 // Aim at another player, weighted towards the leaders.
                 q = others;
@@ -1308,7 +1236,7 @@ void fn_3_144CB8(void) {
                 }
                 for (a = 0; a < 2; a++) {
                     for (b = a + 1; b < 3; b++) {
-                        if (((s16*)(g_Minigame + 0x1890))[others[a]] < ((s16*)(g_Minigame + 0x1890))[others[b]]) {
+                        if (MG->score[others[a]] < MG->score[others[b]]) {
                             t = others[a];
                             others[a] = others[b];
                             others[b] = t;
@@ -1324,22 +1252,22 @@ void fn_3_144CB8(void) {
                     v = others[2];
                 }
                 d = v - i;
-                o[0x1BE8] = -1 - v;
+                MG->objTarget[o] = -1 - v;
                 tgt = &lbl_3_data_21B94[v].x;
-                *(f32*)(f + 0x10C) = lbl_3_rodata_3870 * (s8)(__abs(d) / d) + tgt[0];
-                *(f32*)(f + 0x110) = lbl_3_rodata_3834;
-                *(f32*)(f + 0x114) = tgt[2];
+                f->throwTarget.x = lbl_3_rodata_3870 * (s8)(__abs(d) / d) + tgt[0];
+                f->throwTarget.y = lbl_3_rodata_3834;
+                f->throwTarget.z = tgt[2];
             }
-            gp[0x1C8E] = gq[0x1C7E];
-            o[0x193A] = 3;
-            gs[0xD9A] = 0;
-            if (gp[0x1C92] == 3) {
-                o[0x193A] = 4;
+            MG->heldObj[i] = MG->held[i][0];
+            MG->objState[o] = 3;
+            MG->throwFrame[i] = 0;
+            if (MG->aim[i] == 3) {
+                MG->objState[o] = 4;
             }
-            *(f32*)(f + 0x48) = game_atan2(*(f32*)(f + 0x10C) - *(f32*)(f + 0x0), *(f32*)(f + 0x114) - *(f32*)(f + 0x8));
-        } else if (pad->held & 4) {
-            gp[0x1CA5] = 1;
-            gs[0xDA2] = 0;
+            f->facing = game_atan2(f->throwTarget.x - f->pos.x, f->throwTarget.z - f->pos.z);
+        } else if (pad->buttonInput & 4) {
+            MG->jump[i] = 1;
+            MG->jumpTimer[i] = 0;
             fn_3_90064(0x2DB);
         }
     }
@@ -1353,7 +1281,7 @@ extern void fn_3_1608F0(s32 kind, s32 value, s32 extra);
 extern void fn_80062BE4(Vec* pos);
 extern void* memcpy(void*, const void*, u32);
 extern u8 lbl_3_data_21E18[][2];
-extern u8 lbl_3_common_bss_37400[];
+extern Rep37A8Bss37400View lbl_3_common_bss_37400;
 extern const f32 lbl_3_rodata_3878;
 
 // Flight of a thrown object (idx): bombs (kind 5) blow up at their target player, others can hit a runner.
@@ -1361,12 +1289,13 @@ extern const f32 lbl_3_rodata_3878;
 #if NONMATCHING
 void fn_3_1453BC(s32 idx) {
     s16* timer;
-    u8* thrower;
+    s8* thrower;
     s8 by;
     u8* st;
-    u8* g;
+    Vec* pos;
+    Vec* vel;
     s8 vic;
-    u8* f;
+    InMemFielderType* f;
     Vec dir;
     s8 tgt;
     f32* t;
@@ -1378,44 +1307,44 @@ void fn_3_1453BC(s32 idx) {
     s32 k;
     Vec c;
 
-    timer = &((s16*)(g_Minigame + 0x17C8))[idx];
-    thrower = &g_Minigame[idx + 0x1BB6];
+    timer = &MG->objTimer[idx];
+    thrower = &MG->objOwner[idx];
     by = *thrower;
     if (*timer < 0x7FFE) {
         (*timer)++;
     } else {
         *timer = 0x7FFF;
     }
-    st = &g_Minigame[idx + 0x193A];
+    st = &MG->objState[idx];
     if (*st == 6) {
-        g = g_Minigame + idx * 0xC;
-        *(f32*)(g + 0x1184) = *(f32*)(g + 0x1184) + lbl_3_data_21E24[11];
-        if (g_Minigame[idx + 0x1B84] != 5) {
-            *(f32*)(g + 0x1180) = *(f32*)(g + 0x1180) * lbl_3_data_21E24[12];
-            *(f32*)(g + 0x1188) = *(f32*)(g + 0x1188) * lbl_3_data_21E24[12];
-        } else if (*timer >= *(s16*)(lbl_3_data_21E68 + 0x2E)) {
-            vic = -1 - g_Minigame[idx + 0x1BE8];
-            fn_3_147CFC(g + 0xCD0);
+        vel = &MG->objVel[idx];
+        vel->y = vel->y + lbl_3_data_21E24[11];
+        if (MG->objKind[idx] != 5) {
+            vel->x = vel->x * lbl_3_data_21E24[12];
+            vel->z = vel->z * lbl_3_data_21E24[12];
+        } else if (*timer >= lbl_3_data_21E68[23]) {
+            vic = -1 - MG->objTarget[idx];
+            fn_3_147CFC(&MG->objPos[idx]);
             fn_3_90064(0x309);
             fn_3_154238(idx);
-            if (g_Minigame[vic + 0x1CA5] == 0 && g_Minigame[vic + 0x1C9A] == 0) {
-                g_Minigame[vic + 0x1C9A] = 1;
-                ((s16*)(g_Minigame + 0x1B3C))[vic] = *(s16*)(lbl_3_data_21E68 + 0x1C);
-                ((s16*)(g_Minigame + 0x1B50))[vic] = 0;
-                f = g_Fielders + (s8)g_Minigame[vic + 0x18F8] * 0x268;
+            if (MG->jump[vic] == 0 && MG->stun[vic] == 0) {
+                MG->stun[vic] = 1;
+                MG->stunTimer[vic] = lbl_3_data_21E68[14];
+                MG->combo[vic] = 0;
+                f = &g_Fielders[MG->fielder[vic]];
                 dir.x = lbl_3_rodata_3834;
                 dir.y = lbl_3_rodata_3834;
                 dir.z = lbl_3_rodata_3878;
                 PSVECNormalize(&dir, &dir);
-                *(f32*)(f + 0x38) = dir.x;
-                g_Minigame[vic + 0x1DF4] = 1;
-                *(f32*)(f + 0x3C) = dir.z;
-                *(f32*)(f + 0x50) = lbl_3_data_21E24[15];
-                fn_3_6C854((s8)g_Minigame[vic + 0x18CC], 2);
-                if (g_Minigame[vic + 0x1CB1] < 0xFFFE) {
-                    g_Minigame[vic + 0x1CB1]++;
+                f->_038 = dir.x;
+                MG->knocked[vic] = 1;
+                f->_03C = dir.z;
+                f->speed = lbl_3_data_21E24[15];
+                fn_3_6C854(MG->port[vic], 2);
+                if (MG->hits[vic] < 0xFFFE) {
+                    MG->hits[vic]++;
                 } else {
-                    g_Minigame[vic + 0x1CB1] = 0xFF;
+                    MG->hits[vic] = 0xFF;
                 }
             }
             *st = 0;
@@ -1423,33 +1352,33 @@ void fn_3_1453BC(s32 idx) {
             return;
         }
     }
-    g = g_Minigame + idx * 0xC;
-    *(f32*)(g + 0xCD0) = *(f32*)(g + 0xCD0) + *(f32*)(g + 0x1180);
-    *(f32*)(g + 0xCD4) = *(f32*)(g + 0xCD4) + *(f32*)(g + 0x1184);
-    *(f32*)(g + 0xCD8) = *(f32*)(g + 0xCD8) + *(f32*)(g + 0x1188);
-    if (*(f32*)(g + 0xCD4) < lbl_3_rodata_3834) {
+    pos = &MG->objPos[idx];
+    vel = &MG->objVel[idx];
+    pos->x = pos->x + vel->x;
+    pos->y = pos->y + vel->y;
+    pos->z = pos->z + vel->z;
+    if (pos->y < lbl_3_rodata_3834) {
         *st = 0;
         *timer = 0;
-        if (g_Minigame[idx + 0x1B84] == 5) {
+        if (MG->objKind[idx] == 5) {
             fn_3_154238(idx);
         }
         return;
     }
-    tgt = g_Minigame[idx + 0x1BE8];
+    tgt = MG->objTarget[idx];
     if (tgt >= 0) {
         t = lbl_3_data_21BC4[tgt];
-        d = sqrt37A8((*(f32*)(g + 0xCD0) - t[3]) * (*(f32*)(g + 0xCD0) - t[3]) +
-                     (*(f32*)(g + 0xCD8) - t[5]) * (*(f32*)(g + 0xCD8) - t[5]));
-        r = (MgRunner*)g_Minigame + tgt;
+        d = sqrt37A8((pos->x - t[3]) * (pos->x - t[3]) + (pos->z - t[5]) * (pos->z - t[5]));
+        r = &MG->runner[tgt];
         if (r->st == 2 && d < lbl_3_data_21E24[1]) {
-            kind = &g_Minigame[idx + 0x1B84];
+            kind = &MG->objKind[idx];
             if (*kind == r->who || r->who == 4 || *kind == 5) {
                 if (*kind == 5) {
-                    dmg = *(s16*)(lbl_3_data_21E68 + 0x30);
+                    dmg = lbl_3_data_21E68[24];
                 } else {
                     dmg = 1;
                 }
-                memcpy(&c, g + 0xCD0, sizeof(Vec));
+                memcpy(&c, pos, sizeof(Vec));
                 c.y *= lbl_3_rodata_3878;
                 if (*kind == 5) {
                     fn_3_147CFC(&c);
@@ -1468,28 +1397,28 @@ void fn_3_1453BC(s32 idx) {
                 } else {
                     r->_2D = hp;
                 }
-                ((s16*)(g_Minigame + 0x1B50))[by]++;
-                g_Minigame[by * 10 + 0x1B58 + g_Minigame[by + 0x1B80]] = dmg * lbl_3_data_21E18[r->sel][1];
-                g_Minigame[by + 0x1B80]++;
+                MG->combo[by]++;
+                MG->hitLog[by][MG->hitLogCount[by]] = dmg * lbl_3_data_21E18[r->sel][1];
+                MG->hitLogCount[by]++;
                 r->queue[0] = -1;
                 r->queue[1] = -1;
                 r->queue[2] = -1;
                 r->queue[3] = -1;
                 r->_2E = 0;
                 if (r->_2D == 0) {
-                    g_Minigame[by * 10 + 0x1B58 + g_Minigame[by + 0x1B80]] = lbl_3_data_21E18[r->sel][0];
-                    g_Minigame[by + 0x1B80]++;
+                    MG->hitLog[by][MG->hitLogCount[by]] = lbl_3_data_21E18[r->sel][0];
+                    MG->hitLogCount[by]++;
                     if (r->who == 4) {
-                        g_Minigame[0x1CA3] = 0;
+                        MG->bossActive = 0;
                         r->_2E = 0;
-                    } else if (g_Minigame[0x1CA2] != 0) {
-                        g_Minigame[0x1CA2] = 2;
+                    } else if (MG->_1CA2 != 0) {
+                        MG->_1CA2 = 2;
                     }
-                    r->_1C = *(s16*)(lbl_3_data_21E68 + 0x10) - *(s16*)(lbl_3_data_21E68 + 0x12);
+                    r->_1C = lbl_3_data_21E68[8] - lbl_3_data_21E68[9];
                     r->_1A = 0;
                     r->st = 4;
-                    g_Minigame[r->who + 0x1CA9] = 0;
-                    if (g_d_GameSettings.exhibitionMatchInd == 0 && by == *(s16*)(lbl_3_common_bss_37400 + 0x40)) {
+                    MG->kindUsed[r->who] = 0;
+                    if (g_d_GameSettings.exhibitionMatchInd == 0 && by == lbl_3_common_bss_37400.humanPlayer) {
                         fn_3_1608F0(5, r->who, 0);
                     }
                 }
@@ -1506,17 +1435,17 @@ void fn_3_1453BC(s32 idx) {
                         break;
                     }
                 }
-                ((s16*)(g_Minigame + 0x1B50))[by] = 0;
+                MG->combo[by] = 0;
             }
             *st = 0;
             *timer = 0;
             return;
         }
     }
-    if (*timer > *(s16*)lbl_3_data_21E68) {
+    if (*timer > lbl_3_data_21E68[0]) {
         *st = 0;
         *timer = 0;
-        if (g_Minigame[idx + 0x1B84] == 5) {
+        if (MG->objKind[idx] == 5) {
             fn_3_154238(idx);
         }
     }
@@ -1524,28 +1453,26 @@ void fn_3_1453BC(s32 idx) {
 #endif
 
 // .text:0x00145AD0 size:0xC8 mapped:0x80784B64
-typedef struct { f32 x; f32 y; f32 z; } MgV3;
-
-// 97%: volatile regs allocated differently (k r7 vs r8); this form matches the inlined copy in fn_3_145EB8.
-// ((f32*)(g_Minigame + 0xCD0))[p * 3] stores match this function but break fn_3_145EB8.
+// 97%: volatile regs allocated differently (k r7 vs r8); this form matches the inlined copy in fn_3_145EB8
+// (the held[] / objPos[] element pointers must be formed as byte offsets from the shifted base).
 void fn_3_145AD0(s32 p) {
     s8 t;
     s32 k;
-    u8* m;
+    s8* m;
     u8* g;
 
     k = 0;
-    t = *(s8*)(g_Minigame + p + 0x1BB6);
-    m = g_Minigame + t * 3;
+    t = MG->objOwner[p];
+    m = (s8*)g_Minigame + t * 3;
     for (; k < 3; k++, m++) {
-        if (*(s8*)(m + 0x1C7E) == p) {
+        if (m[(s32)offsetof(Mg37A8, held)] == p) {
             break;
         }
     }
     g = g_Minigame + p * 0xC;
-    *(f32*)(g + 0xCD0) = ((MgV3*)(lbl_3_data_21D34 + g_Minigame[t + 0x1CAD] * 0x24))[k].x;
-    *(f32*)(g + 0xCD4) = ((MgV3*)(lbl_3_data_21D34 + g_Minigame[t + 0x1CAD] * 0x24))[k].y;
-    *(f32*)(g + 0xCD8) = ((MgV3*)(lbl_3_data_21D34 + g_Minigame[t + 0x1CAD] * 0x24))[k].z;
+    ((Vec*)(g + (s32)offsetof(Mg37A8, objPos)))->x = lbl_3_data_21D34[MG_B(home, t)][k].x;
+    ((Vec*)(g + (s32)offsetof(Mg37A8, objPos)))->y = lbl_3_data_21D34[MG_B(home, t)][k].y;
+    ((Vec*)(g + (s32)offsetof(Mg37A8, objPos)))->z = lbl_3_data_21D34[MG_B(home, t)][k].z;
 }
 
 // .text:0x00145B98 size:0x320 mapped:0x80784C2C
@@ -1559,69 +1486,62 @@ void fn_3_145B98(void) {
     s32 j;
     s32 n;
     s32 k;
-    u8* gp;
-    u8* gq;
-    u8* qs;
     s32* lp;
 
-    if (g_Minigame[0x190B] != 0) {
+    if (MG->turnOverStatus != 0) {
         return;
     }
-    gp = g_Minigame;
-    gq = g_Minigame;
     p = 0;
     do {
-        if ((s8)gp[0x18CC] >= 0) {
-            if ((s8)gq[0x1C80] < 0) {
-                qs = gq;
+        if (MG->port[p] >= 0) {
+            if (MG->held[p][2] < 0) {
                 s = 0;
                 do {
                     for (j = 0; j < 50; j++) {
-                        if (g_Minigame[j + 0x193A] == 0) {
-                            qs[0x1C7E] = j;
-                            g_Minigame[j + 0x1BB6] = p;
-                            g_Minigame[j + 0x193A] = 2;
-                            ((s16*)(g_Minigame + 0x17C8))[j] = 0;
-                            g_Minigame[j + 0x1B84] = RandomInt_Game(4);
-                            g_Minigame[j + 0x1C1A] = 0;
-                            g_Minigame[j + 0x1C4C] = 0;
-                            gp[0x1C8A]++;
+                        if (MG->objState[j] == 0) {
+                            MG->held[p][s] = j;
+                            MG->objOwner[j] = p;
+                            MG->objState[j] = 2;
+                            MG->objTimer[j] = 0;
+                            MG->objKind[j] = RandomInt_Game(4);
+                            MG->_1C1A[j] = 0;
+                            MG->_1C4C[j] = 0;
+                            MG->thrown[p]++;
                             fn_3_145AD0(j);
                             break;
                         }
                     }
                     s++;
-                    qs++;
                 } while (s < 3);
-            } else if ((s8)gq[0x1C7E] < 0) {
-                gq[0x1C7E] = gq[0x1C7F];
-                gq[0x1C7F] = gq[0x1C80];
+            } else if (MG->held[p][0] < 0) {
+                MG->held[p][0] = MG->held[p][1];
+                MG->held[p][1] = MG->held[p][2];
                 for (j = 0; j < 50; j++) {
-                    if (g_Minigame[j + 0x193A] == 0) {
-                        gq[0x1C80] = j;
-                        g_Minigame[j + 0x1BB6] = p;
-                        g_Minigame[j + 0x193A] = 2;
-                        ((s16*)(g_Minigame + 0x17C8))[j] = 0;
-                        g_Minigame[j + 0x1C1A] = 0;
-                        g_Minigame[j + 0x1C4C] = 0;
-                        gp[0x1C8A]++;
-                        if (gp[0x1C8A] <= *(s16*)(lbl_3_data_21E68 + 0x2)) {
+                    if (MG->objState[j] == 0) {
+                        MG->held[p][2] = j;
+                        MG->objOwner[j] = p;
+                        MG->objState[j] = 2;
+                        MG->objTimer[j] = 0;
+                        MG->_1C1A[j] = 0;
+                        MG->_1C4C[j] = 0;
+                        MG->thrown[p]++;
+                        if (MG->thrown[p] <= lbl_3_data_21E68[1]) {
                             lp = list;
                             n = 0;
                             for (k = 0; k < 4; k++) {
-                                if (g_Minigame[k + 0x1CA9] == 1) {
+                                if (MG->kindUsed[k] == 1) {
                                     *lp++ = k;
                                     n++;
                                 }
                             }
                             if (n == 0) {
-                                g_Minigame[j + 0x1B84] = RandomInt_Game(4);
+                                MG->objKind[j] = RandomInt_Game(4);
                             } else {
-                                g_Minigame[j + 0x1B84] = list[RandomInt_Game(n)];
+                                MG->objKind[j] = list[RandomInt_Game(n)];
                             }
                         } else {
-                            g_Minigame[j + 0x1B84] = 5;
-                            gp[0x1C8A] = 0;
+                            MG->objKind[j] = 5;
+                            MG->thrown[p] = 0;
                         }
                         break;
                     }
@@ -1629,8 +1549,6 @@ void fn_3_145B98(void) {
             }
         }
         p++;
-        gq += 3;
-        gp++;
     } while (p < 4);
 }
 #endif
@@ -1642,7 +1560,7 @@ void fn_3_145EB8(void) {
 
     ((void (*)(void))fn_3_145B98)();
     for (i = 0; i < 50; i++) {
-        v = g_Minigame[i + 0x193A];
+        v = MG->objState[i];
         if (v == 5 || v == 6) {
             fn_3_1453BC(i);
         } else if (v == 2) {
@@ -1652,53 +1570,50 @@ void fn_3_145EB8(void) {
 }
 
 // .text:0x00145FF4 size:0x1B0 mapped:0x80785088
-typedef struct { u8 pad0[0x1C]; s16 b; u8 pad1[0x2A - 0x1E]; u8 a; u8 c; u8 pad2[0x38 - 0x2C]; } MgPl38;
-typedef struct { u8 pad0[0x193A]; u8 state[50]; u8 pad1[0x1BB6 - 0x193A - 50]; s8 slot[50]; } Mg145F;
-
 void fn_3_145FF4(void) {
     u32 i;
     fn_3_157570();
     fn_3_DE4FC();
-    if (g_Minigame[0x1A2B] <= 2 && g_Minigame[0x1909] == 0) {
-        if (g_Minigame[0x18E8 + *(s8*)(g_Minigame + 0x1908)] == 1 && g_Minigame[0x19A8] == 0) {
-            g_Minigame[0x1A37] = 1;
+    if (MG->difficulty <= 2 && MG->multiPlayerInd == 0) {
+        if (MG->_18E8[MG->_1908] == 1 && MG->_19A8 == 0) {
+            MG->_1A37 = 1;
         } else {
-            g_Minigame[0x1A37] = 2;
+            MG->_1A37 = 2;
         }
     }
     fn_3_5A6D4(0xE);
     for (i = 0; i < 50; i++) {
-        ((Mg145F*)g_Minigame)->state[i] = 0;
-        ((Mg145F*)g_Minigame)->slot[i] = -1;
+        MG->objState[i] = 0;
+        MG->objOwner[i] = -1;
     }
-    *(s16*)(g_Minigame + 0x1B4C) = 0x3C;
+    MG->_1B4C = 0x3C;
     for (i = 0; i < 3; i++) {
         ((void (*)(s32))fn_3_14402C)(i);
-        ((MgPl38*)g_Minigame)[i].a = 2;
-        ((MgPl38*)g_Minigame)[i].b = 1;
-        ((MgPl38*)g_Minigame)[i].c = 0;
+        MG->runner[i].st = 2;
+        MG->runner[i]._1C = 1;
+        MG->runner[i].sel = 0;
     }
     fn_3_154214();
 }
 
 // .text:0x001461A4 size:0x264 mapped:0x80785238
 void fn_3_1461A4(void) {
-    if (g_Minigame[0x190B] == 0) {
-        if (*(u32*)(g_Minigame + 0x17C4) == 0) {
-            g_Minigame[0x190B] = 1;
+    if (MG->turnOverStatus == 0) {
+        if (MG->timeLeft == 0) {
+            MG->turnOverStatus = 1;
             fn_3_10F550(3, 0);
             sndFXStartEx(0x1BE, lbl_800EFBA4[7], 0x3F, 0);
         }
         return;
     }
-    if (g_Minigame[0x190B] == 1) {
-        g_Minigame[0x190B] = 2;
-        *(s16*)(g_GameLogic + 0x100) = *(s16*)(lbl_3_data_21E68 + 0x22);
+    if (MG->turnOverStatus == 1) {
+        MG->turnOverStatus = 2;
+        g_GameLogic.CountdownUntilFade = lbl_3_data_21E68[17];
     }
-    if (--*(s16*)(g_GameLogic + 0x100) == 7) {
+    if (--g_GameLogic.CountdownUntilFade == 7) {
         changeScene(3, 6);
     }
-    if (*(s16*)(g_GameLogic + 0x100) <= 0) {
+    if (g_GameLogic.CountdownUntilFade <= 0) {
         fn_3_145FF4();
     }
 }
@@ -1714,13 +1629,12 @@ void fn_3_146408(void) {
     if (fn_3_108854() != 0) {
         return;
     }
-    if (g_Minigame[0x190B] == 0) {
-        (*(u32*)(g_Minigame + 0x17C0))++;
+    if (MG->turnOverStatus == 0) {
+        MG->frame++;
     }
-    if (*(u32*)(g_Minigame + 0x17C4) != 0) {
-        (*(u32*)(g_Minigame + 0x17C4))--;
-        if (*(u32*)(g_Minigame + 0x17C4) < 600 && *(u32*)(g_Minigame + 0x17C4) != 0 &&
-            *(u32*)(g_Minigame + 0x17C4) % 60 == 0) {
+    if (MG->timeLeft != 0) {
+        MG->timeLeft--;
+        if (MG->timeLeft < 600 && MG->timeLeft != 0 && MG->timeLeft % 60 == 0) {
             fn_3_90064(lbl_3_data_81FC[0x28]);
         }
     }
@@ -1743,16 +1657,16 @@ void fn_3_146928(void) {
 
 // .text:0x001469CC size:0xC4 mapped:0x80785A60
 void fn_3_1469CC(void) {
-    switch (g_GameLogic[0x125]) {
+    switch (g_GameLogic._125) {
     case 0:
         fn_3_10F550(2, lbl_3_data_21278[0]);
         changeScene(1, 6);
-        *(s16*)(g_GameLogic + 0xFE) = 0;
-        g_GameLogic[0x125] = 1;
+        g_GameLogic.FrameCountOfCurrentAtBat_Copy = 0;
+        g_GameLogic._125 = 1;
         break;
     case 1:
-        if (*(u16*)(g_GameLogic + 0xFE) > lbl_3_data_21278[0] + lbl_3_data_21278[1]) {
-            g_GameLogic[0x125] = 2;
+        if (g_GameLogic.FrameCountOfCurrentAtBat_Copy > lbl_3_data_21278[0] + lbl_3_data_21278[1]) {
+            g_GameLogic._125 = 2;
         }
         break;
     case 2:
@@ -1770,7 +1684,7 @@ extern void fn_3_157588(int);
 extern void minigamesSetSomePointers(void);
 extern void minigamesGXStuff(void);
 extern void minigamesSetSomePointers2(void);
-extern s32 g_Scores; // TODO type: first field (inning) of GameScores
+extern GameScores g_Scores;
 extern u8 lbl_3_data_2127C[][5];
 extern u8 lbl_3_data_21E08[];
 extern const f32 lbl_3_rodata_387C;
@@ -1783,92 +1697,97 @@ void fn_3_146A90(void) {
     s32 n;
     s32 j;
     u8 v;
-    u8* f;
+    InMemFielderType* f;
     MgRunner* r;
 
-    if (g_GameLogic[0x125] == 0) {
+    if (g_GameLogic._125 == 0) {
         fn_3_59A90();
-        *(u32*)(g_Minigame + 0x17C0) = 0;
-        g_Minigame[0x190B] = 0;
-        g_GameLogic[0x121] = 7;
-        g_Minigame[0x1A37] = 0;
+        MG->frame = 0;
+        MG->turnOverStatus = 0;
+        g_GameLogic.secondaryGameMode = 7;
+        MG->_1A37 = 0;
         for (i = 0; i < 4; i++) {
-            ((s16*)(g_Minigame + 0x1890))[i] = 0;
-            ((s16*)(g_Minigame + 0x1898))[i] = 0;
-            ((s16*)(g_Minigame + 0x18BC))[i * 2] = 0;
-            ((s16*)(g_Minigame + 0x18BE))[i * 2] = 0;
-            g_Minigame[0x18F4 + i] = -1;
-            g_Minigame[0x18F8 + i] = -1;
-            g_Minigame[0x18FC + i] = -1;
-            g_Minigame[0x1900 + i] = -1;
-            g_Minigame[0x18F0 + i] = 0;
+            MG->score[i] = 0;
+            MG->lastScore[i] = 0;
+            MG->points[i][0] = 0;
+            MG->points[i][1] = 0;
+            MG->order[i] = -1;
+            MG->fielder[i] = -1;
+            MG->_18FC[i] = -1;
+            MG->_1900[i] = -1;
+            MG->_18F0[i] = 0;
         }
-        g_Scores = 0;
-        *(s16*)(g_Minigame + 0x1A26) = 0;
-        g_Minigame[0x190C] = 0;
-        g_Minigame[0x1904] = -1;
-        g_Minigame[0x1905] = -1;
-        *(u32*)(g_Minigame + 0x17C0) = 0;
-        if (g_Minigame[0x1909] == 0) {
-            v = lbl_3_data_2127C[g_Minigame[0x1A2A]][g_Minigame[0x1A2B]];
-            *(u32*)(g_Minigame + 0x17C4) = lbl_3_data_21E08[g_Minigame[0x1A2B]] * 60;
-            g_Minigame[0x18DC] = v;
-            g_Minigame[0x18DD] = v;
-            g_Minigame[0x18DE] = v;
-            g_Minigame[0x18DF] = v;
+        g_Scores.inning = 0;
+        MG->_1A26 = 0;
+        MG->_190C = 0;
+        MG->_1904 = -1;
+        MG->_1905 = -1;
+        MG->frame = 0;
+        if (MG->multiPlayerInd == 0) {
+            v = lbl_3_data_2127C[MG->gameMode][MG->difficulty];
+            MG->timeLeft = lbl_3_data_21E08[MG->difficulty] * 60;
+            MG->cpuLevel[0] = v;
+            MG->cpuLevel[1] = v;
+            MG->cpuLevel[2] = v;
+            MG->cpuLevel[3] = v;
         } else {
-            if (g_Minigame[0x1A3C] != 0) {
-                g_Minigame[0x18DC] = lbl_3_data_2127C[7][0];
-                g_Minigame[0x18DD] = lbl_3_data_2127C[7][0];
-                g_Minigame[0x18DE] = lbl_3_data_2127C[7][0];
-                g_Minigame[0x18DF] = lbl_3_data_2127C[7][0];
+            if (MG->_1A3C != 0) {
+                MG->cpuLevel[0] = lbl_3_data_2127C[7][0];
+                MG->cpuLevel[1] = lbl_3_data_2127C[7][0];
+                MG->cpuLevel[2] = lbl_3_data_2127C[7][0];
+                MG->cpuLevel[3] = lbl_3_data_2127C[7][0];
             }
-            *(u32*)(g_Minigame + 0x17C4) = lbl_3_data_21E08[4] * 60;
+            MG->timeLeft = lbl_3_data_21E08[4] * 60;
         }
         fn_3_591AC();
         fn_3_58870();
         n = 0;
         for (i = 0; i < 4; i++) {
-            if ((s8)g_Minigame[0x18CC + i] < 0) {
+            if (MG->port[i] < 0) {
                 continue;
             }
-            g_Minigame[0x18F4 + n] = i;
-            g_Minigame[0x18F8 + (s8)g_Minigame[0x18F4 + n]] = n + 2;
-            fn_3_6E24C(i, (s8)g_Minigame[0x18F8 + (s8)g_Minigame[0x18F4 + n]]);
-            f = g_Fielders + (s8)g_Minigame[0x18F8 + (s8)g_Minigame[0x18F4 + n]] * 0x268;
-            g_Minigame[0x1C7E + i * 3] = -1;
-            g_Minigame[0x1C7F + i * 3] = -1;
-            g_Minigame[0x1C80 + i * 3] = -1;
-            g_Minigame[0x1C8A + i] = 0;
-            f[0x20D] = i;
-            *(f32*)(f + 0x0) = lbl_3_data_21B94[n].x;
-            ((s16*)(g_Minigame + 0x1B34))[i] = -1;
-            g_Minigame[0x1C92 + i] = -1;
-            *(f32*)(f + 0x4) = lbl_3_data_21B94[n].y;
-            g_Minigame[0x1C9A + i] = 0;
-            *(f32*)(f + 0x8) = lbl_3_data_21B94[n].z;
-            ((s16*)(g_Minigame + 0x1B50))[i] = 0;
-            *(f32*)(f + 0xC) = ((f32*)lbl_3_data_21D2C)[1];
-            g_Minigame[0x1B80 + i] = 0;
-            f[0x1D2] = 0;
-            g_Minigame[0x1CA5 + i] = 0;
-            *(f32*)(f + 0x50) = lbl_3_rodata_3834;
-            g_Minigame[0x1CAD + i] = i;
-            *(f32*)(f + 0x48) = lbl_3_rodata_387C;
-            g_Minigame[0x1CB1 + i] = 0;
+            MG->order[n] = i;
+            MG->fielder[MG->order[n]] = n + 2;
+            fn_3_6E24C(i, MG->fielder[MG->order[n]]);
+            f = &g_Fielders[MG->fielder[MG->order[n]]];
+            MG->held[i][0] = -1;
+            MG->held[i][1] = -1;
+            MG->held[i][2] = -1;
+            MG->thrown[i] = 0;
+            f->minigamePlayer = i;
+            f->pos.x = lbl_3_data_21B94[n].x;
+            MG->throwFrame[i] = -1;
+            MG->aim[i] = -1;
+            f->pos.y = lbl_3_data_21B94[n].y;
+            MG->stun[i] = 0;
+            f->pos.z = lbl_3_data_21B94[n].z;
+            MG->combo[i] = 0;
+            f->height = lbl_3_data_21D2C[1];
+            MG->hitLogCount[i] = 0;
+            f->_1D2 = 0;
+            MG->jump[i] = 0;
+            f->speed = lbl_3_rodata_3834;
+            MG->home[i] = i;
+            f->facing = lbl_3_rodata_387C;
+            MG->hits[i] = 0;
             for (j = 0; j < 10; j++) {
-                g_Minigame[0x1B58 + i * 10 + j] = 0;
+                MG->hitLog[i][j] = 0;
             }
-            g_Minigame[0x1C9E + i] = 0;
+            MG->targeted[i] = 0;
             n++;
         }
         for (j = 0; j < 100; j++) {
-            g_Minigame[0x193A + j] = 0;
-            g_Minigame[0x1BB6 + j] = -1;
+            MG->objState[j] = 0;
+            // the original clears 100 bytes from objOwner, running on into objTarget
+            if (j < 50) {
+                MG->objOwner[j] = -1;
+            } else {
+                MG->objTarget[j - 50] = -1;
+            }
         }
-        *(s16*)(g_Minigame + 0x1B4C) = 0x3C;
+        MG->_1B4C = 0x3C;
         fn_3_145B98();
-        r = (MgRunner*)g_Minigame;
+        r = MG->runner;
         for (i = 0; i < 3; i++, r++) {
             r->st = 0;
             r->sel = 0;
@@ -1887,27 +1806,26 @@ void fn_3_146A90(void) {
             r->queue[2] = -1;
             r->queue[3] = -1;
         }
-        g_Minigame[0x1CA9] = 0;
-        g_Minigame[0x1CAA] = 0;
-        g_Minigame[0x1CAB] = 0;
-        g_Minigame[0x1CAC] = 0;
-        g_Minigame[0x1CA2] = 0;
-        g_Minigame[0x1CA3] = 0;
-        g_Minigame[0x1CA4] = 0;
-        if (g_Minigame[0x1909] == 0) {
-            *(s16*)(g_Minigame + 0x1B4E) =
-                RandomInt_Game_Range(lbl_3_data_21DC8[g_Minigame[0x1A2B]][0].lo, lbl_3_data_21DC8[g_Minigame[0x1A2B]][0].hi) * 60;
+        MG->kindUsed[0] = 0;
+        MG->kindUsed[1] = 0;
+        MG->kindUsed[2] = 0;
+        MG->kindUsed[3] = 0;
+        MG->_1CA2 = 0;
+        MG->bossActive = 0;
+        MG->bossCount = 0;
+        if (MG->multiPlayerInd == 0) {
+            MG->_1B4E = RandomInt_Game_Range(lbl_3_data_21DC8[MG->difficulty][0].lo, lbl_3_data_21DC8[MG->difficulty][0].hi) * 60;
         } else {
-            *(s16*)(g_Minigame + 0x1B4E) = RandomInt_Game_Range(lbl_3_data_21DC8[4][0].lo, lbl_3_data_21DC8[4][0].hi) * 60;
+            MG->_1B4E = RandomInt_Game_Range(lbl_3_data_21DC8[4][0].lo, lbl_3_data_21DC8[4][0].hi) * 60;
         }
         minigamesSetSomePointers();
         minigamesGXStuff();
         minigamesSetSomePointers2();
         for (j = 0; j < 40; j++) {
-            ((MgBallView*)g_Minigame)->ball[j].used = 0;
+            MG->ball[j].used = 0;
         }
         fn_3_157588(0x28);
-        g_GameLogic[0x125]++;
+        g_GameLogic._125++;
     } else {
         fn_3_5A6D4(5);
     }
