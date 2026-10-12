@@ -225,6 +225,11 @@ typedef struct SND_EMITTER {
 
   u16 VolLevelCnt;
   f32 fade;
+#ifdef TARGET_PC
+  // The PC runtime (port/musyx, strikers' MusyX 2.0.3) has this field; the
+  // game allocates the emitters, so they must be its size.
+  unsigned int userData;
+#endif
 
 } SND_EMITTER;
 

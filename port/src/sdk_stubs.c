@@ -99,6 +99,8 @@ void ARQRemoveOwnerRequest(u32 owner) { (void)owner; }
 static u32 s_arqChunkSize = 0x1000;
 void ARQSetChunkSize(u32 size) { s_arqChunkSize = (size + 31) & ~31u; }
 u32 ARQGetChunkSize(void) { return s_arqChunkSize; }
+// ARAM below 0x4000 is reserved for the OS/DSP on hardware (MusyX asks).
+u32 ARGetBaseAddress(void) { return 0x4000; }
 
 // GX ----------------------------------------------------------------------------
 static OSThread* s_gxThread = NULL;

@@ -111,6 +111,67 @@ target_compile_definitions(mssb_game PRIVATE ${MSSB_DEFS})
 target_compile_options(mssb_game PRIVATE ${MSSB_COMMON_FLAGS} ${MSSB_PORT_WARNINGS}
     -include ${CMAKE_SOURCE_DIR}/include/port/prelude.h)
 
+# --- MusyX (audio) ---
+# The MusyX 2.0.3 runtime from strikers (port/musyx, ported to PC there; MIT,
+# from the musyx decomp), with strikers' DSP/AI emulation in port/src/audio.
+# It is compiled against its own headers (port/musyx/include); the game uses
+# include/musyx, whose API must stay ABI-compatible with it (see the
+# TARGET_PC notes in include/musyx/musyx.h).
+# The runtime hands the DSP emulation 32-bit "physical" addresses by
+# truncating pointers on purpose (game-heap offsets: the heap is 4GB-aligned,
+# port/include/port/game_heap.h), so the 64-bit cast warnings stay off here.
+add_library(musyx STATIC
+    ${CMAKE_SOURCE_DIR}/musyx/src/CheapReverb/creverb_fx.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/CheapReverb/creverb.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/Chorus/chorus_fx.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/Delay/delay_fx.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/dsp_import.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/hardware.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/hw_aramdma.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/hw_dolphin.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/hw_dspctrl.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/hw_memory.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/hw_volconv.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/s_data.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/seq_api.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/seq.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/snd_init.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/snd_math.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/snd_midictrl.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/snd_service.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/snd_synthapi.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/snd3d.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/StdReverb/reverb_fx.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/StdReverb/reverb.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/stream.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/synth_ac.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/synth_adsr.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/synth_dbtab.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/synth_vsamples.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/synth.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/synthdata.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/synthmacros.c
+    ${CMAKE_SOURCE_DIR}/musyx/src/synthvoice.c
+)
+target_include_directories(musyx PRIVATE ${CMAKE_SOURCE_DIR}/musyx/include ${AURORA_DIR}/include)
+target_compile_definitions(musyx PRIVATE TARGET_PC NDEBUG=1 MUSY_TARGET=MUSY_TARGET_DOLPHIN
+    MUSY_VERSION_MAJOR=2 MUSY_VERSION_MINOR=0 MUSY_VERSION_PATCH=3)
+target_compile_options(musyx PRIVATE ${MSSB_COMMON_FLAGS} -Wno-everything
+    -Werror=implicit-function-declaration -Werror=int-conversion)
+# DSP microcode HLE and AI output (from strikers). "port/..." headers come in
+# through -iquote: port/include also shadows <math.h> for the game.
+file(GLOB MSSB_AUDIO_SOURCES CONFIGURE_DEPENDS src/audio/*.c src/audio/*.cpp)
+add_library(mssb_audio STATIC ${MSSB_AUDIO_SOURCES})
+target_include_directories(mssb_audio PRIVATE ${CMAKE_SOURCE_DIR}/musyx/include ${AURORA_DIR}/include)
+target_compile_options(mssb_audio PRIVATE -iquote ${CMAKE_SOURCE_DIR}/include
+    ${MSSB_COMMON_FLAGS} -Wno-everything)
+target_compile_definitions(mssb_audio PRIVATE TARGET_PC NDEBUG=1 MUSY_TARGET=MUSY_TARGET_DOLPHIN
+    MUSY_VERSION_MAJOR=2 MUSY_VERSION_MINOR=0 MUSY_VERSION_PATCH=3)
+if (MSSB_AURORA)
+    target_link_libraries(musyx PRIVATE aurora::core)
+    target_link_libraries(mssb_audio PRIVATE aurora::core)
+endif ()
+
 # The game's main() becomes game_main(); port/src/main.cpp owns the entry point.
 set_source_files_properties(${MSSB_ROOT}/src/main/file_80008E00.c PROPERTIES COMPILE_DEFINITIONS main=game_main)
 
@@ -125,12 +186,13 @@ endforeach ()
 
 # PC-only code (port/src) and the executable.
 file(GLOB_RECURSE PORT_SOURCES CONFIGURE_DEPENDS src/*.c src/*.cpp)
+list(FILTER PORT_SOURCES EXCLUDE REGEX "/src/audio/")
 add_executable(mssb ${PORT_SOURCES} $<TARGET_OBJECTS:mssb_game>)
 # port/src sees aurora and port/include, not the game's shadow headers.
 target_include_directories(mssb PRIVATE ${CMAKE_SOURCE_DIR}/include ${AURORA_DIR}/include)
 target_compile_definitions(mssb PRIVATE ${MSSB_DEFS} MSSB_REPO_DIR="${MSSB_ROOT}")
 target_compile_options(mssb PRIVATE ${MSSB_COMMON_FLAGS} -Wno-everything)
 if (MSSB_AURORA)
-    target_link_libraries(mssb PRIVATE aurora::core aurora::gx aurora::vi aurora::pad
+    target_link_libraries(mssb PRIVATE musyx mssb_audio aurora::core aurora::gx aurora::vi aurora::pad
         aurora::si aurora::dvd aurora::card aurora::mtx aurora::os aurora::main)
 endif ()

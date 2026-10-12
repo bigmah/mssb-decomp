@@ -16,7 +16,7 @@ extern StarChanceState lbl_3_common_bss_37400;
 
 extern SndState34C58 lbl_3_common_bss_34C58;
 extern s32 lbl_3_bss_1780[];
-extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
+extern void sndUpdateListener(void*, void*, void*, void*, void*, u8 vol, void* room);
 extern void sndRemoveListener(void*);
 struct StreamTrack;
 extern void fn_800A86B4(s32 cmd); // main/file_800A7C08.h

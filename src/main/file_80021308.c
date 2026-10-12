@@ -2044,7 +2044,8 @@ s8 lbl_800F743C[0x3C] = { // [0x36] used, zero tail
 
 // The on-disc group data stores its pointers as offsets from the start of the block.
 // TODO(port): these are 4-byte pointer fields on disc; SoundGroupData needs
-// PTR32 fields on PC (Phase 3).
+// PTR32 fields on PC (Phase 3). Then swap the MusyX data to native order here,
+// once per load: port_musyx_swap_proj/sdir/pool (port/include/port/musyx_data.h).
 static inline void relocateSoundGroup(SoundGroupData* data) {
     data->proj = (u8*)data->proj + (uintptr_t)data;
     data->sdir = (u8*)data->sdir + (uintptr_t)data;
