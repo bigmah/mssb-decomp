@@ -9,14 +9,9 @@ extern f32 fn_3_BFDA4(void*, s32, f32, s32, u8, u8*);
 typedef struct {
     f32 f[12];
 } M12;
-extern const M12 lbl_3_rodata_2248;
-extern f32 lbl_3_rodata_2278;
-extern f32 lbl_3_rodata_227C;
-extern f32 lbl_3_rodata_2280;
 // .bss (laid out last-defined-first)
-static u8 lbl_3_bss_9F35[0x3]; // unused (alignment gap in the original)
-u8 lbl_3_bss_9F34;
-u8 lbl_3_bss_9F20[0x14];
+static u8 lbl_3_bss_9F34;
+static u8 lbl_3_bss_9F20[0x14];
 // .data lbl_3_data_17898..17B98: the stadium-intro logo effect. Separate initialized statics
 // that the code reaches through one pooled base (CW keeps .data in definition order).
 // Keyframe of an effect curve, read by fn_3_BFDA4 (same layout as BFDA4Key in rep_1E08.c).
@@ -118,52 +113,15 @@ static E21F8 lbl_3_data_17B04[5] = {
 };
 u32 lbl_3_data_17B7C = 0xFF;
 static u8 lbl_3_data_17B80 = 1;       // depth test on while drawing
-static f32 lbl_3_data_17B84[4] = {4.0f, 2.0f, 1.0f, 0.9f}; // scale per logo
-f32 lbl_3_data_17B94 = 0.0f;
+static f32 lbl_3_data_17B84[5] = {4.0f, 2.0f, 1.0f, 0.9f, 0.0f}; // scale per logo (last entry unused)
 extern u8 lbl_3_common_bss_35154[];
 extern void fn_80034120(Mtx);
 extern void fn_3_BF8F8(void*, Mtx, void*, void*);
 extern void fn_3_C9590(u8*, s32, f32*, f32);
 
-// .text:0x000C937C size:0x214 mapped:0x80708410
-int fn_3_C937C(void) {
-    u8* b = lbl_3_bss_9F20;
-    Mtx sm;
-    s32 i;
-    M12 id = lbl_3_rodata_2248;
-    Mtx a;
-    f32 sc;
-    f32 t;
-    switch (b[0x14]) {
-    case 0:
-        b[0x14] = 1;
-        *(f32*)(b + 0x10) = lbl_3_rodata_2278;
-    case 1:
-        t = *(f32*)(b + 0x10) + lbl_3_rodata_227C;
-        *(f32*)(b + 0x10) = t;
-        if (t >= lbl_3_rodata_2280) {
-            b[0x14] = 2;
-        }
-        break;
-    }
-    fn_80034120(a);
-    PSMTXConcat(a, (f32(*)[4])&id, a);
-    sc = lbl_3_data_17B84[b[0]];
-    PSMTXScale(sm, sc, sc, sc);
-    PSMTXConcat(a, sm, a);
-    i = b[0];
-    lbl_3_data_17B04[i].time = *(f32*)(b + 0x10);
-    lbl_3_data_17B04[i].tex = lbl_3_common_bss_35154 + 4;
-    if (lbl_3_data_17B80 != 0) {
-        GXSetZMode(1, 7, 1);
-    }
-    GXSetBlendMode(1, 4, 6, 0);
-    fn_3_BF8F8(&lbl_3_data_17B04[b[0]], a, b + 4, fn_3_C9590);
-    if (lbl_3_data_17B80 != 0) {
-        GXSetZMode(1, 3, 1);
-    }
-    GXSetBlendMode(1, 4, 5, 0);
-    return b[0x14] == 2;
+// .text:0x000C9734 size:0x10
+void fn_3_C9734(void) {
+    lbl_3_bss_9F34 = 2;
 }
 
 // .text:0x000C9590 size:0x1A4 mapped:0x80708624
@@ -200,8 +158,41 @@ void fn_3_C9590(u8* o, s32 k, f32* m, f32 t) {
     fn_3_BFDA4(*(void**)(o + 0x30), o[0x3B], t, k, o[0x43], o + 0x43);
 }
 
-
-// .text:0x000C9734 size:0x10
-void fn_3_C9734(void) {
-    lbl_3_bss_9F34 = 2;
+// .text:0x000C937C size:0x214 mapped:0x80708410
+int fn_3_C937C(void) {
+    u8* b = lbl_3_bss_9F20;
+    Mtx sm;
+    s32 i;
+    M12 id = {{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f}};
+    Mtx a;
+    f32 sc;
+    switch (b[0x14]) {
+    case 0:
+        b[0x14] = 1;
+        *(f32*)(b + 0x10) = 0.0f;
+    case 1:
+        *(f32*)(b + 0x10) += 1.0f;
+        if (*(f32*)(b + 0x10) >= 16.0f) {
+            b[0x14] = 2;
+        }
+        break;
+    }
+    fn_80034120(a);
+    PSMTXConcat(a, (f32(*)[4])&id, a);
+    sc = lbl_3_data_17B84[b[0]];
+    PSMTXScale(sm, sc, sc, sc);
+    PSMTXConcat(a, sm, a);
+    i = b[0];
+    lbl_3_data_17B04[i].time = *(f32*)(b + 0x10);
+    lbl_3_data_17B04[i].tex = lbl_3_common_bss_35154 + 4;
+    if (lbl_3_data_17B80 != 0) {
+        GXSetZMode(1, 7, 1);
+    }
+    GXSetBlendMode(1, 4, 6, 0);
+    fn_3_BF8F8(&lbl_3_data_17B04[b[0]], a, b + 4, fn_3_C9590);
+    if (lbl_3_data_17B80 != 0) {
+        GXSetZMode(1, 3, 1);
+    }
+    GXSetBlendMode(1, 4, 5, 0);
+    return b[0x14] == 2;
 }

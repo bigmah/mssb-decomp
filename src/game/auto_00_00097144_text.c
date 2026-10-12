@@ -5,7 +5,7 @@
 #include "game/rep_16B8.h"
 #include "game/auto_00_0009143C_text.h"
 #include "game/auto_00_0009C578_text.h"
-#include "game/auto_00_000EA340_text.h"
+#include "game/rep_2BF8.h"
 #include "game/auto_00_0015C5F4_text.h"
 
 extern s16 lbl_3_data_BE50[][4];  // TODO type: 8-byte entries, first field read here
