@@ -82,6 +82,10 @@ menus/rep_0788.c:
 menus/rep_07F0.c:
 	.rodata     start:0x000007F0 end:0x00000840
 
+auto_00_00033E70_text:
+	.text       start:0x00033E70 end:0x0003BD88
+	.bss        start:0x000015A0 end:0x000015B4
+
 menus/rep_0840.c:
 	.text       start:0x0003BD88 end:0x0003C03C
 	.rodata     start:0x00000840 end:0x00000898
@@ -93,6 +97,7 @@ menus/rep_0898.c:
 auto_00_0003C03C_text:
 	.text       start:0x0003C03C end:0x00046C88
 	.data       start:0x000124A8 end:0x00012CE8
+	.bss        start:0x000015B8 end:0x000055B8
 
 menus/rep_08E8.c:
 	.text       start:0x00046C88 end:0x0004B1AC

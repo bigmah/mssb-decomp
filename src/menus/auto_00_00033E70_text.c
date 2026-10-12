@@ -1536,7 +1536,7 @@ typedef struct Fn37460Data {
     void* heap;
 } Fn37460Data;
 
-extern Fn37460Data lbl_2_bss_15A0;
+Fn37460Data lbl_2_bss_15A0;
 extern u8 lbl_2_data_12180[];
 extern u8 lbl_2_data_12170[];
 extern void* _OSAllocFromHeap(s32, s32);
