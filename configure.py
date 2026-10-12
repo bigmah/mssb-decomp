@@ -319,12 +319,10 @@ config.warn_missing_source = False
 config.libs = [
     Rel("challenge", [Object(NonMatching, "challenge/rep_7920.c")]),
     Rel("challenge", [Object(NonMatching, "challenge/rep_7BF0.c")]),
-    Rel("challenge", [Object(NonMatching, "challenge/rep_0010.c")]),
     Rel("challenge", [Object(NonMatching, "challenge/rep_00B0.c")]),
     Rel("challenge", [Object(Matching, "challenge/rep_7978.c")]),
     Rel("challenge", [Object(Matching, "challenge/rep_7BA0.c")]),
     Rel("challenge", [
-        Object(NonMatching, "auto_00_00001538_text", source="challenge/auto_00_00001538_text.c"),
         Object(Matching, "auto_00_00004DD8_text", source="challenge/auto_00_00004DD8_text.c"),
         Object(Matching, "auto_00_000085A8_text", source="challenge/auto_00_000085A8_text.c"),
         Object(Matching, "auto_00_00009EA0_text", source="challenge/auto_00_00009EA0_text.c"),
