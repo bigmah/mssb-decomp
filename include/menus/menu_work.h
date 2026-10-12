@@ -251,6 +251,14 @@ typedef struct MenuObject {
     /*0xB8*/ void (*update)(struct MenuObject* object); // lbl_2_data_308B4[active]
 } MenuObject; // size: 0xBC
 
+// Per-menu definition (lbl_800FEF70[]; MenuDef in main/file_800527C4.h, which
+// clashes with the menus' prototypes).
+typedef struct MenuDefEntry {
+    /*0x00*/ u16 _00[4];
+    /*0x08*/ u16 track;
+    /*0x0A*/ u16 _0A[3];
+} MenuDefEntry; // size: 0x10
+
 // Batting order entry (lbl_80354720 / lbl_80353B98, [2 teams][9]); OrderEntry in
 // main/file_8004207C.h, which can't be included next to the menus' lbl_8034E9A0.
 typedef struct MenuOrderEntry {

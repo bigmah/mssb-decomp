@@ -107,19 +107,14 @@ extern u8 lbl_800E8754[];
 extern s16 randRange_FUN_80042bf0(s32, s32);
 extern u8 lbl_80109038[];
 extern s32 fn_80067B40(s32, u8, s32);
-// lbl_800EF808 is SoundManager (main/file_80021308.h), lbl_800FEF70 MenuDef[]
-// (main/file_800527C4.h); both headers clash with this unit's prototypes.
+// lbl_800EF808 is SoundManager (main/file_80021308.h), which clashes with this
+// unit's prototypes.
 typedef struct MenuSoundMgr1254 {
     /*0x00*/ u32 _00;
     /*0x04*/ void* groups[48];
 } MenuSoundMgr1254;
 extern MenuSoundMgr1254 lbl_800EF808;
-typedef struct MenuDef1254 {
-    /*0x00*/ u16 _00[4];
-    /*0x08*/ u16 track;
-    /*0x0A*/ u16 _0A[3];
-} MenuDef1254; // size: 0x10
-extern MenuDef1254 lbl_800FEF70[];
+extern MenuDefEntry lbl_800FEF70[];
 extern s16 lbl_80108EDC[][5]; // character groups (5 ids each)
 extern u8 lbl_800EFBA4[];
 extern int sndFXStartEx(int, int, int, int);

@@ -43,7 +43,13 @@ typedef struct CharSelectState {
     /*0x472A*/ u8 _472A;
     /*0x472B*/ u8 _472B;
     /*0x472C*/ PortInput input[4];
-    /*0x4744*/ u8 _4744[0x4754 - 0x4744];
+    /*0x4744*/ u8 _4744[0x4748 - 0x4744];
+    /*0x4748*/ void* _4748; // menu task (MenuTask)
+    /*0x474C*/ void* _474C; // menu task (MenuTask)
+    /*0x4750*/ u8 _4750;
+    /*0x4751*/ u8 _4751;
+    /*0x4752*/ u8 _4752;
+    /*0x4753*/ u8 _4753;
     /*0x4754*/ u8 _4754;
     /*0x4755*/ u8 _4755;
     /*0x4756*/ u8 _4756;
