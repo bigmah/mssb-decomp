@@ -9,75 +9,120 @@ extern f32 fn_3_BFDA4(void*, s32, f32, s32, u8, u8*);
 typedef struct {
     f32 f[12];
 } M12;
-typedef struct {
-    u8 pad0[4];
-    void* p4;
-    u8 pad8[0xC];
-    f32 f14;
+// Animation key read by fn_3_BFDA4 (BFDA4Key in rep_1E08.c).
+typedef struct AnimKey21F8 {
+    /*0x0*/ f32 v;
+    /*0x4*/ f32 t;
+    /*0x8*/ u16 mode : 4;
+    /*0x8*/ u16 time : 12;
+    /*0xA*/ u8 a;
+    /*0xB*/ u8 b;
+} AnimKey21F8;
+
+// Animated model handed to fn_3_BF8F8; fn_3_C9590 evaluates its tracks.
+typedef struct AnimModel21F8 {
+    /*0x00*/ f32 _00[4];
+    /*0x10*/ s32 _10;
+    /*0x14*/ AnimKey21F8* tracks[8]; // scale x, scale y, x, -, -, rot y, rot z, (evaluated last)
+    /*0x34*/ u8 keyCount[8];
+    /*0x3C*/ u8 keyCursor[8];
+} AnimModel21F8;
+
+typedef struct E21F8 {
+    /*0x00*/ AnimModel21F8* model;
+    /*0x04*/ void* p4;
+    /*0x08*/ s32 _08;
+    /*0x0C*/ s32 _0C;
+    /*0x10*/ f32 _10;
+    /*0x14*/ f32 f14;
 } E21F8;
-extern const M12 lbl_3_rodata_2248;
-extern f32 lbl_3_rodata_2278;
-extern f32 lbl_3_rodata_227C;
-extern f32 lbl_3_rodata_2280;
 // .bss (laid out last-defined-first)
-static u8 lbl_3_bss_9F35[0x3]; // unused (alignment gap in the original)
 static u8 lbl_3_bss_9F34;
 static u8 lbl_3_bss_9F20[0x14];
-typedef struct {
-    u8 pad0[0x26C];
-    E21F8 ents[2];
-    u8 pad2[0x2E8 - 0x26C - 0x30];
-    u8 flag;
-    u8 pad3[3];
-    f32 tab[4];
-} G21F8;
-extern G21F8 lbl_3_data_17898;
+// .data: the animation tracks, the model and its draw entries, all file statics.
+static AnimKey21F8 lbl_3_data_17898[2] = {
+    {1.0f, 0.5f, 1, 0, 1, 1},
+    {2.0f, 0.0f, 0, 14, 0, 0},
+};
+static AnimKey21F8 lbl_3_data_178B0[8] = {
+    {1.0f, 1.0f, 1, 0, 1, 1},
+    {2.0f, 1.8f, 1, 2, 0, 1},
+    {0.2f, 0.0f, 0, 14, 0, 0},
+    {1.0f, 0.5f, 1, 0, 1, 1},
+    {2.0f, 0.0f, 0, 16, 0, 0},
+    {1.0f, 1.0f, 1, 0, 1, 1},
+    {2.0f, 1.8f, 1, 2, 0, 1},
+    {0.2f, 0.0f, 0, 16, 0, 0},
+};
+static AnimKey21F8 lbl_3_data_17910[4] = {
+    {0.0f, 2.0f, 1, 0, 0, 1},
+    {-2.0f, 0.0f, 0, 10, 0, 0},
+    {0.0f, 2.0f, 1, 0, 0, 1},
+    {-2.0f, 0.0f, 0, 12, 0, 0},
+};
+static AnimKey21F8 lbl_3_data_17940[16] = {
+    {0.31415927f, 0.0f, 0, 0, 0, 0},
+    {1.8849558f, 0.0f, 0, 0, 0, 0},
+    {3.4557521f, 0.0f, 0, 0, 0, 0},
+    {5.0265484f, 0.0f, 0, 0, 0, 0},
+    {1.2566371f, 0.0f, 0, 0, 0, 0},
+    {2.8274336f, 0.0f, 0, 0, 0, 0},
+    {4.3982296f, 0.0f, 0, 0, 0, 0},
+    {5.969026f, 0.0f, 0, 0, 0, 0},
+    {0.9424779f, 0.0f, 0, 0, 0, 0},
+    {2.5132742f, 0.0f, 0, 0, 0, 0},
+    {4.0840707f, 0.0f, 0, 0, 0, 0},
+    {5.654867f, 0.0f, 0, 0, 0, 0},
+    {1.5707964f, 0.0f, 0, 0, 0, 0},
+    {3.1415927f, 0.0f, 0, 0, 0, 0},
+    {4.712389f, 0.0f, 0, 0, 0, 0},
+    {6.2831855f, 0.0f, 0, 0, 0, 0},
+};
+static AnimKey21F8 lbl_3_data_17A00[7] = {
+    {0.62831855f, 0.0f, 0, 0, 0, 0},
+    {0.5654867f, 0.0f, 0, 0, 0, 0},
+    {-0.5654867f, 0.0f, 0, 0, 0, 0},
+    {-0.62831855f, 0.0f, 0, 0, 0, 0},
+    {1.0f, 0.0f, 0, 0, 0, 0},
+    {1.0f, 1.0f, 1, 10, 0, 1},
+    {0.0f, 0.0f, 0, 14, 0, 0},
+};
+static AnimKey21F8 lbl_3_data_17A54[9] = {
+    {1.0f, 0.0f, 0, 0, 0, 0},
+    {1.0f, 1.0f, 1, 12, 0, 1},
+    {0.0f, 0.0f, 0, 16, 0, 0},
+    {1.0f, 0.2f, 1, 0, 0, 1},
+    {0.4f, 0.0f, 0, 16, 0, 0},
+    {3.0f, 2.0f, 1, 0, 0, 1},
+    {5.0f, 0.0f, 0, 16, 0, 0},
+    {1.0f, 1.0f, 1, 0, 0, 1},
+    {0.0f, 0.0f, 0, 16, 0, 0},
+};
+
+static AnimModel21F8 lbl_3_data_17AC0 = {
+    {-1.0f, -0.5f, 1.0f, 1.0f},
+    0,
+    {lbl_3_data_17898, lbl_3_data_178B0, lbl_3_data_17910, NULL, NULL, lbl_3_data_17A00, lbl_3_data_17940, lbl_3_data_17A54},
+    {2, 3, 2, 0, 0, 1, 1, 3},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+};
+static E21F8 lbl_3_data_17B04[4] = {
+    {&lbl_3_data_17AC0, NULL, 0x11, 1, 16.0f, 0.0f},
+    {&lbl_3_data_17AC0, NULL, 0x11, 1, 16.0f, 0.0f},
+    {&lbl_3_data_17AC0, NULL, 0x12, 1, 16.0f, 0.0f},
+    {&lbl_3_data_17AC0, NULL, 0x12, 1, 16.0f, 0.0f},
+};
+static u8 lbl_3_data_17B64[0x1C] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF};
+static u8 lbl_3_data_17B80 = 1; // z-compare the effect
+static f32 lbl_3_data_17B84[5] = {4.0f, 2.0f, 1.0f, 0.9f, 0.0f}; // scale per size
 extern u8 lbl_3_common_bss_35154[];
 extern void fn_80034120(Mtx);
 extern void fn_3_BF8F8(void*, Mtx, void*, void*);
 extern void fn_3_C9590(u8*, s32, f32*, f32);
 
-// .text:0x000C937C size:0x214 mapped:0x80708410
-// ~92%: orig keeps (data_17898+0x26C)/(+0x2EC) as separate addi before the index add; we fold the offset into the final add/lfs. Also first base regs/r28 copy loop order differ.
-int fn_3_C937C(void) {
-    G21F8* d = &lbl_3_data_17898;
-    E21F8* e;
-    u8* b = lbl_3_bss_9F20;
-    Mtx sm;
-    M12 id = lbl_3_rodata_2248;
-    Mtx a;
-    f32 sc;
-    f32 t;
-    switch (b[0x14]) {
-    case 0:
-        b[0x14] = 1;
-        *(f32*)(b + 0x10) = lbl_3_rodata_2278;
-    case 1:
-        t = *(f32*)(b + 0x10) + lbl_3_rodata_227C;
-        *(f32*)(b + 0x10) = t;
-        if (t >= lbl_3_rodata_2280) {
-            b[0x14] = 2;
-        }
-        break;
-    }
-    fn_80034120(a);
-    PSMTXConcat(a, (f32(*)[4])&id, a);
-    sc = d->tab[b[0]];
-    PSMTXScale(sm, sc, sc, sc);
-    PSMTXConcat(a, sm, a);
-    e = &d->ents[b[0]];
-    e->f14 = *(f32*)(b + 0x10);
-    e->p4 = lbl_3_common_bss_35154 + 4;
-    if (d->flag != 0) {
-        GXSetZMode(1, 7, 1);
-    }
-    GXSetBlendMode(1, 4, 6, 0);
-    fn_3_BF8F8(&d->ents[b[0]], a, b + 4, fn_3_C9590);
-    if (d->flag != 0) {
-        GXSetZMode(1, 3, 1);
-    }
-    GXSetBlendMode(1, 4, 5, 0);
-    return b[0x14] == 2;
+// .text:0x000C9734 size:0x10
+void fn_3_C9734(void) {
+    lbl_3_bss_9F34 = 2;
 }
 
 // .text:0x000C9590 size:0x1A4 mapped:0x80708624
@@ -114,8 +159,43 @@ void fn_3_C9590(u8* o, s32 k, f32* m, f32 t) {
     fn_3_BFDA4(*(void**)(o + 0x30), o[0x3B], t, k, o[0x43], o + 0x43);
 }
 
-
-// .text:0x000C9734 size:0x10
-void fn_3_C9734(void) {
-    lbl_3_bss_9F34 = 2;
+// .text:0x000C937C size:0x214 mapped:0x80708410
+// ~92%: orig keeps (data_17898+0x26C)/(+0x2EC) as separate addi before the index add; we fold the offset into the final add/lfs. Also first base regs/r28 copy loop order differ.
+int fn_3_C937C(void) {
+    u8* b = lbl_3_bss_9F20;
+    Mtx sm;
+    M12 id = {{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f}};
+    Mtx a;
+    f32 sc;
+    switch (b[0x14]) {
+    case 0:
+        b[0x14] = 1;
+        *(f32*)(b + 0x10) = 0.0f;
+    case 1:
+        *(f32*)(b + 0x10) += 1.0f;
+        if (*(f32*)(b + 0x10) >= 16.0f) {
+            b[0x14] = 2;
+        }
+        break;
+    }
+    fn_80034120(a);
+    PSMTXConcat(a, (f32(*)[4])&id, a);
+    sc = lbl_3_data_17B84[b[0]];
+    PSMTXScale(sm, sc, sc, sc);
+    PSMTXConcat(a, sm, a);
+    {
+        s32 k = b[0];
+        lbl_3_data_17B04[k].f14 = *(f32*)(b + 0x10);
+        lbl_3_data_17B04[k].p4 = lbl_3_common_bss_35154 + 4;
+    }
+    if (lbl_3_data_17B80 != 0) {
+        GXSetZMode(1, 7, 1);
+    }
+    GXSetBlendMode(1, 4, 6, 0);
+    fn_3_BF8F8(&lbl_3_data_17B04[b[0]], a, b + 4, fn_3_C9590);
+    if (lbl_3_data_17B80 != 0) {
+        GXSetZMode(1, 3, 1);
+    }
+    GXSetBlendMode(1, 4, 5, 0);
+    return b[0x14] == 2;
 }
