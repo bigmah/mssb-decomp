@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/GX/GXTypes.h"
+#include "challenge/ch_data.h" // ChTexArchive
 
 // Common header of a process-queue task (see Task in main/file_800A7C08.h).
 // Each challenge task overlays its own work area at 0x14.
@@ -32,11 +33,7 @@ typedef struct ChDrawNode {
     /*0x4*/ void (*func)(void);
 } ChDrawNode;
 
-// Texture archive after convertTextureHeader: a count followed by 0x20-byte image records.
-typedef struct ChTexArchive {
-    /*0x0*/ u32 count;
-    /*0x4*/ u8 images[1][0x20]; // struct TexImage records
-} ChTexArchive;
+// ChTexArchive: challenge/ch_data.h
 
 // Full-screen texture draw node (two per task, indexed by lbl_803CBBC0), drawn by fn_1_1240.
 typedef struct ChTexDrawNode {

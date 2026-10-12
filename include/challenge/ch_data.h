@@ -41,6 +41,12 @@ typedef struct ChSpaniDesc {
 
 struct TexArchive;
 
+// Texture archive after convertTextureHeader: a count followed by 0x20-byte image records.
+typedef struct ChTexArchive {
+    /*0x0*/ u32 count;
+    /*0x4*/ u8 images[1][0x20]; // struct TexImage records
+} ChTexArchive;
+
 // ParticleParams5 (main/file_800263FC.h): spawn parameters of the type-5
 // emitters (fn_80030D88, fn_80031CA4). Fixed point x100000.
 typedef struct ChParticleParams5 {
