@@ -2482,6 +2482,20 @@ typedef struct HeapBlockHeader {
     /*0x4*/ s32 size;
 } HeapBlockHeader;
 
+// The arena never checks for overflow; on PC, stop at the allocation that
+// overruns it rather than at some later write past its end.
+#ifdef TARGET_PC
+#define PORT_HEAP_CHECK(size)                                                                    \
+    do {                                                                                         \
+        if (lbl_803C7898.freeSize < 0) {                                                         \
+            OSReport("heap overrun: %d bytes requested, %d free\n", (s32)(size), lbl_803C7898.freeSize); \
+            __builtin_trap();                                                                    \
+        }                                                                                        \
+    } while (0)
+#else
+#define PORT_HEAP_CHECK(size)
+#endif
+
 // .text:0x800ACF14 size:0x20
 void fn_800ACF14(void* block) {
     u8* hi = ((HeapBlockHeader*)block)[-1].prev;
@@ -2507,6 +2521,7 @@ void* fn_800ACF34(s32 align, s32 size) {
     ((HeapBlockHeader*)block)[-1].size = (s32)(oldHi - newHi);
     heap->freeSize = (s32)(newHi - lo);
     heap->hi = newHi;
+    PORT_HEAP_CHECK(size);
     return block;
 }
 #endif
@@ -2523,6 +2538,7 @@ void fn_800ACF78(void* block, s32 size) {
     heap->lo = base + total;
     heap->freeSize = (s32)(heap->hi - heap->lo);
     ((HeapBlockHeader*)block)[-1].size = total;
+    PORT_HEAP_CHECK(size);
 }
 #endif
 
@@ -2547,6 +2563,7 @@ void* _OSAllocFromHeap(s32 align, s32 size) {
     lo = size + block;
     lbl_803C7898.freeSize = (s32)(hi - lo);
     lbl_803C7898.lo = lo;
+    PORT_HEAP_CHECK(size);
     return block;
 }
 #endif

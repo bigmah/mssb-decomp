@@ -141,6 +141,9 @@ void maybeProcessTeamData(void) {
         }
         break;
     case 2:
+#ifdef TARGET_PC
+        port_swap_char_stats(lbl_3_bss_4, 54);
+#endif
         memcpy(&inMemRoster[0], lbl_3_bss_4 + teams[0] * 0x5A0, 0x5A0);
         memcpy(&inMemRoster[1], lbl_3_bss_4 + teams[1] * 0x5A0, 0x5A0);
         lbl_3_bss_10[0]++;

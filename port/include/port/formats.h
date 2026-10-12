@@ -48,6 +48,12 @@ int port_swap_tex_archive(void* archive);
 // the version already reads native.
 void port_swap_tex_palette(void* pal);
 
+// Character stats (CharacterStats, 0xA0 bytes each): u32 FieldingStats at
+// 0x20, s16 CharID at 0x24, u16 UnusedShorts[21] at 0x74; the rest is bytes.
+// The roster file (0x46E0 bytes) is 54 of them, unused space, then team
+// presets (bytes).
+void port_swap_char_stats(void* stats, uint32_t count);
+
 // A table of count u32 file offsets at the start of a container file (font
 // archive, ...). Call it exactly once per load (values can't tell native
 // from big-endian reliably).
