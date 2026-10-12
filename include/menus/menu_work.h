@@ -834,7 +834,8 @@ typedef struct MenuProgress {
     /*0xEE*/ u8 _EE[0xF4 - 0xEE];
     /*0xF4*/ u8 _F4;
     /*0xF5*/ u8 _F5;
-    /*0xF6*/ u8 _F6[0xF8 - 0xF6];
-} MenuProgress;
+    /*0xF6*/ u8 saveSlot; // selected challenge save slot
+    /*0xF7*/ u8 _F7;
+} MenuProgress; // size: 0xF8 (lbl_80361B20)
 
 #endif

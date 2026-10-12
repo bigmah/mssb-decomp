@@ -2221,19 +2221,13 @@ void fn_2_520A4(void) {
 }
 
 extern MenuSelVars lbl_2_bss_F410;
-// lbl_80361B20 (0xF8 bytes): only the selected challenge save slot is used here.
-typedef struct MenuCardSel {
-    /*0x00*/ u8 _00[0xF6];
-    /*0xF6*/ u8 slot;
-    /*0xF7*/ u8 _F7;
-} MenuCardSel;
-extern MenuCardSel lbl_80361B20;
+extern MenuProgress lbl_80361B20; // lbl_2_bss_1A8244 points at it
 extern MenuSaveSlots lbl_80354768;
 extern MenuCtx starMissionCompletionTracker; // the running challenge's save block
 
 // fn_2_51890, size:0x160
 void fn_2_51890(void) {
-    if ((s8)lbl_80354768.challenge[lbl_80361B20.slot]._1606 != 0) {
+    if ((s8)lbl_80354768.challenge[lbl_80361B20.saveSlot]._1606 != 0) {
         if (lbl_80354768.challenge[lbl_8034E9A0._4754]._441B != 0) {
             lbl_2_bss_F410._54 = 1;
             lbl_2_bss_33FBCC.b5 = 3;
@@ -3391,7 +3385,7 @@ void fn_2_52260(void) {
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     } else if (pad.down & 0x100) {
         lbl_8034E9A0._4754 = sel;
-        lbl_80361B20.slot = sel;
+        lbl_80361B20.saveSlot = sel;
         if (lbl_8034E9A0._4756 == 0 && lbl_2_bss_33FBCC.bF == -1) {
             lbl_2_bss_33FBCC.state = 0;
             lbl_2_bss_F410._54 = 0;
@@ -3456,7 +3450,7 @@ void fn_2_51C58(void) {
             memset(lbl_80354768.challenge[lbl_8034E9A0._4754].charsBackup, 0,
                    offsetof(MenuCtx, _1607[1]) - offsetof(MenuCtx, charsBackup)); // charsBackup.._1607[0]
             memcpy(&starMissionCompletionTracker, &lbl_80354768.challenge[lbl_8034E9A0._4754], sizeof(MenuCtx));
-            lbl_80361B20.slot = sel;
+            lbl_80361B20.saveSlot = sel;
             lbl_2_bss_33FBCC.b6 = 0;
             lbl_2_bss_33FBCC.state = 2;
             break;
@@ -3466,7 +3460,7 @@ void fn_2_51C58(void) {
             lbl_2_bss_33FBCC.b22 = 0x52;
             lbl_8034E978._26 = 1;
             fn_2_5163C();
-            lbl_80361B20.slot = sel;
+            lbl_80361B20.saveSlot = sel;
             lbl_2_bss_33FBCC.b6 = 1;
             lbl_2_bss_33FBCC.bE = 1;
             lbl_2_bss_9E08[0] = 0xA;
@@ -3477,7 +3471,7 @@ void fn_2_51C58(void) {
             } else {
                 fn_8004A34C(&lbl_803C50E8, 0, 0x37, 0, 0);
             }
-            lbl_80361B20.slot = sel;
+            lbl_80361B20.saveSlot = sel;
             lbl_2_bss_33FBCC.b6 = 0;
             lbl_2_bss_9E08[0] = 0x10;
             break;
@@ -3561,7 +3555,7 @@ void fn_2_52690(void) {
         } else {
             lbl_2_bss_9E08[0] = 5;
         }
-        lbl_2_bss_F410._54 = lbl_80361B20.slot;
+        lbl_2_bss_F410._54 = lbl_80361B20.saveSlot;
         break;
     case 2:
         if (lbl_800E877C.mode == 8 || lbl_800E877C.mode == 9) {
@@ -3570,7 +3564,7 @@ void fn_2_52690(void) {
             } else {
                 lbl_803C50E8._52 = 1;
             }
-            fn_8003BF54(0, 0, 0, 0, 1, 1, 2, lbl_80361B20.slot, 0);
+            fn_8003BF54(0, 0, 0, 0, 1, 1, 2, lbl_80361B20.saveSlot, 0);
             lbl_803CC1B8[0]->signal = 0;
             lbl_2_bss_9E08[0] = 9;
         } else {
@@ -3587,7 +3581,7 @@ void fn_2_52690(void) {
             } else if (lbl_800E877C.mode == 0xA) {
                 starMissionCompletionTracker._43BC = 0;
             }
-            fn_8003BF54(0, 0, 0, 0, 1, 1, 2, lbl_80361B20.slot, 0);
+            fn_8003BF54(0, 0, 0, 0, 1, 1, 2, lbl_80361B20.saveSlot, 0);
             lbl_803CC1B8[0]->signal = 0;
             lbl_2_bss_9E08[0] = 9;
             break;
@@ -3868,7 +3862,7 @@ void fn_2_52690(void) {
             break;
         case 3:
         case 4:
-            fn_8003BF54(0, 0, 0, 0, 1, 1, 2, lbl_80361B20.slot, 0);
+            fn_8003BF54(0, 0, 0, 0, 1, 1, 2, lbl_80361B20.saveSlot, 0);
             lbl_803CC1B8[0]->signal = 0;
             lbl_2_bss_9E08[0] = 9;
             break;

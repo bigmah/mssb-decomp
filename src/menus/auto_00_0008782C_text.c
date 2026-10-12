@@ -1036,7 +1036,7 @@ void fn_2_8ABFC(void) {
     fn_80034E20(task = lbl_803CC1B8, lbl_2_data_2ECE4);
     fn_2_8A008(task);
     if (lbl_8034E9A0._4756 == 1) {
-        lbl_2_bss_F410.slot = lbl_80361B20._F6[0];
+        lbl_2_bss_F410.slot = lbl_80361B20.saveSlot;
     }
     lbl_803CC1B8->func = fn_2_8A824;
 }

@@ -9188,7 +9188,7 @@ void fn_2_1D440(void) {
 extern GXColor lbl_2_data_107C8;
 extern MenuFlags lbl_800E877C; // lbl_2_bss_1A823C points here
 extern u8 lbl_800EFBA4[];
-extern u8 lbl_80361B20[];
+extern MenuProgress lbl_80361B20;
 extern u8 lbl_2_data_3CE0[];
 extern s16 lbl_2_data_2E6C[];
 extern s16 lbl_2_data_38CC[];
@@ -10266,7 +10266,7 @@ void fn_2_20D08(void) {
         fn_2_460F8();
         fn_2_44F64();
         fn_2_24EB0(0);
-        fn_8003BF54(0, 0, 0, 0, 1, 4, 1, lbl_80361B20[0xF6], 0);
+        fn_8003BF54(0, 0, 0, 0, 1, 4, 1, lbl_80361B20.saveSlot, 0);
         CHALLENGE_STATE = 0x78;
         break;
     case 0x78:
