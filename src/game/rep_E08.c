@@ -896,7 +896,12 @@ void fn_3_62904(void) {
     for (i = 0; i < 9; p++, i++) {
         if (p->_211 != 0) {
             if (g_Fielders[i]._211 != 0) {
-                u8* q = (u8*)((u32)g_UnkAnimation_31EAC + 0x51 + i * 0x54); // TODO port: pointer math through u32 (needed to match)
+#ifdef __MWERKS__
+                // &g_UnkAnimation_31EAC[i]._51; integer address math keeps the original register allocation
+                u8* q = (u8*)((u32)g_UnkAnimation_31EAC + 0x51 + i * 0x54);
+#else
+                u8* q = &g_UnkAnimation_31EAC[i]._51;
+#endif
                 if (*q != 8 && *q != 9) {
                     *q = 8;
                 }
@@ -2448,7 +2453,7 @@ void fn_3_668BC(void) {
     }
     o = actors[9];
     if (g_d_GameSettings.minigamesEnabled != 0) {
-        o = &lbl_8036E548.actors[g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame.rosterID]]; // TODO type
+        o = &lbl_8036E548.actors[g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame.rosterID]];
     }
     if (lbl_3_common_bss_32220._08 == 0) {
         if (o != NULL && (o->anim[0] == 0x4B || o->anim[0] == 0x66)) {
@@ -2555,7 +2560,7 @@ void fn_3_6714C(s32 player) {
         e->_50 = 0;
         e->_51 = 0;
         e->_00 = lbl_3_rodata_E58;
-        if (o != NULL && (o == NULL || o->parts == NULL)) { // TODO type: actor field 0x30
+        if (o != NULL && (o == NULL || o->parts == NULL)) {
             fn_3_60804(i, 0);
         }
     }
