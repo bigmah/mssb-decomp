@@ -300,12 +300,12 @@ def TRKLib(lib_name:str, objects:List[object], flags :list[str]= cflags_base, ex
     }
 
 # Helper function for REL script objects
-def Rel(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+def Rel(lib_name: str, objects: List[Object], extra_cflags: List[str] = []) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         # "progress_category": lib_name,
         "mw_version": "GC/2.6",
-        "cflags": cflags_rel,
+        "cflags": cflags_rel + extra_cflags,
         "host": True,
         "objects": objects,
     }
@@ -319,23 +319,21 @@ config.warn_missing_source = False
 config.libs = [
     Rel("challenge", [Object(NonMatching, "challenge/rep_7920.c")]),
     Rel("challenge", [Object(NonMatching, "challenge/rep_7BF0.c")]),
-    Rel("challenge", [Object(NonMatching, "challenge/rep_0010.c")]),
     Rel("challenge", [Object(NonMatching, "challenge/rep_00B0.c")]),
-    Rel("challenge", [Object(NonMatching, "challenge/rep_7978.c")]),
-    Rel("challenge", [Object(NonMatching, "challenge/rep_7BA0.c")]),
+    Rel("challenge", [Object(Matching, "challenge/rep_7978.c")]),
+    Rel("challenge", [Object(Matching, "challenge/rep_7BA0.c")]),
     Rel("challenge", [
-        Object(NonMatching, "auto_00_00001538_text", source="challenge/auto_00_00001538_text.c"),
-        Object(NonMatching, "auto_00_00004DD8_text", source="challenge/auto_00_00004DD8_text.c"),
-        Object(NonMatching, "auto_00_000085A8_text", source="challenge/auto_00_000085A8_text.c"),
-        Object(NonMatching, "auto_00_00009EA0_text", source="challenge/auto_00_00009EA0_text.c"),
-        Object(NonMatching, "auto_00_0000C2A4_text", source="challenge/auto_00_0000C2A4_text.c"),
-        Object(NonMatching, "auto_00_00017EFC_text", source="challenge/auto_00_00017EFC_text.c"),
+        Object(Matching, "auto_00_00004DD8_text", source="challenge/auto_00_00004DD8_text.c"),
+        Object(Matching, "auto_00_000085A8_text", source="challenge/auto_00_000085A8_text.c"),
+        Object(Matching, "auto_00_00009EA0_text", source="challenge/auto_00_00009EA0_text.c"),
+        Object(Matching, "auto_00_0000C2A4_text", source="challenge/auto_00_0000C2A4_text.c"),
+        Object(Matching, "auto_00_00017EFC_text", source="challenge/auto_00_00017EFC_text.c"),
         Object(NonMatching, "auto_00_0001D590_text", source="challenge/auto_00_0001D590_text.c"),
-        Object(NonMatching, "auto_00_00026AF8_text", source="challenge/auto_00_00026AF8_text.c"),
+        Object(Matching, "auto_00_00026AF8_text", source="challenge/auto_00_00026AF8_text.c"),
     ]),
     Rel(
         "challenge",
-        [Object(NonMatching, "challenge/rep_7A28.c")]
+        [Object(Matching, "challenge/rep_7A28.c")]
     ),
     Rel(
         "challenge",
@@ -343,7 +341,7 @@ config.libs = [
     ),
     Rel(
         "challenge",
-        [Object(NonMatching, "challenge/rep_0000.c")]
+        [Object(Matching, "challenge/rep_0000.c")]
     ),
     Rel(
         "challenge",
@@ -960,8 +958,6 @@ config.libs = [
             Object(NonMatching, "auto_00_00001254_text", source="menus/auto_00_00001254_text.c"),
             Object(NonMatching, "auto_00_0004B1AC_text", source="menus/auto_00_0004B1AC_text.c"),
             Object(Matching, "auto_00_00016870_text", source="menus/auto_00_00016870_text.c"),
-            Object(NonMatching, "auto_00_00092394_text", source="menus/auto_00_00092394_text.c"),
-            Object(NonMatching, "auto_00_00094854_text", source="menus/auto_00_00094854_text.c"),
             Object(NonMatching, "auto_00_000194BC_text", source="menus/auto_00_000194BC_text.c"),
             Object(NonMatching, "auto_00_00000D08_text", source="menus/auto_00_00000D08_text.c"),
             Object(NonMatching, "auto_00_0001B1BC_text", source="menus/auto_00_0001B1BC_text.c"),
@@ -1041,7 +1037,10 @@ config.libs = [
             Object(NonMatching, "menus/shared/auto_000919CC.c"),
             Object(NonMatching, "menus/shared/auto_00091C4C.c"),
             Object(NonMatching, "menus/shared/auto_00091D74.c"),
-        ]
+        ],
+        # The original compiled menus with -common on: uninitialised globals are
+        # common symbols, laid out after all .bss (see docs/common_bss.md).
+        extra_cflags=["-common on"],
     )
 ]
 

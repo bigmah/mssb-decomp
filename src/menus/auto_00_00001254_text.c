@@ -4,11 +4,11 @@
 
 // This unit's .bss (emitted in reverse order of definition). Sizes are the
 // distances between the original symbols; TODO type: the buffers are byte views.
-s16 lbl_2_bss_3E4[0x1BA];
-u8 lbl_2_bss_3E0[4];
-u8 lbl_2_bss_3A8[0x38];
-u8 lbl_2_bss_3A0[8];
-u8 lbl_2_bss_20[0x380];
+static s16 lbl_2_bss_3E4[0x1BA];
+static u8 lbl_2_bss_3E0[4];
+static u8 lbl_2_bss_3A8[0x38];
+static u8 lbl_2_bss_3A0[8];
+static u8 lbl_2_bss_20[0x380];
 extern u8 lbl_2_bss_758; // followed by 0x387 unreferenced bytes; stays in the auto split
 
 extern void fn_800625A4(u8, s32);

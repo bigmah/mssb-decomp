@@ -21,7 +21,12 @@ extern u8 lbl_803C66B0[];
 extern u8 lbl_8034E978[];
 extern void* lbl_2_data_2A1E8[];
 extern void* lbl_2_data_2A2EC[];
-extern s32 lbl_2_bss_A840;
+// .bss 0xA840..0xB29C (mwcc emits file statics in reverse order of definition).
+static u8 lbl_2_bss_ABC4[0x6D8]; // unreferenced
+static u8 lbl_2_bss_ABC0;
+static u8 lbl_2_bss_A848[0x378]; // unreferenced
+static s32 lbl_2_bss_A844;
+static s32 lbl_2_bss_A840;
 extern s32 lbl_2_bss_F410;
 extern u8 lbl_2_data_2D33C[];
 extern u8 lbl_803C50E8[];
@@ -1852,7 +1857,6 @@ void fn_2_76650(u8* o, u8 k, u32 mask) {
     *(s32*)(((u8**)lbl_80371C30)[(0xD0 + *(u16*)(o + 0x14) + k) * 2] + 0x5C) = buf[1] << 16;
 }
 
-extern s32 lbl_2_bss_A844;
 
 // fn_2_73CBC, size:0x240
 void fn_2_73CBC(u8* o) {
@@ -3895,7 +3899,6 @@ void fn_2_776A0(u8* o, s32 port) {
 }
 #endif
 
-extern u8 lbl_2_bss_ABC0;
 
 // fn_2_845A8, size:0xA00
 // NONMATCHING 85%: switch arms schedule slot loads differently; register allocation

@@ -11,7 +11,7 @@ extern u8 lbl_2_data_3CC8[];
 extern u32 lbl_803CBD0C[];
 extern u32* lbl_2_data_13374[];
 extern void fn_80031CA4(Vec*, u32*);
-u8 lbl_2_bss_15B8[0x4000]; // current message script (copied from lbl_2_data_12C0C)
+static u8 lbl_2_bss_15B8[0x4000]; // current message script (copied from lbl_2_data_12C0C)
 // Message scripts, one per lbl_2_data_12C0C entry (u32 command words).
 // PORT: fn_2_422FC copies 0x4000 bytes from a script start (reads past its end).
 u32 lbl_2_data_124A8[44] = {

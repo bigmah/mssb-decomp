@@ -67,3 +67,33 @@ In this example, `mPadList__10JUTGamePad` is the first common symbol in the TU, 
 This can be useful to determine if symbols are in the same TU without a map: if a `.bss` symbol is much larger than expected, it could be the first common symbol in a TU. One can subtract the sizes of following symbols to find the true size of the symbol, along with the end of the TU's common symbols.
 
 To reproduce this behavior, the `.comment` section must be present in the object. See [`.comment` section](comment_section.md) for more details.
+
+## In this project (menus.rel)
+
+menus.rel's `.bss` ends with a common block from `0xB644` to `0x340DDC` (~3.3 MB). It is reproduced byte-for-byte
+(see `config/GYQE01/menus/splits.txt`, `.bss ... common` lines). What was measured with the project's own tools:
+
+- **Pipeline.** The final REL link is `mwldeppc` GC/1.3.2 `-r1` over the individual objects (`build.ninja`, `.plf`
+  step), so inflation is per object. (The `-r` `.preplf` step merges everything into one object; there the *first*
+  common of the whole module would be inflated by the module's total. It is only used for symbol resolution.)
+- **Inflation.** The first common symbol of an object is laid out with the size of the object's whole common block
+  (all its commons, alignment included, even ones another object already defined); the others follow it. So a block
+  `[s1, s2..sn]` occupies `real(s1) + 2*sum(s2..sn)`. `lbl_2_bss_B644` (a `u32`, `OSGetTick()` in `fn_2_554`) shows
+  this: its gap is `0x2314`.
+- **Order.** Objects in link order; inside an object, symbol-table order. dtk writes split objects' commons in address
+  order. mwcc's order for C is *not* source order (it looked hash-like in tests); check `readelf -s` of the object.
+- **Alignment.** Each object's block starts 4-aligned even for `char` commons (mwcc gives arrays COM alignment 4,
+  scalars their natural alignment); inside a block, a 1-aligned common can follow at an odd address.
+  `lbl_2_bss_33FBF5` (odd address) therefore sits inside the block that starts at `0x33FBCC`, with `align:1` in
+  `symbols.txt`.
+- **dtk.** `common` on a `.bss` split makes dtk emit `SHN_COMMON` symbols with the `symbols.txt` sizes (use the *real*
+  size of a block's first symbol, not the inflated gap) and `align:` as the COM value. Each object can own only one
+  contiguous block.
+- **C side.** menus compiles with `-common on` (`configure.py`): uninitialised globals become commons, so file-local
+  `.bss` must be `static` (as in the original, where only statics sit in the regular `.bss`).
+- **objdiff** does not count `SHN_COMMON` symbols, so the 3.3 MB left the menus data total (and data % rose) when
+  the region became common.
+- **Unknowns.** Only the inflation gaps and references locate block boundaries; where they don't (unlabeled bytes,
+  the size of a first symbol), the split chosen is one that reproduces the layout: e.g. `lbl_2_bss_FC68` and
+  `lbl_2_bss_33FBF8` are unreferenced block starts, and the last block (`0x340234`) is assigned to `rep_1028.c`
+  (not linked) so that the linked `rep_0FD8.c` needs no common definitions.
