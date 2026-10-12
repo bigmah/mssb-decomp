@@ -2416,7 +2416,10 @@ typedef struct _MiniGameStruct {
     /*0x1B2C*/ u8 _1B2C;
     /*0x1B2D*/ u8 _1B2D;
     /*0x1B2E*/ u8 _1B2E;
-    /*0x1B2F*/ u8 _1B2F[4]; // per runner
+    /*0x1B2F*/ u8 _1B2F;
+    /*0x1B30*/ u8 _1B30;
+    /*0x1B31*/ u8 _1B31;
+    /*0x1B32*/ u8 _1B32;
     /*0x1B33*/ u8 _1B33;
     /*0x1B34*/ s16 _1B34;
     /*0x1B36*/ u8 _1B36[6];
