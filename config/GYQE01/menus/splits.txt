@@ -21,6 +21,10 @@ menus/rep_0100.c:
 menus/rep_0150.c:
 	.rodata     start:0x00000150 end:0x000001A0
 
+auto_00_00000000_text:
+	.text       start:0x00000000 end:0x00000A70
+	.bss        start:0x0000B644 end:0x0000FC68 align:4 common
+
 menus/rep_01A0.c:
 	.text       start:0x00000A70 end:0x00000D08
 	.rodata     start:0x000001A0 end:0x00000200
@@ -49,6 +53,7 @@ menus/rep_03E8.c:
 auto_00_00001254_text:
 	.text       start:0x00001254 end:0x00012238
 	.bss        start:0x00000020 end:0x00000758
+	.bss        start:0x0000FC68 end:0x0001010C align:4 common
 
 menus/rep_0438.c:
 	.text       start:0x00012238 end:0x00013BA4
@@ -57,10 +62,12 @@ menus/rep_0438.c:
 menus/rep_04B0.c:
 	.text       start:0x00014574 end:0x00016870
 	.rodata     start:0x000004B0 end:0x00000568
+	.bss        start:0x0001010C end:0x000101AC align:4 common
 
 menus/rep_0568.c:
 	.text       start:0x00016A98 end:0x000194BC
 	.rodata     start:0x00000568 end:0x000005F0
+	.bss        start:0x000101AC end:0x0001033C align:4 common
 
 menus/rep_05F0.c:
 	.rodata     start:0x000005F0 end:0x00000640
@@ -74,9 +81,17 @@ menus/rep_0690.c:
 menus/rep_06E0.c:
 	.rodata     start:0x000006E0 end:0x00000730
 
+auto_00_000194BC_text:
+	.text       start:0x000194BC end:0x0001A4C8
+	.bss        start:0x0001033C end:0x0001034C align:4 common
+
 menus/rep_0730.c:
 	.text       start:0x0001A4C8 end:0x0001B1BC
 	.rodata     start:0x00000730 end:0x00000788
+
+auto_00_0001B1BC_text:
+	.text       start:0x0001B1BC end:0x0001D440
+	.bss        start:0x0001034C end:0x0033FB4C align:4 common
 
 menus/rep_0788.c:
 	.text       start:0x0001D440 end:0x00033E70
@@ -118,6 +133,7 @@ auto_00_0004B1AC_text:
 	.text       start:0x0004B1AC end:0x00054BB0
 	.data       start:0x00013460 end:0x0001F3F0
 	.bss        start:0x000055E8 end:0x00009E10
+	.bss        start:0x0033FB4C end:0x0033FBCC align:4 common
 
 menus/rep_0A58.c:
 	.text       start:0x00054BB0 end:0x0005597C
@@ -127,6 +143,11 @@ menus/rep_0AB0.c:
 	.text       start:0x0005979C end:0x0005E84C
 	.rodata     start:0x00000AB0 end:0x00000B08
 	.data       start:0x00020C68 end:0x000296B8
+	.bss        start:0x0033FBCC end:0x0033FBF8 align:4 common
+
+auto_00_0005E84C_text:
+	.text       start:0x0005E84C end:0x0006832C
+	.bss        start:0x0033FBF8 end:0x0034009C align:4 common
 
 menus/rep_0B08.c:
 	.text       start:0x0006832C end:0x00071EC4
@@ -156,18 +177,29 @@ menus/rep_0DE0.c:
 menus/rep_0F10.c:
 	.rodata     start:0x00000F10 end:0x00000F60
 
+auto_00_0008782C_text:
+	.text       start:0x0008782C end:0x0008ACE0
+	.bss        start:0x0034009C end:0x00340140 align:4 common
+
 menus/rep_0F60.c:
 	.text       start:0x0008ACE0 end:0x0008E6A4
 	.rodata     start:0x00000F60 end:0x00000FD8
 	.data       start:0x0002F990 end:0x0002FEE0
 	.bss        start:0x0000B2B8 end:0x0000B2C0
+	.bss        start:0x00340140 end:0x00340234 align:4 common
 
 menus/rep_0FD8.c:
 	.rodata     start:0x00000FD8 end:0x00001028
 
+auto_00_0008E6A4_text:
+	.text       start:0x0008E6A4 end:0x0008F0F4
+	.bss        start:0x0000B2C0 end:0x0000B640
+	.bss        start:0x00340234 end:0x00340DDC align:4 common
+
 menus/rep_1028.c:
 	.text       start:0x0008F0F4 end:0x00092394
 	.rodata     start:0x00001028 end:0x000010C0
+	.bss        start:0x0000B640 end:0x0000B644
 
 menus/rep_10C0.c:
 	.text       start:0x000927C8 end:0x00094854
