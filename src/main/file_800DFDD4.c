@@ -896,36 +896,60 @@ s32 fn_800E2310(HVQState* state, s32* block, u8 count, u8* src, s32 srcStride, s
 }
 
 // .text:0x800E2580 size:0x318
-// NONMATCHING 69%: original unrolls the raw copy and clip loops differently
+// NONMATCHING 98%: in the raw-pixel branch the original walks rows 1-3 with a copy of dst (r5)
 #if NONMATCHING
 void fn_800E2580(HVQState* state, u8* dst, s32 stride, u8 value, u8 type, s32 planeIdx) {
+    u8* clip = lbl_80328DA0;
     s32 block[16];
     s32 shift;
     s32 bias;
-    s32 i;
 
     if (type == 6) {
         // raw 4x4 pixels
         HVQBitBuf* fixvl = &state->fixvl[planeIdx];
 
-        for (i = 0; i < 4; i++) {
-            dst[0] = *fixvl->ptr++;
-            dst[1] = *fixvl->ptr++;
-            dst[2] = *fixvl->ptr++;
-            dst[3] = *fixvl->ptr++;
-            dst += stride;
-        }
+        dst[0] = *fixvl->ptr++;
+        dst[1] = *fixvl->ptr++;
+        dst[2] = *fixvl->ptr++;
+        dst[3] = *fixvl->ptr++;
+        dst += stride;
+        dst[0] = *fixvl->ptr++;
+        dst[1] = *fixvl->ptr++;
+        dst[2] = *fixvl->ptr++;
+        dst[3] = *fixvl->ptr++;
+        dst += stride;
+        dst[0] = *fixvl->ptr++;
+        dst[1] = *fixvl->ptr++;
+        dst[2] = *fixvl->ptr++;
+        dst[3] = *fixvl->ptr++;
+        dst += stride;
+        dst[0] = *fixvl->ptr++;
+        dst[1] = *fixvl->ptr++;
+        dst[2] = *fixvl->ptr++;
+        dst[3] = *fixvl->ptr++;
         return;
     }
     shift = state->basisShift;
     bias = ((value + 0x80) << shift) - fn_800E20A0(state, block, type, state->nest, state->nestWidth, planeIdx);
-    for (i = 0; i < 4; i++) {
-        dst[0] = lbl_80328DA0[(block[i * 4 + 0] + bias) >> shift];
-        dst[1] = lbl_80328DA0[(block[i * 4 + 1] + bias) >> shift];
-        dst[2] = lbl_80328DA0[(block[i * 4 + 2] + bias) >> shift];
-        dst[3] = lbl_80328DA0[(block[i * 4 + 3] + bias) >> shift];
-        dst += stride;
-    }
+    dst[0] = clip[(block[0] + bias) >> shift];
+    dst[1] = clip[(block[1] + bias) >> shift];
+    dst[2] = clip[(block[2] + bias) >> shift];
+    dst[3] = clip[(block[3] + bias) >> shift];
+    dst += stride;
+    dst[0] = clip[(block[4] + bias) >> shift];
+    dst[1] = clip[(block[5] + bias) >> shift];
+    dst[2] = clip[(block[6] + bias) >> shift];
+    dst[3] = clip[(block[7] + bias) >> shift];
+    dst += stride;
+    dst[0] = clip[(block[8] + bias) >> shift];
+    dst[1] = clip[(block[9] + bias) >> shift];
+    dst[2] = clip[(block[10] + bias) >> shift];
+    dst[3] = clip[(block[11] + bias) >> shift];
+    dst += stride;
+    dst[0] = clip[(block[12] + bias) >> shift];
+    dst[1] = clip[(block[13] + bias) >> shift];
+    dst[2] = clip[(block[14] + bias) >> shift];
+    dst[3] = clip[(block[15] + bias) >> shift];
 }
 #endif
 
