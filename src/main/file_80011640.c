@@ -4797,12 +4797,12 @@ void fn_8001E474(void) {
 }
 
 // .text:0x8001E488 size:0x2FC
-// NONMATCHING 99%: slot/loop-counter registers swapped
+// NONMATCHING 99%: r25/r26 (view, slot->actor) swapped in the inlined drawSlot
 #if NONMATCHING
 void fn_8001E488(void) {
-    s32 i;
     CharActor* actor;
     ActorObject* slot;
+    s32 i;
     f32 x;
     f32 y;
     Mtx44 proj;
@@ -4852,7 +4852,8 @@ static inline void drawMinigameLayer(void) {
     minigamesGXStuff();
 }
 
-// NONMATCHING 64%: the original inlines fn_8001E488 (not compiled in the matching build since it is NONMATCHING); otherwise register allocation
+// NONMATCHING 93%: register allocation (measured with fn_8001E488 compiled, as in the NONMATCHING build;
+// the original inlines it, so this function only reaches 64% while fn_8001E488 is left out)
 #if NONMATCHING
 void fn_8001E784(void) {
     LightPos* lp;
