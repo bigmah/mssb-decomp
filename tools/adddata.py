@@ -24,10 +24,11 @@ ap.add_argument("start")
 ap.add_argument("end")
 ap.add_argument("--module", default="game")
 ap.add_argument("--dry", action="store_true")
+ap.add_argument("--src", help="source file if not src/<unit> (auto units)")
 a = ap.parse_args()
 st, en = int(a.start, 16), int(a.end, 16)
 cfg = "config/GYQE01/%s/" % a.module
-src = "src/" + a.unit
+src = a.src or ("src/" + a.unit)
 
 # --- relocations inside .data of the original REL
 rel = open("orig/GYQE01/files/%s.rel" % a.module, "rb").read()
@@ -97,6 +98,15 @@ open(src, "w").write(s)
 # --- split
 sp = open(cfg + "splits.txt").read()
 m = re.search(r"^" + re.escape(a.unit) + r":[^\n]*\n((?:\t[^\n]*\n)*)", sp, re.M)
+if not m and a.unit.startswith("auto_00_"):
+    # auto text unit with a source file: give it an explicit block ending at the next .text split
+    tst = int(a.unit.split("_")[2], 16)
+    nxt = min(int(x, 16) for x in re.findall(r"\.text\s+start:0x([0-9A-Fa-f]+)", sp) if int(x, 16) > tst)
+    blkname = None
+    for mm in re.finditer(r"^(\S[^\n]*):\n\t\.text\s+start:0x([0-9A-Fa-f]+)", sp, re.M):
+        if int(mm.group(2), 16) == nxt: blkname = mm.start(); break
+    sp = sp[:blkname] + "%s:\n\t.text       start:0x%08X end:0x%08X\n\n" % (a.unit, tst, nxt) + sp[blkname:]
+    m = re.search(r"^" + re.escape(a.unit) + r":[^\n]*\n((?:\t[^\n]*\n)*)", sp, re.M)
 blk = m.group(1)
 if ".data" not in blk:
     order = [".text", ".ctors", ".dtors", ".rodata", ".data", ".bss"]

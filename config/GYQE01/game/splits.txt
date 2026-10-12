@@ -507,6 +507,10 @@ game/rep_3B70.c:
 game/rep_3BD8.c:
 	.rodata     start:0x00003BD8 end:0x00003C28
 
+auto_00_0015C5F4_text:
+	.text       start:0x0015C5F4 end:0x0015F574
+	.data       start:0x000273E0 end:0x00027C94
+
 game/rep_3C28.c:
 	.text       start:0x0015F574 end:0x0015F648
 	.rodata     start:0x00003C28 end:0x00003C7C
