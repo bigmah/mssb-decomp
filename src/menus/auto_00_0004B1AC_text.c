@@ -1527,15 +1527,15 @@ extern MenuData* lbl_2_bss_1A824C[];
 
 extern void fn_2_89F70(void);
 
-extern u8 lbl_2_data_1323C[];
+extern MenuAsset lbl_2_data_1323C;
 
-extern u8 lbl_2_data_1324C[];
+extern MenuAsset lbl_2_data_1324C;
 
-extern u8 lbl_2_data_1325C[];
+extern MenuAsset lbl_2_data_1325C;
 
 extern u8 lbl_2_data_1326C[];
 
-extern u8 lbl_2_data_132DC[];
+extern MenuAsset lbl_2_data_132DC;
 
 extern s16 lbl_2_data_3EC8[];
 
@@ -1662,7 +1662,7 @@ void fn_2_4E94C(void) {
 
 // fn_2_4E970, size:0x38
 s32 fn_2_4E970(void) {
-    return fn_80035838(lbl_2_data_132DC, 0x17) != 0;
+    return fn_80035838(&lbl_2_data_132DC, 0x17) != 0;
 }
 
 // fn_2_4EABC, size:0x38
@@ -1672,17 +1672,17 @@ s32 fn_2_4EABC(void) {
 
 // fn_2_4EAF4, size:0x38
 s32 fn_2_4EAF4(void) {
-    return fn_80035838(lbl_2_data_1325C, 0xC) != 0;
+    return fn_80035838(&lbl_2_data_1325C, 0xC) != 0;
 }
 
 // fn_2_4EB2C, size:0x38
 s32 fn_2_4EB2C(void) {
-    return fn_80035838(lbl_2_data_1324C, 0x15) != 0;
+    return fn_80035838(&lbl_2_data_1324C, 0x15) != 0;
 }
 
 // fn_2_4EB64, size:0x38
 s32 fn_2_4EB64(void) {
-    return fn_80035838(lbl_2_data_1323C, 0x8) != 0;
+    return fn_80035838(&lbl_2_data_1323C, 0x8) != 0;
 }
 
 // fn_2_4E858, size:0x20
@@ -1800,7 +1800,7 @@ void fn_2_4E7A4(void) {
 
 // fn_2_515DC, size:0x60
 void fn_2_515DC(u8 mode) {
-    memset(&lbl_2_bss_1A824C[0]->_19542C, 0, offsetof(MenuData, _1972BC) - offsetof(MenuData, _19542C));
+    memset(lbl_2_bss_1A824C[0]->msgs, 0, offsetof(MenuData, _1972BC) - offsetof(MenuData, msgs));
     lbl_2_bss_1A824C[0]->_1972B8 = mode;
     fn_2_4906C();
 }
@@ -3528,13 +3528,8 @@ void fn_2_51C58(void) {
     lbl_2_bss_F410._54 = cursor;
 }
 
-// lbl_800EF808 (0x39C-byte block in main.dol .data); only the field used here.
-typedef struct MenuOptionsBlock {
-    /*0x000*/ u8 _000[0x98];
-    /*0x098*/ void* _098; // heap block freed with fn_800ACFB0
-    /*0x09C*/ u8 _09C[0x39C - 0x9C];
-} MenuOptionsBlock;
-extern MenuOptionsBlock lbl_800EF808;
+#include "main/file_80021308.h" // SoundManager
+extern SoundManager lbl_800EF808;
 extern s32 fn_80021410(void);
 extern void fn_80062A74(void);
 
@@ -3777,7 +3772,7 @@ void fn_2_52690(void) {
                 fn_80035B50(6);
                 fn_800AD054(lbl_8034E9A0.heapMarkB[0], lbl_8034E9A0.heapMarkB[1]);
                 fn_80021410();
-                fn_800ACFB0(lbl_800EF808._098);
+                fn_800ACFB0(lbl_800EF808.groups[37]);
                 fn_80042D38(0x10);
                 break;
             }

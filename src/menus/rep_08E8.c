@@ -1,6 +1,8 @@
 #include "menus/rep_08E8.h"
 #include "main/file_80011640.h"
 #include "menus/menu_work.h"
+#include "menus/menu_asset.h"
+#include "menus/rep_10C0.h" // MenuCamera
 #include "main/file_800BD8C4.h"
 #include "main/file_80024D2C.h"
 #include "C3/control.h"
@@ -354,7 +356,7 @@ extern void fn_800B4AFC(GameActor* actor, u8 loop);
 extern u8* fn_80052734(s32);
 extern s32 fn_800527BC(void);
 extern u8 fn_800B3C04(s32 viewIndex, GameActor* actor, Mtx camera);
-extern u8* lbl_2_bss_340140;
+extern MenuCharMgr* lbl_2_bss_340140;
 extern const f32 lbl_2_rodata_9B0;
 
 // .text:0x47B24 size:0x1D8
@@ -367,7 +369,7 @@ void fn_2_47B24(u16* count) {
     CharActor* actor;
     u8 f;
     f32 m[3][4];
-    if (lbl_2_bss_340140[0x307A] != 3) {
+    if (lbl_2_bss_340140->_307A != 3) {
         for (i = 0; i < *count; i++) {
             actor = lbl_8036E548.active[i];
             if (actor != NULL && actor->mode[0] != 0) {
@@ -443,8 +445,8 @@ void fn_2_46D94(s16* sel, s16* scroll, s16 count, s16 page, u32 flags) {
         max = count - page;
     }
     pad = (u8*)&lbl_803C77B8;
-    pad += lbl_2_bss_1A824C[0]->port * 0x20;
-    switch (*(u16*)(pad + 4)) {
+    pad += lbl_2_bss_1A824C[0]->port * sizeof(MenuPad);
+    switch (((MenuPad*)pad)->repeat) {
     case 0x8:
         if (scroll != NULL) {
             *sel = v = (s16)(*sel - 1);
@@ -610,8 +612,8 @@ void fn_2_472C4(s16* sel, s16* scroll, s16 count, s16 page, s16 flags) {
         max = count - page;
     }
     pad = (u8*)&lbl_803C77B8;
-    pad += lbl_2_bss_1A824C[0]->port * 0x20;
-    switch (*(u16*)(pad + 4)) {
+    pad += lbl_2_bss_1A824C[0]->port * sizeof(MenuPad);
+    switch (((MenuPad*)pad)->repeat) {
     case 0x4:
     case 0x20:
         if (!(flags & 8) && scroll != NULL && count > page) {
@@ -795,7 +797,7 @@ void fn_2_487A0(void) {
     s32 i;
     s32 j;
     f32 z;
-    GXLoadPosMtxImm((MtxPtr)((u8*)fn_80052768_getCamera(0) + 0x40), GX_PNMTX0);
+    GXLoadPosMtxImm(fn_80052768_getCamera(0)->view, GX_PNMTX0);
     GXSetCurrentMtx(GX_PNMTX0);
     GXSetColorUpdate(GX_TRUE);
     GXClearVtxDesc();
@@ -847,9 +849,8 @@ void fn_2_487A0(void) {
 
 extern void fn_2_6A87C(void);
 extern void fn_2_9007C(void);
-extern void fn_2_93BF8(void*);
 extern void fn_80052968(void);
-extern u8 lbl_2_bss_1A81D4[];
+extern MenuCamera lbl_2_bss_1A81D4; // menus/rep_10C0.h
 
 // .text:0x47FF8 size:0x1C0
 void fn_2_47FF8(void) {
@@ -866,20 +867,20 @@ void fn_2_47FF8(void) {
                 fn_2_6A87C();
             } else {
                 fn_2_6A87C();
-                fn_2_93BF8(lbl_2_bss_1A81D4);
+                fn_2_93BF8(&lbl_2_bss_1A81D4);
             }
         } else if (mode == 2) {
             fn_2_9007C();
         } else {
-            fn_2_93BF8(lbl_2_bss_1A81D4);
+            fn_2_93BF8(&lbl_2_bss_1A81D4);
         }
     } else {
-        fn_2_93BF8(lbl_2_bss_1A81D4);
+        fn_2_93BF8(&lbl_2_bss_1A81D4);
     }
-    memcpy((u8*)fn_80052768_getCamera(0) + 0x70, lbl_2_bss_1A81D4 + 0x4C, sizeof(Vec));
-    memcpy((u8*)fn_80052768_getCamera(0) + 0x7C, lbl_2_bss_1A81D4 + 0x40, sizeof(Vec));
-    *(f32*)((u8*)fn_80052768_getCamera(0) + 0xA4) = *(f32*)(lbl_2_bss_1A81D4 + 0x3C);
-    PSMTXCopy((MtxPtr)lbl_2_bss_1A81D4, (MtxPtr)((u8*)fn_80052768_getCamera(0) + 0x40));
+    memcpy(&fn_80052768_getCamera(0)->eye, &lbl_2_bss_1A81D4.pos, sizeof(Vec));
+    memcpy(&fn_80052768_getCamera(0)->target, &lbl_2_bss_1A81D4.target, sizeof(Vec));
+    fn_80052768_getCamera(0)->zoom = lbl_2_bss_1A81D4.fov;
+    PSMTXCopy(lbl_2_bss_1A81D4.view, fn_80052768_getCamera(0)->view);
     fn_80052968();
 }
 
@@ -900,8 +901,8 @@ void fn_2_48A1C(void) {
     z = direction.z * lbl_2_rodata_9A0;
     direction.x = x;
     direction.z = z;
-    position.x += ((s8*)((u8*)&lbl_803C77B8 + 0x10))[lbl_2_bss_1A824C[0]->port * 0x20] / 768.0f;
-    position.z += ((s8*)((u8*)&lbl_803C77B8 + 0x11))[lbl_2_bss_1A824C[0]->port * 0x20] / 768.0f;
+    position.x += ((s8*)((u8*)&lbl_803C77B8 + offsetof(MenuPad, stickX)))[lbl_2_bss_1A824C[0]->port * sizeof(MenuPad)] / 768.0f;
+    position.z += ((s8*)((u8*)&lbl_803C77B8 + offsetof(MenuPad, stickY)))[lbl_2_bss_1A824C[0]->port * sizeof(MenuPad)] / 768.0f;
     if (0.0f != x || 0.0f != z) {
         lbl_2_bss_55BC = fn_2_4A1E8(direction.z, x);
     }
@@ -914,19 +915,20 @@ void fn_2_48A1C(void) {
     parameters->rot.z = lbl_2_data_13304.z;
 }
 
-extern u8 lbl_80366B18[];
+#include "main/file_8000F150.h" // TextSystem lbl_80366B18
 
 // .text:0x4906C size:0x110
 void fn_2_4906C(void) {
     s32 i;
     s32 j;
     for (i = 0; i < 15; i++) {
-        ((u32*)lbl_2_bss_1A824C[0])[i + 0x19542C / 4] =
-            ((u32*)(*(u8**)(lbl_80366B18 + 0x798 + lbl_2_bss_1A824C[0]->_1972B8 * 4) + 4))[i];
+        // = msgs[i] = tables[_1972B8]->msgs[i], spelled so that it matches
+        ((u16**)lbl_2_bss_1A824C[0])[i + (s32)(offsetof(MenuData, msgs) / sizeof(u16*))] =
+            ((u16**)((u8*)lbl_80366B18.tables[lbl_2_bss_1A824C[0]->_1972B8] + offsetof(MsgTable, msgs)))[i];
     }
 }
 
-extern u8 lbl_2_data_12EC0[];
+extern MenuAsset lbl_2_data_12EC0[];
 
 
 // .text:0x477C0 size:0x134
@@ -939,7 +941,7 @@ void fn_2_477C0(void) {
     u8* buf;
     for (i = 0; i < 54; i++) {
         j = i * 19;
-        v = ((Entry08E8*)lbl_2_data_12EC0)[j].size & 0x0FFFFFFF;
+        v = lbl_2_data_12EC0[j].sizeFlags & 0x0FFFFFFF;
         if (max < v) max = v;
     }
     size = (max + 0x1F) & ~0x1F;
@@ -967,17 +969,17 @@ void fn_2_47540(void) {
     s32 k;
     s32 m;
     u8* p;
-    Entry08E8* f;
+    MenuAsset* f;
 
     for (k = 0; k < 4; k++) {
-        f = &((Entry08E8*)lbl_2_data_12EC0)[k * 19];
-        size = f[4].size & 0x0FFFFFFF;
+        f = &lbl_2_data_12EC0[k * 19];
+        size = f[4].sizeFlags & 0x0FFFFFFF;
         if (max0 < size) max0 = size;
-        size = f[3].size & 0x0FFFFFFF;
+        size = f[3].sizeFlags & 0x0FFFFFFF;
         if (max1 < size) max1 = size;
-        size = f[5].size & 0x0FFFFFFF;
+        size = f[5].sizeFlags & 0x0FFFFFFF;
         if (max2 < size) max2 = size;
-        size = f[2].size & 0x0FFFFFFF;
+        size = f[2].sizeFlags & 0x0FFFFFFF;
         if (max3 < size) max3 = size;
     }
     s1 = (max1 + 0x1F) & ~0x1F;
@@ -1520,11 +1522,11 @@ u16* fn_2_4917C(u16* buffer, s32 number, s32 flags, s32 digits, s32 style) {
     }
 
     if ((flags & 4) && (flags & 1)) {
-        lbl_2_bss_55C0.space = *(lbl_2_bss_1A824C[0]->_19544C);
+        lbl_2_bss_55C0.space = *(lbl_2_bss_1A824C[0]->msgs[8]);
     } else if ((flags & 4) && (flags & 0x10)) {
-        lbl_2_bss_55C0.space = *(lbl_2_bss_1A824C[0]->_195464);
+        lbl_2_bss_55C0.space = *(lbl_2_bss_1A824C[0]->msgs[14]);
     } else if (flags & 4) {
-        lbl_2_bss_55C0.space = *(lbl_2_bss_1A824C[0]->_195460);
+        lbl_2_bss_55C0.space = *(lbl_2_bss_1A824C[0]->msgs[13]);
     } else if (flags & 1) {
         lbl_2_bss_55C0.space = 0x4003;
     } else {
@@ -1539,26 +1541,26 @@ u16* fn_2_4917C(u16* buffer, s32 number, s32 flags, s32 digits, s32 style) {
             *out = lbl_2_bss_55C0.space;
         } else if (c == '-') {
             if (flags & 0x10) {
-                *out = *(menu->_19545C);
+                *out = *(menu->msgs[12]);
             } else if (flags & 1) {
-                *out = *(menu->_195458);
+                *out = *(menu->msgs[11]);
             } else {
-                *out = *(menu->_19545C);
+                *out = *(menu->msgs[12]);
             }
         } else if (c >= '0' && c <= '9') {
             if (flags & 0x10) {
-                *out = (menu->_195464)[c - '0'];
+                *out = (menu->msgs[14])[c - '0'];
             } else if (flags & 1) {
-                *out = (menu->_19544C)[c - '0'];
+                *out = (menu->msgs[8])[c - '0'];
             } else {
-                *out = (menu->_195460)[c - '0'];
+                *out = (menu->msgs[13])[c - '0'];
             }
         } else if (flags & 0x10) {
-            *out = (menu->_195464)[c - 'a' + 12];
+            *out = (menu->msgs[14])[c - 'a' + 12];
         } else if (flags & 1) {
-            *out = (menu->_195444)[c - 'a'];
+            *out = (menu->msgs[6])[c - 'a'];
         } else {
-            *out = (menu->_195450)[c - 'a'];
+            *out = (menu->msgs[9])[c - 'a'];
         }
         out++;
         count++;
@@ -1567,18 +1569,18 @@ u16* fn_2_4917C(u16* buffer, s32 number, s32 flags, s32 digits, s32 style) {
     lbl_2_bss_55C0.text[count] = 0x4000;
 
     if (flags & 0x10) {
-        lbl_2_bss_55C0.space = (lbl_2_bss_1A824C[0]->_195464)[10];
+        lbl_2_bss_55C0.space = (lbl_2_bss_1A824C[0]->msgs[14])[10];
     } else if (flags & 1) {
-        lbl_2_bss_55C0.space = (lbl_2_bss_1A824C[0]->_195460)[10];
+        lbl_2_bss_55C0.space = (lbl_2_bss_1A824C[0]->msgs[13])[10];
     } else {
-        lbl_2_bss_55C0.space = (lbl_2_bss_1A824C[0]->_195460)[10];
+        lbl_2_bss_55C0.space = (lbl_2_bss_1A824C[0]->msgs[13])[10];
     }
     if (flags & 0x10) {
-        lbl_2_bss_55C0.minus = *(lbl_2_bss_1A824C[0]->_19545C);
+        lbl_2_bss_55C0.minus = *(lbl_2_bss_1A824C[0]->msgs[12]);
     } else if (flags & 1) {
-        lbl_2_bss_55C0.minus = *(lbl_2_bss_1A824C[0]->_195458);
+        lbl_2_bss_55C0.minus = *(lbl_2_bss_1A824C[0]->msgs[11]);
     } else {
-        lbl_2_bss_55C0.minus = *(lbl_2_bss_1A824C[0]->_19545C);
+        lbl_2_bss_55C0.minus = *(lbl_2_bss_1A824C[0]->msgs[12]);
     }
 
     if (flags & 0x20) {
@@ -1614,70 +1616,73 @@ extern void fn_2_42BE8(void);
 extern void fn_2_439D0(void);
 Vec lbl_2_data_12EA8 = {0.8f, 0.8f, 0.8f};
 Vec lbl_2_data_12EB4 = {0.8f, 0.8f, 0.8f};
-u8 lbl_2_data_12EC0[0x360] = { // TODO type: Entry08E8[54]
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 4, 49, 180, 14, 177, 216, 0, 0, 2, 178, 44,
-    0, 0, 4, 11, 64, 3, 150, 160, 14, 180, 144, 0, 0, 2, 110, 212,
-    0, 0, 4, 11, 64, 3, 237, 140, 14, 183, 0, 0, 0, 2, 140, 76,
-    0, 0, 4, 11, 64, 3, 105, 68, 14, 185, 144, 0, 0, 2, 45, 244,
-    0, 0, 4, 11, 64, 3, 155, 68, 14, 187, 192, 0, 0, 2, 102, 24,
-    0, 0, 4, 11, 64, 3, 32, 228, 14, 190, 40, 0, 0, 2, 30, 44,
-    0, 0, 4, 11, 64, 3, 8, 120, 14, 192, 72, 0, 0, 1, 221, 128,
-    0, 0, 4, 11, 64, 2, 211, 196, 14, 194, 40, 0, 0, 1, 179, 236,
-    0, 0, 4, 11, 64, 3, 82, 88, 14, 195, 224, 0, 0, 2, 56, 220,
-    0, 0, 4, 11, 64, 4, 30, 208, 14, 198, 32, 0, 0, 2, 155, 132,
-    0, 0, 4, 11, 64, 4, 20, 172, 14, 200, 192, 0, 0, 2, 209, 96,
-    0, 0, 4, 11, 64, 2, 233, 136, 14, 203, 152, 0, 0, 1, 224, 188,
-    0, 0, 4, 11, 64, 2, 254, 208, 14, 205, 128, 0, 0, 1, 195, 152,
-    0, 0, 4, 11, 64, 1, 255, 40, 14, 207, 72, 0, 0, 1, 80, 0,
-    0, 0, 4, 11, 64, 3, 44, 244, 14, 208, 152, 0, 0, 1, 244, 228,
-    0, 0, 4, 11, 64, 2, 30, 244, 14, 210, 144, 0, 0, 1, 81, 20,
-    0, 0, 4, 11, 64, 3, 137, 152, 14, 211, 232, 0, 0, 2, 57, 72,
-    0, 0, 4, 11, 64, 1, 206, 56, 14, 214, 40, 0, 0, 1, 27, 48,
-    0, 0, 4, 11, 64, 3, 47, 220, 14, 215, 72, 0, 0, 2, 17, 84,
-    0, 0, 4, 11, 64, 2, 237, 36, 14, 217, 96, 0, 0, 1, 233, 76,
-    0, 0, 4, 11, 64, 3, 20, 144, 14, 219, 80, 0, 0, 1, 248, 36,
-    0, 0, 4, 11, 64, 3, 3, 112, 14, 221, 80, 0, 0, 1, 235, 112,
-    0, 0, 4, 11, 64, 3, 3, 112, 14, 223, 64, 0, 0, 1, 235, 112,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 36, 40, 14, 229, 128, 0, 0, 1, 240, 32,
-    0, 0, 4, 11, 64, 3, 108, 216, 14, 231, 120, 0, 0, 2, 56, 40,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 2, 151, 72, 15, 8, 184, 0, 0, 1, 171, 244,
-    0, 0, 4, 11, 64, 2, 151, 72, 15, 8, 184, 0, 0, 1, 171, 244,
-    0, 0, 4, 11, 64, 2, 151, 72, 15, 8, 184, 0, 0, 1, 171, 244,
-    0, 0, 4, 11, 64, 2, 151, 72, 15, 8, 184, 0, 0, 1, 171, 244,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
-    0, 0, 4, 11, 64, 3, 196, 184, 14, 175, 112, 0, 0, 2, 101, 168,
+// ARAM load instructions of the character files, 19 per character.
+// PORT: fn_2_477C0 and fn_2_47540 index this as [character * 19 + n] for all 54 characters,
+// reading far past the 54 entries defined here (the original does the same).
+MenuAsset lbl_2_data_12EC0[54] = {
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x400431B4, 0x0EB1D800, 0x0002B22C},
+    {0x0000040B, 0x400396A0, 0x0EB49000, 0x00026ED4},
+    {0x0000040B, 0x4003ED8C, 0x0EB70000, 0x00028C4C},
+    {0x0000040B, 0x40036944, 0x0EB99000, 0x00022DF4},
+    {0x0000040B, 0x40039B44, 0x0EBBC000, 0x00026618},
+    {0x0000040B, 0x400320E4, 0x0EBE2800, 0x00021E2C},
+    {0x0000040B, 0x40030878, 0x0EC04800, 0x0001DD80},
+    {0x0000040B, 0x4002D3C4, 0x0EC22800, 0x0001B3EC},
+    {0x0000040B, 0x40035258, 0x0EC3E000, 0x000238DC},
+    {0x0000040B, 0x40041ED0, 0x0EC62000, 0x00029B84},
+    {0x0000040B, 0x400414AC, 0x0EC8C000, 0x0002D160},
+    {0x0000040B, 0x4002E988, 0x0ECB9800, 0x0001E0BC},
+    {0x0000040B, 0x4002FED0, 0x0ECD8000, 0x0001C398},
+    {0x0000040B, 0x4001FF28, 0x0ECF4800, 0x00015000},
+    {0x0000040B, 0x40032CF4, 0x0ED09800, 0x0001F4E4},
+    {0x0000040B, 0x40021EF4, 0x0ED29000, 0x00015114},
+    {0x0000040B, 0x40038998, 0x0ED3E800, 0x00023948},
+    {0x0000040B, 0x4001CE38, 0x0ED62800, 0x00011B30},
+    {0x0000040B, 0x40032FDC, 0x0ED74800, 0x00021154},
+    {0x0000040B, 0x4002ED24, 0x0ED96000, 0x0001E94C},
+    {0x0000040B, 0x40031490, 0x0EDB5000, 0x0001F824},
+    {0x0000040B, 0x40030370, 0x0EDD5000, 0x0001EB70},
+    {0x0000040B, 0x40030370, 0x0EDF4000, 0x0001EB70},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x40032428, 0x0EE58000, 0x0001F020},
+    {0x0000040B, 0x40036CD8, 0x0EE77800, 0x00023828},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x40029748, 0x0F08B800, 0x0001ABF4},
+    {0x0000040B, 0x40029748, 0x0F08B800, 0x0001ABF4},
+    {0x0000040B, 0x40029748, 0x0F08B800, 0x0001ABF4},
+    {0x0000040B, 0x40029748, 0x0F08B800, 0x0001ABF4},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
+    {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
 };
 extern u8 lbl_800F5D98[];
 extern u8 lbl_800F71D8[];
 void* lbl_2_data_13220[2] = {lbl_800F5D98, lbl_800F71D8}; // unreferenced by code
 DrawCallbackNode lbl_2_data_13228[2] = {{{2}, fn_2_487A0}, {{2}, fn_2_487A0}};
 u16 lbl_2_data_13238[2] = {22, 11};
-u8 lbl_2_data_1323C[16] = {0, 0, 4, 11, 64, 11, 44, 184, 24, 227, 240, 0, 0, 5, 52, 84};
-u8 lbl_2_data_1324C[16] = {0, 0, 4, 11, 64, 7, 106, 224, 24, 237, 112, 0, 0, 3, 107, 200};
-u8 lbl_2_data_1325C[16] = {0, 0, 4, 11, 64, 17, 236, 36, 24, 240, 224, 0, 0, 13, 136, 24};
+MenuAsset lbl_2_data_1323C = {0x0000040B, 0x400B2CB8, 0x18E3F000, 0x00053454};
+MenuAsset lbl_2_data_1324C = {0x0000040B, 0x40076AE0, 0x18ED7000, 0x00036BC8};
+MenuAsset lbl_2_data_1325C = {0x0000040B, 0x4011EC24, 0x18F0E000, 0x000D8818};
 u8 lbl_2_data_1326C[112] = {
     0, 0, 4, 11, 64, 6, 157, 252, 24, 233, 40, 0, 0, 4, 8, 208,
     0, 0, 4, 11, 64, 9, 148, 124, 24, 254, 112, 0, 0, 2, 247, 88,
@@ -1687,7 +1692,7 @@ u8 lbl_2_data_1326C[112] = {
     0, 0, 4, 11, 64, 7, 178, 208, 25, 11, 192, 0, 0, 2, 181, 32,
     0, 0, 4, 11, 64, 10, 244, 232, 25, 14, 120, 0, 0, 4, 216, 4,
 };
-u8 lbl_2_data_132DC[16] = {0, 0, 4, 11, 64, 35, 73, 28, 25, 19, 88, 0, 0, 8, 41, 40};
+MenuAsset lbl_2_data_132DC = {0x0000040B, 0x4023491C, 0x19135800, 0x00082928};
 Vec lbl_2_data_132EC = {0.0f, 0.0f, 0.0f};
 Vec lbl_2_data_132F8 = {0.0f, 0.0f, 0.0f};
 Vec lbl_2_data_13304 = {0.0f, 0.0f, 0.0f};

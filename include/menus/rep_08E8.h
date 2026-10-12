@@ -55,8 +55,6 @@ typedef struct MenuSceneTask {
 // Use as MENU_CHARMGR.field where lbl_8036E548 is declared as a u8 array.
 #define MENU_CHARMGR (*(MenuCharMgr*)lbl_8036E548)
 
-// Entry of the ARAM file table (19 per character).
-typedef struct { u32 a; u32 size; u32 c; u32 d; } Entry08E8;
 
 // lbl_80353A90: per-game line score (main.dol .bss, size 0x108).
 typedef struct MenuLineScore {

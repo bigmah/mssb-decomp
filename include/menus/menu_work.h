@@ -467,17 +467,10 @@ typedef struct MenuData {
     /*0x195420*/ u8 _195420[0x195424 - 0x195420];
     /*0x195424*/ u8* heapLo; // lbl_803C7898.lo saved by fn_2_481F4
     /*0x195428*/ u8* heapHi;
-    /*0x19542C*/ u8 _19542C; // start of the block cleared by fn_2_515DC (up to _1972BC)
-    /*0x19542D*/ u8 _19542D[0x195444 - 0x19542D];
-    /*0x195444*/ u16* _195444;
-    /*0x195448*/ u8 _195448[0x19544C - 0x195448];
-    /*0x19544C*/ u16* _19544C;
-    /*0x195450*/ u16* _195450;
-    /*0x195454*/ u8 _195454[0x195458 - 0x195454];
-    /*0x195458*/ u16* _195458;
-    /*0x19545C*/ u16* _19545C;
-    /*0x195460*/ u16* _195460;
-    /*0x195464*/ u16* _195464;
+    // Start of the block cleared by fn_2_515DC (up to _1972BC). The first 15 entries of the
+    // current message table (fn_2_4906C): [6] lower-case glyphs, [8]/[13]/[14] digit glyphs,
+    // [9] alternate lower-case glyphs, [11]/[12] minus signs.
+    /*0x19542C*/ u16* msgs[15];
     /*0x195468*/ u8 _195468[0x1954AC - 0x195468];
     /*0x1954AC*/ s32 _1954AC[2]; // per text channel
     /*0x1954B4*/ u8 _1954B4[0x196F1C - 0x1954B4];
