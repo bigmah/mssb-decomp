@@ -1259,13 +1259,16 @@ void fn_800E33AC(HVQState* state, HVQMCPlane* mc, s32 flag, s32 proc) {
 #endif
 
 // .text:0x800E3860 size:0x5DC
-// NONMATCHING 53%: original fully unrolls the min/max and output loops
+// NONMATCHING 88%: the original reads mcdivTable through the clip-table base (both are statics of this TU),
+// strength-reduces block[i + k] in the output loop differently, and register allocation
 #if NONMATCHING
-void fn_800E3860(HVQState* state, u8* dst, u8* src, u16 stride, u8 type, u8* nest, u16 nestStride, s32 planeIdx,
+void fn_800E3860(HVQState* state, u8* dst, u8* src, s32 stride, u8 type, u8* nest, s32 nestStride, s32 planeIdx,
                  s32 halfX, s32 halfY) {
+    u8* clip = lbl_80328DA0;
     s32 block[16];
     u8 pred[16];
     s32 diff[16];
+    s32 unused[2]; // stack layout only
     s32 avg;
     s32 mean;
     s32 min;
@@ -1281,17 +1284,98 @@ void fn_800E3860(HVQState* state, u8* dst, u8* src, u16 stride, u8 type, u8* nes
 
     avg = fn_800E2310(state, block, type - 1, nest, nestStride, planeIdx);
     fn_800E2C18(pred, 4, src, stride, halfX, halfY);
-    mean = (pred[0] + pred[1] + pred[2] + pred[3] + pred[4] + pred[5] + pred[6] + pred[7] + pred[8] + pred[9] +
-            pred[10] + pred[11] + pred[12] + pred[13] + pred[14] + pred[15] + 8) >> 4;
+    mean = (pred[0] + (pred[1] + pred[2] + pred[3] + pred[4] + pred[5] + pred[6] + pred[7] + pred[8] + pred[9] +
+            pred[10] + pred[11] + pred[12] + pred[13] + pred[14] + pred[15] + 8)) >> 4;
     min = max = diff[0] = pred[0] - mean;
-    for (i = 1; i < 16; i++) {
-        diff[i] = pred[i] - mean;
-        if (diff[i] < min) {
-            min = diff[i];
-        }
-        if (diff[i] > max) {
-            max = diff[i];
-        }
+    if ((diff[1] = pred[1] - mean) < min) {
+        min = diff[1];
+    }
+    if (diff[1] > max) {
+        max = diff[1];
+    }
+    if ((diff[2] = pred[2] - mean) < min) {
+        min = diff[2];
+    }
+    if (diff[2] > max) {
+        max = diff[2];
+    }
+    if ((diff[3] = pred[3] - mean) < min) {
+        min = diff[3];
+    }
+    if (diff[3] > max) {
+        max = diff[3];
+    }
+    if ((diff[4] = pred[4] - mean) < min) {
+        min = diff[4];
+    }
+    if (diff[4] > max) {
+        max = diff[4];
+    }
+    if ((diff[5] = pred[5] - mean) < min) {
+        min = diff[5];
+    }
+    if (diff[5] > max) {
+        max = diff[5];
+    }
+    if ((diff[6] = pred[6] - mean) < min) {
+        min = diff[6];
+    }
+    if (diff[6] > max) {
+        max = diff[6];
+    }
+    if ((diff[7] = pred[7] - mean) < min) {
+        min = diff[7];
+    }
+    if (diff[7] > max) {
+        max = diff[7];
+    }
+    if ((diff[8] = pred[8] - mean) < min) {
+        min = diff[8];
+    }
+    if (diff[8] > max) {
+        max = diff[8];
+    }
+    if ((diff[9] = pred[9] - mean) < min) {
+        min = diff[9];
+    }
+    if (diff[9] > max) {
+        max = diff[9];
+    }
+    if ((diff[10] = pred[10] - mean) < min) {
+        min = diff[10];
+    }
+    if (diff[10] > max) {
+        max = diff[10];
+    }
+    if ((diff[11] = pred[11] - mean) < min) {
+        min = diff[11];
+    }
+    if (diff[11] > max) {
+        max = diff[11];
+    }
+    if ((diff[12] = pred[12] - mean) < min) {
+        min = diff[12];
+    }
+    if (diff[12] > max) {
+        max = diff[12];
+    }
+    if ((diff[13] = pred[13] - mean) < min) {
+        min = diff[13];
+    }
+    if (diff[13] > max) {
+        max = diff[13];
+    }
+    if ((diff[14] = pred[14] - mean) < min) {
+        min = diff[14];
+    }
+    if (diff[14] > max) {
+        max = diff[14];
+    }
+    if ((diff[15] = pred[15] - mean) < min) {
+        min = diff[15];
+    }
+    if (diff[15] > max) {
+        max = diff[15];
     }
 
     shift = state->basisShift;
@@ -1318,13 +1402,13 @@ void fn_800E3860(HVQState* state, u8* dst, u8* src, u16 stride, u8 type, u8* nes
     scale = lbl_80328FA0.mcdivTable[max - min] * (sum >> state->dcShift);
 
     for (i = 0; i < 16; i++) {
-        block[i] = bias + scale * diff[i] + block[i];
+        block[i] = bias + (scale * diff[i] + block[i]);
     }
     for (i = 0; i < 4; i++) {
-        dst[0] = lbl_80328DA0[pred[i * 4 + 0] + (block[i * 4 + 0] >> shift) + 0x80];
-        dst[1] = lbl_80328DA0[pred[i * 4 + 1] + (block[i * 4 + 1] >> shift) + 0x80];
-        dst[2] = lbl_80328DA0[pred[i * 4 + 2] + (block[i * 4 + 2] >> shift) + 0x80];
-        dst[3] = lbl_80328DA0[pred[i * 4 + 3] + (block[i * 4 + 3] >> shift) + 0x80];
+        dst[0] = clip[pred[i * 4 + 0] + (block[i * 4 + 0] >> shift) + 0x80];
+        dst[1] = clip[pred[i * 4 + 1] + (block[i * 4 + 1] >> shift) + 0x80];
+        dst[2] = clip[pred[i * 4 + 2] + (block[i * 4 + 2] >> shift) + 0x80];
+        dst[3] = clip[pred[i * 4 + 3] + (block[i * 4 + 3] >> shift) + 0x80];
         dst += stride;
     }
 }
