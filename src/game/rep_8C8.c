@@ -700,8 +700,9 @@ s32 fn_3_1EFE4(void) {
     }
     if (g_AiLogic.batterAIPotentialSwingTypeForCurrentPitch == 1) {
         if (g_AiLogic._70 != 0 && g_AiLogic.lastPitchType != 0xFF) {
-            s16 windup = // TODO type: windup frames per pitch type at 0x126..0x12A
-                ((s16*)&g_Pitcher.windupCountdownUntilBallReleased)[2 - g_AiLogic.lastPitchType];
+            // windup frames for the last pitch type: curvePitchWindupFrames (0), pitchWindUpCountDown (1)
+            // or windupCountdownUntilBallReleased (2), three consecutive s16 fields of g_Pitcher
+            s16 windup = (&g_Pitcher.windupCountdownUntilBallReleased)[2 - g_AiLogic.lastPitchType];
             v = windup + g_AiLogic.lastPitchFramesUntilPitchGetsToBatter;
             v -= lbl_3_data_19C4[4];
         } else {

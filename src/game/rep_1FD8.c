@@ -3,6 +3,13 @@
 #include "header_rep_inline.h"
 
 #include "static/UnknownHomes_Static.h"
+#include "game/UnknownHomes_Game.h"
+#include "main/scene_task.h"    // SceneTask
+#include "main/screenfx.h"      // ScreenFx lbl_803C5090
+#include "main/file_8000F150.h" // LayoutSlot lbl_80371C30
+#include "main/file_80011640.h" // CharMgr lbl_8036E548
+#include "main/file_80022DAC.h" // StadiumLight, fn_80023B90
+#include "C3/geoPalette.h"      // DODisplayObj, DisplayStateList
 #include "Dolphin/vec.h"
 #include "Dolphin/mtxext.h"
 #include "Dolphin/GX/GXFifo.h"
@@ -56,7 +63,7 @@ extern const f32 lbl_3_rodata_214C;
 extern void fn_800528B4(void);
 extern int rand(void);
 extern TexImage* lbl_3_bss_9D98; // 3 textures of the fn_3_C1C18 effect
-extern u8* lbl_3_common_bss_350E4[];
+extern C42A4Bss lbl_3_common_bss_350E4;
 extern void fn_3_B8184(void* pp, void* cam);
 extern void fn_3_B828C(void*);
 extern void fn_800BF058(void*);
@@ -70,7 +77,6 @@ extern u8 lbl_3_data_84B8[];
 extern u16 lbl_3_data_81DC[];
 extern u32 sndFXStartEx(int, u8, u8, u8);
 extern void sndFXCtrl(int, int, u8);
-extern u8 g_Ball[];
 extern const f32 lbl_3_rodata_20F4;
 extern const f32 lbl_3_rodata_20F8;
 extern u32 fn_8005268C(void);
@@ -83,11 +89,8 @@ extern CamMtx* fn_80052734(s32 index);
 extern Vec lbl_3_rodata_2080;
 extern f32 lbl_3_rodata_2178;
 extern void* memset(void*, int, u32);
-extern s32 fn_8001B728(s32, s32, void*);
 extern void fn_3_25844(u32, int);
-extern u8 g_GameLogic[];
-extern u8 g_Minigame[];
-extern u8* lbl_803CC1B8;
+extern SceneTask* lbl_803CC1B8;
 extern Control* lbl_3_bss_9D94;
 typedef struct DspObj2 DspObj2;
 struct DspObj2 {
@@ -105,8 +108,6 @@ struct DspObj2 {
     u8 padF0[0x10];
     DspObj2* next;
 };
-extern void DOSetWorldMatrix(void*, void*);
-extern void DOVARenderSkin(void* obj, MtxPtr m, void* m2, void* m3, u8 flag, void* args); // args: va_list*
 extern void fn_8003A8A0(void* model, Mtx viewMtx, s32 unused);
 extern u32 lbl_3_bss_9D88;
 extern u16 lbl_3_data_177F0;
@@ -117,11 +118,10 @@ typedef struct Rep1FD8Ent {
     void* w38;
 } Rep1FD8Ent;
 extern Rep1FD8Ent lbl_3_data_17804[];
-extern u8 lbl_803CBBC0[];
+extern u8 lbl_803CBBC0; // current frame buffer (0/1)
 extern Vec lbl_3_bss_9DE8[];
 extern u8 lbl_3_bss_9E48[];
-extern u8* lbl_3_bss_9E50[];
-extern u8 lbl_80371C30[];
+extern SceneTask* lbl_3_bss_9E50[];
 extern void fn_800528C0(s16* sx, s16* sy, f32 x, f32 y, f32 z);
 // A few matched callers evaluate the floats before the out pointers. On PPC the
 // argument order makes no difference to the call, so the matching build calls
@@ -146,14 +146,22 @@ typedef struct C2244Task {
 extern C2244Task* lbl_3_bss_9D90;
 extern f32 lbl_3_data_1787C; // alpha scale of the first quad
 extern void fn_800A7D4C(int, Rep1FD8Ent*);
-extern u8 lbl_800E8754[];
-extern Vec lbl_80367318;
-extern void fn_80023B90(void*, Vec*);
-extern u8 lbl_800F7478[];
-extern u8 lbl_3_data_177F8[];
+#include "main/menu_globals.h" // SavedSettings
+extern SavedSettings lbl_800E8754;
+extern StadiumLightPos lbl_80367318;
+// Per-stadium light row (lbl_800F7478, 0x2C bytes; same as main/file_800263FC.c).
+typedef struct StadiumLightRow {
+    StadiumLight light;
+    u8 pad[0x2C - sizeof(StadiumLight)];
+} StadiumLightRow;
+extern StadiumLightRow lbl_800F7478[];
+typedef struct PaddedStadiumLight {
+    StadiumLight light;
+    u8 pad[2];
+} PaddedStadiumLight;
+extern PaddedStadiumLight lbl_3_data_177F8;
 extern s32 lbl_3_data_177F4;
-extern u8 lbl_803C5090[];
-extern u8 lbl_8036E548[];
+extern ScreenFx lbl_803C5090;
 extern void fn_800BEBCC(u8 index, Vec dir);
 extern const f32 lbl_3_rodata_20F0;
 extern void fn_3_CB7E8(f32, f32, f32);
@@ -166,8 +174,9 @@ void fn_3_C1964(void) {
 }
 
 void fn_3_C1974(u8* a) {
-    u8* p = fn_800B0A5C_insertQueue(fn_3_C2644, 4);
-    *(s16*)(p + 0x10) = 0;
+    SceneTask* p = fn_800B0A5C_insertQueue(fn_3_C2644, 4);
+    p->_10 = 0;
+    // TODO port: a is a loaded stadium file; its textures start at byte 0x3C4 (32-bit file layout).
     lbl_3_bss_9D98 = (TexImage*)(a + 0x3C4);
     lbl_3_bss_9D9C = 0;
 }
@@ -175,45 +184,54 @@ void fn_3_C1974(u8* a) {
 // .text:0x000C19C8 size:0x250 mapped:0x80700A5C
 extern s32 fn_3_B7FC8(s32 id, s32 kind);
 extern s16 lbl_3_data_17880[];
-typedef struct { f32 x, y, z; u8 pad[4]; u8 f10; u8 pad11; u8 f12; u8 pad13[5]; } C71CCEnt;
 // .data 0x00017508..0x00017898
 f32 lbl_3_data_17508[3] = {1.0f, 3.0f, 5.0f};
-f32 lbl_3_data_17514[55] = {
-    -51.592f, -18.0f, 68.051f, 306.0f, 9.477712e-38f, -43.569f, -18.0f, 76.869f,
-    314.0f, 9.477712e-38f, -33.845f, -18.0f, 84.008f, 330.0f, 9.477712e-38f, 51.592f,
-    -18.0f, 68.051f, 52.0f, 9.477999e-38f, 43.569f, -18.0f, 76.869f, 44.0f,
-    9.477999e-38f, 33.845f, -18.0f, 84.008f, 28.0f, 9.477999e-38f, 0.0f, 0.0f,
-    0.0f, 0.0f, 9.704596e-35f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+StadPlace14 lbl_3_data_17514[11] = { // group A spots
+    {-51.592f, -18.0f, 68.051f, 306.0f, 2, 1, 1, 2},
+    {-43.569f, -18.0f, 76.869f, 314.0f, 2, 1, 1, 2},
+    {-33.845f, -18.0f, 84.008f, 330.0f, 2, 1, 1, 2},
+    {51.592f, -18.0f, 68.051f, 52.0f, 2, 1, 2, 2},
+    {43.569f, -18.0f, 76.869f, 44.0f, 2, 1, 2, 2},
+    {33.845f, -18.0f, 84.008f, 28.0f, 2, 1, 2, 2},
+    {0.0f, 0.0f, 0.0f, 0.0f, 7, 0, 255, 7},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
 };
 f32 lbl_3_data_175F0[3] = {0.06f, 0.07f, 0.08f};
-C71CCEnt lbl_3_data_175FC[11] = {
-    {-48.0f, 5.5f, 25.0f, {0, 0, 0, 0}, 3, 1, 1, {3, 1, 39, 0, 1}},
-    {-43.0f, 5.5f, 56.0f, {0, 0, 0, 0}, 3, 1, 1, {3, 1, 59, 0, 90}},
-    {-10.0f, 5.5f, 77.0f, {0, 0, 0, 0}, 3, 1, 2, {3, 0, 180, 0, 90}},
-    {10.0f, 5.5f, 77.0f, {0, 0, 0, 0}, 3, 1, 2, {3, 1, 14, 0, 90}},
-    {45.0f, 5.5f, 23.0f, {0, 0, 0, 0}, 3, 1, 3, {3, 0, 245, 0, 1}},
-    {43.0f, 5.5f, 56.0f, {0, 0, 0, 0}, 3, 1, 3, {3, 0, 135, 0, 90}},
-    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 7, 0, 255, {7, 0, 0, 0, 0}},
-    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
-    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
-    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
-    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
+StadPlace18 lbl_3_data_175FC[11] = { // group B spots
+    {-48.0f, 5.5f, 25.0f, 0.0f, 3, 1, 1, 3, 295, 1},
+    {-43.0f, 5.5f, 56.0f, 0.0f, 3, 1, 1, 3, 315, 90},
+    {-10.0f, 5.5f, 77.0f, 0.0f, 3, 1, 2, 3, 180, 90},
+    {10.0f, 5.5f, 77.0f, 0.0f, 3, 1, 2, 3, 270, 90},
+    {45.0f, 5.5f, 23.0f, 0.0f, 3, 1, 3, 3, 245, 1},
+    {43.0f, 5.5f, 56.0f, 0.0f, 3, 1, 3, 3, 135, 90},
+    {0.0f, 0.0f, 0.0f, 0.0f, 7, 0, 255, 7, 0, 0},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0, 0, 0},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0, 0, 0},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0, 0, 0},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0, 0, 0},
 };
-f32 lbl_3_data_17704[59] = {
-    -12.891f, -5.93f, 87.961f, 348.0f, 1.5164347e-36f, 12.891f, -5.93f, 87.961f,
-    12.0f, 1.5164347e-36f, -23.0f, -0.02f, 72.0f, 0.0f, 6.0659225e-36f, -22.0f,
-    -0.02f, 45.0f, 0.0f, 6.0659225e-36f, -50.0f, -0.02f, 38.0f, 0.0f,
-    6.0659225e-36f, 23.0f, -0.02f, 72.0f, 0.0f, 6.066106e-36f, 22.0f, -0.02f,
-    45.0f, 0.0f, 6.066106e-36f, 50.0f, -0.02f, 38.0f, 0.0f, 6.066106e-36f,
-    0.0f, 0.0f, 0.0f, 0.0f, 9.704596e-35f, 0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.387867e-38f,
-    9.551472e-38f, 2.5208502e-35f, 4.122694e-34f,
+StadPlaceGroupC lbl_3_data_17704 = { // group C spots
+    {
+        {-12.891f, -5.93f, 87.961f, 348.0f, 4, 1, 1, 6},
+        {12.891f, -5.93f, 87.961f, 12.0f, 4, 1, 1, 6},
+        {-23.0f, -0.02f, 72.0f, 0.0f, 5, 1, 2, 6},
+        {-22.0f, -0.02f, 45.0f, 0.0f, 5, 1, 2, 6},
+        {-50.0f, -0.02f, 38.0f, 0.0f, 5, 1, 2, 6},
+        {23.0f, -0.02f, 72.0f, 0.0f, 5, 1, 3, 6},
+        {22.0f, -0.02f, 45.0f, 0.0f, 5, 1, 3, 6},
+        {50.0f, -0.02f, 38.0f, 0.0f, 5, 1, 3, 6},
+        {0.0f, 0.0f, 0.0f, 0.0f, 7, 0, 255, 7},
+        {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
+        {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
+    },
+    {1, 2, 2, 2, 2, 2, 2, 6, 6, 6, 8, 9, 8, 9, 0, 0},
 };
 u16 lbl_3_data_177F0 = 4;
 s32 lbl_3_data_177F4 = 2;
-u8 lbl_3_data_177F8[12] = {0, 200, 5, 146, 8, 104, 255, 255, 255, 0, 0, 0};
+PaddedStadiumLight lbl_3_data_177F8 = {{200, 1426, 2152, 255, 255, 255}}; // light during the flash
 Rep1FD8Ent lbl_3_data_17804[2] = {{NULL, fn_3_C1C18}, {NULL, fn_3_C1C18}};
 f32 lbl_3_data_1787C = 0.7f;
 s16 lbl_3_data_17880[12] = {106, -98, 220, 94, -87, 230, 120, -80, 212, 0, 0, 0};
@@ -227,7 +245,7 @@ void fn_3_C19C8(void) {
     if (lbl_3_bss_9D90 == NULL) {
         lbl_3_bss_9D90 = fn_800B0A5C_insertQueue(fn_3_C2244, 5);
     }
-    if (*(s16*)(lbl_803CC1B8 + 0x10) != 0x136) {
+    if (lbl_803CC1B8->_10 != 0x136) {
         fn_3_B7FC8(lbl_3_data_81DC[g_d_GameSettings.StadiumID] + 6, 8);
     }
     lbl_3_bss_9D90->f2A = 0xFF;
@@ -354,16 +372,16 @@ void fn_3_C1C18(Rep1FD8Ent* ent) {
 
 // .text:0x000C2244 size:0xCC mapped:0x807012D8
 void fn_3_C2244(void) {
-    u8* p = lbl_803CC1B8;
+    C2244Task* p = (C2244Task*)lbl_803CC1B8;
     if (*(s32*)&lbl_3_bss_9D9C != 0) {
         lbl_3_bss_9D90 = NULL;
         REMOVE_QUEUE_NOARG();
         return;
     }
-    if (p[0x2A] != 0) {
-        fn_800A7D4C(1, &lbl_3_data_17804[lbl_803CBBC0[0]]);
-        PSMTXCopy((MtxPtr)((u8*)fn_80052768_getCamera(0) + 0x40), lbl_3_data_17804[lbl_803CBBC0[0]].m);
-        lbl_3_data_17804[lbl_803CBBC0[0]].w38 = p;
+    if (p->f2A != 0) {
+        fn_800A7D4C(1, &lbl_3_data_17804[lbl_803CBBC0]);
+        PSMTXCopy(fn_80052768_getCamera(0)->view, lbl_3_data_17804[lbl_803CBBC0].m);
+        lbl_3_data_17804[lbl_803CBBC0].w38 = p;
     }
 }
 
@@ -395,19 +413,19 @@ void fn_3_C2310(void* pp, void* cam) {
 
 // .text:0x000C23E0 size:0xC0 mapped:0x80701474
 void fn_3_C23E0(void) {
-    u8* c;
+    StadObj1FD8* c;
     int i;
-    u8** base;
+    C42A4Bss* base;
     fn_800BF058(fn_3_B8184);
-    base = lbl_3_common_bss_350E4;
-    for (i = 0; i < *(int*)((u8*)base + 0x30); i++) {
-        c = *base + i * 0xE8;
+    base = &lbl_3_common_bss_350E4;
+    for (i = 0; i < base->count; i++) {
+        c = &base->arr[i];
         fn_3_B828C(c);
         if (i >= 1 && i < 11) {
-            if ((c[0x90] >> 7) & 1) {
-                if (*(u8**)(c + 0x74) != 0) {
-                    (*(u8**)*(u8**)(c + 0x74))[0x98] = c[0x93] | 6;
-                    fn_800BDF70(*(u8**)(c + 0x74));
+            if (c->visible) {
+                if (c->model != 0) {
+                    c->model->actor->flags = c->pad93 | 6;
+                    fn_800BDF70(c->model);
                 }
             }
         }
@@ -419,32 +437,34 @@ void fn_3_C24A0(void) {
     Vec n;
     u8 a;
     u8* q;
-    *(s16*)(lbl_803CC1B8 + 0x10) -= 1;
-    if (*(s16*)(lbl_803CC1B8 + 0x10) == 0) {
+    lbl_803CC1B8->_10 -= 1;
+    if (lbl_803CC1B8->_10 == 0) {
         REMOVE_QUEUE_NOARG();
-        fn_80023B90(lbl_800F7478 + g_d_GameSettings._54 * 0x2C, &lbl_80367318);
-        q = *(u8**)(lbl_8036E548 + 4);
+        fn_80023B90(&lbl_800F7478[g_d_GameSettings._54].light, &lbl_80367318);
+        q = lbl_8036E548._0004[0];
         if (q != NULL) {
+            // TODO port: q is a loaded file; its word at 0x14 is an in-file offset (32-bit layout).
             *(u16*)(q + *(u32*)(q + 0x14) + 0x60) = 2;
         }
     } else {
-        s16 t = *(s16*)(lbl_803CC1B8 + 0x10);
+        s16 t = lbl_803CC1B8->_10;
         if (t < 12) {
             a = (t << 7) / 12;
         } else {
             a = 0x80;
         }
-        fn_80023B90(lbl_3_data_177F8, &lbl_80367318);
-        q = *(u8**)(lbl_8036E548 + 4);
+        fn_80023B90(&lbl_3_data_177F8.light, &lbl_80367318);
+        q = lbl_8036E548._0004[0];
         if (q != NULL) {
+            // TODO port: see above.
             *(u16*)(q + *(u32*)(q + 0x14) + 0x60) = 3;
         }
-        lbl_803C5090[0x1D] = 0xB;
-        *(f32*)lbl_803C5090 = lbl_3_rodata_20F0;
-        *(u16*)(lbl_803C5090 + 0x14) = 0x1C0;
-        lbl_803C5090[0x17] = a;
-        lbl_803C5090[0x19] = lbl_3_data_177F4;
-        lbl_803C5090[0x18] = 1;
+        lbl_803C5090.flags = 0xB;
+        lbl_803C5090.scale = lbl_3_rodata_20F0;
+        lbl_803C5090.lines = 0x1C0;
+        lbl_803C5090.alpha = a;
+        lbl_803C5090.repeat = lbl_3_data_177F4;
+        lbl_803C5090.unk18 = 1;
     }
     n.x = -lbl_80367318.x;
     n.y = -lbl_80367318.y;
@@ -456,24 +476,24 @@ void fn_3_C24A0(void) {
 // .text:0x000C2644 size:0x330 mapped:0x807016D8
 // Stadium ambient task: every 1800 frames it fires the event at ticks 300, 310
 // and 1200 (fn_3_C24A0 fade + fn_3_C19C8).
-// NONMATCHING ~90% (192 of 204 insns, rest regalloc): inlines fn_3_C19C8 (itself 99%); the original keeps an empty-bodied minigamesEnabled/g_GameLogic[0x11E] in 0x1B..0x29 test that CW drops for us
+// NONMATCHING ~90% (192 of 204 insns, rest regalloc): inlines fn_3_C19C8 (itself 99%); the original keeps an empty-bodied minigamesEnabled/g_GameLogic.gameStatus in 0x1B..0x29 test that CW drops for us
 #if NONMATCHING
 void fn_3_C2644(void) {
     s16 tick;
-    if (g_GameLogic[0x11E] == 0x17) {
+    if (g_GameLogic.gameStatus == 0x17) {
         lbl_3_bss_9D9C = 1;
     }
     if (*(s32*)&lbl_3_bss_9D9C != 0) {
         REMOVE_QUEUE_NOARG();
         return;
     }
-    tick = (*(s16*)(lbl_803CC1B8 + 0x10) + 1) % 1800;
-    *(s16*)(lbl_803CC1B8 + 0x10) = tick;
+    tick = (lbl_803CC1B8->_10 + 1) % 1800;
+    lbl_803CC1B8->_10 = tick;
     switch (tick) {
     case 300:
     case 310:
     case 1200:
-        *(s16*)((u8*)fn_800B0A5C_insertQueue(fn_3_C24A0, 5) + 0x10) = 0x10;
+        ((SceneTask*)fn_800B0A5C_insertQueue(fn_3_C24A0, 5))->_10 = 0x10;
         fn_3_C19C8();
         break;
     }
@@ -490,31 +510,46 @@ void fn_3_C2974(void) {
 }
 
 // .text:0x000C298C size:0x114 mapped:0x80701A20
+// Emitter (main/file_800263FC.h Emitter) of the smoke effect, the fields used here.
+typedef struct C366CHdr {
+    void* prev;
+    void* next;
+    void* update;
+    C4724P* head;
+    void* tex;
+    u8 pad14[4];
+    Vec pos;
+    u8 idx;
+} C366CHdr;
+// Smoke task: keeps six emitters (fn_3_C30F0) alive.
+typedef struct C298CTask {
+    /*0x00*/ u8 hdr[0x14];
+    /*0x14*/ struct C366CHdr* emitters[6];
+} C298CTask;
 void fn_3_C298C(void) {
-    u8* e = lbl_803CC1B8;
+    C298CTask* e = (C298CTask*)lbl_803CC1B8;
     u32 i;
     if (g_d_GameSettings.GameModeSelected == 7) {
-        if (g_GameLogic[0x11E] == 0xB || g_GameLogic[0x11E] >= 0x22) {
-            if (g_Minigame[0x1A40] != 0 && g_Minigame[0x1A38] == 0) {
+        if (g_GameLogic.gameStatus == 0xB || g_GameLogic.gameStatus >= 0x22) {
+            if (g_Minigame._1A40 != 0 && g_Minigame._1A38 == 0) {
                 REMOVE_QUEUE_NOARG();
             }
         }
-    } else if (g_GameLogic[0x128] != 0 || g_d_GameSettings._13 != 0) {
+    } else if (g_GameLogic._128 != 0 || g_d_GameSettings._13 != 0) {
         REMOVE_QUEUE_NOARG();
     }
     i = 0;
     do {
-        u8* o = *(u8**)(e + 0x14);
-        if (o == NULL || *(u32*)(o + 8) == 0) {
+        struct C366CHdr* o = e->emitters[i];
+        if (o == NULL || o->update == NULL) {
             void* r = fn_80033A24(fn_3_C30F0, 0x80, 0, 0x15, 1, 0);
-            *(void**)(e + 0x14) = r;
-            r = *(void**)(e + 0x14);
+            e->emitters[i] = r;
+            r = e->emitters[i];
             if (r != NULL) {
                 fn_3_C366C(r, i);
             }
         }
         i++;
-        e += 4;
     } while (i < 6);
 }
 
@@ -574,7 +609,7 @@ u8 fn_3_C2AA0(Vec* pos, f32 w, f32 h) {
 #endif
 
 // .text:0x000C2C80 size:0x25C mapped:0x80701D14
-void fn_3_C2C80(void* pv, u8* h) {
+void fn_3_C2C80(void* pv, C366CHdr* h) {
     C4724P* p = pv;
     f32 a;
     s16 t;
@@ -590,9 +625,9 @@ void fn_3_C2C80(void* pv, u8* h) {
     t = rand() % 24 + 0x48;
     p->s4A = t;
     p->f4F = t;
-    p->x = *(f32*)(h + 0x18);
-    p->y = *(f32*)(h + 0x1C);
-    p->z = *(f32*)(h + 0x20);
+    p->x = h->pos.x;
+    p->y = h->pos.y;
+    p->z = h->pos.z;
     p->a40 = lbl_3_rodata_2028[0];
     p->a41 = lbl_3_rodata_2028[1];
     p->a42 = lbl_3_rodata_2028[2];
@@ -625,16 +660,6 @@ void fn_3_C2EDC(void* pv) {
 #endif
 
 // Emitter view used by the fn_3_C30F0 smoke effects: spawn point and slot.
-typedef struct C366CHdr {
-    void* prev;
-    void* next;
-    void* update;
-    C4724P* head;
-    void* tex;
-    u8 pad14[4];
-    Vec pos;
-    u8 idx;
-} C366CHdr;
 // .text:0x000C30F0 size:0x57C mapped:0x80702184
 extern const f32 lbl_3_rodata_2148;
 extern void fn_8003403C(f32, f32);
@@ -646,10 +671,10 @@ extern void fn_80033CC8(void*, void*);
 s32 fn_3_C30F0(C366CHdr* h) {
     C4724P* p = h->head;
     Vec pos;
-    if (g_GameLogic[0x11E] >= 0x1B && g_GameLogic[0x11E] <= 0x21) {
+    if (g_GameLogic.gameStatus >= 0x1B && g_GameLogic.gameStatus <= 0x21) {
         return 0;
     }
-    if (g_GameLogic[0x11E] == 2 || g_GameLogic[0x11E] == 1) {
+    if (g_GameLogic.gameStatus == 2 || g_GameLogic.gameStatus == 1) {
         pos = h->pos;
         if (!fn_3_C2AA0(&pos, lbl_3_rodata_2148, lbl_3_rodata_2148)) {
             return 0;
@@ -668,7 +693,7 @@ s32 fn_3_C30F0(C366CHdr* h) {
         }
         p->s48 -= (fn_8005268C() == 0);
         if (p->s4A == 0) {
-            fn_3_C2C80(p, (u8*)h);
+            fn_3_C2C80(p, h);
         }
         p = p->next;
     } while (p != NULL);
@@ -731,10 +756,10 @@ void fn_3_C39C8(void) {
 }
 
 // .text:0x000C3A38 size:0x1F4 mapped:0x80702ACC
-void fn_3_C3A38(u8* obj) {
+void fn_3_C3A38(camera_803c639c_s* obj) {
     Vec v;
     Mtx m;
-    if (g_GameLogic[0x11E] != 2 || obj == NULL) {
+    if (g_GameLogic.gameStatus != 2 || obj == NULL) {
         lbl_3_bss_9D8C = 0;
         lbl_3_bss_9D81 = 0;
         fn_800528B4();
@@ -748,14 +773,14 @@ void fn_3_C3A38(u8* obj) {
         v.x = (f32)(rand() % 20 - 10) / lbl_3_rodata_214C;
         v.y = (f32)(rand() % 20 - 10) / lbl_3_rodata_214C;
         v.z = lbl_3_rodata_213C;
-        PSMTXInverse((MtxPtr)((u8*)fn_80052768_getCamera(0) + 0x40), m);
+        PSMTXInverse(fn_80052768_getCamera(0)->view, m);
         PSMTXMultVecSR(m, &v, &v);
-        *(f32*)(obj + 0x70) += v.x;
-        *(f32*)(obj + 0x74) += v.y;
-        *(f32*)(obj + 0x78) += v.z;
-        *(f32*)(obj + 0x7C) += v.x;
-        *(f32*)(obj + 0x80) += v.y;
-        *(f32*)(obj + 0x84) += v.z;
+        obj->eye.x += v.x;
+        obj->eye.y += v.y;
+        obj->eye.z += v.z;
+        obj->target.x += v.x;
+        obj->target.y += v.y;
+        obj->target.z += v.z;
         lbl_3_bss_9D8C -= 1;
     }
 }
@@ -776,40 +801,40 @@ typedef struct {
     u8 f67;
     Vec pos[8];
     u8 state[8];
-    u8* fD0;
-    u8 animD4[0x130 - 0xD4];  // anim player (fn_80025FFC); first word = anim data
-    u8 anim130[0x18C - 0x130]; // anim player of the group B objects
+    SceneTask* fD0; // layout task of the markers
+    ShapeAnimPlayer animD4;  // anim player (fn_80025FFC)
+    ShapeAnimPlayer anim130; // anim player of the group B objects
     void* tex; // 9F0C
 } C3C2CBss;
 extern C3C2CBss lbl_3_bss_9D80;
-#define C3C2C_SLOT(o, i) (((u8**)lbl_80371C30)[(*(u16*)((o) + 0x14) + (i)) * 2])
+#define C3C2C_SLOT(o, i) (lbl_80371C30[(o)->u14.objIdx + (i)].obj)
 void fn_3_C3C2C(void) {
     C3C2CBss* g = &lbl_3_bss_9D80;
     u8* st = g->state;
     Vec* pv = g->pos;
-    u8* e = lbl_803CC1B8;
+    SceneTask* e = lbl_803CC1B8;
     s32 i;
     for (i = 0; i < 8; i++, st++, pv++) {
         switch (*st) {
         case 1: {
             s16 y1, x1;
             fn_800528C0(&x1, &y1, pv->x, pv->y, pv->z);
-            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x48) = x1;
-            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x4C) = y1;
-            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x50) = 0.0f;
-            *(u32*)(C3C2C_SLOT(e, i) + 0x5C) = 0;
-            *(u32*)(C3C2C_SLOT(e, i) + 0x54) |= 2;
+            C3C2C_SLOT(g->fD0, i)->x = x1;
+            C3C2C_SLOT(g->fD0, i)->y = y1;
+            C3C2C_SLOT(g->fD0, i)->z = 0.0f;
+            C3C2C_SLOT(e, i)->_5C = 0;
+            C3C2C_SLOT(e, i)->flags |= 2;
             *st = 2;
             break;
         }
         case 2: {
             s16 y2, x2;
             fn_800528C0(&x2, &y2, pv->x, pv->y, pv->z);
-            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x48) = x2;
-            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x4C) = y2;
-            *(f32*)(C3C2C_SLOT(g->fD0, i) + 0x50) = 0.0f;
-            if ((C3C2C_SLOT(e, i)[0x69] == 2) ? 1 : 0) {
-                *(u32*)(C3C2C_SLOT(e, i) + 0x54) &= ~2;
+            C3C2C_SLOT(g->fD0, i)->x = x2;
+            C3C2C_SLOT(g->fD0, i)->y = y2;
+            C3C2C_SLOT(g->fD0, i)->z = 0.0f;
+            if ((C3C2C_SLOT(e, i)->_69 == 2) ? 1 : 0) {
+                C3C2C_SLOT(e, i)->flags &= ~2;
                 *st = 0;
             }
             break;
@@ -828,18 +853,18 @@ void fn_3_C3E94(f32* pos, s32 idx) {
     s16 x;
     s16 y;
     fn_800528C0_xyz(pos[0], pos[1], pos[2], &x, &y);
-    *(f32*)(((u8**)lbl_80371C30)[(*(u16*)(lbl_3_bss_9E50[0] + 0x14) + idx) * 2] + 0x48) = x;
-    *(f32*)(((u8**)lbl_80371C30)[(*(u16*)(lbl_3_bss_9E50[0] + 0x14) + idx) * 2] + 0x4C) = y;
-    *(f32*)(((u8**)lbl_80371C30)[(*(u16*)(lbl_3_bss_9E50[0] + 0x14) + idx) * 2] + 0x50) = 0.0f;
+    lbl_80371C30[lbl_3_bss_9E50[0]->u14.objIdx + idx].obj->x = x;
+    lbl_80371C30[lbl_3_bss_9E50[0]->u14.objIdx + idx].obj->y = y;
+    lbl_80371C30[lbl_3_bss_9E50[0]->u14.objIdx + idx].obj->z = 0.0f;
 }
 
 // .text:0x000C3F70 size:0xF8 mapped:0x80703004
-void fn_3_C3F70(u8* a) {
-    u8* t = **(u8***)(a + 0x74);
-    u8* q;
+void fn_3_C3F70(StadObj1FD8* a) {
+    GameActor* t = a->model->actor;
+    DisplayStateList* q;
     u32 i;
     u32 j;
-    u8* e;
+    void* e; // bone, then its display object
     if (lbl_3_bss_9D88++ > 4) {
         if (++lbl_3_data_177F0 > 0x13) {
             lbl_3_data_177F0 = 4;
@@ -849,35 +874,35 @@ void fn_3_C3F70(u8* a) {
     if (lbl_3_bss_9D88 != 0) {
         return;
     }
-    for (i = 0; i < *(u16*)(t + 6); i++) {
-        e = ((u8**)*(u8**)(t + 0x18))[i];
-        e = *(u8**)(e + 0x14);
+    for (i = 0; i < t->totalBones; i++) {
+        e = t->boneArray[i];
+        e = ((GameBone*)e)->dispObj;
         if (e != NULL) {
-            q = *(u8**)(*(u8**)(e + 0x10) + 4);
-            for (j = 0; j < *(u16*)(*(u8**)(e + 0x10) + 8); j++) {
-                if (q[0] == 1) {
-                    *(u32*)(q + 4) = *(u32*)(q + 4) & ~0x1FFF;
-                    *(u32*)(q + 4) = *(u32*)(q + 4) | lbl_3_data_177F0;
+            q = ((struct DODisplayObj*)e)->displayData->displayStateList;
+            for (j = 0; j < ((struct DODisplayObj*)e)->displayData->numStateEntries; j++) {
+                if (q->id == 1) {
+                    q->setting = q->setting & ~0x1FFF;
+                    q->setting = q->setting | lbl_3_data_177F0;
                 }
-                q += 0x10;
+                q++;
             }
         }
     }
 }
 
 // .text:0x000C4068 size:0x84 mapped:0x807030FC
-void fn_3_C4068(u8* a) {
-    u8* p = **(u8***)(a + 0x74);
+void fn_3_C4068(StadObj1FD8* a) {
+    void* p = a->model->actor; // walked down to the first display state of bone 1
     u32 n;
     u32 v;
     u16 t;
-    p = *(u8**)(p + 0x18);
-    p = *(u8**)(p + 4);
-    p = *(u8**)(p + 0x14);
-    p = *(u8**)(p + 0x10);
-    p = *(u8**)(p + 4);
+    p = ((GameActor*)p)->boneArray;
+    p = ((GameBone**)p)[1];
+    p = ((GameBone*)p)->dispObj;
+    p = ((struct DODisplayObj*)p)->displayData;
+    p = ((DisplayData*)p)->displayStateList;
     n = lbl_3_bss_9D84;
-    t = *(u32*)(p + 4) & 0x1FFF;
+    t = ((DisplayStateList*)p)->setting & 0x1FFF;
     lbl_3_bss_9D84 = n + 1;
     v = t;
     if (n > 4) {
@@ -887,24 +912,19 @@ void fn_3_C4068(u8* a) {
         }
         lbl_3_bss_9D84 = 0;
     }
-    *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
-    *(u32*)(p + 4) = *(u32*)(p + 4) | (u16)v;
+    ((DisplayStateList*)p)->setting = ((DisplayStateList*)p)->setting & ~0x1FFF;
+    ((DisplayStateList*)p)->setting = ((DisplayStateList*)p)->setting | (u16)v;
 }
 
 // .text:0x000C40EC size:0x60 mapped:0x80703180
-void fn_3_C40EC(u8* a) {
-    u8* p = **(u8***)(a + 0x74);
-    p = *(u8**)(p + 0x18);
-    p = *(u8**)(p + 4);
-    p = *(u8**)(p + 0x14);
-    p = *(u8**)(p + 0x10);
-    p = *(u8**)(p + 4);
-    if (a[0xA9] != 6) {
-        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
-        *(u32*)(p + 4) = *(u32*)(p + 4) | 0x19;
+void fn_3_C40EC(StadObj1FD8* a) {
+    DisplayStateList* p = a->model->actor->boneArray[1]->dispObj->displayData->displayStateList;
+    if (a->type != 6) {
+        p->setting = p->setting & ~0x1FFF;
+        p->setting = p->setting | 0x19;
     } else {
-        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
-        *(u32*)(p + 4) = *(u32*)(p + 4) | 0x1A;
+        p->setting = p->setting & ~0x1FFF;
+        p->setting = p->setting | 0x1A;
     }
 }
 
@@ -912,62 +932,31 @@ void fn_3_C40EC(u8* a) {
 void fn_3_C414C(int idx) {
     u8 hit = 0;
     Vec t;
-    u8* c = *(u8**)&lbl_3_common_bss_350E4 + idx * 0xE8;
-    CTRLGetTranslation((Control*)c, &t.x, &t.y, &t.z);
-    if (*(s16*)(g_Ball + 0x1B7A) != 2) {
-        if (c[0xA9] == 5 && lbl_800E8754[4] != 0) {
+    StadObj1FD8* c = &lbl_3_common_bss_350E4.arr[idx];
+    CTRLGetTranslation(&c->u.ctrl, &t.x, &t.y, &t.z);
+    if (g_Ball.AtBat_ContactResult != 2) {
+        if (c->type == 5 && lbl_800E8754._04 != 0) {
             fn_3_CB7E8(t.x, t.y - lbl_3_rodata_2150, t.z);
             hit = 1;
-            c[0xA9] = 6;
-        } else if (c[0xA9] == 4 && lbl_800E8754[4] != 0) {
+            c->type = 6;
+        } else if (c->type == 4 && lbl_800E8754._04 != 0) {
             fn_3_CB7E8(t.x, t.y, t.z - lbl_3_rodata_2150);
             hit = 1;
-            c[0xA9] = 6;
+            c->type = 6;
         }
     }
     if (hit) {
-        int i = g_Ball[0x1BE5] ? 7 : 6;
+        int i = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy ? 7 : 6;
         lbl_3_bss_9E48[i] = 1;
-        lbl_3_bss_9DE8[i].x = ((Vec*)g_Ball)->x;
-        lbl_3_bss_9DE8[i].y = -((Vec*)g_Ball)->y;
-        lbl_3_bss_9DE8[i].z = ((Vec*)g_Ball)->z;
+        lbl_3_bss_9DE8[i].x = g_Ball.AtBat_Contact_BallPos.x;
+        lbl_3_bss_9DE8[i].y = -g_Ball.AtBat_Contact_BallPos.y;
+        lbl_3_bss_9DE8[i].z = g_Ball.AtBat_Contact_BallPos.z;
     }
 }
 
 // .text:0x000C42A4 size:0x1A8 mapped:0x80703338
-typedef struct {
-    union {
-        Control ctrl;
-        u8 raw[0x78];
-    } u;
-    void* f78; // model drawn by fn_3_B8464
-    u8 pad2[0xE8 - 0x7C];
-} C42A4Ctl;
-// Stadium object list (lbl_3_common_bss_350E4) and the per-group shadow/collision batch
-// buffers built by fn_3_C82B4: p48 = n pairs of Vec (bounds), p3C = counts, p44 = indices,
-// p40 = u16 first-index per group.
-typedef struct {
-    C42A4Ctl* arr;
-    void* arr2; // 0x04: second 0x1D00 buffer
-    u8 pad8[0x18 - 8];
-    void (*f18)(void); // 0x18
-    u8 pad1C[0x20 - 0x1C];
-    void* lights[4]; // 0x20: passed to fn_800BD548 for every actor
-    s32 count;       // 0x30: object slots
-    s32* fileIdx;    // 0x34: indices into the stadium file list (fn_3_B9D68)
-    u8 pad38[0x3C - 0x38];
-    u32* p3C;
-    u16* p40;
-    u32* p44;
-    u8* p48;
-    u8 pad4C[0x64 - 0x4C];
-    s16 groups;
-    u8 pad66[0x6D - 0x66];
-    u8 nActors; // 0x6D
-} C42A4Bss;
-typedef struct { u8 pad[0x10]; u8 f10; u8 f11; u8 f12; u8 f13; } C42A4Ent;
 extern u8 lbl_3_bss_9DE0[];
-extern f32 lbl_3_data_17704[59];
+extern StadPlaceGroupC lbl_3_data_17704;
 extern f32 lbl_3_rodata_2154;
 extern void fn_3_B8414(void*, void*);
 extern void fn_3_B8464(void*, void*);
@@ -975,32 +964,32 @@ extern void fn_3_B8574(void);
 void fn_3_C42A4(s32* a, s32* b) {
     Mtx m;
     C42A4Bss* g;
-    C42A4Ent* e;
+    StadPlace14* e;
     s32 off;
     s32 k;
     s32 j;
     u32 v;
-    C42A4Ctl* c;
+    StadObj1FD8* c;
     s32 idx;
-    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    g = &lbl_3_common_bss_350E4;
     for (k = 0; k < 5; k++) {
         v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
         g->p40[*a] = v;
         ((void (*)(void))fn_3_B8574)();
-        e = (C42A4Ent*)((u8*)lbl_3_data_17704);
+        e = lbl_3_data_17704.place;
         off = v * 4;
         for (j = 0; j < 10; e++, j++) {
-            if (k == e->f12 && e->f10 != 7) {
-                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(j + lbl_3_bss_9DE0[0]) * 0xE8 + 0x90] >> 6) & 1) {
+            if (k == e->f12 && e->type != 7) {
+                if (lbl_3_common_bss_350E4.arr[j + lbl_3_bss_9DE0[0]].animated) {
                     idx = j + lbl_3_bss_9DE0[0];
                     *(s32*)((u8*)g->p44 + off) = idx;
                     off += 4;
                     g->p3C[*a] += 1;
-                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE0[0]];
+                    c = &lbl_3_common_bss_350E4.arr[j + lbl_3_bss_9DE0[0]];
                     CTRLBuildMatrix(&c->u.ctrl, m);
-                    fn_3_B8464(m, c->f78);
+                    fn_3_B8464(m, c->anim);
                     m[1][3] = m[1][3] * lbl_3_rodata_2154;
-                    fn_3_B8464(m, c->f78);
+                    fn_3_B8464(m, c->anim);
                     *b += 1;
                 }
             }
@@ -1013,12 +1002,12 @@ void fn_3_C42A4(s32* a, s32* b) {
 }
 
 // .text:0x000C444C size:0x2D8 mapped:0x807034E0
-void fn_3_C444C(void* hv, u8* b) {
+void fn_3_C444C(void* hv, StadObj1FD8* b) {
     C4724Hdr* h = hv;
     C4724P* p = h->head;
-    f32 px = *(f32*)(b + 0x9C);
-    f32 py = *(f32*)(b + 0xA0);
-    f32 pz = *(f32*)(b + 0xA4);
+    f32 px = b->pos.x;
+    f32 py = b->pos.y;
+    f32 pz = b->pos.z;
     u32 i = 0;
     f32 a;
     f32 c;
@@ -1053,7 +1042,7 @@ extern void fn_80033CC8(void*, void*);
 extern const f32 lbl_3_rodata_2168[];
 extern const f32 lbl_3_rodata_21A4;
 extern const f32 lbl_3_rodata_21AC;
-extern f32 lbl_3_data_17514[55];
+extern StadPlace14 lbl_3_data_17514[11];
 extern const f32 lbl_3_rodata_21A8;
 extern f64 pow(f64, f64);
 // .text:0x000C4724 size:0x1AC mapped:0x807037B8
@@ -1273,11 +1262,11 @@ s32 fn_3_C4F00(void* hv) {
 }
 
 // .text:0x000C5304 size:0x1CC mapped:0x80704398
-void fn_3_C5304(void* hv, u8* b) {
+void fn_3_C5304(void* hv, StadObj1FD8* b) {
     C4724Hdr* h = hv;
     C4724P* p = h->head;
     s16 i = 0;
-    h->f18 = (Vec*)(b + 0x9C);
+    h->f18 = &b->pos;
     h->f20 = b;
     while (p != NULL) {
         p->f38 = p->f3C = lbl_3_rodata_213C;
@@ -1303,8 +1292,8 @@ void fn_3_C5304(void* hv, u8* b) {
 }
 
 // .text:0x000C54D0 size:0x218 mapped:0x80704564
-void fn_3_C54D0(u8* a) {
-    C4724Hdr* h = fn_800339F0(0, (u8)(a[0xA8] + 0x2A));
+void fn_3_C54D0(StadObj1FD8* a) {
+    C4724Hdr* h = fn_800339F0(0, (u8)(a->idx + 0x2A));
     C4724P* p;
     if (h == NULL) {
         return;
@@ -1342,13 +1331,13 @@ void fn_3_C54D0(u8* a) {
 }
 
 // .text:0x000C56E8 size:0x294 mapped:0x8070477C
-void fn_3_C56E8(u8* a) {
+void fn_3_C56E8(StadObj1FD8* a) {
     Vec v1;
     Vec v2;
     C4724Hdr* h;
     C4724P* p;
-    PSMTXMultVec(fn_80052734(fn_8005268C())->view, (Vec*)(a + 0x9C), &v1);
-    h = fn_800339F0(0, (u8)(a[0xA8] + 0x2A));
+    PSMTXMultVec(fn_80052734(fn_8005268C())->view, &a->pos, &v1);
+    h = fn_800339F0(0, (u8)(a->idx + 0x2A));
     if (h == NULL) {
         return;
     }
@@ -1393,16 +1382,6 @@ void fn_3_C56E8(u8* a) {
 }
 
 // .text:0x000C597C size:0x364 mapped:0x80704A10
-typedef struct {
-    u8 pad0[0x90];
-    u8 b90_7 : 1;
-    u8 b90_rest : 7;
-    u8 pad91[0x9C - 0x91];
-    f32 px, py, pz;
-    u8 fA8;
-    u8 padA9[0xBD - 0xA9];
-    u8 fBD;
-} C597CEnt;
 void fn_3_C597C(s32 idx) {
     f32 k;
     u32 i;
@@ -1413,15 +1392,15 @@ void fn_3_C597C(s32 idx) {
     f32 pz;
     f32 a;
     f32 c;
-    C597CEnt* e;
-    e = (C597CEnt*)(*(u8**)&lbl_3_common_bss_350E4 + idx * 0xE8);
-    pitchingMachinePitching((u8)(e->fA8 + 0x2A));
-    h = fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(e->fA8 + 0x34));
+    StadObj1FD8* e;
+    e = &lbl_3_common_bss_350E4.arr[idx];
+    pitchingMachinePitching((u8)(e->idx + 0x2A));
+    h = fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(e->idx + 0x34));
     if (h != NULL) {
         p = h->head;
-        px = e->px;
-        py = e->py;
-        pz = e->pz;
+        px = e->pos.x;
+        py = e->pos.y;
+        pz = e->pos.z;
         i = 0;
         while (p != NULL) {
             p->x = px;
@@ -1448,18 +1427,18 @@ void fn_3_C597C(s32 idx) {
         h->tex = lbl_3_bss_9F0C;
         h->f24 = 0x1E;
     }
-    e->fBD = 2;
-    e->b90_7 = 0;
-    e->py = lbl_3_rodata_2160[0];
+    e->x.b.bd = 2;
+    e->visible = 0;
+    e->pos.y = lbl_3_rodata_2160[0];
 }
 
 // .text:0x000C5CE0 size:0xFC mapped:0x80704D74
-u8 fn_3_C5CE0(u8* a) {
+u8 fn_3_C5CE0(StadObj1FD8* a) {
     Vec pos = lbl_3_rodata_2080;
     Vec d;
     u32 i;
     f32 lim;
-    if (g_GameLogic[0x11E] == 2 && g_GameLogic[0x138] != 0) {
+    if (g_GameLogic.gameStatus == 2 && g_GameLogic.playOver != 0) {
         return 0;
     }
     i = 0;
@@ -1467,7 +1446,7 @@ u8 fn_3_C5CE0(u8* a) {
     do {
         memset(&pos, 0, 0xC);
         fn_8001B728(i, 4, &pos);
-        PSVECSubtract(&pos, (Vec*)(a + 0x9C), &d);
+        PSVECSubtract(&pos, &a->pos, &d);
         if (PSVECMag(&d) <= lim) {
             fn_3_25844(i, 1);
             return 1;
@@ -1485,7 +1464,7 @@ u8 fn_3_C5CE0(u8* a) {
 void fn_3_C5DDC(void) {
     C3C2CBss* g = &lbl_3_bss_9D80;
     u32 i;
-    C597CEnt* e;
+    StadObj1FD8* e;
     C4724Hdr* h;
     Vec pos;
     if (g->f2 != 0) {
@@ -1494,38 +1473,38 @@ void fn_3_C5DDC(void) {
         return;
     }
     for (i = 0; i < g->sprayCount; i++) {
-        e = (C597CEnt*)(*(u8**)&lbl_3_common_bss_350E4 + (g->sprayStart + i) * 0xE8);
-        if (e->fBD == 1 && fn_3_C5CE0((u8*)e)) {
-            h = fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(e->fA8 + 0x34));
+        e = &lbl_3_common_bss_350E4.arr[g->sprayStart + i];
+        if (e->x.b.bd == 1 && fn_3_C5CE0(e)) {
+            h = fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(e->idx + 0x34));
             if (h != NULL) {
-                pos = *(Vec*)&e->px;
+                pos = *(Vec*)&e->pos.x;
                 fn_3_C48D0(h, &pos);
                 h->tex = g->tex;
                 h->f24 = 30;
             }
-            e->fBD = 2;
-            e->b90_7 = 0;
-            e->py = lbl_3_rodata_2160[0];
+            e->x.b.bd = 2;
+            e->visible = 0;
+            e->pos.y = lbl_3_rodata_2160[0];
         }
     }
 }
 #endif
 
 // .text:0x000C625C size:0x174 mapped:0x807052F0
-u8 fn_3_C625C(u8* a) {
-    Vec pos = *(Vec*)(a + 0x9C);
+u8 fn_3_C625C(StadObj1FD8* a) {
+    Vec pos = *&a->pos;
     Vec d;
     u32 stad;
     u8 v;
     u32 h;
-    if (g_Ball[0x1BC9] == 1) {
+    if (g_Ball.ballState == 1) {
         return 0;
     }
-    if ((g_Ball[0x1BE8] == 0xB) | (g_Ball[0x1BE8] == 0xC)) {
+    if ((g_Ball.currentStarSwing2 == 0xB) | (g_Ball.currentStarSwing2 == 0xC)) {
         return 0;
     }
     pos.y *= lbl_3_rodata_20F4;
-    PSVECSubtract((Vec*)g_Ball, &pos, &d);
+    PSVECSubtract(&g_Ball.AtBat_Contact_BallPos, &pos, &d);
     if (PSVECMag(&d) <= lbl_3_rodata_2178) {
         stad = g_d_GameSettings.StadiumID;
         if (g_d_GameSettings.GameModeSelected == 6) {
@@ -1545,68 +1524,7 @@ u8 fn_3_C625C(u8* a) {
     return 0;
 }
 
-extern C71CCEnt lbl_3_data_175FC[];
-// One stadium object slot of lbl_3_common_bss_350E4 (0xE8 bytes), as set up by fn_3_C8650.
-typedef struct StadObj1FD8 {
-    union {
-        Control ctrl;
-        u8 raw[0x74];
-    } u;
-    ActorObject* model; // 0x74
-    void* anim;         // 0x78
-    void* update;       // 0x7C
-    void* hit;          // 0x80
-    void* draw;         // 0x84
-    void* draw2;        // 0x88
-    void* animPlayer;   // 0x8C
-    u8 visible : 1;     // 0x90
-    u8 animated : 1;
-    u8 b5 : 1;
-    u8 bits : 5;
-    u8 pad91;
-    u8 alpha; // 0x92
-    u8 pad93;
-    s16 f94;
-    s16 f96;
-    u8 f98;
-    u8 placed; // 0x99
-    u8 f9A;
-    u8 pad9B;
-    Vec pos;  // 0x9C
-    u8 idx;   // 0xA8
-    u8 type;  // 0xA9
-    u8 padAA[2];
-    union {
-        struct {
-            f32 speed;
-            u8 state, timer, armed;
-        } a; // group A (fn_3_C7A0C)
-        struct {
-            f32 v[3];
-            u16 b8, ba;
-            u8 bc, bd;
-        } b; // group B (fn_3_C63D0)
-    } x;
-    u8 padBE[0xE8 - 0xBE];
-} StadObj1FD8;
-typedef struct {
-    f32 x, y, z;
-    f32 rotY;
-    u8 type; // 7 = end of list
-    u8 visible;
-    u8 f12;
-    u8 pad13;
-} StadPlace14; // lbl_3_data_17514 / lbl_3_data_17704
-typedef struct {
-    f32 x, y, z;
-    f32 rotY;
-    u8 type;
-    u8 visible;
-    u8 f12;
-    u8 pad13;
-    u16 f14;
-    u16 f16;
-} StadPlace18; // lbl_3_data_175FC
+extern StadPlace18 lbl_3_data_175FC[11];
 // .text:0x000C63D0 size:0xDFC mapped:0x80705464
 extern const Vec lbl_3_rodata_2074; // (0, 1, 0)
 extern const f64 lbl_3_rodata_2180; // 5.0
@@ -1617,7 +1535,7 @@ extern f64 acos(f64);
 extern f64 sqrt(f64);
 extern s16 fn_3_B7F70(s16 range);
 extern s32 fn_80033928(u8 type);
-#define GAME_ACTOR(i) (((u8**)(lbl_8036E548 + 0x2C50))[i]) // TODO type: lbl_8036E548 actor list
+#define GAME_ACTOR(i) (lbl_8036E548.active[i])
 // Group B object (set up by fn_3_C8650): waits at its spot until no fielder
 // (actors 6..8) is within 5 units, then hops off in a random direction; on
 // landing (collision) or when it reaches the ball it bursts (fn_3_C48D0 /
@@ -1632,7 +1550,7 @@ void fn_3_C63D0(StadObj1FD8* o) {
     VecSrcDst seg;
     CollisionStruct col;
     Vec pos;
-    StadPlace18* pb = (StadPlace18*)lbl_3_data_175FC;
+    StadPlace18* pb = lbl_3_data_175FC;
     C4724Hdr* h;
     u8 hit = 0;
     u32 i;
@@ -1643,7 +1561,7 @@ void fn_3_C63D0(StadObj1FD8* o) {
     u8 v;
     u32 snd;
 
-    if (g_GameLogic[0x11E] != 2) {
+    if (g_GameLogic.gameStatus != 2) {
         if (o->placed == 0) {
             o->pos.x = pb[o->idx].x;
             o->pos.y = pb[o->idx].y;
@@ -1665,8 +1583,8 @@ void fn_3_C63D0(StadObj1FD8* o) {
             break;
         }
         for (i = 6; i < 9; i++) {
-            d = pow(*(f32*)(GAME_ACTOR(i) + 0x3C) - o->pos.z, lbl_3_rodata_2118);
-            if ((f32)sqrt(pow(*(f32*)(GAME_ACTOR(i) + 0x34) - o->pos.x, lbl_3_rodata_2118) + d) < lbl_3_rodata_2180) {
+            d = pow(GAME_ACTOR(i)->pos.z - o->pos.z, lbl_3_rodata_2118);
+            if ((f32)sqrt(pow(GAME_ACTOR(i)->pos.x - o->pos.x, lbl_3_rodata_2118) + d) < lbl_3_rodata_2180) {
                 o->pos.x = pb[o->idx].x;
                 o->pos.y = pb[o->idx].y;
                 o->pos.z = pb[o->idx].z;
@@ -1683,7 +1601,7 @@ void fn_3_C63D0(StadObj1FD8* o) {
         o->x.b.v[2] = spd * sin(ang);
         h = fn_80033A24(fn_3_C4F00, 0x80, 0, 7, 1, (u8)(o->idx + 0x2A));
         if (h != NULL) {
-            fn_3_C5304(h, (u8*)o);
+            fn_3_C5304(h, o);
             h->tex = lbl_3_bss_9F0C;
         }
         o->x.b.bc = fn_3_B7F70(0xF0) + 1;
@@ -1715,7 +1633,7 @@ void fn_3_C63D0(StadObj1FD8* o) {
         if (o->x.b.v[1] < lbl_3_rodata_213C && checkCollision(&seg, &col, 0, 0) != 0) {
             hit = 1;
         }
-        if (fn_3_C625C((u8*)o)) {
+        if (fn_3_C625C(o)) {
             hit = 2;
         }
         if (hit) {
@@ -1731,7 +1649,7 @@ void fn_3_C63D0(StadObj1FD8* o) {
             } else if (hit == 2) {
                 h = fn_80033A24(fn_3_C4724, 0x80, 0, 0x18, 1, (u8)(o->idx + 0x34));
                 if (h != NULL) {
-                    fn_3_C444C(h, (u8*)o);
+                    fn_3_C444C(h, o);
                     h->tex = lbl_3_bss_9F0C;
                     h->f24 = 30;
                 }
@@ -1762,7 +1680,6 @@ void fn_3_C63D0(StadObj1FD8* o) {
 #endif
 
 // .text:0x000C71CC size:0x278 mapped:0x80706260
-typedef struct { u8 d[0x44]; } C71CCCopy;
 extern f32 lbl_3_data_175F0[];
 extern const f64 lbl_3_rodata_2190;
 extern const f32 lbl_3_rodata_2198;
@@ -1770,18 +1687,18 @@ extern const f32 lbl_3_rodata_219C;
 extern const f32 lbl_3_rodata_21A0;
 void fn_3_C71CC(s32* a, s32* b) {
     u32 v;
-    C71CCEnt* e;
+    StadPlace18* e;
     f64 D;
     C42A4Bss* g;
     f32 y;
     s32 off;
     Mtx m;
     f32 d;
-    C42A4Ctl* c;
+    StadObj1FD8* c;
     s32 k;
     s32 j;
-    C71CCCopy t;
-    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    GameControl t;
+    g = &lbl_3_common_bss_350E4;
     D = lbl_3_rodata_2190 * lbl_3_rodata_2198 + lbl_3_rodata_219C;
     for (k = 0; k < 5; k++) {
         v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
@@ -1790,23 +1707,23 @@ void fn_3_C71CC(s32* a, s32* b) {
         e = lbl_3_data_175FC;
         off = v * 4;
         for (j = 0; j < 10; e++, j++) {
-            if (k == e->f12 && e->f10 != 7) {
-                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(*b) * 0xE8 + 0x90] >> 6) & 1) {
+            if (k == e->f12 && e->type != 7) {
+                if (lbl_3_common_bss_350E4.arr[*b].animated) {
                     *(s32*)((u8*)g->p44 + off) = *b;
                     g->p3C[*a] += 1;
-                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[*b];
+                    c = &lbl_3_common_bss_350E4.arr[*b];
                     off += 4;
-                    t = *(C71CCCopy*)c;
+                    t = c->u.gctrl;
                     CTRLBuildMatrix(&c->u.ctrl, m);
-                    fn_3_B8464(m, c->f78);
+                    fn_3_B8464(m, c->anim);
                     y = (f32)D;
                     d = lbl_3_data_175F0[2] * lbl_3_rodata_21A0;
-                    CTRLSetTranslation((Control*)&t, d + e->x, y + e->y, d + e->z);
-                    CTRLBuildMatrix((Control*)&t, m);
-                    fn_3_B8464(m, c->f78);
-                    CTRLSetTranslation((Control*)&t, e->x - d, y + e->y, e->z - d);
-                    CTRLBuildMatrix((Control*)&t, m);
-                    fn_3_B8464(m, c->f78);
+                    CTRLSetTranslation(&t.base, d + e->x, y + e->y, d + e->z);
+                    CTRLBuildMatrix(&t.base, m);
+                    fn_3_B8464(m, c->anim);
+                    CTRLSetTranslation(&t.base, e->x - d, y + e->y, e->z - d);
+                    CTRLBuildMatrix(&t.base, m);
+                    fn_3_B8464(m, c->anim);
                     *b += 1;
                 }
             }
@@ -1819,20 +1736,15 @@ void fn_3_C71CC(s32* a, s32* b) {
 }
 
 // .text:0x000C7444 size:0x58 mapped:0x807064D8
-void fn_3_C7444(u8* a) {
-    u8* p = **(u8***)(a + 0x74);
-    p = *(u8**)(p + 0x18);
-    p = *(u8**)(p + 0x34);
-    p = *(u8**)(p + 0x14);
-    p = *(u8**)(p + 0x10);
-    p = *(u8**)(p + 4);
-    switch (*(s8*)(a + 0xB0)) {
+void fn_3_C7444(StadObj1FD8* a) {
+    DisplayStateList* p = a->model->actor->boneArray[13]->dispObj->displayData->displayStateList;
+    switch ((s8)a->x.a.state) {
     case 0:
-        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
-        *(u32*)(p + 4) = *(u32*)(p + 4) | 2;
+        p->setting = p->setting & ~0x1FFF;
+        p->setting = p->setting | 2;
         break;
     default:
-        *(u32*)(p + 4) = *(u32*)(p + 4) & ~0x1FFF;
+        p->setting = p->setting & ~0x1FFF;
         break;
     }
 }
@@ -1843,11 +1755,11 @@ void fn_3_C749C(void) {
     s32 stad;
     u8 v;
     u32 h;
-    i = g_Ball[0x1BE5] ? 3 : 2;
+    i = g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy ? 3 : 2;
     lbl_3_bss_9E48[i] = 1;
-    lbl_3_bss_9DE8[i].x = ((Vec*)g_Ball)->x;
-    lbl_3_bss_9DE8[i].y = -((Vec*)g_Ball)->y;
-    lbl_3_bss_9DE8[i].z = ((Vec*)g_Ball)->z;
+    lbl_3_bss_9DE8[i].x = g_Ball.AtBat_Contact_BallPos.x;
+    lbl_3_bss_9DE8[i].y = -g_Ball.AtBat_Contact_BallPos.y;
+    lbl_3_bss_9DE8[i].z = g_Ball.AtBat_Contact_BallPos.z;
     stad = g_d_GameSettings.StadiumID;
     if (g_d_GameSettings.GameModeSelected == 6) {
         v = lbl_3_data_84B8[8];
@@ -1900,14 +1812,14 @@ u32 fn_3_C75B8(void* hv) {
 // .text:0x000C77AC size:0x260 mapped:0x80706840
 // NONMATCHING 99%: one 'fmuls f0,f25,f0' operand order (we emit f0,f25); const-left source order changes the hoisted-const layout instead
 #if NONMATCHING
-void fn_3_C77AC(void* hv, u8* b) {
+void fn_3_C77AC(void* hv, StadObj1FD8* b) {
     u32 ang;
     C4724P* p;
     C4724Hdr* h = hv;
     f32 a, fa;
     u32 i;
     p = h->head;
-    h->f18 = (Vec*)(b + 0x9C);
+    h->f18 = &b->pos;
     h->f20 = b;
     h->tex = lbl_3_bss_9F0C;
     h->f24 = 30;
@@ -1916,7 +1828,7 @@ void fn_3_C77AC(void* hv, u8* b) {
     while (p != NULL) {
         p->f38 = p->f3C = lbl_3_rodata_213C;
         p->f1C = lbl_3_rodata_21AC - (f32)(rand() % 3);
-        fa = (f32)ang + *(f32*)((u8*)lbl_3_data_17514 + b[0xA8] * 0x14 + 0xC);
+        fa = (f32)ang + lbl_3_data_17514[b->idx].rotY;
         a = (fa * lbl_3_rodata_2158) / lbl_3_rodata_215C;
         p->vx = 0.3499999940395355 * cos(a);
         p->vy = (f32)-(rand() % 3);
@@ -1942,28 +1854,6 @@ void fn_3_C77AC(void* hv, u8* b) {
 // Rising/falling obstacle (state machine in e->state): rests at its table
 // height, rises when a ball is about to hit it, drops with a splash + sound,
 // waits, then rises back.
-typedef struct C7A0CEnt {
-    union {
-        Control ctrl;
-        u8 raw[0x98];
-    } u;
-    u8 pad98;
-    u8 placed; // 0x99
-    u8 pad9A[0x9C - 0x9A];
-    Vec pos; // 0x9C
-    u8 idx;  // 0xA8: entry in lbl_3_data_17514
-    u8 padA9[0xAC - 0xA9];
-    f32 speed; // 0xAC
-    u8 state;  // 0xB0
-    u8 timer;  // 0xB1
-    u8 armed;  // 0xB2
-} C7A0CEnt;
-typedef struct {
-    f32 x, y, z;
-    f32 ang;
-    u8 pad10[4];
-} C7A0CTbl; // lbl_3_data_17514
-#define C7A0C_TBL ((C7A0CTbl*)((u8*)lbl_3_data_17514))
 extern f32 lbl_3_data_17508[];
 extern s16 fn_3_B7F70(s16 range);
 extern s32 fn_3_8BBC4(s32 id, f32* pos, f32* dir, s32 type);
@@ -1983,14 +1873,14 @@ extern f32 lbl_3_rodata_21E0;        // -5.0f
 // copy that is always visible (fn_3_C77AC itself is NONMATCHING).
 #pragma inline_max_size(100000)
 // Inline copy of fn_3_C77AC.
-static inline void fn_3_C77AC_inline(void* hv, u8* b) {
+static inline void fn_3_C77AC_inline(void* hv, StadObj1FD8* b) {
     u32 ang;
     C4724P* p;
     C4724Hdr* h = hv;
     f32 a, fa;
     u32 i;
     p = h->head;
-    h->f18 = (Vec*)(b + 0x9C);
+    h->f18 = &b->pos;
     h->f20 = b;
     h->tex = lbl_3_bss_9F0C;
     h->f24 = 30;
@@ -1999,7 +1889,7 @@ static inline void fn_3_C77AC_inline(void* hv, u8* b) {
     while (p != NULL) {
         p->f38 = p->f3C = lbl_3_rodata_213C;
         p->f1C = lbl_3_rodata_21AC - (f32)(rand() % 3);
-        fa = (f32)ang + *(f32*)(lbl_3_data_17514 + b[0xA8] * 0x14 + 0xC);
+        fa = (f32)ang + lbl_3_data_17514[b->idx].rotY;
         a = (fa * lbl_3_rodata_2158) / lbl_3_rodata_215C;
         p->vx = 0.3499999940395355 * cos(a);
         p->vy = (f32)-(rand() % 3);
@@ -2022,88 +1912,87 @@ static inline void fn_3_C77AC_inline(void* hv, u8* b) {
 
 // NONMATCHING 98%: register numbering; the inlined fn_3_C77AC copy carries its fmuls operand-order difference
 #if NONMATCHING
-void fn_3_C7A0C(C7A0CEnt* e) {
+void fn_3_C7A0C(StadObj1FD8* e) {
     Vec pos;
     f64 d;
     f32 x;
     C4724Hdr* h;
-    if (g_GameLogic[0x11E] != 2) {
+    if (g_GameLogic.gameStatus != 2) {
         if (e->placed == 0) {
-            e->pos.y = C7A0C_TBL[e->idx].y;
-            e->state = 0;
-            e->armed = 1;
+            e->pos.y = lbl_3_data_17514[e->idx].y;
+            e->x.a.state = 0;
+            e->x.a.armed = 1;
             CTRLSetTranslation(&e->u.ctrl, e->pos.x, e->pos.y, e->pos.z);
             pitchingMachinePitching((u8)(e->idx + 0x3E));
             e->placed = 1;
         }
-        if (g_GameLogic[0x11E] == 0) {
-            e->speed = lbl_3_data_17508[fn_3_B7F70(3)];
+        if (g_GameLogic.gameStatus == 0) {
+            e->x.a.speed = lbl_3_data_17508[fn_3_B7F70(3)];
         }
         return;
     }
     e->placed = 0;
-    switch (e->state) {
+    switch (e->x.a.state) {
     case 0:
-        if (e->armed != 0) {
-            // TODO type: g_Ball fields (InMemBallType)
-            if (g_Ball[0x1BC9] != 0) {
-                e->armed = 0;
-            } else if (*(f32*)(g_Ball + 0x320) < lbl_3_rodata_213C) {
-                e->armed = 0;
-            } else if (g_Ball[0x1BD1] != 0) {
-                e->armed = 0;
+        if (e->x.a.armed != 0) {
+            if (g_Ball.ballState != 0) {
+                e->x.a.armed = 0;
+            } else if (g_Ball.physicsSubstruct.velocity.z < lbl_3_rodata_213C) {
+                e->x.a.armed = 0;
+            } else if (g_Ball.deadBallReason != 0) {
+                e->x.a.armed = 0;
             } else {
-                x = *(f32*)(g_Ball + 0x318) / *(f32*)(g_Ball + 0x320) * (e->pos.z - ((Vec*)g_Ball)->z) + ((Vec*)g_Ball)->x;
+                x = g_Ball.physicsSubstruct.velocity.x / g_Ball.physicsSubstruct.velocity.z * (e->pos.z - g_Ball.AtBat_Contact_BallPos.z) + g_Ball.AtBat_Contact_BallPos.x;
                 if (x < e->pos.x - lbl_3_rodata_21B8 || x > lbl_3_rodata_21B8 + e->pos.x) {
-                    e->armed = 0;
+                    e->x.a.armed = 0;
                 } else {
-                    d = pow(e->pos.y + ((Vec*)g_Ball)->y, lbl_3_rodata_2118);
-                    d = pow(e->pos.x - ((Vec*)g_Ball)->x, lbl_3_rodata_2118) + d;
-                    if ((f32)sqrt(pow(e->pos.z - ((Vec*)g_Ball)->z, lbl_3_rodata_2118) + d) < lbl_3_rodata_21BC &&
-                        ((Vec*)g_Ball)->y < lbl_3_rodata_21C0 - e->pos.y) {
-                        e->state = 1;
+                    d = pow(e->pos.y + g_Ball.AtBat_Contact_BallPos.y, lbl_3_rodata_2118);
+                    d = pow(e->pos.x - g_Ball.AtBat_Contact_BallPos.x, lbl_3_rodata_2118) + d;
+                    if ((f32)sqrt(pow(e->pos.z - g_Ball.AtBat_Contact_BallPos.z, lbl_3_rodata_2118) + d) < lbl_3_rodata_21BC &&
+                        g_Ball.AtBat_Contact_BallPos.y < lbl_3_rodata_21C0 - e->pos.y) {
+                        e->x.a.state = 1;
                     }
                 }
             }
         }
         break;
     case 1:
-        d = C7A0C_TBL[e->idx].y - lbl_3_rodata_21C8;
+        d = lbl_3_data_17514[e->idx].y - lbl_3_rodata_21C8;
         if (e->pos.y <= d) {
             e->pos.y = d;
-            e->state = 2;
+            e->x.a.state = 2;
         } else {
             e->pos.y = e->pos.y - lbl_3_rodata_21D0;
         }
         break;
     case 2:
-        e->pos.y += e->speed;
+        e->pos.y += e->x.a.speed;
         if (e->pos.y >= lbl_3_rodata_21D8) {
             e->pos.y = lbl_3_rodata_21E0;
             memcpy(&pos, &e->pos, sizeof(Vec));
-            e->state = 3;
-            e->timer = 0;
+            e->x.a.state = 3;
+            e->x.a.timer = 0;
             lbl_3_bss_9D81 = 1;
-            fn_800528AC((fn_800528AC_parameter)fn_3_C3A38);
+            fn_800528AC(fn_3_C3A38);
             fn_3_8BBC4(lbl_3_data_81DC[g_d_GameSettings.StadiumID] + 5, (f32*)&pos, NULL, 9);
         }
-        if (lbl_3_rodata_2148 * e->speed + e->pos.y >= lbl_3_rodata_21D8) {
+        if (lbl_3_rodata_2148 * e->x.a.speed + e->pos.y >= lbl_3_rodata_21D8) {
             h = fn_80033A24(fn_3_C75B8, 0x80, 0, 0xC, 1, (u8)(e->idx + 0x3E));
             if (h != NULL) {
-                fn_3_C77AC_inline(h, (u8*)e);
+                fn_3_C77AC_inline(h, e);
             }
         }
         break;
     case 3:
-        if (e->timer++ > 40) {
-            e->state = 4;
-            e->timer = 0;
+        if (e->x.a.timer++ > 40) {
+            e->x.a.state = 4;
+            e->x.a.timer = 0;
         }
         break;
     case 4:
-        if (e->pos.y <= C7A0C_TBL[e->idx].y) {
-            e->pos.y = C7A0C_TBL[e->idx].y;
-            e->state = 0;
+        if (e->pos.y <= lbl_3_data_17514[e->idx].y) {
+            e->pos.y = lbl_3_data_17514[e->idx].y;
+            e->x.a.state = 0;
         } else {
             e->pos.y = e->pos.y - lbl_3_rodata_21E8;
         }
@@ -2115,41 +2004,41 @@ void fn_3_C7A0C(C7A0CEnt* e) {
 
 typedef struct { u32 w[17]; } C42A4Cpy;
 extern u8 lbl_3_bss_9DE4[];
-extern f32 lbl_3_data_17514[55];
+extern StadPlace14 lbl_3_data_17514[11];
 extern f32 lbl_3_rodata_21E0;
 // .text:0x000C805C size:0x1E0 mapped:0x807070F0
 void fn_3_C805C(s32* a, s32* b) {
     Mtx m;
     C42A4Cpy cpy;
     C42A4Bss* g;
-    C42A4Ent* e;
+    StadPlace14* e;
     s32 off;
     s32 k;
     s32 j;
     u32 v;
-    C42A4Ctl* c;
+    StadObj1FD8* c;
     s32 idx;
-    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    g = &lbl_3_common_bss_350E4;
     for (k = 0; k < 5; k++) {
         v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
         g->p40[*a] = v;
         ((void (*)(void))fn_3_B8574)();
-        e = (C42A4Ent*)((u8*)lbl_3_data_17514);
+        e = lbl_3_data_17514;
         off = v * 4;
         for (j = 0; j < 10; e++, j++) {
-            if (k == e->f12 && e->f10 != 7) {
-                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(j + lbl_3_bss_9DE4[0]) * 0xE8 + 0x90] >> 6) & 1) {
+            if (k == e->f12 && e->type != 7) {
+                if (lbl_3_common_bss_350E4.arr[j + lbl_3_bss_9DE4[0]].animated) {
                     idx = j + lbl_3_bss_9DE4[0];
                     *(s32*)((u8*)g->p44 + off) = idx;
                     g->p3C[*a] += 1;
-                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE4[0]];
+                    c = &lbl_3_common_bss_350E4.arr[j + lbl_3_bss_9DE4[0]];
                     off += 4;
                     cpy = *(C42A4Cpy*)c;
                     CTRLBuildMatrix(&c->u.ctrl, m);
-                    fn_3_B8464(m, c->f78);
+                    fn_3_B8464(m, c->anim);
                     CTRLSetTranslation((Control*)&cpy, ((f32*)e)[0], lbl_3_rodata_21E0, ((f32*)e)[2]);
                     CTRLBuildMatrix((Control*)&cpy, m);
-                    fn_3_B8464(m, c->f78);
+                    fn_3_B8464(m, c->anim);
                     *b += 1;
                 }
             }
@@ -2162,57 +2051,47 @@ void fn_3_C805C(s32* a, s32* b) {
 }
 
 // .text:0x000C823C size:0x78 mapped:0x807072D0
-typedef struct {
-    union {
-        Control ctrl;
-        u8 raw[0x78];
-    } u;
-    void* f78;
-    u8 _7C[0xA9 - 0x7C];
-    u8 fA9;
-    u8 _AA[0xE8 - 0xAA];
-} C823CEnt;
 // Builds object idx's matrix into out (dropping it slightly while in state 5)
 // and returns its model.
 void* fn_3_C823C(s32 idx, Mtx out) {
-    C823CEnt* p = *(C823CEnt**)&lbl_3_common_bss_350E4 + idx;
+    StadObj1FD8* p = &lbl_3_common_bss_350E4.arr[idx];
     CTRLBuildMatrix(&p->u.ctrl, out);
-    if (p->fA9 == 5) {
+    if (p->type == 5) {
         out[1][3] = -0.002f;
     }
-    return (*(C823CEnt**)&lbl_3_common_bss_350E4 + idx)->f78;
+    return lbl_3_common_bss_350E4.arr[idx].anim;
 }
 
 // Inline copies of fn_3_C42A4 and fn_3_C805C (the original expands both in fn_3_C82B4).
 static inline void fn_3_C42A4_inline(s32* a, s32* b) {
     Mtx m;
     C42A4Bss* g;
-    C42A4Ent* e;
+    StadPlace14* e;
     s32 off;
     s32 k;
     s32 j;
     u32 v;
-    C42A4Ctl* c;
+    StadObj1FD8* c;
     s32 idx;
-    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    g = &lbl_3_common_bss_350E4;
     for (k = 0; k < 5; k++) {
         v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
         g->p40[*a] = v;
         ((void (*)(void))fn_3_B8574)();
-        e = (C42A4Ent*)lbl_3_data_17704;
+        e = lbl_3_data_17704.place;
         off = v * 4;
         for (j = 0; j < 10; e++, j++) {
-            if (k == e->f12 && e->f10 != 7) {
-                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(j + lbl_3_bss_9DE0[0]) * 0xE8 + 0x90] >> 6) & 1) {
+            if (k == e->f12 && e->type != 7) {
+                if (lbl_3_common_bss_350E4.arr[j + lbl_3_bss_9DE0[0]].animated) {
                     idx = j + lbl_3_bss_9DE0[0];
                     *(s32*)((u8*)g->p44 + off) = idx;
                     off += 4;
                     g->p3C[*a] += 1;
-                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE0[0]];
+                    c = &lbl_3_common_bss_350E4.arr[j + lbl_3_bss_9DE0[0]];
                     CTRLBuildMatrix(&c->u.ctrl, m);
-                    fn_3_B8464(m, c->f78);
+                    fn_3_B8464(m, c->anim);
                     m[1][3] = m[1][3] * lbl_3_rodata_2154;
-                    fn_3_B8464(m, c->f78);
+                    fn_3_B8464(m, c->anim);
                     *b += 1;
                 }
             }
@@ -2228,34 +2107,34 @@ static inline void fn_3_C805C_inline(s32* a, s32* b) {
     Mtx m;
     C42A4Cpy cpy;
     C42A4Bss* g;
-    C42A4Ent* e;
+    StadPlace14* e;
     s32 off;
     s32 k;
     s32 j;
     u32 v;
-    C42A4Ctl* c;
+    StadObj1FD8* c;
     s32 idx;
-    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    g = &lbl_3_common_bss_350E4;
     for (k = 0; k < 5; k++) {
         v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
         g->p40[*a] = v;
         ((void (*)(void))fn_3_B8574)();
-        e = (C42A4Ent*)lbl_3_data_17514;
+        e = lbl_3_data_17514;
         off = v * 4;
         for (j = 0; j < 10; e++, j++) {
-            if (k == e->f12 && e->f10 != 7) {
-                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(j + lbl_3_bss_9DE4[0]) * 0xE8 + 0x90] >> 6) & 1) {
+            if (k == e->f12 && e->type != 7) {
+                if (lbl_3_common_bss_350E4.arr[j + lbl_3_bss_9DE4[0]].animated) {
                     idx = j + lbl_3_bss_9DE4[0];
                     *(s32*)((u8*)g->p44 + off) = idx;
                     g->p3C[*a] += 1;
-                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE4[0]];
+                    c = &lbl_3_common_bss_350E4.arr[j + lbl_3_bss_9DE4[0]];
                     off += 4;
                     cpy = *(C42A4Cpy*)c;
                     CTRLBuildMatrix(&c->u.ctrl, m);
-                    fn_3_B8464(m, c->f78);
+                    fn_3_B8464(m, c->anim);
                     CTRLSetTranslation((Control*)&cpy, ((f32*)e)[0], lbl_3_rodata_21E0, ((f32*)e)[2]);
                     CTRLBuildMatrix((Control*)&cpy, m);
-                    fn_3_B8464(m, c->f78);
+                    fn_3_B8464(m, c->anim);
                     *b += 1;
                 }
             }
@@ -2274,7 +2153,7 @@ extern void* _OSAllocFromHeap(s32 heap, s32 size);
 // NONMATCHING 95%: register allocation and a 0x10 smaller frame (the inlined copies' locals share slots)
 #if NONMATCHING
 void fn_3_C82B4(void) {
-    C42A4Bss* g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    C42A4Bss* g = &lbl_3_common_bss_350E4;
     s32 n;
     s32 size;
     s32 groups;
@@ -2283,29 +2162,25 @@ void fn_3_C82B4(void) {
     if (g->p48 == NULL) {
         g->p48 = _OSAllocFromHeap(4, size);
         n = g->count;
-        ((C42A4Bss*)lbl_3_common_bss_350E4)->p3C = (u32*)(g->p48 + n * 0x18);
-        ((C42A4Bss*)lbl_3_common_bss_350E4)->p44 = (u32*)((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->p3C + n * 4);
-        ((C42A4Bss*)lbl_3_common_bss_350E4)->p40 = (u16*)((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->p44 + n * 4);
+        lbl_3_common_bss_350E4.p3C = (u32*)(g->p48 + n * 0x18);
+        lbl_3_common_bss_350E4.p44 = lbl_3_common_bss_350E4.p3C + n;
+        lbl_3_common_bss_350E4.p40 = (u16*)(lbl_3_common_bss_350E4.p44 + n);
     }
     memset(g->p48, 0, size);
     groups = 0;
     objs = 0;
     fn_3_C805C_inline(&groups, &objs);
     fn_3_C42A4_inline(&groups, &objs);
-    ((C42A4Bss*)lbl_3_common_bss_350E4)->groups = groups;
+    lbl_3_common_bss_350E4.groups = groups;
 }
 #endif
 
 // .text:0x000C8650 size:0xD2C mapped:0x807076E4
-#define ACTOR_TABLE (*(ActorObjectTable**)(lbl_8036E548 + 0x6C)) // TODO type: lbl_8036E548
+#define ACTOR_TABLE (lbl_8036E548.slots6C)
 extern void fn_3_B939C(void);
 extern void fn_3_B9D68(u8* ids, s32 n, void** files, s32* out);
 extern void fn_3_B97C8(void* fn);
 extern void fn_800BD548(ActorObject* obj, u8 numLights, ...);
-extern void fn_80025C58(void* shape, void* model);
-extern void fn_80025DDC(void* shape);
-extern void fn_80025FFC(void* model, void* player);
-extern void fn_80025EEC(void* player, s32 table, s32 entry);
 extern void fn_80035750(void* data, void* tex, s16 id);
 extern void fn_80034E20(void* group, void* descs);
 extern u8 lbl_3_data_10C1C[];
@@ -2315,11 +2190,11 @@ extern u8 lbl_3_data_10C1C[];
 // NONMATCHING ~90%: 834 vs 843 insns, mostly register allocation; the original reaches the placement tables and 9D98/9D9C through the lbl_3_data_17508 / lbl_3_bss_9D80 bases
 #if NONMATCHING
 void fn_3_C8650(void** files) {
-    C42A4Bss* g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    C42A4Bss* g = &lbl_3_common_bss_350E4;
     C3C2CBss* bss = &lbl_3_bss_9D80;
-    StadPlace14* pa = (StadPlace14*)((u8*)lbl_3_data_17514);
-    StadPlace18* pb = (StadPlace18*)lbl_3_data_175FC;
-    StadPlace14* pc = (StadPlace14*)((u8*)lbl_3_data_17704);
+    StadPlace14* pa = lbl_3_data_17514;
+    StadPlace18* pb = lbl_3_data_175FC;
+    StadPlace14* pc = lbl_3_data_17704.place;
     StadObj1FD8* o;
     s32* idx;
     u32 nB;
@@ -2335,7 +2210,7 @@ void fn_3_C8650(void** files) {
     g->f18 = fn_3_B939C;
     idx = _OSAllocFromHeap(4, 0x40);
     g->fileIdx = idx;
-    fn_3_B9D68((u8*)lbl_3_data_17704 + 0xDC, 16, files, idx);
+    fn_3_B9D68(lbl_3_data_17704.fileIdx, 16, files, idx);
     bss->tex = files[0];
 
     for (nB = 0; nB < 10; nB++) {
@@ -2361,16 +2236,16 @@ void fn_3_C8650(void** files) {
     }
     fn_80025DDC(files[idx[10]]);
     for (i = 0; i < nB; i++) {
-        fn_80025C58(files[idx[10]], &ACTOR_TABLE->objects[i + 3]);
+        fn_80025C58(files[idx[10]], (ShapeModel**)&ACTOR_TABLE->objects[i + 3].actor);
     }
-    *(void**)bss->anim130 = files[idx[11]];
-    fn_80025FFC(files[idx[10]], bss->anim130);
-    fn_80025EEC(bss->anim130, 0, 0);
+    bss->anim130.set = files[idx[11]];
+    fn_80025FFC(files[idx[10]], &bss->anim130);
+    fn_80025EEC(&bss->anim130, 0, 0);
     fn_80025DDC(files[idx[12]]);
-    fn_80025C58(files[idx[12]], &ACTOR_TABLE->objects[1]);
-    *(void**)bss->animD4 = files[idx[13]];
-    fn_80025FFC(files[idx[12]], bss->animD4);
-    fn_80025EEC(bss->animD4, 0, 0);
+    fn_80025C58(files[idx[12]], (ShapeModel**)&ACTOR_TABLE->objects[1].actor);
+    bss->animD4.set = files[idx[13]];
+    fn_80025FFC(files[idx[12]], &bss->animD4);
+    fn_80025EEC(&bss->animD4, 0, 0);
     fn_80035750(files[idx[15]], files[idx[14]], 5);
     bss->fD0 = fn_800B0A5C_insertQueue(fn_3_C3C2C, 2);
     fn_80034E20(bss->fD0, lbl_3_data_10C1C);
@@ -2413,7 +2288,7 @@ void fn_3_C8650(void** files) {
     CTRLSetRotation(&o[1].u.ctrl, 0.0f, 0.0f, 0.0f);
     o[1].b5 = 0;
     o[1].alpha = 0xFF;
-    o[1].animPlayer = bss->animD4;
+    o[1].animPlayer = &bss->animD4;
     o[1].draw = NULL;
     o[1].f94 = 0;
     o[1].f96 = -1;
@@ -2501,7 +2376,7 @@ void fn_3_C8650(void** files) {
             o->pos.z = pb[j].z;
             o->b5 = 1;
             o->alpha = 0xFF;
-            o->animPlayer = bss->anim130;
+            o->animPlayer = &bss->anim130;
             o->draw = fn_3_C56E8;
             o->draw2 = fn_3_C54D0;
             o->f94 = 1;
@@ -2578,7 +2453,7 @@ void fn_3_C8650(void** files) {
     if (g_d_GameSettings.GameModeSelected != 7) {
         fn_3_C82B4();
     }
-    fn_800528AC((fn_800528AC_parameter)fn_3_C3A38);
+    fn_800528AC(fn_3_C3A38);
     fn_3_C39C8();
     fn_3_C1974(files[idx[0]]);
     fn_3_B97C8(fn_3_C2974);
