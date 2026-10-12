@@ -1669,7 +1669,7 @@ typedef struct ChFileDesc {
 } ChFileDesc;
 // Draw-list node with its model matrix (fn_800A7D4C), one per frame buffer.
 typedef struct ChDrawMtxNode {
-    u32 link; // next node | flags in bits 0-1, set by fn_800A7D4C (TODO port: tagged 32-bit pointer)
+    uintptr_t link; // (pointer-sized on PC, like DrawLink) next node | flags in bits 0-1, set by fn_800A7D4C (TODO port: tagged 32-bit pointer)
     void (*draw)(struct ChDrawMtxNode* object);
     Mtx m;
 } ChDrawMtxNode;

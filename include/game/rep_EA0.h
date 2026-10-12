@@ -22,7 +22,7 @@ typedef struct TrailStrip {
 
 // Draw node queued with fn_800A7D4C (lbl_3_data_69A0, one per frame buffer).
 typedef struct TrailNode {
-    /*0x00*/ u32 link; // set by fn_800A7D4C
+    /*0x00*/ uintptr_t link; // (pointer-sized on PC, like DrawLink) set by fn_800A7D4C
     /*0x04*/ void (*draw)(struct TrailNode* node);
     /*0x08*/ TrailStrip* strips[2]; // drawn in this order
 } TrailNode; // size: 0x10

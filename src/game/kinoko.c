@@ -168,7 +168,7 @@ u8 lbl_3_data_2A308[6][4] = {
     { 0x00, 0xFF, 0xFF, 0xC8 }, { 0x00, 0x00, 0xFF, 0xC8 }, { 0xFF, 0x00, 0xFF, 0xC8 },
 };
 typedef struct KinokoNode {
-    /*0x0*/ u32 link; // set by fn_800A7D4C
+    /*0x0*/ uintptr_t link; // (pointer-sized on PC, like DrawLink) set by fn_800A7D4C
     /*0x4*/ void (*draw)(void);
 } KinokoNode;
 KinokoNode lbl_3_data_2A320[2] = {

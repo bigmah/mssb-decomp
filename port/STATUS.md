@@ -31,7 +31,8 @@ Compile errors (failing files / errors), first build vs now:
 343 files failing, 7347 errors, most of them repeats from shared headers.)
 64-bit warnings: 351 unique sites
 (152 pointer-to-int casts, 107 int-to-pointer casts, 66 shortenings,
-6 function-pointer mismatches) plus 36 implicit declarations, all fixed.
+6 function-pointer mismatches) plus 36 implicit declarations, all fixed
+(src/main: 155 + ~150 sites, game/menus/challenge: ~50).
 
 ### How the SDK is wired
 
@@ -63,6 +64,14 @@ Compile errors (failing files / errors), first build vs now:
   `uintptr_t`/`intptr_t`; pointer differences are cast explicitly.
 - Runtime-only fields that held pointers in `u32` became pointer types.
 
+- The draw list (`DrawLink`, file_800A7C08.h) is a pointer-sized tagged
+  pointer on PC (flags in bits 0-1); every node struct's `link` word is
+  `uintptr_t`.
+- Matching caveat: keep the expression shape when swapping `u32` for
+  `uintptr_t` (`(u8*)field + (uintptr_t)base`); reordering operands changed
+  MWCC codegen once (fn_800111B4) while the shasum stayed OK, so also check
+  the matched-function count, not only `dtk shasum`.
+
 ## Deferred (known problems, not fixed in Phase 1)
 
 Grep `TODO(port)` in `src/` and `include/` for the individual sites.
@@ -75,6 +84,14 @@ Grep `TODO(port)` in `src/` and `include/` for the individual sites.
    `lbl_3_common_bss_35154.assets` in `rep_1E08.c`, `actor->files` in
    `menus/rep_0F60.c`): 8 bytes per entry on PC, so they read garbage. They
    need `u32` tables plus `U32_TO_PTR`, or a converted native copy.
+   More in-place loaders whose 32-bit offset/pointer fields are typed as
+   pointers (compile through `uintptr_t`, wrong layout on PC): `GEO_RELOC`
+   (file_800B9974, geometry palettes), `ANIMGet` (file_800B4A44),
+   `LoadActorLayout`/`fn_800B49E4` (file_800B2C44), `SKNLoadFile` and
+   `convertTextureHeader` (file_800BDEA0), `MsgTable.msgs` (file_8000F150),
+   `SoundGroupData` (file_80021308), `TEXPalette` (file_800A7C08).
+   `fn_8000B9C8` (file_8000A0AC) and `fn_80025DDC` (file_80024D2C) relocate
+   with `PTR_TO_U32` and need the file in the game heap.
 2. **Raw-offset views of runtime structs** (GameCube layout): about 90
    `u8 pad[0x..]` view structs (e.g. `sta_c2.c` `D5B6CCtl`), 30
    `*(T*)((u8*)p + 0x..)` reads and 41 `// TODO type` spots. Wherever the

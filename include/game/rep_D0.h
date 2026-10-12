@@ -26,7 +26,7 @@ struct ActorLayoutFile;
 
 // Sky/backdrop object drawn per camera (two copies, indexed by lbl_803CBBC0).
 typedef struct StadiumSkyObj {
-    /*0x00*/ u32 link; // draw-list link (fn_800A7D4C)
+    /*0x00*/ uintptr_t link; // (pointer-sized on PC, like DrawLink) draw-list link (fn_800A7D4C)
     /*0x04*/ void (*func)(struct StadiumSkyObj* obj);
     /*0x08*/ Mtx model;
     /*0x38*/ Mtx view;

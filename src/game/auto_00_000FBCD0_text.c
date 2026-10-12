@@ -8,7 +8,7 @@
 
 // Draw node queued with fn_800A7D4C (two per frame buffer, indexed by lbl_803CBBC0).
 typedef struct FBNode {
-    /* 0x00 */ u32 link; // low bits: flags; the rest is set by fn_800A7D4C
+    /* 0x00 */ uintptr_t link; // (pointer-sized on PC, like DrawLink) low bits: flags; the rest is set by fn_800A7D4C
     /* 0x04 */ void (*draw)(struct FBNode* node);
     /* 0x08 */ u8 _08[0x38 - 0x08];
     /* 0x38 */ Mtx view; // camera view matrix for this frame

@@ -30,7 +30,7 @@ typedef struct ChallengeAssetEntry {
 } ChallengeAssetEntry;
 // Minimal draw-list links (cf. DrawNode in main/file_80069BDC.h), one per frame buffer.
 typedef struct ChallengeDrawLink {
-    u32 link; // set by fn_800A7D4C
+    uintptr_t link; // (pointer-sized on PC, like DrawLink) set by fn_800A7D4C
     void (*draw)(void);
 } ChallengeDrawLink;
 static char lbl_1_data_F888[7][0x20] = { // debug view-mode labels (unreferenced)

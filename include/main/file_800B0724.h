@@ -78,7 +78,7 @@ typedef struct SkinState {
 
 // Per-layer display-list draw command handed to fn_800A7D4C.
 typedef struct SpriteDrawCmd {
-    /*0x0*/ u32 link; // low two bits: flags (fn_800B0D38); the rest is set by fn_800A7D4C
+    /*0x0*/ uintptr_t link; // (pointer-sized on PC, like DrawLink) low two bits: flags (fn_800B0D38); the rest is set by fn_800A7D4C
     /*0x4*/ void (*draw)(struct SpriteDrawCmd* cmd);
     /*0x8*/ GDCurrentDL* dl;
 } SpriteDrawCmd; // size 0xC
