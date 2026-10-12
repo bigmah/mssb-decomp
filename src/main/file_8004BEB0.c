@@ -16,21 +16,11 @@ typedef struct UnkState_80366158 {
 extern UnkState_80366158 lbl_80366158;
 extern s16 lbl_800FBCA8[]; // per-character start frame
 extern s16 lbl_800FBD14[]; // per-character end frame
-// Effect templates (ParticleParams5 layout); .stamp is filled in at runtime.
-ParticleParams5 lbl_800FC398 = {
-    0, 7, 3, 100000, 30000, 10000, 12, 8, 110000, 50000, 0, 60, 4500000, 20000000, 0, 2000000, 0xFFFFFF00, 0, 75000, 0
-};
-ParticleParams5 lbl_800FC3E8 = {
-    0, 7, 10, 18000, 20000, 60000, 12, 6, 109000, 101000, 0, 60, 4500000, 9400000, -1000000, 4500000, 0xFFFFFF00, 0, 75000, 0
-};
-ParticleParams5 lbl_800FC438 = {
-    0, 4, 1, 60000, 10000, 50000, 30, 8, 104000, 105999, 0, 90, 12800000, 10000000, 1000000, 6000000, 0x3C3C3C00, 0, 75000, 0
-};
-EffectParams* lbl_800FC488[3] = {
-    (EffectParams*)&lbl_800FC398, // TODO type: EffectParams and ParticleParams5 are the same struct
-    (EffectParams*)&lbl_800FC3E8,
-    (EffectParams*)&lbl_800FC438,
-};
+// Effect templates; .stamp is filled in at runtime.
+EffectParams lbl_800FC398 = {NULL, 7, 3, 100000, 30000, {10000, 12, 8, 110000, 50000, 0, 60, 4500000, 20000000, 0, 2000000}, 0xFFFFFF00, {0, 75000, 0}};
+EffectParams lbl_800FC3E8 = {NULL, 7, 10, 18000, 20000, {60000, 12, 6, 109000, 101000, 0, 60, 4500000, 9400000, -1000000, 4500000}, 0xFFFFFF00, {0, 75000, 0}};
+EffectParams lbl_800FC438 = {NULL, 4, 1, 60000, 10000, {50000, 30, 8, 104000, 105999, 0, 90, 12800000, 10000000, 1000000, 6000000}, 0x3C3C3C00, {0, 75000, 0}};
+EffectParams* lbl_800FC488[3] = {&lbl_800FC398, &lbl_800FC3E8, &lbl_800FC438};
 s32 lbl_800FC494[54][3] = {0}; // per-character effect offset, fixed point (x100000)
 extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 

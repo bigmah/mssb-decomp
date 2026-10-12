@@ -8,19 +8,23 @@ struct ActorObject;
 
 
 // Effect spawn parameters (templates in .data, copied and tweaked before use).
+// Same layout as ParticleParams5 (file_800263FC.h).
 typedef struct EffectParams {
     /*0x00*/ void* stamp; // TexArchive*
-    /*0x04*/ u8 pad04[0x8];
+    /*0x04*/ s32 texIndex;
+    /*0x08*/ s32 count;
     /*0x0C*/ s32 unk0C;
     /*0x10*/ s32 unk10;
-    /*0x14*/ u8 pad14[0x2C];
+    /*0x14*/ s32 unk14[11];
     /*0x40*/ u32 rgb; // r << 24 | g << 16 | b << 8
-    /*0x44*/ u8 pad44[0xC];
+    /*0x44*/ s32 unk44[3];
 } EffectParams; // size 0x50
 
+// Same layout as ParticleParamsC (file_800263FC.h).
 typedef struct EffectParamsB {
     /*0x00*/ void* stamp; // TexArchive*
-    /*0x04*/ u8 pad04[0x50];
+    /*0x04*/ s32 texIndex;
+    /*0x08*/ s32 unk08[19];
 } EffectParamsB; // size 0x54
 
 typedef struct RGB8 {
