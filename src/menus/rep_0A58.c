@@ -25,7 +25,8 @@ extern MenuProgress lbl_80361B20;
 extern MenuFlags lbl_800E877C;
 extern u8 lbl_8036E548[];
 extern u8 lbl_800EFBA4[];
-extern u8 lbl_800EF808[];
+#include "main/file_80021308.h" // SoundManager
+extern SoundManager lbl_800EF808;
 extern MenuDef lbl_800FEF70[];
 extern Menu0A58Seed lbl_2_data_1F8F0[];
 extern const f32 lbl_2_rodata_AA8;
@@ -299,7 +300,7 @@ void fn_2_54BB0(void) {
         fn_2_4E7EC();
         fn_8001F228();
         fn_80021410();
-        fn_800ACFB0(*(void**)(lbl_800EF808 + 0x14)); // TODO type
+        fn_800ACFB0(lbl_800EF808.groups[4]);
         fn_80035B50(0xA);
         if (lbl_80366B18.tables[2] != NULL) {
             fn_800ACFB0(lbl_80366B18.tables[2]);
