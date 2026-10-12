@@ -1,23 +1,23 @@
 #include "game/rep_3E00.h"
 #define REP_HEADER_FN repHeader_3E00
 #include "header_rep_inline.h"
+#include "main/file_80011640.h" // CharMgr lbl_8036E548
+#include "main/file_80024D2C.h" // ShapeData, ShapeAnimPlayer
+#include "main/file_800BD8C4.h" // ActorObjectInitTable
 
-extern u8 lbl_8036E548[];
-extern u8 lbl_3_common_bss_32724[];
+extern TrailShapeWork lbl_3_common_bss_32724;
 extern void LoadActorLayout(void*);
 extern void convertGeometryAndSknHeader(void* geo, void* skn);
 extern void haveActLayoutPointToGeoHeader(void*, void*);
 extern void convertTextureHeader(void*);
 extern void fn_800BD190(struct GQRValueGroups* groups, void* textures);
-extern void fn_80025DDC(void*);
-extern void fn_80025FFC(void*, void*);
-extern void fn_80025EEC(void*, int, int);
 extern void* _OSAllocFromHeap(int, int);
 extern void* memset(void*, int, u32);
-extern void* ActorObjectInitTable(u16);
 extern void fn_3_11D2C8(s32 idx, s32 start, s32 count, void* animBank, struct sHdr* skHeader);
-extern void fn_80025C58(void*, void*);
 extern f32 lbl_3_rodata_3E50;
+
+// The trail* fields are written and read back through a volatile view, which forces the reloads.
+#define VMGR ((volatile CharMgr*)&lbl_8036E548)
 
 // 91%: only register allocation differs. Original has b=r31, bss=r30, a=r29, c=r28, zero=r29, one=r31;
 // ours ranks the bss pointer (r31) above b (r30) as soon as the unit has any branch (zero check).
@@ -30,21 +30,21 @@ extern f32 lbl_3_rodata_3E50;
 // .text:0x00166448 size:0x19C mapped:0x807A54DC
 #pragma opt_propagation off
 void fn_3_166448(void) {
-    u8* b;
-    u8* bss = lbl_3_common_bss_32724;
-    u8* a;
-    u8* c;
-    u8* hdr = *(u8**)(lbl_8036E548 + 0x2D9C);
+    void* b;
+    TrailShapeWork* bss = &lbl_3_common_bss_32724;
+    void* a;
+    void* c;
+    u8* hdr = (u8*)lbl_8036E548.trailFile; // file of 32-bit offsets from its own start
     int idx = 3;
-    u8* p = hdr + idx * 4;
-    *(u8* volatile*)(lbl_8036E548 + 0x2DA0) = hdr + *(u32*)(hdr + 0);
-    *(u8* volatile*)(lbl_8036E548 + 0x2DA4) = hdr + *(u32*)(hdr + 4);
-    *(u8* volatile*)(lbl_8036E548 + 0x2DA8) = hdr + *(u32*)(hdr + 8);
-    a = *(u8* volatile*)(lbl_8036E548 + 0x2DA0);
-    b = *(u8* volatile*)(lbl_8036E548 + 0x2DA4);
-    *(u8**)(bss + 0) = hdr + *(u32*)(p + 0);
-    c = *(u8* volatile*)(lbl_8036E548 + 0x2DA8);
-    *(u8**)(bss + 4) = hdr + *(u32*)(p + 4);
+    u32* p = (u32*)hdr + idx;
+    VMGR->trailLayout = hdr + ((u32*)hdr)[0];
+    VMGR->trailGeo = hdr + ((u32*)hdr)[1];
+    VMGR->trailTex = hdr + ((u32*)hdr)[2];
+    a = VMGR->trailLayout;
+    b = VMGR->trailGeo;
+    bss->shape = (ShapeData*)(hdr + p[0]);
+    c = VMGR->trailTex;
+    bss->anim.set = (ShapeAnimSet*)(hdr + p[1]);
     LoadActorLayout(a);
     convertGeometryAndSknHeader(b, NULL);
     haveActLayoutPointToGeoHeader(a, b);
@@ -53,21 +53,21 @@ void fn_3_166448(void) {
     {
     int one = 1;
     int zero = 0;
-    fn_80025DDC(*(u8**)bss);
-    fn_80025FFC(*(u8**)bss, bss + 4);
-    fn_80025EEC(bss + 4, 0, 0);
+    fn_80025DDC((u8*)bss->shape);
+    fn_80025FFC(bss->shape, &bss->anim);
+    fn_80025EEC(&bss->anim, 0, 0);
     if (zero == 0) {
-        *(u16*)(bss + 0x1E) = one;
+        bss->anim.state.loops = one;
     }
     {
     int cnt = 1;
-    *(u16*)(lbl_8036E548 + 0x3078) = cnt;
-    *(void**)(lbl_8036E548 + 0x2D94) = _OSAllocFromHeap(0x20, cnt * 0x28);
-    memset(*(void**)(lbl_8036E548 + 0x2D94), 0, *(u16*)(lbl_8036E548 + 0x3078) * 0x28);
-    *(void**)(lbl_8036E548 + 0x68) = ActorObjectInitTable(*(u16*)(lbl_8036E548 + 0x3078));
+    lbl_8036E548._3078 = cnt;
+    lbl_8036E548.trail2 = _OSAllocFromHeap(0x20, cnt * 0x28);
+    memset(lbl_8036E548.trail2, 0, lbl_8036E548._3078 * 0x28);
+    lbl_8036E548.slots68 = ActorObjectInitTable(lbl_8036E548._3078);
     }
     fn_3_11D2C8(0, 0, 1, 0, 0);
-    *(f32*)(lbl_3_common_bss_32724 + 0x14) = lbl_3_rodata_3E50;
-    fn_80025C58(*(void**)lbl_3_common_bss_32724, *(u8**)(lbl_8036E548 + 0x68) + 0x34);
+    lbl_3_common_bss_32724.anim.state.speed = lbl_3_rodata_3E50;
+    fn_80025C58(lbl_3_common_bss_32724.shape, (ShapeModel**)&lbl_8036E548.slots68->objects[0]);
     }
 }
