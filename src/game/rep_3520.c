@@ -1156,13 +1156,13 @@ void fn_3_1360BC(int p) {
                 *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinCoordinates[0].y)) = *(f32*)(f + 4);
                 *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinCoordinates[0].z)) = *(f32*)(f + 8);
                 *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinCoordinates[0].y)) = *(f32*)(f + (s32)OFFSET_OF(InMemFielderType, _16C));
-                *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.y)) = lbl_3_data_219B8[18];
-                getComponentsFromSAng(random_fn_3_9EE24(0x1000), (f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.x)), (f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.z)));
+                *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].y)) = lbl_3_data_219B8[18];
+                getComponentsFromSAng(random_fn_3_9EE24(0x1000), (f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].x)), (f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].z)));
                 {
                     f32 r = RandomF32_Game_Range(lbl_3_data_219B8[16], lbl_3_data_219B8[17]);
                     k++;
-                    *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.x)) *= r;
-                    *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.z)) *= r;
+                    *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].x)) *= r;
+                    *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].z)) *= r;
                 }
                 ((u8*)&g_Minigame)[(s32)OFFSET_OF(MiniGameStruct, wallBall_coinsVisibleInd[0]) + i] = 1;
                 ((s16*)((u8*)&g_Minigame))[0xBE4 + i] = 0;
@@ -2495,11 +2495,11 @@ void fn_3_139CA0(void) {
                     *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinCoordinates[0].x)) = lbl_3_data_219AC[0];
                     *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinCoordinates[0].y)) = lbl_3_data_219AC[1];
                     *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinCoordinates[0].z)) = lbl_3_data_219AC[2];
-                    getComponentsFromSAng(ang + (random_fn_3_9EE24(lbl_3_data_21A04[4] * 2) - lbl_3_data_21A04[4]), (f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.x)), (f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.z)));
+                    getComponentsFromSAng(ang + (random_fn_3_9EE24(lbl_3_data_21A04[4] * 2) - lbl_3_data_21A04[4]), (f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].x)), (f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].z)));
                     r = base + RandomF32_Game_Range(-lbl_3_data_219B8[4], lbl_3_data_219B8[4]);
-                    *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.x)) *= r;
-                    *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.z)) *= r;
-                    *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.y)) = RandomF32_Game_Range(lbl_3_data_219B8[0], lbl_3_data_219B8[1]);
+                    *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].x)) *= r;
+                    *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].z)) *= r;
+                    *(f32*)(((u8*)&g_Minigame) + i * 12 + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].y)) = RandomF32_Game_Range(lbl_3_data_219B8[0], lbl_3_data_219B8[1]);
                     n--;
                     ((u8*)&g_Minigame)[(s32)OFFSET_OF(MiniGameStruct, wallBall_coinsVisibleInd[0]) + i] = 1;
                     ((s16*)((u8*)&g_Minigame))[0xBE4 + i] = 0;
@@ -2531,8 +2531,8 @@ void fn_3_139F84(void) {
         if (a[0x193A] == 3) {
             b[0xBE4]++;
             PSVECAdd((Vec*)(c + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinCoordinates[0])), (Vec*)(c + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity)), (Vec*)(c + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinCoordinates[0])));
-            *(f32*)(c + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.y)) += lbl_3_data_219B8[11];
-            if (*(f32*)(c + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity.y)) < lbl_3_rodata_35D0) {
+            *(f32*)(c + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].y)) += lbl_3_data_219B8[11];
+            if (*(f32*)(c + (s32)OFFSET_OF(MiniGameStruct, wallBall_coinVelocity[0].y)) < lbl_3_rodata_35D0) {
                 a[0x193A] = 0;
                 ((u8*)&g_Minigame)[0x1D6C]--;
             }

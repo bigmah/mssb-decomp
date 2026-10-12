@@ -1184,9 +1184,9 @@ void fn_3_CE954(void) {
             s16 b1;
             s16 a1;
             fn_800528C0_xyz(v[0], v[1], v[2], &a1, &b1);
-            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->baseIdx + i].obj->x = a1;
-            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->baseIdx + i].obj->y = b1;
-            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->baseIdx + i].obj->z = 0.0f;
+            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->u14.objIdx + i].obj->x = a1;
+            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->u14.objIdx + i].obj->y = b1;
+            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->u14.objIdx + i].obj->z = 0.0f;
             lbl_80371C30[g->u14.objIdx + i].obj->_5C = 0;
             lbl_80371C30[g->u14.objIdx + i].obj->flags |= 2;
             *st = 2;
@@ -1197,9 +1197,9 @@ void fn_3_CE954(void) {
             s16 a2;
             LayoutObj* t;
             fn_800528C0_xyz(v[0], v[1], v[2], &a2, &b2);
-            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->baseIdx + i].obj->x = a2;
-            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->baseIdx + i].obj->y = b2;
-            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->baseIdx + i].obj->z = 0.0f;
+            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->u14.objIdx + i].obj->x = a2;
+            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->u14.objIdx + i].obj->y = b2;
+            lbl_80371C30[(*C2_BSS(SpaniGroup*, lbl_3_bss_A8A4, b, 0x88C))->u14.objIdx + i].obj->z = 0.0f;
             t = lbl_80371C30[g->u14.objIdx + i].obj;
             f = (t->_69 == 2);
             if (f != 0) {
@@ -1225,18 +1225,18 @@ void fn_3_CEBBC(f32* v, s32 k) {
     s16 a;
     s16 b;
     fn_800528C0_xyz(v[0], v[1], v[2], &a, &b);
-    lbl_80371C30[lbl_3_bss_A8A4->baseIdx + k].obj->x = a;
-    lbl_80371C30[lbl_3_bss_A8A4->baseIdx + k].obj->y = b;
-    lbl_80371C30[lbl_3_bss_A8A4->baseIdx + k].obj->z = 0.0f;
+    lbl_80371C30[lbl_3_bss_A8A4->u14.objIdx + k].obj->x = a;
+    lbl_80371C30[lbl_3_bss_A8A4->u14.objIdx + k].obj->y = b;
+    lbl_80371C30[lbl_3_bss_A8A4->u14.objIdx + k].obj->z = 0.0f;
 }
 
 // .text:0x000CEC98 size:0x98 mapped:0x8070DD2C
 void fn_3_CEC98(void) {
     s32 k = (g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy != 0) + 8;
     lbl_3_bss_A898[k] = 1;
-    lbl_80371C30[lbl_3_bss_A8A4->baseIdx + k].obj->x = g_Ball.AtBat_Contact_BallPos.x;
-    lbl_80371C30[lbl_3_bss_A8A4->baseIdx + k].obj->y = -g_Ball.AtBat_Contact_BallPos.y;
-    lbl_80371C30[lbl_3_bss_A8A4->baseIdx + k].obj->z = g_Ball.AtBat_Contact_BallPos.z;
+    lbl_80371C30[lbl_3_bss_A8A4->u14.objIdx + k].obj->x = g_Ball.AtBat_Contact_BallPos.x;
+    lbl_80371C30[lbl_3_bss_A8A4->u14.objIdx + k].obj->y = -g_Ball.AtBat_Contact_BallPos.y;
+    lbl_80371C30[lbl_3_bss_A8A4->u14.objIdx + k].obj->z = g_Ball.AtBat_Contact_BallPos.z;
 }
 
 // .text:0x000CED30 size:0x4 mapped:0x8070DDC4
@@ -1729,9 +1729,9 @@ void fn_3_D0284(C2ObjD0284* p) {
 void fn_3_D0490(void) {
     s32 k = (g_Ball.inAirOrBefore2ndBounceOrLowBallEnergy != 0) + 2;
     lbl_3_bss_A898[k] = 1;
-    lbl_80371C30[lbl_3_bss_A8A4->baseIdx + k].obj->x = g_Ball.AtBat_Contact_BallPos.x;
-    lbl_80371C30[lbl_3_bss_A8A4->baseIdx + k].obj->y = -g_Ball.AtBat_Contact_BallPos.y;
-    lbl_80371C30[lbl_3_bss_A8A4->baseIdx + k].obj->z = g_Ball.AtBat_Contact_BallPos.z;
+    lbl_80371C30[lbl_3_bss_A8A4->u14.objIdx + k].obj->x = g_Ball.AtBat_Contact_BallPos.x;
+    lbl_80371C30[lbl_3_bss_A8A4->u14.objIdx + k].obj->y = -g_Ball.AtBat_Contact_BallPos.y;
+    lbl_80371C30[lbl_3_bss_A8A4->u14.objIdx + k].obj->z = g_Ball.AtBat_Contact_BallPos.z;
 }
 
 // .text:0x000D0528 size:0x4 mapped:0x8070F5BC
