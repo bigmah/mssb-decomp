@@ -397,7 +397,7 @@ s32 fn_80042DA8(LayoutOwner* owner, s32 idx, s32 value) {
 }
 
 // .text:0x80042DE8 size:0x5A4
-// NONMATCHING ~98%: two (count >> 1) expressions use srawi instead of srwi/extrwi
+// NONMATCHING 99.8%: the (count >> 1) in the wrap-to-0 test still uses srawi instead of extrwi
 #if NONMATCHING
 void challengeStarMenu(void) {
     u8 fixed = 0;
@@ -469,9 +469,9 @@ void challengeStarMenu(void) {
                 lbl_803297E0.prevStarCursor2 = lbl_803297E0.starCursor2;
                 lbl_803297E0.starCursor2--;
                 if (lbl_803297E0.starCursor2 < 0 && lbl_803297E0.starCursor2 < (s32)((u32)lbl_803297E0._CF9A >> 1)) {
-                    lbl_803297E0.starCursor2 = (lbl_803297E0._CF9A >> 1) - 1;
-                } else if (lbl_803297E0.starCursor2 < (lbl_803297E0._CF9A >> 1) &&
-                           lbl_803297E0.starCursor2 >= (lbl_803297E0._CF9A >> 1) - 1) {
+                    lbl_803297E0.starCursor2 = ((u32)lbl_803297E0._CF9A >> 1) - 1;
+                } else if (lbl_803297E0.starCursor2 < ((s32)((u32)lbl_803297E0._CF9A >> 1)) &&
+                           lbl_803297E0.starCursor2 >= ((s32)((u32)lbl_803297E0._CF9A >> 1)) - 1) {
                     lbl_803297E0.starCursor2 = lbl_803297E0._CF9A - 1;
                 }
             } else {
