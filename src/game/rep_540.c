@@ -2383,8 +2383,6 @@ void fn_3_DBD0(void) {
 }
 
 // .text:0x0000DC48 size:0x68C mapped:0x8064CCDC
-// NONMATCHING 98.8%: float register allocation around the inlined sqrtf calls
-#if NONMATCHING
 void fn_3_DC48(BOOL fromPitcher) {
     VecSrcDst ray;
     CollisionStruct hit;
@@ -2393,7 +2391,6 @@ void fn_3_DC48(BOOL fromPitcher) {
     s32 i;
     s32 j;
     s32 n;
-    f32 wallPlus20;
     f32 ax;
     f32 sx;
     f32 sz;
@@ -2426,15 +2423,15 @@ void fn_3_DC48(BOOL fromPitcher) {
     if (type == BALL_COLLISION_TYPE_WALL || type == BALL_COLLISION_TYPE_UNCLIMBABLE_WALL) {
         g_Ball.ballWillHitBallPos.x = hit.position.x;
         g_Ball.ballWillHitBallPos.z = hit.position.z;
-        sx = hit.position.x * hit.position.x;
         sz = hit.position.z * hit.position.z;
+        sx = hit.position.x * hit.position.x;
         g_Ball.wallAndBallIntersectionDistFromHome = sqrt540(sx + sz);
         len = sqrt540(hit.normal.x * hit.normal.x + hit.normal.z * hit.normal.z) == 0.0f ? 1.0f : sqrt540(hit.normal.x * hit.normal.x + hit.normal.z * hit.normal.z);
         g_Ball._1BC0 = 1;
         g_Ball._19E4 = hit.normal.x / len;
+        g_Ball._19E8 = hit.normal.z / len;
         g_Ball.physicsSubstruct.throwYAtSelectedFuturePoint = 0.0f;
         g_Ball.frameBallWillHitWall = -1;
-        g_Ball._19E8 = hit.normal.z / len;
         // find the first future frame past the wall
         for (i = 0; i < 360; i += 10) {
             if (g_Ball.physicsSubstruct.futureCoordsAndDist[i].dist > g_Ball.wallAndBallIntersectionDistFromHome) {
@@ -2449,8 +2446,7 @@ void fn_3_DC48(BOOL fromPitcher) {
             }
         }
         if (g_Ball.Hit_HorizontalAngle >= 0x200 && g_Ball.Hit_HorizontalAngle <= 0x600 && g_Ball.someCollisionInd == 0) {
-            wallPlus20 = 20.0f + g_Ball.wallAndBallIntersectionDistFromHome;
-            if (((wallPlus20 < g_Ball.physicsSubstruct.hitLandingSpotDistFromHome && g_Ball.Hit_VerticalAngle > 300) ||
+            if (((20.0f + g_Ball.wallAndBallIntersectionDistFromHome < g_Ball.physicsSubstruct.hitLandingSpotDistFromHome && g_Ball.Hit_VerticalAngle > 300) ||
                  g_Ball.physicsSubstruct.hitLandingSpotDistFromHome >= 140.0f) &&
                 g_Ball.physicsSubstruct.throwYAtSelectedFuturePoint >= 8.0f) {
                 ax = g_Ball.ballWillHitBallPos.x;
@@ -2462,7 +2458,7 @@ void fn_3_DC48(BOOL fromPitcher) {
                     return;
                 }
             }
-            if (wallPlus20 < g_Ball.physicsSubstruct.hitLandingSpotDistFromHome) {
+            if (20.0f + g_Ball.wallAndBallIntersectionDistFromHome < g_Ball.physicsSubstruct.hitLandingSpotDistFromHome) {
                 g_Ball.someCollisionVariable = 2;
             } else if (10.0f + g_Ball.wallAndBallIntersectionDistFromHome < g_Ball.physicsSubstruct.hitLandingSpotDistFromHome && g_Ball.Hit_VerticalAngle > 300) {
                 g_Ball.someCollisionVariable = 2;
@@ -2476,7 +2472,6 @@ void fn_3_DC48(BOOL fromPitcher) {
         g_Ball.frameBallWillHitWall = -1;
     }
 }
-#endif
 
 // .text:0x0000E2D4 size:0xB78 mapped:0x8064D368
 // Per-frame ball bookkeeping: speed, zones, distances to bases, foul estimate, throw timing.
