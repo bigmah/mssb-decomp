@@ -2233,13 +2233,13 @@ void fn_3_10BE7C(void) {
     s32 i;
 
     for (i = 0; i < 4; i++) {
-        if ((g_Minigame[0x18D8 + i] == 0) && ((*((s8 *) ((g_Minigame + 0x19DA) + i))) >= 0)) {
-            taken[i] = *((s8 *) ((g_Minigame + 0x19E8) + (i * 9)));
+        if (g_Minigame[0x18D8 + i] == 0 && (*((s8*)(g_Minigame + 0x19DA + i))) >= 0) {
+            taken[i] = *((s8*)(g_Minigame + 0x19E8 + i * 9));
         } else {
             taken[i] = -1;
         }
     }
-    if ((g_d_GameSettings[7] == 6) && (g_d_GameSettings[8] == 0)) {
+    if (g_d_GameSettings[7] == 6 && g_d_GameSettings[8] == 0) {
         for (i = 0; i < lbl_3_data_1894C[0][0]; i++) {
             pool[i] = lbl_3_data_1894C[0][i + 1];
         }
@@ -2250,7 +2250,7 @@ void fn_3_10BE7C(void) {
         fn_3_9E078(pool, 12, 0);
     } else {
         mode = g_Minigame[0x1A2A];
-        if (((mode == 1) || (mode == 3)) && ((*((s8 *) (g_Minigame + 0x1908))) >= 0)) {
+        if ((mode == 1 || mode == 3) && (*((s8*)(g_Minigame + 0x1908))) >= 0) {
             return;
         }
         n = 6;
@@ -2304,10 +2304,10 @@ void fn_3_10BE7C(void) {
     i = 0;
     k = 0;
     for (; i < 4; i++) {
-        if (((*((s8 *) ((g_Minigame + 0x19DA) + i))) != 0) && ((*((s8 *) ((g_Minigame + 0x19E9) + (i * 9)))) == 0)) {
+        if ((*((s8*)(g_Minigame + 0x19DA + i))) != 0 && (*((s8*)(g_Minigame + 0x19E9 + i * 9))) == 0) {
             for (m = k; k < 6; k++, m++) {
                 for (j = 0; j < 4; j++) {
-                    if ((pool[m] == taken[j]) && (pool[m] >= 0)) {
+                    if (pool[m] == taken[j] && pool[m] >= 0) {
                         break;
                     }
                 }
@@ -2315,9 +2315,9 @@ void fn_3_10BE7C(void) {
                     break;
                 }
             }
-            g_Minigame[0x19E8 + (i * 9)] = pool[m];
-            *((s16 *) ((g_Minigame + 0x19D2) + (i * 2))) = 0x14;
-            g_Minigame[0x1A17 + i] = (lbl_8034E9A0[(pool[m] * 0xA0) + 0x26] * 2) + lbl_8034E9A0[(pool[m] * 0xA0) + 0x27];
+            g_Minigame[0x19E8 + i * 9] = pool[m];
+            *((s16*)(g_Minigame + 0x19D2 + i * 2)) = 0x14;
+            g_Minigame[0x1A17 + i] = lbl_8034E9A0[pool[m] * 0xA0 + 0x26] * 2 + lbl_8034E9A0[pool[m] * 0xA0 + 0x27];
             k++;
         }
     }

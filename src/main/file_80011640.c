@@ -4878,30 +4878,30 @@ void fn_8001E474(void) {
 
 // .text:0x8001E488 size:0x2FC
 void fn_8001E488(void) {
-    int new_var;
+    int blend;
     CharActor* actor;
     ActorObject* slot;
     s32 i;
-    Mtx* new_var2;
+    Mtx* view;
     f32 x;
     f32 y;
     Mtx44 proj;
 
-    new_var = GX_BM_BLEND;
+    blend = GX_BM_BLEND;
     GXSetZMode(GX_ENABLE, GX_LEQUAL, GX_ENABLE);
     GXSetCullMode(GX_CULL_BACK);
-    GXSetBlendMode(new_var, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXSetBlendMode(blend, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     for (i = 0; i < lbl_8036E548.slots->count; i++) {
         actor = lbl_8036E548.active[i];
         if (actor != NULL) {
             slot = &lbl_8036E548.slots->objects[i];
-            if ((slot->actor != NULL) && (slot->animateBones != 0)) {
+            if (slot->actor != NULL && slot->animateBones != 0) {
                 x = actor->pos.x / 1280.0f;
                 y = actor->pos.y / 1280.0f;
                 C_MTXFrustum(proj, (-0.175f) + y, 0.175f + y, 0.25f + x, (-0.25f) + x, 1.0f, 512.0f);
                 GXSetProjection(proj, GX_PERSPECTIVE);
-                new_var2 = &fn_80052734(0)->view;
-                fn_8001DEA4(slot, 0, *new_var2);
+                view = &fn_80052734(0)->view;
+                fn_8001DEA4(slot, 0, *view);
             }
         }
     }
