@@ -205,7 +205,7 @@ void fn_3_15FB84(s32 count, ...) {
     yOffset = -((f32)lay->height / 100000.0f);
     node = &lay->nodes[lbl_803CBBC0];
     node->count = count;
-    node->tex = (TexImage*)(lbl_3_common_bss_35154.effectFile + 0x344); // TODO type
+    node->tex = &((TexArchive*)lbl_3_common_bss_35154.effectFile)->entries[26]; // effect file is a TexArchive
     node->fadeColor = lbl_3_common_bss_35154.level;
 
     memset(perPlayer, 0, sizeof(perPlayer));
