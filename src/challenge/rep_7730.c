@@ -2347,12 +2347,10 @@ void fn_1_202A4(void) {
     fn_80048C28();
 }
 
-// NONMATCHING 99.5%: saved regs q=r25/i=r26 in orig, ours q=r26/i=r25 (decl/assign order variants did not help)
 // .text:0x2004C size:0x258
-#if NONMATCHING
 void fn_1_2004C(void) {
     ChallengeTextureStages* q = (ChallengeTextureStages*)lbl_803CC1B8;
-    s32 ids[9] = { 5, 6, 7, 8, 9, 13, 0x60, 0x61, 0x55 };
+    s32 ids[9] = {5, 6, 7, 8, 9, 13, 0x60, 0x61, 0x55};
     u8* data;
     u32 i;
 
@@ -2362,14 +2360,14 @@ void fn_1_2004C(void) {
         q->cursor++;
         break;
     case 1:
-        if ((s32)lbl_803C6CF8.idle == 1) {
+        i = lbl_803C6CF8.idle;
+        if (((s32)i) == 1) {
             data = q->file;
             q->tex = (ChallengeTexArchive*)(data + ((ChallengeFileHeader*)data)->texOffset);
             convertTextureHeader(q->tex);
             for (i = 0; i < 8; i++) {
                 lbl_1_bss_6E24[i] = i;
-                if (fn_1_2051C(&q->tex->entries[ids[i]],
-                        &lbl_1_bss_6EA4[i], &lbl_1_bss_6E44[i], i)) {
+                if (fn_1_2051C(&q->tex->entries[ids[i]], &lbl_1_bss_6EA4[i], &lbl_1_bss_6E44[i], i)) {
                     lbl_1_bss_6E24[i] |= 0x80000000;
                 }
             }
@@ -2379,7 +2377,6 @@ void fn_1_2004C(void) {
         break;
     }
 }
-#endif
 
 // .text:0x1FD78 size:0x2D4
 void fn_1_1FD78(ChallengeTextureStages* menu) {
