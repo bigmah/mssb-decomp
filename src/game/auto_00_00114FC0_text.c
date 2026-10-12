@@ -29,7 +29,7 @@ extern void fn_3_58870(void);
 extern void fn_3_DE4FC(void);
 extern void fn_3_10F550(s32, s32);
 extern void Set_803cb848(s32);
-extern void* memset(void*, s32, u32);
+extern void* memset(void*, int, size_t);
 extern u8 lbl_3_common_bss_32234[];
 #include "game/rep_36D8.h" // RepBss37400View lbl_3_common_bss_37400
 extern RepBss37400View lbl_3_common_bss_37400;

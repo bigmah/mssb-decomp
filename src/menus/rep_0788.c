@@ -5129,7 +5129,7 @@ void fn_2_2DCA8(MenuTableContext* menu, MenuItemState* item) {
     }
 }
 
-extern void* memcpy(void* dest, const void* src, u32 n);
+extern void* memcpy(void* dest, const void* src, size_t n);
 
 // fn_2_2C1A8, size:0x1D8
 void fn_2_2C1A8(MenuTableContext* menu, MenuItemState* item) {
@@ -7901,7 +7901,7 @@ void fn_2_2A338(MenuTableContext* menu, MenuItemState* item) {
 }
 #endif
 
-extern void* memcpy(void* dest, const void* src, u32 n);
+extern void* memcpy(void* dest, const void* src, size_t n);
 extern u8 lbl_2_data_3F98[][0x1FE];
 extern u8 lbl_2_data_3F60[][9];
 extern s16 lbl_2_data_3EC8[];

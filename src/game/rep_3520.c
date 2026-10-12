@@ -83,6 +83,7 @@ extern u8 lbl_80366158[];
 extern s8 lbl_3_data_26580;
 extern s32 fn_800247E4(s32, s32, s32, s32);
 extern void DCFlushRange(void*, u32);
+#ifndef TARGET_PC
 extern void GXLoadTexObj(void*, s32);
 extern void GXSetTexCoordGen2(s32, s32, s32, s32, s32, s32);
 extern void GXSetTevOrder(s32, s32, s32, s32);
@@ -92,6 +93,7 @@ extern void GXSetTevAlphaIn(s32, s32, s32, s32, s32);
 extern void GXSetTevAlphaOp(s32, s32, s32, s32, s32, s32);
 extern void GXInitTexObj(void*, void*, s32, s32, s32, s32, s32, s32);
 extern void GXInitTexObjLOD(void*, s32, s32, f32, f32, f32, s32, s32, s32);
+#endif
 static u8 lbl_3_bss_B781; // difficulty row for the obstacle drop timings
 static u8 lbl_3_bss_B780; // number of active obstacles
 static u8 s_buf[0x40];

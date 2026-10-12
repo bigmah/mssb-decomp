@@ -39,7 +39,7 @@ extern MenuSelVars lbl_2_bss_F410;
 extern void fn_800625A4(s32 port, s32 sound);
 extern void fn_8003BF54(u8 a, u8 b, u8 slot, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h);
 extern void fn_2_96D20(void);
-extern void* memset(void*, int, unsigned long);
+extern void* memset(void*, int, size_t);
 
 // Buttons latched by the menus, one per port.
 typedef struct MenuPadState {

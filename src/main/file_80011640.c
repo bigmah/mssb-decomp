@@ -89,6 +89,7 @@ extern void fn_800B2C10(GameActor* model, u16 joint, Vec* out);
 extern void fn_800B2C44(GameActor* model, u16 joint, Vec* out);
 extern void convertTextureHeader(void* textures);
 extern void convertGeometryAndSknHeader(void* geo, void* skn);
+struct GQRValueGroups;
 extern void fn_800BD190(struct GQRValueGroups* groups, void* textures);
 extern void fn_8002399C(ActorObject* slot, s32 modelIndex, u16 index, void* layout, void* bank, void* skn);
 extern void fn_800B2B74(GameActor* model, u16 joint);

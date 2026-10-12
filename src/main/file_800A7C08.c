@@ -913,8 +913,15 @@ extern s32 CARDGetXferredBytes(s32 chan);
 extern s32 CARDCheckAsync(s32 chan, CARDCallback callback);
 extern s32 CARDFormatAsync(s32 chan, CARDCallback callback);
 extern s32 CARDDeleteAsync(s32 chan, const char* fileName, CARDCallback callback);
+#ifdef TARGET_PC
+// symbols.txt names 0x80088698 CARDFastDelete, but it takes a file name: it
+// is the SDK's CARDDelete. aurora's CARDInit takes the game and maker codes.
+#define CARDFastDelete CARDDelete
+#define CARDInit() CARDInit("GYQE", "01")
+#else
 extern s32 CARDFastDelete(s32 chan, char* fileName);
 extern void CARDInit(void);
+#endif
 
 // Classifies lbl_803C7838.status: 0 = still busy, 1 = ready, 2 = error.
 static inline s32 CardStatusClass(void) {

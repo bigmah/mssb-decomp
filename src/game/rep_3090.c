@@ -59,8 +59,8 @@ extern V3U lbl_3_rodata_30EC; /* (0, 1, 0) */
 static u8 lbl_3_bss_B67C[0x1C]; // unused
 static s16 lbl_3_bss_B67A;
 static u8 lbl_3_bss_B678[0x2]; // unused
-extern void* memset(void*, s32, u32);
-extern void* memcpy(void*, const void*, u32);
+extern void* memset(void*, int, size_t);
+extern void* memcpy(void*, const void*, size_t);
 extern const f32 lbl_3_rodata_30FC;
 extern const f32 lbl_3_rodata_30F8;
 extern const f32 lbl_3_rodata_3144;

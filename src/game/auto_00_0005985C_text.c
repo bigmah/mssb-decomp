@@ -267,7 +267,7 @@ extern void fn_3_6C0E0(void);
 extern void fn_3_67130(void);
 extern void fn_3_8FC0C(void);
 extern void fn_3_76558(void);
-extern void* memset(void*, int, unsigned long);
+extern void* memset(void*, int, size_t);
 extern void sndVolume(u8 volume, u16 time, u8 volGroup);
 extern void fn_3_59F40(void);
 extern void fn_3_59C2C(void);

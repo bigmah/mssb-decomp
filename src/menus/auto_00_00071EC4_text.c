@@ -1788,7 +1788,7 @@ void fn_2_7A9D8(MenuTask* o, s32 index) {
     }
 }
 
-extern void* memset(void* dst, int c, unsigned long n);
+extern void* memset(void* dst, int c, size_t n);
 
 // fn_2_76650, size:0x224
 void fn_2_76650(MenuTask* o, u8 k, u32 mask) {

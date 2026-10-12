@@ -157,8 +157,8 @@ extern const f64 lbl_3_rodata_3058;
 extern f64 __fabs(f64);
 extern StaObjDef lbl_3_data_1BA98[];
 extern void* fn_800B0A5C_insertQueue(void*, s32);
-extern void* memcpy(void*, const void*, u32);
-extern void* memset(void*, int, u32);
+extern void* memcpy(void*, const void*, size_t);
+extern void* memset(void*, int, size_t);
 extern void DCFlushRange(void*, u32);
 
 // .text:0x000F8444 size:0x10
@@ -860,7 +860,7 @@ void fn_3_F9E78(s32 idx, s32 b, CollisionStruct* c) {
 // .text:0x000FA3C0 size:0x1CC mapped:0x80739454
 // NONMATCHING 97%: idx assigned directly (no j temp). Remaining: saved-reg ranking (orig: offC<cnt<j<i<off18<off2<off4; ours: i<cnt<j<off18<offC) and the orig IV zero-inits are `mr` copies of i (ours li). Explicit offset vars + decl order fix regs but give li inits.
 extern void* _OSAllocFromHeap(s32, s32);
-extern void* memset(void*, int, u32);
+extern void* memset(void*, int, size_t);
 extern void fn_3_B8414(void*, void*);
 extern void fn_3_B8464(void*, void*);
 extern void fn_3_B8574(void);

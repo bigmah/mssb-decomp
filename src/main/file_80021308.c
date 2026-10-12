@@ -42,7 +42,7 @@ s32 sndSetAuxProcessingCallbacks(u8 studio, SND_AUX_CALLBACK auxA, void* userA, 
                                  void* userB, u8 midiB, u16 seqIDB);
 u32 OSGetSoundMode(void);
 void OSSetSoundMode(u32 mode);
-void* memset(void* dst, int c, u32 n);
+void* memset(void* dst, int c, size_t n);
 
 #define DVD_STATE_IDLE (lbl_803C6CF8.idle) // dvdsys loader idle flag
 

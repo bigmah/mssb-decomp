@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 
+struct MenuTask;
+
 void fn_2_94854(s32 value);
 
 void fn_2_95604(void);

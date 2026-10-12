@@ -5,6 +5,7 @@
 
 #include <dolphin/gx.h>
 #include <dolphin/mtx.h>
+#include <dolphin/card.h>
 
 // --- MTX ---
 typedef f32 Mtx23[2][3];
@@ -19,6 +20,12 @@ typedef f32 Mtx43[4][3];
 #define PSVECScale(src, scale, dst) C_VECScale((src), (dst), (scale))
 #undef PSQUATScale
 #define PSQUATScale(q, scale, r) C_QUATScale((q), (r), (scale))
+
+// --- CARD ---
+// The card work area (the decomp spells out its layout; aurora ignores it).
+typedef struct CARDMemoryCard {
+    u8 data[CARD_WORKAREA_SIZE];
+} CARDMemoryCard;
 
 // --- GX enums under their decomp names ---
 typedef enum _GXTevClampMode {

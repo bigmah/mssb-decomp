@@ -132,7 +132,7 @@ extern const f32 lbl_1_rodata_77E4_s;
 
 
 extern void* _OSAllocFromHeap(s32, s32);
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern void DCStoreRangeNoSync(void*, u32);
 extern void PPCSync(void);
 
@@ -144,7 +144,7 @@ extern const f32 lbl_1_rodata_78BC;
 extern const f32 lbl_1_rodata_78C0;
 extern double cos(double);
 extern int rand(void);
-extern void* memset(void*, int, u32);
+extern void* memset(void*, int, size_t);
 
 extern const f32 lbl_1_rodata_77E8;
 extern s32 fn_80023F0C(void*, ChallengeTextureHeader*, s32, s32, s32, s32, s32, s32);

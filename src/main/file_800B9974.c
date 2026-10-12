@@ -1435,9 +1435,15 @@ void fn_800BD190(GQRValueGroups* groups, void* value) {
 
 // __MTGQR5, size:0x8
 void __MTGQR5(register u32 value) {
+#ifdef TARGET_PC
+    // No graphics quantization registers on PC: nothing reads them (the
+    // paired-single loads/stores they configure are C code here).
+    (void)value;
+#else
     asm {
         mtspr GQR5, value
     }
+#endif
 }
 
 // fn_800BD1E8, size:0x8
@@ -1447,16 +1453,28 @@ void fn_800BD1E8(DOShadowTevCallback callback) {
 
 // __MTGQR6, size:0x8
 void __MTGQR6(register u32 value) {
+#ifdef TARGET_PC
+    // No graphics quantization registers on PC: nothing reads them (the
+    // paired-single loads/stores they configure are C code here).
+    (void)value;
+#else
     asm {
         mtspr GQR6, value
     }
+#endif
 }
 
 // __MTGQR7, size:0x8
 void __MTGQR7(register u32 value) {
+#ifdef TARGET_PC
+    // No graphics quantization registers on PC: nothing reads them (the
+    // paired-single loads/stores they configure are C code here).
+    (void)value;
+#else
     asm {
         mtspr GQR7, value
     }
+#endif
 }
 
 // .text:0x800BD208 size:0x38

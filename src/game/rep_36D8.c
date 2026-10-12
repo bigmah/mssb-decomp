@@ -21,7 +21,7 @@ extern const f64 lbl_3_rodata_3788; // 0.5
 extern const f32 lbl_3_rodata_3790; // pi / 180
 extern f64 sin(f64);
 extern f64 cos(f64);
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern f32 RandomF32_Game_Range(f32 a, f32 b);
 extern const f64 lbl_3_rodata_3798; // 3.0
 extern const f64 lbl_3_rodata_37A0; // 0.0
@@ -92,7 +92,7 @@ extern s8 lbl_3_data_2197C[];        // per AI strength
 extern s8 lbl_3_data_21980[];        // per AI strength
 extern int RandomInt_Game_Range(int, int);
 extern int RandomInt_Game(int);
-extern void* memset(void*, int, u32);
+extern void* memset(void*, int, size_t);
 extern u8 lbl_800EFBA4[];
 extern s16 lbl_3_data_21904[];
 extern void fn_3_151798(void);
@@ -123,7 +123,7 @@ extern const f64 lbl_3_rodata_3788; // 0.5
 extern const f32 lbl_3_rodata_3790; // pi / 180
 extern f64 sin(f64);
 extern f64 cos(f64);
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern f32 RandomF32_Game_Range(f32 a, f32 b);
 extern const f64 lbl_3_rodata_3798; // 3.0
 extern const f64 lbl_3_rodata_37A0; // 0.0

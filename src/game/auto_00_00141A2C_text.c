@@ -28,7 +28,7 @@ extern s8 lbl_3_data_2197C[];           // per AI strength: chance (percent)
 extern s8 lbl_3_data_21980[];           // per AI strength: minimum value
 
 extern void fn_3_10F550(s8 a, s16 b);
-extern void* memset(void* dst, int c, u32 n);
+extern void* memset(void* dst, int c, size_t n);
 
 // .text:0x00141A2C size:0x4 mapped:0x80780AC0
 void fn_3_141A2C(void) {

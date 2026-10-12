@@ -2,6 +2,9 @@
 #define __MAIN_FILE_800639BC_H__
 
 #include "mssbTypes.h"
+
+struct SoundGroupRequest;
+struct SoundGroupData;
 #include "Dolphin/mtx.h"
 #include "game/UnknownHomes_Game.h"
 #include "main/file_80069BDC.h"

@@ -3,6 +3,9 @@
 
 #include "mssbTypes.h"
 
+struct SoundGroupRequest;
+struct SoundGroupData;
+
 struct CharActor;
 
 struct SceneTask;

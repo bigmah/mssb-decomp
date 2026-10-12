@@ -4,8 +4,14 @@
 
 void PSMTXMultVecArray(const Mtx m, const Vec *src, Vec *dst, u32 count);
 
+#ifdef TARGET_PC
+// The host libm declares cosf/sinf; keep the double-precision versions.
+#define cosf(v) ((f32)cos(v))
+#define sinf(v) ((f32)sin(v))
+#else
 static f32 cosf(f32 v) { return cos(v); }
 static f32 sinf(f32 v) { return sin(v); }
+#endif
 
 void CTRLSetScale(Control *control, f32 x, f32 y, f32 z) {
     control->type |= CTRL_SCALE;

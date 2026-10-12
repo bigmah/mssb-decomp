@@ -89,7 +89,9 @@ u32 fn_80023D3C(void);
 void soundQuit(void);
 void fn_800A94C4(void);
 OSThread* GXSetCurrentGXThread(void);
+#ifndef TARGET_PC
 s32 OSWaitSemaphore(volatile OSSemaphore* sem);
+#endif
 
 extern u8 lbl_803CBBC0; // index of the display list buffer in use
 extern u8 lbl_801181A0[2][0x40];

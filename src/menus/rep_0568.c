@@ -105,6 +105,7 @@ extern void convertTextureHeader(void* textures);
 extern void LoadActorLayout(void* layout);
 extern void convertGeometryAndSknHeader(void* geo, void* skn);
 extern void haveActLayoutPointToGeoHeader(void* layout, void* geo);
+struct GQRValueGroups;
 extern void fn_800BD190(struct GQRValueGroups* groups, void* textures);
 extern void fn_8002399C(ActorObject* slot, s32 modelIndex, u16 index, void* layout, void* bank, void* skn);
 extern void fn_800B2B74(GameActor* model, u16 joint);

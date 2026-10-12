@@ -25,7 +25,7 @@ extern u8 lbl_3_data_21278[];
 extern void fn_3_10F550(s32, u8);
 extern void fn_3_5A6D4(s32);
 extern void changeScene(s32, s32);
-extern void* memset(void*, s32, u32);
+extern void* memset(void*, int, size_t);
 extern s16 RandomInt_Game_Range(s16, s16);
 extern s16 lbl_3_data_21EAC[];
 extern Vec lbl_3_data_21D34[4][3]; // held-object offsets per home slot
@@ -1276,7 +1276,7 @@ extern void fn_3_147CFC(void* arg);
 extern void fn_3_154238(s16 id);
 extern void fn_3_1608F0(s32 kind, s32 value, s32 extra);
 extern void fn_80062BE4(Vec* pos);
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern u8 lbl_3_data_21E18[][2];
 extern Rep37A8Bss37400View lbl_3_common_bss_37400;
 extern const f32 lbl_3_rodata_3878;

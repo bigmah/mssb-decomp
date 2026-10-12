@@ -3,8 +3,14 @@
 #include "stl/mem.h"
 #include "stl/math.h"
 
+#ifdef TARGET_PC
+// The host libm declares cosf/sinf; keep the double-precision versions.
+#define cosf(v) ((f32)cos(v))
+#define sinf(v) ((f32)sin(v))
+#else
 static f32 cosf(f32 v) { return cos(v); }
 static f32 sinf(f32 v) { return sin(v); }
+#endif
 
 // Like CTRLBuildMatrix, with a 180-degree rotation about the axes in flipFlags
 // (1 = X, 2 = Y, 4 = Z) and the rotation part mirrored in Y.

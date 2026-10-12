@@ -1542,7 +1542,7 @@ static Fn37460Data lbl_2_bss_15A0;
 extern AssetLoadInstructions lbl_2_data_12180; // THP movie file
 extern AssetLoadInstructions lbl_2_data_12170; // THP movie file
 extern void* _OSAllocFromHeap(s32, s32);
-extern void* memset(void*, int, u32);
+extern void* memset(void*, int, size_t);
 extern void* fn_80009018(void* heap);
 extern void fn_800AD070(void);
 extern void fn_800AD500(void*, void*);

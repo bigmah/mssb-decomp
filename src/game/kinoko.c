@@ -187,10 +187,10 @@ typedef struct {
     u8 pad[3];
 } RibEnt;
 extern RibEnt lbl_3_bss_BAE0[];
-extern void* memcpy(void*, void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern void fn_3_16A07C(void);
 extern f32 lbl_3_rodata_402C; // -1.0f
-extern void* memset(void*, s32, u32);
+extern void* memset(void*, int, size_t);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 
 // .text:0x0016C394 size:0x7C

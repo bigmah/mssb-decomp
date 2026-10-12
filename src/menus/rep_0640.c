@@ -25,7 +25,7 @@ extern s32 fn_2_46D00(void);
 extern s32 lbl_2_bss_1598;
 extern u8* lbl_803CC1B8[];
 #include "main/file_8001FE00.h" // SceneFade lbl_8037169C
-extern void* memset(void*, int, unsigned long);
+extern void* memset(void*, int, size_t);
 
 // fn_2_1A420, size:0xA8
 s32 fn_2_1A420(void) {

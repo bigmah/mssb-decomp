@@ -19,7 +19,7 @@ typedef struct {
 extern MG1471Timing lbl_3_data_21278;
 extern MG1471Range lbl_3_data_21EAC[]; // per AI strength
 
-extern void* memset(void* dst, int c, u32 n);
+extern void* memset(void* dst, int c, size_t n);
 
 // .text:0x001471C0 size:0x4 mapped:0x80786254
 void fn_3_1471C0(void) {

@@ -2,6 +2,8 @@
 #define __AUTO_00_0004B1AC_TEXT_MENUS_H__
 
 #include "mssbTypes.h"
+
+struct MenuTask;
 #include "menus/menu_asset.h" // InitEntry
 
 

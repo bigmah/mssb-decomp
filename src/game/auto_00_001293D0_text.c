@@ -58,9 +58,9 @@ extern void fn_3_1608F0(s32, s32, u8);
 extern void fn_3_11D780(void);
 extern void fn_3_EA454(void);
 extern s32 fn_3_9E834(void); // game/auto_00_0009CD90_text.h (clashes with game/rep_1838.h)
-extern void* memset(void*, s32, u32);
+extern void* memset(void*, int, size_t);
 extern int __abs(int);
-extern void* memcpy(void*, const void*, unsigned long);
+extern void* memcpy(void*, const void*, size_t);
 
 // Switch the pause-menu description to menu (lbl_800FEF70 entry).
 static inline void setMenu(u8 menu) {

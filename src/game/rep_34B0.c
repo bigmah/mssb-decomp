@@ -31,7 +31,7 @@ extern void fn_3_8913C(void);
 extern void fn_3_58870(void);
 extern void fn_3_BF1AC(void);
 extern void fn_3_BF158(void);
-extern void* memset(void*, s32, u32);
+extern void* memset(void*, int, size_t);
 
 extern void fn_3_5A6D4(u8 status);
 extern f32 lbl_3_data_21770[];         // barrel physics constants

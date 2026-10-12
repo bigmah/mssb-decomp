@@ -222,7 +222,12 @@ BALL_COLLISION_TYPE didCollideWithBoundingBoxes(VecSrcDst* inVec, CollisionStruc
 // .text:0x000010E0 size:0x3C4 mapped:0x80640174
 int checkTriangleCollisions(TriangleCollisionStruct* collisionData, TriangleGroup* _triangleGroup) {
 #define O_GROUP ((TriangleGroup*)_triangleGroup)
+#ifdef TARGET_PC
+// _triangleGroup is reused as the triangle cursor (MWCC allows assigning to a cast).
+#define O_TRI (*(CollisionTriangle**)&_triangleGroup)
+#else
 #define O_TRI ((CollisionTriangle*)_triangleGroup)
+#endif
 
     Vec tri[3];
     Vec dist[3];

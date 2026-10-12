@@ -88,7 +88,7 @@ typedef struct CamMtx {
 extern CamMtx* fn_80052734(s32 index);
 extern Vec lbl_3_rodata_2080;
 extern f32 lbl_3_rodata_2178;
-extern void* memset(void*, int, u32);
+extern void* memset(void*, int, size_t);
 extern void fn_3_25844(u32, int);
 extern SceneTask* lbl_803CC1B8;
 extern Control* lbl_3_bss_9D94;
@@ -1857,7 +1857,7 @@ void fn_3_C77AC(void* hv, StadObj1FD8* b) {
 extern f32 lbl_3_data_17508[];
 extern s16 fn_3_B7F70(s16 range);
 extern s32 fn_3_8BBC4(s32 id, f32* pos, f32* dir, s32 type);
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern f64 sqrt(f64);
 extern void pitchingMachinePitching(u8);
 extern const f32 lbl_3_rodata_21B8; // 25.0f

@@ -31,7 +31,7 @@ typedef struct {
     /*0x17*/ u8 f17; // frames until the next burst
 } Q3D50;
 static Q3D50* lbl_3_bss_B9B8[10]; // only [0] is used
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern void fn_8002C2D0(Vec*, Vec*, void*);
 
 // .text:0x00160814 size:0xDC mapped:0x8079F8A8

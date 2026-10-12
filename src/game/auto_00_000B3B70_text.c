@@ -11,7 +11,7 @@
 extern void possiblyTransitionBlackScreen(void);
 extern void fn_3_5BAC(void);
 
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 
 // Practice-mode default roster (lbl_3_data_FAA8).
 typedef struct PracticeRosterTbl {

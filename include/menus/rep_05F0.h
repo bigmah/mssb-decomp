@@ -3,6 +3,8 @@
 
 #include "mssbTypes.h"
 
+struct ActorObject;
+
 // Options menu state (lbl_2_bss_1033C): rumble / sound mode / third option.
 typedef struct OptionsMenu {
     /*0x00*/ u16 state;

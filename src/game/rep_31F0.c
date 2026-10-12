@@ -29,7 +29,7 @@ extern void fn_3_8913C(void);
 extern void fn_3_58870(void);
 extern void fn_3_BF1AC(void);
 extern void Set_803cb848(s32);
-extern void* memset(void*, s32, u32);
+extern void* memset(void*, int, size_t);
 
 extern void fn_3_5A6D4(s32);
 extern u8 lbl_3_common_bss_32220[];

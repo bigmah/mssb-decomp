@@ -113,8 +113,8 @@ static E30_1F58 lbl_3_data_174A8[2] = {
     {{{NULL, fn_3_C095C}, {NULL, fn_3_C095C}}},
     {{{NULL, fn_3_C095C}, {NULL, fn_3_C095C}}},
 };
-extern void* memset(void*, s32, u32);
-extern void* memcpy(void*, const void*, u32);
+extern void* memset(void*, int, size_t);
+extern void* memcpy(void*, const void*, size_t);
 extern void DCStoreRange(void*, u32);
 
 // .text:0x000C0854 size:0x108 mapped:0x806FF8E8

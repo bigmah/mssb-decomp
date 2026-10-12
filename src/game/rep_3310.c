@@ -61,7 +61,7 @@ f32 lbl_3_data_226DC = 4.0f;
 extern f64 acos(f64);
 extern f64 sin(f64);
 extern f64 cos(f64);
-extern void* memcpy(void* dst, const void* src, u32 n);
+extern void* memcpy(void* dst, const void* src, size_t n);
 extern s16 lbl_3_data_217A4[];
 extern u32 fn_3_90064(s32 id);
 extern f32 lbl_3_data_21A48[];
@@ -548,7 +548,7 @@ void fn_3_118164(void) {
 }
 
 // .text:0x00118358 size:0xA4 mapped:0x807573EC
-extern void* memset(void* dst, int c, u32 n);
+extern void* memset(void* dst, int c, size_t n);
 
 void fn_3_118358(s32 i, f32* v) {
     // objects[i + 0x82].actor, addressed as the original does (base + 0x34 then an indexed load)

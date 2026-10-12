@@ -10,9 +10,10 @@ extern void LoadActorLayout(void*);
 extern void convertGeometryAndSknHeader(void* geo, void* skn);
 extern void haveActLayoutPointToGeoHeader(void*, void*);
 extern void convertTextureHeader(void*);
+struct GQRValueGroups;
 extern void fn_800BD190(struct GQRValueGroups* groups, void* textures);
 extern void* _OSAllocFromHeap(int, int);
-extern void* memset(void*, int, u32);
+extern void* memset(void*, int, size_t);
 extern void fn_3_11D2C8(s32 idx, s32 start, s32 count, void* animBank, struct sHdr* skHeader);
 extern f32 lbl_3_rodata_3E50;
 

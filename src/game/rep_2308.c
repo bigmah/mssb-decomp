@@ -11,7 +11,7 @@ extern s32 lbl_3_data_17D08[2];
 extern Rep2308Task* lbl_3_data_17D10[2];
 #include "Dolphin/mtx.h"
 #include "stl/fdlibm.h"
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 
 #include "C3/actor.h"                // ACTSetAnimation
 #include "main/file_80008E00.h"     // lbl_80366158

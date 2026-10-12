@@ -1,6 +1,10 @@
 #include "main/file_800A6870.h"
 #include "Dolphin/gx.h"
 
+#ifdef TARGET_PC
+#define cBlock cb // DVDFileInfo's command block (aurora's name)
+#endif
+
 // dvdsys.c
 
 // Same object as lbl_803C7420_s in file_80008E00.c; only the fields used here.

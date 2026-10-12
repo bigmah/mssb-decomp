@@ -17,7 +17,7 @@
 #include "main/aramloader.h"
 #include "game/UnknownHomes_Game.h"
 
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern f64 cos(f64);
 extern f64 sin(f64);
 extern int rand(void);
@@ -198,7 +198,7 @@ extern void* fn_3_E4BE8(s32 idx, Mtx m);
 extern void* fn_3_F6504(s32 idx, Mtx m);
 extern void* fn_3_E751C(s32 idx, Mtx m);
 extern void* fn_800B0A5C_insertQueue(void*, s32);
-extern void* memset(void*, int, u32);
+extern void* memset(void*, int, size_t);
 extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
 extern void minigamesSetSomePointers(void);
 extern void minigamesGXStuff(void);

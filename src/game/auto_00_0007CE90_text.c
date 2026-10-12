@@ -19,7 +19,7 @@ extern u8 g_UnkThrowing_31ACC[];
 extern u8 g_UnkAnimation_31EAC[];
 extern u8 lbl_3_common_bss_321A0[];
 extern ReplayActorMgrView lbl_8036E548;
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern void fn_8001B2D0(void);
 extern s32 fn_3_6C938(s32, s32);
 extern ReplayFadeView lbl_8037169C;

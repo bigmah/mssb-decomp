@@ -1080,7 +1080,7 @@ extern const f32 lbl_3_rodata_1EB0;
 extern f64 __fabs(f64);
 extern f64 acos(f64);
 extern int rand(void);
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern void* _OSAllocFromHeap(int, int);
 extern void fn_800ACFB0(void*);
 extern s32 fn_3_BA174(void* key, void* elem); // game/auto_00_000BA150_text.h
@@ -1752,7 +1752,7 @@ extern f32 lbl_3_rodata_1EFC;
 extern Vec lbl_3_bss_9978[];
 extern Vec lbl_3_bss_996C;
 extern u8 fn_3_8D4(void*, void*);
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 // 81%: stack layout (orig sp8,sp14,sp2C,sp38 + 0x10 spare) and float-reg order of the 4-way box test not matched
 void fn_3_BD1D8(f32 (*m)[4]) {
     Vec sp38;
@@ -1828,7 +1828,7 @@ void fn_3_BD4F0(void) {
 }
 
 // .text:0x000BD504 size:0x1A8 mapped:0x806FC598
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern void fn_3_CB538(s32 mode);
 extern void fn_3_15B79C(int flag);
 extern void fn_3_15F574(void);
@@ -2074,7 +2074,7 @@ void fn_3_BDCA4(void) {
 extern const f32 lbl_3_rodata_1F38;
 extern const f64 lbl_3_rodata_1F40;
 extern int rand(void);
-extern void* memcpy(void*, const void*, u32);
+extern void* memcpy(void*, const void*, size_t);
 extern u8 lbl_3_data_A3C[];
 typedef struct { u8 pad[0x4C]; V2f pts[0x60]; V2f pts2[0x60]; } BDE14T;
 void fn_3_BDE14(void) {
@@ -2604,7 +2604,7 @@ int fn_3_BF878(void) {
 // .text:0x000BF8F8 size:0x244 mapped:0x806FE98C
 extern u16 lbl_800F7860[];
 extern f32 lbl_3_rodata_1EF8;
-extern void* memset(void*, int, u32);
+extern void* memset(void*, int, size_t);
 // 95%: x/y of the quad are read via lfsx (reg+reg) in the original and the e-based loads are not CSE'd with them
 void fn_3_BF8F8(SprAnim* a, f32 (*in)[4], f32* pos, f32 (*cb)(SprAnimElem*, s32, f32 (*)[4], f32)) {
     Mtx cur;
@@ -2786,7 +2786,7 @@ extern SwingTrail lbl_3_bss_9950;
 extern struct GameActor** fn_800111D8(struct CharActor* actor); // main/file_8000F150.h
 extern s32 fn_8005268C(void);
 extern void* fn_80052734(s32 index);
-extern void* memmove(void*, const void*, u32);
+extern void* memmove(void*, const void*, size_t);
 extern void fn_3_310C(Vec* out, Vec* in, s32 n, s32 outCount); // game/rep_140.c: spline through n points
 // NONMATCHING 74%: scheduling of the int->float conversions, original keeps &ptsA/&prevA in regs (no folded offsets), regalloc
 #if NONMATCHING

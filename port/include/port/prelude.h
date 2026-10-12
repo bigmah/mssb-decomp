@@ -23,14 +23,20 @@ typedef va_list __va_list;
 #include <strings.h>
 
 // Metrowerks / PowerPC intrinsics
-#define __fabs(x) fabs(x)
-#define __fabsf(x) fabsf(x)
-#define __fnabs(x) (-fabs(x))
-#define __frsqrte(x) (1.0 / sqrt(x))
-#define __fres(x) (1.0f / (x))
-#define __fsel(a, b, c) ((a) >= 0 ? (b) : (c))
-#define __float_max (FLT_MAX)
-#define __float_epsilon (FLT_EPSILON)
+// (functions, not macros: game sources also declare some of them, and the
+// SDK headers declare __frsqrte.)
+static inline double port_fabs(double x) { return fabs(x); }
+static inline float port_fabsf(float x) { return fabsf(x); }
+static inline double port_fnabs(double x) { return -fabs(x); }
+static inline double port_frsqrte(double x) { return 1.0 / sqrt(x); }
+static inline float port_fres(float x) { return 1.0f / x; }
+static inline double port_fsel(double a, double b, double c) { return a >= 0 ? b : c; }
+#define __fabs port_fabs
+#define __fabsf port_fabsf
+#define __fnabs port_fnabs
+#define __frsqrte port_frsqrte
+#define __fres port_fres
+#define __fsel port_fsel
 #define __cntlzw(x) ((x) == 0 ? 32 : __builtin_clz((unsigned int)(x)))
 #define __rlwimi(a, b, sh, mb, me) port_rlwimi((a), (b), (sh), (mb), (me))
 #define __sync()

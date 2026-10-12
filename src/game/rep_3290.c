@@ -7,7 +7,7 @@
 #include "header_rep_inline.h"
 #include "stl/math.h"
 
-extern void* memset(void*, s32, u32);
+extern void* memset(void*, int, size_t);
 
 extern u8 g_Minigame[];
 #define MG ((Mg3290*)g_Minigame)

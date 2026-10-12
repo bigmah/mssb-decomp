@@ -30,8 +30,8 @@ void fn_800A7E00(void);
 void OSReport(const char* msg, ...);
 void OSPanic(const char* file, int line, const char* msg, ...);
 void OSSetProgressiveMode(u32 on);
-void* memset(void* dst, int c, u32 n);
-void* memcpy(void* dst, const void* src, u32 n);
+void* memset(void* dst, int c, size_t n);
+void* memcpy(void* dst, const void* src, size_t n);
 // ACTSort and DOSetWorldMatrix are declared in C3/ with the SDK's Actor/DODisplayObj layouts.
 
 // Bump allocator over a caller-supplied buffer.

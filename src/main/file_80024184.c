@@ -24,8 +24,8 @@ extern const f32 lbl_803CC5A4; // 1.0f
 OSThread* GXGetCurrentGXThread(void);
 void* fn_800ACF34(u32 align, u32 size);
 void fn_800ACF14(void* p);
-void* memcpy(void* dst, const void* src, u32 n);
-void* memmove(void* dst, const void* src, u32 n);
+void* memcpy(void* dst, const void* src, size_t n);
+void* memmove(void* dst, const void* src, size_t n);
 
 // .text:0x80024184 size:0x20C
 void gOz_GXSetTexture(GXTevMode tevMode, s32 texFrac, s32 hasNormal) {

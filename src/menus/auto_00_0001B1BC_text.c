@@ -101,7 +101,7 @@ extern MenuAsset lbl_2_data_4B90;
 extern MenuData lbl_2_bss_1A8250; // menu work buffer that lbl_2_bss_1A824C points at
 #include "main/charsel_state_type.h"
 extern CharSelectState lbl_8034E9A0;
-extern void* memset(void*, int, unsigned long);
+extern void* memset(void*, int, size_t);
 
 // NONMATCHING 87%: the original keeps the relocation loop (count 1, index 0) as a real loop; CW folds and unrolls ours
 #if NONMATCHING
