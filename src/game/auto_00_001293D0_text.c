@@ -12,7 +12,8 @@
 #include "game/rep_2BF8.h"
 
 extern LayoutSlot lbl_80371C30[];
-extern u8 lbl_3_common_bss_37400[];
+#include "game/rep_36D8.h" // RepBss37400View lbl_3_common_bss_37400
+extern RepBss37400View lbl_3_common_bss_37400;
 extern u8 lbl_3_data_9FB4[];
 extern u8 lbl_3_data_9ECC[];
 extern u8 lbl_3_data_9D94[];
@@ -194,7 +195,7 @@ void fn_3_12E83C(void) {
     }
     g_Minigame.miniGameCurrentPoints[g_Minigame.rosterID] += points;
     g_Minigame._1DF4[0] = points;
-    if (g_d_GameSettings.exhibitionMatchInd == 0 && g_Minigame.rosterID == *(s16*)(lbl_3_common_bss_37400 + 0x40)) { // TODO type
+    if (g_d_GameSettings.exhibitionMatchInd == 0 && g_Minigame.rosterID == lbl_3_common_bss_37400.humanPlayer) {
         fn_3_1608F0(2, points, g->barrelBatter_barrelsHit);
     }
 }
