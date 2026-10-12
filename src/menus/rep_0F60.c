@@ -327,8 +327,6 @@ void fn_2_8C80C(s32 res, s32 first, s32 count, void* anim, void* skin) {
 extern u8 lbl_2_data_3CD0[]; // actor kind per slot
 extern u8 lbl_800E869C[];    // actor kind per character
 
-// NONMATCHING 95%: lis of lbl_800E869C scheduled before the lbl_2_bss_1A824C load in case 2
-#if NONMATCHING
 // fn_2_8D9DC, size:0x138
 void fn_2_8D9DC(s32 mode) {
     s32 i;
@@ -351,7 +349,6 @@ void fn_2_8D9DC(s32 mode) {
         fn_2_8D270(i);
     }
 }
-#endif
 
 // NONMATCHING 96%: original copies i into off (mr r30,r29) and swaps r3/r4 in the pointer table setup
 #if NONMATCHING
