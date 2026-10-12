@@ -101,11 +101,8 @@ void fn_3_12E8FC(void) {
 
 // .text:0x0012EB10 size:0x270 mapped:0x8076DBA4
 // Drop the barrels above blown-up ones (state 4) down by one slot in each row.
-// NONMATCHING 99%: the original keeps the barrel-state test as 0x890(base) inside the loop; ours
-// hoists base+0x890.
-#if NONMATCHING
 void fn_3_12EB10(void) {
-    s32 i; // unused copy of the barrel index (kept: the original keeps it too)
+    s32 i;
     s32 row;
     s32 j;
     s32 k;
@@ -114,11 +111,12 @@ void fn_3_12EB10(void) {
     for (row = 0; row < 5; row++) {
         for (j = 0, i = row * 3; j < 2; j++, i++) {
             for (;;) {
-                if (g_Minigame.barrels[row * 3 + j].barrelState != 4) {
+                n = (row * 3) + j;
+                if (g_Minigame.barrels[n].barrelState != 4) {
                     break;
                 }
                 for (k = j + 1; k < 3; k++) {
-                    n = k + row * 3;
+                    n = k + (row * 3);
                     g_Minigame.barrels[n - 1].barrelState = g_Minigame.barrels[n].barrelState;
                     g_Minigame.barrels[n - 1].barrelColour = g_Minigame.barrels[n].barrelColour;
                     g_Minigame.barrels[n - 1].currentPos.x = g_Minigame.barrels[n].currentPos.x;
@@ -130,13 +128,12 @@ void fn_3_12EB10(void) {
         }
     }
     for (row = 0; row < 5; row++) {
-        u8* s = &g_Minigame.barrels[row * 3 + 2].barrelState;
-        if (*s == 4) {
+        u8* s = &g_Minigame.barrels[(row * 3) + 2].barrelState;
+        if ((*s) == 4) {
             *s = 0;
         }
     }
 }
-#endif
 
 // .text:0x0012ED80 size:0xE8 mapped:0x8076DE14
 u8 fn_3_12ED80(void) {
