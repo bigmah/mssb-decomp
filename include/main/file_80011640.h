@@ -250,6 +250,11 @@ typedef struct CharQueueTask {
     /*0x14*/ u8 _14;
 } CharQueueTask;
 
+void fn_80011468(void);
+CharActor* fn_80011570(void); // actor being drawn (lbl_803CBC18)
+void fn_80011578(void);
+void fn_800115C8(s8 index);
+void fn_80011604(s8 index, DOTevHook value);
 void fn_80011640(Mtx a, Mtx out);
 void fn_800116DC(CharActor* actor, Mtx m, u16 joint);
 void fn_800117CC(Mtx src, Mtx m, Mtx dst);

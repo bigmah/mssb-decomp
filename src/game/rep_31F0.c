@@ -1,5 +1,6 @@
 #include "game/rep_31F0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_31F0
+#include "header_rep_inline.h"
 
 #include "musyx/musyx.h"
 #include "Dolphin/mtx.h"
@@ -150,8 +151,6 @@ extern camera_803c639c_s* fn_80052768_getCamera(int index);
 extern u8 lbl_3_data_213E0[4];
 extern f32 lbl_3_data_21438[];
 
-// NONMATCHING 99.8%: f1/f2/f3 picks around the fdivs in the re-aim branch
-#if NONMATCHING
 // g_Minigame +0x1AA0: last 10 hit results per roster slot
 typedef struct { u8 pad[0x1AA0]; u8 hist[4][10]; } MgHist_31F0;
 
@@ -217,9 +216,9 @@ void fn_3_110AD4(void) {
         angB += *(s16*)(g_Minigame + 0x18A4);
         getComponentsFromSAng(angA, &v.x, &v.z);
         getComponentsFromSAng(angB, &cosB, &v.y);
-        v.y = v.y / cosB;
         v.x *= lbl_3_data_21438[3];
         v.z *= lbl_3_data_21438[3];
+        v.y = v.y / cosB;
         v.y = v.y * -lbl_3_data_21438[3];
         if (g_Pitcher[0x164] != 0) {
             fn_3_BC6D8(&v, &fn_80052768_getCamera(0)->eye, RandomInt_Game_Range(0, 3), 1);
@@ -243,7 +242,6 @@ void fn_3_110AD4(void) {
         startBombTimer_31F0();
     }
 }
-#endif
 
 extern u8 g_d_GameSettings[];
 extern u8 lbl_3_common_bss_37400[];
@@ -503,8 +501,6 @@ extern void atBat_batter(void);
 extern void fn_3_2EA24(void);
 extern void fn_3_8A958(void);
 
-// NONMATCHING 97%: the inlined fn_3_111AC4 tail reuses a different g_Minigame base; one extsb is CSE'd
-#if NONMATCHING
 static inline void clearHitFlags_31F0(void) {
     s8 i = 0;
     do {
@@ -513,6 +509,8 @@ static inline void clearHitFlags_31F0(void) {
     } while (i < 4);
 }
 
+// NONMATCHING 97%: the inlined fn_3_111AC4 tail reuses a different g_Minigame base; one extsb is CSE'd
+#if NONMATCHING
 void fn_3_111C5C(void) {
     u8* e;
     u8 ci;
@@ -533,7 +531,7 @@ void fn_3_111C5C(void) {
                 switch (g_Pitcher[0x13E]) {
                 case 2:
                     if (g_Minigame[0x1DD0] == 0) {
-                        fn_3_110634();
+                        ((void (*)(void))fn_3_110634)(); // a call in the original (not inlined)
                         g_Minigame[0x1DD0] = 1;
                     }
                     if (*(s16*)(g_Pitcher + 0x126) <= *(s16*)(g_Minigame + 0x1DCC)) {
@@ -907,10 +905,58 @@ void fn_3_1128EC(void) {
     fn_8003414C(cam->view);
 }
 
+// The original expands fn_3_111C5C into fn_3_112BD8. CW only does that with a larger inline size
+// limit (with -inline deferred, the value in effect at the end of the file counts) and only from a
+// copy that is always visible (fn_3_111C5C itself is NONMATCHING).
+#pragma inline_max_size(100000)
+// Inline copy of fn_3_111C5C.
+static inline void fn_3_111C5C_inline(void) {
+    u8* e;
+    u8 ci;
+    s8 i;
+    if (g_Minigame[0x190B] == 0) {
+        if (fn_3_108854() != 0) {
+            return;
+        }
+        fn_3_75560();
+        clearHitFlags_31F0();
+        i = 0;
+        do {
+            ci = g_Minigame[0x18CC + i];
+            if ((s8)ci >= 0 && (s8)ci < 4 && i == *(s8*)(g_Minigame + 0x1905) && g_Minigame[0x18D8 + i] != 0) {
+                e = g_Minigame + (s8)ci * 0x10;
+                g_Minigame[0x1DBC + (s8)ci] = 1;
+                memset(e + 0x1D7C, 0, 0x10);
+                switch (g_Pitcher[0x13E]) {
+                case 2:
+                    if (g_Minigame[0x1DD0] == 0) {
+                        ((void (*)(void))fn_3_110634)(); // a call in the original (not inlined)
+                        g_Minigame[0x1DD0] = 1;
+                    }
+                    if (*(s16*)(g_Pitcher + 0x126) <= *(s16*)(g_Minigame + 0x1DCC)) {
+                        *(u16*)(e + 0x1D80) |= 0x100;
+                    }
+                    break;
+                case 3:
+                    if (*(s16*)(g_Ball + 0x1B68) < *(s16*)(g_Pitcher + 0x122) - *(s16*)(g_Minigame + 0x1DCE)) {
+                        *(u16*)(e + 0x1D80) |= 0x100;
+                    }
+                    break;
+                }
+            }
+            i++;
+        } while (i < 4);
+        atBat_batter();
+        clearHitFlags_31F0();
+        fn_3_2EA24();
+        fn_3_8A958();
+    }
+    fn_3_111AC4();
+}
+
 // .text:0x00112BD8 size:0x7C0 mapped:0x80751C6C
 // Bomb-omb Derby state machine: dispatches on the game state (g_GameLogic+0x11E).
-// NONMATCHING 60%: the original inlines every case handler except fn_3_112610/fn_3_112230; ours
-// does too, except fn_3_111C5C (itself nonmatching), which CW refuses to inline here.
+// NONMATCHING 99%: register allocation in the inlined fn_3_111C5C copy (as in fn_3_111C5C itself).
 #if NONMATCHING
 void fn_3_112BD8(void) {
     switch (g_GameLogic[0x11E]) {
@@ -930,7 +976,7 @@ void fn_3_112BD8(void) {
         fn_3_112230();
         break;
     case 1:
-        fn_3_111C5C();
+        fn_3_111C5C_inline();
         break;
     case 2:
         fn_3_111738();

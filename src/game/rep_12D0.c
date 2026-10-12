@@ -1,5 +1,6 @@
 #include "game/rep_12D0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_12D0
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/auto_00_0009CD90_text.h"
 #include "game/auto_00_000759BC_text.h"

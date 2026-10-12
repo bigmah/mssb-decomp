@@ -5,7 +5,8 @@
 #include "game/rep_720.h"
 #include "main/file_80011640.h"
 #include "main/file_80069BDC.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_2BF8
+#include "header_rep_inline.h"
 
 // Screen-edge limits of the off-screen player markers (lbl_3_data_D638).
 typedef struct MarkerEdges {

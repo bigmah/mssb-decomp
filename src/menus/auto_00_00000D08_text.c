@@ -1,3 +1,8 @@
+// NOTE: this code (0xD08-0x121C) is the tail of rep_01A0's translation unit
+// (rep_01A0 compiles in reverse source order; the merged file defines these
+// functions before fn_2_C74, from fn_2_11D8 down to fn_2_D08). Every function
+// matches in the merged unit except fn_2_E84, so the merge waits until fn_2_E84
+// matches: rep_01A0 is linked and would lose fn_2_E84's code.
 #include "menus/auto_00_00000D08_text.h"
 #include "menus/rep_01A0.h"
 #include "static/UnknownHomes_Static.h"

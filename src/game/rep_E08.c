@@ -1,5 +1,6 @@
 #include "game/rep_E08.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_E08
+#include "header_rep_inline.h"
 #include "math.h"
 #include "game/rep_D0.h"
 

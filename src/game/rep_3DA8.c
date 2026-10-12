@@ -1,5 +1,6 @@
 #include "game/rep_3DA8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3DA8
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "Dolphin/rand.h"
 
@@ -122,46 +123,79 @@ static inline void countMission(ChallengeTrackingStruct* trk, s32 i, MissionRec*
     }
 }
 
-static inline void countMissionType(ChallengeTrackingStruct* trk, MissionRec* rec, s32 type) {
-    s32 i;
-    for (i = 0; i < 10; i++, rec++) {
-        if (MISSION_STATUS(trk, i) >= 0 && rec->type == type) {
-            countMission(trk, i, rec);
-        }
-    }
-}
+// Counts mission `type` (a constant: it is a case label, which gives the original's beq/b layout).
+#define countMissionType(trk_, rec_, type_)                      \
+    do {                                                        \
+        ChallengeTrackingStruct* t_ = (trk_);                   \
+        MissionRec* r_ = (rec_);                                \
+        s32 i_;                                                 \
+        s8 st_;                                                 \
+        for (i_ = 0; i_ < 10; i_++, r_++) {                     \
+            st_ = MISSION_STATUS(t_, i_);                       \
+            if (st_ >= 0) {                                     \
+                switch (r_->type) {                             \
+                case type_:                                     \
+                    MISSION_STATUS(t_, i_) = st_ + 1;           \
+                    if (MISSION_STATUS(t_, i_) >= r_->target) { \
+                        MISSION_STATUS(t_, i_) = -1;            \
+                    }                                           \
+                    break;                                      \
+                }                                               \
+            }                                                   \
+        }                                                       \
+    } while (0)
 
-static inline void countMissionTypeOnHit(ChallengeTrackingStruct* trk, MissionRec* rec, s32 type) {
-    s32 i;
-    for (i = 0; i < 10; i++, rec++) {
-        if (MISSION_STATUS(trk, i) >= 0 && rec->type == type && g_Ball.AtBat_ContactResult == 3) {
-            countMission(trk, i, rec);
-        }
-    }
-}
+// Same, counting only on a hit (contact result 3).
+#define countMissionTypeOnHit(trk_, rec_, type_)                     \
+    do {                                                            \
+        ChallengeTrackingStruct* t_ = (trk_);                       \
+        MissionRec* r_ = (rec_);                                    \
+        s32 i_;                                                     \
+        s8 st_;                                                     \
+        for (i_ = 0; i_ < 10; i_++, r_++) {                         \
+            st_ = MISSION_STATUS(t_, i_);                           \
+            if (st_ >= 0) {                                         \
+                switch (r_->type) {                                 \
+                case type_:                                         \
+                    if (g_Ball.AtBat_ContactResult == 3) {          \
+                        MISSION_STATUS(t_, i_) = st_ + 1;           \
+                        if (MISSION_STATUS(t_, i_) >= r_->target) { \
+                            MISSION_STATUS(t_, i_) = -1;            \
+                        }                                           \
+                    }                                               \
+                    break;                                          \
+                }                                                   \
+            }                                                       \
+        }                                                           \
+    } while (0)
 
 // Fielding / batting event for star missions of roster slot `rosterIdx` of the tracked team.
-// NONMATCHING 71%: same instruction count; the original tests "type != X" with an inverted
-// branch layout and reuses the status byte it loaded for the increment (extsh on rosterIdx differs too)
+// NONMATCHING 96%: register allocation; the original also tests the last type of fn_3_161588's case 7
+// loop with a beq/b layout
 // .text:0x00161588 size:0xAF8
 #if NONMATCHING
-void fn_3_161588(s32 event, s16 rosterIdx) {
+void fn_3_161588(s32 event, s32 rosterIdx) {
     MissionIdx* mi = &lbl_800E8558[inMemRoster[*(s16*)(lbl_3_common_bss_37400 + 0x40)][rosterIdx].stats.CharID]; // TODO type
     ChallengeTrackingStruct* trk;
     MissionRec* rec;
     MissionFielderView* fielder;
     s32 i;
+    u8 trkIdx = mi->trk;
+    u8 row = mi->row;
 
     switch (event) {
     case 0:
-        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x1F);
+        countMissionType(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x1F);
         break;
     case 1:
-        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x20);
+        countMissionType(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x20);
+        break;
+    case 3:
+        countMissionType(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x25);
         break;
     case 2:
-        trk = &starMissionCompletionTracker[mi->trk];
-        rec = lbl_80109AE8[mi->row];
+        trk = &starMissionCompletionTracker[trkIdx];
+        rec = lbl_80109AE8[row];
         for (i = 0; i < 10; i++, rec++) {
             if (MISSION_STATUS(trk, i) >= 0) {
                 switch (rec->type) {
@@ -184,23 +218,20 @@ void fn_3_161588(s32 event, s16 rosterIdx) {
             }
         }
         break;
-    case 3:
-        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x25);
-        break;
     case 4:
-        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x23);
+        countMissionType(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x23);
         break;
     case 5:
-        countMissionTypeOnHit(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x26);
+        countMissionTypeOnHit(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x26);
         break;
     case 6:
-        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x27);
+        countMissionType(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x27);
         break;
     case 7:
         // Throw to a given teammate.
-        trk = &starMissionCompletionTracker[mi->trk];
+        trk = &starMissionCompletionTracker[trkIdx];
         fielder = &g_Fielders[g_Ball.fielderBeingThrownTo];
-        rec = lbl_80109AE8[mi->row];
+        rec = lbl_80109AE8[row];
         for (i = 0; i < 10; i++, rec++) {
             if (MISSION_STATUS(trk, i) >= 0 && rec->type == 0x28 &&
                 rec->target == lbl_800E8558[fielder->charID].row) {
@@ -209,19 +240,19 @@ void fn_3_161588(s32 event, s16 rosterIdx) {
         }
         break;
     case 8:
-        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x29);
+        countMissionType(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x29);
         break;
     case 9:
-        countMissionTypeOnHit(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x2A);
+        countMissionTypeOnHit(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x2A);
         break;
     case 10:
-        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x2C);
+        countMissionType(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x2C);
         break;
     case 11:
-        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x2D);
+        countMissionType(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x2D);
         break;
     case 12:
-        countMissionType(&starMissionCompletionTracker[mi->trk], lbl_80109AE8[mi->row], 0x2E);
+        countMissionType(&starMissionCompletionTracker[trkIdx], lbl_80109AE8[row], 0x2E);
         break;
     }
 }
@@ -322,8 +353,8 @@ void fn_3_162080(void) {
 #endif
 
 // Star mission progress after an at-bat (result: play result code, rbi: runs batted in).
-// NONMATCHING 65%: control flow and stores line up; register allocation differs throughout, the original
-// keeps q on the stack and the opponent's mission row as a byte pointer, and rbi is not re-masked there
+// NONMATCHING 81%: register allocation differs throughout, the original keeps q on the stack, hoists the
+// double-play out counts out of the fielder loop and keeps the opponent's mission row as a byte pointer
 // .text:0x0016230C size:0xA48 mapped:0x807A13A0
 #if NONMATCHING
 void fn_3_16230C(s32 result, u8 rbi) {
@@ -519,6 +550,17 @@ void fn_3_16230C(s32 result, u8 rbi) {
                                     }
                                 }
                                 break;
+                            case 30:
+                                if (result == 10) {
+                                    for (p = 0; p < 9; p++) {
+                                        if (rec->target == lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].row &&
+                                            lbl_803537E4[*(s16*)(q + 0x40)][p]._09 != 0) {
+                                            MISSION_STATUS(trk, i) = -1;
+                                            break;
+                                        }
+                                    }
+                                }
+                                break;
                             case 24:
                                 if (ball->currentStarSwing2 != 0 && rbi != 0) {
                                     MISSION_STATUS(trk, i) += rbi;
@@ -561,17 +603,6 @@ void fn_3_16230C(s32 result, u8 rbi) {
                                     MISSION_STATUS(trk, i)++;
                                     if (MISSION_STATUS(trk, i) >= rec->target) {
                                         done = 1;
-                                    }
-                                }
-                                break;
-                            case 30:
-                                if (result == 10) {
-                                    for (p = 0; p < 9; p++) {
-                                        if (rec->target == lbl_800E8558[inMemRoster[*(s16*)(q + 0x40)][p].stats.CharID].row &&
-                                            lbl_803537E4[*(s16*)(q + 0x40)][p]._09 != 0) {
-                                            MISSION_STATUS(trk, i) = -1;
-                                            break;
-                                        }
                                     }
                                 }
                                 break;

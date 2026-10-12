@@ -1,5 +1,6 @@
 #include "game/rep_37A8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_37A8
+#include "header_rep_inline.h"
 
 extern u8 g_Minigame[];
 
@@ -39,7 +40,7 @@ extern u8 lbl_3_data_21E10[];
 extern u8 lbl_3_data_21D1C[];
 extern u8 lbl_3_data_21DC4[];
 extern u8 lbl_3_data_21E04[];
-extern u8 lbl_3_data_26698[];
+extern f32 lbl_3_data_26698[3];
 extern int random_fn_3_9EE24(int max);
 extern u8 lbl_3_data_21D2C[];
 extern u8 g_Fielders[];
@@ -121,6 +122,10 @@ static s32 lbl_3_bss_B7E4;                          // frame tick for the flash
 static GXTexObj lbl_3_bss_B7C4;                     // texture object
 static u8 lbl_3_bss_B7C1;                           // hook frame counter
 static u8 lbl_3_bss_B7C0;
+
+// .data 0x00026698..0x000266A8
+f32 lbl_3_data_26698[3] = {0.5f, 0.0f, -0.5f};
+s8 lbl_3_data_266A4 = -1;
 
 // .text:0x00141C44 size:0x48
 void fn_3_141C44(void) {
@@ -578,8 +583,6 @@ void fn_3_142CA8(void) {
 // .text:0x00142DB4 size:0x31C mapped:0x80781E48
 extern f32 lbl_3_data_21BC4[][12];
 
-// NONMATCHING 69.1%: same velocity math as fn_3_1430D0 (which matches) but the original uses 4 non-lmw saved regs and a different schedule
-#if NONMATCHING
 void fn_3_142DB4(s32 idx) {
     MgRunner* r = (MgRunner*)g_Minigame + idx;
     MgBall* b;
@@ -608,8 +611,8 @@ void fn_3_142DB4(s32 idx) {
             b->pos.z = lbl_3_data_21BC4[idx][8];
         }
         b->_22 = r->player;
-        b->owner = r->player;
         ch = *(s16*)(g_Fielders + r->fielder * 0x268 + 0x17A);
+        b->owner = r->player;
         k = g_Minigame[r->player + 0x1CAD];
         h = lbl_3_rodata_385C * ((f32)lbl_3_data_7F10[ch] * charSizeMultipliers[ch][0]);
         dx = lbl_3_data_21B94[k].x - b->pos.x;
@@ -625,7 +628,6 @@ void fn_3_142DB4(s32 idx) {
         fn_3_15730C(i, b->pos.x, -b->pos.y, b->pos.z);
     }
 }
-#endif
 
 // .text:0x001430D0 size:0x288 mapped:0x80782164
 
@@ -918,7 +920,7 @@ void fn_3_14402C(s32 idx) {
             *(s8*)MU(0x34) = -1;
             *(f32*)MU(0x14) = lbl_3_rodata_3834;
             *(f32*)MU(0xC) = lbl_3_rodata_3834;
-            *(f32*)MU(0x10) = ((f32*)lbl_3_data_26698)[idx];
+            *(f32*)MU(0x10) = lbl_3_data_26698[idx];
         }
     }
 #undef MU
@@ -1912,4 +1914,3 @@ void fn_3_146A90(void) {
     fn_3_142088();
 }
 #endif
-

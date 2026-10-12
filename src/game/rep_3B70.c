@@ -1,9 +1,12 @@
 #include "game/rep_3B70.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3B70
+#include "header_rep_inline.h"
 #include "Dolphin/mtx.h"
+#include "game/auto_00_0015C230_text.h"
 
 typedef struct {
-    u8 pad0[8];
+    void* next;                 // draw-list link
+    void (*draw)(BallQuad* q);  // fn_3_15C230
     Mtx m;
     u8 pad38[0x1C];
     Vec q[4];
@@ -13,9 +16,6 @@ typedef struct {
 typedef struct {
     u8 cnt[4];
     Ent3B70 e[2][2];
-    s32 f224;
-    s32 f228;
-    s32 f22C;
 } Dat3B70;
 
 extern u8 lbl_803CBBC0;
@@ -30,6 +30,51 @@ extern void fn_800A7D4C(s32, void*);
 extern const f32 lbl_3_rodata_3BC0;
 extern const f32 lbl_3_rodata_3BC4;
 extern const f32 lbl_3_rodata_3BC8;
+
+// .data 0x000271A8..0x000273E0
+Dat3B70 lbl_3_data_271A8 = {
+    {0, 0, 0, 0},
+    {
+        {
+            {
+                NULL,
+                fn_3_15C230,
+                {{0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
+                NULL,
+            },
+            {
+                NULL,
+                fn_3_15C230,
+                {{0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
+                NULL,
+            },
+        },
+        {
+            {
+                NULL,
+                fn_3_15C230,
+                {{0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
+                NULL,
+            },
+            {
+                NULL,
+                fn_3_15C230,
+                {{0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
+                NULL,
+            },
+        },
+    },
+};
+QuadColor lbl_3_data_273CC = {100000, 128};
+QuadColor2 lbl_3_data_273D4 = {190000, 128, 0};
 
 // 94%: saved regs swapped (orig data base r31 / entry r30; ours r30 / r31), float temp regs rotated in the sel==2 branches
 // .text:0x0015C3F8 size:0x1FC mapped:0x8079B48C

@@ -1,5 +1,6 @@
 #include "game/rep_3CE0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3CE0
+#include "header_rep_inline.h"
 #include "stl/stdarg.h"
 #include "stl/mem.h"
 #include "Dolphin/gx.h"
@@ -99,9 +100,10 @@ void fn_3_15FB84(s32 count, ...) {
 
 #endif
 
-// NONMATCHING 93%: float constant pooling (docs/patterns/floats.md) and the original keeps the
+// NONMATCHING 97%: float constant pooling (docs/patterns/floats.md) and the original keeps the
 // lbl_3_data_27EC0 pool base in r30 for the first depth-clear block too
 // .text:0x0015FF28 size:0x650 mapped:0x8079EFBC
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 void fn_3_15FF28(PlayerMarkerNode* node) {
     Mtx identity;
@@ -234,3 +236,4 @@ void fn_3_15FF28(PlayerMarkerNode* node) {
     GXSetAlphaUpdate(GX_TRUE);
 }
 #endif
+#pragma pool_data reset

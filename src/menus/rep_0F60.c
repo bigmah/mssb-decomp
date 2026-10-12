@@ -975,3 +975,194 @@ void fn_2_8B418(void) {
     fn_2_8C80C(17, 27, 1, NULL, NULL);
     fn_2_8C80C(18, 28, 1, NULL, NULL);
 }
+
+// ---- 0x8E6A4..0x8ED4C: menu actor loader tasks ----
+
+extern u8 lbl_2_bss_3401C0[0x74];
+extern u8* lbl_2_bss_1A8248[];
+extern void fn_2_94854(s32 value);
+extern void fn_2_9461C(s16 value);
+extern void fn_2_94604(u8 value);
+extern void fn_2_94634(s32 i);
+
+// lbl_2_bss_340140 points at lbl_8036E548 (MenuActorMgr view).
+#define MENU_MGR ((MenuActorMgr*)lbl_2_bss_340140)
+// TODO type: lbl_2_bss_1A824C work area
+#define MENU_ACTOR_COUNT (*(s16*)(lbl_2_bss_1A824C + 0x197746))
+#define MENU_STADIUM (*(s16*)(lbl_2_bss_1A824C + 0x197706))
+
+// .text:0x0008E6A4 size:0x200
+// NONMATCHING 93.8%: actor loop induction registers rotated (i/actor/offset; docs/patterns/loops.md)
+#if NONMATCHING
+void fn_2_8E6A4(void) {
+    s32 i;
+    MenuLoadTask* parent;
+    MenuLoadTask* task = (MenuLoadTask*)lbl_803CC1B8;
+
+    switch (task->step) {
+    case 0:
+        lbl_2_bss_340140 = lbl_8036E548;
+        task->count = 0;
+        fn_2_4E824();
+        fn_80052D70();
+        fn_2_8DCD8();
+        fn_2_48DB4();
+        fn_2_93C64();
+        task->step = 1;
+        break;
+    case 1:
+        MENU_MGR->actors[task->count].files =
+            ARAMTransfer(&lbl_2_data_2FA60[lbl_2_data_2FDC0[task->kind]], 0, 0, 0);
+        task->count++;
+        task->step = 2;
+        break;
+    case 2:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            task->step = 5;
+        }
+        break;
+    case 5:
+        for (i = 0; i < MENU_ACTOR_COUNT; i++) {
+            MENU_MGR->active[i] = &((MenuActorMgr*)lbl_8036E548)->actors[i];
+            MENU_MGR->active[i]->modelIndex = i;
+            MENU_MGR->active[i]->_254 = i;
+            MENU_MGR->active[i]->kind = lbl_800E869C[MENU_STADIUM];
+            fn_2_8D270(i);
+        }
+        task->step = 6;
+        break;
+    case 6:
+        MENU_MGR->_307A = 2;
+        parent = ((MenuLoadTask*)lbl_803CC1B8)->parent;
+        parent->_10 = 1;
+        fn_800B0A14_removeQueue(parent);
+        task->step = 0;
+        break;
+    }
+}
+#endif
+
+// .text:0x0008E8A4 size:0x1DC
+// NONMATCHING 92.3%: actor loop induction registers rotated (i/actor/offset; docs/patterns/loops.md)
+#if NONMATCHING
+void fn_2_8E8A4(void) {
+    s32 i;
+    MenuLoadTask* parent;
+    MenuLoadTask* task = (MenuLoadTask*)lbl_803CC1B8;
+
+    switch (task->step) {
+    case 0:
+        lbl_2_bss_340140 = lbl_8036E548;
+        task->count = 0;
+        fn_2_4E824();
+        fn_80052D70();
+        fn_2_8DCD8();
+        fn_2_48DB4();
+        fn_2_93C64();
+        task->step = 1;
+        break;
+    case 1:
+        MENU_MGR->actors[task->count].files = ARAMTransfer(&lbl_2_data_2F990[task->kind], 0, 0, 0);
+        task->count++;
+        task->step = 2;
+        break;
+    case 2:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            task->step = 5;
+        }
+        break;
+    case 5:
+        for (i = 0; i < MENU_ACTOR_COUNT; i++) {
+            MENU_MGR->active[i] = &((MenuActorMgr*)lbl_8036E548)->actors[i];
+            MENU_MGR->active[i]->modelIndex = i;
+            MENU_MGR->active[i]->_254 = i;
+            MENU_MGR->active[i]->kind = 0x1C;
+            fn_2_8D270(i);
+        }
+        task->step = 6;
+        break;
+    case 6:
+        MENU_MGR->_307A = 2;
+        parent = ((MenuLoadTask*)lbl_803CC1B8)->parent;
+        parent->_10 = 1;
+        fn_800B0A14_removeQueue(parent);
+        task->step = 0;
+        break;
+    }
+}
+#endif
+
+// .text:0x0008EA80 size:0x2CC
+// NONMATCHING 95.7%: actor loop induction registers rotated (i/actor/offset; docs/patterns/loops.md)
+#if NONMATCHING
+void fn_2_8EA80(void) {
+    s32 i;
+    MenuLoadTask* parent;
+    MenuLoadTask* task = (MenuLoadTask*)lbl_803CC1B8;
+
+    switch (task->step) {
+    case 0:
+        lbl_2_bss_340140 = lbl_8036E548;
+        lbl_2_bss_3401BC = lbl_2_bss_3401C0;
+        task->count = 0;
+        fn_2_4E824();
+        fn_80052D70();
+        fn_2_8DCD8();
+        fn_2_48DB4();
+        fn_2_93C64();
+        task->step = 1;
+        break;
+    case 1:
+        // TODO type: lbl_2_bss_1A8248[0] + 0x441C is the selected stadium/file index
+        MENU_MGR->actors[task->count].files =
+            ARAMTransfer(&lbl_2_data_2F990[lbl_2_bss_1A8248[0][0x441C]], 0, 0, 0);
+        task->count++;
+        task->step = 2;
+        break;
+    case 2:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            task->step = 3;
+        }
+        break;
+    case 3:
+        MENU_MGR->actors[task->count].files = ARAMTransfer(&lbl_2_data_2F990[task->count + 5], 0, 0, 0);
+        task->count++;
+        task->step = 4;
+        break;
+    case 4:
+        if ((s32)lbl_803C6CF8[0x715] == 1) {
+            if (task->count == MENU_ACTOR_COUNT) {
+                task->step = 5;
+            } else {
+                task->step = 3;
+            }
+        }
+        break;
+    case 5:
+        for (i = 0; i < MENU_ACTOR_COUNT; i++) {
+            MENU_MGR->active[i] = &((MenuActorMgr*)lbl_8036E548)->actors[i];
+            MENU_MGR->active[i]->modelIndex = i;
+            MENU_MGR->active[i]->_254 = i;
+            MENU_MGR->active[i]->kind = lbl_2_data_3CD0[i];
+            fn_2_8D270(i);
+        }
+        task->step = 6;
+        break;
+    case 6:
+        task->step = 7;
+        break;
+    case 7:
+        fn_2_94854(0xB);
+        fn_2_9461C(0);
+        fn_2_94604(0);
+        fn_2_94634(1);
+        fn_2_93C64();
+        MENU_MGR->_307A = 2;
+        parent = ((MenuLoadTask*)lbl_803CC1B8)->parent;
+        parent->_10 = 1;
+        fn_800B0A14_removeQueue(parent);
+        task->step = 0;
+        break;
+    }
+}
+#endif

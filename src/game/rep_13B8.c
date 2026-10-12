@@ -1,5 +1,6 @@
 #include "game/rep_13B8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_13B8
+#include "header_rep_inline.h"
 #include "math.h"
 extern const f32 lbl_3_rodata_14E4;
 extern const f32 lbl_3_rodata_14E0;

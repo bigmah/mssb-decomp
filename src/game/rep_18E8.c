@@ -13,7 +13,8 @@
 #include "game/rep_540.h"
 #include "game/rep_12D0.h"
 #include "main/file_80024184.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_18E8
+#include "header_rep_inline.h"
 #include "PowerPC_EABI_Support/MSL_C/MSL_Common/math_api.h"
 
 extern GameScores g_Scores;

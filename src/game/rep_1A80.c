@@ -1,3 +1,4 @@
 #include "game/rep_1A80.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1A80
+#include "header_rep_inline.h"
 

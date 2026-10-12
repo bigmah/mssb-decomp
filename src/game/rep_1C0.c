@@ -1,5 +1,6 @@
 #include "game/rep_1C0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1C0
+#include "header_rep_inline.h"
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/GX.h"
 #include "Dolphin/mtx.h"
@@ -207,7 +208,7 @@ StadiumDrawData lbl_3_data_7EC = {
 
 StadiumDrawFn lbl_3_data_A10[2] = {NULL, NULL}; // per camera set: deferred draw callback
 
-void (*lbl_3_bss_18[6])(void); // extra stadium draw hook (fn_3_35E4); only [0] is used
+static void (*lbl_3_bss_18[6])(void); // extra stadium draw hook (fn_3_35E4); only [0] is used
 extern f32 lbl_3_rodata_504;
 extern f32 lbl_3_rodata_524;
 extern f32 lbl_3_rodata_528;
@@ -413,7 +414,8 @@ void fn_3_3904(s16 x, s16 y, s32 msg, GXColor color0, GXColor color1, u8 flags) 
 // Draws the texel rect (u, v, uw, vh) of `img` as a screen quad (x0, y0)-(x1, y1).
 // Tex coords are s16 with 9 fractional bits.
 // .text:0x00003BE8 size:0x300 mapped:0x80642C7C
-// NONMATCHING 94%: float constant pooling (-0.5f reloaded per vertex in the original) and r28/r31 swap
+// NONMATCHING 96%: float constant pooling (-0.5f reloaded per vertex in the original) and r28/r31 swap
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 void fn_3_3BE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 uw, s16 vh) {
     GXTexObj tex;
@@ -464,10 +466,12 @@ void fn_3_3BE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 
     GXWGFifo.s16 = v + vh;
 }
 #endif
+#pragma pool_data reset
 
 // Like fn_3_3BE8 with point sampling and normalized float tex coords.
 // .text:0x00003EE8 size:0x3E4 mapped:0x80642F7C
-// NONMATCHING 77%: scheduling of the int->float conversions; float constant pooling
+// NONMATCHING 82%: scheduling of the int->float conversions
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 void fn_3_3EE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 uw, s16 vh) {
     GXTexObj tex;
@@ -527,6 +531,7 @@ void fn_3_3EE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 
 // glyph (the outline), then the glyph texel rect (sx, sy, sw, sh) on top.
 // Bit 0 of flags inverts the glyph.
 #endif
+#pragma pool_data reset
 
 // .text:0x000042CC size:0x6B8 mapped:0x80643360
 // NONMATCHING 99.8%: r0/r5/r11 allocation of the sx/sw/sy/sh int->float temps, f25/f27 swap
@@ -666,8 +671,8 @@ extern GameScores g_Scores;
 // and the two totals. From extra innings on, the board starts at the inning
 // after the stadium's last regular column.
 // .text:0x00004A38 size:0x558 mapped:0x80643ACC
-// NONMATCHING 73%: the original copies each local table from its own rodata symbol (ours share one
-// pooled base) and lays out the stack differently; control flow and calls match.
+// NONMATCHING 98%: stack layout and register allocation; control flow and calls match.
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 void fn_3_4A38(u8 stadium) {
     GXColor colors[7][2] = {
@@ -739,6 +744,7 @@ void fn_3_4A38(u8 stadium) {
 // cells, using the digit messages 0-9. `boxed` first draws a box in color0
 // in front of the digits.
 #endif
+#pragma pool_data reset
 
 // .text:0x00004F90 size:0x450 mapped:0x80644024
 // NONMATCHING 95%: saved-register allocation; right/bottom kept unextended in the original
@@ -824,7 +830,8 @@ void fn_3_53E0(u16* in, s16* x, s16* y, s16* w, s16* h, s16* page) {
 }
 
 // .text:0x00005518 size:0x164 mapped:0x806445AC
-// NONMATCHING 99.8%: r29/r31 swapped between the texture list and the image offset
+// NONMATCHING 91%: r29/r31 swapped between the texture list and the image offset
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 // Copies the rendered scoreboard into the stadium's scoreboard texture.
 void fn_3_5518(void) {
@@ -852,6 +859,7 @@ void fn_3_5518(void) {
     GXPixModeSync();
 }
 #endif
+#pragma pool_data reset
 
 
 // Per-frame stadium update: queues the sky objects and draw nodes of every
