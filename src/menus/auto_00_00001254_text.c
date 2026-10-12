@@ -4198,16 +4198,16 @@ void fn_2_104FC(u16 port) {
 }
 #endif
 
-// NONMATCHING 60%: plain C; the original inlines fn_2_EC54/fn_2_C698 at every use, unrolls
-// the slot searches and shares one fn_2_1C34(0x200) tail.
+// NONMATCHING 85%: register allocation differs throughout and the original walks the roster
+// with pointers where ours indexes it; fn_2_EC54/fn_2_C698 inline as in the original.
 #if NONMATCHING
 static void fn_2_CE44_clear_ratings(void) {
     s32 i;
-    for (i = 0; i < 9; i++) {
-        lbl_803C6724[0x26 + i] = 0;
-    }
-    for (i = 0; i < 9; i++) {
-        lbl_803C6724[0x2F + i] = 0;
+    s32 j;
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 9; j++) {
+            lbl_803C6724[i * 9 + 0x26 + j] = 0;
+        }
     }
 }
 
@@ -4223,7 +4223,7 @@ static void fn_2_CE44_reset_both(void) {
 }
 
 // fn_2_CE44, size:0x1168
-void fn_2_CE44(s8 team) {
+void fn_2_CE44(u8 team) {
     s32* state = (s32*)lbl_2_bss_F468;
     s32 cap;
     u8* row;
@@ -4233,7 +4233,7 @@ void fn_2_CE44(s8 team) {
     s32 st;
     s32 i;
     s32 t;
-    if (g_d_GameSettings.GameModeSelected == 5 && lbl_2_bss_F468[0x3F] != 0) {
+    if ((g_d_GameSettings.GameModeSelected == 5 && lbl_2_bss_F468[0x3F] != 0) ? 1 : 0) {
         sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
         return;
     }
@@ -4366,81 +4366,86 @@ void fn_2_CE44(s8 team) {
                 state[team] = 8;
             }
         }
+        st = state[team + 2];
         for (i = 0; i < 9; i++) {
-            if ((s8)row[i + 0x14] == state[team + 2]) {
+            if ((s8)row[i + 0x14] == st) {
                 slot = i;
             }
         }
         if ((s8)row[slot + 2] != -1) {
+            s32 old;
             fn_2_C698(slot, team);
             fn_800506E8(team, (s8)row[slot + 2], 0);
             fn_80067B40(team, row[slot + 2], 0);
+            old = (s8)row[slot + 2]; // the removed character, read before the slot is cleared
             row[slot + 0x26] = 0;
             row[slot + 2] = -1;
             lbl_2_bss_F468[0x3D] = 0;
-            lbl_8034E9A0[(s8)row[slot + 2] + 0x4757] = 0;
+            lbl_8034E9A0[old + 0x4757] = 0;
             row[slot + 0x4A] = 0;
             lbl_2_bss_F468[0x37 + team] = 0;
         }
         fn_800625A4(team, 0x10);
         goto end;
     }
-    if (lbl_2_bss_100B8[0x2E + team] != 0) {
-        lbl_2_bss_100B8[0x2E + team] = 0;
-        fn_800625A4(team, 0x12);
-        ((void (*)(u32))fn_2_1C34)(0x200);
-        return;
-    }
-    if (n != 0) {
-        state[team + 2] = state[team];
-        state[team] = 8;
-        if (cap == (s8)row[8 + 2]) {
-            state[team]--;
+    if (st == 9 || st == 10) {
+        if (lbl_2_bss_100B8[0x2E + team] != 0) {
+            lbl_2_bss_100B8[0x2E + team] = 0;
+            fn_800625A4(team, 0x12);
+            ((void (*)(u32))fn_2_1C34)(0x200);
+            return;
         }
-        fn_800625A4(team, 0x15);
-        ((void (*)(u32))fn_2_1C34)(0x200);
-        return;
-    }
-    if (lbl_803C66B0[0x55] != 0 || lbl_803C66B0[0x56] != 0) {
-        return;
-    }
-    fn_2_CE44_clear_ratings();
-    lbl_2_bss_F468[0x46] = 0;
-    lbl_2_bss_F468[0x45] = 0;
-    state[1] = 0;
-    state[0] = 0;
-    lbl_2_bss_F468[0x60] = 0;
-    lbl_2_bss_F468[0x5F] = 0;
-    for (t = 0; t < 2; t++) {
-        u8* r = lbl_803C6724 + t * 9;
-        for (i = 1; i < 9; i++) {
-            s8 id = r[i + 2];
-            lbl_8034E9A0[id + 0x4757] = 0;
-            fn_800506E8(*(s8*)(lbl_8034E9A0 + 0x46F8 + t), id, 0);
-            fn_80067B40(t, r[i + 2], 0);
-            r[i + 2] = -1;
-            r[i + 0x4A] = 0;
-            r[i + 0x26] = 0;
-        }
-        lbl_2_bss_F468[0x37 + t] = 0;
-        if (state[t] == 9) {
-            state[t] = 0;
-            switch (t) {
-            case 0:
-                if ((s8)lbl_803C6724[2] == *(s32*)(lbl_8034E9A0 + 0x46E0)) {
-                    state[0] = 1;
-                }
-                break;
-            case 1:
-                if ((s8)lbl_803C6724[0xB] == *(s32*)(lbl_8034E9A0 + 0x46E4)) {
-                    state[1] = 0xB;
-                }
-                break;
+        if (n != 0) {
+            state[team + 2] = state[team];
+            state[team] = 8;
+            if (cap == (s8)row[8 + 2]) {
+                state[team]--;
             }
+            fn_800625A4(team, 0x15);
+            ((void (*)(u32))fn_2_1C34)(0x200);
+            return;
         }
-        lbl_2_bss_F468[0x3D + t] = 0;
+        if (lbl_803C66B0[0x55] != 0 || lbl_803C66B0[0x56] != 0) {
+            return;
+        }
+        fn_2_CE44_clear_ratings();
+        lbl_2_bss_F468[0x46] = 0;
+        lbl_2_bss_F468[0x45] = 0;
+        state[1] = 0;
+        state[0] = 0;
+        lbl_2_bss_F468[0x60] = 0;
+        lbl_2_bss_F468[0x5F] = 0;
+        for (t = 0; t < 2; t++) {
+            u8* r = lbl_803C6724 + t * 9;
+            for (i = 1; i < 9; i++) {
+                s8 id = r[i + 2];
+                lbl_8034E9A0[id + 0x4757] = 0;
+                fn_800506E8(*(s8*)(lbl_8034E9A0 + 0x46F8 + t), id, 0);
+                fn_80067B40(t, r[i + 2], 0);
+                r[i + 2] = -1;
+                r[i + 0x4A] = 0;
+                r[i + 0x26] = 0;
+            }
+            lbl_2_bss_F468[0x37 + t] = 0;
+            if (state[t] == 9) {
+                state[t] = 0;
+                switch (t) {
+                case 0:
+                    if ((s8)lbl_803C6724[2] == *(s32*)(lbl_8034E9A0 + 0x46E0)) {
+                        state[0] = 1;
+                    }
+                    break;
+                case 1:
+                    if ((s8)lbl_803C6724[0xB] == *(s32*)(lbl_8034E9A0 + 0x46E4)) {
+                        state[1] = 0xB;
+                    }
+                    break;
+                }
+            }
+            lbl_2_bss_F468[0x3D + t] = 0;
+        }
+        fn_2_EC54(team);
     }
-    fn_2_EC54(team);
 end:
     ((void (*)(u32))fn_2_1C34)(0x200);
 }
