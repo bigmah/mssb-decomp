@@ -10,7 +10,7 @@ extern const f32 lbl_2_rodata_C28;
 #include "main/file_80011640.h"
 extern const f32 lbl_2_rodata_BA0;
 
-extern u8 lbl_800F7478[];
+extern StadiumLights lbl_800F7478[]; // per stadium (main/file_80011640.h)
 
 extern void fn_2_69E1C(s32 index);
 
@@ -588,7 +588,7 @@ void fn_2_6C2E8(MenuEntry* object) {
 
 // fn_2_6BA50, size:0x5C
 void fn_2_6BA50(MenuEntry* object) {
-    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    GXColor color = lbl_800F7478[0].ambient;
     color.a = 0xFF;
     fn_800BD2CC(0, color);
     object->state = 2;
@@ -1106,7 +1106,7 @@ void fn_2_6CCB8(MenuEntry* owner) {
         owner->mode = 4;
         owner->flagC4 = 1;
         for (i = 0; i < 4; i++) {
-            if (lbl_2_bss_1A8248[0]->entries[0].targetLocation == *(s16*)((u8*)lbl_2_data_3D30 + lbl_2_bss_1A8248[0]->entries[0].locationIndex * 8 + i * 2)) {
+            if (lbl_2_bss_1A8248[0]->entries[0].targetLocation == lbl_2_data_3D30[lbl_2_bss_1A8248[0]->entries[0].locationIndex][i]) {
                 lbl_2_bss_1A8248[0]->_4448 = i;
             }
         }
