@@ -8,8 +8,10 @@
 #include "main/file_80008E00.h"
 #include <string.h>
 
-// This unit's .bss (emitted in reverse order of definition). Sizes are the
-// distances between the original symbols; TODO type: the buffers are byte views.
+// This unit's .bss (emitted in reverse order of definition). Sizes are the distances
+// between the original symbols; only the leading elements are used: lbl_2_bss_20[0] and
+// lbl_2_bss_3A0[0] are step counters, lbl_2_bss_3E0 s8 flags per batting slot and
+// lbl_2_bss_3A8 one byte per character.
 static s16 lbl_2_bss_3E4[0x1BA];
 static u8 lbl_2_bss_3E0[4];
 static u8 lbl_2_bss_3A8[0x38];
@@ -157,7 +159,7 @@ void fn_2_6138(void) {
 
 // fn_2_35D0, size:0x54
 u8 fn_2_35D0(u8 index) {
-    u8* flag = (u8*)((u32)&lbl_2_bss_F468._45 + index); // TODO port: pointer math through u32 (needed to match)
+    u8* flag = (u8*)lbl_2_bss_F468._45 + (u32)index; // = &_45[index]; the unsigned index matches
     if (*flag != 0) {
         *flag = 0;
         sndFXRelated(0x200);
