@@ -583,8 +583,6 @@ void fn_800385F0(RigidBody* rb, f32 len, f32 frac, f32 radius, f32 mass) {
 }
 
 // .text:0x800387B0 size:0x398
-// NONMATCHING 99.8%: f1/f2 swapped for force.y and the 0.0f constant in the ground-friction test
-#if NONMATCHING
 void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
     Vec dv;
     Vec d;
@@ -599,6 +597,7 @@ void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
     f32 len;
     f32 fmag;
     f32 vmag;
+    f32 fy;
 
     // gravity and external force on the last node
     for (i = 0; i < count; i++) {
@@ -652,8 +651,8 @@ void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
                 PSVECScale(&d, p->drag * (speed * speed), &d);
                 PSVECAdd(&acc, &d, &acc);
             }
-            if (node->pos.y <= node->floorY && node->force.y < lbl_803CC728) {
-                len = node->force.y * p->friction;
+            if (node->pos.y <= node->floorY && (fy = node->force.y) < lbl_803CC728) {
+                len = fy * p->friction;
                 if (len < lbl_803CC728) {
                     len = -len;
                 }
@@ -663,7 +662,7 @@ void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
                 dv.y = lbl_803CC728;
                 vmag = PSVECMag(&dv);
                 if (vmag != lbl_803CC728 || fmag > len) {
-                    if (vmag != 0.0f) {
+                    if (vmag) {
                         PSVECNormalize(&dv, &d);
                     } else {
                         PSVECNormalize(&d, &d);
@@ -679,7 +678,6 @@ void fn_800387B0(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
         }
     }
 }
-#endif
 
 // .text:0x80038B48 size:0x188
 void fn_80038B48(RopeParams* p, RopeNode* nodes, s32 count, Vec* force) {
@@ -864,7 +862,7 @@ void fn_80038F08(CharModelObj* obj, Model* model, u8 joint) {
 #endif
 
 // .text:0x80039310 size:0x73C
-// NONMATCHING 98%: float register allocation differs (the original keeps one more callee-saved FPR, f24)
+// NONMATCHING 98.0%: float register allocation differs (the original keeps one more callee-saved FPR, f24)
 #if NONMATCHING
 void fn_80039310(BatSim* bat, f32 floorY, f32 minEnergy) {
     Mtx rotM;

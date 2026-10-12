@@ -657,7 +657,7 @@ u8 sBoxFaces[6][4] = {
     {0, 3, 7, 4}, {2, 1, 5, 6}, {0, 1, 2, 3}, {7, 6, 5, 4}, {3, 2, 6, 7}, {0, 4, 5, 1},
 };
 
-// NONMATCHING 99%: register allocation of the corner loop pointers, fcmpu operand order
+// NONMATCHING 99.0%: register allocation of the corner loop pointers, fcmpu operand order
 #if NONMATCHING
 // Tests the convex quad against the box's 8 corners. Returns 0 when no corner is behind the
 // quad's plane, 1 when a box edge crosses the plane inside the quad, -1 otherwise.
@@ -731,7 +731,7 @@ s32 fn_800B81C0(Vec *quad, Vec *box)
 }
 #endif
 
-// NONMATCHING 97.8%: FPR allocation (the 1.0f constant and right-left swap registers)
+// NONMATCHING 97.7%: FPR allocation (the 1.0f constant and right-left swap registers)
 #if NONMATCHING
 // Sets up frustum `index` from the window [left, right] x [bottom, top] at distance
 // `focalLength`, clipped to [near, far].
