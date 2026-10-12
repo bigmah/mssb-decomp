@@ -2583,6 +2583,8 @@ extern u32 minigame_checkIfAIInputIs_Algorithmic_Or_ControllerBased(u8);
 
 extern u8 swingSoundFrame[2][4];
 
+// m_sound.c declares its own typed view (SndState34C58) of this object.
+#ifndef M_SOUND_SNDSTATE
 extern struct {
     /* 0x00 */ void* _00; // file loaded by ARAMTransfer
     /* 0x04 */ u32 _04;
@@ -2611,6 +2613,7 @@ extern struct {
     /* 0x33 */ u8 _33;
     /* 0x34 */ u8 _34;
 } lbl_3_common_bss_34C58; // size: 0x38
+#endif
 
 extern InputStruct g_Controls[];
 
