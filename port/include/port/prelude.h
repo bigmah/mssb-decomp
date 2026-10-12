@@ -104,6 +104,10 @@ static inline uint32_t port_rlwimi(uint32_t a, uint32_t b, int sh, int mb, int m
 #include <dolphin/base/PPCArch.h>
 #include "port/sdk_compat.h"
 
+// DVD callbacks run under the port's interrupt lock (port/src/dvd_irq.c).
+BOOL port_DVDReadAsyncPrio(DVDFileInfo* fileInfo, void* addr, s32 length, s32 offset, DVDCallback callback, s32 prio);
+#define DVDReadAsyncPrio port_DVDReadAsyncPrio
+
 #include "port/endian.h"
 #include "port/ptr32.h"
 #include "port/blob.h"
