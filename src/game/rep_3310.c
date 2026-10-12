@@ -68,11 +68,38 @@ extern void fn_80024FA4(void* model, void* data, void* state, s32 frame);
 extern void* _OSAllocFromHeap(int, int);
 extern void fn_80025C58(void*, void*);
 
+// .data 0x000225F0..0x000226E0
+AssetLoadInstructions lbl_3_data_225F0[3] = {
+    {1035, {0x40001640}, {0x8EB4800}, 3128},
+    {1035, {0x400B2D00}, {0x8EB5800}, 436552},
+    {0, {1670}, {0x8F20800}, 1672},
+};
+f32 lbl_3_data_22620[3] = {0.0f, -0.15f, 18.5f};
+f32 lbl_3_data_2262C = 0.45f;
+u8 lbl_3_data_22630[4] = {0, 1, 3, 2}; // unreferenced
+u8 lbl_3_data_22634[4] = {15, 15, 15, 15};
+u8 lbl_3_data_22638[4] = {2, 0, 3, 1};
+u8 lbl_3_data_2263C[2] = {0, 1};
+u8 lbl_3_data_2263E = 2;
+u8 lbl_3_data_2263F = 6;
+f32 lbl_3_data_22640[4] = {0.75f, 0.05f, 3.0f, 0.02f}; // unreferenced
+f32 lbl_3_data_22650[3] = {5.0f, 5.0f, 10.0f};
+Rep3310BallCfg lbl_3_data_2265C = {{1, 0, 2, 3}, 2.0f, 8.0f, 1.0f, 60};
+u8 lbl_3_data_22670[8] = {2, 0, 3, 4, 1, 0, 0, 0};
+f32 lbl_3_data_22678[4] = {2.0f, 2.5f, 1.0f, 1.0f};
+f32 lbl_3_data_22688[3] = {0.5f, 0.0f, -0.5f};
+f32 lbl_3_data_22694[6] = {0.5f, 1.0f, 1.0f, 0.5f, 0.5f, 0.5f};
+s16 lbl_3_data_226AC[8] = {0, 0, 20, 10, 0, 0, 3920, 0};
+u8 lbl_3_data_226BC[8] = {3, 1, 4, 2, 0, 0, 0, 0};
+f32 lbl_3_data_226C4[4] = {1.5f, 0.7f, 1.0f, 0.5f};
+f32 lbl_3_data_226D4[2] = {1.0f, 30.0f};
+f32 lbl_3_data_226DC = 4.0f;
+
 // .text:0x00116840 size:0x190 mapped:0x807558D4
-// NONMATCHING 84%: the original reaches lbl_3_data_22678/22688/22694/226AC through the lbl_3_data_225F0 pooled base (a u8* d = lbl_3_data_225F0 + offsets version reached 97%, but indexes past that object's end); the 0x88 table lookup is addi+lfsx there
-#if NONMATCHING
 extern f32 lbl_3_data_22678[];
 extern f32 lbl_3_data_22688[];
+
+
 // Places the 3 runners (sprites 0x82..0x84); a runner that just started (state 0x1C == 1)
 // gets its idle animation.
 void fn_3_116840(void) {
@@ -98,7 +125,6 @@ void fn_3_116840(void) {
         }
     }
 }
-#endif
 
 // .text:0x001169D0 size:0x168 mapped:0x80755A64
 void fn_3_1169D0(void) {
@@ -1795,31 +1821,4 @@ void fn_3_11D2C8(s32 idx, s32 start, s32 count, void* animBank, struct sHdr* skH
     }
 }
 
-
-// .data 0x000225F0..0x000226E0
-AssetLoadInstructions lbl_3_data_225F0[3] = {
-    {1035, {0x40001640}, {0x8EB4800}, 3128},
-    {1035, {0x400B2D00}, {0x8EB5800}, 436552},
-    {0, {1670}, {0x8F20800}, 1672},
-};
-f32 lbl_3_data_22620[3] = {0.0f, -0.15f, 18.5f};
-f32 lbl_3_data_2262C = 0.45f;
-u8 lbl_3_data_22630[4] = {0, 1, 3, 2}; // unreferenced
-u8 lbl_3_data_22634[4] = {15, 15, 15, 15};
-u8 lbl_3_data_22638[4] = {2, 0, 3, 1};
-u8 lbl_3_data_2263C[2] = {0, 1};
-u8 lbl_3_data_2263E = 2;
-u8 lbl_3_data_2263F = 6;
-f32 lbl_3_data_22640[4] = {0.75f, 0.05f, 3.0f, 0.02f}; // unreferenced
-f32 lbl_3_data_22650[3] = {5.0f, 5.0f, 10.0f};
-Rep3310BallCfg lbl_3_data_2265C = {{1, 0, 2, 3}, 2.0f, 8.0f, 1.0f, 60};
-u8 lbl_3_data_22670[8] = {2, 0, 3, 4, 1, 0, 0, 0};
-f32 lbl_3_data_22678[4] = {2.0f, 2.5f, 1.0f, 1.0f};
-f32 lbl_3_data_22688[3] = {0.5f, 0.0f, -0.5f};
-f32 lbl_3_data_22694[6] = {0.5f, 1.0f, 1.0f, 0.5f, 0.5f, 0.5f};
-s16 lbl_3_data_226AC[8] = {0, 0, 20, 10, 0, 0, 3920, 0};
-u8 lbl_3_data_226BC[8] = {3, 1, 4, 2, 0, 0, 0, 0};
-f32 lbl_3_data_226C4[4] = {1.5f, 0.7f, 1.0f, 0.5f};
-f32 lbl_3_data_226D4[2] = {1.0f, 30.0f};
-f32 lbl_3_data_226DC = 4.0f;
 
