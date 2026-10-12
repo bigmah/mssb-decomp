@@ -2359,8 +2359,6 @@ void fn_1_116EC(void* object) {
 
 // .text:0x1125C size:0x4B8
 // Draws the floor: a green line grid, or the selected floor texture tiled ch_5F60 times.
-// NONMATCHING ~90%: the original reloads the float constants after every FIFO write (non-const rodata); register allocation
-#if NONMATCHING
 void fn_1_1125C(u8* object) {
     Mtx44 projection;
     s32 i;
@@ -2432,7 +2430,6 @@ void fn_1_1125C(u8* object) {
     GXColor1u32(0xFFFFFFFF);
     GXTexCoord2u16(ch_5F60, 0);
 }
-#endif
 
 // .text:0x10E2C size:0x430
 // Draws a small axis gizmo (22 line vertices) at the given model matrix.
