@@ -2,4 +2,4 @@
 // one global per unit as in the original link (the linker puts all commons after the other .bss).
 #include "types.h"
 
-u32 lbl_3_common_bss_350E4[0x1C]; // TODO type
+u32 lbl_3_common_bss_350E4[0x1C]; // TODO type: StadiumObjMgr (0x70), still defined inside rep_1D58.c; needs moving to a header
