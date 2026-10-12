@@ -52,7 +52,9 @@ typedef struct MenuCharSelect {
     /*0x46E8*/ u8* _46E8[4]; // heap marks (CharSelectState, main/charsel_state_type.h)
     /*0x46F8*/ u8 _46F8[0x4701 - 0x46F8];
     /*0x4701*/ u8 _4701;
-    /*0x4702*/ u8 _4702[0x4755 - 0x4702];
+    /*0x4702*/ u8 _4702[0x4748 - 0x4702];
+    /*0x4748*/ void* _4748[2]; // menu tasks (CharSelectState)
+    /*0x4750*/ u8 _4750[0x4755 - 0x4750];
     /*0x4755*/ u8 _4755;
 } MenuCharSelect;
 extern MenuCharSelect lbl_8034E9A0;

@@ -26,10 +26,6 @@ typedef struct GameSettingsView {
 } GameSettingsView;
 
 
-typedef struct Unk803716B8 {
-    /*0x000*/ u8 _000[0x1E8];
-    /*0x1E8*/ u8 _1E8;
-} Unk803716B8;
 
 // Camera returned by fn_80052734.
 typedef struct CameraView {
@@ -52,7 +48,7 @@ typedef struct ShadowView {
 
 
 extern GameSettingsView g_d_GameSettings;
-extern Unk803716B8 lbl_803716B8;
+extern AramLoader lbl_803716B8; // main/file_80021308.h
 extern DiskFileEntry* lbl_803CB790;
 extern u32 lbl_803CBBF0;
 extern CharLoadTask* lbl_803CC1B8;
@@ -762,7 +758,7 @@ u8 LoadModel(CharActor* actor) {
         }
         lbl_803CBC14 = 1;
     }
-    if (lbl_803716B8._1E8 == 0) {
+    if (lbl_803716B8.keepTask == 0) {
         part = lbl_803CBC10;
         tex = actor->parts->tex;
         // TODO(port): the file header holds 32-bit offsets relocated in place; on PC
@@ -801,7 +797,7 @@ static inline BOOL loadPartModel(CharPart* part, s8 kind, s32 mode, void* tex) {
         lbl_803CBC0C = 1;
         fn_80021CA4(kind, mode, part->files);
     }
-    if (lbl_803716B8._1E8 == 0) {
+    if (lbl_803716B8.keepTask == 0) {
         part = lbl_803CBC1C;
         lbl_803CBC0C = 0;
         // TODO(port): the file header holds 32-bit offsets relocated in place; on PC
@@ -1306,7 +1302,7 @@ s32 fn_80014E50(s32 id) {
             ARAMTransfer(&lbl_803CB790[file], lbl_8036E548.preload[2].buffer, 0, 0);
         }
         lbl_8036E548.preload[2].state = 2;
-    } else if (lbl_803716B8._1E8 == 0 && (s32)(u8)lbl_803C6CF8.idle == 1) {
+    } else if (lbl_803716B8.keepTask == 0 && (s32)(u8)lbl_803C6CF8.idle == 1) {
         lbl_8036E548.preload[2].id = id;
         lbl_8036E548.preload[2].state = 0;
         return 1;
@@ -2298,7 +2294,7 @@ s32 fn_8001758C(u8* state, s32 actorIdx, u8 kind, u8 team, u8 roster, s8 arg5, u
         *state = 1;
         break;
     case 1:
-        if (lbl_803716B8._1E8 == 0 && (s32)(u8)lbl_803C6CF8.idle == 1) {
+        if (lbl_803716B8.keepTask == 0 && (s32)(u8)lbl_803C6CF8.idle == 1) {
         load:
             fn_80017814(actor, actor->modelIndex, index, fn_8001FDD4);
             return 1;
