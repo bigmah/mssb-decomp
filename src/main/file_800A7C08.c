@@ -23,7 +23,7 @@ extern s32 OSSignalSemaphore(OSSemaphore* sem);
 void* fn_800A7C08(void* arg) {
     GXRenderModeObj* rmode;
     DrawCallbackNode* node;
-    u32 next;
+    uintptr_t next;
 
     lbl_803C7420.field = 0;
     while (TRUE) {
@@ -58,8 +58,12 @@ void* fn_800A7C08(void* arg) {
 
 // .text:0x800A7D4C size:0x30
 void fn_800A7D4C(s32 index, DrawCallbackNode* node) {
+#ifdef TARGET_PC
+    node->next.raw = (lbl_803C7420.drawList[index].raw & ~(uintptr_t)3) | (node->next.raw & 3);
+#else
     node->next.bits.addr = lbl_803C7420.drawList[index].bits.addr;
-    lbl_803C7420.drawList[index].raw = (u32)node | 1;
+#endif
+    lbl_803C7420.drawList[index].raw = (uintptr_t)node | 1;
 }
 
 // .text:0x800A7D7C size:0x34
@@ -67,7 +71,7 @@ void fn_800A7D7C(DrawLink* list, s32 count) {
     lbl_803C7420.drawList = list;
     count--;
     do {
-        list->raw = (u32)(list + 1) | 1;
+        list->raw = (uintptr_t)(list + 1) | 1;
         list++;
     } while (--count != 0);
     list->raw = 0;
@@ -189,7 +193,7 @@ void initRenderMode(GXRenderModeObj* rmode, u32 fifoSize, u32 overscan) {
     fn_800AD054(heapLo, arenaHi);
     lbl_803C7420.heapLo = heapLo;
     lbl_803C7420.heapHi = arenaHi;
-    lbl_803C7420.heapSize = OSRoundUp32B(arenaHi - heapLo);
+    lbl_803C7420.heapSize = (u32)OSRoundUp32B(arenaHi - heapLo);
     OSSetArenaLo(arenaHi);
 
     VIConfigure(lbl_803C7420.renderMode);
@@ -1083,30 +1087,31 @@ static inline void CardTaskFinish(s16 result) {
 }
 
 // Turns the file offsets inside a TPL loaded into memory into pointers.
-// TODO type: offsets are stored in pointer fields (32-bit only).
+// TODO(port): offsets are stored in 4-byte pointer fields on disc; TEXPalette
+// needs PTR32 fields (or a native copy) on PC.
 static inline void UnpackTexPalette(TEXPalette* pal) {
     u16 i;
 
     if (pal->versionNumber != 2142000) {
         OSPanic(lbl_803CCEE0, 0x52F, lbl_800E7A38 + 0x2C);
     }
-    pal->descriptorArray = (TEXDescriptor*)((u32)pal->descriptorArray + (u32)pal);
+    pal->descriptorArray = (TEXDescriptor*)((uintptr_t)pal->descriptorArray + (uintptr_t)pal);
     for (i = 0; i < pal->numDescriptors; i++) {
         if (pal->descriptorArray[i].textureHeader != NULL) {
             pal->descriptorArray[i].textureHeader =
-                (TEXHeader*)((u32)pal + (u32)pal->descriptorArray[i].textureHeader);
+                (TEXHeader*)((uintptr_t)pal + (uintptr_t)pal->descriptorArray[i].textureHeader);
             if (!pal->descriptorArray[i].textureHeader->unpacked) {
                 pal->descriptorArray[i].textureHeader->data =
-                    (Ptr)((u32)pal + (u32)pal->descriptorArray[i].textureHeader->data);
+                    (Ptr)((uintptr_t)pal + (uintptr_t)pal->descriptorArray[i].textureHeader->data);
                 pal->descriptorArray[i].textureHeader->unpacked = TRUE;
             }
         }
         if (pal->descriptorArray[i].CLUTHeader != NULL) {
             pal->descriptorArray[i].CLUTHeader =
-                (CLUTHeader*)((u32)pal + (u32)pal->descriptorArray[i].CLUTHeader);
+                (CLUTHeader*)((uintptr_t)pal + (uintptr_t)pal->descriptorArray[i].CLUTHeader);
             if (!pal->descriptorArray[i].CLUTHeader->unpacked) {
                 pal->descriptorArray[i].CLUTHeader->data =
-                    (Ptr)((u32)pal + (u32)pal->descriptorArray[i].CLUTHeader->data);
+                    (Ptr)((uintptr_t)pal + (uintptr_t)pal->descriptorArray[i].CLUTHeader->data);
                 pal->descriptorArray[i].CLUTHeader->unpacked = TRUE;
             }
         }
@@ -2301,7 +2306,7 @@ void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl,
         fn_800ACFB0(defaultBanner);
     }
     lbl_803CC164 = cursor;
-    lbl_802EF330.commentAddr = cursor - lbl_803CC16C;
+    lbl_802EF330.commentAddr = (u32)(cursor - lbl_803CC16C);
 }
 #endif
 
@@ -2420,7 +2425,7 @@ typedef struct HeapBlockHeader {
 void fn_800ACF14(void* block) {
     u8* hi = ((HeapBlockHeader*)block)[-1].prev;
     lbl_803C7898.hi = hi;
-    lbl_803C7898.freeSize = hi - lbl_803C7898.lo;
+    lbl_803C7898.freeSize = (s32)(hi - lbl_803C7898.lo);
 }
 
 // .text:0x800ACF34 size:0x44
@@ -2435,11 +2440,11 @@ void* fn_800ACF34(s32 align, s32 size) {
     size = (size + 3) & ~3;
     oldHi = heap->hi;
     lo = heap->lo;
-    block = (u8*)(-align & (u32)(oldHi - size));
+    block = (u8*)(-align & (uintptr_t)(oldHi - size));
     newHi = block - sizeof(HeapBlockHeader);
     ((HeapBlockHeader*)block)[-1].prev = oldHi;
-    ((HeapBlockHeader*)block)[-1].size = oldHi - newHi;
-    heap->freeSize = newHi - lo;
+    ((HeapBlockHeader*)block)[-1].size = (s32)(oldHi - newHi);
+    heap->freeSize = (s32)(newHi - lo);
     heap->hi = newHi;
     return block;
 }
@@ -2453,9 +2458,9 @@ void fn_800ACF78(void* block, s32 size) {
     u8* base = ((HeapBlockHeader*)block)[-1].prev;
     s32 total;
     heap = &lbl_803C7898;
-    total = ((size + 3) & ~3) + ((u8*)block - base);
+    total = ((size + 3) & ~3) + (s32)((u8*)block - base);
     heap->lo = base + total;
-    heap->freeSize = heap->hi - heap->lo;
+    heap->freeSize = (s32)(heap->hi - heap->lo);
     ((HeapBlockHeader*)block)[-1].size = total;
 }
 #endif
@@ -2464,7 +2469,7 @@ void fn_800ACF78(void* block, s32 size) {
 void fn_800ACFB0(void* block) {
     u8* lo = ((HeapBlockHeader*)block)[-1].prev;
     lbl_803C7898.lo = lo;
-    lbl_803C7898.freeSize = lbl_803C7898.hi - lo;
+    lbl_803C7898.freeSize = (s32)(lbl_803C7898.hi - lo);
 }
 
 // .text:0x800ACFD0 size:0x4C
@@ -2475,11 +2480,11 @@ void* _OSAllocFromHeap(s32 align, s32 size) {
     u8* hi = lbl_803C7898.hi;
     u8* block;
     size = (size + 3) & ~3;
-    block = (u8*)(-align & (u32)(lo + (align + 7)));
+    block = (u8*)(-align & (uintptr_t)(lo + (align + 7)));
     ((HeapBlockHeader*)block)[-1].prev = lo;
-    ((HeapBlockHeader*)block)[-1].size = (block - lo) + size;
+    ((HeapBlockHeader*)block)[-1].size = (s32)(block - lo) + size;
     lo = size + block;
-    lbl_803C7898.freeSize = hi - lo;
+    lbl_803C7898.freeSize = (s32)(hi - lo);
     lbl_803C7898.lo = lo;
     return block;
 }
@@ -2488,20 +2493,20 @@ void* _OSAllocFromHeap(s32 align, s32 size) {
 // .text:0x800AD01C size:0x1C
 void fn_800AD01C(void* hi) {
     lbl_803C7898.hi = hi;
-    lbl_803C7898.freeSize = (u8*)hi - lbl_803C7898.lo;
+    lbl_803C7898.freeSize = (s32)((u8*)hi - lbl_803C7898.lo);
 }
 
 // .text:0x800AD038 size:0x1C
 void fn_800AD038(void* lo) {
     lbl_803C7898.lo = lo;
-    lbl_803C7898.freeSize = lbl_803C7898.hi - (u8*)lo;
+    lbl_803C7898.freeSize = (s32)(lbl_803C7898.hi - (u8*)lo);
 }
 
 // .text:0x800AD054 size:0x1C
 void fn_800AD054(void* lo, void* hi) {
     lbl_803C7898.lo = lo;
     lbl_803C7898.hi = hi;
-    lbl_803C7898.freeSize = (u8*)hi - (u8*)lo;
+    lbl_803C7898.freeSize = (s32)((u8*)hi - (u8*)lo);
 }
 
 extern u8 lbl_803CC17C;               // stop requested
@@ -2639,9 +2644,9 @@ void fn_800AD070(void) {
         elapsed = OSGetTime() - p->startTime;
         if (p->flags & 1) {
             base = p->startFrameTime * 1000000 / (p->audioRate * 4);
-            p->currentFrame = (base + OSTicksToMicroseconds(elapsed)) / p->frameTime;
+            p->currentFrame = (u32)((base + OSTicksToMicroseconds(elapsed)) / p->frameTime);
         } else {
-            p->currentFrame = OSTicksToMicroseconds(elapsed) / p->frameTime;
+            p->currentFrame = (u32)(OSTicksToMicroseconds(elapsed) / p->frameTime);
         }
         for (i = 0, frame = p->frames; i < 6; i++, frame++) {
             if (frame->state == 1 && p->currentFrame == frame->frameNo) {
@@ -2705,7 +2710,7 @@ void fn_800AD500(ThpPlayer* p, u8* work) {
     u16 height = p->video.height;
     u8 mcuX = p->video.mcuX;
     u8 mcuY = p->video.mcuY;
-    u32 audioBlocks = lbl_803CBAE4 * ((OSRoundUp32B(p->audioBufSize) + (lbl_803CBAE4 - 1)) / lbl_803CBAE4);
+    u32 audioBlocks = lbl_803CBAE4 * (((u32)OSRoundUp32B(p->audioBufSize) + (lbl_803CBAE4 - 1)) / lbl_803CBAE4);
     u32 pixels = width * height;
     u32 audioSize = audioBlocks * 0x1C;
     u32 texSize = pixels << (p->format + 1);
@@ -2713,7 +2718,7 @@ void fn_800AD500(ThpPlayer* p, u8* work) {
     u32 frameSize;
 
     fn_800E4B90(&p->video, work);
-    texSize = OSRoundUp32B(texSize);
+    texSize = (u32)OSRoundUp32B(texSize);
     p->texBuf[0] = work + OSRoundUp32B(fn_800E4B1C(&p->video));
     p->texBuf[1] = p->texBuf[0] + texSize;
     memset(p->texBuf[0], 0, texSize * 2);
@@ -2726,7 +2731,7 @@ void fn_800AD500(ThpPlayer* p, u8* work) {
     p->_154 = p->_E8 = p->_D0 = p->audioBuf + OSRoundUp32B(p->audioBufSize);
     p->_158 = p->_160 = p->_154;
     p->frames[0].data = p->_15C = p->_EC = p->_D4 = p->_154 + audioSize;
-    frameSize = OSRoundUp32B(pixels * (mcus + 2) / mcus);
+    frameSize = (u32)OSRoundUp32B(pixels * (mcus + 2) / mcus);
     p->frames[1].data = p->frames[0].data + frameSize;
     p->frames[2].data = p->frames[1].data + frameSize;
     p->frames[3].data = p->frames[2].data + frameSize;
@@ -2742,13 +2747,13 @@ u32 fn_800AD6BC(ThpPlayer* p) {
     u32 mcus = p->video.mcuX * p->video.mcuY;
     u32 readBufSize = p->readBufSize;
     u32 pixels = p->video.width * p->video.height;
-    u32 audioBufSize = OSRoundUp32B(p->audioBufSize);
+    u32 audioBufSize = (u32)OSRoundUp32B(p->audioBufSize);
     u32 texSize = pixels << (p->format + 1);
     u32 audioBlocks = lbl_803CBAE4 * ((audioBufSize + (lbl_803CBAE4 - 1)) / lbl_803CBAE4);
     u32 audioSize = audioBlocks * 0x1C;
-    u32 total = OSRoundUp32B(readBufSize) + OSRoundUp32B(texSize) * 2 + audioBufSize + audioSize +
-                OSRoundUp32B(pixels * (mcus + 2) / mcus) * 6;
-    return total + OSRoundUp32B(fn_800E4B1C(&p->video));
+    u32 total = (u32)OSRoundUp32B(readBufSize) + (u32)OSRoundUp32B(texSize) * 2 + audioBufSize + audioSize +
+                (u32)OSRoundUp32B(pixels * (mcus + 2) / mcus) * 6;
+    return total + (u32)OSRoundUp32B(fn_800E4B1C(&p->video));
 }
 #endif
 

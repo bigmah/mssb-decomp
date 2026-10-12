@@ -94,7 +94,11 @@ s32 OSWaitSemaphore(volatile OSSemaphore* sem);
 #endif
 
 extern u8 lbl_803CBBC0; // index of the display list buffer in use
+#ifdef TARGET_PC
+extern uintptr_t lbl_801181A0[2][0x10]; // DrawLink lists (pointer-sized on PC)
+#else
 extern u8 lbl_801181A0[2][0x40];
+#endif
 extern s32 lbl_803CBBA8;
 extern const GXColor lbl_803CD300;
 
@@ -735,7 +739,11 @@ QuadCallback fn_8000A094(QuadCallback value) {
 
 
 // .bss 0x801181A0..0x80118220 (MWCC lays these out in reverse definition order)
+#ifdef TARGET_PC
+uintptr_t lbl_801181A0[2][0x10];
+#else
 u8 lbl_801181A0[2][0x40];
+#endif
 
 // .sbss 0x803CBBA0..0x803CBBD8 (MWCC lays these out in reverse definition order)
 s32 lbl_803CBBD4;
