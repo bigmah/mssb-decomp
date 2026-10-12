@@ -44,28 +44,6 @@ typedef struct TrailMesh {
     /*0x14*/ TrailStrip cap;
 } TrailMesh; // size: 0x28
 
-// lbl_3_bss_200: trail effect state.
-typedef struct RepTrailWork {
-    /*0x0000*/ u8 _0000[0x4];
-    /*0x0004*/ u8 _0004[4];            // lbl_3_bss_204 (a separate variable, see rep_EA0.c)
-    /*0x0008*/ s32 fadeFrames;
-    /*0x000C*/ s32 delay;              // frames before the fade starts (-1: never)
-    /*0x0010*/ u8 _0010[0x20 - 0x10];
-    /*0x0020*/ u32 capColors[2][8];
-    /*0x0060*/ Vec capPositions[2][8];
-    /*0x0120*/ u32 colors[2][64];
-    /*0x0320*/ Vec positions[2][120];
-    /*0x0E60*/ u8 displayListReversed[0x180];
-    /*0x0FE0*/ u8 displayList[0x180];
-    /*0x1160*/ Vec history[60];
-    /*0x1430*/ VecQueue queue;
-    /*0x144C*/ TrailMesh meshes[2];
-    /*0x149C*/ u8 _149C[4];            // lbl_3_bss_169C (a separate variable, see rep_EA0.c)
-    /*0x14A0*/ s32 type;
-    /*0x14A4*/ f32 alphaStep;
-    /*0x14A8*/ f32 alpha;              // lbl_3_bss_16A8
-} RepTrailWork;
-
 // The task running fn_3_678B8 (lbl_803CC1B8 while it runs); only the fields used here.
 typedef struct TrailTask {
     /*0x00*/ u8 _00[0x14];
@@ -77,14 +55,7 @@ typedef struct TrailTask {
 typedef struct TrailShadowData {
     /*0x00*/ f32 shadowOffset[2]; // y, z offset of the bat shadow (fn_3_69184)
     /*0x08*/ f32 _08[4];
-    /*0x18*/ u16 texCoords[8][2]; // GX_U16, 14 fractional bits
 } TrailShadowData;
-
-// lbl_3_data_6940.
-typedef struct TrailCharData {
-    /*0x00*/ u8 charTex[0x40];     // per character id: trail texture (+0x21 in the archive)
-    /*0x40*/ u8 capDisplayList[0x20];
-} TrailCharData;
 
 // lbl_3_common_bss_32724 (GameHudFlags in game/auto_00_00097144_text.h), only the fields used here.
 typedef struct TrailHudView {
