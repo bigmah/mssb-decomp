@@ -4645,7 +4645,7 @@ void fn_1_17D90(void) {
             c = src[2].frame;
             if (c == -2) {
                 if (table != NULL) {
-                    dst->frame = (s32)table->animSequences[b].trackArray->animTime;
+                    dst->frame = (s32)PTR32_GET(struct ANIMAnimTrack, PTR32_GET(ANIMSequences, table->animSequences)[b].trackArray)->animTime;
                 } else {
                     dst->frame = 0;
                 }
@@ -5163,7 +5163,7 @@ void* fn_1_16590(void) {
     bank = (void**)base;
     bank += lbl_1_bss_6940.player[scene].group;
     table = ((CharMgr*)bank)->actors[0].banks.b[0];
-    return table->animSequences[lbl_1_bss_6940.player[scene].seq].sequenceName;
+    return PTR32_GET(char, PTR32_GET(ANIMSequences, table->animSequences)[lbl_1_bss_6940.player[scene].seq].sequenceName);
 }
 
 // .text:0x00016558 size:0x38
@@ -5176,7 +5176,7 @@ void* fn_1_16558(s32 group, s32 index) {
     bank = (void**)base;
     bank += group;
     table = ((CharMgr*)bank)->actors[0].banks.b[0];
-    return table->animSequences[index].sequenceName;
+    return PTR32_GET(char, PTR32_GET(ANIMSequences, table->animSequences)[index].sequenceName);
 }
 
 // .text:0x1644C size:0x10C
@@ -7684,8 +7684,8 @@ void fn_1_EA20(void) {
         entry = &lbl_1_bss_6940.player[lbl_1_bss_5F73];
         table = (ANIMBank**)&lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[entry->group];
         j = entry->seq;
-        for (i = 0; i < (*table)->animSequences[j].totalTracks; i++) {
-            f32 frame = (*table)->animSequences[j].trackArray[i].animTime;
+        for (i = 0; i < PTR32_GET(ANIMSequences, (*table)->animSequences)[j].totalTracks; i++) {
+            f32 frame = PTR32_GET(struct ANIMAnimTrack, PTR32_GET(ANIMSequences, (*table)->animSequences)[j].trackArray)[i].animTime;
             if ((f32)lbl_1_bss_5F58 < frame) {
                 lbl_1_bss_5F58 = (s32)frame;
             }
@@ -7769,7 +7769,7 @@ void fn_1_E8D4(void) {
             c = src[2].frame;
             if (c == -2) {
                 if (table != NULL) {
-                    dst->frame = (s32)table->animSequences[b].trackArray->animTime;
+                    dst->frame = (s32)PTR32_GET(struct ANIMAnimTrack, PTR32_GET(ANIMSequences, table->animSequences)[b].trackArray)->animTime;
                 } else {
                     dst->frame = 0;
                 }
@@ -7871,7 +7871,7 @@ void fn_1_E098(void) {
 
             if (step->group >= 0) {
                 table = lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[step->group];
-                anim = &table->animSequences[step->index];
+                anim = &PTR32_GET(ANIMSequences, table->animSequences)[step->index];
             } else {
                 table = NULL;
                 anim = NULL;
@@ -7894,7 +7894,7 @@ void fn_1_E098(void) {
                                 step->frame--;
                             }
                         } else if (buttons & 2) {
-                            if (step->frame < (s16)(s32)anim->trackArray->animTime) {
+                            if (step->frame < (s16)(s32)PTR32_GET(struct ANIMAnimTrack, anim->trackArray)->animTime) {
                                 step->frame++;
                             }
                         }
@@ -8155,7 +8155,7 @@ void fn_1_D7A4(s32 index) {
             c = src[2].frame;
             if (c == -2) {
                 if (table != NULL) {
-                    dst->frame = (s32)table->animSequences[b].trackArray->animTime;
+                    dst->frame = (s32)PTR32_GET(struct ANIMAnimTrack, PTR32_GET(ANIMSequences, table->animSequences)[b].trackArray)->animTime;
                 } else {
                     dst->frame = 0;
                 }

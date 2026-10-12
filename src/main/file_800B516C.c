@@ -227,8 +227,8 @@ void DoTranslationAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next
         offset += 8;
     }
 
-    GetData(compType, cur->setting + offset, trans0, 3, scale);
-    GetData(compType, next->setting + offset, trans1, 3, scale);
+    GetData(compType, PTR32_GET(char, cur->setting) + offset, trans0, 3, scale);
+    GetData(compType, PTR32_GET(char, next->setting) + offset, trans1, 3, scale);
 
     t = GetInterpTime(pipe, cur, next);
 
@@ -273,15 +273,15 @@ void DoTranslationAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next
         }
         break;
     case ANIM_INTERP_BEZIER:
-        GetData(compType, cur->interpolation + (offset + vecSize), ctrlCur, 3, scale);
-        GetData(compType, next->interpolation + offset, ctrlNext, 3, scale);
+        GetData(compType, PTR32_GET(char, cur->interpolation) + (offset + vecSize), ctrlCur, 3, scale);
+        GetData(compType, PTR32_GET(char, next->interpolation) + offset, ctrlNext, 3, scale);
         BezierVec(result, trans0, ctrlCur, ctrlNext, trans1, t);
         break;
     case ANIM_INTERP_HERMITE:
-        data = cur->interpolation + (offset + vecSize);
+        data = PTR32_GET(char, cur->interpolation) + (offset + vecSize);
         GetData(compType, data, ctrlCur, 3, scale);
         GetData(lbl_803CBB51, data + (vecSize + 2), &easeIn, 1, lbl_803CBB4C);
-        data = next->interpolation + offset;
+        data = PTR32_GET(char, next->interpolation) + offset;
         GetData(compType, data, ctrlNext, 3, scale);
         GetData(lbl_803CBB51, data + vecSize * 2, &easeOut, 1, lbl_803CBB4C);
         t = EaseTime(t, easeIn, easeOut);
@@ -322,11 +322,11 @@ void DoScaleAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next, u8 u
     scale = 1.0f / (f32)(1 << (pipe->currentTrack->quantizeInfo & 0xF));
     vecSize = GetCompSize(compType) * 3;
 
-    GetData(compType, cur->setting, scale0, 3, scale);
-    GetData(compType, next->setting, scale1, 3, scale);
+    GetData(compType, PTR32_GET(char, cur->setting), scale0, 3, scale);
+    GetData(compType, PTR32_GET(char, next->setting), scale1, 3, scale);
     if (pipe->currentTrack->animType & ANIM_SCALE_QUAT) {
-        GetData(compType, cur->setting + vecSize, &quat0.x, 4, scale);
-        GetData(compType, next->setting + vecSize, &quat1.x, 4, scale);
+        GetData(compType, PTR32_GET(char, cur->setting) + vecSize, &quat0.x, 4, scale);
+        GetData(compType, PTR32_GET(char, next->setting) + vecSize, &quat1.x, 4, scale);
     }
 
     t = GetInterpTime(pipe, cur, next);
@@ -352,19 +352,19 @@ void DoScaleAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next, u8 u
         }
         break;
     case ANIM_INTERP_BEZIER:
-        GetData(compType, cur->interpolation + vecSize, ctrlCur, 3, scale);
-        GetData(compType, next->interpolation, ctrlNext, 3, scale);
+        GetData(compType, PTR32_GET(char, cur->interpolation) + vecSize, ctrlCur, 3, scale);
+        GetData(compType, PTR32_GET(char, next->interpolation), ctrlNext, 3, scale);
         BezierVec(result, scale0, ctrlCur, ctrlNext, scale1, t);
         if (pipe->currentTrack->animType & ANIM_SCALE_QUAT) {
             QuatSlerp(&quat0, &quat1, &quatResult, t);
         }
         break;
     case ANIM_INTERP_HERMITE:
-        data = cur->interpolation + vecSize;
+        data = PTR32_GET(char, cur->interpolation) + vecSize;
         GetData(compType, data, ctrlCur, 3, scale);
         GetData(lbl_803CBB51, data + (vecSize + 2), &easeIn, 1, lbl_803CBB4C);
-        GetData(compType, next->interpolation, ctrlNext, 3, scale);
-        GetData(lbl_803CBB51, next->interpolation + vecSize * 2, &easeOut, 1, lbl_803CBB4C);
+        GetData(compType, PTR32_GET(char, next->interpolation), ctrlNext, 3, scale);
+        GetData(lbl_803CBB51, PTR32_GET(char, next->interpolation) + vecSize * 2, &easeOut, 1, lbl_803CBB4C);
         t = EaseTime(t, easeIn, easeOut);
         HermiteVec(result, scale0, ctrlCur, ctrlNext, scale1, t);
         if (pipe->currentTrack->animType & ANIM_SCALE_QUAT) {
@@ -408,8 +408,8 @@ void DoEulerAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next) {
         offset = vecSize;
     }
 
-    GetData(compType, cur->setting + offset, rot0, 3, scale);
-    GetData(compType, next->setting + offset, rot1, 3, scale);
+    GetData(compType, PTR32_GET(char, cur->setting) + offset, rot0, 3, scale);
+    GetData(compType, PTR32_GET(char, next->setting) + offset, rot1, 3, scale);
 
     t = GetInterpTime(pipe, cur, next);
 
@@ -443,8 +443,8 @@ void DoEulerAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next) {
         }
         break;
     case ANIM_INTERP_BEZIER:
-        GetData(compType, cur->interpolation + (offset + vecSize), ctrlCur, 3, scale);
-        GetData(compType, next->interpolation + offset, ctrlNext, 3, scale);
+        GetData(compType, PTR32_GET(char, cur->interpolation) + (offset + vecSize), ctrlCur, 3, scale);
+        GetData(compType, PTR32_GET(char, next->interpolation) + offset, ctrlNext, 3, scale);
         BezierVec(result, rot0, ctrlCur, ctrlNext, rot1, t);
         break;
     case ANIM_INTERP_HERMITE:
@@ -489,8 +489,8 @@ void DoQuatAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next) {
         }
     }
 
-    GetData(lbl_803CBB50, cur->setting + offset, &quat0.x, 4, lbl_803CBB48);
-    GetData(lbl_803CBB50, next->setting + offset, &quat1.x, 4, lbl_803CBB48);
+    GetData(lbl_803CBB50, PTR32_GET(char, cur->setting) + offset, &quat0.x, 4, lbl_803CBB48);
+    GetData(lbl_803CBB50, PTR32_GET(char, next->setting) + offset, &quat1.x, 4, lbl_803CBB48);
 
     t = GetInterpTime(pipe, cur, next);
     squadT = t;
@@ -514,14 +514,14 @@ void DoQuatAnimation(struct ANIMPipe* pipe, KeyFrame* cur, KeyFrame* next) {
         result.w = quat0.w;
         break;
     case ANIM_INTERP_SQUAD_EASE:
-        GetData(lbl_803CBB51, next->interpolation + (offset + 0x10), &easeOut, 1, lbl_803CBB4C);
-        GetData(lbl_803CBB51, cur->interpolation + (offset + 0x12), &easeIn, 1, lbl_803CBB4C);
+        GetData(lbl_803CBB51, PTR32_GET(char, next->interpolation) + (offset + 0x10), &easeOut, 1, lbl_803CBB4C);
+        GetData(lbl_803CBB51, PTR32_GET(char, cur->interpolation) + (offset + 0x12), &easeIn, 1, lbl_803CBB4C);
         t = EaseTime(t, easeIn, easeOut);
         squadT = t;
         // fallthrough
     case ANIM_INTERP_SQUAD:
-        GetData(lbl_803CBB50, cur->interpolation + (offset + 8), &ctrlCur.x, 4, lbl_803CBB48);
-        GetData(lbl_803CBB50, next->interpolation + offset, &ctrlNext.x, 4, lbl_803CBB48);
+        GetData(lbl_803CBB50, PTR32_GET(char, cur->interpolation) + (offset + 8), &ctrlCur.x, 4, lbl_803CBB48);
+        GetData(lbl_803CBB50, PTR32_GET(char, next->interpolation) + offset, &ctrlNext.x, 4, lbl_803CBB48);
         Squad(&quat0, &ctrlCur, &ctrlNext, &quat1, &result, squadT);
         break;
     case ANIM_INTERP_SLERP:
@@ -552,19 +552,19 @@ void ANIMTick(struct ANIMPipe* pipe, u8 arg1) {
     if (pipe->currentTrack->animType & ANIM_MTX) {
         frame = cur;
         scale = 1.0f / (f32)(1 << (pipe->currentTrack->quantizeInfo & 0xF));
-        ((MtxPtr)frame->setting)[0][0] *= scale;
-        ((MtxPtr)frame->setting)[0][1] *= scale;
-        ((MtxPtr)frame->setting)[0][2] *= scale;
-        ((MtxPtr)frame->setting)[0][3] *= scale;
-        ((MtxPtr)frame->setting)[1][0] *= scale;
-        ((MtxPtr)frame->setting)[1][1] *= scale;
-        ((MtxPtr)frame->setting)[1][2] *= scale;
-        ((MtxPtr)frame->setting)[1][3] *= scale;
-        ((MtxPtr)frame->setting)[2][0] *= scale;
-        ((MtxPtr)frame->setting)[2][1] *= scale;
-        ((MtxPtr)frame->setting)[2][2] *= scale;
-        ((MtxPtr)frame->setting)[2][3] *= scale;
-        CTRLSetMatrix(pipe->control, (MtxPtr)frame->setting);
+        ((MtxPtr)PTR32_GET(char, frame->setting))[0][0] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[0][1] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[0][2] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[0][3] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[1][0] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[1][1] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[1][2] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[1][3] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[2][0] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[2][1] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[2][2] *= scale;
+        ((MtxPtr)PTR32_GET(char, frame->setting))[2][3] *= scale;
+        CTRLSetMatrix(pipe->control, (MtxPtr)PTR32_GET(char, frame->setting));
         return;
     }
 

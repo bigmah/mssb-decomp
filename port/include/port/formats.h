@@ -19,6 +19,9 @@ void port_swap_geo_palette(void* palette);
 // Actor layout (C3 ActorLayout): header, bones and their orientation controls.
 void port_swap_actor_layout(void* layout);
 
+// Animation bank (C3 ANIMBank): sequences, tracks, key frames and their data.
+void port_swap_anim_bank(void* bank);
+
 // Texture archive (TexArchive): u16 count, u16 pad, then count 0x20-byte
 // images {u32 data, u32 tlut, u16 height, u16 width, u8 wrapS, wrapT, minFilter,
 // magFilter, f32 lodBias, u8 x4, u16 tlutEntries, u8 tlutFormat, u8 pad,

@@ -90,8 +90,8 @@ typedef struct {
 
 typedef struct KeyFrame {
     /* 0x00 */ f32 time;
-    /* 0x04 */ char * setting;
-    /* 0x08 */ char * interpolation;
+    /* 0x04 */ PTR32(char) setting;
+    /* 0x08 */ PTR32(char) interpolation;
 } KeyFrame;
 
 typedef struct {

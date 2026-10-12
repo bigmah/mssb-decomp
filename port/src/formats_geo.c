@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 
-#define MAX_SWAPPED 1024
+#define MAX_SWAPPED 16384
 
 typedef struct
 {
@@ -202,4 +202,130 @@ void port_swap_actor_layout(void* layoutFile)
             swap32_array(lay + ctrl + 4, 14);
         }
     }
+}
+
+// Animation bank (C3 ANIMBank, include/C3/anim.h):
+//   header 0x18: u32 version, u32 animSequences, u16 bankID, u16 numSequences,
+//                u16 numTracks, u16 numKeyFrames, u32 userDataSize, u32 userData
+//   sequences 0x0C (at +0x18): u32 name, u32 trackArray, u16 totalTracks, u16 pad
+//   tracks 0x10: f32 animTime, u32 keyFrames, u16 totalFrames, u16 trackID,
+//                u8 quantizeInfo, u8 animType, u8 interpolationType, u8 replace
+//   key frames 0x0C: f32 time, u32 setting, u32 interpolation
+// Key frame data (layout from file_800B516C.c): setting = [scale vec]
+// [scale quat] [euler vec] [quat: 4 x s16] [translation vec], or a 3x4 f32
+// matrix (ANIM_MTX); interpolation = per part, Bezier: 2 vecs, Hermite: 2
+// vecs + 2 x s16 ease, Squad: 2 quats (+ 2 x s16 ease). Vector components
+// have the track's type (quantizeInfo >> 4).
+enum
+{
+    ANIM_TRANS = 0x01,
+    ANIM_SCALE = 0x02,
+    ANIM_ROT_EULER = 0x04,
+    ANIM_ROT_QUAT = 0x08,
+    ANIM_MTX = 0x10,
+    ANIM_SCALE_QUAT = 0x20,
+};
+
+// Swaps n components of the given size at *p and advances p.
+static void swap_run(uint8_t** p, uint32_t n, uint32_t size)
+{
+    swap_comps(*p, n, size);
+    *p += n * size;
+}
+
+// Interpolation data of a vector part (scale, euler or translation).
+static void swap_vec_interp(uint8_t** p, uint32_t interp, uint32_t cs)
+{
+    if (interp == 2) // Bezier
+        swap_run(p, 6, cs);
+    else if (interp == 3) // Hermite
+    {
+        swap_run(p, 6, cs);
+        swap_run(p, 2, 2);
+    }
+}
+
+void port_swap_anim_bank(void* bankFile)
+{
+    uint8_t* bank = (uint8_t*)bankFile;
+    static SwapSet set;
+    set.count = 0;
+
+    swap32_array(bank, 2);
+    swap16_array(bank + 8, 4);
+    swap32_array(bank + 0x10, 2);
+    uint16_t numSeq = *(uint16_t*)(bank + 0xA);
+    uint16_t numTracks = *(uint16_t*)(bank + 0xC);
+    uint16_t numKeys = *(uint16_t*)(bank + 0xE);
+    uint8_t* seqs = bank + 0x18;
+    uint8_t* tracks = seqs + numSeq * 0xC;
+    uint8_t* keys = tracks + numTracks * 0x10;
+
+    for (uint32_t i = 0; i < numSeq; i++)
+    {
+        swap32_array(seqs + i * 0xC, 2);
+        swap16_array(seqs + i * 0xC + 8, 2);
+    }
+    for (uint32_t i = 0; i < numTracks; i++)
+    {
+        swap32_array(tracks + i * 0x10, 2);
+        swap16_array(tracks + i * 0x10 + 8, 2);
+    }
+    swap32_array(keys, numKeys * 3u);
+
+    for (uint32_t i = 0; i < numTracks; i++)
+    {
+        uint8_t* t = tracks + i * 0x10;
+        uint32_t kf = *(uint32_t*)(t + 4);
+        uint16_t frames = *(uint16_t*)(t + 8);
+        uint8_t quant = t[0xC], type = t[0xD], it = t[0xE];
+        uint32_t cs = comp_size(quant);
+        for (uint32_t f = 0; f < frames; f++)
+        {
+            uint8_t* key = bank + kf + f * 0xC;
+            uint32_t setting = *(uint32_t*)(key + 4);
+            uint32_t interp = *(uint32_t*)(key + 8);
+            if (setting != 0 && swap_set_add(&set, setting))
+            {
+                uint8_t* p = bank + setting;
+                if (type & ANIM_MTX)
+                    swap_run(&p, 12, 4);
+                else
+                {
+                    if (type & ANIM_SCALE)
+                    {
+                        swap_run(&p, 3, cs);
+                        if (type & ANIM_SCALE_QUAT)
+                            swap_run(&p, 4, cs);
+                    }
+                    if (type & ANIM_ROT_EULER)
+                        swap_run(&p, 3, cs);
+                    if (type & ANIM_ROT_QUAT)
+                        swap_run(&p, 4, 2);
+                    if (type & ANIM_TRANS)
+                        swap_run(&p, 3, cs);
+                }
+            }
+            if (interp != 0 && !(type & ANIM_MTX) && swap_set_add(&set, interp | 0x80000000u))
+            {
+                uint8_t* p = bank + interp;
+                if (type & ANIM_SCALE)
+                    swap_vec_interp(&p, (it >> 2) & 3, cs);
+                if (type & ANIM_ROT_QUAT)
+                {
+                    uint32_t ri = (it >> 4) & 7;
+                    if (ri == 4) // Squad
+                        swap_run(&p, 8, 2);
+                    else if (ri == 5) // Squad with ease
+                        swap_run(&p, 10, 2);
+                }
+                else if (type & ANIM_ROT_EULER)
+                    swap_vec_interp(&p, (it >> 4) & 7, cs);
+                if (type & ANIM_TRANS)
+                    swap_vec_interp(&p, it & 3, cs);
+            }
+        }
+    }
+    if (set.count == MAX_SWAPPED)
+        fprintf(stderr, "[port] anim bank %p: too many key frames to track\n", bankFile);
 }

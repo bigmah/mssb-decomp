@@ -766,7 +766,7 @@ void fn_3_F9B9C(s32 idx, s32 b, CollisionStruct* c) {
 void fn_3_F9D94(StaObj* o) {
     ActorObject* anim = o->actorObj;
     s32 i;
-    if (o->animTime >= ((ANIMBank*)anim->animBank)->animSequences->trackArray[anim->seqNum].animTime) {
+    if (o->animTime >= PTR32_GET(struct ANIMAnimTrack, PTR32_GET(ANIMSequences, ((ANIMBank*)anim->animBank)->animSequences)->trackArray)[anim->seqNum].animTime) {
         o->visible = 0;
         o->actorObj = NULL;
         o->shadow = NULL;
