@@ -8,8 +8,10 @@ struct TexImage;
 
 // lbl_3_data_228 (0x14 bytes, defined in rep_1C0.c): frame counter / random seed.
 typedef struct RandSeedView {
-    /*0x00*/ u32 counter;
-    /*0x04*/ u8 _04[0xC];
+    /*0x00*/ u32 counter;     // frames the game logic actually ran
+    /*0x04*/ s32 totalFrames;
+    /*0x08*/ s32 randomInt1;    // copy of g_Ball.StaticRandomInt1
+    /*0x0C*/ s32 randomInt2;    // copy of g_Ball.StaticRandomInt2
     /*0x10*/ u8 _10;
     /*0x11*/ u8 _11[3];
 } RandSeedView; // size: 0x14

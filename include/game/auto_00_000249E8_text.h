@@ -136,30 +136,50 @@ typedef struct Unk32724 {
     /*0x00*/ u8 _00[0x90];
     /*0x90*/ s16 _90;
     /*0x92*/ s16 _92;
-    /*0x94*/ u8 _94[0x9A - 0x94];
+    /*0x94*/ u8 _94[0x96 - 0x94];
+    /*0x96*/ u8 hudOff; // set when the HUD is being torn down (GameHudFlags in game/auto_00_00097144_text.h)
+    /*0x97*/ u8 _97;
+    /*0x98*/ u8 _98;
+    /*0x99*/ u8 _99;
     /*0x9A*/ u8 _9A; // load step (fn_3_6B4C8, fn_3_6B5D8, fn_3_6BA64)
     /*0x9B*/ u8 _9B;
     /*0x9C*/ u8 _9C[2];
-    /*0x9E*/ s16 _9E; // character ids
-    /*0xA0*/ s16 _A0;
-    /*0xA2*/ s16 _A2;
+    union {
+        struct {
+            /*0x9E*/ s16 _9E; // character ids
+            /*0xA0*/ s16 _A0;
+            /*0xA2*/ s16 _A2;
+        };
+        /*0x9E*/ s16 pending[3]; // queued for fn_80014F40 / fn_80014D4C / fn_80014E50 (-1: none)
+    };
     /*0xA4*/ u8 _A4[0xA9 - 0xA4];
     /*0xA9*/ u8 _A9;
-    /*0xAA*/ u8 _AA[0xAE - 0xAA];
+    /*0xAA*/ u8 _AA[0xAC - 0xAA];
+    /*0xAC*/ u8 _AC;
+    /*0xAD*/ u8 _AD;
     /*0xAE*/ u8 _AE; // set when a captain-duel scene event plays
     /*0xAF*/ s8 _AF; // pitcher roster id for it
     /*0xB0*/ u8 _B0;
     /*0xB1*/ u8 _B1; // set once the scene skip point is reached (fn_3_23890)
-    /*0xB2*/ u8 _B2[0xB5 - 0xB2];
+    /*0xB2*/ u8 _B2[0xB4 - 0xB2];
+    /*0xB4*/ u8 _B4;
     /*0xB5*/ u8 _B5;
     /*0xB6*/ u8 _B6[0xC8 - 0xB6];
     /*0xC8*/ u8 _C8;
     /*0xC9*/ u8 _C9;
     /*0xCA*/ u8 _CA;
-    /*0xCB*/ u8 _CB[0xD3 - 0xCB];
+    /*0xCB*/ u8 _CB[0xCD - 0xCB];
+    /*0xCD*/ u8 _CD;
+    /*0xCE*/ u8 _CE;
+    /*0xCF*/ u8 _CF[0xD1 - 0xCF];
+    /*0xD1*/ u8 _D1;
+    /*0xD2*/ u8 _D2; // scorebook busy this frame
     /*0xD3*/ u8 _D3;
     /*0xD4*/ u8 _D4;
-    /*0xD5*/ u8 _D5[0x124 - 0xD5];
+    /*0xD5*/ u8 _D5[0xD7 - 0xD5];
+    /*0xD7*/ u8 _D7;
+    /*0xD8*/ u8 loadStep; // fn_3_1665E4 trail-file load state
+    /*0xD9*/ u8 _D9[0x124 - 0xD9];
 } Unk32724; // size: 0x124
 
 void fn_3_249E8(s32 idx);

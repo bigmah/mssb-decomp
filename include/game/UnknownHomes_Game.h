@@ -652,7 +652,9 @@ typedef struct _InMemFielderType {
     /*0x196*/ s16 _196;
     /*0x198*/ u8 _198[0x1A0 - 0x198];
     /*0x1A0*/ s16 _1A0;
-    /*0x1A2*/ u8 _1A2[0x1AA - 0x1A2];
+    /*0x1A2*/ u8 _1A2[0x1A4 - 0x1A2];
+    /*0x1A4*/ s16 _1A4;
+    /*0x1A6*/ u8 _1A6[0x1AA - 0x1A6];
     /*0x1AA*/ s16 _1AA;
     /*0x1AC*/ s16 _1AC;
     /*0x1AE*/ u8 _1AE[0x1B4 - 0x1AE];
@@ -678,7 +680,7 @@ typedef struct _InMemFielderType {
     /*0x1D0*/ u8 speedStat;
     /*0x1D1*/ u8 _1D1;
     /*0x1D2*/ u8 _1D2;
-    /*0x1D3*/ u8 _1D3[0x1D7 - 0x1D3];
+    /*0x1D3*/ u8 _1D3[0x1D7 - 0x1D3]; // [0]: lbl_3_data_3C40 state index (fn_3_5985C)
     /*0x1D7*/ u8 _1D7;
     /*0x1D8*/ u8 _1D8[0x1DF - 0x1D8];
     /*0x1DF*/ u8 throwing;
@@ -700,7 +702,8 @@ typedef struct _InMemFielderType {
     /*0x1F6*/ u8 _1F6;
     /*0x1F7*/ s8 _1F7;
     /*0x1F8*/ u8 _1F8;
-    /*0x1F9*/ u8 _1F9[0x200 - 0x1F9];
+    /*0x1F9*/ u8 _1F9[0x1FF - 0x1F9];
+    /*0x1FF*/ u8 _1FF;
     /*0x200*/ u8 _200;
     /*0x201*/ u8 _201[0x203 - 0x201];
     /*0x203*/ u8 _203;
