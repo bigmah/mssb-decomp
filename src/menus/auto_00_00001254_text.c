@@ -90,7 +90,7 @@ extern void fn_2_87A8(void);
 extern void fn_2_7504(void);
 
 extern CharSelectState lbl_8034E9A0;
-#define CS_STATS(id) ((MenuCharStats*)&lbl_8034E9A0.roster[(id) / 9][(id) % 9])
+#define CS_STATS(id) ((CharacterStats*)&lbl_8034E9A0.roster[(id) / 9][(id) % 9])
 
 extern u32 lbl_803CB750[];
 
@@ -1320,11 +1320,11 @@ void fn_2_C484(s32 owner, s16 id) {
     }
 }
 
-#define g_Roster ((MenuCharStats*)inMemRoster)
+#define g_Roster ((CharacterStats*)inMemRoster)
 
 // fn_2_11EA8, size:0x228
 void fn_2_11EA8(void) {
-    MenuCharStats* src;
+    CharacterStats* src;
     s32 i;
     s8 sel;
     for (i = 0; i < 9; i++) {
@@ -1509,7 +1509,7 @@ void fn_2_6AF4(void) {
         lbl_80354720[1][i]._0 = i;
         lbl_80354720[1][i].slot = i;
         lbl_80354720[1][i]._1 = i;
-        lbl_803C6724[0xB + i] = ((MenuCharStats*)&lbl_8034E9A0.roster[(u8)(id / 9)][(u8)(id % 9)])->h24;
+        lbl_803C6724[0xB + i] = ((CharacterStats*)&lbl_8034E9A0.roster[(u8)(id / 9)][(u8)(id % 9)])->stats.CharID;
         lbl_803C6724[0x53 + i] = 1;
     }
     lbl_8034E9A0.captain[0] = CHALLENGE->_441D;
@@ -1531,7 +1531,7 @@ void fn_2_CA60(u8 slot, s32 team) {
         MenuOrderEntry* order = lbl_80354720[(u8)team];
         order[slot]._1 = slot;
         order[slot]._0 = slot;
-        g_Roster[(u8)team * 9 + slot].h24 = v;
+        g_Roster[(u8)team * 9 + slot].stats.CharID = v;
     } else {
         fn_2_A1A0(slot, team);
     }
@@ -1584,7 +1584,7 @@ void fn_2_C7DC(u8 slot, s32 team) {
         order2->_0 = slot;
         order->_0 = slot;
         order->slot = slot;
-        g_Roster[(u8)team * 9 + slot].h24 = lbl_8034E9A0.captain[(u8)team];
+        g_Roster[(u8)team * 9 + slot].stats.CharID = lbl_8034E9A0.captain[(u8)team];
         order2->slot = slot;
         return;
     }
@@ -1594,7 +1594,7 @@ retry:
         goto retry;
     }
     for (j = 0; j < slot; j++) {
-        if (g_Roster[j].h24 == id || g_Roster[9 + j].h24 == id) {
+        if (g_Roster[j].stats.CharID == id || g_Roster[9 + j].stats.CharID == id) {
             goto retry;
         }
     }
@@ -1605,7 +1605,7 @@ retry:
     order2->_1 = slot;
     order2->_0 = slot;
     order->slot = slot;
-    g_Roster[(u8)team * 9 + slot].h24 = id;
+    g_Roster[(u8)team * 9 + slot].stats.CharID = id;
     order2->slot = slot;
     fn_2_C698(slot, team);
 }
@@ -1880,7 +1880,7 @@ void fn_2_ABC0(u8 team) {
     s32 i;
     s32 j;
     s32 cap = lbl_8034E9A0.captain[team];
-    MenuCharStats* c = CS_STATS(cap);
+    CharacterStats* c = CS_STATS(cap);
     for (i = 0; i < 0x36; i++) {
         ids[i] = i;
         chem[i] = c->chem[i];
@@ -2033,7 +2033,7 @@ void fn_2_5444(u8 team) {
             CHALLENGE->order[i].charId = id;
             CHALLENGE->order[i]._2 = i;
             CHALLENGE->order[i]._3 = pos;
-            g_Roster[i].h24 = id;
+            g_Roster[i].stats.CharID = id;
             lbl_80354720[0][i].slot = pos;
         }
         fn_800625A4(0, 0x13);
@@ -2071,8 +2071,8 @@ void fn_2_8940(void) {
     s32 t;
     s32 i;
     s8 sel;
-    MenuCharStats* src;
-    MenuCharStats* dst;
+    CharacterStats* src;
+    CharacterStats* dst;
     for (t = 0; t < 2; t++) {
         for (i = 0; i < 9; i++) {
             sel = lbl_803C6724[t * 9 + i + 2];
@@ -2082,8 +2082,8 @@ void fn_2_8940(void) {
             lbl_80354720[t][i].slot = lbl_803C6724[t * 9 + i + 0x14];
             if (t == 0 && g_d_GameSettings.GameModeSelected == 5) {
                 s32 v = lbl_2_bss_3A8[CHALLENGE->order[i].charId];
-                dst->b26 = v >> 1;
-                dst->b27 = v % 2;
+                dst->stats.FieldingArm = v >> 1;
+                dst->stats.BattingStance = v % 2;
             }
         }
     }
@@ -2237,7 +2237,7 @@ void fn_2_AEE8(void) {
     s32 i;
     s32 j;
     s32 cap;
-    MenuCharStats* c;
+    CharacterStats* c;
     for (t = 0; t < 2; t++) {
         for (i = 0; i < 0x36; i++) {
             ids[t][i] = i;
@@ -2357,15 +2357,15 @@ s32 fn_2_ED94(u8 team, u16 held, u16 pressed, s32 dirs) {
 
 #define FN_2_9ACC_RESTORE(t, i)                                                   \
     do {                                                                          \
-        MenuCharStats* dst = &g_Roster[(t) * 9 + (i)];                            \
-        MenuCharStats* src = &((MenuCharStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
+        CharacterStats* dst = &g_Roster[(t) * 9 + (i)];                            \
+        CharacterStats* src = &((CharacterStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
         MenuOrderEntry* order = &lbl_80354720[(t)][(i)];                          \
         MenuOrderEntry* saved = &((MenuOrderEntry(*)[9])lbl_2_bss_DCE8)[(t)][(i)];                        \
         MENU_COPY_CHAR_STATS(dst, src);                                           \
         order->_0 = saved->_0;                                                      \
         order->_1 = saved->_1;                                                      \
         order->slot = saved->slot;                                                      \
-        dst->h24 = lbl_8034E9A0.captain[(t)];                      \
+        dst->stats.CharID = lbl_8034E9A0.captain[(t)];                      \
         order->_3 = saved->_3;                                                      \
     } while (0)
 
@@ -3176,7 +3176,7 @@ void fn_2_11698(void) {
 // NONMATCHING 87%: the original strength-reduces the roster index into a walking pointer
 // (ours indexes) and its prologue/register order differs.
 #if NONMATCHING
-#define CHAR_CLASS(id) (CS_STATS(id)->b31)
+#define CHAR_CLASS(id) (CS_STATS(id)->stats.CharacterClass)
 
 // Collects the unused character ids of one class from lbl_80108DB8 into cand; returns count - 1.
 // cand is only 8 bytes in the original; a longer run spills into the next stack array.
@@ -3597,8 +3597,8 @@ void fn_2_7504(void) {
                 }
             }
             for (i = 0; i < 0x36; i++) {
-                MenuCharStats* c = CS_STATS(i);
-                lbl_2_bss_3A8[i] = c->b27 + c->b26 * 2;
+                CharacterStats* c = CS_STATS(i);
+                lbl_2_bss_3A8[i] = c->stats.BattingStance + c->stats.FieldingArm * 2;
             }
             if (lbl_803CBBCC->prevScene != 0xB && lbl_803297E0._CFA1 == 0) {
                 for (i = 0; i < 9; i++) {
@@ -3647,8 +3647,8 @@ void fn_2_7504(void) {
 #if NONMATCHING
 #define FN_2_8CF8_SAVE(t, i)                                                      \
     do {                                                                          \
-        MenuCharStats* src = &g_Roster[(t) * 9 + (i)];                            \
-        MenuCharStats* dst = &((MenuCharStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
+        CharacterStats* src = &g_Roster[(t) * 9 + (i)];                            \
+        CharacterStats* dst = &((CharacterStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
         MenuOrderEntry* order = &lbl_80354720[(t)][(i)];                          \
         MenuOrderEntry* saved = &((MenuOrderEntry(*)[9])lbl_2_bss_DCE8)[(t)][(i)];                        \
         MENU_COPY_CHAR_STATS(dst, src);                                           \
@@ -3656,13 +3656,13 @@ void fn_2_7504(void) {
         saved->_1 = order->_1;                                                      \
         saved->slot = order->slot;                                                      \
         saved->_3 = order->_3;                                                      \
-        lbl_2_bss_3E4[(t) * 9 + (i)] = src->h24;                                  \
+        lbl_2_bss_3E4[(t) * 9 + (i)] = src->stats.CharID;                                  \
     } while (0)
 
 #define FN_2_8CF8_LOAD(t, i)                                                      \
     do {                                                                          \
-        MenuCharStats* dst = &g_Roster[(t) * 9 + (i)];                            \
-        MenuCharStats* src = &((MenuCharStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
+        CharacterStats* dst = &g_Roster[(t) * 9 + (i)];                            \
+        CharacterStats* src = &((CharacterStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
         MenuOrderEntry* order = &lbl_80354720[(t)][(i)];                          \
         MenuOrderEntry* saved = &((MenuOrderEntry(*)[9])lbl_2_bss_DCE8)[(t)][(i)];                        \
         MENU_COPY_CHAR_STATS(dst, src);                                           \
@@ -3670,7 +3670,7 @@ void fn_2_7504(void) {
         order->_1 = saved->_1;                                                      \
         order->slot = saved->slot;                                                      \
         order->_3 = saved->_3;                                                      \
-        dst->h24 = lbl_2_bss_3E4[(t) * 9 + (i)];                                  \
+        dst->stats.CharID = lbl_2_bss_3E4[(t) * 9 + (i)];                                  \
     } while (0)
 
 // fn_2_8CF8, size:0x8E0
@@ -4636,7 +4636,7 @@ void fn_2_3624(u8 port) {
                     CHALLENGE->order[i].charId = id;
                     CHALLENGE->order[i]._2 = i;
                     CHALLENGE->order[i]._3 = pos;
-                    g_Roster[i].h24 = id;
+                    g_Roster[i].stats.CharID = id;
                     lbl_80354720[0][i].slot = pos;
                 }
                 lbl_2_bss_F468._2E = 0;

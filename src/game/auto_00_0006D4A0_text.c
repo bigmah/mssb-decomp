@@ -55,7 +55,7 @@ BOOL checkFieldingStat(int team, int idx, E(int, FIELDING_ABILITY) ability) {
 // NONMATCHING 90%: the roster index mulli/addi is scheduled around the GameSettings load differently
 #if NONMATCHING
 s32 fn_3_6D658(s32 team, s32 charId, s32 otherId) {
-    s32 chem = ((u8*)&lbl_8034E9A0[charId].chemistry)[otherId];
+    s32 chem = lbl_8034E9A0[charId].chem[otherId];
 
     if (!g_d_GameSettings.exhibitionMatchInd && g_d_GameSettings.humanTeamNumber == team &&
         (s8)g_d_GameSettings.challengeCaptainStarBought[5] != 0) {
