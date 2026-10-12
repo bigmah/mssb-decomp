@@ -521,20 +521,18 @@ void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, u16 value) {
 }
 
 // .text:0x8004CCC0 size:0x430
-// NONMATCHING 97.9%: scheduling of the lbl_803C5F74/lbl_80366B18 address loads after fn_8000F988
-#if NONMATCHING
 void fn_8004CCC0(void) {
     LayoutGroup* task = lbl_803CC1B8;
     LayoutObj* obj;
     s32 done;
     s32 frame;
-    u16 idx;
+    u32 idx;
     if (lbl_803C5F74.state == 0) {
         lbl_803C5F74.state = 1;
         if (lbl_803C5F74.table >= 0) {
-            idx = fn_8000F988(task, 8, lbl_800FEAAC[lbl_803C5F74.kind].msgId, lbl_803C5F74.table, lbl_803C5F74.msg, 0);
-            lbl_80366B18.entries[idx].hAlign = 1;
+            idx = (u16)fn_8000F988(task, 8, lbl_800FEAAC[lbl_803C5F74.kind].msgId, lbl_803C5F74.table, lbl_803C5F74.msg, 0);
             lbl_803C5F74.textIdx = idx;
+            lbl_80366B18.entries[idx].hAlign = 1;
             lbl_80366B18.entries[idx].vAlign = 1;
             if (lbl_803C5F74.hasTextRect != 0) {
                 fn_8000FD78(idx, lbl_803C5F74.textRect[0], lbl_803C5F74.textRect[1], lbl_803C5F74.textRect[2], lbl_803C5F74.textRect[3]);
@@ -628,10 +626,9 @@ close:
     lbl_803C5F74.state = 4;
     lbl_803C5F74.active = 0;
     fn_80034CEC((SpaniGroup *)task);
-    fn_800B0A14_removeQueue(NULL);
+    REMOVE_QUEUE_NOARG();
     lbl_80366158._20 = 1;
 }
-#endif
 
 // .text:0x8004D0F0 size:0x370
 void fn_8004D0F0(void) {
