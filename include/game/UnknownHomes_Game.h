@@ -2344,18 +2344,8 @@ typedef struct _MiniGameStruct {
     /*0x1A8B*/ u8 _1A8B;
     /*0x1A8C*/ u8 _1A8C[2];
     /*0x1A8E*/ s16 bOD_HitPowerOfEachChar[4];
-    /*0x1A96*/ u8 bODRelated5;
-    /*0x1A97*/ u8 bODRelated6;
-    /*0x1A98*/ u8 bODUnusedBytes[8];
-    /*0x1AA0*/ u8 _1AA0[3];
-    /*0x1AA3*/ u8 _1AA3;
-    /*0x1AA4*/ u8 _1AA4;
-    /*0x1AA5*/ u8 _1AA5;
-    /*0x1AA6*/ u8 _1AA6;
-    /*0x1AA7*/ u8 _1AA7;
-    /*0x1AA8*/ u8 _1AA8;
-    /*0x1AA9*/ u8 _1AA9;
-    /*0x1AAA*/ u8 pad18[30];
+    /*0x1A96*/ u8 bODBombTimers[10]; // explosion timers, 0: free (rep_31F0)
+    /*0x1AA0*/ u8 bODHitHistory[4][10]; // per player, newest first (rep_31F0)
     /*0x1AC8*/ u8 bODRelated2;
     /*0x1AC9*/ u8 barrelBatter_BODPitchSelectionType;
     /*0x1ACA*/ u8 minigamePitchSpeedAdjustment;
