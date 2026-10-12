@@ -111,18 +111,21 @@ typedef struct MenuRecord {
 } MenuRecord; // size: 0x8
 
 typedef struct MenuMission {
-    /*0x0*/ u8 _0;
-    /*0x1*/ s8 state; // star mission state (-2 / 0 / ...)
+    /*0x0*/ s8 state; // star mission state (-2 / 0 / ...)
+    /*0x1*/ u8 shown; // shown on the pause menu
 } MenuMission; // size: 0x2
 
-// Star-mission state of one character (0x34 bytes); MenuCtx.chars.
+// Star-mission state of one character (0x34 bytes); MenuCtx.chars. Same layout as
+// ChallengeTrackingStruct in game/UnknownHomes_Game.h.
 typedef struct MenuRosterEntry {
     /*0x00*/ s8* limits; // indexed by [_4415 * 6 + _441C + 4]
-    /*0x04*/ u8 _04[2];
+    /*0x04*/ s8 _04;
+    /*0x05*/ s8 _05;
     /*0x06*/ s8 value;
     /*0x07*/ u8 _07;
-    /*0x08*/ MenuMission missions[10];
-    /*0x1C*/ u8 _1C[0x31 - 0x1C];
+    /*0x08*/ u8 _08;
+    /*0x09*/ MenuMission missions[10];
+    /*0x1D*/ MenuMission savedMissions[10];
     /*0x31*/ u8 _31;
     /*0x32*/ u8 _32[2];
 } MenuRosterEntry; // size: 0x34
@@ -295,10 +298,17 @@ typedef struct MenuCtx {
     /*0x44FE*/ u8 _44FE[8]; // indexed
 } MenuCtx; // size: 0x4508
 
+typedef struct MenuSortEntry {
+    /*0x0*/ s32 k;
+    /*0x4*/ s32 v;
+} MenuSortEntry; // size: 0x8
+
 // Draw area after the per-layer flags (lbl_2_bss_1A8230 points at it); starts with the
 // MenuDrawEntry[10][864] table used by fn_2_53F04.
 typedef struct MenuDrawArea {
-    /*0x00000*/ u8 _00000[0x32A55];
+    /*0x00000*/ u8 _00000[0x32A0F];
+    /*0x32A0F*/ u8 _32A0F;
+    /*0x32A10*/ u8 _32A10[0x32A55 - 0x32A10];
     /*0x32A55*/ u8 _32A55;
     /*0x32A56*/ u8 _32A56[0x32A86 - 0x32A56];
     /*0x32A86*/ u8 _32A86;
@@ -350,7 +360,15 @@ typedef struct MenuData {
     /*0x197418*/ u8 _197418;
     /*0x197419*/ u8 _197419[0x197430 - 0x197419];
     /*0x197430*/ s16 stats[8]; // a StatOutput
-    /*0x197440*/ u8 _197440[0x1976A0 - 0x197440];
+    /*0x197440*/ u8 _197440[0x197450 - 0x197440];
+    /*0x197450*/ MenuSortEntry sortList[55];
+    /*0x197608*/ u8 _197608[0x197684 - 0x197608];
+    /*0x197684*/ u32* scriptPc; // menu script interpreter (fn_2_422FC)
+    /*0x197688*/ s32 _197688;
+    /*0x19768C*/ s32 _19768C;
+    /*0x197690*/ s32 _197690;
+    /*0x197694*/ s32 _197694;
+    /*0x197698*/ u8 _197698[0x1976A0 - 0x197698];
     /*0x1976A0*/ s32 selection;
     /*0x1976A4*/ s32 secondarySelection;
     /*0x1976A8*/ u32 _1976A8;
@@ -387,15 +405,18 @@ typedef struct MenuData {
     /*0x197726*/ s16 _197726;
     /*0x197728*/ s16 _197728;
     /*0x19772A*/ s16 _19772A;
-    /*0x19772C*/ u8 _19772C[0x197730 - 0x19772C];
+    /*0x19772C*/ s16 _19772C;
+    /*0x19772E*/ u8 _19772E[0x197730 - 0x19772E];
     /*0x197730*/ s16 _197730;
     /*0x197732*/ u8 _197732[0x197734 - 0x197732];
     /*0x197734*/ s16 _197734;
     /*0x197736*/ s16 _197736;
-    /*0x197738*/ u8 _197738[0x19773C - 0x197738];
+    /*0x197738*/ s16 _197738;
+    /*0x19773A*/ s16 _19773A;
     /*0x19773C*/ s16 _19773C;
     /*0x19773E*/ s16 _19773E;
-    /*0x197740*/ u8 _197740[0x197746 - 0x197740];
+    /*0x197740*/ s16 _197740;
+    /*0x197742*/ u8 _197742[0x197746 - 0x197742];
     /*0x197746*/ s16 _197746;
     /*0x197748*/ u8 _197748[0x19774C - 0x197748];
     /*0x19774C*/ s16 _19774C;
@@ -433,7 +454,11 @@ typedef struct MenuData {
     /*0x197848*/ u8 _197848;
     /*0x197849*/ u8 _197849;
     /*0x19784A*/ u8 _19784A;
-    /*0x19784B*/ u8 _19784B[0x197857 - 0x19784B];
+    /*0x19784B*/ u8 _19784B[0x197851 - 0x19784B];
+    /*0x197851*/ s8 _197851;
+    /*0x197852*/ u8 _197852[0x197854 - 0x197852];
+    /*0x197854*/ s8 _197854;
+    /*0x197855*/ u8 _197855[0x197857 - 0x197855];
     /*0x197857*/ s8 _197857;
     /*0x197858*/ u8 _197858;
     /*0x197859*/ u8 _197859;
@@ -447,7 +472,7 @@ typedef struct MenuData {
     /*0x197865*/ u8 _197865;
     /*0x197866*/ s8 _197866;
     /*0x197867*/ s8 _197867;
-    /*0x197868*/ u8 _197868[0x36]; // indexed by _197867
+    /*0x197868*/ s8 _197868[0x36]; // indexed by _197867
     /*0x19789E*/ u8 _19789E;
     /*0x19789F*/ u8 _19789F[20]; // indexed
     /*0x1978B3*/ u8 _1978B3[20]; // indexed
@@ -457,7 +482,8 @@ typedef struct MenuData {
     /*0x1978F0*/ s8 _1978F0;
     /*0x1978F1*/ u8 _1978F1[0x1978F3 - 0x1978F1];
     /*0x1978F3*/ u8 _1978F3;
-    /*0x1978F4*/ u8 _1978F4[0x1978F6 - 0x1978F4];
+    /*0x1978F4*/ u8 _1978F4;
+    /*0x1978F5*/ u8 _1978F5;
     /*0x1978F6*/ u8 _1978F6;
     /*0x1978F7*/ u8 _1978F7;
     /*0x1978F8*/ u8 _1978F8;

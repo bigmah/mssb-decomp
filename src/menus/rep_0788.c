@@ -2368,7 +2368,7 @@ extern void fn_8000FE54(void);
 
 // fn_2_20074, size:0x70
 s32 fn_2_20074(void) {
-    u16 v = ((MenuPad*)&lbl_803C77B8)[(s8)(u8)lbl_2_bss_1A824C->port].held;
+    u16 v = ((MenuPad*)&lbl_803C77B8)[(s8)lbl_2_bss_1A824C->port].held;
     s32 r;
     if (v & 0x8) {
         r = 0;
@@ -4872,7 +4872,7 @@ void fn_2_31538(MenuTableContext* menu, MenuItemState* item) {
     case 2: {
         LayoutObj* object;
         MenuData* p = lbl_2_bss_1A824C;
-        fn_800363D8(menu, item->offset, 1, 0x83, ((s8*)p->_197868)[p->_197867]);
+        fn_800363D8(menu, item->offset, 1, 0x83, p->_197868[p->_197867]);
         object = lbl_80371C30[menu->baseIdx + item->offset].obj;
         object->flags |= 2;
         lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
@@ -5992,7 +5992,7 @@ void fn_2_2E7D0(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
     case 2:
-        if ((s8)(u8)lbl_2_bss_1A8248->_444B == -1) {
+        if ((s8)lbl_2_bss_1A8248->_444B == -1) {
             LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
             object->flags |= 2;
             lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
@@ -6013,7 +6013,7 @@ void fn_2_2E7D0(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
     case 8:
-        if ((s8)(u8)lbl_2_bss_1A8248->_444C == -1) {
+        if ((s8)lbl_2_bss_1A8248->_444C == -1) {
             LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
             object->flags |= 2;
             lbl_80371C30[menu->baseIdx + item->offset].obj->_5C = 0xF0000;
@@ -6093,7 +6093,7 @@ void fn_2_2EBE4(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
     case 2: {
-        s32 value = (s8)(u8)lbl_2_bss_1A8248->_444B;
+        s32 value = (s8)lbl_2_bss_1A8248->_444B;
         if (value == -1) {
             item->state = 37;
         } else {
@@ -7772,7 +7772,7 @@ void fn_2_2A338(MenuTableContext* menu, MenuItemState* item) {
         s16 minLevel = lbl_80109AE8[row][sel].minLevel;
         MenuRosterEntry* record = &lbl_2_bss_1A8248->chars[lbl_800E869C[row]];
         LayoutObj* object;
-        if (check != -1 && (s8)record->missions[sel + 1]._0 == 0) {
+        if (check != -1 && (s8)record->missions[sel].shown == 0) {
             u8 level = lbl_2_bss_1A8248->_4415;
             if (level < minLevel) {
                 fn_8000FE08(item->unk14, 0, 0x1C6);
@@ -7785,7 +7785,7 @@ void fn_2_2A338(MenuTableContext* menu, MenuItemState* item) {
             } else {
                 fn_8000FE08(item->unk14, 0, 0x1C5);
             }
-        } else if (check != -1 && (s32)record->missions[sel + 1]._0 == 1 && record->missions[sel].state == 0) {
+        } else if (check != -1 && (s32)record->missions[sel].shown == 1 && record->missions[sel].state == 0) {
             u8 level = lbl_2_bss_1A8248->_4415;
             if (level < minLevel) {
                 fn_8000FE08(item->unk14, 0, 0x1C6);
@@ -8479,7 +8479,7 @@ void fn_2_24800(void) {
 #endif
 
 
-#define MENU_PAD (((MenuPad*)&lbl_803C77B8)[(s8)(u8)lbl_2_bss_1A824C->port])
+#define MENU_PAD (((MenuPad*)&lbl_803C77B8)[(s8)lbl_2_bss_1A824C->port])
 
 extern void fn_2_46C2C(s32 unused, Vec* src);
 extern void fn_2_3F66C(void);
