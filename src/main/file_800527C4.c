@@ -3149,8 +3149,6 @@ void fn_8005F068(SceneTask* task, s32 port) {
 #endif
 
 // .text:0x8005F734 size:0x29C
-// NONMATCHING 95%: add operand order objIdx+port and r4/r8 swapped throughout
-#if NONMATCHING
 void fn_8005F734(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
 
@@ -3158,32 +3156,31 @@ void fn_8005F734(SceneTask* task, s32 port) {
         TASK_OBJ(task, port)->_64 = 0x49;
         TASK_OBJ(task, port)->_5C = 50 << 16;
         TASK_OBJ(task, port)->_68 = 4;
-        TASK_OBJ(task, port + 2)->_64 = 0x52;
-        TASK_OBJ(task, port + 2)->_5C = 0;
-        TASK_OBJ(task, port + 2)->_68 = 1;
-        TASK_OBJ(task, port + 4)->_5C = 0;
-        TASK_OBJ(task, port + 4)->_68 = 1;
-        TASK_OBJ(task, port + 6)->_5C = 14 << 16;
-        TASK_OBJ(task, port + 6)->_68 = 1;
-        TASK_OBJ(task, port + 10)->flags |= 2;
-        TASK_OBJ(task, port + 10)->_5C = 0;
-        TASK_OBJ(task, port + 10)->_68 = 1;
-        TASK_OBJ(task, port + 20)->_5C = 0;
-        TASK_OBJ(task, port + 20)->_68 = 1;
+        TASK_OBJ_AT(task, port, 2)->_64 = 0x52;
+        TASK_OBJ_AT(task, port, 2)->_5C = 0;
+        TASK_OBJ_AT(task, port, 2)->_68 = 1;
+        TASK_OBJ_AT(task, port, 4)->_5C = 0;
+        TASK_OBJ_AT(task, port, 4)->_68 = 1;
+        TASK_OBJ_AT(task, port, 6)->_5C = 14 << 16;
+        TASK_OBJ_AT(task, port, 6)->_68 = 1;
+        TASK_OBJ_AT(task, port, 10)->flags |= 2;
+        TASK_OBJ_AT(task, port, 10)->_5C = 0;
+        TASK_OBJ_AT(task, port, 10)->_68 = 1;
+        TASK_OBJ_AT(task, port, 20)->_5C = 0;
+        TASK_OBJ_AT(task, port, 20)->_68 = 1;
         if (((u8*)&g_d_GameSettings)[0x10] == 0 && port == 0) { // TODO type
-            TASK_OBJ(task, port + 18)->_5C = 30 << 16;
-            TASK_OBJ(task, port + 18)->_68 = 4;
-            TASK_OBJ(task, port + 24)->_5C = 0;
-            TASK_OBJ(task, port + 24)->_68 = 0;
+            TASK_OBJ_AT(task, port, 18)->_5C = 30 << 16;
+            TASK_OBJ_AT(task, port, 18)->_68 = 4;
+            TASK_OBJ_AT(task, port, 24)->_5C = 0;
+            TASK_OBJ_AT(task, port, 24)->_68 = 0;
         } else {
-            TASK_OBJ(task, port + 18)->_5C = 0;
-            TASK_OBJ(task, port + 18)->_68 = 1;
+            TASK_OBJ_AT(task, port, 18)->_5C = 0;
+            TASK_OBJ_AT(task, port, 18)->_68 = 1;
         }
         fn_800626EC(port);
         *state = 1;
     }
 }
-#endif
 
 // .text:0x8005F9D0 size:0x2D0
 // NONMATCHING 96%: the original keeps the constant 5 in r27 (set in each branch) and tests ready[] with bne/b
