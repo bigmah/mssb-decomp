@@ -1880,9 +1880,16 @@ void fn_800ABB60(void) {
 }
 #endif
 
+// fn_800ABB14 as inlined into fn_800ABBD0 (the length argument is evaluated first).
+static inline u16 cardCrcInline(s32 len, u8* data) {
+    u16 crc = 0xFFFF;
+    while (--len >= 0) {
+        crc = (crc << 8) ^ lbl_800E7800[(u8)(crc >> 8) ^ *data++];
+    }
+    return ~crc;
+}
+
 // .text:0x800ABBD0 size:0x374
-// NONMATCHING 99%: r7/r8 swapped in the inlined fn_800ABB14 CRC loop
-#if NONMATCHING
 void fn_800ABBD0(void) {
     CARDStat* stat = &lbl_802EF330;
     CardMountTask* task = (CardMountTask*)lbl_803CC1B8;
@@ -1964,7 +1971,7 @@ void fn_800ABBD0(void) {
     case 3:
         if (!(lbl_803CC160 & 1)) {
             header = file->buffer;
-            if (header->crc != fn_800ABB14((u8*)(header + 1), file->length - sizeof(CardSaveHeader))) {
+            if (header->crc != cardCrcInline(file->length - sizeof(CardSaveHeader), (u8*)(header + 1))) {
                 Task* parent;
                 lbl_803C7838.status = 0xB;
                 parent = task->parent;
@@ -1979,7 +1986,6 @@ void fn_800ABBD0(void) {
         break;
     }
 }
-#endif
 
 // .text:0x800ABF44 size:0x5C4
 // NONMATCHING 92%: switch jump table lives in unsplit .data (reloc names differ); register allocation differs
