@@ -24,7 +24,7 @@ extern void fn_2_4AB1C(void);
 extern s32 fn_2_46D00(void);
 extern s32 lbl_2_bss_1598;
 extern u8* lbl_803CC1B8[];
-extern u8 lbl_8037169C[];
+#include "main/file_8001FE00.h" // SceneFade lbl_8037169C
 extern void* memset(void*, int, unsigned long);
 
 // fn_2_1A420, size:0xA8
@@ -55,21 +55,21 @@ void fn_2_1A2AC(void) {
         object->step = 1;
         break;
     case 1:
-        if (lbl_8037169C[0x12] != 0) {
+        if (lbl_8037169C.done != 0) {
             object->step = 2;
         }
         break;
     case 2: {
         u8* pad = (u8*)&lbl_803C77B8;
-        pad += lbl_2_bss_1A824C[0]->port * 0x20;
-        if (*(u16*)(pad + 2) & 0x100) {
+        pad += lbl_2_bss_1A824C[0]->port * sizeof(MenuPad);
+        if (((MenuPad*)pad)->down & 0x100) {
             changeScene(3, 6);
             object->step = 3;
         }
         break;
     }
     case 3:
-        if (lbl_8037169C[0x13] != 0) {
+        if (lbl_8037169C._13 != 0) {
             object->step = 4;
         }
         break;
@@ -128,9 +128,13 @@ void fn_2_19F2C(void) {
     s32 i;
     lbl_8036E548._0000 = 0;
     lbl_8036E548.trailFile = 0;
+#if NONMATCHING
+    memset(&lbl_8036E548.trailLayout, 0, offsetof(CharMgr, _3070) - offsetof(CharMgr, trailLayout));
+#else
     for (i = 0; i < CHARMGR_RES_WORDS; i++) {
         *(u32*)((u8*)&lbl_8036E548 + offsetof(CharMgr, trailLayout) + i * 4) = 0;
     }
+#endif
     lbl_8036E548._0004[1] = 0;
     for (i = 0; i < 0x15; i++) {
         lbl_8036E548._000C[i] = 0;
