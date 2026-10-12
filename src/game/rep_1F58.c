@@ -6,7 +6,9 @@ extern u8 lbl_3_common_bss_35154[];
 extern u8 lbl_3_data_17260[];
 extern u8* lbl_3_data_174A0[];
 extern void* fn_800B0A5C_insertQueue(void*, s32);
-extern u8 lbl_3_bss_9D20[];
+// .bss (laid out last-defined-first)
+u8 lbl_3_bss_9D40[0x40];
+u8 lbl_3_bss_9D20[0x20];
 extern u8* lbl_803CC1B8;
 extern u8 lbl_8036E548[];
 extern u8 lbl_803CBBC0;
@@ -16,7 +18,6 @@ extern E30_1F58 lbl_3_data_174A8[];
 extern u8 lbl_80366158[];
 extern void fn_800A7D4C(int, void*);
 extern void fn_800B0A14_removeQueue(void*);
-extern u8 lbl_3_bss_9D40[];
 extern f32 lbl_3_rodata_1FA8;
 extern void fn_80027918(u8, f32);
 extern f32 lbl_3_rodata_1FAC;
