@@ -798,7 +798,7 @@ Mtx lbl_800F78E0[4] = {
 
 // .bss 0x801F8640..0x8023DD80 (MWCC lays these out in reverse definition order)
 s16 lbl_8023D6C0[0x360];
-u8 lbl_801F86C0[];
+u8 lbl_801F86C0[0x45000];
 Mtx44 lbl_801F8680;
 Mtx44 lbl_801F8640;
 

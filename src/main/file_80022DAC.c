@@ -704,7 +704,7 @@ StadiumLightSet lbl_800F7478[14] = {
 };
 
 // .bss 0x8017EB40..0x8017EC00 (MWCC lays these out in reverse definition order)
-u8* lbl_8017EBB0[];
+u8* lbl_8017EBB0[0x14];
 u8* lbl_8017EB40[0x1C];
 
 // .sbss 0x803CBC58..0x803CBC68 (MWCC lays these out in reverse definition order)
