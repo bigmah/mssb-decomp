@@ -6,7 +6,10 @@ static u8 ch_data_AB0[0xD4] = {1};
 static s32 ch_B84 = 1;
 static u8 ch_padB88[0x40] = {1};
 static u8 ch_BC8[0xA0] = {1};
-static u8 ch_C68[0x356] = {1};
+static u8 ch_C68[0x60] = {1};
+static u8 ch_CC8[0x1E0] = {1};
+static u8 ch_EA8[0x64] = {1}; // message table (fn_800111B4); +4 is the message data
+static u8 ch_F0C[0xB2] = {1}; // 12 file load records of 0x10 bytes
 static u16 ch_FBE = 1;
 extern u8* lbl_803CC1B8[];
 extern u8 lbl_1_bss_2FAA;
@@ -201,6 +204,21 @@ void fn_1_90E4(s32 value) {
     fn_8003664C(lbl_1_data_BC8[0x14], 2, (u16)(value / 10 + 10), 6);
 }
 
+// Copy of fn_1_90E4 for fn_1_9AB0, which inlines it and reaches the score object and
+// ch_BC8 through its pooled bases.
+static inline void showScore(ChalScoreState* b, s32 value) {
+    fn_80034CEC(b->scoreObj);
+    fn_80034E20(b->scoreObj, ch_BC8);
+    *(s32*)(lbl_80371C30[*(u16*)(b->scoreObj + 0x14) * 2] + 0x5C) = 0x80000;
+    fn_8003664C(ch_BC8[0x14], 0, (u16)(value / 1000 + 10), 4);
+    value %= 1000;
+    *(s32*)(lbl_80371C30[*(u16*)(b->scoreObj + 0x14) * 2 + 2] + 0x5C) = 0xC0000;
+    fn_8003664C(ch_BC8[0x14], 1, (u16)(value / 100 + 10), 5);
+    value %= 100;
+    *(s32*)(lbl_80371C30[*(u16*)(b->scoreObj + 0x14) * 2 + 4] + 0x5C) = 0x100000;
+    fn_8003664C(ch_BC8[0x14], 2, (u16)(value / 10 + 10), 6);
+}
+
 // .text:0x9380 size:0x324
 void fn_1_9380(void* object) {
     u8* queue;
@@ -358,27 +376,23 @@ extern u8 lbl_1_common_bss_47698[]; // TODO type
 // fn_1_9AB0, size:0x3F0
 // Score-screen task: loads the messages and 12 pages, then runs the page handlers and
 // (in mode 1) counts the displayed score down.
-// NONMATCHING 67%: the original reaches .data/.bss through pooled bases and keeps the clear loop rolled
-// nmverify: lbl_1_bss_2FCC lbl_1_data_BC8 lbl_1_data_CC8 reached through a pooled base in original
+// NONMATCHING 99%: two register pairs swapped (task r29/r28, the clear loop's counter and pointer)
 #if NONMATCHING
 void fn_1_9AB0(void) {
     ChalScoreState* b;
     u8* task;
-    u8* p;
     s32 i;
 
     b = &lbl_1_bss_2FA8;
     task = *(u8**)lbl_803CC1B8;
     switch (*(s16*)(task + 0x10)) {
     case 0:
-        fn_800111B4(lbl_1_data_CC8 + 0x1E0); // TODO type: message table inside lbl_1_data_CC8
-        b->msgData = lbl_1_data_CC8 + 0x1E4;
+        fn_800111B4(ch_EA8); // TODO type: message table inside lbl_1_data_CC8
+        b->msgData = ch_EA8 + 4;
         *(u16*)lbl_1_common_bss_47698 = 0;
-        p = lbl_1_common_bss_47698 + 0xA;
         i = 10;
         do {
-            p[2] = 0;
-            p--;
+            lbl_1_common_bss_47698[i + 2] = 0;
         } while (--i != 0);
         lbl_1_common_bss_47698[0xC] = 0;
         task[0x1A] = 0;
@@ -395,7 +409,7 @@ void fn_1_9AB0(void) {
             break;
         }
         // TODO type: 12 load records of 0x10 bytes inside lbl_1_data_CC8
-        if (fn_80035838(lbl_1_data_CC8 + 0x244 + b->loadIdx * 0x10, (u8)b->loadIdx) != 0) {
+        if (fn_80035838(ch_F0C + b->loadIdx * 0x10, (u8)b->loadIdx) != 0) {
             b->loadIdx++;
         }
         break;
@@ -412,7 +426,7 @@ void fn_1_9AB0(void) {
                     ch_B84 = 3000;
                 }
                 if (ch_B84 % 10 == 0) {
-                    fn_1_90E4(ch_B84);
+                    showScore(b, ch_B84);
                 }
             }
             b->step = 2;
