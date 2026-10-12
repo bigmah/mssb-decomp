@@ -217,10 +217,14 @@ game/rep_D68.c:
 game/rep_DB8.c:
 	.rodata     start:0x00000DB8 end:0x00000E08
 
+auto_00_0005985C_text:
+	.text       start:0x0005985C end:0x00060768
+	.data       start:0x00003D60 end:0x000065EC
+
 game/rep_E08.c:
 	.text       start:0x00060768 end:0x000674E0
 	.rodata     start:0x00000E08 end:0x00000EA0
-	.data       start:0x00006660 end:0x00006804
+	.data       start:0x000065F0 end:0x00006804
 
 game/rep_EA0.c:
 	.text       start:0x0006750C end:0x0006A160

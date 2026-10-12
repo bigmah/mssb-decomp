@@ -2510,7 +2510,7 @@ typedef struct {
 
 extern lbl_3_common_bss_32718_struct g_UnkSound_32718;
 
-extern struct {
+extern struct StarPowerCosts {
     /* 0x0 */ u8 moonShotCost;
     /* 0x1 */ u8 captainStarCost;
     /* 0x2 */ u8 nonCaptain_CaptainStarCost;
