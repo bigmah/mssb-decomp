@@ -44,8 +44,8 @@ static s8 lbl_1_bss_5F62;
 static u16 lbl_1_bss_5F60;
 static s32 lbl_1_bss_5F5C;
 static s32 lbl_1_bss_5F58;
-static u8 lbl_1_bss_3758[0x2800];
-static u8 lbl_1_bss_3258[0x500];
+static ShapeKey lbl_1_bss_3758[8][5][0x40]; // keys of the saved shape animations
+static ShapeAnimState lbl_1_bss_3258[8][5]; // shape animations saved per script step
 static u8 lbl_1_bss_3218[0x40];      // Ch8 records
 static u8 lbl_1_bss_3217;            // unused
 static u8 lbl_1_bss_3216;
@@ -4634,7 +4634,7 @@ void fn_1_17D90(void) {
     base = CHARMGR_AT(lbl_1_bss_5F73);
     while ((src -= 8, dst -= 8, n-- != 0)) {
         if ((s8)src[0x10] != 0) {
-            u8* table;
+            ANIMBank* table;
             s16 a = *(s16*)(src + 0x12);
             s16 b;
             s16 c;
@@ -4646,7 +4646,7 @@ void fn_1_17D90(void) {
             c = *(s16*)(src + 0x16);
             if (c == -2) {
                 if (table != NULL) {
-                    *(s16*)(dst + 4) = (s32) **(f32**)(*(u8**)(table + 4) + b * 0xC + 4);
+                    *(s16*)(dst + 4) = (s32)table->animSequences[b].trackArray->animTime;
                 } else {
                     *(s16*)(dst + 4) = 0;
                 }
@@ -4821,7 +4821,7 @@ void fn_1_16978(void) {
     switch (step) {
     case 0:
         lbl_1_bss_3098 = NULL;
-        *(s16*)((u8*)fn_800B0A5C_insertQueue((void*)fn_1_10560, 11) + 0x10) = 0;
+        ((ChTaskHeader*)fn_800B0A5C_insertQueue((void*)fn_1_10560, 11))->result = 0;
         CH_TASK->result += 1;
         break;
     case 1:
@@ -5081,7 +5081,7 @@ void fn_1_165E0(void) {
     if (lbl_803C77B8._00 & 0x400) {
         delta *= 10;
     }
-    switch (*(u32*)&lbl_1_bss_307C) {
+    switch (lbl_1_bss_307C) {
     case 0: {
         lbl_1_bss_5F70 += delta;
         if (lbl_1_bss_5F70 < 0) {
@@ -5573,8 +5573,7 @@ void fn_1_1540C(void) {
 
 // .text:0x151F8 size:0x214
 void fn_1_151F8(void) {
-    u8* pad = (u8*)&lbl_803C77B8;
-    u16 buttons = *(u16*)(pad + 4);
+    u16 buttons = lbl_803C77B8._04;
     s32 cursor;
     f32 step;
     f32 value;
@@ -5598,7 +5597,7 @@ void fn_1_151F8(void) {
             break;
         case 1:
             step = lbl_1_rodata_7430;
-            if (*(u16*)pad & 0x400) {
+            if (lbl_803C77B8._00 & 0x400) {
                 step = step * lbl_1_rodata_73F8;
             }
             step = step * lbl_1_rodata_73A4[0];
@@ -5621,7 +5620,7 @@ void fn_1_151F8(void) {
             break;
         case 1:
             step = lbl_1_rodata_7430;
-            if (*(u16*)pad & 0x400) {
+            if (lbl_803C77B8._00 & 0x400) {
                 step = step * lbl_1_rodata_73F8;
             }
             step = step * lbl_1_rodata_73BC;
@@ -5655,21 +5654,21 @@ void fn_1_15170(void) {
 // .text:0x14FB8 size:0x1B8
 void fn_1_14FB8(void) {
     u16 buttons = lbl_803C77B8._04;
-    u8* q = (u8*)lbl_803CC1B8;
+    ChMainTask* q = lbl_803CC1B8;
 
     if (buttons & 8) {
-        if (q[0x20] != 0) {
-            q[0x20]--;
+        if (q->page != 0) {
+            q->page--;
         } else {
-            q[0x20] = 8;
+            q->page = 8;
         }
     } else if (buttons & 4) {
-        q[0x20]++;
-        if (q[0x20] == 9) {
-            q[0x20] = 0;
+        q->page++;
+        if (q->page == 9) {
+            q->page = 0;
         }
     } else if (lbl_803C77B8._00 & 0x100) {
-        switch (q[0x20]) {
+        switch (q->page) {
         case 0:
             if (buttons & 0x100) lbl_1_bss_5F71 = 3;
             break;
@@ -5760,7 +5759,7 @@ void fn_1_1496C(u8* object) {
         memset(&lbl_8036E548, 0, sizeof(lbl_8036E548));
         lbl_1_bss_3070[0] = 0;
         fn_800AD038(lbl_80366158[2]);
-        *(s16*)((u8*)CH_TASK->parent + 0x10) = 1;
+        CH_TASK->parent->result = 1;
     }
 }
 #endif
@@ -5768,7 +5767,7 @@ void fn_1_1496C(u8* object) {
 // .text:0x00014928 size:0x44
 void fn_1_14928(void) {
     fn_800AD038(lbl_80366158[2]);
-    *(s16*)((u8*)CH_TASK->parent + 0x10) = 1;
+    CH_TASK->parent->result = 1;
 }
 
 // .text:0x000148CC size:0x5C
@@ -5780,16 +5779,16 @@ void fn_1_148CC(void) {
 }
 
 // .text:0x00014888 size:0x44
-void fn_1_14888(u8* object) {
+void fn_1_14888(ActorObject* object) {
     if (lbl_1_bss_67E0.lightOn) {
         fn_800B9AA8(&lbl_1_bss_67E0.cam.light);
     } else {
-        fn_800B9AA8(*(void**)(object + 0x70));
+        fn_800B9AA8(object->lights[0]);
     }
 }
 
 // .text:0x14710 size:0x174
-void fn_1_14710(u8* object) {
+void fn_1_14710(CharActor* object) {
     s32 i;
     s32 k;
     ChPair* p;
@@ -5798,16 +5797,16 @@ void fn_1_14710(u8* object) {
     u16 x;
     u16 y;
     for (i = 0; i < 0x78; i++) {
-        ((u16*)object)[i + 0x39] = i;
+        object->mirror[i] = i;
     }
     k = 0;
     p = lbl_1_data_1DC0;
     do {
-        x = *(u16*)(object + p->a * 2 + 0x162);
-        y = *(u16*)(object + p->b * 2 + 0x162);
+        x = object->jointIdx[p->a];
+        y = object->jointIdx[p->b];
         if (x != 0xFFFF && y != 0xFFFF) {
-            *(u16*)(object + x * 2 + 0x72) = y;
-            *(u16*)(object + y * 2 + 0x72) = x;
+            object->mirror[x] = y;
+            object->mirror[y] = x;
         }
         k += 4;
         p = (ChPair*)((u8*)p + 4);
@@ -5827,11 +5826,11 @@ done:
     if (q != NULL) {
         ChPair* r = q;
         for (; r->a != 0xFFFF; r++) {
-            u16 x = *(u16*)(object + r->a * 2 + 0x162);
-            u16 y = *(u16*)(object + r->b * 2 + 0x162);
+            u16 x = object->jointIdx[r->a];
+            u16 y = object->jointIdx[r->b];
             if (x != 0xFFFF && y != 0xFFFF) {
-                *(u16*)(object + x * 2 + 0x72) = y;
-                *(u16*)(object + y * 2 + 0x72) = x;
+                object->mirror[x] = y;
+                object->mirror[y] = x;
             }
         }
     }
@@ -5923,7 +5922,7 @@ void fn_1_135C0(void) {
         }
         entry = &lbl_1_bss_6940.player[lbl_1_bss_5F73];
         table = lbl_8036E548.actors[0].banks.b[entry->group];
-        if (entry->seq >= *(u16*)((u8*)table + 0xA)) {
+        if (entry->seq >= ((ANIMBank*)table)->numSequences) {
             entry->seq = 0;
         }
     }
@@ -6016,7 +6015,7 @@ void fn_1_135C0(void) {
     row->kind = lbl_1_bss_68FC.character[0];
     row->_25C = 1;
     row->_277 = 0xFF;
-    main->objects[0].callback = (ActorObjectCallback)fn_1_14888; // TODO type: callback receives the object
+    main->objects[0].callback = fn_1_14888;
     if (lbl_1_bss_60A4[lbl_1_bss_68FC.character[0]] != 0) {
         fn_800B2B74(lbl_8036E548.slots->objects[0].actor, row->jointIdx[0x13]);
         fn_800B2B74(lbl_8036E548.slots->objects[0].actor, row->jointIdx[0x19]);
@@ -6835,9 +6834,9 @@ void fn_1_10ACC(f32 (*matrix)[4], f32* position, void* unused, u8* color, f32 si
 }
 
 // .text:0x00010AA4 size:0x28
-void fn_1_10AA4(u8* object, f32 value) {
-    *(f32*)(object + 0x54) = value;
-    object[0x5A] = 1;
+void fn_1_10AA4(ActorObject* object, f32 value) {
+    object->unk54 = value;
+    object->setSpeed = 1;
     if (lbl_1_bss_67B8[0] != 0) {
         ((ShapeAnimState*)lbl_1_bss_67B8[0])->speed = value;
     }
@@ -6917,7 +6916,7 @@ void fn_1_106C4(void) {
         return;
     }
     if (!(buttons & 0x100) && (buttons & 0x200)) {
-        *(u32*)&lbl_1_bss_307C = 0;
+        lbl_1_bss_307C = 0;
         lbl_1_bss_5F71 = 1;
     }
 }
@@ -6931,8 +6930,8 @@ void* fn_1_106A4(void) {
 }
 
 void fn_1_10670(void) {
-    u8* object = fn_800B0A5C_insertQueue((void*)fn_1_10560, 11);
-    *(s16*)(object + 0x10) = 0;
+    ChTaskHeader* object = fn_800B0A5C_insertQueue((void*)fn_1_10560, 11);
+    object->result = 0;
 }
 
 // .text:0x10560 size:0x110
@@ -6964,10 +6963,10 @@ void fn_1_10560(void* object) {
 void fn_1_10458(void) {
     s32 cursor;
     s32 buttons;
-    if (*(u32*)&lbl_1_bss_3098 == 0) {
-        if (*(u32*)&lbl_1_bss_3094 == 0) {
-            u8* object = fn_800B0A5C_insertQueue((void*)fn_1_10560, 11);
-            *(s16*)(object + 0x10) = 0;
+    if (lbl_1_bss_3098 == NULL) {
+        if (lbl_1_bss_3094 == NULL) {
+            ChTaskHeader* object = fn_800B0A5C_insertQueue((void*)fn_1_10560, 11);
+            object->result = 0;
         }
         return;
     }
@@ -7129,7 +7128,7 @@ void fn_1_FB98(void) {
         } else {
             step = 1;
         }
-        switch (*(u32*)&lbl_1_bss_307C) {
+        switch (lbl_1_bss_307C) {
         case 0:
             if (--lbl_1_bss_309C < 0) {
                 lbl_1_bss_309C = 13;
@@ -7171,7 +7170,7 @@ void fn_1_FB98(void) {
         } else {
             step = 1;
         }
-        switch (*(u32*)&lbl_1_bss_307C) {
+        switch (lbl_1_bss_307C) {
         case 0:
             if (++lbl_1_bss_309C >= 14) {
                 lbl_1_bss_309C = 0;
@@ -7450,13 +7449,13 @@ void fn_1_F50C(void) {
 
 // .text:0xF37C size:0x190
 void fn_1_F37C(void) {
-    u8* pad;
+    lbl_803C77B8_s* pad;
     ChFireballTask* object;
     fn_1_F798(lbl_1_data_F10C, lbl_1_data_F0A8, 0x12);
-    pad = (u8*)&lbl_803C77B8;
-    if (*(u16*)(pad + 4) & 0x1100) {
-        *(u32*)lbl_1_data_F10C = *(u32*)&lbl_1_bss_3098;
-        *(u32*)lbl_1_data_F174[0] = *(u32*)&lbl_1_bss_3098;
+    pad = &lbl_803C77B8;
+    if (pad->_04 & 0x1100) {
+        *(u8**)lbl_1_data_F10C = lbl_1_bss_3098;    // TODO type: particle params, texture first
+        *(u8**)lbl_1_data_F174[0] = lbl_1_bss_3098; // TODO type: same
         *(u32*)(lbl_1_data_F174[0] + 4) = 5;
         object = fn_800B0A5C_insertQueue((void*)fn_1_F50C, (u16)(CH_TASK->priority + 1));
         object->pos.y = lbl_1_rodata_7394;
@@ -7472,11 +7471,11 @@ void fn_1_F37C(void) {
         object->spawn = 1;
         object->id = lbl_1_bss_30A4;
         lbl_1_bss_30A4 = lbl_1_bss_30A4 + 2;
-        object->onFeet = (*(u16*)(pad + 4) >> 12) & 1;
+        object->onFeet = (pad->_04 >> 12) & 1;
         return;
     }
-    if (*(u16*)(pad + 4) & 0x200) {
-        *(u32*)&lbl_1_bss_307C = 0;
+    if (pad->_04 & 0x200) {
+        lbl_1_bss_307C = 0;
         lbl_1_bss_5F71 = 10;
     }
 }
@@ -7485,11 +7484,11 @@ void fn_1_F37C(void) {
 void fn_1_F2F8(void) {
     s32 buttons = lbl_803C77B8._04;
     if (buttons & 0x100) {
-        lbl_80108B90 = *(u32*)&lbl_1_bss_3098;
+        lbl_80108B90 = (u32)lbl_1_bss_3098; // TODO port: texture pointer kept in a u32
         fn_800324EC(lbl_1_data_F17C[0], 0, -1, &lbl_80108B90);
     } else if (buttons & 0x200) {
         lbl_80108B90 = 0;
-        *(u32*)&lbl_1_bss_307C = 0;
+        lbl_1_bss_307C = 0;
         lbl_1_bss_5F71 = 10;
     }
 }
@@ -7710,7 +7709,7 @@ void fn_1_E8D4(void) {
     base = CHARMGR_AT(lbl_1_bss_5F73);
     while ((src -= 8, dst -= 8, n-- != 0)) {
         if ((s8)src[0x10] != 0) {
-            u8* table;
+            ANIMBank* table;
             s16 a = *(s16*)(src + 0x12);
             s16 b;
             s16 c;
@@ -7722,7 +7721,7 @@ void fn_1_E8D4(void) {
             c = *(s16*)(src + 0x16);
             if (c == -2) {
                 if (table != NULL) {
-                    *(s16*)(dst + 4) = (s32) **(f32**)(*(u8**)(table + 4) + b * 0xC + 4);
+                    *(s16*)(dst + 4) = (s32)table->animSequences[b].trackArray->animTime;
                 } else {
                     *(s16*)(dst + 4) = 0;
                 }
@@ -7804,11 +7803,11 @@ void fn_1_E098(void) {
                 object->setSpeed = table != NULL;
                 object->speed = 0.0f;
                 for (k = 4; k >= 0; k--) {
-                    u8* anims = lbl_1_bss_3258 + (s8)queue->step * 0xA0;
-                    if (*(u16*)(anims + k * 0x20 + 8) != 0) {
-                        // The original indexes with the row counter (row * 0x20) instead of k.
-                        lbl_1_bss_67B8[k] = anims + row * 0x20;
-                        *(f32*)lbl_1_bss_67B8[k] = 0.0f;
+                    ShapeAnimState* anims = lbl_1_bss_3258[(s8)queue->step];
+                    if (anims[k].unk8 != 0) {
+                        // The original indexes with the row counter instead of k.
+                        lbl_1_bss_67B8[k] = &anims[row];
+                        ((ShapeAnimState*)lbl_1_bss_67B8[k])->frame = 0.0f;
                     } else {
                         lbl_1_bss_67B8[k] = NULL;
                     }
@@ -7817,14 +7816,14 @@ void fn_1_E098(void) {
             }
             break;
         default: {
-            u8* table;
-            u8* anim;
+            ANIMBank* table;
+            ANIMSequences* anim;
             u16 highlight;
             u16 pad0;
 
             if (step->group >= 0) {
                 table = lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[step->group];
-                anim = *(u8**)(table + 4) + step->index * 0xC;
+                anim = &table->animSequences[step->index];
             } else {
                 table = NULL;
                 anim = NULL;
@@ -7847,7 +7846,7 @@ void fn_1_E098(void) {
                                 step->frame--;
                             }
                         } else if (buttons & 2) {
-                            if (step->frame < (s16)(s32)**(f32**)(anim + 4)) {
+                            if (step->frame < (s16)(s32)anim->trackArray->animTime) {
                                 step->frame++;
                             }
                         }
@@ -7875,7 +7874,7 @@ void fn_1_E098(void) {
                                 step->index--;
                             }
                         } else if (buttons & 2) {
-                            if (step->index < *(u16*)(table + 0xA) - 1) {
+                            if (step->index < table->numSequences - 1) {
                                 step->index++;
                             }
                         }
@@ -7924,9 +7923,9 @@ void fn_1_DF14(void) {
     ChScriptTask* queue = lbl_803CC1B8;
     s16 state = queue->h.result;
     s32 idx = queue->index;
-    u8** p;
-    u8* q;
-    u8* r;
+    ShapeAnimState** p;
+    ShapeAnimState* q;
+    ShapeKey* r;
     s32 n;
     switch (state) {
     case 0:
@@ -7941,17 +7940,17 @@ void fn_1_DF14(void) {
         break;
     case 1:
         if (lbl_1_bss_5F5C == 0) {
-            p = (u8**)lbl_1_bss_67B8 + 5;
-            q = lbl_1_bss_3258 + idx * 0xA0 + 0xA0;
-            r = lbl_1_bss_3758 + idx * 0x500 + 0x500;
+            p = (ShapeAnimState**)lbl_1_bss_67B8 + 5;
+            q = lbl_1_bss_3258[idx] + 5; // walk the 5 slots backwards
+            r = lbl_1_bss_3758[idx][0] + 5 * 0x40;
             n = 5;
-            while ((p--, q -= 0x20, r -= 0x100, n-- != 0)) {
+            while ((p--, q--, r -= 0x40, n-- != 0)) {
                 if (*p != NULL) {
-                    memcpy(q, *p, 0x20);
-                    *(u8**)(q + 0x1C) = r;
-                    memcpy(r, *(void**)(*p + 0x1C), *(u16*)(*p + 0x1A) * 4);
+                    memcpy(q, *p, sizeof(ShapeAnimState));
+                    q->seqs[0].keys = r;
+                    memcpy(r, (*p)->seqs[0].keys, (*p)->seqs[0].hdr.keyCount * sizeof(ShapeKey));
                 } else {
-                    memset(q, 0, 0x20);
+                    memset(q, 0, sizeof(ShapeAnimState));
                 }
             }
             {
@@ -7975,9 +7974,9 @@ void fn_1_DE1C(void) {
             u8 n;
             while ((s8)(n = queue->step--) != 0) {
                 if (((Ch8*)lbl_1_bss_3218)[(s8)queue->step].v >= 0) {
-                    u8* object = fn_800B0A5C_insertQueue((void*)fn_1_DF14, (u16)(CH_TASK->priority + 1));
-                    *(s16*)(object + 0x10) = 0;
-                    object[0x14] = queue->step;
+                    ChScriptTask* object = fn_800B0A5C_insertQueue((void*)fn_1_DF14, (u16)(CH_TASK->priority + 1));
+                    object->h.result = 0;
+                    object->index = queue->step;
                     queue->h.result = 0;
                     queue->index = queue->index + 1;
                     break;
@@ -8042,18 +8041,18 @@ void fn_1_D9B8(void) {
         object->setTime = table != NULL;
         object->setSpeed = table != NULL;
         object->speed = 0.0f;
-        start = *(f32*)lbl_1_bss_67B8[0];
+        start = ((ShapeAnimState*)lbl_1_bss_67B8[0])->frame;
         for (k = 4; k >= 0; k--) {
-            u8* anim = lbl_1_bss_3258 + (s8)queue->step * 0xA0 + k * 0x20;
-            if (*(u16*)(anim + 8) != 0) {
-                u16 key = *(u16*)((u8*)lbl_1_bss_67B8[0] + 0xC);
+            ShapeAnimState* anim = &lbl_1_bss_3258[(s8)queue->step][k];
+            if (anim->unk8 != 0) {
+                u16 key = ((ShapeAnimState*)lbl_1_bss_67B8[0])->keyIdx;
                 lbl_1_bss_67B8[k] = anim;
-                if (steps[(s8)queue->step].sync != 0 && (f32)*(u16*)((u8*)lbl_1_bss_67B8[k] + 0x18) < start) {
-                    *(f32*)lbl_1_bss_67B8[k] = start;
-                    *(u16*)((u8*)lbl_1_bss_67B8[k] + 0xC) = key;
+                if (steps[(s8)queue->step].sync != 0 && (f32)((ShapeAnimState*)lbl_1_bss_67B8[k])->seqs[0].hdr.length < start) {
+                    ((ShapeAnimState*)lbl_1_bss_67B8[k])->frame = start;
+                    ((ShapeAnimState*)lbl_1_bss_67B8[k])->keyIdx = key;
                 } else {
-                    *(f32*)lbl_1_bss_67B8[k] = 0.0f;
-                    *(u16*)((u8*)lbl_1_bss_67B8[k] + 0xC) = 0;
+                    ((ShapeAnimState*)lbl_1_bss_67B8[k])->frame = 0.0f;
+                    ((ShapeAnimState*)lbl_1_bss_67B8[k])->keyIdx = 0;
                 }
             } else {
                 lbl_1_bss_67B8[k] = NULL;
@@ -8097,7 +8096,7 @@ void fn_1_D7A4(s32 index) {
     n = 8;
     while ((src -= 8, dst -= 8, n-- != 0)) {
         if ((s8)src[0x10] != 0) {
-            u8* table;
+            ANIMBank* table;
             s16 a = *(s16*)(src + 0x12);
             s16 b;
             s16 c;
@@ -8109,7 +8108,7 @@ void fn_1_D7A4(s32 index) {
             c = *(s16*)(src + 0x16);
             if (c == -2) {
                 if (table != NULL) {
-                    *(s16*)(dst + 4) = (s32) **(f32**)(*(u8**)(table + 4) + b * 0xC + 4);
+                    *(s16*)(dst + 4) = (s32)table->animSequences[b].trackArray->animTime;
                 } else {
                     *(s16*)(dst + 4) = 0;
                 }
@@ -8430,16 +8429,16 @@ void fn_1_CCC8(void) {
 
 // .text:0xCC24 size:0xA4
 void fn_1_CC24(void) {
-    u8* object;
+    ChBodyTask* object;
     if (lbl_1_bss_30BC == 0) {
         lbl_1_bss_30BC = 1;
         object = fn_800B0A5C_insertQueue((void*)fn_1_CCC8, (u16)(CH_TASK->priority + 1));
         if (lbl_1_bss_5F69 != 0) {
-            *(void**)(object + 0x14) = lbl_1_bss_67B8[1];
-            *(u16*)(object + 0x18) = lbl_1_data_F56C;
+            object->anim = lbl_1_bss_67B8[1];
+            object->id = lbl_1_data_F56C;
         } else {
-            *(void**)(object + 0x14) = lbl_1_bss_67B8[2];
-            *(u16*)(object + 0x18) = lbl_1_data_F56E;
+            object->anim = lbl_1_bss_67B8[2];
+            object->id = lbl_1_data_F56E;
         }
     }
 }

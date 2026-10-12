@@ -130,11 +130,11 @@ void fn_1_148CC(void);
 
 void fn_1_15170(void);
 
-void fn_1_14888(u8* object);
+void fn_1_14888(ActorObject* object);
 
 void fn_1_E9F8(GameActor* object, s32 index, s32 count);
 
-void fn_1_10AA4(u8* object, f32 value);
+void fn_1_10AA4(ActorObject* object, f32 value);
 
 void fn_1_161D0(void);
 
@@ -189,7 +189,7 @@ void fn_1_1347C(void);
 
 void fn_1_17D90(void);
 
-void fn_1_14710(u8* object);
+void fn_1_14710(CharActor* object);
 
 void fn_1_14FB8(void);
 
