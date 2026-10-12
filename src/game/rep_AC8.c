@@ -1763,14 +1763,12 @@ found:
 }
 #endif
 
-// .text:0x00027FF4 size:0x230 mapped:0x80667088
-// NONMATCHING 97%: f2/f5 swapped for fielder z and the 0x70 scale in the segment setup
 #if NONMATCHING
-int fn_3_27FF4(int i) {
+static inline int Inl27FF4(int i) {
     u8* f = g_Fielders + i * 0x268;
     VecSrcDst seg;
     CollisionStruct hit;
-    f32 x, y, z;
+    f32 z, y, x;
     f32 d;
     if ((0.0f == *(f32*)(f + 0x38) && 0.0f == *(f32*)(f + 0x3C)) || *(s16*)(f + 0x19A) < 0) {
         return 0;
@@ -1799,6 +1797,14 @@ int fn_3_27FF4(int i) {
     *(f32*)(f + 0x144) = hit.normal.z / d;
     *(f32*)(f + 0x50) = 0.0f;
     return 1;
+}
+#endif
+
+// .text:0x00027FF4 size:0x230 mapped:0x80667088
+// NONMATCHING 99%: float registers differ in the segment setup (x/z/0x70 scale); body in Inl27FF4, shared with fn_3_2A288
+#if NONMATCHING
+int fn_3_27FF4(int i) {
+    return Inl27FF4(i);
 }
 #endif
 
@@ -2366,8 +2372,7 @@ int fn_3_2A164(int i) {
 }
 
 // .text:0x0002A288 size:0x414 mapped:0x8066931C
-// NONMATCHING 50%: the original inlines fn_3_27FF4 for the type-1 wall check; we call it (same behaviour)
-// nmverify: fn_3_27FF4 inlined on one side (calls match once expanded)
+// NONMATCHING 99.5%: fn_3_27FF4 inlined for the type-1 wall check via Inl27FF4; only float registers in that body differ
 #if NONMATCHING
 int fn_3_2A288(int i) {
     int who = i;
@@ -2387,32 +2392,31 @@ int fn_3_2A288(int i) {
     if (*(s16*)(g_Ball + 0x1B7A) == -1) {
         return 0;
     }
-    if (*(s16*)(g_Ball + 0x1B66) < f[0x1D2] + 5) {
-        return 0;
-    }
-    if (f[0x1C5] == 0) {
-        if (f[0x1CB] == 2) {
-            if (fn_3_28224(i) != 0) {
-                (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-                fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 1);
-                return 1;
-            }
-        } else if (f[0x1CB] == 1) {
-            if (fn_3_27FF4(i) != 0) {
-                (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-                return 1;
-            }
-        } else if (f[0x1CB] == 3) {
-            if (fn_3_30214(i) != 0) {
-                (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-                fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 2);
-                return 1;
+    if (*(s16*)(g_Ball + 0x1B66) >= f[0x1D2] + 5) {
+        if (f[0x1C5] == 0) {
+            if (f[0x1CB] == 2) {
+                if (fn_3_28224(i) != 0) {
+                    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+                    fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 1);
+                    return 1;
+                }
+            } else if (f[0x1CB] == 1) {
+                if (Inl27FF4(i) != 0) {
+                    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+                    return 1;
+                }
+            } else if (f[0x1CB] == 3) {
+                if (fn_3_30214(i) != 0) {
+                    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+                    fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 2);
+                    return 1;
+                }
             }
         }
-    }
-    if (fn_3_28CA8(i) != 0) {
-        (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-        return 1;
+        if (fn_3_28CA8(i) != 0) {
+            (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+            return 1;
+        }
     }
     return 0;
 }
