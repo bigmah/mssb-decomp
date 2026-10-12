@@ -5,6 +5,7 @@
 #include "main/file_800263FC.h"
 #include "main/file_80063028.h"
 #include "main/file_800BD8C4.h"
+#include "game/sta_ext_list.h" // StaExtList
 
 // One 0xE8-byte entry of lbl_3_common_bss_350E4.objs (stadium object of this stadium).
 typedef struct StaObj {
@@ -57,17 +58,7 @@ typedef struct StaHazeNode {
     /* 0x68 */ u8 _68[4];
 } StaHazeNode; // size: 0x6C
 
-// List hanging off lbl_3_common_bss_350E4 (+0x08 / +0x0C), set up by fn_3_FA58C.
-typedef struct StaExtList {
-    /*0x00*/ void* p0;      // stadium file + 0x60 / + 0xA0
-    /*0x04*/ void* p4;      // stadium file + 0x40 / + 0x80
-    /*0x08*/ void* p8;      // lbl_3_data_10F88 / lbl_3_data_11008
-    /*0x0C*/ void* pC;      // lbl_3_data_10F7C / lbl_3_data_10F84
-    /*0x10*/ u8* entries;   // count entries of 3 bytes
-    /*0x14*/ u16 count;
-    /*0x16*/ u16 nChoices;  // range of the random third byte
-    /*0x18*/ u16 n18;
-} StaExtList; // size: 0x1C
+// StaExtList (lbl_3_common_bss_350E4 + 0x08 / + 0x0C): game/sta_ext_list.h.
 
 // lbl_3_common_bss_350E4 + 0x10, set up by fn_3_FA58C.
 typedef struct StaExt10 {
