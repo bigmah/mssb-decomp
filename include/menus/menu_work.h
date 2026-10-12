@@ -254,7 +254,10 @@ typedef struct MenuObject {
 // 6-byte batting-order slot; MenuCtx.order.
 typedef struct MenuOrderSlot {
     /*0x0*/ s16 charId;
-    /*0x2*/ u8 _2[4];
+    /*0x2*/ u8 _2;
+    /*0x3*/ s8 _3;
+    /*0x4*/ u8 _4;
+    /*0x5*/ u8 _5;
 } MenuOrderSlot; // size: 0x6
 
 // 10-byte star-mission / location record; MenuCtx.slots.
