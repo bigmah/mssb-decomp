@@ -45,6 +45,7 @@ typedef struct RepTask {
     /*0x22*/ u16 _22;
     /*0x24*/ union {
         u8 flag[4]; // per-player "counting" flags (fn_3_11F02C, fn_3_121304)
+        s8 count[4]; // signed counter shown (fn_3_124738)
         s16 delta[4]; // per-player score change shown (fn_3_12026C)
         u32 voice; // looping sound voice, 0xFFFFFFFF when none (fn_3_121908)
         s16 disp[8]; // counted-up stat values shown (fn_3_127B68)
