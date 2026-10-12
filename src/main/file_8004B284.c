@@ -248,7 +248,7 @@ void fn_8004B284(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     case 1:
     case 3:
     case 7:
-        fn_8002955C(&pos, &dir, (ParticleParamsC *)paramsB); // TODO type
+        fn_8002955C(&pos, &dir, (ParticleParamsC *)paramsB);
         // fallthrough
     case 0:
     case 2:
@@ -258,7 +258,7 @@ void fn_8004B284(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     case 10:
     case 11:
     case 12:
-        fn_80030D88(&pos, &dir, (ParticleParams5 *)params, 5); // TODO type
+        fn_80030D88(&pos, &dir, (ParticleParams5 *)params, 5);
         break;
     }
 }

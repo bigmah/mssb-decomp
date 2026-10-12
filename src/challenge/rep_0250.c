@@ -3,9 +3,11 @@
 #include "header_rep_inline.h"
 #include "static/UnknownHomes_Static.h"
 
-extern u8* lbl_803CC1B8[];
+#include "challenge/rep_0010.h"
+#include "main/file_8000F150.h" // LayoutSlot lbl_80371C30
+
+#define SCORE_TASK ((ChScoreTask*)lbl_803CC1B8)
 extern void fn_80034CEC(void*);
-extern u8* lbl_80371C30[];
 extern void fn_80034E20(void*, ChSpaniDesc*);
 extern s16* fn_80035F20(u8, s32, u16, s16);
 extern void fn_80035ED0(s32);
@@ -78,7 +80,7 @@ static u16 lbl_1_data_FBE = 3; // number shown by the third page mode, 0..9
 // Score screen state. .bss is laid out in reverse definition order, and the
 // functions reach these through one pooled base (sScoreUnk00).
 static u8 sScoreStep;        // 0x2FD0
-static u8* sScoreObj;        // 0x2FCC: queue object of the shown page
+static ChScoreTask* sScoreObj;        // 0x2FCC: queue object of the shown page
 static void* sScoreMsgData;  // 0x2FC8
 static s32 sScoreLoadIdx;    // 0x2FC4: next page texture to load
 static u16 sScoreUnk1A;      // 0x2FC2 (unused)
@@ -99,20 +101,19 @@ static u8 sScorePage;        // 0x2FAA: 0-11
 static u8 sScoreUnk01;       // 0x2FA9 (unused)
 static u8 sScoreUnk00;       // 0x2FA8
 
-extern void fn_800111B4(void* data);
 extern u8 lbl_1_common_bss_47698[]; // TODO type
 
 // .text:0x00009AB0 size:0x3F0
 // Score-screen task: loads the messages and 12 pages, then runs the page handlers and
 // (in mode 1) counts the displayed score down.
 void fn_1_9AB0(void) {
-    u8* task;
+    ChScoreTask* task;
     s32 i;
     u8* p;
-    task = *(u8**)lbl_803CC1B8;
-    switch (*(s16*)(task + 0x10)) {
+    task = SCORE_TASK;
+    switch (task->h.result) {
     case 0:
-        fn_800111B4(&lbl_1_data_EA8);
+        fn_800111B4((MsgTable*)&lbl_1_data_EA8);
         sScoreMsgData = lbl_1_data_EA8.msgs;
         *(u16*)lbl_1_common_bss_47698 = 0;
         p = lbl_1_common_bss_47698 + 0xA;
@@ -122,17 +123,17 @@ void fn_1_9AB0(void) {
             p--;
         } while (--i != 0);
         lbl_1_common_bss_47698[0xC] = 0;
-        task[0x1A] = 0;
+        task->sel = 0;
         sScoreLoadIdx = 0;
         sScorePage = 0;
         sScoreMode = 0;
         sScore09 = 1;
         sScoreStep = 0;
-        *(s16*)(*(u8**)lbl_803CC1B8 + 0x10) = 1;
+        SCORE_TASK->h.result = 1;
         break;
     case 1:
         if (sScoreLoadIdx > 11) {
-            *(s16*)(*(u8**)lbl_803CC1B8 + 0x10) = 2;
+            SCORE_TASK->h.result = 2;
             break;
         }
         if (fn_80035838(&lbl_1_data_F0C[sScoreLoadIdx], (u8)sScoreLoadIdx) != 0) {
@@ -203,8 +204,8 @@ void fn_1_9AB0(void) {
 
 // .text:0x97E4 size:0x2CC
 void fn_1_97E4(void) {
-    u8* queue = *(u8**)lbl_803CC1B8;
-    switch ((s32)*(u16*)((u8*)&lbl_803C77B8 + 4)) {
+    ChScoreTask* queue = SCORE_TASK;
+    switch ((s32)lbl_803C77B8._04) {
     case 0x100: {
         s32 n;
         sScore08 = 0;
@@ -225,7 +226,7 @@ void fn_1_97E4(void) {
         fn_80034CEC(sScoreObj);
         fn_80035A00(); // r3 still holds fn_80034CEC's leftover; fn_80035A00 takes none
         fn_800AD038(lbl_80366158[2]);
-        *(s16*)(*(u8**)(queue + 0xC) + 0x10) = 1;
+        queue->h.parent->result = 1;
         break;
     case 0x800:
         lbl_1_data_FBC = 1;
@@ -240,20 +241,20 @@ void fn_1_97E4(void) {
         lbl_1_data_B80 = 0x10000;
         break;
     case 8:
-        if (queue[0x1A] != 0) {
-            queue[0x1A] = queue[0x1A] - 1;
+        if (queue->sel != 0) {
+            queue->sel = queue->sel - 1;
         } else {
-            queue[0x1A] = 1;
+            queue->sel = 1;
         }
         break;
     case 4:
-        queue[0x1A] = queue[0x1A] + 1;
-        if (queue[0x1A] == 2) {
-            queue[0x1A] = 0;
+        queue->sel = queue->sel + 1;
+        if (queue->sel == 2) {
+            queue->sel = 0;
         }
         break;
     case 1:
-        switch (queue[0x1A]) {
+        switch (queue->sel) {
         case 0: {
             s32 n;
             sScore10 = 0;
@@ -274,7 +275,7 @@ void fn_1_97E4(void) {
         sScoreStep = 0;
         break;
     case 2:
-        switch (queue[0x1A]) {
+        switch (queue->sel) {
         case 0: {
             s32 n;
             sScore10 = 0;
@@ -308,17 +309,17 @@ void fn_1_97B8(void) {
 
 // .text:0x973C size:0x7C
 void fn_1_973C(void* object) {
-    u8* queue = *(u8**)lbl_803CC1B8;
+    ChScoreTask* queue = SCORE_TASK;
     fn_80034E20(queue, lbl_1_data_B88);
-    *(u8*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x66) = sScorePage;
-    *(u16*)(queue + 0x18) = 0;
-    **(void***)lbl_803CC1B8 = (void*)fn_1_96D4;
+    lbl_80371C30[queue->start].obj->_66 = sScorePage;
+    queue->timer = 0;
+    SCORE_TASK->h.func = fn_1_96D4;
 }
 
 // .text:0x96D4 size:0x68
 void fn_1_96D4(void) {
-    u8* queue = *(u8**)lbl_803CC1B8;
-    *(u16*)(queue + 0x18) += 1;
+    ChScoreTask* queue = SCORE_TASK;
+    queue->timer += 1;
     if ((lbl_803C77B8._02 & 1) || (lbl_803C77B8._02 & 2)) {
         fn_80034CEC(queue);
         REMOVE_QUEUE_NOARG();
@@ -337,11 +338,11 @@ void fn_1_96A4(void) {
 
 // .text:0x9380 size:0x324
 void fn_1_9380(void* object) {
-    u8* queue;
+    ChScoreTask* queue;
     u8 id;
     s32 value;
     ChSpaniDesc* p;
-    queue = *(u8**)lbl_803CC1B8;
+    queue = SCORE_TASK;
     p = lbl_1_data_BC8;
     id = p->texId;
     sScoreObj = queue;
@@ -352,13 +353,13 @@ void fn_1_9380(void* object) {
     } else if (sScoreMode == 1) {
         fn_80034E20(queue, p);
         value = lbl_1_data_B84;
-        *(s32*)(lbl_80371C30[*(u16*)(sScoreObj + 0x14) * 2] + 0x5C) = 0x80000;
+        lbl_80371C30[sScoreObj->start].obj->_5C = 0x80000;
         fn_8003664C(id, 0, (u16)(value / 1000 + 10), 4);
         value %= 1000;
-        *(s32*)(lbl_80371C30[*(u16*)(sScoreObj + 0x14) * 2 + 2] + 0x5C) = 0xC0000;
+        lbl_80371C30[sScoreObj->start + 1].obj->_5C = 0xC0000;
         fn_8003664C(id, 1, (u16)(value / 100 + 10), 5);
         value %= 100;
-        *(s32*)(lbl_80371C30[*(u16*)(sScoreObj + 0x14) * 2 + 4] + 0x5C) = 0x100000;
+        lbl_80371C30[sScoreObj->start + 2].obj->_5C = 0x100000;
         fn_8003664C(id, 2, (u16)(value / 10 + 10), 6);
     } else {
         s16* result;
@@ -366,8 +367,8 @@ void fn_1_9380(void* object) {
         fn_80034E20(queue, lbl_1_data_C68);
         p2 = lbl_1_data_C68;
         result = fn_80035F20(p2->texId, 1, sScore18, -1);
-        *(f32*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x48) = result[0x14 / 2] / 2;
-        *(f32*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x4C) = result[0x16 / 2] / 2;
+        lbl_80371C30[queue->start].obj->x = result[0x14 / 2] / 2;
+        lbl_80371C30[queue->start].obj->y = result[0x16 / 2] / 2;
         fn_80035ED0(1);
         fn_8003664C(p2->texId, 0, lbl_1_data_FBE, 1);
         sScore18 += 1;
@@ -379,14 +380,14 @@ void fn_1_9380(void* object) {
             lbl_1_data_FBE = 0;
         }
     }
-    *(u16*)(queue + 0x18) = 0;
-    **(void***)lbl_803CC1B8 = (void*)fn_1_9290;
+    queue->timer = 0;
+    SCORE_TASK->h.func = fn_1_9290;
 }
 
 // .text:0x9290 size:0xF0
 void fn_1_9290(void) {
-    u8* queue = *(u8**)lbl_803CC1B8;
-    *(u16*)(queue + 0x18) += 1;
+    ChScoreTask* queue = SCORE_TASK;
+    queue->timer += 1;
     if (sScoreMode == 0) {
         fn_80035EEC(3, 0);
         fn_80035EEC(7, 1);
@@ -412,13 +413,13 @@ void fn_1_9290(void) {
 void fn_1_90E4(s32 value) {
     fn_80034CEC(sScoreObj);
     fn_80034E20(sScoreObj, lbl_1_data_BC8);
-    *(s32*)(lbl_80371C30[*(u16*)(sScoreObj + 0x14) * 2] + 0x5C) = 0x80000;
+    lbl_80371C30[sScoreObj->start].obj->_5C = 0x80000;
     fn_8003664C(lbl_1_data_BC8[0].texId, 0, (u16)(value / 1000 + 10), 4);
     value %= 1000;
-    *(s32*)(lbl_80371C30[*(u16*)(sScoreObj + 0x14) * 2 + 2] + 0x5C) = 0xC0000;
+    lbl_80371C30[sScoreObj->start + 1].obj->_5C = 0xC0000;
     fn_8003664C(lbl_1_data_BC8[0].texId, 1, (u16)(value / 100 + 10), 5);
     value %= 100;
-    *(s32*)(lbl_80371C30[*(u16*)(sScoreObj + 0x14) * 2 + 4] + 0x5C) = 0x100000;
+    lbl_80371C30[sScoreObj->start + 2].obj->_5C = 0x100000;
     fn_8003664C(lbl_1_data_BC8[0].texId, 2, (u16)(value / 10 + 10), 6);
 }
 
@@ -429,7 +430,7 @@ void fn_1_90B8(void) {
 
 // .text:0x8F34 size:0x184
 void fn_1_8F34(void* object) {
-    u8* queue = *(u8**)lbl_803CC1B8;
+    ChScoreTask* queue = SCORE_TASK;
     if (lbl_803C77B8._02 & 0x200) {
         fn_80034CEC(sScoreObj);
         REMOVE_QUEUE_NOARG();
@@ -439,26 +440,26 @@ void fn_1_8F34(void* object) {
     fn_80034E20(queue, lbl_1_data_CC8);
     if (sScoreMode == 1 || sScoreMode == 3) {
         s16* result = fn_80035F20(lbl_1_data_CC8[0].texId, 1, sScoreAnimFrame, (s16)(sScoreAnimFrame + 2));
-        *(f32*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x48) = result[0x14 / 2];
-        *(f32*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x4C) = result[0x16 / 2];
+        lbl_80371C30[queue->start].obj->x = result[0x14 / 2];
+        lbl_80371C30[queue->start].obj->y = result[0x16 / 2];
         fn_80035ED0(1);
         sScoreAnimFrame += 1;
         if (sScoreAnimFrame > 3) {
             sScoreAnimFrame = 0;
         }
     } else {
-        *(s16*)(lbl_80371C30[*(u16*)(queue + 0x14) * 2] + 0x64) = 7;
+        lbl_80371C30[queue->start].obj->_64 = 7;
         fn_80035ED0(1);
         fn_80035ED0(2);
         fn_80035ED0(3);
     }
-    **(void***)lbl_803CC1B8 = (void*)fn_1_8DBC;
+    SCORE_TASK->h.func = fn_1_8DBC;
 }
 
 // .text:0x8DBC size:0x178
 void fn_1_8DBC(void) {
-    u8* queue = *(u8**)lbl_803CC1B8;
-    *(u16*)(queue + 0x18) += 1;
+    ChScoreTask* queue = SCORE_TASK;
+    queue->timer += 1;
     if (sScoreMode == 1 || sScoreMode == 3) {
         if (lbl_8039C3E0[0x69] == 1) {
             s16* result;
@@ -468,8 +469,8 @@ void fn_1_8DBC(void) {
                 return;
             }
             result = fn_80035F20(lbl_1_data_CC8[0].texId, 1, sScoreAnimFrame, (s16)(sScoreAnimFrame + 2));
-            *(f32*)(lbl_80371C30[*(u16*)(sScoreObj + 0x14) * 2] + 0x48) = result[0x14 / 2];
-            *(f32*)(lbl_80371C30[*(u16*)(sScoreObj + 0x14) * 2] + 0x4C) = result[0x16 / 2];
+            lbl_80371C30[sScoreObj->start].obj->x = result[0x14 / 2];
+            lbl_80371C30[sScoreObj->start].obj->y = result[0x16 / 2];
             fn_80035ED0(1);
             sScoreAnimFrame += 1;
             if (sScoreAnimFrame > 3) {
@@ -488,8 +489,8 @@ void fn_1_8DBC(void) {
 // .text:0x8CD4 size:0x78
 void fn_1_8CD4(void) {
     s16* result = fn_80035F20(lbl_1_data_CC8[0].texId, 1, sScoreAnimFrame, (s16)(sScoreAnimFrame + 2));
-    *(f32*)(lbl_80371C30[*(u16*)(sScoreObj + 0x14) * 2] + 0x48) = result[0x14 / 2];
-    *(f32*)(lbl_80371C30[*(u16*)(sScoreObj + 0x14) * 2] + 0x4C) = result[0x16 / 2];
+    lbl_80371C30[sScoreObj->start].obj->x = result[0x14 / 2];
+    lbl_80371C30[sScoreObj->start].obj->y = result[0x16 / 2];
     fn_80035ED0(1);
     sScoreAnimFrame += 1;
     if (sScoreAnimFrame > 3) {

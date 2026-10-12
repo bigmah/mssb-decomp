@@ -215,19 +215,21 @@ s32 fn_800247E4(s32 x, s32 y, s32 width, s32 bytesPerTexel) {
 }
 
 // .text:0x80024840 size:0x134
-// NONMATCHING 99.7%: r0/r3 swapped loading the mission status
-#if NONMATCHING
 s32 challengeStarRelatedInd(s32 team, s32 mission) {
+    u8 bit0;
     u8 status = starMissionCompletionTracker[team].inGameMissionTracker[mission].starMissionStatus;
     u8 row = lbl_800E8558[team].missionRow;
+    u64 wide; // a 64-bit copy of status: matches the original's register use
     s16 flags;
 
-    if ((s8)status == -2) {
+    wide = status;
+    if ((s8)wide == -2) {
         return 1;
     }
-    if (g_d_GameSettings.GameModeSelected == 5 && (s8)status == -1) {
+    if (g_d_GameSettings.GameModeSelected == 5 && (s8)wide == -1) {
         flags = lbl_80109AE8[row][mission].flags;
-        if (flags & 1) {
+        bit0 = flags & 1;
+        if (bit0) {
             return 0;
         }
         if (flags & 2) {
@@ -251,7 +253,6 @@ s32 challengeStarRelatedInd(s32 team, s32 mission) {
     }
     return 0;
 }
-#endif
 
 // Scale the byte b by a/255.
 static inline s32 scaleByte(u32 b, u32 a) {

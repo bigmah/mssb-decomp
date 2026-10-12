@@ -57,7 +57,7 @@ typedef struct CharTrail {
 
 typedef struct CharActor {
     /*0x000*/ GameActor* model;
-    /*0x004*/ u8 _004[0x4];
+    /*0x004*/ GameActor* _004; // challenge viewer: the shown model
     /*0x008*/ void** files; // file offsets, relocated in place
     /*0x00C*/ void** _0C;
     /*0x010*/ CharAnimBanks banks;
@@ -160,11 +160,11 @@ typedef struct CharMgr {
     /*0x0070*/ u32 _0070;
     /*0x0074*/ s32 _0074;
     /*0x0078*/ s32 _0078;
-    /*0x007C*/ u8 _007C[0xAC - 0x007C];
-    /*0x00AC*/ struct Light* lights[4];
+    /*0x007C*/ u8 _007C[0xAC - 0x7C];
+    /*0x00AC*/ void* lights[4];
     /*0x00BC*/ u32 _00BC[0x15]; // indexed (cleared by menus fn_2_19F2C)
     /*0x0110*/ s32 _0110;
-    /*0x0114*/ u8 _0114[0x13C - 0x0114];
+    /*0x0114*/ u8 _0114[0x13C - 0x114];
     /*0x013C*/ ActorObjectTable* partSlots;
     /*0x0140*/ CharParts partsPool[13];
     /*0x0C04*/ CharActor actors[13];
@@ -185,8 +185,7 @@ typedef struct CharMgr {
     /*0x2D77*/ u8 state;
     /*0x2D78*/ u8 _2D78;
     /*0x2D79*/ u8 _2D79;
-    /*0x2D7A*/ u8 _2D7A;
-    /*0x2D7B*/ u8 _2D7B;
+    /*0x2D7A*/ u8 _2D7A[0x2];
     /*0x2D7C*/ u8 _2D7C;
     /*0x2D7D*/ u8 _2D7D[0x2];
     /*0x2D7F*/ s8 _2D7F[9];

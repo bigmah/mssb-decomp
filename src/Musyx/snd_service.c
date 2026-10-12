@@ -120,15 +120,25 @@ void* sndBSearch(void* key, void* base, s32 num, s32 len, SND_COMPARE cmp) {
   return NULL;
 }
 
-extern f32 lbl_800E81B0;
-extern f64 lbl_803CD268;
-extern f32 lbl_800E81B4[];
+// Constants of sndSqrt/sndCos (.rodata 0x800E81A8).
+typedef struct SndMathConsts {
+    /*0x00*/ f32 three;   // sndSqrt: Newton-Raphson step, 0.5 * r * (3 - x * r * r)
+    /*0x04*/ f32 half;
+    /*0x08*/ f32 zero;
+    /*0x0C*/ u32 cos[9];  // sndCos: -1/6, 1/120, -1/5040, 1/362880, 2/pi, pi/2, 0, ~2.4e-8, 0 (paired singles)
+} SndMathConsts;
+
+const SndMathConsts sndMathConsts = {
+    3.0f, 0.5f, 0.0f,
+    {0xBE2AAAAB, 0x3C088887, 0xB9500C03, 0x3638B94F, 0x3F22F983, 0x3FC90FDB, 0x00000000, 0x32CD4CA8, 0x00000000},
+};
+const f64 lbl_803CD268 = 4503601774854144.0; // 0x4330000080000000: int -> double bias
 
 asm f32 sndSqrt(f32 x)
 {
   nofralloc
-  lis r3, lbl_800E81B0@ha
-  lfs f3, lbl_800E81B0@l(r3)
+  lis r3, (sndMathConsts+0x8)@ha
+  lfs f3, (sndMathConsts+0x8)@l(r3)
   lfs f0, -0x7e58(r3)
   lfs f2, -0x7e54(r3)
   fcmpo cr0, f1, f3
@@ -154,9 +164,9 @@ asm f32 sndCos(f32 x)
 {
   nofralloc
   stwu r1, -0x10(r1)
-  lis r3, lbl_800E81B4@ha
+  lis r3, (sndMathConsts+0xC)@ha
   li r4, 0xc
-  addi r3, r3, lbl_800E81B4@l
+  addi r3, r3, (sndMathConsts+0xC)@l
   psq_l f6, 0x10(r3), 0, 0
   psq_l f12, 0x18(r3), 0, 0
   lis r7, lbl_803CD268@ha

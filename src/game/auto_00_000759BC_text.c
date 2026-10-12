@@ -413,6 +413,16 @@ void fn_3_76C78(void) {
     }
 }
 
+#if !NONMATCHING
+// Switch jump tables of fn_3_76D08; mwcc emits them itself once the function matches.
+void* jumptable_3_data_80A8[16] = {
+    (u8*)fn_3_76D08 + 0x560, (u8*)fn_3_76D08 + 0x2DC, (u8*)fn_3_76D08 + 0x304, (u8*)fn_3_76D08 + 0x328,
+    (u8*)fn_3_76D08 + 0x560, (u8*)fn_3_76D08 + 0x560, (u8*)fn_3_76D08 + 0x560, (u8*)fn_3_76D08 + 0x34C,
+    (u8*)fn_3_76D08 + 0x394, (u8*)fn_3_76D08 + 0x3DC, (u8*)fn_3_76D08 + 0x424, (u8*)fn_3_76D08 + 0x560,
+    (u8*)fn_3_76D08 + 0x560, (u8*)fn_3_76D08 + 0x4F0, (u8*)fn_3_76D08 + 0x514, (u8*)fn_3_76D08 + 0x538,
+};
+#endif
+
 // .text:0x00076D08 size:0xC0C mapped:0x806B5D9C
 // Records the result of a plate appearance in the box score and play log.
 // NONMATCHING 94%: register allocation

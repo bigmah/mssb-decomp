@@ -3066,3 +3066,53 @@ void fn_2_71098(MenuEntry* owner) {
     }
 }
 #endif
+
+// .data 0x2A1E8-0x2A3C0: per-object state handler tables, then the per-type init table.
+// .data 0x0002A1E8..0x0002A3C0
+void *lbl_2_data_2A1E8[3] = {fn_2_71C6C, fn_2_71B80, fn_2_71A70};
+void (*lbl_2_data_2A1F4[3])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_71098, (void (*)(MenuEntry*))fn_2_709A0, (void (*)(MenuEntry*))fn_2_705C0};
+void (*lbl_2_data_2A200[2])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_704AC, (void (*)(MenuEntry*))fn_2_704A0};
+void (*lbl_2_data_2A208[2])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_70110, (void (*)(MenuEntry*))fn_2_6FE6C};
+void (*lbl_2_data_2A210[4])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6FB0C, (void (*)(MenuEntry*))fn_2_6F88C, (void (*)(MenuEntry*))fn_2_6F78C, (void (*)(MenuEntry*))fn_2_6F72C};
+void (*lbl_2_data_2A220[5])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6F104, (void (*)(MenuEntry*))fn_2_6ED30, (void (*)(MenuEntry*))fn_2_6EA74, (void (*)(MenuEntry*))fn_2_6E88C, (void (*)(MenuEntry*))fn_2_6E880};
+void (*lbl_2_data_2A234[5])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6E1D0, (void (*)(MenuEntry*))fn_2_6DE54, (void (*)(MenuEntry*))fn_2_6DB30, (void (*)(MenuEntry*))fn_2_6D968, (void (*)(MenuEntry*))fn_2_6D878};
+void (*lbl_2_data_2A248[2])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6D754, (void (*)(MenuEntry*))fn_2_6D748};
+void (*lbl_2_data_2A250[3])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6D5D4, (void (*)(MenuEntry*))fn_2_6D4F8, (void (*)(MenuEntry*))fn_2_6D4E8};
+void (*lbl_2_data_2A25C[3])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6D374, (void (*)(MenuEntry*))fn_2_6D298, (void (*)(MenuEntry*))fn_2_6D288};
+void (*lbl_2_data_2A268[3])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6D164, (void (*)(MenuEntry*))fn_2_6D088, (void (*)(MenuEntry*))fn_2_6D078};
+void (*lbl_2_data_2A274[3])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6CDD4, (void (*)(MenuEntry*))fn_2_6CCB8, (void (*)(MenuEntry*))fn_2_6CBB0};
+void (*lbl_2_data_2A280[3])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6C988, (void (*)(MenuEntry*))fn_2_6C97C, (void (*)(MenuEntry*))fn_2_6C970};
+void (*lbl_2_data_2A28C[4])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6C5E0, (void (*)(MenuEntry*))fn_2_6C348, (void (*)(MenuEntry*))fn_2_6C2E8, (void (*)(MenuEntry*))fn_2_6C2C4};
+void (*lbl_2_data_2A29C[4])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6C190, (void (*)(MenuEntry*))fn_2_6C120, (void (*)(MenuEntry*))fn_2_6C020, (void (*)(MenuEntry*))fn_2_6BFC0};
+void (*lbl_2_data_2A2AC[3])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6BE80, (void (*)(MenuEntry*))fn_2_6BDE0, (void (*)(MenuEntry*))fn_2_6BDD4};
+void (*lbl_2_data_2A2B8[3])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6BCAC, (void (*)(MenuEntry*))fn_2_6BC0C, (void (*)(MenuEntry*))fn_2_6BC00};
+void (*lbl_2_data_2A2C4[4])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6BB7C, (void (*)(MenuEntry*))fn_2_6BAD8, (void (*)(MenuEntry*))fn_2_6BAAC, (void (*)(MenuEntry*))fn_2_6BA50};
+void (*lbl_2_data_2A2D4[3])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6B744, (void (*)(MenuEntry*))fn_2_6B620, (void (*)(MenuEntry*))fn_2_6B4FC};
+void (*lbl_2_data_2A2E0[3])(MenuEntry* object) = {(void (*)(MenuEntry*))fn_2_6B238, (void (*)(MenuEntry*))fn_2_6B120, (void (*)(MenuEntry*))fn_2_6B024};
+void fn_2_71EFC(u8* obj);
+void fn_2_71EC4(u8* obj);
+void *lbl_2_data_2A2EC[21] = {
+    fn_2_71EFC,
+    fn_2_71EC4,
+    fn_2_71A38,
+    fn_2_70588,
+    fn_2_7045C,
+    fn_2_6FE34,
+    fn_2_6F6F4,
+    fn_2_6E848,
+    fn_2_6D840,
+    fn_2_6D710,
+    fn_2_6D4B0,
+    fn_2_6D250,
+    fn_2_6D040,
+    fn_2_6CB78,
+    fn_2_6C938,
+    fn_2_6C28C,
+    fn_2_6BF88,
+    fn_2_6BD9C,
+    fn_2_6BBC8,
+    fn_2_6BA18,
+    fn_2_6B4C4,
+};
+Vec lbl_2_data_2A340 = {0.0f, 0.0f, 0.0f};
+

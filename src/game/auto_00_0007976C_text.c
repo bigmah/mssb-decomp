@@ -887,6 +887,16 @@ void fn_3_7BC0C(void) {
     g_Stats._39 = 1;
 }
 
+#if !NONMATCHING
+// Switch jump tables of fn_3_7BC20; mwcc emits them itself once the function matches.
+void* jumptable_3_data_8110[14] = {
+    (u8*)fn_3_7BC20 + 0x548, (u8*)fn_3_7BC20 + 0x548, (u8*)fn_3_7BC20 + 0x48C, (u8*)fn_3_7BC20 + 0x4B4,
+    (u8*)fn_3_7BC20 + 0x4C8, (u8*)fn_3_7BC20 + 0x4DC, (u8*)fn_3_7BC20 + 0x4F0, (u8*)fn_3_7BC20 + 0x504,
+    (u8*)fn_3_7BC20 + 0x518, (u8*)fn_3_7BC20 + 0x48C, (u8*)fn_3_7BC20 + 0x4B4, (u8*)fn_3_7BC20 + 0x534,
+    (u8*)fn_3_7BC20 + 0x548, (u8*)fn_3_7BC20 + 0x4A0,
+};
+#endif
+
 // fn_3_7BC20, size:0x570
 // Picks the replay camera/commentary kind for the play that just ended.
 // NONMATCHING 94%: register allocation; original keeps different global bases live

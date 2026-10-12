@@ -4430,10 +4430,14 @@ void fn_2_2CF58(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
     case 8:
+    case 30:
+    case 33:
         item->timer = 1;
         item->state++;
         return;
     case 9:
+    case 31:
+    case 34:
         if (item->timer-- <= 0) {
             LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
             object->flags |= 2;
@@ -5426,6 +5430,7 @@ void fn_2_306D8(MenuTableContext* menu, MenuItemState* item) {
         item->state = 37;
         return;
     }
+    case 8:
     case 17: {
         MenuData* ctx = lbl_2_bss_1A824C;
         s32 sum = item->index;
@@ -7447,6 +7452,22 @@ void fn_2_2B884(MenuTableContext* menu, MenuItemState* item) {
 
 extern s16 fn_2_53AA4(void* item);
 
+#if !NONMATCHING
+// Switch jump tables of fn_2_25A48; mwcc emits them itself once the function matches.
+void* jumptable_2_data_10B54[38] = {
+    (u8*)fn_2_25A48 + 0x58, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0xD0, (u8*)fn_2_25A48 + 0x140,
+    (u8*)fn_2_25A48 + 0x1A4, (u8*)fn_2_25A48 + 0x22C, (u8*)fn_2_25A48 + 0x2A4, (u8*)fn_2_25A48 + 0x2E4,
+    (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C,
+    (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C,
+    (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C,
+    (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C,
+    (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C,
+    (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C,
+    (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C,
+    (u8*)fn_2_25A48 + 0x30C, (u8*)fn_2_25A48 + 0x30C,
+};
+#endif
+
 // fn_2_25A48, size:0x324
 // NONMATCHING 99%: case 0 schedules li r0,0x26 one slot later
 #if NONMATCHING
@@ -7663,6 +7684,22 @@ void fn_2_262D0(MenuTableContext* menu, MenuItemState* item) {
 
 extern s32 fn_2_44E2C(s32 ch);
 
+#if !NONMATCHING
+// Switch jump table of fn_2_28EA0; mwcc emits it itself once the function matches.
+void* jumptable_2_data_10F7C[38] = {
+    (u8*)fn_2_28EA0 + 0x54, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x88, (u8*)fn_2_28EA0 + 0x3B8,
+    (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x34C, (u8*)fn_2_28EA0 + 0x360, (u8*)fn_2_28EA0 + 0x3B8,
+    (u8*)fn_2_28EA0 + 0x248, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8,
+    (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8,
+    (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8,
+    (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8,
+    (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8,
+    (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8,
+    (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8,
+    (u8*)fn_2_28EA0 + 0x3B8, (u8*)fn_2_28EA0 + 0x3B8,
+};
+#endif
+
 #if NONMATCHING
 static inline void fn_2_28EA0_showIfChanged(MenuTableContext* menu, MenuItemState* item) {
     u8 id = lbl_800E869C[item->unk10];
@@ -7743,6 +7780,22 @@ typedef struct MissionText {
 } MissionText;
 
 extern MissionText lbl_8010A768[][10];
+
+#if !NONMATCHING
+// Switch jump tables of fn_2_2A338; mwcc emits them itself once the function matches.
+void* jumptable_2_data_11144[38] = {
+    (u8*)fn_2_2A338 + 0x58, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0xC0, (u8*)fn_2_2A338 + 0x2E8,
+    (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x344, (u8*)fn_2_2A338 + 0x358, (u8*)fn_2_2A338 + 0x3E0,
+    (u8*)fn_2_2A338 + 0xC0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0,
+    (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0,
+    (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0,
+    (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0,
+    (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0,
+    (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0,
+    (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x3E0,
+    (u8*)fn_2_2A338 + 0x3E0, (u8*)fn_2_2A338 + 0x338,
+};
+#endif
 
 // fn_2_2A338, size:0x444
 // NONMATCHING 96%: case 2 prologue scheduling/registers differ (lbl_2_bss_1A824C loaded via addi;lwz 0)
@@ -8204,6 +8257,22 @@ void fn_2_338D4(MenuTableContext* menu, MenuItemState* item) {
 }
 #endif
 
+#if !NONMATCHING
+// Switch jump tables of fn_2_2926C; mwcc emits them itself once the function matches.
+void* jumptable_2_data_11014[38] = {
+    (u8*)fn_2_2926C + 0x54, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x88, (u8*)fn_2_2926C + 0x604,
+    (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x598, (u8*)fn_2_2926C + 0x5AC, (u8*)fn_2_2926C + 0x604,
+    (u8*)fn_2_2926C + 0x3BC, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604,
+    (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604,
+    (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604,
+    (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604,
+    (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604,
+    (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604,
+    (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604,
+    (u8*)fn_2_2926C + 0x604, (u8*)fn_2_2926C + 0x604,
+};
+#endif
+
 // fn_2_2926C, size:0x618
 // NONMATCHING 99%: flag byte is not sign-extended (only compared with 0/1, so same behaviour)
 #if NONMATCHING
@@ -8508,6 +8577,32 @@ static inline void fn_2_1D440_unlockTeam(s32 team) {
         lbl_2_bss_1A8248->_4428 |= 1 << team;
     }
 }
+
+#if !NONMATCHING
+// Switch jump tables of fn_2_1D440; mwcc emits them itself once the function matches.
+void* jumptable_2_data_107CC[12] = {
+    (u8*)fn_2_1D440 + 0x2248, (u8*)fn_2_1D440 + 0x2294, (u8*)fn_2_1D440 + 0x233C, (u8*)fn_2_1D440 + 0x23DC,
+    (u8*)fn_2_1D440 + 0x2484, (u8*)fn_2_1D440 + 0x2524, (u8*)fn_2_1D440 + 0x25DC, (u8*)fn_2_1D440 + 0x2684,
+    (u8*)fn_2_1D440 + 0x272C, (u8*)fn_2_1D440 + 0x27CC, (u8*)fn_2_1D440 + 0x2874, (u8*)fn_2_1D440 + 0x2914,
+};
+void* jumptable_2_data_107FC[7] = {
+    (u8*)fn_2_1D440 + 0xE20, (u8*)fn_2_1D440 + 0xE74, (u8*)fn_2_1D440 + 0xEC0, (u8*)fn_2_1D440 + 0xF0C,
+    (u8*)fn_2_1D440 + 0xF58, (u8*)fn_2_1D440 + 0xFA4, (u8*)fn_2_1D440 + 0xFF0,
+};
+void* jumptable_2_data_10818[19] = {
+    (u8*)fn_2_1D440 + 0x148, (u8*)fn_2_1D440 + 0x1A4, (u8*)fn_2_1D440 + 0x304, (u8*)fn_2_1D440 + 0x360,
+    (u8*)fn_2_1D440 + 0x494, (u8*)fn_2_1D440 + 0x5E8, (u8*)fn_2_1D440 + 0x634, (u8*)fn_2_1D440 + 0x680,
+    (u8*)fn_2_1D440 + 0x6F0, (u8*)fn_2_1D440 + 0x760, (u8*)fn_2_1D440 + 0x7C4, (u8*)fn_2_1D440 + 0x810,
+    (u8*)fn_2_1D440 + 0x8A8, (u8*)fn_2_1D440 + 0x948, (u8*)fn_2_1D440 + 0x9B0, (u8*)fn_2_1D440 + 0xA98,
+    (u8*)fn_2_1D440 + 0xAE4, (u8*)fn_2_1D440 + 0xB30, (u8*)fn_2_1D440 + 0xC2C,
+};
+void* jumptable_2_data_10864[14] = {
+    (u8*)fn_2_1D440 + 0x40, (u8*)fn_2_1D440 + 0x70, (u8*)fn_2_1D440 + 0xD50, (u8*)fn_2_1D440 + 0x10A8,
+    (u8*)fn_2_1D440 + 0x1B28, (u8*)fn_2_1D440 + 0x1D48, (u8*)fn_2_1D440 + 0x1F38, (u8*)fn_2_1D440 + 0x2178,
+    (u8*)fn_2_1D440 + 0x2AB8, (u8*)fn_2_1D440 + 0x2A20, (u8*)fn_2_1D440 + 0x2A48, (u8*)fn_2_1D440 + 0x2A60,
+    (u8*)fn_2_1D440 + 0x2A88, (u8*)fn_2_1D440 + 0x2AA0,
+};
+#endif
 
 // fn_2_1D440, size:0x2ACC
 // NONMATCHING 98%: register allocation and a few compare forms (cmpw vs cmpwi) differ
@@ -9145,6 +9240,50 @@ void fn_80068838(void);
         ((MenuTask*)fn_800B0A5C_insertQueue(fn, 2))->step = 0; \
         QUEUE_DONE = 0; \
     } while (0)
+
+#if !NONMATCHING
+// Switch jump tables of fn_2_20D08; mwcc emits them itself once the function matches.
+void* jumptable_2_data_10920[9] = {
+    (u8*)fn_2_20D08 + 0x4A0, (u8*)fn_2_20D08 + 0x4D8, (u8*)fn_2_20D08 + 0x4E4, (u8*)fn_2_20D08 + 0x4F0,
+    (u8*)fn_2_20D08 + 0x514, (u8*)fn_2_20D08 + 0x53C, (u8*)fn_2_20D08 + 0x564, (u8*)fn_2_20D08 + 0x58C,
+    (u8*)fn_2_20D08 + 0x598,
+};
+void* jumptable_2_data_10944[132] = {
+    (u8*)fn_2_20D08 + 0x7C, (u8*)fn_2_20D08 + 0x110, (u8*)fn_2_20D08 + 0x178, (u8*)fn_2_20D08 + 0x190,
+    (u8*)fn_2_20D08 + 0x1C4, (u8*)fn_2_20D08 + 0x1DC, (u8*)fn_2_20D08 + 0x3418, (u8*)fn_2_20D08 + 0x234,
+    (u8*)fn_2_20D08 + 0x3418, (u8*)fn_2_20D08 + 0x3418, (u8*)fn_2_20D08 + 0x3418, (u8*)fn_2_20D08 + 0x254,
+    (u8*)fn_2_20D08 + 0x468, (u8*)fn_2_20D08 + 0x5A4, (u8*)fn_2_20D08 + 0x5E0, (u8*)fn_2_20D08 + 0x664,
+    (u8*)fn_2_20D08 + 0x670, (u8*)fn_2_20D08 + 0x6D4, (u8*)fn_2_20D08 + 0x6EC, (u8*)fn_2_20D08 + 0xCC4,
+    (u8*)fn_2_20D08 + 0xD10, (u8*)fn_2_20D08 + 0xF5C, (u8*)fn_2_20D08 + 0xF98, (u8*)fn_2_20D08 + 0xFF4,
+    (u8*)fn_2_20D08 + 0x1034, (u8*)fn_2_20D08 + 0x110C, (u8*)fn_2_20D08 + 0x113C, (u8*)fn_2_20D08 + 0x11EC,
+    (u8*)fn_2_20D08 + 0xE8C, (u8*)fn_2_20D08 + 0xEC8, (u8*)fn_2_20D08 + 0xEF0, (u8*)fn_2_20D08 + 0xF2C,
+    (u8*)fn_2_20D08 + 0x1278, (u8*)fn_2_20D08 + 0x12A4, (u8*)fn_2_20D08 + 0x12F8, (u8*)fn_2_20D08 + 0x1334,
+    (u8*)fn_2_20D08 + 0x13BC, (u8*)fn_2_20D08 + 0x146C, (u8*)fn_2_20D08 + 0x14F8, (u8*)fn_2_20D08 + 0x1600,
+    (u8*)fn_2_20D08 + 0x1674, (u8*)fn_2_20D08 + 0x16B4, (u8*)fn_2_20D08 + 0x1778, (u8*)fn_2_20D08 + 0x16F0,
+    (u8*)fn_2_20D08 + 0x1828, (u8*)fn_2_20D08 + 0x18CC, (u8*)fn_2_20D08 + 0x191C, (u8*)fn_2_20D08 + 0x1978,
+    (u8*)fn_2_20D08 + 0x1994, (u8*)fn_2_20D08 + 0x19C4, (u8*)fn_2_20D08 + 0x1A4C, (u8*)fn_2_20D08 + 0x1AFC,
+    (u8*)fn_2_20D08 + 0x1B88, (u8*)fn_2_20D08 + 0x1C5C, (u8*)fn_2_20D08 + 0x1D18, (u8*)fn_2_20D08 + 0x1DC0,
+    (u8*)fn_2_20D08 + 0x1F18, (u8*)fn_2_20D08 + 0x1FC8, (u8*)fn_2_20D08 + 0x1FF0, (u8*)fn_2_20D08 + 0x2098,
+    (u8*)fn_2_20D08 + 0x20CC, (u8*)fn_2_20D08 + 0x20F0, (u8*)fn_2_20D08 + 0x213C, (u8*)fn_2_20D08 + 0x2170,
+    (u8*)fn_2_20D08 + 0x295C, (u8*)fn_2_20D08 + 0x2990, (u8*)fn_2_20D08 + 0x2B54, (u8*)fn_2_20D08 + 0x2B60,
+    (u8*)fn_2_20D08 + 0x2BDC, (u8*)fn_2_20D08 + 0x2C14, (u8*)fn_2_20D08 + 0x2C58, (u8*)fn_2_20D08 + 0x2C7C,
+    (u8*)fn_2_20D08 + 0x2CC0, (u8*)fn_2_20D08 + 0x2D1C, (u8*)fn_2_20D08 + 0x2D88, (u8*)fn_2_20D08 + 0x2DC0,
+    (u8*)fn_2_20D08 + 0x2E04, (u8*)fn_2_20D08 + 0x2E6C, (u8*)fn_2_20D08 + 0x2ED8, (u8*)fn_2_20D08 + 0x2F10,
+    (u8*)fn_2_20D08 + 0x2F54, (u8*)fn_2_20D08 + 0x2FBC, (u8*)fn_2_20D08 + 0x3028, (u8*)fn_2_20D08 + 0x3094,
+    (u8*)fn_2_20D08 + 0x3418, (u8*)fn_2_20D08 + 0x3418, (u8*)fn_2_20D08 + 0x3100, (u8*)fn_2_20D08 + 0x3138,
+    (u8*)fn_2_20D08 + 0x317C, (u8*)fn_2_20D08 + 0x31B0, (u8*)fn_2_20D08 + 0x21C8, (u8*)fn_2_20D08 + 0x2204,
+    (u8*)fn_2_20D08 + 0x2230, (u8*)fn_2_20D08 + 0x2290, (u8*)fn_2_20D08 + 0x2310, (u8*)fn_2_20D08 + 0x234C,
+    (u8*)fn_2_20D08 + 0x2364, (u8*)fn_2_20D08 + 0x23D0, (u8*)fn_2_20D08 + 0x244C, (u8*)fn_2_20D08 + 0x2478,
+    (u8*)fn_2_20D08 + 0x24B4, (u8*)fn_2_20D08 + 0x24E0, (u8*)fn_2_20D08 + 0x2568, (u8*)fn_2_20D08 + 0x2580,
+    (u8*)fn_2_20D08 + 0x25B4, (u8*)fn_2_20D08 + 0x2600, (u8*)fn_2_20D08 + 0x2624, (u8*)fn_2_20D08 + 0x2668,
+    (u8*)fn_2_20D08 + 0x2680, (u8*)fn_2_20D08 + 0x26FC, (u8*)fn_2_20D08 + 0x2714, (u8*)fn_2_20D08 + 0x279C,
+    (u8*)fn_2_20D08 + 0x27B4, (u8*)fn_2_20D08 + 0x27EC, (u8*)fn_2_20D08 + 0x2804, (u8*)fn_2_20D08 + 0x2838,
+    (u8*)fn_2_20D08 + 0x2850, (u8*)fn_2_20D08 + 0x2884, (u8*)fn_2_20D08 + 0x289C, (u8*)fn_2_20D08 + 0x28A8,
+    (u8*)fn_2_20D08 + 0x290C, (u8*)fn_2_20D08 + 0x2938, (u8*)fn_2_20D08 + 0x31DC, (u8*)fn_2_20D08 + 0x3224,
+    (u8*)fn_2_20D08 + 0x327C, (u8*)fn_2_20D08 + 0x32C4, (u8*)fn_2_20D08 + 0x331C, (u8*)fn_2_20D08 + 0x3364,
+    (u8*)fn_2_20D08 + 0x3418, (u8*)fn_2_20D08 + 0x3418, (u8*)fn_2_20D08 + 0x33BC, (u8*)fn_2_20D08 + 0x33F0,
+};
+#endif
 
 // fn_2_20D08, size:0x3464
 // NONMATCHING 90%: register allocation and scheduling in the big state switch differ
@@ -10386,3 +10525,5 @@ void fn_2_20D08(void) {
     (lbl_2_bss_1A824C->_1976C0)++;
 }
 #endif
+
+GXColor lbl_2_data_107C8 = {0, 0, 0, 0}; // clear colour

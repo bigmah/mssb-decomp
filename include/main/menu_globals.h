@@ -133,7 +133,8 @@ typedef struct MenuWork {
     /*0xCFA0*/ u8 _CFA0;
     /*0xCFA1*/ u8 _CFA1;
     /*0xCFA2*/ u8 _CFA2[2];
-} MenuWork;
+    /*0xCFA4*/ u8 _CFA4[0x14];
+} MenuWork; // size: 0xCFB8 (from the common block's inflated slot, docs/common_bss.md)
 
 
 extern MenuWork lbl_803297E0;
@@ -193,5 +194,52 @@ typedef struct MsgBox {
 } MsgBox; // size: 0x5C
 
 extern MsgBox lbl_803C50E8;
+
+// Saved per-controller match settings (part of lbl_800E8754).
+typedef struct PortSettings {
+    /*0x0*/ u8 _0;
+    /*0x1*/ u8 _1;
+    /*0x2*/ u8 _2;
+    /*0x3*/ u8 _3;
+    /*0x4*/ u8 _4;
+    /*0x5*/ u8 _5;
+    /*0x6*/ u8 _6;
+} PortSettings; // size: 0x7
+
+// Saved match settings (lbl_800E8754).
+typedef struct SavedSettings {
+    /*0x00*/ u8 innings; // stored doubled
+    /*0x01*/ u8 _01[3];
+    /*0x04*/ u8 _04;
+    /*0x05*/ u8 _05;
+    /*0x06*/ u8 _06;
+    /*0x07*/ PortSettings port[4];
+    /*0x23*/ u8 _23[5];
+} SavedSettings; // size: 0x28 (lbl_800E8754, declared in main/file_8004207C.h)
+
+// Streamed music file (lbl_800E87B4, one per track): passed to fn_800A8E30, which hands it to
+// ConvertPathToEntryNum (first member is the path).
+typedef struct StreamFileDesc {
+    /*0x0*/ const char* path;
+    /*0x4*/ u32 size;
+    /*0x8*/ u32 _08;
+    /*0xC*/ u32 size2;
+} StreamFileDesc; // size: 0x10
+
+// Menu cursor/slot positions as stored in .data (all words).
+typedef struct MenuSlotSrc {
+    /*0x0*/ s32 id;
+    /*0x4*/ s32 x;
+    /*0x8*/ s32 y;
+} MenuSlotSrc; // size: 0xC
+
+// lbl_800E8558 entries (one per character).
+typedef struct CharTableEntry {
+    /*0x0*/ u8 _0;
+    /*0x1*/ u8 id;
+    /*0x2*/ u8 _2[2];
+    /*0x4*/ u8 _4; // selectable
+    /*0x5*/ u8 _5;
+} CharTableEntry; // size: 0x6
 
 #endif

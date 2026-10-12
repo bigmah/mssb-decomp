@@ -4037,3 +4037,5 @@ s32 fn_2_40CB8(void) {
     }
     return 0;
 }
+
+void* lbl_2_data_12CE8[1] = {(void*)&lbl_2_data_12558};
