@@ -11,11 +11,7 @@ struct ActorObject;
 #include "main/file_8001FE00.h"
 #include "main/menu_globals.h"
 
-// Anything that owns a run of layout objects in lbl_80371C30 starting at baseIdx.
-typedef struct LayoutOwner {
-    /*0x00*/ u8 _00[0x14];
-    /*0x14*/ u16 baseIdx;
-} LayoutOwner;
+#include "main/scene_task.h" // LayoutOwner
 
 // Per-character swing effect callback (table lbl_800FBE64).
 typedef void (*SwingFxFunc)(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);

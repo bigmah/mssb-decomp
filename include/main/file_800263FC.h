@@ -636,12 +636,7 @@ void minigamesSetSomePointers(void);
 void minigamesSetSomePointers2(void);
 void fn_8003414C(Mtx view);
 
-// Owner of a run of sprites in lbl_80371C30.
-typedef struct SpaniGroup {
-    /* 0x00 */ u8 unk0[0x14];
-    /* 0x14 */ u16 baseIdx;
-    /* 0x16 */ u16 count;
-} SpaniGroup;
+#include "main/scene_task.h" // SpaniGroup
 
 // lbl_80371C30 entries.
 typedef struct SpaniSlot {

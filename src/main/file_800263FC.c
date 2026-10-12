@@ -3738,11 +3738,11 @@ s32 fn_80034BCC(SpaniAttach* a, Mtx unused) {
 
 // .text:0x80034CEC size:0x134
 void fn_80034CEC(SpaniGroup* g) {
-    s32 base = g->baseIdx;
+    s32 base = g->u14.objIdx;
     s32 i;
     s32 dst;
 
-    for (i = 0; i < g->count; i++) {
+    for (i = 0; i < g->u14.objCount; i++) {
         if (lbl_80371C30[base + i].obj != NULL) {
             lbl_80371C30[base + i].obj->flags = 0;
         }
@@ -3752,7 +3752,7 @@ void fn_80034CEC(SpaniGroup* g) {
         lbl_80371C30[dst].obj = lbl_80371C30[i].obj;
         lbl_80371C30[dst].owner = lbl_80371C30[i].owner;
         if (lbl_80371C30[dst].owner != NULL) {
-            lbl_80371C30[dst].owner->baseIdx = dst;
+            lbl_80371C30[dst].owner->u14.objIdx = dst;
         }
     }
     for (i = dst; i < 0x360; i++) {
@@ -3773,7 +3773,7 @@ void fn_80034E20(SpaniGroup* g, SpaniDesc* descs) {
 
     for (i = 0; i < 0x360; i++) {
         if (lbl_80371C30[i].obj == NULL) {
-            g->baseIdx = i;
+            g->u14.objIdx = i;
             base = &lbl_80371C30[i];
             base->owner = g;
             break;
@@ -3787,11 +3787,10 @@ void fn_80034E20(SpaniGroup* g, SpaniDesc* descs) {
         }
         lbl_80371C30[idx].obj = fn_80034F50(d);
         obj = lbl_80371C30[idx].obj;
-        // TODO type: SpaniDesc.unk12 is the parent's index within the group (0xFF: none)
-        if (*(s16*)d->unk12 == 0xFF || n == 0) {
+        if (d->parent == 0xFF || n == 0) {
             obj->parent = NULL;
         } else {
-            obj->parent = base[*(s16*)d->unk12].obj;
+            obj->parent = base[d->parent].obj;
             obj->unk4 = ((SpaniObj*)obj->parent)->unk8;
             ((SpaniObj*)obj->parent)->unk8 = obj;
         }
@@ -3801,5 +3800,5 @@ void fn_80034E20(SpaniGroup* g, SpaniDesc* descs) {
         d++;
         n++;
     }
-    g->count = n;
+    g->u14.objCount = n;
 }

@@ -84,7 +84,10 @@ extern RosterSelect lbl_803C6028;
 
 // Queue task created by fn_80052634.
 typedef struct MeterTask {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ struct SceneTask* _04[3]; // prev, next, parent (SceneTask header)
+    /*0x10*/ s16 _10;
+    /*0x12*/ u16 _12;
     /*0x14*/ struct ActorObject* anim;
     /*0x18*/ struct CharActor* actor;
     /*0x1C*/ u8 kind;

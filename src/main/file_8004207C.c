@@ -378,7 +378,7 @@ void fn_80042D38(u16 scene) {
 
 // .text:0x80042D68 size:0x40
 s32 fn_80042D68(LayoutOwner* owner, s32 idx, s32 value) {
-    LayoutObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+    LayoutObj* obj = lbl_80371C30[owner->u14.objIdx + idx].obj;
     if ((s32)(obj->_5C >> 16) >= value) {
         obj->_68 = 0;
         return 1;
@@ -388,7 +388,7 @@ s32 fn_80042D68(LayoutOwner* owner, s32 idx, s32 value) {
 
 // .text:0x80042DA8 size:0x40
 s32 fn_80042DA8(LayoutOwner* owner, s32 idx, s32 value) {
-    LayoutObj* obj = lbl_80371C30[owner->baseIdx + idx].obj;
+    LayoutObj* obj = lbl_80371C30[owner->u14.objIdx + idx].obj;
     if ((s32)(obj->_5C >> 16) == value) {
         obj->_68 = 0;
         return 1;
