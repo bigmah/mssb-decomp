@@ -163,8 +163,8 @@ struct { TexArchive head; u8 rest[0x35FC]; } __gen_lbl_800E9920 GEN_SYM(lbl_800E
     {0, 0},
     {
         {
-            (void*)0x00000060 /* TODO */,
-            (void*)0x00000040 /* TODO */,
+            0x00000060,
+            0x00000040,
             18,
             1024,
             0,

@@ -561,8 +561,8 @@ s32 fn_80023F0C(TexImage* src, TexImage* dst, s32 srcX, s32 srcY, s32 width, s32
             return 1;
         }
     }
-    srcRow = src->data + (srcX + srcStride * srcY) * 32;
-    dstRow = dst->data + (dstX + dstStride * dstY) * 32;
+    srcRow = PTR32_GET(u8, src->data) + (srcX + srcStride * srcY) * 32;
+    dstRow = PTR32_GET(u8, dst->data) + (dstX + dstStride * dstY) * 32;
     for (; height != 0; height--) {
         memcpy(dstRow, srcRow, width * 32);
         srcRow += srcStride * 32;

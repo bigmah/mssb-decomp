@@ -766,7 +766,7 @@ s32 fn_800B1EBC(TexImage* tex, s32 map, u32 width, u32 height) {
                 tlutSize *= 2;
             }
             tmem = (map << 13) + 0xC0000;
-            GDLoadTlut(tex->tlut, tmem, tlutSize);
+            GDLoadTlut(PTR32_GET(void, tex->tlut), tmem, tlutSize);
             GDSetTexTlut(id, tmem, tex->tlutFormat);
         }
         {
@@ -800,7 +800,7 @@ s32 fn_800B1EBC(TexImage* tex, s32 map, u32 width, u32 height) {
                         GX_FALSE, GX_FALSE, GX_ANISO_1);
         }
         GDSetTexImgAttr(id, tex->width, tex->height, tex->format);
-        GDSetTexImgPtr(id, tex->data);
+        GDSetTexImgPtr(id, PTR32_GET(u8, tex->data));
         written = TRUE;
     }
     if (lbl_803CBB34->texWidth != width || lbl_803CBB34->texHeight != height) {

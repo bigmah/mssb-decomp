@@ -56,6 +56,9 @@ struct PortThread
     bool started = false;
     bool blocked = false;   // waiting on a queue
     bool finished = false;
+    // Resumes from interrupt context that arrived while the thread was still
+    // running (see OSResumeThread).
+    int pendingResume = 0;
 };
 
 std::mutex g_sched;
@@ -306,6 +309,17 @@ s32 OSResumeThread(OSThread* thread)
 {
     std::unique_lock lk(g_sched);
     s32 prev = thread->suspend;
+    if (prev <= 0 && t_self == nullptr)
+    {
+        // An interrupt callback (DVD, ARQ, ...) resumes a thread that hasn't
+        // suspended itself yet: on PC the "interrupt" can arrive before the
+        // thread reaches OSSuspendThread, which on the GameCube's single CPU
+        // it can't. Keep the resume for that OSSuspendThread.
+        PortThread* pt = pt_of(thread);
+        if (pt != nullptr && pt->started && !pt->finished)
+            pt->pendingResume++;
+        return prev;
+    }
     if (prev > 0 && --thread->suspend == 0)
     {
         PortThread* pt = pt_of(thread);
@@ -323,6 +337,15 @@ s32 OSResumeThread(OSThread* thread)
 s32 OSSuspendThread(OSThread* thread)
 {
     std::unique_lock lk(g_sched);
+    if (thread == t_self)
+    {
+        PortThread* pt = pt_of(thread);
+        if (pt != nullptr && pt->pendingResume > 0)
+        {
+            pt->pendingResume--;
+            return thread->suspend;
+        }
+    }
     s32 prev = thread->suspend++;
     if (thread == t_self && g_running == thread)
     {

@@ -123,12 +123,12 @@ void SetDisplayStateTexture(TexImage* tex, s32 map, u32 tlutName) {
         }
     }
     if (tex->tlut != NULL) {
-        GXInitTexObjCI(&texObj, tex->data, tex->width, tex->height, tex->format, wrapS, wrapT, tex->minLOD != tex->maxLOD,
+        GXInitTexObjCI(&texObj, PTR32_GET(u8, tex->data), tex->width, tex->height, tex->format, wrapS, wrapT, tex->minLOD != tex->maxLOD,
                        tlutName);
-        GXInitTlutObj(&tlutObj, tex->tlut, tex->tlutFormat, tex->tlutEntries);
+        GXInitTlutObj(&tlutObj, PTR32_GET(void, tex->tlut), tex->tlutFormat, tex->tlutEntries);
         GXLoadTlut(&tlutObj, tlutName);
     } else {
-        GXInitTexObj(&texObj, tex->data, tex->width, tex->height, tex->format, wrapS, wrapT, tex->minLOD != tex->maxLOD);
+        GXInitTexObj(&texObj, PTR32_GET(u8, tex->data), tex->width, tex->height, tex->format, wrapS, wrapT, tex->minLOD != tex->maxLOD);
     }
     GXInitTexObjLOD(&texObj, tex->minFilter, tex->magFilter, tex->minLOD, tex->maxLOD, tex->lodBias, GX_FALSE, GX_FALSE,
                     GX_ANISO_1);
@@ -379,5 +379,11 @@ u8 lbl_800F76E0[32] = {
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 }; // 4x4 texture data
+#ifdef TARGET_PC
+// PTR32 fields can't hold a static address at compile time: set at startup.
+TexImage lbl_800F7700 = {0, 0, 4, 4, 0, 0, 1, 1, 0.0f, 0, 0, 0, 5, 0, 0, 0, 0, {0, 0}};
+__attribute__((constructor)) static void port_init_800F7700(void) { PTR32_SET(lbl_800F7700.data, lbl_800F76E0); }
+#else
 TexImage lbl_800F7700 = {lbl_800F76E0, NULL, 4, 4, 0, 0, 1, 1, 0.0f, 0, 0, 0, 5, 0, 0, 0, 0, {0, 0}};
+#endif
 

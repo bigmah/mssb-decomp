@@ -44,7 +44,7 @@ void fn_2_D88(u16 ch, s16 id) {
         lbl_2_bss_D974[c] = -1;
         lbl_2_bss_D958[c] = -1;
     }
-    lbl_2_bss_D974[c] = sndSeqPlayEx(entry->a, entry->b, ((void**)lbl_2_bss_D984)[entry->c], 0, 0);
+    lbl_2_bss_D974[c] = sndSeqPlayEx(entry->a, entry->b, U32_TO_PTR(((u32*)lbl_2_bss_D984)[entry->c]), 0, 0);
     lbl_2_bss_D958[c] = id;
 }
 
@@ -63,7 +63,7 @@ void fn_2_E84(u16 ch, s16 id) {
         lbl_2_bss_D974[ch] = -1;
         lbl_2_bss_D958[ch] = -1;
     }
-    lbl_2_bss_D974[ch] = sndSeqPlayEx(entry->a, entry->b, ((void**)lbl_2_bss_D984)[entry->c], 0, 0);
+    lbl_2_bss_D974[ch] = sndSeqPlayEx(entry->a, entry->b, U32_TO_PTR(((u32*)lbl_2_bss_D984)[entry->c]), 0, 0);
     lbl_2_bss_D958[ch] = id;
 }
 #endif
@@ -90,7 +90,10 @@ void fn_2_1018(u16 ch) {
 
 // fn_2_10AC, size:0x50
 void fn_2_10AC(u8* data) {
-    // TODO(port): relocates the file's two leading 32-bit offsets into pointers in place
+    // Relocates the file's two leading 32-bit song offsets in place.
+#ifdef TARGET_PC
+    port_swap_offset_table(data, 2);
+#endif
     *(u32*)data = *(u32*)data + PTR_TO_U32(data);
     *(u32*)(data + 4) = *(u32*)(data + 4) + PTR_TO_U32(data);
     lbl_2_bss_D974[0] = -1;

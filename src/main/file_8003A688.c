@@ -67,7 +67,7 @@ u16 lbl_800F7AC0[16] ATTRIBUTE_ALIGN(32) = { // IA8 TLUT for the memory card ico
     0, 4607, 8959, 13311, 17663, 22015, 65535, 65535,
     65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
 };
-TexImage lbl_800F7AE0 = {NULL, NULL, 480, 640, 0, 0, 1, 1, 0.0f, 0, 0, 0, 4, 0, 0, 0, 0, {0, 0}};
+TexImage lbl_800F7AE0 = {0, 0, 480, 640, 0, 0, 1, 1, 0.0f, 0, 0, 0, 4, 0, 0, 0, 0, {0, 0}};
 SaveBannerData lbl_800F7B00 = {
     {
         0x02, 0x05, 0x04, 0x03, 0x08, 0x03, 0x04, 0x05, 0x02, 0x06, 0x00, 0x01, 0x08, 0x06, 0x07, 0x01,
@@ -902,7 +902,7 @@ extern void* GetUITexture(void); // main/file_80037054.h (clashes with this unit
 
 // .text:0x8003A37C size:0x14C
 void fn_8003A37C(Mtx mtx, s32* stage, s32* coord, s32* map, u8* count, u8* texMtx) {
-    lbl_800F7AE0.data = GetUITexture();
+    PTR32_SET(lbl_800F7AE0.data, GetUITexture());
     SetDisplayStateTexture(&lbl_800F7AE0, *map, 0);
     GXSetTevOrder(*stage, *coord, *map, GX_COLOR0A0);
     GXSetTevColorIn(*stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_TEXA, GX_CC_CPREV);
@@ -982,12 +982,12 @@ void fn_8003A688(s32 type, f32 speed, f32 spread) {
 void fn_8003A6B0(s32 type, TexImage* tex, f32 speed, f32 spread) {
     if (tex->tlut != NULL) {
         lbl_802D3D80.texMode[type] = 2;
-        GXInitTexObjCI(&lbl_802D3D80.texObj[type], tex->data, tex->width, tex->height, tex->format, tex->wrapS, tex->wrapT,
+        GXInitTexObjCI(&lbl_802D3D80.texObj[type], PTR32_GET(u8, tex->data), tex->width, tex->height, tex->format, tex->wrapS, tex->wrapT,
                        GX_FALSE, type);
-        GXInitTlutObj(&lbl_802D3D80.tlutObj[type], tex->tlut, tex->tlutFormat, tex->tlutEntries);
+        GXInitTlutObj(&lbl_802D3D80.tlutObj[type], PTR32_GET(void, tex->tlut), tex->tlutFormat, tex->tlutEntries);
     } else {
         lbl_802D3D80.texMode[type] = 1;
-        GXInitTexObj(&lbl_802D3D80.texObj[type], tex->data, tex->width, tex->height, tex->format, tex->wrapS, tex->wrapT,
+        GXInitTexObj(&lbl_802D3D80.texObj[type], PTR32_GET(u8, tex->data), tex->width, tex->height, tex->format, tex->wrapS, tex->wrapT,
                      GX_FALSE);
     }
     GXInitTexObjLOD(&lbl_802D3D80.texObj[type], tex->minFilter, tex->magFilter, tex->minLOD, tex->maxLOD, tex->lodBias,
@@ -1235,7 +1235,7 @@ extern GXTlutObj lbl_803C50DC;
 void fn_8003AD84(TexArchive* arc) {
     TexImage* tex = arc->entries;
 
-    GXInitTexObjCI(&lbl_803C50B0, tex->data, tex->width, tex->height, GX_TF_C4, tex->wrapS, tex->wrapT, GX_FALSE, GX_TLUT0);
+    GXInitTexObjCI(&lbl_803C50B0, PTR32_GET(u8, tex->data), tex->width, tex->height, GX_TF_C4, tex->wrapS, tex->wrapT, GX_FALSE, GX_TLUT0);
     GXInitTlutObj(&lbl_803C50DC, lbl_800F7AC0, GX_TL_IA8, 16);
     GXInitTexObjLOD(&lbl_803C50B0, tex->minFilter, tex->magFilter, tex->minLOD, tex->maxLOD, tex->lodBias, GX_FALSE, GX_FALSE,
                     GX_ANISO_1);

@@ -611,7 +611,7 @@ void fn_1_267F4(void) {
         }
         entry = CHALLENGE_TEX_SLOTS;
         entry += index;
-        queue->trackCount = entry->anim->table->count;
+        queue->trackCount = PTR32_GET(AnimTrackTable, entry->anim->table)->count;
         fn_80034E20(queue->sprite, &lbl_1_data_10344);
         queue->track = 0;
         queue->cursor = 0;
@@ -709,7 +709,7 @@ void fn_1_25F98(void) {
                     frame.subTrack--;
                 }
                 // write the edited texture index back into the track's first entry
-                CHALLENGE_TEX_SLOTS[CHALLENGE_SPRITE_OBJ(q)->_66].anim->table->tracks[q->track]->blocks[0]->entries[0].size
+                PTR32_GET(AnimBlock, PTR32_GET(AnimTrack, PTR32_GET(AnimTrackTable, CHALLENGE_TEX_SLOTS[CHALLENGE_SPRITE_OBJ(q)->_66].anim->table)->tracks[q->track])->blocks[0])->entries[0].size
                     = frame.subTrack;
             }
             break;
@@ -2291,11 +2291,11 @@ void fn_1_20640(ChallengeTextureStages* stages, u32* indices) {
 s32 fn_1_2051C(ChallengeTextureHeader* texture, GXTexObj* object, GXTlutObj* palette, GXTlut name) {
     u8 mipmapped = texture->minLod != texture->maxLod;
     if (texture->palette != NULL) {
-        GXInitTexObjCI(object, texture->image, texture->width, texture->height,
+        GXInitTexObjCI(object, PTR32_GET(void, texture->image), texture->width, texture->height,
             texture->format, texture->wrapS, texture->wrapT, mipmapped, name);
-        GXInitTlutObj(palette, texture->palette, texture->paletteFormat, texture->paletteEntries);
+        GXInitTlutObj(palette, PTR32_GET(void, texture->palette), texture->paletteFormat, texture->paletteEntries);
     } else {
-        GXInitTexObj(object, texture->image, texture->width, texture->height,
+        GXInitTexObj(object, PTR32_GET(void, texture->image), texture->width, texture->height,
             texture->format, texture->wrapS, texture->wrapT, mipmapped);
     }
     GXInitTexObjLOD(object, texture->minFilter, texture->magFilter,
@@ -3087,11 +3087,11 @@ void fn_1_1DA54(void) {
         case 1:
         case 2:
             size = tex->paletteEntries * 2;
-            q->header->palette = _OSAllocFromHeap(0x20, size);
-            memcpy(q->header->palette, q->tex->entries[2].palette, size);
+            PTR32_SET(q->header->palette, _OSAllocFromHeap(0x20, size));
+            memcpy(PTR32_GET(void, q->header->palette), PTR32_GET(void, q->tex->entries[2].palette), size);
             break;
         }
-        DCStoreRangeNoSync(q->header->palette, size);
+        DCStoreRangeNoSync(PTR32_GET(void, q->header->palette), size);
         tex = q->header;
         switch (tex->format) {
         case 8:
@@ -3120,9 +3120,9 @@ void fn_1_1DA54(void) {
             return;
         }
     }
-    q->header->image = _OSAllocFromHeap(0x20, size);
-    memcpy(q->header->image, q->tex->entries[2].image, size);
-    DCStoreRangeNoSync(q->header->image, size);
+    PTR32_SET(q->header->image, _OSAllocFromHeap(0x20, size));
+    memcpy(PTR32_GET(void, q->header->image), PTR32_GET(void, q->tex->entries[2].image), size);
+    DCStoreRangeNoSync(PTR32_GET(void, q->header->image), size);
     PPCSync();
     ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1D944;
 }
@@ -3173,7 +3173,7 @@ void fn_1_1D694(ChallengeAnimEntry* obj) {
         tex = obj->tex;
         src = obj->table;
         dst = obj->data;
-        memset(tex->image, 0, tex->width * tex->height);
+        memset(PTR32_GET(void, tex->image), 0, tex->width * tex->height);
         rows = tex->height / 64;
         cols = tex->width / 32;
         for (y = 0; y < rows; y++) {
@@ -3184,7 +3184,7 @@ void fn_1_1D694(ChallengeAnimEntry* obj) {
                 }
             }
         }
-        DCStoreRange(tex->image, tex->width * tex->height);
+        DCStoreRange(PTR32_GET(void, tex->image), tex->width * tex->height);
     }
     {
         Mtx proj;

@@ -843,12 +843,12 @@ void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr came
         magFilter = tex->magFilter;
         lodBias = tex->lodBias;
         if (tex->tlut != NULL) {
-            GXInitTexObjCI(&lbl_803CB5FC[texMap], tex->image, tex->width, tex->height, tex->format, wrapS, wrapT, mipmap,
+            GXInitTexObjCI(&lbl_803CB5FC[texMap], PTR32_GET(void, tex->image), tex->width, tex->height, tex->format, wrapS, wrapT, mipmap,
                            texMap);
-            GXInitTlutObj(&lbl_803CB49C[texMap], tex->tlut, tex->tlutFormat, tex->tlutEntries);
+            GXInitTlutObj(&lbl_803CB49C[texMap], PTR32_GET(void, tex->tlut), tex->tlutFormat, tex->tlutEntries);
             GXLoadTlut(&lbl_803CB49C[texMap], texMap);
         } else {
-            GXInitTexObj(&lbl_803CB5FC[texMap], tex->image, tex->width, tex->height, tex->format, wrapS, wrapT, mipmap);
+            GXInitTexObj(&lbl_803CB5FC[texMap], PTR32_GET(void, tex->image), tex->width, tex->height, tex->format, wrapS, wrapT, mipmap);
         }
         GXInitTexObjLOD(&lbl_803CB5FC[texMap], minFilter, magFilter, minLOD, maxLOD, lodBias, GX_FALSE, GX_FALSE,
                         GX_ANISO_1);

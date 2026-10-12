@@ -161,10 +161,19 @@ u32 ReadBits(u32 bits)
         while (!gDataDecompressorValues.ReadOffset && !gDataDecompressorValues.segmentCount)
         {
             // nop
+#ifdef TARGET_PC
+            // The read thread (higher priority) is woken from the DVD
+            // callback; on the GameCube it preempts this loop.
+            OSYieldThread();
+#endif
         }
 
         // read a new u32 into our buffer
+#ifdef TARGET_PC
+        gDataDecompressorValues.bitBuffer = read_be32(&gDataDecompressorValues.DataReadBottom[gDataDecompressorValues.ReadOffset]);
+#else
         gDataDecompressorValues.bitBuffer = *(u32 *)&gDataDecompressorValues.DataReadBottom[gDataDecompressorValues.ReadOffset];
+#endif
         // how many bits our next buffer will hold after we remove the rest of the current data
         bitsForNextBuffer = 32 - bitsNeededToRead;
         // push out most of the new bits, and be left with bottom bits of the buffer
