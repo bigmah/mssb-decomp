@@ -3302,6 +3302,13 @@ void fn_2_5E104(void) {
 }
 #endif
 
+// File-load entries and medal names (0x20BF0-0x20C68; read by auto 5E84C, which is this TU's text).
+u8 lbl_2_data_20BF0[16] = {0, 0, 4, 11, 64, 7, 106, 224, 24, 237, 112, 0, 0, 3, 107, 200}; // TODO type: DiskFileEntry
+u8 lbl_2_data_20C00[16] = {0, 0, 0, 0, 0, 0, 101, 38, 8, 234, 224, 0, 0, 0, 101, 40}; // TODO type: DiskFileEntry
+char lbl_2_data_20C10[4][10] = {"none", "bronze", "silver", "gold"};
+s16 lbl_2_data_20C38[8] = {0, 1, 4, 3, 2, 5, 7, 0};
+s16 lbl_2_data_20C48[8] = {0, 1, 3, 4, 2, 5, 7, 0};
+s16 lbl_2_data_20C58[8] = {0, 1, 4, 3, 2, 5, 6, 0};
 // Character grids (0x296B8-0x29748); this TU's jump tables follow.
 s16 lbl_2_data_296B8[6 * 6] = {
     0, 0, 1, 2, 3, 0, 4, 5,

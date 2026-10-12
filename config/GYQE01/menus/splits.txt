@@ -135,7 +135,7 @@ menus/rep_0A08.c:
 
 auto_00_0004B1AC_text:
 	.text       start:0x0004B1AC end:0x00054BB0
-	.data       start:0x00013460 end:0x0001F3F0
+	.data       start:0x00013460 end:0x0001F4D8
 	.bss        start:0x000055E8 end:0x00009E10
 	.bss        start:0x0033FB4C end:0x0033FBCC align:4 common
 
@@ -146,7 +146,7 @@ menus/rep_0A58.c:
 menus/rep_0AB0.c:
 	.text       start:0x0005979C end:0x0005E84C
 	.rodata     start:0x00000AB0 end:0x00000B08
-	.data       start:0x00020C68 end:0x00029994
+	.data       start:0x00020BF0 end:0x00029994
 	.bss        start:0x0033FBCC end:0x0033FBF8 align:4 common
 
 auto_00_0005E84C_text:
