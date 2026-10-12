@@ -4001,6 +4001,8 @@ void fn_3_AB5B0(s32 maxFrames, f32* outAngle, f32* speedPtr) {
     case 9:
         spd = lbl_3_rodata_1A6C;
         break;
+    case 10:
+        break;
     }
     if (g_FieldingLogic._13D != 0) {
         lift = lbl_3_data_4760[0];
