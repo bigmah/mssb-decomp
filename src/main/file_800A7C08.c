@@ -38,6 +38,21 @@ void* fn_800A7C08(void* arg) {
         }
         GXInvalidateVtxCache();
         node = (DrawCallbackNode*)lbl_803C7420.drawList;
+#ifdef TARGET_PC
+        {
+            extern void port_trace_draw(void** funcs, int count);
+            void* funcs[128];
+            int n = 0;
+            DrawCallbackNode* q = node;
+            while (q->next.raw != 0 && n < 128) {
+                if (!(q->next.raw & 1) && (q->next.raw & 2) == lbl_803C7420.field && q->func != NULL) {
+                    funcs[n++] = (void*)q->func;
+                }
+                q = (DrawCallbackNode*)(q->next.raw & ~(uintptr_t)3);
+            }
+            port_trace_draw(funcs, n);
+        }
+#endif
         while (TRUE) {
             next = node->next.raw;
             if (next == 0) {

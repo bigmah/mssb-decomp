@@ -1,5 +1,6 @@
-// Debug tracing for the boot loop (MSSB_TRACE_TASKS=1): prints the scene task
-// list whenever it changes, with symbol names.
+// Debug tracing for the boot loop: MSSB_TRACE_TASKS=1 prints the scene task
+// list and MSSB_TRACE_DRAW=1 the draw callbacks of a frame whenever they
+// change, with symbol names.
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +31,28 @@ void port_trace_tasks(void** funcs, int count)
     memcpy(last, funcs, (size_t)count * sizeof(void*));
     lastCount = count;
     fprintf(stderr, "[tasks]");
+    for (int i = 0; i < count; i++)
+        fprintf(stderr, " %s", sym_name(funcs[i]));
+    fprintf(stderr, "\n");
+}
+
+// funcs: the enabled draw-list callbacks of one frame, in order.
+void port_trace_draw(void** funcs, int count)
+{
+    static int enabled = -1;
+    static void* last[128];
+    static int lastCount = -1;
+    if (enabled < 0)
+        enabled = getenv("MSSB_TRACE_DRAW") != NULL;
+    if (!enabled)
+        return;
+    if (count > 128)
+        count = 128;
+    if (count == lastCount && memcmp(last, funcs, (size_t)count * sizeof(void*)) == 0)
+        return;
+    memcpy(last, funcs, (size_t)count * sizeof(void*));
+    lastCount = count;
+    fprintf(stderr, "[draw]");
     for (int i = 0; i < count; i++)
         fprintf(stderr, " %s", sym_name(funcs[i]));
     fprintf(stderr, "\n");

@@ -35,6 +35,12 @@ typedef struct LayoutInfo {
     /*0x1C*/ u32 color;
     /*0x20*/ u8 _20[0x30];
 } LayoutInfo; // size: 0x50
+// The frame's first colour is RGBA bytes (left big-endian by the spani swap).
+#ifdef TARGET_PC
+#define LAYOUT_INFO_COLOR(info) read_be32(&(info).color)
+#else
+#define LAYOUT_INFO_COLOR(info) ((info).color)
+#endif
 
 typedef struct LayoutAnimSlot {
     /*0x00*/ Mtx _00; // same layout as SpaniTexSlot (main/file_80034F50.h)
@@ -210,9 +216,9 @@ void fn_8000F534(LayoutObj* obj, s32 visible) {
     x = info.x;
     y = info.y;
     if (obj->flags & 8) {
-        color = byteWiseMultiply(info.color, obj->color);
+        color = byteWiseMultiply(LAYOUT_INFO_COLOR(info), obj->color);
     } else {
-        color = multBottomBits_asFloat(info.color, obj->color);
+        color = multBottomBits_asFloat(LAYOUT_INFO_COLOR(info), obj->color);
     }
     lbl_80366B18.entries[owner->entry].color = color;
     size = (info.size << 8) / 1024;
@@ -245,7 +251,7 @@ void fn_8000F534(LayoutObj* obj, s32 visible) {
         e->y = y;
     }
     if (fn_8000CEF0(*anim, animId, 1, owner->_06, (u32*)&info) != 0) {
-        lbl_80366B18.entries[owner->entry].shadowColor = multBottomBits_asFloat(info.color, obj->color);
+        lbl_80366B18.entries[owner->entry].shadowColor = multBottomBits_asFloat(LAYOUT_INFO_COLOR(info), obj->color);
         lbl_80366B18.entries[owner->entry].shadowX = info.x - lbl_80366B18.entries[owner->entry].x;
         lbl_80366B18.entries[owner->entry].shadowY = info.y - lbl_80366B18.entries[owner->entry].y;
     } else {
