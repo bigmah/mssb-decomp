@@ -1457,7 +1457,7 @@ void fn_8003AECC(void) {
 
 // .text:0x8003B5B0 size:0x5E0
 // Save task: creates the save file if needed and writes lbl_802D4B00 to the card.
-// NONMATCHING 99.1%: the original reaches the banner comment strings through a pooled .data base (addi 0x3220; addi 0x20), unsplit data
+// NONMATCHING 99.1%: the original computes the comment pointers as text[line] (addi 0x3220/0x3260) plus a separate addi 0x20; every C form tried folds them into one addi
 #if NONMATCHING
 void fn_8003B5B0(void) {
     SaveTask* task = (SaveTask*)lbl_803CC1B8;
