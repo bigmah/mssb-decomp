@@ -539,15 +539,12 @@ void fn_80025EEC(ShapeAnimPlayer* p, s32 table, s32 entry) {
 
 // .text:0x80025FFC size:0x134
 // Relocates the player's animation set and binds it to model.
-// NONMATCHING 95%: `p == NULL` early return emitted as bne/blr; st in r7 instead of r6
+// NONMATCHING 97%: st in r6 instead of r7 (and the tail stores scheduled differently)
 #if NONMATCHING
 void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
     ShapeAnimState* st;
     u32 i;
-    if (model == NULL) {
-        return;
-    }
-    if (p == NULL) {
+    if (model == NULL || p == NULL) {
         return;
     }
     if (p->set == NULL) {
