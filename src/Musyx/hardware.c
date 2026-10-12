@@ -18,9 +18,6 @@ u8 salNumVoices;
 u8 salMaxStudioNum;
 SND_HOOKS2 salHooks;
 u8 salTimeOffset;
-extern f32 lbl_803CD270;
-extern f32 lbl_803CD274;
-extern f32 lbl_803CD278;
 f32 sndCos(f32 x);
 f32 sndSqrt(f32 x);
 void hwSetTimeOffset(u8 offset);
@@ -330,7 +327,7 @@ void hwLowPassFrqToCoef(u32 frq, u16 *_a0, u16 *_b1)
   f32 x;
   f32 t;
 
-  x = lbl_803CD270 - sndCos((lbl_803CD274 * (f32)frq) / lbl_803CD278);
+  x = 2.0f - sndCos((6.2831855f * (f32)frq) / 32000.0f);
   if (x > 1.0f)
   {
     t = sndSqrt(x * x - 1.0f) - x;

@@ -24,7 +24,8 @@ void fn_1_27AD0(void);
 
 void fn_1_27E50(void);
 
-void fn_1_27560(s32 value);
+struct TexArchive;
+void fn_1_27560(struct TexArchive* tex);
 
 void fn_1_27AD4(void);
 

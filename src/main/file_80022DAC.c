@@ -556,3 +556,15 @@ s32 fn_80023F0C(TexImage* src, TexImage* dst, s32 srcX, s32 srcY, s32 width, s32
     }
     return 0;
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .bss 0x8017EB40..0x8017EC00 (MWCC lays these out in reverse definition order)
+u8* lbl_8017EBB0[];
+u8* lbl_8017EB40[0x1C];
+
+// .sbss 0x803CBC58..0x803CBC68 (MWCC lays these out in reverse definition order)
+u32 lbl_803CBC60;
+u32 lbl_803CBC5C;
+u32 lbl_803CBC58;
+

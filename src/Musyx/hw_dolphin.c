@@ -4,20 +4,22 @@
 #include "Dolphin/OS/OSThread.h"
 #include "musyx/dsp_import.h"
 
-static OSThreadQueue dspQueue;
 static DSPTaskInfo dsp_task ATTRIBUTE_ALIGN(8);
 static u16 dram_image[4096] ATTRIBUTE_ALIGN(32);
 
-static volatile u32 oldState = 0;
-static volatile u16 hwIrqLevel = 0;
-static volatile u32 salDspInitIsDone = 0;
-static volatile OSTick salLastTick = 0;
-static volatile u32 salLogicActive = 0;
-static volatile u32 salLogicIsWaiting = 0;
-static volatile u32 salDspIsDone = 0;
-void* salAIBufferBase = NULL;
-static u8 salAIBufferIndex = 0;
-static SND_SOME_CALLBACK userCallback = NULL;
+// Zero-initialised statics, defined in reverse: MWCC lays out uninitialised
+// .sbss objects in reverse definition order.
+static SND_SOME_CALLBACK userCallback;
+static u8 salAIBufferIndex;
+void* salAIBufferBase;
+static volatile u32 salDspIsDone;
+static volatile u32 salLogicIsWaiting;
+static volatile u32 salLogicActive;
+static volatile OSTick salLastTick;
+static volatile u32 salDspInitIsDone;
+static OSThreadQueue dspQueue;
+static volatile u16 hwIrqLevel;
+static volatile u32 oldState;
 
 #define DMA_BUFFER_LEN 0x280
 
@@ -63,7 +65,7 @@ void dspResumeCallback() {
 void dspDoneCallback(void* task) { OSWakeupThread(&dspQueue); }
 
 u32 salInitAi(SND_SOME_CALLBACK callback, u32 unk, u32* outFreq) {
-  if ((salAIBufferBase = salMalloc(DMA_BUFFER_LEN * 4)) != NULL) {
+  if ((salAIBufferBase = salMallocPhysical(DMA_BUFFER_LEN * 4)) != NULL) {
     memset(salAIBufferBase, 0, DMA_BUFFER_LEN * 4);
     DCFlushRange(salAIBufferBase, DMA_BUFFER_LEN * 4);
     salAIBufferIndex = TRUE;

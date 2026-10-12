@@ -1995,10 +1995,8 @@ typedef struct MnOwner {
 extern u8 lbl_80108EC4[];
 extern u8 lbl_2_data_2AF08[];
 
-// fn_2_72E54, size:0x1D4
-// NONMATCHING 80%: zero kept in r30/slot base in r31 swapped vs ours, search loop uses lbz not lbzu
-#if NONMATCHING
-void fn_2_72E54(u8* o) {
+// Body of fn_2_72E54; also inlined into fn_2_7308C.
+static inline void setupHeaderSlots(u8* o) {
     s32 j;
     s32 found = -1;
     u8 v;
@@ -2028,6 +2026,13 @@ void fn_2_72E54(u8* o) {
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
     }
+}
+
+// fn_2_72E54, size:0x1D4
+// NONMATCHING 83%: zero kept in r30/slot base in r31 swapped vs ours, search loop uses lbz not lbzu
+#if NONMATCHING
+void fn_2_72E54(u8* o) {
+    setupHeaderSlots(o);
 }
 #endif
 
@@ -2082,10 +2087,8 @@ void fn_2_7E194(u8* o, s32 index) {
 }
 #endif
 
-// fn_2_72A88, size:0x22C
-// NONMATCHING 88%: character search loop uses lbz instead of the original lbzu walker; register order differs
-#if NONMATCHING
-void fn_2_72A88(u8* o) {
+// Body of fn_2_72A88; also inlined into fn_2_7308C.
+static inline void setupHeaderRoster(u8* o) {
     s32 j;
     s32 found = -1;
     u8 v;
@@ -2105,6 +2108,13 @@ void fn_2_72A88(u8* o) {
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
     }
+}
+
+// fn_2_72A88, size:0x22C
+// NONMATCHING 94%: character search loop uses lbz instead of the original lbzu walker; register order differs
+#if NONMATCHING
+void fn_2_72A88(u8* o) {
+    setupHeaderRoster(o);
 }
 #endif
 
@@ -3393,13 +3403,14 @@ void fn_2_80F5C(u8* o, s32 index) {
 
 // fn_2_7308C, size:0x6CC
 // Team-select header state machine; each case is a pair of the small helpers above.
-// NONMATCHING 45%: structure is right (CW inlines the matched helpers); fn_2_72E54/fn_2_72A88 must match and be defined above it to inline too
+// NONMATCHING 94%: the inlined fn_2_72E54/fn_2_72A88 bodies keep their own mismatches (lbz instead of the
+// original lbzu search walker, register order)
 #if NONMATCHING
 void fn_2_7308C(void) {
     u8* o = lbl_803CC1B8;
     switch (lbl_803CBBC4[0]) {
     case 1:
-        fn_2_72E54(o);
+        setupHeaderSlots(o);
         fn_2_72DDC(o);
         break;
     case 2:
@@ -3407,7 +3418,7 @@ void fn_2_7308C(void) {
         fn_2_72814(o);
         break;
     case 3:
-        fn_2_72A88(o);
+        setupHeaderRoster(o);
         fn_2_72A58();
         break;
     case 0x47:
@@ -4167,7 +4178,8 @@ void fn_2_74F40(u8* o, s32 index) {
 
 // fn_2_81628, size:0x1174
 // Per-frame driver of the team/field-position menu: runs each player's state handler.
-// NONMATCHING 40%: logic matches; CW auto-inlines the matched per-state handlers defined above it (original calls them), so sizes differ
+// NONMATCHING 89%: the per-state handlers are called through casts so CW keeps them out of line (the
+// original calls them); the frame is 0x10 bigger (four spills) and the saved registers are coloured differently
 #if NONMATCHING
 void fn_2_81628(void) {
     u8* o = *(u8**)(lbl_8034E9A0 + 0x474C); // TODO type
@@ -4207,7 +4219,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 2:
-                fn_2_80C2C(o, i);
+                ((void (*)(u8*, s32))fn_2_80C2C)(o, i);
                 if (st[0xD] == 1) {
                     n = fn_80042DA8(o, i, 0) != 0;
                     n += fn_80042DA8(o, i + 2, 0) != 0;
@@ -4230,7 +4242,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 4:
-                fn_2_805DC(o, i);
+                ((void (*)(u8*, s32))fn_2_805DC)(o, i);
                 break;
             case 5:
                 if (st[0xD] == 0) {
@@ -4246,10 +4258,10 @@ void fn_2_81628(void) {
                 }
                 break;
             case 6:
-                fn_2_802EC(o);
+                ((void (*)(u8*))fn_2_802EC)(o);
                 break;
             case 7:
-                fn_2_800B0(o, i);
+                ((void (*)(u8*, s32))fn_2_800B0)(o, i);
                 break;
             case 8:
                 fn_2_7FAFC(o, i);
@@ -4269,11 +4281,11 @@ void fn_2_81628(void) {
                 break;
             case 10:
                 fn_2_7AE3C(o, i);
-                fn_2_7AC64(o, i);
+                ((void (*)(u8*, s32))fn_2_7AC64)(o, i);
                 break;
             case 11:
                 fn_2_7A9D8(o, i);
-                fn_2_7A748(o, i);
+                ((void (*)(u8*, s32))fn_2_7A748)(o, i);
                 break;
             case 14:
                 fn_2_7DAB8(o, i);
@@ -4355,7 +4367,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 19:
-                fn_2_7A5B8(o, i);
+                ((void (*)(u8*, s32))fn_2_7A5B8)(o, i);
                 if (st[0xD] == 1) {
                     n = fn_80042DA8(o, i, 0x28) != 0;
                     n += fn_80042DA8(o, i + 2, 0x28) != 0;
@@ -4371,7 +4383,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 20:
-                fn_2_7A194(o, i);
+                ((void (*)(u8*, s32))fn_2_7A194)(o, i);
                 if (st[0xD] == 1) {
                     s32 cur = F468_S32(8 + i * 4);
                     n = 0;
@@ -4393,7 +4405,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 21:
-                fn_2_79CF8(o, i);
+                ((void (*)(u8*, s32))fn_2_79CF8)(o, i);
                 if (st[0xD] == 1) {
                     s32 sel = F468_S32(i * 4);
                     n = 0;
@@ -4415,7 +4427,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 22:
-                fn_2_79930(o, i);
+                ((void (*)(u8*, s32))fn_2_79930)(o, i);
                 if (st[0xD] == 1) {
                     s32 hits = 0;
                     s32 total = 0;
@@ -4454,7 +4466,7 @@ void fn_2_81628(void) {
                 fn_2_7912C(o, i);
                 break;
             case 26:
-                fn_2_78F78(o, i);
+                ((void (*)(u8*, s32))fn_2_78F78)(o, i);
                 break;
             case 27:
                 fn_2_78AC0(o, i);

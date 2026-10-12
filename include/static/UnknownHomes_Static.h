@@ -82,6 +82,13 @@ typedef struct {
     /* 0x42 */ u16 _42;
     artificial_padding(0x42, 0x62, u16);
     /* 0x62 */ u16 _62;
+    artificial_padding(0x62, 0x70, u16);
+    /* 0x70 */ s8 stickX3; // pad 3 (PadState.sticks)
+    /* 0x71 */ s8 stickY3;
+    /* 0x72 */ s8 substickX3;
+    /* 0x73 */ s8 substickY3;
+    /* 0x74 */ u8 triggerL3;
+    /* 0x75 */ u8 triggerR3;
 } lbl_803C77B8_s;
 extern lbl_803C77B8_s lbl_803C77B8;
 

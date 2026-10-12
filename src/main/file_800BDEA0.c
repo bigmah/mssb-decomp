@@ -3,7 +3,7 @@
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
 
-extern const f32 lbl_803CBB68; // 20.0f
+extern f32 lbl_803CBB68; // 20.0f (writable .sdata in the original)
 extern const f32 lbl_803CD068; // 1e8f
 extern const f32 lbl_803CD06C; // -1e8f
 extern const f32 lbl_803CD070; // 0.0f
@@ -1651,3 +1651,9 @@ void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(cons
     }
 }
 #endif
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .sdata 0x803CBB68..0x803CBB70
+f32 lbl_803CBB68 = 20.0f;
+

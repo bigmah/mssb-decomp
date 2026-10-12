@@ -3,6 +3,8 @@
 #include "main/file_800B0724.h"
 #include "main/file_800ADC40.h"
 #include "Dolphin/stl.h"
+#define REP_HEADER_FN repHeader_7BA0
+#include "header_rep_inline.h"
 
 // THP player state for the movie test.
 typedef struct ChMovieWork {
@@ -13,9 +15,41 @@ typedef struct ChMovieWork {
 } ChMovieWork;
 
 ChMovieWork lbl_1_bss_47058;
-extern ThpMovie lbl_1_data_112D8[];
+// The two test movies (DVD offset/size pairs, see ThpMovie).
+ThpMovie lbl_1_data_112D8[2] = {
+    { { 0x00, 0x00, 0x00, 0x00, 0x05, 0x23, 0x34, 0x58, 0x00, 0x01, 0x20, 0x00 }, 0x05233458 },
+    { { 0 }, 0 },
+};
+static u32 lbl_1_data_112F8[2] = { 0, 0 }; // unreferenced, follows the movie table
 extern void* lbl_80366158[];
 extern PadState lbl_803C77B8[4];
+
+// .text:0x0002852C size:0x60
+void fn_1_2852C(void) {
+    ChMovieTask* task = lbl_803CC1B8;
+
+    fn_800AD038(lbl_80366158[2]);
+    task->state = 0;
+    task->movieIdx = 0;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_284A8;
+}
+
+// .text:0x000284A8 size:0x84
+void fn_1_284A8(void) {
+    ChMovieTask* task = lbl_803CC1B8;
+    u16 repeated = lbl_803C77B8[0].repeat;
+
+    if (repeated & 3) {
+        task->movieIdx ^= 1;
+    } else if (repeated & 0x100) {
+        task->state = 0;
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_282F4;
+    } else if (repeated & 0x200) {
+        ChTaskHeader* parent = task->h.parent;
+        parent->result = 1;
+        fn_800B0A14_removeQueue(parent);
+    }
+}
 
 // .text:0x000282F4 size:0x1B4
 void fn_1_282F4(void) {
@@ -61,31 +95,4 @@ void fn_1_282F4(void) {
         }
         break;
     }
-}
-
-// .text:0x000284A8 size:0x84
-void fn_1_284A8(void) {
-    ChMovieTask* task = lbl_803CC1B8;
-    u16 repeated = lbl_803C77B8[0].repeat;
-
-    if (repeated & 3) {
-        task->movieIdx ^= 1;
-    } else if (repeated & 0x100) {
-        task->state = 0;
-        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_282F4;
-    } else if (repeated & 0x200) {
-        ChTaskHeader* parent = task->h.parent;
-        parent->result = 1;
-        fn_800B0A14_removeQueue(parent);
-    }
-}
-
-// .text:0x0002852C size:0x60
-void fn_1_2852C(void) {
-    ChMovieTask* task = lbl_803CC1B8;
-
-    fn_800AD038(lbl_80366158[2]);
-    task->state = 0;
-    task->movieIdx = 0;
-    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_284A8;
 }
