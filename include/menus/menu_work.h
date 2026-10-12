@@ -379,6 +379,13 @@ typedef struct MenuCtx {
     /*0x44FE*/ u8 _44FE[8]; // indexed
 } MenuCtx; // size: 0x4508
 
+// 0x14-byte camera/object spot records (lbl_2_data_3198[42], lbl_2_data_369C).
+typedef struct MenuSpot {
+    /*0x00*/ Vec position;
+    /*0x0C*/ f32 _0C;
+    /*0x10*/ s32 _10;
+} MenuSpot; // size: 0x14
+
 // lbl_80354768 (SaveProgress in main/file_8003A688.h) with its challenge save blocks
 // as MenuCtx records.
 typedef struct MenuSaveSlots {

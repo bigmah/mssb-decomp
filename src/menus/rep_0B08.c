@@ -2227,13 +2227,7 @@ void fn_2_6B238(MenuEntry* owner) {
     owner->state = 1;
 }
 
-// 0x14-byte records in lbl_2_data_3198 (see also rep_1028.c).
-typedef struct MenuSpot {
-    Vec position;
-    f32 _0C;
-    f32 _10;
-} MenuSpot;
-extern MenuSpot lbl_2_data_3198[];
+extern MenuSpot lbl_2_data_3198[]; // menus/menu_work.h
 
 // .text:0x6B744 size:0x2D4
 void fn_2_6B744(MenuEntry* owner) {
