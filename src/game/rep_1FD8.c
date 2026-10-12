@@ -2141,11 +2141,95 @@ void* fn_3_C823C(s32 idx, Mtx out) {
     return (*(C823CEnt**)&lbl_3_common_bss_350E4 + idx)->f78;
 }
 
+// Inline copies of fn_3_C42A4 and fn_3_C805C (the original expands both in fn_3_C82B4).
+static inline void fn_3_C42A4_inline(s32* a, s32* b) {
+    Mtx m;
+    C42A4Bss* g;
+    C42A4Ent* e;
+    s32 off;
+    s32 k;
+    s32 j;
+    u32 v;
+    C42A4Ctl* c;
+    s32 idx;
+    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    for (k = 0; k < 5; k++) {
+        v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
+        g->p40[*a] = v;
+        ((void (*)(void))fn_3_B8574)();
+        e = (C42A4Ent*)lbl_3_data_17704;
+        off = v * 4;
+        for (j = 0; j < 10; e++, j++) {
+            if (k == e->f12 && e->f10 != 7) {
+                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(j + lbl_3_bss_9DE0[0]) * 0xE8 + 0x90] >> 6) & 1) {
+                    idx = j + lbl_3_bss_9DE0[0];
+                    *(s32*)((u8*)g->p44 + off) = idx;
+                    off += 4;
+                    g->p3C[*a] += 1;
+                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE0[0]];
+                    CTRLBuildMatrix(&c->u.ctrl, m);
+                    fn_3_B8464(m, c->f78);
+                    m[1][3] = m[1][3] * lbl_3_rodata_2154;
+                    fn_3_B8464(m, c->f78);
+                    *b += 1;
+                }
+            }
+        }
+        if (g->p3C[*a] != 0) {
+            fn_3_B8414(g->p48 + *a * 0x18, g->p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
+}
+
+static inline void fn_3_C805C_inline(s32* a, s32* b) {
+    Mtx m;
+    C42A4Cpy cpy;
+    C42A4Bss* g;
+    C42A4Ent* e;
+    s32 off;
+    s32 k;
+    s32 j;
+    u32 v;
+    C42A4Ctl* c;
+    s32 idx;
+    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    for (k = 0; k < 5; k++) {
+        v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
+        g->p40[*a] = v;
+        ((void (*)(void))fn_3_B8574)();
+        e = (C42A4Ent*)lbl_3_data_17514;
+        off = v * 4;
+        for (j = 0; j < 10; e++, j++) {
+            if (k == e->f12 && e->f10 != 7) {
+                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(j + lbl_3_bss_9DE4[0]) * 0xE8 + 0x90] >> 6) & 1) {
+                    idx = j + lbl_3_bss_9DE4[0];
+                    *(s32*)((u8*)g->p44 + off) = idx;
+                    g->p3C[*a] += 1;
+                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE4[0]];
+                    off += 4;
+                    cpy = *(C42A4Cpy*)c;
+                    CTRLBuildMatrix(&c->u.ctrl, m);
+                    fn_3_B8464(m, c->f78);
+                    CTRLSetTranslation((Control*)&cpy, ((f32*)e)[0], lbl_3_rodata_21E0, ((f32*)e)[2]);
+                    CTRLBuildMatrix((Control*)&cpy, m);
+                    fn_3_B8464(m, c->f78);
+                    *b += 1;
+                }
+            }
+        }
+        if (g->p3C[*a] != 0) {
+            fn_3_B8414(g->p48 + *a * 0x18, g->p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
+}
+
 // .text:0x000C82B4 size:0x39C mapped:0x80707348
 extern void* _OSAllocFromHeap(s32 heap, s32 size);
 // Builds the object groups: allocates the batch buffers once, then lets
 // fn_3_C805C and fn_3_C42A4 fill one group per pass.
-// NONMATCHING ~85%: the original inlines fn_3_C805C and fn_3_C42A4 (CW won't auto-inline them here; with both marked inline the body is 233 vs 231 insns, rest regalloc)
+// NONMATCHING 95%: register allocation and a 0x10 smaller frame (the inlined copies' locals share slots)
 #if NONMATCHING
 void fn_3_C82B4(void) {
     C42A4Bss* g = (C42A4Bss*)lbl_3_common_bss_350E4;
@@ -2164,8 +2248,8 @@ void fn_3_C82B4(void) {
     memset(g->p48, 0, size);
     groups = 0;
     objs = 0;
-    fn_3_C805C(&groups, &objs);
-    fn_3_C42A4(&groups, &objs);
+    fn_3_C805C_inline(&groups, &objs);
+    fn_3_C42A4_inline(&groups, &objs);
     ((C42A4Bss*)lbl_3_common_bss_350E4)->groups = groups;
 }
 #endif
