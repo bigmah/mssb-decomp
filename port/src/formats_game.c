@@ -138,3 +138,28 @@ int port_spani_descs_native(const void* descs)
     }
     return 1;
 }
+
+// Song file of a game sound set (m_sound.c fn_3_906FC): u32 offsets[count]
+// (big-endian) then MusyX songs. Swaps the table and each song once (songs
+// can share an offset); a song's size is the distance to the next one.
+void port_musyx_swap_song(void* data, uint32_t size);
+void port_swap_song_table(void* base, uint32_t count)
+{
+    uint8_t* b = (uint8_t*)base;
+    uint32_t* offs = (uint32_t*)b;
+    swap32_array(offs, count);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        int dup = 0;
+        for (uint32_t k = 0; k < i; k++)
+            dup |= offs[k] == offs[i];
+        if (dup || offs[i] == 0)
+            continue;
+        uint32_t end = 0;
+        for (uint32_t k = 0; k < count; k++)
+            if (offs[k] > offs[i] && (end == 0 || offs[k] < end))
+                end = offs[k];
+        uint32_t size = end ? end - offs[i] : 0x100000;
+        port_musyx_swap_song(b + offs[i], size);
+    }
+}

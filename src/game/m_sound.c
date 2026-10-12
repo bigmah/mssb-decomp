@@ -1750,10 +1750,10 @@ void fn_3_906FC(void) {
     s32 i;
     base = lbl_3_common_bss_34C58.unk0;
     p = (u32*)base;
-    for (i = 0; i < (g_d_GameSettings.GameModeSelected == 2 ? 1 : 0x14); i++) {
 #ifdef TARGET_PC
-        swap32_inplace(p); // song offset table (big-endian on disc)
+    port_swap_song_table(base, g_d_GameSettings.GameModeSelected == 2 ? 1 : 0x14);
 #endif
+    for (i = 0; i < (g_d_GameSettings.GameModeSelected == 2 ? 1 : 0x14); i++) {
         *p += PTR_TO_U32(base); // in-place offset relocation
         p++;
     }

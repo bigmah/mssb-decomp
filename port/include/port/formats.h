@@ -63,6 +63,8 @@ void port_swap_camera_anim(void* anim);
 // SpaniDesc lists declared as bytes, port/src/formats_game.c.
 void port_swap_spani_descs(void* descs);
 int port_spani_descs_native(const void* descs);
+// Game song files (offset table + MusyX songs), port/src/formats_game.c.
+void port_swap_song_table(void* base, uint32_t count);
 
 #ifdef __cplusplus
 }
