@@ -201,8 +201,8 @@ void fn_3_67620(s32 type, u16 frames) {
 #endif
 
 // .text:0x000678B8 size:0x190 mapped:0x806A694C
-// NONMATCHING 70%: scheduling and register allocation of the address arithmetic after the call (the
-// original computes the node address inside each branch and keeps (side + 1) >> 1 in r12)
+// NONMATCHING 83%: scheduling of the argument setup before fn_3_67EF0 (the original loads lbl_803CC1B8
+// with addi + lwz 0 and the trail type after it) and register numbering after the call
 #if NONMATCHING
 void fn_3_678B8(void) {
     s32 buf = lbl_803CBBC0;
@@ -212,31 +212,31 @@ void fn_3_678B8(void) {
 
     side = fn_3_67EF0(&sTrailQueue, 60, sTrailPositions[buf], sTrailColors[buf], (u32)sTrailAlpha | 0xFFFFFF00,
                       sTrailCapPositions[buf], sTrailCapColors[buf], TRAIL_TASK->dir, lbl_3_data_6880[sTrailType].width);
+    side = (side + 1) >> 1;
     buf = lbl_803CBBC0;
+    sTrailMeshes[buf].body.positions = sTrailPositions[buf];
+    sTrailMeshes[buf].body.texCoords = lbl_3_data_6860;
+    sTrailMeshes[buf].body.colors = sTrailColors[buf];
+    sTrailMeshes[buf].cap.positions = sTrailCapPositions[buf];
+    sTrailMeshes[buf].cap.texCoords = lbl_3_data_6860;
+    sTrailMeshes[buf].cap.colors = sTrailCapColors[buf];
+    sTrailMeshes[buf].cap.displayListSize = sizeof(lbl_3_data_6980);
+    sTrailMeshes[buf].cap.displayList = lbl_3_data_6980;
     mesh = &sTrailMeshes[buf];
-    mesh->body.positions = sTrailPositions[buf];
-    mesh->body.texCoords = lbl_3_data_6860;
-    mesh->body.colors = sTrailColors[buf];
-    mesh->cap.positions = sTrailCapPositions[buf];
-    mesh->cap.texCoords = lbl_3_data_6860;
-    mesh->cap.colors = sTrailCapColors[buf];
-    mesh->cap.displayListSize = sizeof(lbl_3_data_6980);
-    mesh->cap.displayList = lbl_3_data_6980;
-    node = &lbl_3_data_69A0[buf];
-    if ((side + 1) >> 1) {
-        
+    if (side) {
         mesh->body.displayListSize = sizeof(sTrailDisplayListReversed);
+        node = &lbl_3_data_69A0[buf];
         node->strips[0] = &mesh->cap;
         mesh->body.displayList = sTrailDisplayListReversed;
         node->strips[1] = &mesh->body;
     } else {
-        
         mesh->body.displayListSize = sizeof(sTrailDisplayList);
+        node = &lbl_3_data_69A0[buf];
         node->strips[0] = &mesh->body;
         mesh->body.displayList = sTrailDisplayList;
         node->strips[1] = &mesh->cap;
     }
-    REMOVE_QUEUE_NOARG();
+    fn_800B0A14_removeQueue(node);
 }
 #endif
 
