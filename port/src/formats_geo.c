@@ -329,3 +329,62 @@ void port_swap_anim_bank(void* bankFile)
     if (set.count == MAX_SWAPPED)
         fprintf(stderr, "[port] anim bank %p: too many key frames to track\n", bankFile);
 }
+
+// Skin file (SKNHeader / sHdr, include/main/file_800BDEA0.h):
+//   header 0x24: u16 numSk1, numSk2, numAcc; u8 posNrmShift, pad;
+//                u32 sk1Lists, sk2Lists, accLists, bzeroBase, bzeroSize,
+//                flushIndices, flushCount
+//   SKN1List 0x40: f32 m[12]; u32 vertSrc, vertDst; u16 bone, count;
+//                  u8 vertSrcOffset, pad[3]
+//   SKN2List 0x74: f32 m0[12], m1[12]; u32 vertSrc, weights, vertDst;
+//                  u16 bone0, bone1, count; u8 vertSrcOffset, pad
+//   SKNAccList 0x44: f32 m[12]; u32 vertSrc, vertIndices, vertDst, weights;
+//                  u16 bone, count
+// Vertices are position + normal, 6 components of compSize bytes (4: f32
+// skins, 2: s16), at vertSrc + vertSrcOffset; weights are bytes, vertex
+// indices and flush indices u16.
+void port_swap_skin(void* skinFile, uint32_t compSize)
+{
+    uint8_t* hdr = (uint8_t*)skinFile;
+    static SwapSet set;
+    set.count = 0;
+
+    swap16_array(hdr, 3);
+    swap32_array(hdr + 8, 7);
+    uint16_t n1 = ((uint16_t*)hdr)[0], n2 = ((uint16_t*)hdr)[1], na = ((uint16_t*)hdr)[2];
+    uint32_t* h32 = (uint32_t*)(hdr + 8);
+
+    for (uint32_t i = 0; i < n1 && h32[0] != 0; i++)
+    {
+        uint8_t* l = hdr + h32[0] + i * 0x40;
+        swap32_array(l, 14);
+        swap16_array(l + 0x38, 2);
+        uint32_t src = *(uint32_t*)(l + 0x30);
+        if (src != 0 && swap_set_add(&set, src))
+            swap_comps(hdr + src + l[0x3C], *(uint16_t*)(l + 0x3A) * 6u, compSize);
+    }
+    for (uint32_t i = 0; i < n2 && h32[1] != 0; i++)
+    {
+        uint8_t* l = hdr + h32[1] + i * 0x74;
+        swap32_array(l, 27);
+        swap16_array(l + 0x6C, 3);
+        uint32_t src = *(uint32_t*)(l + 0x60);
+        if (src != 0 && swap_set_add(&set, src))
+            swap_comps(hdr + src + l[0x72], *(uint16_t*)(l + 0x70) * 6u, compSize);
+    }
+    for (uint32_t i = 0; i < na && h32[2] != 0; i++)
+    {
+        uint8_t* l = hdr + h32[2] + i * 0x44;
+        swap32_array(l, 16);
+        swap16_array(l + 0x40, 2);
+        uint16_t count = *(uint16_t*)(l + 0x42);
+        uint32_t src = *(uint32_t*)(l + 0x30);
+        uint32_t idx = *(uint32_t*)(l + 0x34);
+        if (src != 0 && swap_set_add(&set, src))
+            swap_comps(hdr + src, count * 6u, compSize);
+        if (idx != 0 && swap_set_add(&set, idx))
+            swap16_array(hdr + idx, count);
+    }
+    if (h32[5] != 0)
+        swap16_array(hdr + h32[5], h32[6]);
+}

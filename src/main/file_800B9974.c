@@ -1267,6 +1267,10 @@ void DOGet(struct DODisplayObj** dispObj, DODisplayDataPtr pal, u16 id) {
 // PC: the palette keeps its disc layout with PTR32 pointer fields. Swap it to
 // native once (port/src/formats_geo.c), then relocate the offsets against the
 // palette (descriptors) or the layout (everything below a layout).
+// Quantize info of the last skinned (compCount 6) position array relocated:
+// tells the skin swap whether its vertices are f32 or s16.
+static u8 s_skinQuant;
+
 static void* GeoPaletteRelocateLayout(DODisplayLayout* layout) {
     u32 base = PTR_TO_U32(layout);
     void* skinPositions = NULL;
@@ -1281,6 +1285,7 @@ static void* GeoPaletteRelocateLayout(DODisplayLayout* layout) {
         }
         if (pos->compCount == 6) {
             skinPositions = PTR32_GET(char, pos->positionArray);
+            s_skinQuant = pos->quantizeInfo;
         }
     }
     if (layout->colorData != 0) {
@@ -1468,6 +1473,9 @@ void convertGeometryAndSknHeader(DODisplayDataPtr pal, void* sknHeader) {
     void* skinPositions = LoadGeoPalette(pal);
 
     if (sknHeader != NULL) {
+#ifdef TARGET_PC
+        port_swap_skin(sknHeader, s_skinQuant == 0x40 ? 4 : 2); // f32 or s16 vertices (fn_800B2D5C)
+#endif
         SKNLoadFile(sknHeader, skinPositions);
     }
 #ifdef TARGET_PC

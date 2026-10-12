@@ -22,6 +22,10 @@ void port_swap_actor_layout(void* layout);
 // Animation bank (C3 ANIMBank): sequences, tracks, key frames and their data.
 void port_swap_anim_bank(void* bank);
 
+// Skin (SKNHeader): lists, vertex data (compSize 4: f32 skins, 2: s16),
+// vertex and flush indices.
+void port_swap_skin(void* skin, uint32_t compSize);
+
 // Texture archive (TexArchive): u16 count, u16 pad, then count 0x20-byte
 // images {u32 data, u32 tlut, u16 height, u16 width, u8 wrapS, wrapT, minFilter,
 // magFilter, f32 lodBias, u8 x4, u16 tlutEntries, u8 tlutFormat, u8 pad,
