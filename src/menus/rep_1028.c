@@ -25,7 +25,7 @@ extern void fn_2_3FA14(void);
 extern void fn_2_46D34(s32 delta);
 extern s32 lbl_2_data_38BC;
 
-extern u8 lbl_800F7478[];
+extern StadiumLights lbl_800F7478[]; // per stadium (main/file_80011640.h)
 
 extern void fn_2_8AC84(s32 index, s32 value);
 extern MenuCtx* lbl_2_bss_1A8248[];
@@ -314,14 +314,14 @@ void fn_2_90628(MenuObject* object) {
 
 // fn_2_8F688, size:0x48
 void fn_2_8F688(void) {
-    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    GXColor color = lbl_800F7478[0].ambient;
     color.a = 0xFF;
     fn_800BD2CC(0, color);
 }
 
 // fn_2_8F640, size:0x48
 void fn_2_8F640(void) {
-    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    GXColor color = lbl_800F7478[0].ambient;
     color.a = 0xFF;
     fn_800BD2CC(1, color);
 }
@@ -737,7 +737,7 @@ void fn_2_90DE4(MenuObject* object, f32 limit) {
 // .text:0x8F528 size:0x118
 void fn_2_8F528(s32 index) {
     MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
-    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    GXColor color = lbl_800F7478[0].ambient;
     s32 alpha;
     switch (slot->_A6) {
     case 0:
@@ -765,7 +765,7 @@ void fn_2_8F528(s32 index) {
 // .text:0x8F27C size:0x158
 void fn_2_8F27C(s32 index) {
     MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
-    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    GXColor color = lbl_800F7478[0].ambient;
     s32 alpha;
     switch (slot->_A6) {
     case 0:
@@ -1066,7 +1066,7 @@ void fn_2_912A8(MenuObject* object) {
 // .text:0x8F3D4 size:0x154
 void fn_2_8F3D4(s32 index) {
     MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
-    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    GXColor color = lbl_800F7478[0].ambient;
     s32 alpha;
     switch (slot->_A6) {
     case 0:
@@ -1100,7 +1100,7 @@ void fn_2_8F3D4(s32 index) {
 // .text:0x8F0F4 size:0x188
 void fn_2_8F0F4(s32 index) {
     MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
-    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    GXColor color = lbl_800F7478[0].ambient;
     s32 alpha;
     switch (slot->_A6) {
     case 0:
@@ -1503,7 +1503,7 @@ void fn_2_92654(s32 index, u8 state) {
 
 // fn_2_924B0, size:0x54
 void fn_2_924B0(MenuObject* object) {
-    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    GXColor color = lbl_800F7478[0].ambient;
     fn_2_8AC84(object->_78, 0);
     color.a = 0xFF;
     fn_800BD2CC(0, color);
