@@ -37,7 +37,8 @@ typedef struct {
     /*0x5A*/ u8 setSpeed;
     /*0x5B*/ u8 padding5B[0x11];
     /*0x6C*/ u8 visible; // animateBones in ActorObject
-    /*0x6D*/ u8 padding6D[0x23];
+    /*0x6D*/ u8 padding6D[3];
+    /*0x70*/ struct Light* lights[8];
 } ChallengeDrawNode;
 
 typedef struct {
@@ -172,9 +173,17 @@ typedef struct ChallengeActorMgr {
     /*0xC04*/ ChallengeViewerActor actors[24];
 } ChallengeActorMgr;
 
+// Debug viewer's draw state (lbl_1_bss_69FC).
+typedef struct ChViewerView {
+    /*0x00*/ u8 _00[0x10];
+    /*0x10*/ Mtx camera;
+    /*0x40*/ u8 actorFlags[24];
+    /*0x58*/ u8 _58[0x40];
+} ChViewerView; // size: 0x98
+
 void fn_1_1D10C(void);
 
-void fn_1_1D0E8(u8* object);
+void fn_1_1D0E8(ChallengeDrawNode* object);
 
 void fn_1_1D450(u8* object);
 

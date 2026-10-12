@@ -57,7 +57,7 @@ typedef struct CharTrail {
 
 typedef struct CharActor {
     /*0x000*/ GameActor* model;
-    /*0x004*/ u8 _004[0x4];
+    /*0x004*/ GameActor* _004; // challenge viewer: the shown model
     /*0x008*/ void** files; // file offsets, relocated in place
     /*0x00C*/ void** _0C;
     /*0x010*/ CharAnimBanks banks;

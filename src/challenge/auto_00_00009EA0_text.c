@@ -4,7 +4,7 @@
 #include "static/UnknownHomes_Static.h"
 #include "main/file_80008E00.h"
 #include "Unknown/File_0x800a64e0.h"
-extern u8 lbl_803C6CF8[]; // TODO type: ARAMLoader (main/file_800A6870.h); idle at 0x715
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 
 struct SoundGroupData;
 
@@ -175,7 +175,7 @@ void fn_1_9F04(void) {
         task->step = 1;
         break;
     case 1:
-        if ((s32)lbl_803C6CF8[0x715] != 1) {
+        if ((s32)lbl_803C6CF8.idle != 1) {
             break;
         }
         fn_80021980(lbl_800EF808.groups[task->group]);
