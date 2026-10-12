@@ -110,7 +110,7 @@ extern s32 lbl_803CBBA8;
 extern const GXColor lbl_803CD300;
 typedef struct {
      void (*func)(void);
-     u8 _04[0xC];
+     void* _04[3]; 
      s16 _10;
      u16 priority;
      OSModuleHeader* module;
@@ -119,6 +119,14 @@ typedef struct {
      u32 moduleSize;
 } MainTask;
 extern MainTask* lbl_803CC1B8;
+
+
+#ifdef TARGET_PC
+OSModuleHeader* port_module_load(s32 dllIndex);
+void port_module_prolog(OSModuleHeader* module);
+void port_module_epilog(OSModuleHeader* module);
+
+#endif
 typedef struct {
      char* path;
      u32 _04[3];

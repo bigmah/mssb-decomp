@@ -12,7 +12,8 @@
 extern void fn_80035CA4(s32 id);
 extern void fn_1_9AB0(void);
 typedef struct ChAnimObj {
-     u8 _00[0x5C];
+     void* _00[3]; 
+     u8 _0C[0x5C - 0x0C];
      u32 frame; 
 } ChAnimObj;
 typedef struct ChAnimSlot {

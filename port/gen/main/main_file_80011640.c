@@ -28,10 +28,6 @@ typedef struct GameSettingsView {
      u8 _12[0x54 - 0x12];
      u8 _54;
 } GameSettingsView;
-typedef struct Unk803716B8 {
-     u8 _000[0x1E8];
-     u8 _1E8;
-} Unk803716B8;
 typedef struct CameraView {
      Mtx44 proj;
      Mtx view;
@@ -48,7 +44,7 @@ typedef struct ShadowView {
      u8 _70[0xE4 - 0x70];
 } ShadowView;
 extern GameSettingsView g_d_GameSettings;
-extern Unk803716B8 lbl_803716B8;
+extern AramLoader lbl_803716B8;
 extern DiskFileEntry* lbl_803CB790;
 extern u32 lbl_803CBBF0;
 extern CharLoadTask* lbl_803CC1B8;

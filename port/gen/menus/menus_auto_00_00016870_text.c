@@ -29,5 +29,5 @@ void fn_2_16870(void);
 MenuCharLoadTask * __gen_lbl_2_bss_1224 GEN_SYM(lbl_2_bss_1224);
 
 // menus .bss 0x1010C
-Mtx __gen_lbl_2_bss_1010C GEN_SYM(lbl_2_bss_1010C);
+struct { Mtx head; u8 rest[0x50]; } __gen_lbl_2_bss_1010C GEN_SYM(lbl_2_bss_1010C); // symbol is 0x58 bytes
 

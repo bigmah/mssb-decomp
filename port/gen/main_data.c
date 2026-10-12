@@ -171,13 +171,6 @@ char __gen_lbl_800E7B28[36] GEN_SYM(lbl_800E7B28) = {
     32, 32, 10, 0,
 };
 
-// main .rodata 0x800E7B50
-char __gen_lbl_800E7B50[33] GEN_SYM(lbl_800E7B50) = {
-    89, 85, 86, 45, 62, 82, 71, 66, 32, 67, 111, 110, 118, 32, 83, 114,
-    99, 65, 100, 100, 114, 32, 105, 115, 32, 78, 85, 76, 76, 33, 33, 10,
-    0,
-};
-
 // main .rodata 0x800E7B74
 char __gen_lbl_800E7B74[33] GEN_SYM(lbl_800E7B74) = {
     89, 85, 86, 45, 62, 82, 71, 66, 32, 67, 111, 110, 118, 32, 68, 115,
@@ -811,7 +804,7 @@ f32 __gen_lbl_803CBBDC GEN_SYM(lbl_803CBBDC);
 f32 __gen_lbl_803CBBE0 GEN_SYM(lbl_803CBBE0);
 
 // main .sbss 0x803CBBE4
-u8 __gen_lbl_803CBBE4 GEN_SYM(lbl_803CBBE4);
+struct { u8 head; u8 rest[0x6]; } __gen_lbl_803CBBE4 GEN_SYM(lbl_803CBBE4); // symbol is 0x4 bytes
 
 // main .sbss 0x803CBC48
 s32 __gen_lbl_803CBC48 GEN_SYM(lbl_803CBC48);

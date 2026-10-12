@@ -1,4 +1,5 @@
 #include "game/rep_3310.h"
+#include "main/SpaniDesc.h"
 #include "Unknown/File_0x800a64e0.h"
 #include "game/rep_1D58.h"
 #include "game/rep_1C0.h"
@@ -76,7 +77,7 @@ extern void fn_3_909B0(void);
 extern void fn_3_9081C(void);
 extern void fn_800BD548(ActorObject* obj, u8 numLights, ...);
 extern void fn_80034E20(void*, void*);
-extern u8 lbl_3_data_69D0[];
+extern SpaniDesc lbl_3_data_69D0[];
 extern void fn_80034CEC(void*);
 extern void fn_800B0A14_removeQueue(void*);
 

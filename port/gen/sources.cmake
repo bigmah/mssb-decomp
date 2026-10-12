@@ -23,6 +23,7 @@ set(MSSB_GEN_SOURCES
     ${CMAKE_SOURCE_DIR}/gen/game/game_rep_1FD8.c
     ${CMAKE_SOURCE_DIR}/gen/game/game_rep_2998.c
     ${CMAKE_SOURCE_DIR}/gen/game/game_rep_3090.c
+    ${CMAKE_SOURCE_DIR}/gen/game/game_rep_3310.c
     ${CMAKE_SOURCE_DIR}/gen/game/game_rep_3880.c
     ${CMAKE_SOURCE_DIR}/gen/game/game_rep_A00.c
     ${CMAKE_SOURCE_DIR}/gen/game/game_rep_AC8.c
@@ -40,7 +41,6 @@ set(MSSB_GEN_SOURCES
     ${CMAKE_SOURCE_DIR}/gen/main/main_file_80063028.c
     ${CMAKE_SOURCE_DIR}/gen/main/main_file_800A7C08.c
     ${CMAKE_SOURCE_DIR}/gen/main/main_file_800ADC40.c
-    ${CMAKE_SOURCE_DIR}/gen/main/main_file_800B0724.c
     ${CMAKE_SOURCE_DIR}/gen/main/main_file_800B2C44.c
     ${CMAKE_SOURCE_DIR}/gen/main/main_file_800B9974.c
     ${CMAKE_SOURCE_DIR}/gen/main/main_file_800BDEA0.c
@@ -51,6 +51,7 @@ set(MSSB_GEN_SOURCES
     ${CMAKE_SOURCE_DIR}/gen/menus/menus_auto_00_0004B1AC_text.c
     ${CMAKE_SOURCE_DIR}/gen/menus/menus_auto_00_0005597C_text.c
     ${CMAKE_SOURCE_DIR}/gen/menus/menus_auto_00_0005E84C_text.c
+    ${CMAKE_SOURCE_DIR}/gen/menus/menus_auto_00_00071EC4_text.c
     ${CMAKE_SOURCE_DIR}/gen/menus/menus_auto_00_0008782C_text.c
     ${CMAKE_SOURCE_DIR}/gen/menus/menus_rep_04B0.c
     ${CMAKE_SOURCE_DIR}/gen/menus/menus_rep_0568.c

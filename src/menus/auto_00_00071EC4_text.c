@@ -3,6 +3,7 @@
 #include "static/UnknownHomes_Static.h"
 #include "menus/menu_work.h"
 #include "main/file_8000F150.h"
+#include "main/SpaniDesc.h"
 #include "main/charsel_state.h"
 
 extern s32 fn_80036214(MenuTask* o, s32 a, s32 b, s32 c);
@@ -28,7 +29,7 @@ static u8 lbl_2_bss_A848[0x378]; // unreferenced
 static s32 lbl_2_bss_A844;
 static s32 lbl_2_bss_A840;
 extern MenuSelVars lbl_2_bss_F410;
-extern u8 lbl_2_data_2D33C[];
+extern SpaniDesc lbl_2_data_2D33C[];
 extern void fn_80053FE8(void);
 extern void fn_8004E2EC(void);
 extern void fn_8004F964(void);
@@ -42,8 +43,8 @@ extern MenuDefEntry lbl_800FEF70[];
 extern MenuProgress lbl_80361B20;
 extern u8 lbl_800FE930[];
 extern CharSelectState lbl_8034E9A0;
-extern u8 lbl_2_data_2B4DC[];
-extern u8 lbl_2_data_2AADC[];
+extern SpaniDesc lbl_2_data_2B4DC[];
+extern SpaniDesc lbl_2_data_2AADC[];
 #include "menus/auto_00_00001254_text.h"
 
 // fn_2_73028, size:0x4
@@ -684,7 +685,7 @@ s32 fn_2_73BF0(s32 arg0) {
     return r;
 }
 
-extern u8 lbl_2_data_2AF4C[];
+extern SpaniDesc lbl_2_data_2AF4C[];
 extern u8 lbl_803C6724[];
 extern void fn_2_7308C(void);
 
@@ -722,7 +723,7 @@ void fn_2_7A5B8(MenuTask* o, s32 index) {
 }
 
 extern u8 lbl_2_data_2DC84[];
-extern u8 lbl_2_data_2DC8C[];
+extern SpaniDesc lbl_2_data_2DC8C[];
 extern void fn_2_845A8(void);
 
 // fn_2_84FA8, size:0x160
@@ -1041,7 +1042,7 @@ s32 fn_2_7463C(MenuTask* o) {
     return ok;
 }
 
-extern u8 lbl_2_data_2E02C[];
+extern SpaniDesc lbl_2_data_2E02C[];
 extern void fn_2_82EC0(void);
 
 // fn_2_834F0, size:0x1B4
@@ -2739,7 +2740,7 @@ void fn_2_7207C(void) {
     }
 }
 
-extern u8 lbl_2_data_2B59C[];
+extern SpaniDesc lbl_2_data_2B59C[];
 
 // fn_2_8279C, size:0x554
 // NONMATCHING 93%: CW sign-extends the team icon differently (extsb vs extsh); register allocation

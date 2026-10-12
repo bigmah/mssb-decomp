@@ -16,7 +16,7 @@ void fn_1_26B7C(ChallengeAnimation* animation);
 // ---- generated data ----
 
 // challenge .bss 0x4BC30
-ChallengeAnimation __gen_lbl_1_common_bss_4BC30[85] GEN_SYM(lbl_1_common_bss_4BC30);
+struct { ChallengeAnimation head[85]; u8 rest[0x50]; } __gen_lbl_1_common_bss_4BC30 GEN_SYM(lbl_1_common_bss_4BC30); // symbol is 0xAC8 bytes
 
 // challenge .bss 0x4C6F8
 ChallengeResource __gen_lbl_1_common_bss_4C6F8[5] GEN_SYM(lbl_1_common_bss_4C6F8);

@@ -40,7 +40,9 @@ typedef struct LayoutInfo {
      u8 _20[0x30];
 } LayoutInfo;
 typedef struct LayoutAnimSlot {
-     u8 _00[0x38];
+     Mtx _00; 
+     void* _30;
+     void* _34;
      void* anim;
 } LayoutAnimSlot;
 extern LayoutAnimSlot lbl_803C4BE0[];
@@ -163,8 +165,8 @@ struct { TexArchive head; u8 rest[0x35FC]; } __gen_lbl_800E9920 GEN_SYM(lbl_800E
     {0, 0},
     {
         {
-            0x00000060,
-            0x00000040,
+            (void*)0x00000060 /* TODO */,
+            (void*)0x00000040 /* TODO */,
             18,
             1024,
             0,

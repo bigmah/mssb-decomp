@@ -32,7 +32,7 @@ typedef struct PadState04B0 {
 typedef struct CharSel04B0 {
      u8 _0000[0x46E0];
      s32 captain[2]; 
-     u8 _46E8[0x46F8 - 0x46E8];
+     u8* _46E8[4]; 
      s8 teamPort[4]; 
      s8 joined[4];   
      u8 _4700[0x4704 - 0x4700];
@@ -41,7 +41,9 @@ typedef struct CharSel04B0 {
      u8 _4729;
      u8 _472A[0x472C - 0x472A];
      PortInput input[4];
-     u8 _4744[0x4757 - 0x4744];
+     u8 _4744[0x4748 - 0x4744];
+     void* _4748[2]; 
+     u8 _4750[0x4757 - 0x4750];
      u8 charFlag[0x36]; 
 } CharSel04B0;
 extern CharSel04B0 lbl_8034E9A0;

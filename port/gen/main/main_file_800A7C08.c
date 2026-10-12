@@ -156,7 +156,17 @@ static inline void CardCheckResultStep(s32* step, u8 chan, s32 errorStep);
 static inline void CardSerialStep(s32* step, u8 chan, s32 errorStep);
 static inline s32 CardFileExists(u8 chan, char* fileName);
 static inline void CardTaskFinish(s16 result);
+
+
+
+#ifdef TARGET_PC
 static inline void UnpackTexPalette(TEXPalette* pal);
+
+#else
+static inline void UnpackTexPalette(TEXPalette* pal);
+
+
+#endif
 static inline BOOL LoadDefaultBanner(void* buf);
 void fn_800A9864(u8 chan, u8 mode, u64 serial);
 

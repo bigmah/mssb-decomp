@@ -39,10 +39,19 @@ typedef struct YuvTable {
      s16 uB[256];
      u8 clamp[0x600];
 } YuvTable;
+
+
+#ifdef TARGET_PC
+
+#include "main/video_system.h"
+#define sleepQueue retraceQueue
+#else
 typedef struct MovSync {
      u8 _00[0x5C];
      OSThreadQueue sleepQueue;
 } MovSync;
+ 
+#endif
 extern s16 lbl_802F93A0[16];
 extern s16 lbl_802F93C0[16];
 extern s16 lbl_802F93E0[2][0x780];
@@ -54,7 +63,11 @@ extern ARQRequest lbl_803C78C4[2];
 extern ARQRequest lbl_803C7994[2];
 extern MovAramRing lbl_803C79D4;
 extern MovMramRing lbl_803C7A00;
+
+#ifndef TARGET_PC
 extern MovSync lbl_803C7420;
+
+#endif
 extern u16 lbl_801101C0[128];
 extern YuvTable lbl_801102C0;
 extern u8 lbl_801112C0[0x20];
@@ -79,7 +92,7 @@ extern f32 lbl_803CC184;
 extern const GXColor lbl_803CCEE8;
 extern u32 lbl_803CC188;
 extern AIDCallback lbl_803CC18C;
-extern u32 lbl_803CC190;
+extern void (*lbl_803CC190)(u32 frame);
 extern u8 lbl_803CC194;
 extern s32 lbl_803CC19C;
 extern u32 lbl_803CC1A0;
@@ -87,6 +100,11 @@ extern u32 lbl_803CC1A4;
 extern u8 lbl_803CC1A8;
 extern u32 lbl_803CC1AC;
 extern char lbl_800E7B50[];
+ 
+#ifdef TARGET_PC
+
+#define lbl_800E7B50 s_movStrings
+#endif
 extern char lbl_800E7B74[];
 extern char lbl_800E7B98[];
 extern char lbl_803CCF00[8];
@@ -102,6 +120,30 @@ extern char lbl_803CCF00[8];
 #define MOV_STATE_STOP 4
 #define MOV_DVD_DONE() ((s32)*(volatile u8*)&lbl_803C6CF8.idle)
 
+#ifdef TARGET_PC
+static int port_skip_movies(void);
+
+#endif
+
+
+
+#ifdef TARGET_PC
+static inline void MOV_SWAP_HEADER(MovPlayer* mov);
+
+#define MOV_SWAP_BLOCK(mov) swap32_array(&(mov)->_060, 5)
+static inline void MOV_SWAP_RECORD(MovPlayer* mov);
+
+#define MOV_READ_U32(p) read_be32(p)
+
+#define MOV_YIELD() OSYieldThread()
+#else
+#define MOV_YIELD()
+#define MOV_SWAP_HEADER(mov)
+#define MOV_SWAP_BLOCK(mov)
+#define MOV_SWAP_RECORD(mov)
+#define MOV_READ_U32(p) (*(u32*)(p))
+#endif
+
 
 #if NONMATCHING
 void fn_800ADC40(u8* streamBuf, u32 streamBufSize);
@@ -110,6 +152,12 @@ void fn_800ADC40(u8* streamBuf, u32 streamBufSize);
 void fn_800ADD70(void);
 
 
+
+#ifdef TARGET_PC
+#define YUV_TEXEL(x) be32((u32)(x))
+#else
+#define YUV_TEXEL(x) (x)
+#endif
 #define YUV_CLAMP(t, y, c) (((y) + (c))[0xA00]) // y: table base + luma offset; 0xA00 = clamp
 
 
@@ -166,8 +214,14 @@ void fn_800B0390(uintptr_t request);
 void fn_800B03F4(u8* src, u32 len);
 void fn_800B0580(uintptr_t request);
 void fn_800B05E4(s32 aramSize, u32 mramSize);
+
+#ifdef TARGET_PC // the same fields, by name (the structs hold pointers)
+
+#else
+
+#endif
 typedef struct MovDrawNode {
-     u32 link;
+     uintptr_t link; 
      void (*func)(void);
 } MovDrawNode;
 

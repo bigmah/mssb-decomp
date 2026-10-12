@@ -121,8 +121,13 @@ struct StadCtlA {
     u8 pad34[0x74 - 0x3C];
     ActorObject* obj;
     u8 pad78[0x90 - 0x78];
+#ifdef TARGET_PC 
+    u8 fl90_lo : 7;
+    u8 fl90_hi : 1;
+#else
     u8 fl90_hi : 1;
     u8 fl90_lo : 7;
+#endif
     u8 pad91[8];
     u8 f99;
     u8 pad9A[2];
@@ -156,6 +161,16 @@ typedef struct StadObjHdr {
     void (*preDraw)(void* p);  
     void* f88;                 
     void* drawArg;             
+#ifdef TARGET_PC 
+    u8 flag01 : 1;
+    u8 zUpdate : 1;
+    u8 zAlways : 1;
+    u8 zCompare : 1;
+    u8 customZ : 1;
+    u8 depthSort : 1;
+    u8 hasShadow : 1;
+    u8 visible : 1;            
+#else
     u8 visible : 1;            
     u8 hasShadow : 1;
     u8 depthSort : 1;
@@ -164,6 +179,7 @@ typedef struct StadObjHdr {
     u8 zAlways : 1;
     u8 zUpdate : 1;
     u8 flag01 : 1;
+#endif
     u8 pad91;
     u8 alpha;                  
     u8 pad93;

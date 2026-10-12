@@ -221,5 +221,5 @@ MenuData * __gen_lbl_2_bss_1A824C[1] GEN_SYM(lbl_2_bss_1A824C);
 MenuData __gen_lbl_2_bss_1A8250 GEN_SYM(lbl_2_bss_1A8250);
 
 // menus .bss 0x340140
-CharMgr * __gen_lbl_2_bss_340140 GEN_SYM(lbl_2_bss_340140);
+struct { CharMgr * head; u8 rest[0xF0]; } __gen_lbl_2_bss_340140 GEN_SYM(lbl_2_bss_340140); // symbol is 0x7C bytes
 

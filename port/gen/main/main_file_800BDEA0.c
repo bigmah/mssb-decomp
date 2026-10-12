@@ -51,7 +51,14 @@ typedef struct ShadowHeapInfo {
      void* arenaEnd;
      u32 arenaSize;
 } ShadowHeapInfo;
+
+#ifdef TARGET_PC
+
+#include "main/video_system.h"
+#else
 extern ShadowHeapInfo lbl_803C7420;
+
+#endif
 typedef struct ShadowDirTable {
     Vec dirs[4];
 } ShadowDirTable;
@@ -122,8 +129,18 @@ void fn_800BF038(ShadowEndCallback callback);
 void fn_800BF048(ShadowBeginCallback callback);
 void fn_800BF058(ShadowDrawCallback callback);
 ShadowState* fn_800BF068(void);
+
+
+
+
+
+#ifdef TARGET_PC
 void SKNLoadFile(SKNHeader* hdr, void* skinPositions);
 
+#else
+void SKNLoadFile(SKNHeader* hdr, void* skinPositions);
+
+#endif
 
 
 #if NONMATCHING
@@ -148,7 +165,15 @@ void SKNBzero32B(void* base, u32 size);
 #else
 
 #endif
+
+
+#ifdef TARGET_PC
 void SKNInit(void);
+
+#else
+void SKNInit(void);
+
+#endif
 static inline u32 SKNLCTouchData(u8 buffer, void* data, u32 size);
 static inline u32 SKNLC2TouchData(u8 buffer, void* data, u32 size);
 static inline void SKNLCAccTouchData(u8 buffer, void* src, void* indices, void* weights, u32 count, u32 vtxSize);

@@ -55,6 +55,11 @@ void fn_800B472C(StaticModel* model);
 void haveActLayoutPointToGeoHeader(ActorLayout* layout, DODisplayData* geoPalette);
 
 
+#ifdef TARGET_PC
+void LoadActorLayout(ActorLayout* layout);
+void fn_800B49E4(ActorLayout* layout);
+
+#else
 
 
 
@@ -65,6 +70,8 @@ void LoadActorLayout(ActorLayout* layout);
 
 #endif
 void fn_800B49E4(ActorLayout* layout);
+
+#endif
 
 // ---- generated data ----
 

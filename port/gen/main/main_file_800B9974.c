@@ -49,6 +49,16 @@ extern void fn_800ACFB0(void* ptr);
 
 
 #define GEO_RELOC(a, b) ((void*)((uintptr_t)(a) + (uintptr_t)(b)))
+
+
+
+
+#ifdef TARGET_PC
+#define GEO_SET_ARRAY(attr, data, count, stride, le) \
+    (GXSetArray)((attr), (data), (u32)(count) * (u32)(stride), (stride), (le))
+#else
+#define GEO_SET_ARRAY(attr, data, count, stride, le) GXSetArray((attr), (data), (stride))
+#endif
 void SetFogNone(void);
 
 
@@ -111,11 +121,34 @@ void fn_800BC824(struct DODisplayObj* dispObj, void* shaderData);
 void DOSetWorldMatrix(struct DODisplayObj* dispObj, MtxPtr m);
 void InitDisplayObjWithLayout(struct DODisplayObj* dispObj, DODisplayLayout* layout);
 void DOGet(struct DODisplayObj** dispObj, DODisplayDataPtr pal, u16 id);
+
+
+
+#ifdef TARGET_PC
+static void* GeoPaletteRelocateLayout(DODisplayLayout* layout);
+static void GeoPaletteMarkDispObjs(const void* pal, BOOL dispObjs);
+BOOL GeoPaletteHasDispObjs(const void* pal);
 void* LoadGeoPalette(DODisplayDataPtr pal);
+
+#else
+void* LoadGeoPalette(DODisplayDataPtr pal);
+
+#endif
 void convertGeometryAndSknHeader(DODisplayDataPtr pal, void* sknHeader);
+
+
+#ifdef TARGET_PC
+void fn_800BCDBC(DODisplayDataPtr pal);
+void* fn_800BCEF8(DODisplayLayout* layout, struct DODisplayObj* dispObj);
+void fn_800BCE38(DODisplayDataPtr pal);
+
+#else
 void fn_800BCDBC(DODisplayDataPtr pal);
 void fn_800BCE38(DODisplayDataPtr pal);
 void* fn_800BCEF8(DODisplayLayout* layout, struct DODisplayObj* dispObj);
+
+
+#endif
 extern DOShadowTevCallback lbl_803CC20C;
 void fn_800BD190(GQRValueGroups* groups, void* value);
 void __MTGQR5(register u32 value);

@@ -51,9 +51,13 @@ typedef struct MenuRosterChar {
 } MenuRosterChar;
 typedef struct MenuCharSelect {
      MenuRosterChar roster[6][9];
-     u8 _21C0[0x4701 - 0x21C0];
+     u8 _21C0[0x46E8 - 0x21C0];
+     u8* _46E8[4]; 
+     u8 _46F8[0x4701 - 0x46F8];
      u8 _4701;
-     u8 _4702[0x4755 - 0x4702];
+     u8 _4702[0x4748 - 0x4702];
+     void* _4748[2]; 
+     u8 _4750[0x4755 - 0x4750];
      u8 _4755;
 } MenuCharSelect;
 extern MenuCharSelect lbl_8034E9A0;

@@ -21,9 +21,21 @@ extern const f32 lbl_803CC560;
 extern const f32 lbl_803CC564;
 extern const f32 lbl_803CC568;
 extern const f32 lbl_803CC56C;
+ 
+#ifdef TARGET_PC
+#include "main/file_80011640.h" // CharMgr lbl_8036E548
+#else
 extern u8 lbl_8036E548[];
+ 
+#endif
 void* _OSAllocFromHeap(u32 align, u32 size);
+
+#ifdef TARGET_PC
+#define ActorObjectInitTable(count) ((ActorSlotTable*)ActorObjectInitTable(count)) // ActorObjectTable* (file_800BD8C4.h)
+#else
 ActorSlotTable* ActorObjectInitTable(u16 count);
+
+#endif
 void fn_800B4724(MActor* actor, struct sHdr* skHeader);
 void fn_800A7E00(void);
 void OSReport(const char* msg, ...);
@@ -31,6 +43,20 @@ void OSPanic(const char* file, int line, const char* msg, ...);
 void OSSetProgressiveMode(u32 on);
 void* memset(void* dst, int c, size_t n);
 void* memcpy(void* dst, const void* src, size_t n);
+
+
+
+
+
+#ifdef TARGET_PC
+#define MDISPLAYOBJ_ALLOC ((sizeof(MDisplayObj) + 0x1F) & ~0x1F)
+#define ACTOR_BUFFER_SMALL (0x1BC0 * 2)
+#define ACTOR_BUFFER_LARGE (0x86A0 * 2)
+#else
+#define MDISPLAYOBJ_ALLOC 0x80
+#define ACTOR_BUFFER_SMALL 0x1BC0
+#define ACTOR_BUFFER_LARGE 0x86A0
+#endif
 typedef struct BufferCursor {
     u8* ptr;
 } BufferCursor;

@@ -26,6 +26,10 @@ Byte arrays (no C type found) are `TODO(port)`; `POINTERS` ones hold addresses a
 - `lbl_2_data_20F8` (menus .data 0x20F8): NOTE: type size 0x8 != symbol size 0x324
 - `lbl_2_data_20F8` (menus .data 0x20F8): WARNING: 0x31C bytes past the type are not zero: 0000000042be0000c20c00000000000000160010001700110018001200190013001a...
 - `lbl_2_data_2780` (menus .data 0x2780): pointer field holds a non-address value (see `/* TODO */`)
+- `lbl_2_data_2AADC` (menus .data 0x2AADC): NOTE: type size 0x420 != symbol size 0x42C
+- `lbl_2_data_2AADC` (menus .data 0x2AADC): WARNING: 0xC bytes past the type are not zero: 00010005000b001100030013
+- `lbl_2_data_2AF4C` (menus .data 0x2AF4C): NOTE: type size 0x440 != symbol size 0x458
+- `lbl_2_data_2AF4C` (menus .data 0x2AF4C): WARNING: 0x18 bytes past the type are not zero: 00010005000b00110003001300020608040a01030705090b
 - `lbl_3_bss_170` (game .bss 0x170): NOTE: type size 0x2 != symbol size 0x90
 - `lbl_3_bss_176C` (game .bss 0x176C): NOTE: type size 0x4 != symbol size 0x8
 - `lbl_3_bss_1774` (game .bss 0x1774): NOTE: type size 0x4 != symbol size 0xC
@@ -70,8 +74,6 @@ Byte arrays (no C type found) are `TODO(port)`; `POINTERS` ones hold addresses a
 - `lbl_800EEA58` (main .data 0x800EEA58): NOTE: type size 0x19 != symbol size 0x54
 - `lbl_800EEA58` (main .data 0x800EEA58): WARNING: 0x3B bytes past the type are not zero: 000000000000000000000000000000000001000000000001000000010101010000000...
 - `lbl_802E4BC0` (main .bss 0x802E4BC0): NOTE: type size 0x120 != symbol size 0x128
-- `lbl_802FE918` (main .bss 0x802FE918): NOTE: type size 0x2A0 != symbol size 0x2E0
-- `lbl_802FEBF8` (main .bss 0x802FEBF8): NOTE: type size 0x1B00 != symbol size 0xD80
 - `lbl_803CBC50` (main .sbss 0x803CBC50): NOTE: type size 0x4 != symbol size 0x8
 - `lbl_803CC798` (main .sdata2 0x803CC798): NOTE: type size 0x4 != symbol size 0x8
 - `lbl_803CCF10` (main .sdata2 0x803CCF10): NOTE: type size 0x4 != symbol size 0x8

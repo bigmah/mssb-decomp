@@ -23,7 +23,7 @@ extern StarChanceState lbl_3_common_bss_37400;
 #include "main/file_80011640.h"
 extern SndState34C58 lbl_3_common_bss_34C58;
 extern s32 lbl_3_bss_1780[];
-extern void sndUpdateListener(void*, void*, void*, void*, void*, s32, s32);
+extern void sndUpdateListener(void*, void*, void*, void*, void*, u8 vol, void* room);
 extern void sndRemoveListener(void*);
 extern void fn_800A86B4(s32 cmd);
 extern struct StreamTrack* fn_800A88C0(void);
