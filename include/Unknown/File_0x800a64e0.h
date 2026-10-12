@@ -11,12 +11,12 @@ typedef struct AssetLoadInstructions
     /* 0x0 */ u32 compressionConstants; // repetition size << 8 | look-back size
 
     /* 0x4 */ union {
+        u32 sizeFlags; // low 28 bits: size, top 4 bits: flags (first: tables initialise this member)
         struct {
             u8 compressionFlag:2;
             u8 unused:2;
             u32 originalDiskSize:28;
         };
-        u32 sizeFlags; // low 28 bits: size, top 4 bits: flags
     };
     /* 0x8 */ union {
         u32 diskLocation;
