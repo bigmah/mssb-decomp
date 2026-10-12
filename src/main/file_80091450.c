@@ -9,7 +9,7 @@ TEXDescriptorPtr TEXGet(TEXPalettePtr pal, u32 id) {
 void DSInitList(DSListPtr list, Ptr obj, DSLinkPtr link) {
     list->Head = NULL;
     list->Tail = NULL;
-    list->Offset = (u8*)link - (u8*)obj;
+    list->Offset = (u32)((u8*)link - (u8*)obj);
 }
 
 // .text:0x80091478 size:0x94
@@ -67,7 +67,7 @@ s8 Strcmp(char* str1, char* str2) {
 #pragma scheduling off
 void DSInitTree(DSTreePtr tree, Ptr obj, DSBranchPtr branch) {
     tree->Root = NULL;
-    tree->Offset = (u8*)branch - (u8*)obj;
+    tree->Offset = (u32)((u8*)branch - (u8*)obj);
 }
 #pragma scheduling reset
 

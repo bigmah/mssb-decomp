@@ -229,6 +229,8 @@ ANIMSequences* ANIMGetSequence(ANIMBank* animBank, char* sequenceName, u16 seqNu
 
 // .text:0x800B508C size:0xE0
 // Converts the bank's file offsets into pointers in place.
+// TODO(port): the bank is a big-endian disc image with 32-bit pointer fields;
+// on PC it needs a byte swap and conversion into native structs (Phase 3).
 void ANIMGet(ANIMBank* animBank) {
     ANIMSequences* seq;
     struct ANIMAnimTrack* track;
@@ -236,22 +238,22 @@ void ANIMGet(ANIMBank* animBank) {
     u32 i;
 
     if (animBank->userDataSize != 0 && animBank->userData != NULL) {
-        animBank->userData = (u8*)animBank->userData + (u32)animBank;
+        animBank->userData = (u8*)animBank->userData + (uintptr_t)animBank;
     }
     seq = (ANIMSequences*)(animBank + 1);
     track = (struct ANIMAnimTrack*)(seq + animBank->numSequences);
     keyFrame = (KeyFrame*)(track + animBank->numTracks);
-    animBank->animSequences = (ANIMSequences*)((u8*)animBank->animSequences + (u32)animBank);
+    animBank->animSequences = (ANIMSequences*)((u8*)animBank->animSequences + (uintptr_t)animBank);
 
     for (i = 0; i < animBank->numSequences; i++) {
-        seq[i].sequenceName = (char*)animBank + (u32)seq[i].sequenceName;
-        seq[i].trackArray = (struct ANIMAnimTrack*)((u8*)animBank + (u32)seq[i].trackArray);
+        seq[i].sequenceName = (char*)animBank + (uintptr_t)seq[i].sequenceName;
+        seq[i].trackArray = (struct ANIMAnimTrack*)((u8*)animBank + (uintptr_t)seq[i].trackArray);
     }
     for (i = 0; i < animBank->numTracks; i++) {
-        track[i].keyFrames = (KeyFrame*)((u8*)animBank + (u32)track[i].keyFrames);
+        track[i].keyFrames = (KeyFrame*)((u8*)animBank + (uintptr_t)track[i].keyFrames);
     }
     for (i = 0; i < animBank->numKeyFrames; i++) {
-        keyFrame[i].setting = (char*)animBank + (u32)keyFrame[i].setting;
-        keyFrame[i].interpolation = (char*)animBank + (u32)keyFrame[i].interpolation;
+        keyFrame[i].setting = (char*)animBank + (uintptr_t)keyFrame[i].setting;
+        keyFrame[i].interpolation = (char*)animBank + (uintptr_t)keyFrame[i].interpolation;
     }
 }
