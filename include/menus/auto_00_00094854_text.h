@@ -15,24 +15,24 @@ void fn_2_948B8(void);
 
 void fn_2_96D20(void);
 
-void fn_2_95E80(u8* object);
+void fn_2_95E80(struct MenuTask* object);
 
-void fn_2_95F3C(u8* object);
+void fn_2_95F3C(struct MenuTask* object);
 
-void fn_2_95FE0(u8* object);
+void fn_2_95FE0(struct MenuTask* object);
 
-void fn_2_9493C(u8* object);
+void fn_2_9493C(struct MenuTask* object);
 
 void fn_2_96AD4(void);
 
-void fn_2_95B78(u8* object);
+void fn_2_95B78(struct MenuTask* object);
 
 void fn_2_96698(void);
 
-void fn_2_95654(u8* object);
+void fn_2_95654(struct MenuTask* object);
 
-void fn_2_96118(u8* object);
+void fn_2_96118(struct MenuTask* object);
 
-void fn_2_94A8C(u8* object);
+void fn_2_94A8C(struct MenuTask* object);
 
 #endif
