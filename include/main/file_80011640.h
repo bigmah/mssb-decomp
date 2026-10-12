@@ -157,7 +157,7 @@ typedef struct CharMgr {
     /*0x0064*/ ActorObjectTable* slots64;
     /*0x0068*/ ActorObjectTable* slots68;
     /*0x006C*/ ActorObjectTable* slots6C;
-    /*0x0070*/ u32 _0070;
+    /*0x0070*/ ActorObjectTable* _0070; // stadium actors (lights at lights[])
     /*0x0074*/ u8 _0074[0xAC - 0x74];
     /*0x00AC*/ void* lights[4];
     /*0x00BC*/ u8 _00BC[0x13C - 0xBC];
