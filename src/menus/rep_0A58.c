@@ -23,7 +23,7 @@ extern MenuDrawArea* lbl_2_bss_1A8230[];
 extern MenuData lbl_2_bss_1A8250;
 extern MenuProgress lbl_80361B20;
 extern MenuFlags lbl_800E877C;
-extern u8 lbl_8036E548[];
+#include "main/file_80011640.h" // CharMgr lbl_8036E548
 extern u8 lbl_800EFBA4[];
 #include "main/file_80021308.h" // SoundManager
 extern SoundManager lbl_800EF808;
@@ -290,7 +290,7 @@ void fn_2_54BB0(void) {
         break;
     case 17:
         if (lbl_8037169C._13) {
-            lbl_8036E548[0x307A] = 0;
+            lbl_8036E548._307A = 0;
             (lbl_2_bss_1A8234[0]->done) = 1;
             lbl_2_bss_1A8230[0]->_32A86 = 1;
             lbl_803CBBCC->step = 0x12;
@@ -321,7 +321,7 @@ void fn_2_54BB0(void) {
         }
         break;
     }
-    if (lbl_8036E548[0x307A] == 2) {
+    if (lbl_8036E548._307A == 2) {
         if (lbl_2_bss_1A8248[0]->_44F2 != 4) {
             fn_2_68E68();
         }
