@@ -1374,7 +1374,7 @@ void fn_3_DE744(void) {
     g_Minigame.maybeTFCollisionResultState = 0;
     g_Minigame.toyFieldBallStateResult = 0;
     g_Minigame._19BC = 0;
-    g_Minigame._19D0 = 0;
+    g_Minigame._19D0b[0] = 0;
     g_Minigame._19CD = 0;
     g_Minigame._19CF = 0;
     if (g_Minigame._19CE == 3) {

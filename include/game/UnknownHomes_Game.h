@@ -2267,8 +2267,6 @@ typedef struct _MiniGameStruct {
     /*0x19CD*/ u8 _19CD;
     /*0x19CE*/ u8 _19CE;
     /*0x19CF*/ u8 _19CF;
-    /*0x19D0*/ u8 _19D0;
-    /*0x19D1*/ u8 _19D1;
     union {
         /*0x19D0*/ s16 _19D0;
         /*0x19D0*/ u8 _19D0b[2]; // rep_AC8 uses the high byte as a flag
