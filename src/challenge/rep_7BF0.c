@@ -23,7 +23,6 @@ static ChallengeSimulationMenu lbl_1_bss_471BC;
 static RigidBody lbl_1_bss_47068;
 // POOL END
 extern f32 lbl_1_rodata_7DFC;
-extern const char* lbl_1_data_11424[];
 
 static ChallengeSimulationSettings lbl_1_data_11300 = {
     { 150000, 50000, 6250, 12500 }, // len, frac, radius, mass
@@ -65,10 +64,48 @@ static u8 sBoxDisplayList[0x40] = {
     0x03, 0x02, 0x03, 0x02, 0x04, 0x06, 0x04, 0x07, 0x04, 0x03, 0x04, 0x03, 0x05, 0x07, 0x05, 0x04,
     0x05, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
-static u32 sB = 1;
-static u32 sC[36] = {0};
-static struct { u8 pad0[0x30]; u32 v; u8 pad1[0x444]; } sD = {{0}};
-static ChallengeMenuItem* sE[2] = {0};
+static const char* sMainMenuTitle = "MAIN MENU"; // default menu data (fn_1_28C34)
+// Help line of the main menu's state item, by simulationState.
+static const char* lbl_1_data_11424[3] = {
+    "A:Sim Start X:Sim Step",
+    "A:Sim Start X:SimStep B:Reset",
+    "A:Sim Stop  B:Reset",
+};
+static ChallengeMenuItem sBatMenu[3] = {
+    { 8, "BACK TO PREV MENU", 0, 0, { 0, 0, 0 }, NULL, 0x100, -1, (ChMenuFunc)fn_1_28AE0 },
+    { 8, "BAT MENU", 0, 0, { 0, 0, 0 }, NULL, 0x100, 1, (ChMenuFunc)fn_1_28AE0 },
+    { 0, NULL, 0, 0, { 0, 0, 0 }, NULL, 0, 0, NULL },
+};
+static ChallengeMenuItem sMainMenu[26] = {
+    { 8, "MAIN MENU", 0, 0, { 0, 0, 0 }, NULL, 0x100, 0, (ChMenuFunc)fn_1_28AE0 },
+    { 8, NULL, 0, 0, { 0, 0, 0 }, NULL, 0x700, 0, fn_1_289E0 },
+    { 0, "SIM NUM  ", 1, 100, { 1, 10, 20 }, &lbl_1_data_11300.cameraFlags, 0, 0, NULL },
+    { 1, "LENGTH   ", 0, 1000000, { 1000, 100, 10000 }, &lbl_1_data_11300.scaledCamera[0], 0, 0, NULL },
+    { 1, "CENTER   ", 0, 1000000, { 1000, 100, 10000 }, &lbl_1_data_11300.scaledCamera[1], 0, 0, NULL },
+    { 1, "RADIUS   ", 0, 1000000, { 1000, 100, 10000 }, &lbl_1_data_11300.scaledCamera[2], 0, 0, NULL },
+    { 1, "MASS     ", 0, 1000000, { 1000, 100, 10000 }, &lbl_1_data_11300.scaledCamera[3], 0, 0, NULL },
+    { 1, "FIRST POS", -10000000, 10000000, { 1000, 100, 10000 }, &lbl_1_data_11300.height, 0, 0, NULL },
+    { 1, "FIRST ROT", -18000000, 18000000, { 100000, 10000, 1000000 }, &lbl_1_data_11300.angle, 0, 0, NULL },
+    { 1, "VEL   X  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.vel[0], 0, 0, NULL },
+    { 1, "VEL   Y  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.vel[1], 0, 0, NULL },
+    { 1, "VEL   Z  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.vel[2], 0, 0, NULL },
+    { 1, "OMEGA X  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.angVel[0], 0, 0, NULL },
+    { 1, "OMEGA Y  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.angVel[1], 0, 0, NULL },
+    { 1, "OMEGA Z  ", -10000000, 10000000, { 100, 1000, 10000 }, &lbl_1_data_11300.angVel[2], 0, 0, NULL },
+    { 1, "AIR REG  ", -10000000, 10000000, { 10, 100, 1000 }, &lbl_1_data_11300.unk50, 0, 0, NULL },
+    { 1, "ENV K    ", -100000000, 100000000, { 10000, 100000, 1000000 }, &sSimParams.spring, 0, 0, NULL },
+    { 1, "ENV D    ", -100000000, 100000000, { 100, 1000, 10000 }, &sSimParams.damping, 0, 0, NULL },
+    { 1, "ENV E    ", -100000000, 100000000, { 10, 100, 1000 }, &sSimParams.unk8, 0, 0, NULL },
+    { 1, "ENV MK   ", 0, 100000000, { 1000, 10000, 100000 }, &sSimParams.friction, 0, 0, NULL },
+    { 1, "ENV R CAP", 0, 100000000, { 1000, 10000, 100000 }, &sSimParams.maxForce, 0, 0, NULL },
+    { 1, "ENV R CUT", 0, 100000000, { 10, 100, 1000 }, &sSimParams.minForce, 0, 0, NULL },
+    { 1, "ENV M CUT", 0, 100000000, { 1000, 10000, 100000 }, &sSimParams.torqueEps, 0, 0, NULL },
+    { 1, "ENV S CAP", 0, 100000000, { 100, 1000, 10000 }, &sSimParams.maxDepth, 0, 0, NULL },
+    { 1, "ENV O CAP", 0, 100000000, { 1000, 10000, 100000 }, &sSimParams.maxAngVel, 0, 0, NULL },
+    { 0, NULL, 0, 0, { 0, 0, 0 }, NULL, 0, 0, NULL },
+};
+static ChallengeMenuItem* sMenus[2] = { sBatMenu, sMainMenu };
+static const Vec sUnusedZero = { 0.0f, 0.0f, 0.0f }; // unreferenced, but in .rodata
 
 // .text:0x00029A9C size:0x1C0
 // NONMATCHING 92%: register allocation/scheduling of the inlined fn_1_2935C prologue
@@ -246,15 +283,15 @@ void fn_1_28CE8(ChallengeQueueEntry* task) {
 
 // .text:0x00028C34 size:0xB4
 void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data) {
-    menu->data = data ? data : (void*)sB;
+    menu->data = data ? data : (void*)sMainMenuTitle;
     menu->capacity = 0x10;
     menu->cursor = 0;
     menu->selected = 0;
     menu->flags = 1;
-    menu->items = sE[which];
+    menu->items = sMenus[which];
     if (which == 1) {
-        if (sD.v == 0) {
-            sD.v = sC[lbl_1_data_11300.simulationState];
+        if (sMainMenu[1].text == NULL) {
+            sMainMenu[1].text = lbl_1_data_11424[lbl_1_data_11300.simulationState];
         }
     }
     menu->count = 0;
