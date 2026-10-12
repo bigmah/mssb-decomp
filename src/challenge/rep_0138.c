@@ -242,10 +242,7 @@ typedef struct ChalLightColors {
 extern const ChalLightColors lbl_1_rodata_194; // red, blue, green
 extern const f32 lbl_1_rodata_1FC;
 extern const f32 lbl_1_rodata_200;
-extern struct {
-    u8 pad[0x715];
-    volatile s8 idle;
-} lbl_803C6CF8; // main.dol's DVD/ARAM loader
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 extern void LITAlloc(void** light);
 extern void LITInitAttn(void* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 extern void LITInitPos(void* light, f32 x, f32 y, f32 z);

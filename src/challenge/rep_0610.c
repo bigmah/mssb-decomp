@@ -7,7 +7,7 @@
 // .bss of this file, laid out in reverse definition order. The functions reach
 // most of it through one pooled base (lbl_1_bss_3070).
 static ChPlayerBss lbl_1_bss_6940;  // player record and its parts slot
-static u8 lbl_1_bss_68FC[0x44];      // [0x40 + player]: character
+static ChScene lbl_1_bss_68FC;      // view matrix and per-player character
 static ChViewer lbl_1_bss_67E0;     // also covers 0x68F8
 static void* lbl_1_bss_67B8[0xA];
 static u8 lbl_1_bss_62B8[0x500];     // unused
@@ -51,7 +51,7 @@ static u8 lbl_1_bss_3217;            // unused
 static u8 lbl_1_bss_3216;
 static u8 lbl_1_bss_3215;
 static u8 lbl_1_bss_3214;
-static u8 lbl_1_bss_30C0[0x154];
+static RigidBody lbl_1_bss_30C0;
 static s32 lbl_1_bss_30BC;
 static u8 lbl_1_bss_30BB;            // unused
 static u8 lbl_1_bss_30BA;            // unused
@@ -178,7 +178,7 @@ extern f32 lbl_1_rodata_73A4[];
 extern void fn_1_135C0(void);
 extern void fn_1_1770C(u8* object);
 
-extern u8 lbl_803C6CF8[];
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 
 typedef struct { u8 b[0x38]; } Ch38;
 extern void fn_1_179CC(void);
@@ -278,8 +278,8 @@ extern void fn_1_CDC8(void);
 
 extern void fn_80052D70(void);
 
-// ScreenFx (main/file_80039AC0.h); that header pulls in game/UnknownHomes_Game.h, which clashes with this file's externs
-extern u8 lbl_803C5090[]; // TODO type: ScreenFx
+#include "main/screenfx.h"
+extern ScreenFx lbl_803C5090;
 extern void fn_8003A2C0(void);
 
 #include "Dolphin/OS/OSError.h"
@@ -388,7 +388,7 @@ extern void convertGeometryAndSknHeader(struct DODisplayData* pal, void* sknHead
 extern void LoadActorLayout(struct ActorLayout* layout);
 extern ActorObjectTable* ActorObjectInitTable(u16 count);
 
-#define CH_ARAM_DONE() ((s32)lbl_803C6CF8[0x715] == 1)
+#define CH_ARAM_DONE() ((s32)lbl_803C6CF8.idle == 1)
 
 // main.dol helpers used by fn_1_135C0. Declared from this call site's asm: several main headers
 // (file_8004B284.h, file_80024D2C.h, ...) clash with this file's externs or give a void return
@@ -4679,7 +4679,7 @@ void fn_1_17B5C(void) {
     for (i = 0; i < 7; i++) {
         if (lbl_1_data_2390[i] != 0) break;
     }
-    lbl_1_bss_68FC[0x40] = 0;
+    lbl_1_bss_68FC.character[0] = 0;
     entry = lbl_1_bss_6940.player;
     entry->group = i;
     entry->seq = 0;
@@ -4751,26 +4751,26 @@ void fn_1_1770C(u8* object) {
         lbl_1_bss_5F5C = 2;
     }
     fn_1_179CC();
-    PSMTXCopy(lbl_1_bss_67E0.cam.view, (f32(*)[4])(lbl_1_bss_68FC + 0x10));
+    PSMTXCopy(lbl_1_bss_67E0.cam.view, lbl_1_bss_68FC.view);
     fn_1_129D0();
-    PSMTXCopy((f32(*)[4])(lbl_1_bss_68FC + 0x10), lbl_1_data_AAC4[lbl_803CBBC0[0]].m);
+    PSMTXCopy(lbl_1_bss_68FC.view, lbl_1_data_AAC4[lbl_803CBBC0[0]].m);
     fn_800A7D4C(7, &lbl_1_data_AAC4[lbl_803CBBC0[0]]);
     if (lbl_1_bss_3078 != 0) {
         fn_800A7D4C(7, &lbl_1_data_AB34[lbl_803CBBC0[0]]);
     }
-    PSMTXCopy((f32(*)[4])(lbl_1_bss_68FC + 0x10), lbl_1_data_AA54[lbl_803CBBC0[0]].m);
+    PSMTXCopy(lbl_1_bss_68FC.view, lbl_1_data_AA54[lbl_803CBBC0[0]].m);
     fn_800A7D4C(7, &lbl_1_data_AA54[lbl_803CBBC0[0]]);
     if (lbl_1_data_1F1A != 0) {
-        PSMTXCopy((f32(*)[4])(lbl_1_bss_68FC + 0x10), lbl_1_data_A9E4[lbl_803CBBC0[0]].m);
+        PSMTXCopy(lbl_1_bss_68FC.view, lbl_1_data_A9E4[lbl_803CBBC0[0]].m);
         fn_800A7D4C(9, &lbl_1_data_A9E4[lbl_803CBBC0[0]]);
     }
-    lbl_803C5090[0x1D] = 1;                // flags
-    *(f32*)(lbl_803C5090 + 0x0) = 1.0f;    // scale
-    *(f32*)(lbl_803C5090 + 0x4) = 1.0f;
-    lbl_803C5090[0x17] = 0xFF;             // alpha
-    *(f32*)(lbl_803C5090 + 0x8) = 0.0f;    // jitterX
-    *(f32*)(lbl_803C5090 + 0xC) = 0.0f;    // jitterY
-    *(u16*)(lbl_803C5090 + 0x14) = 0x1C0;  // lines
+    lbl_803C5090.flags = 1;
+    lbl_803C5090.scale = 1.0f;
+    lbl_803C5090.unk4 = 1.0f;
+    lbl_803C5090.alpha = 0xFF;
+    lbl_803C5090.jitterX = 0.0f;
+    lbl_803C5090.jitterY = 0.0f;
+    lbl_803C5090.lines = 0x1C0;
     fn_8003A2C0();
     fn_800A7D4C(0, &lbl_1_data_AC7C[lbl_803CBBC0[0]]);
 }
@@ -4785,7 +4785,7 @@ void fn_1_176EC(u8* object) {
 // current character, or skip to `next` when the character has none.
 static inline void loadAnimBank(ChMainTask* queue, s32 group, s16 next) {
     if (lbl_1_data_2390[lbl_1_bss_5F73 * 7 + group] != 0) {
-        u8 character = lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73];
+        u8 character = lbl_1_bss_68FC.character[lbl_1_bss_5F73];
         lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[group] =
             (void*)ARAMTransfer(&lbl_1_data_2398[*(s32*)(lbl_1_bss_3070 + 4) + (character * 0x13 + 2 + group)], 0, 0, 0);
         CH_TASK->result += 1;
@@ -4842,7 +4842,7 @@ void fn_1_16978(void) {
         }
         break;
     case 4: {
-        u8 character = lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73];
+        u8 character = lbl_1_bss_68FC.character[lbl_1_bss_5F73];
         u8 variant = lbl_1_bss_6940.player[lbl_1_bss_5F73].variant;
         lbl_8036E548.actors[lbl_1_bss_5F73].files =
             (void*)ARAMTransfer(&lbl_1_data_2398[*(s32*)(lbl_1_bss_3070 + 4) + character * 0x13 + variant], 0, 0, 0);
@@ -4904,7 +4904,7 @@ void fn_1_16978(void) {
         break;
     case 18:
         if (lbl_1_data_2390[lbl_1_bss_5F73 * 7 + 6] != 0) {
-            u8 character = lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73];
+            u8 character = lbl_1_bss_68FC.character[lbl_1_bss_5F73];
             lbl_8036E548.actors[lbl_1_bss_5F73].banks.b[6] =
                 (void*)ARAMTransfer(&lbl_1_data_2398[*(s32*)(lbl_1_bss_3070 + 4) + (character * 0x13 + 8)], 0, 0, 0);
             CH_TASK->result += 1;
@@ -4928,7 +4928,7 @@ void fn_1_16978(void) {
             break;
         }
         row->part = &lbl_1_bss_6940.part[lbl_1_bss_5F73];
-        if (lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73] == 0) {
+        if (lbl_1_bss_68FC.character[lbl_1_bss_5F73] == 0) {
             lbl_8036E548.actors[lbl_1_bss_5F73].part->files = ARAMTransfer(lbl_1_data_A3F8, 0, 0, 0);
             CH_TASK->result += 1;
         } else {
@@ -4943,7 +4943,7 @@ void fn_1_16978(void) {
         }
         break;
     case 22: {
-        s16 file = lbl_1_data_A978[lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73]];
+        s16 file = lbl_1_data_A978[lbl_1_bss_68FC.character[lbl_1_bss_5F73]];
         if (file >= 0) {
             (&lbl_1_bss_60A0)[lbl_1_bss_5F73] = (void*)ARAMTransfer(&lbl_1_data_A5D8[file], 0, 0, 0);
             CH_TASK->result += 1;
@@ -5717,16 +5717,16 @@ void fn_1_1496C(u8* object) {
     lbl_1_bss_5F73 = 0;
     if (buttons & 1) {
         for (lbl_1_bss_5F73 = 0; lbl_1_bss_5F73 < 1; lbl_1_bss_5F73++) {
-            if (lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73] != 0) {
-                lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73]--;
+            if (lbl_1_bss_68FC.character[lbl_1_bss_5F73] != 0) {
+                lbl_1_bss_68FC.character[lbl_1_bss_5F73]--;
             } else {
-                lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73] = 0x35;
+                lbl_1_bss_68FC.character[lbl_1_bss_5F73] = 0x35;
             }
         }
     } else if (buttons & 2) {
         for (lbl_1_bss_5F73 = 0; lbl_1_bss_5F73 < 1; lbl_1_bss_5F73++) {
-            if (++lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73] == 0x36) {
-                lbl_1_bss_68FC[0x40 + lbl_1_bss_5F73] = 0;
+            if (++lbl_1_bss_68FC.character[lbl_1_bss_5F73] == 0x36) {
+                lbl_1_bss_68FC.character[lbl_1_bss_5F73] = 0;
             }
         }
     } else if (lbl_803C77B8._02 & 0x400) {
@@ -5812,7 +5812,7 @@ void fn_1_14710(u8* object) {
         k += 4;
         p = (ChPair*)((u8*)p + 4);
     } while (((u16*)lbl_1_data_1DC0)[k / 2] != 0xFFFF);
-    mode = (lbl_1_bss_68FC + lbl_1_bss_5F73)[0x40];
+    mode = lbl_1_bss_68FC.character[lbl_1_bss_5F73];
     if (mode < 0x2C) {
         if (mode == 0x10) goto yes;
         goto no;
@@ -5866,7 +5866,7 @@ void fn_1_135C0(void) {
     lbl_1_bss_5F7C[1] = ActorObjectInitTable(1);
     lbl_1_bss_5F7C[0] = ActorObjectInitTable(5);
     memset(&lbl_1_bss_5F7C[3], 0, 0x118);
-    lbl_8036E548.actors[0].kind = lbl_1_bss_68FC[0x40];
+    lbl_8036E548.actors[0].kind = lbl_1_bss_68FC.character[0];
 
     for (i = 0; i < 1; i++) {
         // Relocate the player file header (5 offsets).
@@ -5876,7 +5876,7 @@ void fn_1_135C0(void) {
                 header[k] += (u32)header; // TODO type: 32-bit file offsets
             }
         }
-        if (lbl_1_data_A978[lbl_1_bss_68FC[0x40]] >= 0) {
+        if (lbl_1_data_A978[lbl_1_bss_68FC.character[0]] >= 0) {
             files = lbl_1_bss_60A0;
             for (k = 0; k < 16; k++) {
                 ((u32*)lbl_1_bss_60A0)[k] += (u32)lbl_1_bss_60A0; // TODO type: 32-bit file offsets
@@ -5892,7 +5892,7 @@ void fn_1_135C0(void) {
         convertGeometryAndSknHeader(geometry, skin);
         haveActLayoutPointToGeoHeader(layout, geometry);
         fn_800BD190(geometry, textures);
-        if (lbl_1_data_A978[lbl_1_bss_68FC[0x40]] >= 0) {
+        if (lbl_1_data_A978[lbl_1_bss_68FC.character[0]] >= 0) {
             files = lbl_1_bss_60A0;
             for (k = 0; k <= 7; k += 2) {
                 struct ActorLayout* extraLayout = (struct ActorLayout*)((u32*)lbl_1_bss_60A0)[k];
@@ -5946,7 +5946,7 @@ void fn_1_135C0(void) {
     if (lbl_1_bss_67B8[5] != NULL && lbl_1_bss_6940.player[lbl_1_bss_5F73].variant == 0) {
         fn_80025DDC(lbl_1_bss_67B8[5]);
         fn_80025C58(lbl_1_bss_67B8[5], (struct ShapeModel**)&lbl_8036E548.slots->objects[0].actor);
-        if (lbl_1_data_A978[lbl_1_bss_68FC[0x40]] >= 0) {
+        if (lbl_1_data_A978[lbl_1_bss_68FC.character[0]] >= 0) {
             for (k = 0; k < 4; k++) {
                 lbl_1_bss_67B8[6 + k] = (void*)((u32*)lbl_1_bss_60A0)[8 + k];
                 fn_80025DDC(lbl_1_bss_67B8[6 + k]);
@@ -6013,11 +6013,11 @@ void fn_1_135C0(void) {
     row->pos.z = lbl_1_rodata_73F8;
     row->_04C = lbl_1_rodata_73C0[0];
     row->mode[0] = 1;
-    row->kind = lbl_1_bss_68FC[0x40];
+    row->kind = lbl_1_bss_68FC.character[0];
     row->_25C = 1;
     row->_277 = 0xFF;
     main->objects[0].callback = (ActorObjectCallback)fn_1_14888; // TODO type: callback receives the object
-    if (lbl_1_bss_60A4[lbl_1_bss_68FC[0x40]] != 0) {
+    if (lbl_1_bss_60A4[lbl_1_bss_68FC.character[0]] != 0) {
         fn_800B2B74(lbl_8036E548.slots->objects[0].actor, row->jointIdx[0x13]);
         fn_800B2B74(lbl_8036E548.slots->objects[0].actor, row->jointIdx[0x19]);
         fn_1_ECF8(lbl_1_bss_5F73, 0, 0);
@@ -6202,7 +6202,7 @@ void fn_1_12F8C(void* tableArg, void* matrixArg) {
 // .text:0x00012F18 size:0x74
 void fn_1_12F18(u8* object) {
     fn_1_12820(lbl_8036E548.slots, object + 8);
-    if (lbl_1_data_A978[lbl_1_bss_68FC[0x40]] >= 0) {
+    if (lbl_1_data_A978[lbl_1_bss_68FC.character[0]] >= 0) {
         fn_800BD670(lbl_1_bss_5F7C[0], (MtxPtr)(object + 8));
     }
 }
@@ -6291,15 +6291,15 @@ void fn_1_129D0(void) {
             memcpy(&lbl_8036E548.actors[lbl_1_bss_5F73].part->player.state, lbl_1_bss_67B8[0], 0x20);
         }
     }
-    PSMTXCopy((f32(*)[4])(lbl_1_bss_68FC + 0x10), lbl_1_data_AC9C[lbl_803CBBC0[0]].m);
+    PSMTXCopy(lbl_1_bss_68FC.view, lbl_1_data_AC9C[lbl_803CBBC0[0]].m);
     fn_800A7D4C(7, &lbl_1_data_AC9C[lbl_803CBBC0[0]]);
-    if (lbl_1_data_A978[lbl_1_bss_68FC[0x40]] >= 0) {
+    if (lbl_1_data_A978[lbl_1_bss_68FC.character[0]] >= 0) {
         // TODO type: fn_800BD8C4's second parameter is the view matrix
-        fn_800BD8C4(lbl_1_bss_5F7C[0], (MtxPtr)(lbl_1_bss_68FC + 0x10));
+        fn_800BD8C4(lbl_1_bss_5F7C[0], lbl_1_bss_68FC.view);
     }
     table = lbl_8036E548.slots;
     table->objects[0].animateBones = 1;
-    fn_1_12F8C(lbl_8036E548.slots, lbl_1_bss_68FC + 0x10);
+    fn_1_12F8C(lbl_8036E548.slots, lbl_1_bss_68FC.view);
     lbl_8036E548.slots->objects[0].animateBones = (lbl_1_bss_3080 == 0) & (lbl_1_bss_5F73 == 0);
     if (lbl_8036E548._3083[0] != 0) {
         u8 player = lbl_8036E548._3083[1];
@@ -6473,7 +6473,7 @@ void fn_1_11D00(ChViewCam* camera) {
 void fn_1_11C98(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
-        LITXForm(lbl_8036E548.lights[i], lbl_1_bss_68FC + 0x10);
+        LITXForm(lbl_8036E548.lights[i], lbl_1_bss_68FC.view);
     }
 }
 
@@ -6497,7 +6497,7 @@ void fn_1_11714(u8* object) {
     C_MTXFrustum(projection2, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
                  lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],
                  lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
-    fn_800245EC(projection2, (f32(*)[4])(lbl_1_bss_68FC + 0x10), lbl_1_data_AD30, &uv[0][0], 8, 1);
+    fn_800245EC(projection2, lbl_1_bss_68FC.view, lbl_1_data_AD30, &uv[0][0], 8, 1);
     SetDisplayStateTexture(fn_80039AB4(), 0, 0);
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
@@ -6943,7 +6943,7 @@ void fn_1_10560(void* object) {
         CH_TASK->result = 1;
         break;
     case 1:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             u8* data = (u8*)lbl_1_bss_3094;
             lbl_1_bss_3098 = data + *(u32*)data;
             convertTextureHeader(lbl_1_bss_3098);
@@ -6952,7 +6952,7 @@ void fn_1_10560(void* object) {
         }
         break;
     case 2:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             convertTextureHeader(lbl_1_bss_60E4);
             REMOVE_QUEUE_NOARG();
         }
@@ -7584,7 +7584,7 @@ void fn_1_ECF8(u8 player, u8 group, u8 flag) {
     s32 first;
     s32 second;
 
-    if (lbl_1_bss_60A4[(lbl_1_bss_68FC + player)[0x40]] == 0) {
+    if (lbl_1_bss_60A4[lbl_1_bss_68FC.character[player]] == 0) {
         return;
     }
     row = &lbl_8036E548.actors[player];
@@ -8076,7 +8076,7 @@ void fn_1_D8A0(void) {
                  lbl_1_rodata_73DC[0], lbl_1_rodata_73E0[0]);
     GXSetProjection(projection, GX_PERSPECTIVE);
     fn_1_179CC();
-    PSMTXCopy(lbl_1_bss_67E0.cam.view, (f32(*)[4])(lbl_1_bss_68FC + 0x10));
+    PSMTXCopy(lbl_1_bss_67E0.cam.view, lbl_1_bss_68FC.view);
     fn_800A7D4C(7, &lbl_1_data_AA54[lbl_803CBBC0[0]]);
     if (lbl_1_bss_3078 != 0) {
         fn_800A7D4C(7, &lbl_1_data_AB34[lbl_803CBBC0[0]]);
@@ -8280,7 +8280,7 @@ void fn_1_D13C(void) {
     queue = fn_800B0A5C_insertQueue((void*)fn_1_CDC8, (u16)(CH_TASK->priority + 1));
     lbl_1_bss_60E8 = queue;
     queue->result = lbl_1_bss_6940.player[lbl_1_bss_5F73].group;
-    switch ((lbl_1_bss_68FC + lbl_1_bss_5F73)[0x40]) {
+    switch (lbl_1_bss_68FC.character[lbl_1_bss_5F73]) {
     case 38:
         kind = 0;
         break;
@@ -8334,7 +8334,7 @@ void fn_1_CDC8(void) {
     idB = row->jointIdx[0x19];
     fn_800B2BA8(lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor, row->jointIdx[0x13], NULL, 0);
     fn_800B2BA8(lbl_8036E548.slots->objects[lbl_1_bss_5F73].actor, idB, NULL, 0);
-    switch ((lbl_1_bss_68FC + lbl_1_bss_5F73)[0x40]) {
+    switch (lbl_1_bss_68FC.character[lbl_1_bss_5F73]) {
     case 38:
         kind = 0;
         break;
@@ -8394,7 +8394,7 @@ void fn_1_CDC8(void) {
             }
         }
         i++;
-    } while ((both != 0 || (lbl_1_bss_68FC + lbl_1_bss_5F73)[0x40] == 38) && i < 2);
+    } while ((both != 0 || lbl_1_bss_68FC.character[lbl_1_bss_5F73] == 38) && i < 2);
     if (i == 1) {
         if (lbl_1_bss_5F69 != 0) {
             tables[0] = &((ActorObjectTable*)lbl_1_bss_5F7C[0])->objects[2].actor;
@@ -8418,12 +8418,12 @@ void fn_1_CCC8(void) {
     f32* animation = queue->anim;
     if (animation != NULL && animation[0] < animation[1]) {
         if (lbl_1_bss_5F69 != 0) {
-            fn_800385F0((struct RigidBody *)lbl_1_bss_30C0, lbl_1_rodata_73BC, lbl_1_rodata_73C0[0], lbl_1_rodata_73C4[0], lbl_1_rodata_73BC); // TODO type
+            fn_800385F0(&lbl_1_bss_30C0, lbl_1_rodata_73BC, lbl_1_rodata_73C0[0], lbl_1_rodata_73C4[0], lbl_1_rodata_73BC);
         } else {
-            fn_800385F0((struct RigidBody *)lbl_1_bss_30C0, lbl_1_rodata_73A4[0], lbl_1_rodata_73C0[0], lbl_1_rodata_73C4[0], lbl_1_rodata_73BC); // TODO type
+            fn_800385F0(&lbl_1_bss_30C0, lbl_1_rodata_73A4[0], lbl_1_rodata_73C0[0], lbl_1_rodata_73C4[0], lbl_1_rodata_73BC);
         }
-        *(f32*)(lbl_1_bss_30C0 + 0x50) = lbl_1_data_F568[0];
-        fn_80037AA0((struct RigidBody *)lbl_1_bss_30C0, 0, (void (*)(void))fn_1_CB9C, queue->id, queue->anim); // TODO type
+        lbl_1_bss_30C0.unk50 = lbl_1_data_F568[0];
+        fn_80037AA0(&lbl_1_bss_30C0, 0, (void (*)(void))fn_1_CB9C, queue->id, queue->anim);
         REMOVE_QUEUE_NOARG();
     }
 }
@@ -8451,7 +8451,7 @@ void fn_1_CB9C(s32 reset) {
     } else {
         s32 index;
         ChDrawMtxNode* entry = &lbl_1_data_F4F8[lbl_803CBBC0[0]];
-        PSMTXCopy((f32(*)[4])(lbl_1_bss_30C0 + 0x58), entry->m);
+        PSMTXCopy(lbl_1_bss_30C0.world, entry->m);
         index = lbl_803CBBC0[0];
         fn_800A7D4C(8, &lbl_1_data_F4F8[index]);
     }
@@ -8462,25 +8462,25 @@ void fn_1_C9E0(u8* object) {
     Mtx concat;
     Vec scaled;
     fn_1_F2C(4, 0, 0);
-    PSMTXConcat((f32(*)[4])(lbl_1_bss_68FC + 0x10), (f32(*)[4])(object + 8), concat);
+    PSMTXConcat(lbl_1_bss_68FC.view, (f32(*)[4])(object + 8), concat);
     GXLoadPosMtxImm(concat, 0);
     GXSetCurrentMtx(0);
     GXSetBlendMode(1, 4, 5, 0);
     GXSetZMode(1, 7, 1);
     GXBegin(0xA8, 0, 6);
-    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0xC);
-    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x10);
-    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x14);
+    GXWGFifo.f32 = lbl_1_bss_30C0.p1.x;
+    GXWGFifo.f32 = lbl_1_bss_30C0.p1.y;
+    GXWGFifo.f32 = lbl_1_bss_30C0.p1.z;
     GXWGFifo.u32 = 0xFF0000FF;
-    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x0);
-    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x4);
-    GXWGFifo.f32 = *(f32*)(lbl_1_bss_30C0 + 0x8);
+    GXWGFifo.f32 = lbl_1_bss_30C0.p0.x;
+    GXWGFifo.f32 = lbl_1_bss_30C0.p0.y;
+    GXWGFifo.f32 = lbl_1_bss_30C0.p0.z;
     GXWGFifo.u32 = 0x00FF00FF;
     GXWGFifo.f32 = 0.0f;
     GXWGFifo.f32 = 0.0f;
     GXWGFifo.f32 = 0.0f;
     GXWGFifo.u32 = 0x000000FF;
-    PSVECScale((Vec*)(lbl_1_bss_30C0 + 0x128), lbl_1_data_F570.scale, &scaled);
+    PSVECScale(&lbl_1_bss_30C0.velLocal, lbl_1_data_F570.scale, &scaled);
     GXWGFifo.f32 = scaled.x;
     GXWGFifo.f32 = scaled.y;
     GXWGFifo.f32 = scaled.z;
@@ -8489,7 +8489,7 @@ void fn_1_C9E0(u8* object) {
     GXWGFifo.f32 = 0.0f;
     GXWGFifo.f32 = 0.0f;
     GXWGFifo.u32 = 0xFFFFFFFF;
-    PSVECScale((Vec*)(lbl_1_bss_30C0 + 0x140), lbl_1_data_F570.scale, &scaled);
+    PSVECScale(&lbl_1_bss_30C0.angVel, lbl_1_data_F570.scale, &scaled);
     GXWGFifo.f32 = scaled.x;
     GXWGFifo.f32 = scaled.y;
     GXWGFifo.f32 = scaled.z;

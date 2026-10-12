@@ -51,7 +51,7 @@ extern void fn_1_1DA54(void);
 extern const f32 lbl_1_rodata_77E4;
 
 
-extern u8 lbl_803C6CF8[];
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 extern const f32 lbl_1_rodata_77D8;
 extern const f32 lbl_1_rodata_7804;
 extern const f32 lbl_1_rodata_7858;
@@ -2076,13 +2076,13 @@ void fn_1_20F8C(void) {
     ChallengeTransfer* transfer = (ChallengeTransfer*)((ChTaskHeader*)lbl_803CC1B8)->parent;
     switch (phase) {
     case 0:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             transfer->data = (void*)ARAMTransfer(&lbl_1_data_104F4, 0, 0, 0);
             (((ChTaskHeader*)lbl_803CC1B8)->result)++;
         }
         break;
     case 1:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             transfer->complete = 1;
         }
         break;
@@ -2335,7 +2335,7 @@ void fn_1_2004C(void) {
         q->cursor++;
         break;
     case 1:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             data = q->file;
             q->tex = data + *(s32*)(data + 0x14); // file-relative offset in the header
             convertTextureHeader(q->tex);
@@ -3030,7 +3030,7 @@ void fn_1_1DA54(void) {
     ChTaskHeader* object;
     s32 size;
 
-    if ((s32)lbl_803C6CF8[0x715] != 1) {
+    if ((s32)lbl_803C6CF8.idle != 1) {
         return;
     }
     q->tex = q->file + *(s32*)(q->file + 0x14); // file-relative offset in the header

@@ -9,7 +9,7 @@
 
 extern void GXDrawSphere1(u8);
 extern void minigamesGXStuff(void);
-extern u8 lbl_803C6CF8[];
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 extern void* _OSAllocFromHeap(s32, s32);
 extern void PSVECNormalize(const Vec*, Vec*);
 extern void* lbl_80366158[];
@@ -182,7 +182,7 @@ void fn_1_28118(void) {
         object->h.result = state + 1;
         object->texture = ARAMTransfer(&lbl_1_data_108F8, 0, 0, 0);
     case 1:
-        ready = lbl_803C6CF8[0x715];
+        ready = lbl_803C6CF8.idle;
         if (ready == 1) {
             object->texture = (u8*)object->texture + *(s32*)object->texture; // relocate the archive header
             convertTextureHeader(object->texture);

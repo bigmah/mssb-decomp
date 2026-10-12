@@ -313,12 +313,7 @@ extern const char lbl_1_rodata_769C[];
 extern const char lbl_1_rodata_76C0[];
 extern const char lbl_1_rodata_76E4[];
 extern const char lbl_1_rodata_7708[];
-// view of the ARAM loader (lbl_803C6CF8, ARAMLoader in main/file_800A6870.h)
-typedef struct ChallengeAramLoader {
-    u8 pad000[0x715];
-    u8 transferDone;
-} ChallengeAramLoader;
-extern ChallengeAramLoader lbl_803C6CF8;
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 
 ChallengeDrawCollection* ActorObjectInitTable(u16 count);
 void LoadActorLayout(void* layout);
@@ -473,7 +468,7 @@ void fn_1_1CBE4(u8* object) {
         lbl_803CC1B8->state++;
         break;
     case 3:
-        if ((s32)lbl_803C6CF8.transferDone == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             task->state = 1;
         }
         break;

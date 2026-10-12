@@ -7,6 +7,7 @@
 #include "C3/control.h"
 #include "C3/light.h"
 #include "main/file_80011640.h" // CharPart
+#include "main/file_80037054.h" // RigidBody
 #include "challenge/rep_0010.h"   // ChTaskHeader
 
 // Main challenge-viewer task (fn_1_16978 loader, fn_1_168C8, fn_1_1496C menu).
@@ -66,6 +67,13 @@ typedef struct ChPlayerBss {
     /*0x48*/ CharPart part[1]; // main/file_80011640.h
     /*0xAC*/ u8 _AC[4];
 } ChPlayerBss; // size: 0xB0
+
+// lbl_1_bss_68FC: the scene view matrix and the character shown for each player.
+typedef struct ChScene {
+    /*0x00*/ u8 _00[0x10];
+    /*0x10*/ Mtx view;
+    /*0x40*/ u8 character[4];
+} ChScene; // size: 0x44
 
 // Free/orbit debug camera of the challenge viewer (lbl_1_bss_67E0), driven by fn_1_121D4.
 typedef struct ChViewCam {

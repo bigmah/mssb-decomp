@@ -27,7 +27,7 @@ inline f32 repHeaderConst_0000(s32 i) {
 #define REP_HEADER_FN repHeader_0000
 #include "header_rep_inline.h"
 
-extern u8 lbl_803C6CF8[]; // TODO type: ARAMLoader (main/file_800A6870.h); idle at 0x715
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 
 
 extern void fn_800A7D4C(s32 list, void* node);
@@ -196,7 +196,7 @@ void fn_1_16A0(void) {
 
 // .text:0x00001634 size:0x6C
 void fn_1_1634(void) {
-    if ((s32)lbl_803C6CF8[0x715] == 1) {
+    if ((s32)lbl_803C6CF8.idle == 1) {
         ((ChTexViewTask*)lbl_803CC1B8)->file = (s32*)ARAMTransfer(&lbl_1_data_0[3], 0, 0, 0);
         ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_15CC;
     }
@@ -206,7 +206,7 @@ void fn_1_1634(void) {
 void fn_1_15CC(void) {
     ChTexViewTask* task = lbl_803CC1B8;
 
-    if ((s32)lbl_803C6CF8[0x715] == 1) {
+    if ((s32)lbl_803C6CF8.idle == 1) {
         task->tex = (ChTexArchive*)((u8*)task->file + *task->file);
         convertTextureHeader(task->tex);
         ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1538;
@@ -526,7 +526,7 @@ void fn_1_1E0(void) {
         }
         break;
     case 3:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             s32 v = queue->index % 19;
             switch (v) {
             case 0:
