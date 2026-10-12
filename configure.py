@@ -669,7 +669,8 @@ config.libs = [
     {
         "lib": "unk",
         "mw_version": "GC/2.6",
-        "cflags": cflags_base + ["-O4,p", "-sym on"],
+        # The game code has extab/extabindex entries: built as C with C++ exceptions on.
+        "cflags": cflags_base + ["-O4,p", "-sym on", "-Cpp_exceptions on"],
         "host": False,
         "objects": [
             Object(NonMatching, "main/file_80008E00.c"),
@@ -682,7 +683,7 @@ config.libs = [
             Object(NonMatching, "main/file_80022DAC.c"),
             Object(NonMatching, "main/file_80024184.c"),
             Object(NonMatching, "main/file_80024D2C.c"),
-            Object(Matching, "main/file_80026134.c", extra_cflags=["-Cpp_exceptions on"]),
+            Object(Matching, "main/file_80026134.c"),
             Object(NonMatching, "main/file_800263FC.c"),
             Object(NonMatching, "main/file_80034F50.c"),
             Object(NonMatching, "main/file_80037054.c"),
@@ -690,7 +691,7 @@ config.libs = [
             Object(NonMatching, "main/file_8003A688.c"),
             Object(NonMatching, "main/file_8004207C.c"),
             Object(NonMatching, "main/file_8004B284.c"),
-            Object(Matching, "main/file_8004BEB0.c", extra_cflags=["-Cpp_exceptions on"]),
+            Object(Matching, "main/file_8004BEB0.c"),
             Object(NonMatching, "main/file_8004C19C.c"),
             Object(NonMatching, "main/file_8004C5F8.c"),
             Object(NonMatching, "main/file_800527C4.c"),
@@ -706,11 +707,11 @@ config.libs = [
             Object(NonMatching, "main/file_800B2C44.c"),
             Object(NonMatching, "main/file_800B4A44.c"),
             Object(NonMatching, "main/file_800B516C.c"),
-            Object(Matching, "main/file_800B79D0.c", extra_cflags=["-Cpp_exceptions on"]),
+            Object(Matching, "main/file_800B79D0.c"),
             Object(Matching, "main/file_800B993C.c"),
             Object(NonMatching, "main/file_800B9974.c"),
             Object(NonMatching, "main/file_800BD3EC.c"),
-            Object(Matching, "main/file_800BD8C4.c", extra_cflags=["-Cpp_exceptions on"]),
+            Object(Matching, "main/file_800BD8C4.c"),
             Object(NonMatching, "main/file_800BDEA0.c"),
             Object(NonMatching, "main/file_800DFDD4.c", mw_version="GC/1.2.5", cflags=cflags_base),  # HVQM4 library
             Object(NonMatching, "Unknown/File_0x800a6304.c", extra_cflags=["-cpp_exceptions on"]),
