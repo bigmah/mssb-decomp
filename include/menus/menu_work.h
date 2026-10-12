@@ -143,7 +143,10 @@ typedef struct MenuEntry {
     /*0x30*/ f32 angle30;
     /*0x34*/ f32 angle34;
     /*0x38*/ f32 _38;
-    /*0x3C*/ u8 _3C[0x10];
+    /*0x3C*/ f32 _3C;
+    /*0x40*/ f32 _40;
+    /*0x44*/ f32 _44;
+    /*0x48*/ u8 _48[0x4C - 0x48];
     /*0x4C*/ f32 heading;
     /*0x50*/ f32 _50;
     /*0x54*/ f32 _54;
@@ -152,7 +155,9 @@ typedef struct MenuEntry {
     /*0x70*/ f32 storedZ;
     /*0x74*/ Vec target;
     /*0x80*/ s32 objectId;
-    /*0x84*/ u8 _84[0x0C];
+    /*0x84*/ s32 _84;
+    /*0x88*/ f32 _88;
+    /*0x8C*/ f32 progress;
     /*0x90*/ f32 bouncePhase;
     /*0x94*/ s16 state;
     /*0x96*/ s16 _96;
@@ -168,17 +173,23 @@ typedef struct MenuEntry {
     /*0xB0*/ s16 targetLocation;
     /*0xB2*/ s16 locationIndex;
     /*0xB4*/ s16 _B4;
-    /*0xB6*/ u8 _B6[0xBA - 0xB6];
+    /*0xB6*/ u8 _B6;
+    /*0xB7*/ u8 _B7;
+    /*0xB8*/ u8 _B8;
+    /*0xB9*/ u8 _B9;
     /*0xBA*/ u8 mode;
     /*0xBB*/ u8 flagBB;
     /*0xBC*/ u8 flagBC;
     /*0xBD*/ u8 flagBD;
-    /*0xBE*/ u8 _BE[2];
+    /*0xBE*/ u8 _BE;
+    /*0xBF*/ u8 _BF;
     /*0xC0*/ s8 flagC0;
-    /*0xC1*/ u8 _C1[2];
+    /*0xC1*/ u8 _C1[2]; // indexed
     /*0xC3*/ u8 typeC3;
     /*0xC4*/ u8 flagC4;
-    /*0xC5*/ u8 _C5[5];
+    /*0xC5*/ u8 _C5;
+    /*0xC6*/ s8 _C6;
+    /*0xC7*/ u8 _C7[0xCA - 0xC7];
     /*0xCA*/ s8 flagCA;
     /*0xCB*/ s8 flagCB;
     /*0xCC*/ s8 flagCC;
@@ -477,12 +488,9 @@ typedef struct MenuData {
     /*0x197748*/ u8 _197748[0x19774C - 0x197748];
     /*0x19774C*/ s16 _19774C;
     /*0x19774E*/ s16 _19774E;
-    /*0x197750*/ u8 _197750[0x197766 - 0x197750];
-    /*0x197766*/ s16 _197766;
-    /*0x197768*/ s16 _197768;
-    /*0x19776A*/ s16 _19776A;
-    /*0x19776C*/ s16 _19776C;
-    /*0x19776E*/ u8 _19776E[0x19779A - 0x19776E];
+    /*0x197750*/ u8 _197750[0x197756 - 0x197750];
+    /*0x197756*/ s16 _197756[14]; // animation per entry (MenuEntry.objectId)
+    /*0x197772*/ u8 _197772[0x19779A - 0x197772];
     /*0x19779A*/ s16 _19779A;
     /*0x19779C*/ s16 _19779C;
     /*0x19779E*/ s16 _19779E;
@@ -536,7 +544,8 @@ typedef struct MenuData {
     /*0x1978DB*/ u8 _1978DB[20]; // indexed by _1978F0
     /*0x1978EF*/ u8 _1978EF;
     /*0x1978F0*/ s8 _1978F0;
-    /*0x1978F1*/ u8 _1978F1[0x1978F3 - 0x1978F1];
+    /*0x1978F1*/ u8 _1978F1;
+    /*0x1978F2*/ u8 _1978F2;
     /*0x1978F3*/ u8 _1978F3;
     /*0x1978F4*/ u8 _1978F4;
     /*0x1978F5*/ u8 _1978F5;

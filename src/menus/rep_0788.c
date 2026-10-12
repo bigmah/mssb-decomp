@@ -8094,20 +8094,20 @@ void fn_2_338D4(MenuTableContext* menu, MenuItemState* item) {
         lbl_80371C30[menu->baseIdx + item->offset].obj->_68 = 1;
         switch (kind) {
         case 0:
-            value = lbl_2_bss_1A824C->_197766;
-            magnitude = __abs(lbl_2_bss_1A824C->_197766);
+            value = lbl_2_bss_1A824C->_197756[8];
+            magnitude = __abs(lbl_2_bss_1A824C->_197756[8]);
             break;
         case 1:
-            value = lbl_2_bss_1A824C->_197768;
-            magnitude = __abs(lbl_2_bss_1A824C->_197768);
+            value = lbl_2_bss_1A824C->_197756[9];
+            magnitude = __abs(lbl_2_bss_1A824C->_197756[9]);
             break;
         case 2:
-            value = lbl_2_bss_1A824C->_19776A;
-            magnitude = __abs(lbl_2_bss_1A824C->_19776A);
+            value = lbl_2_bss_1A824C->_197756[10];
+            magnitude = __abs(lbl_2_bss_1A824C->_197756[10]);
             break;
         case 3:
-            value = lbl_2_bss_1A824C->_19776C;
-            magnitude = __abs(lbl_2_bss_1A824C->_19776C);
+            value = lbl_2_bss_1A824C->_197756[11];
+            magnitude = __abs(lbl_2_bss_1A824C->_197756[11]);
             break;
         }
         if (magnitude == 10000) {
