@@ -8,8 +8,7 @@
 #include "musyx/musyx.h"
 #include "Dolphin/os.h"
 
-// View of the sound manager (SoundManager, main/file_80021308.h): [0] unk0, [1 + g] groups[g].
-// TODO type: use SoundManager; the byte offsets (0x390, 0x396) are 32-bit layout.
+// The sound manager (main/file_80021308.h).
 #include "main/file_80021308.h" // SoundManager
 extern SoundManager lbl_800EF808;
 
@@ -850,7 +849,7 @@ s32 fn_1_A7E4(void) {
 
 // .text:0x0000A7B0 size:0x34
 s32 fn_1_A7B0(void) {
-    fn_80021518(0x33, lbl_800EF808.groups[0x31]);
+    fn_80021518(0x33, lbl_800EF808.groups[0x31]); // past groups[47]: the original reads the start of reverb here
     return 0;
 }
 
