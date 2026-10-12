@@ -1,6 +1,7 @@
 #include "main/file_8004BEB0.h"
 #include "main/file_80011640.h"
 #include "main/file_800263FC.h"
+#include "main/file_8004C19C.h"
 #include "static/GameSettings.h"
 #include "static/Camera.h"
 #include "static/Pad.h"
@@ -15,11 +16,23 @@ typedef struct UnkState_80366158 {
 extern UnkState_80366158 lbl_80366158;
 extern s16 lbl_800FBCA8[]; // per-character start frame
 extern s16 lbl_800FBD14[]; // per-character end frame
-extern s32 lbl_800FC494[][3]; // per-character effect offset, fixed point (x100000)
-extern EffectParams* lbl_800FC488[3];
+// Effect templates (ParticleParams5 layout); .stamp is filled in at runtime.
+ParticleParams5 lbl_800FC398 = {
+    0, 7, 3, 100000, 30000, 10000, 12, 8, 110000, 50000, 0, 60, 4500000, 20000000, 0, 2000000, 0xFFFFFF00, 0, 75000, 0
+};
+ParticleParams5 lbl_800FC3E8 = {
+    0, 7, 10, 18000, 20000, 60000, 12, 6, 109000, 101000, 0, 60, 4500000, 9400000, -1000000, 4500000, 0xFFFFFF00, 0, 75000, 0
+};
+ParticleParams5 lbl_800FC438 = {
+    0, 4, 1, 60000, 10000, 50000, 30, 8, 104000, 105999, 0, 90, 12800000, 10000000, 1000000, 6000000, 0x3C3C3C00, 0, 75000, 0
+};
+EffectParams* lbl_800FC488[3] = {
+    (EffectParams*)&lbl_800FC398, // TODO type: EffectParams and ParticleParams5 are the same struct
+    (EffectParams*)&lbl_800FC3E8,
+    (EffectParams*)&lbl_800FC438,
+};
+s32 lbl_800FC494[54][3] = {0}; // per-character effect offset, fixed point (x100000)
 extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
-extern f32 lbl_803CC82C; // 0.0f
-extern f32 lbl_803CC830; // 1.0f
 
 // .text:0x8004BEB0 size:0x1E4
 void fn_8004BEB0(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
@@ -44,9 +57,9 @@ void fn_8004BEB0(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     ctrl.base.type = 0;
     CTRLSetRotation(&ctrl.base, model->rot.x, model->rot.y, model->rot.z);
     CTRLBuildMatrix(&ctrl.base, m);
-    dir.x = lbl_803CC82C;
-    dir.y = lbl_803CC82C;
-    dir.z = lbl_803CC830;
+    dir.x = 0.0f;
+    dir.y = 0.0f;
+    dir.z = 1.0f;
     PSMTXMultVec(m, &dir, &dir);
 
     stamp = lbl_803CBD0C;
@@ -58,8 +71,9 @@ void fn_8004BEB0(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[2], 5); // TODO type
 }
 
-extern EffectParams* lbl_803CB860;
-DECL_SECT(".sdata") extern RGB8 lbl_803CB864[4];
+extern RepeatFxData lbl_800FC720;
+EffectParams* lbl_803CB860 = &lbl_800FC720.unk00;
+DECL_SECT(".sdata") RGB8 lbl_803CB864[4] = {{0xFF, 0xFF, 0xFF}, {0xFF, 0xB6, 0x64}, {0x00, 0x00, 0x00}, {0x00, 0x00, 0x00}};
 extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 
 // .text:0x8004C094 size:0x74

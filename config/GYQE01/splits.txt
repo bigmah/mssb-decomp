@@ -170,15 +170,15 @@ main/file_8004B284.c:
 	extab       start:0x800060F0 end:0x80006120
 	extabindex  start:0x80007CC8 end:0x80007D10
 	.text       start:0x8004B284 end:0x8004BEB0
-	.data       start:0x800FBF10 end:0x800FC384
+	.data       start:0x800FBF10 end:0x800FC398
 	.sdata2     start:0x803CC818 end:0x803CC828
 
 main/file_8004BEB0.c:
 	extab       start:0x80006120 end:0x80006138
 	extabindex  start:0x80007D10 end:0x80007D34
 	.text       start:0x8004BEB0 end:0x8004C19C
-	.data       start:0x800FC388 end:0x800FC720
-	.sdata      start:0x803CB864 end:0x803CB870
+	.data       start:0x800FC398 end:0x800FC720
+	.sdata      start:0x803CB860 end:0x803CB870
 	.sdata2     start:0x803CC828 end:0x803CC840
 
 main/file_8004C19C.c:
