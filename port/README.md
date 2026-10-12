@@ -12,9 +12,9 @@ cmake -S port -B build/port -G Ninja
 ninja -C build/port
 ```
 
-The default target compiles every game source (`mssb_game`, an object
-library). The `mssb` executable does not link yet (Phase 2):
-`ninja -C build/port mssb` shows the undefined symbols.
+The default target builds `build/port/mssb`. Run it with the disc image as
+an argument, `MSSB_ISO=...`, or `mario_baseball.iso` in a parent folder of the
+checkout. It does not get far yet: see `port/STATUS.md`.
 
 Options:
 
