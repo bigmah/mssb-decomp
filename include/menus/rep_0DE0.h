@@ -36,20 +36,19 @@ typedef struct {
     /* 0x307A */ u8 unk307A;
 } MenuDrawWorld;
 
-// Stadium background objects (lbl_2_data_2E608), indexed by stadium.
+// Draw-list node for fn_800A7D4C (DrawCallbackNode in main/file_800A7C08.h).
+typedef struct {
+    /* 0x0 */ u32 next; // TODO type: tagged link, set by fn_800A7D4C
+    /* 0x4 */ void (*func)(void);
+} MenuDrawNode;
+
+// Stadium background object (sStageObjects in rep_0DE0.c, at lbl_2_data_2E608).
 typedef struct {
     /* 0x0 */ s16 model;
     /* 0x2 */ s16 texSet;
     /* 0x4 */ s16 hasTexSet;
 } MenuStageObject;
 
-typedef struct {
-    /* 0x000 */ MenuStageObject objects[4][30];
-    /* 0x2D0 */ s16 boneCount[6];       // per model
-    /* 0x2DC */ s16 texCount[6];        // per model
-    /* 0x2E8 */ s16 texIndex[5][8];     // per texSet
-    /* 0x338 */ s8 objectCount[4];      // per stadium
-} MenuStageData;
 
 typedef struct {
     Mtx view;

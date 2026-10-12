@@ -19,3 +19,4 @@ void fn_3_CB344(s32 who, u8 val) {
     }
     lbl_3_common_bss_35154.val467 = val;
 }
+

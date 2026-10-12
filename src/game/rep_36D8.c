@@ -57,7 +57,11 @@ extern f32 lbl_3_data_21934[]; // per AI strength: max distance to go for an ite
 extern const f32 lbl_3_rodata_372C; // 0.001f
 extern f64 __fabs(f64);
 extern u16 lbl_3_data_81FC[]; // sound ids
-extern u8 lbl_3_bss_B791;
+// .bss (laid out last-defined-first)
+s32 lbl_3_bss_B798[0xA];
+f32 lbl_3_bss_B794;
+u8 lbl_3_bss_B791;
+static u8 lbl_3_bss_B790[0x1]; // unused
 extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
 
 // Inlined single-precision sqrt (MSL sqrtf with the rodata constants of this unit).
@@ -103,8 +107,6 @@ extern void fn_3_7DD6C(void);
 extern void fn_3_10F550(s32, s32);
 extern void fn_3_5A6D4(s32);
 extern f32 lbl_3_data_218BC[];
-extern s32 lbl_3_bss_B798[];
-extern f32 lbl_3_bss_B794;
 #include "static/UnknownHomes_Static.h"
 
 extern s16 lbl_3_data_21924[];
@@ -157,7 +159,6 @@ extern f32 lbl_3_data_21934[]; // per AI strength: max distance to go for an ite
 extern const f32 lbl_3_rodata_372C; // 0.001f
 extern f64 __fabs(f64);
 extern u16 lbl_3_data_81FC[]; // sound ids
-extern u8 lbl_3_bss_B791;
 extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
 
 // Inlined single-precision sqrt (MSL sqrtf with the rodata constants of this unit).

@@ -5,48 +5,75 @@
 extern DebugMenuState lbl_2_bss_100B8;
 extern UnlockFlags lbl_80361B20;
 
-// .text:0x00013BA4 size:0xFC
-// Page 4: toggle one of the four flags at lbl_80361B20+0xE4.
-void fn_2_13BA4(PortInput* in) {
-    u16 repeat = in->repeat;
-    if (repeat & 8) {
-        lbl_2_bss_100B8.flagSel--;
-        if ((s8)lbl_2_bss_100B8.flagSel < 0) {
-            lbl_2_bss_100B8.flagSel = 3;
-        }
-    } else if (repeat & 4) {
-        lbl_2_bss_100B8.flagSel++;
-        if ((s8)lbl_2_bss_100B8.flagSel == 4) {
-            lbl_2_bss_100B8.flagSel = 0;
-        }
-    } else if (repeat & 1) {
-        lbl_80361B20.flagsE4[(s8)lbl_2_bss_100B8.flagSel] ^= 1;
-    } else if (repeat & 2) {
-        lbl_80361B20.flagsE4[(s8)lbl_2_bss_100B8.flagSel] ^= 1;
-    } else if (in->pressed & 0x200) {
-        lbl_2_bss_100B8.flagSel = 0;
-        lbl_2_bss_100B8.page = 0;
+// -inline deferred emits functions in reverse source order: these are in reverse address order.
+
+// .text:0x00014220 size:0x354
+void fn_2_14220(PortInput* in) {
+    switch (lbl_2_bss_100B8.page) {
+    case 0:
+        fn_2_14164(in);
+        break;
+    case 1:
+        fn_2_1406C(in);
+        break;
+    case 2:
+        fn_2_13D70(in);
+        break;
+    case 3:
+        fn_2_13CA0(in);
+        break;
+    case 4:
+        fn_2_13BA4(in);
+        break;
     }
 }
 
-// .text:0x00013CA0 size:0xD0
-// Page 3: toggle lbl_80361B20._F5.
-void fn_2_13CA0(PortInput* in) {
+// .text:0x00014164 size:0xBC
+// Top menu: pick a page (1..4).
+void fn_2_14164(PortInput* in) {
     u16 repeat = in->repeat;
+    u16 pressed;
     if (repeat & 8) {
-        lbl_2_bss_100B8._4E--;
-        if ((s8)lbl_2_bss_100B8._4E < 0) {
-            lbl_2_bss_100B8._4E = 5;
+        lbl_2_bss_100B8.cursor--;
+        if ((s8)lbl_2_bss_100B8.cursor == 0) {
+            lbl_2_bss_100B8.cursor = 4;
         }
     } else if (repeat & 4) {
-        lbl_2_bss_100B8._4E++;
-        if ((s8)lbl_2_bss_100B8._4E == 6) {
-            lbl_2_bss_100B8._4E = 0;
+        lbl_2_bss_100B8.cursor++;
+        if ((s8)lbl_2_bss_100B8.cursor == 5) {
+            lbl_2_bss_100B8.cursor = 1;
+        }
+    } else {
+        pressed = in->pressed;
+        if (pressed & 0x100) {
+            lbl_2_bss_100B8.page = lbl_2_bss_100B8.cursor;
+        } else if (pressed & 0x200) {
+            lbl_2_bss_100B8.settingSel = 0;
+            lbl_2_bss_100B8.page = 0;
+            lbl_2_bss_100B8.cursor = 1;
+            lbl_2_bss_100B8._4B = 0;
+        }
+    }
+}
+
+// .text:0x0001406C size:0xF8
+// Page 1: toggle g_d_GameSettings._1A entries.
+void fn_2_1406C(PortInput* in) {
+    u16 repeat = in->repeat;
+    if (repeat & 8) {
+        lbl_2_bss_100B8.settingSel--;
+        if ((s8)lbl_2_bss_100B8.settingSel < 0) {
+            lbl_2_bss_100B8.settingSel = 5;
+        }
+    } else if (repeat & 4) {
+        lbl_2_bss_100B8.settingSel++;
+        if ((s8)lbl_2_bss_100B8.settingSel == 6) {
+            lbl_2_bss_100B8.settingSel = 0;
         }
     } else if (repeat & 1) {
-        lbl_80361B20._F5 ^= 1;
+        g_d_GameSettings._1A[(s8)lbl_2_bss_100B8.settingSel] ^= 1;
     } else if (repeat & 2) {
-        lbl_80361B20._F5 ^= 1;
+        g_d_GameSettings._1A[(s8)lbl_2_bss_100B8.settingSel] ^= 1;
     } else if (in->pressed & 0x200) {
         lbl_2_bss_100B8.page = 0;
     }
@@ -88,74 +115,49 @@ void fn_2_13D70(PortInput* in) {
     }
 }
 
-// .text:0x0001406C size:0xF8
-// Page 1: toggle g_d_GameSettings._1A entries.
-void fn_2_1406C(PortInput* in) {
+// .text:0x00013CA0 size:0xD0
+// Page 3: toggle lbl_80361B20._F5.
+void fn_2_13CA0(PortInput* in) {
     u16 repeat = in->repeat;
     if (repeat & 8) {
-        lbl_2_bss_100B8.settingSel--;
-        if ((s8)lbl_2_bss_100B8.settingSel < 0) {
-            lbl_2_bss_100B8.settingSel = 5;
+        lbl_2_bss_100B8._4E--;
+        if ((s8)lbl_2_bss_100B8._4E < 0) {
+            lbl_2_bss_100B8._4E = 5;
         }
     } else if (repeat & 4) {
-        lbl_2_bss_100B8.settingSel++;
-        if ((s8)lbl_2_bss_100B8.settingSel == 6) {
-            lbl_2_bss_100B8.settingSel = 0;
+        lbl_2_bss_100B8._4E++;
+        if ((s8)lbl_2_bss_100B8._4E == 6) {
+            lbl_2_bss_100B8._4E = 0;
         }
     } else if (repeat & 1) {
-        g_d_GameSettings._1A[(s8)lbl_2_bss_100B8.settingSel] ^= 1;
+        lbl_80361B20._F5 ^= 1;
     } else if (repeat & 2) {
-        g_d_GameSettings._1A[(s8)lbl_2_bss_100B8.settingSel] ^= 1;
+        lbl_80361B20._F5 ^= 1;
     } else if (in->pressed & 0x200) {
         lbl_2_bss_100B8.page = 0;
     }
 }
 
-// .text:0x00014164 size:0xBC
-// Top menu: pick a page (1..4).
-void fn_2_14164(PortInput* in) {
+// .text:0x00013BA4 size:0xFC
+// Page 4: toggle one of the four flags at lbl_80361B20+0xE4.
+void fn_2_13BA4(PortInput* in) {
     u16 repeat = in->repeat;
-    u16 pressed;
     if (repeat & 8) {
-        lbl_2_bss_100B8.cursor--;
-        if ((s8)lbl_2_bss_100B8.cursor == 0) {
-            lbl_2_bss_100B8.cursor = 4;
+        lbl_2_bss_100B8.flagSel--;
+        if ((s8)lbl_2_bss_100B8.flagSel < 0) {
+            lbl_2_bss_100B8.flagSel = 3;
         }
     } else if (repeat & 4) {
-        lbl_2_bss_100B8.cursor++;
-        if ((s8)lbl_2_bss_100B8.cursor == 5) {
-            lbl_2_bss_100B8.cursor = 1;
+        lbl_2_bss_100B8.flagSel++;
+        if ((s8)lbl_2_bss_100B8.flagSel == 4) {
+            lbl_2_bss_100B8.flagSel = 0;
         }
-    } else {
-        pressed = in->pressed;
-        if (pressed & 0x100) {
-            lbl_2_bss_100B8.page = lbl_2_bss_100B8.cursor;
-        } else if (pressed & 0x200) {
-            lbl_2_bss_100B8.settingSel = 0;
-            lbl_2_bss_100B8.page = 0;
-            lbl_2_bss_100B8.cursor = 1;
-            lbl_2_bss_100B8._4B = 0;
-        }
-    }
-}
-
-// .text:0x00014220 size:0x354
-void fn_2_14220(PortInput* in) {
-    switch (lbl_2_bss_100B8.page) {
-    case 0:
-        fn_2_14164(in);
-        break;
-    case 1:
-        fn_2_1406C(in);
-        break;
-    case 2:
-        fn_2_13D70(in);
-        break;
-    case 3:
-        fn_2_13CA0(in);
-        break;
-    case 4:
-        fn_2_13BA4(in);
-        break;
+    } else if (repeat & 1) {
+        lbl_80361B20.flagsE4[(s8)lbl_2_bss_100B8.flagSel] ^= 1;
+    } else if (repeat & 2) {
+        lbl_80361B20.flagsE4[(s8)lbl_2_bss_100B8.flagSel] ^= 1;
+    } else if (in->pressed & 0x200) {
+        lbl_2_bss_100B8.flagSel = 0;
+        lbl_2_bss_100B8.page = 0;
     }
 }

@@ -555,11 +555,10 @@ void fn_3_148EF0(u8* o, f32 ang) {
 }
 #pragma dont_inline on
 
-// NONMATCHING 89%: 148EF0 inlined; orig keeps a clrlwi copy of the colour base in its own saved reg (r30), ours folds it into the stb, shifting saved regs
-// .text:0x00148FD0 size:0x370 mapped:0x80788064
-#pragma dont_inline off
-#if NONMATCHING
-void fn_3_148FD0(u8* a, u8* p) {
+// The original inlines 148FD0 into 149340 into 14975C into 149BA8; CW only inlines bodies that big with a raised limit
+// (600 is enough; 1000 also inlines fn_3_14E234 into fn_3_14E7C0, which the original does not).
+#pragma inline_max_size(600)
+static inline void Inl148FD0(u8* a, u8* p) {
     s32 base = ((s32*)lbl_3_data_26E7C)[6];
     u8* t = ((u8**)(lbl_8036E548 + 0x2C50))[(s8)a[0x18]];
     u8 lo;
@@ -570,7 +569,7 @@ void fn_3_148FD0(u8* a, u8* p) {
     *(f32*)(p + 8) = -((f32)((s32*)lbl_3_data_26E7C)[5] / lbl_3_rodata_3930 + *(f32*)(t + 0x38));
     *(f32*)(p + 0xC) = lbl_3_rodata_3934[0];
     fn_3_148EF0(p, lbl_3_rodata_39BC * ((f32)(((s32*)lbl_3_data_26E7C)[0] / 2 - *(s16*)(p + 0x4A)) / ((f32)((s32*)lbl_3_data_26E7C)[0] * lbl_3_rodata_39A8)));
-    *(f32*)(p + 0x24) = *(f32*)(p + 0x20) = *(f32*)(p + 0x1C) = 0.0f;
+    *(f32*)(p + 0x1C) = *(f32*)(p + 0x20) = *(f32*)(p + 0x24) = 0.0f;
     r = lbl_3_rodata_39C0 * ((f32)((s32*)lbl_3_data_26E7C)[2] / lbl_3_rodata_3930);
     *(f32*)(p + 0x28) = (f32)(rand() % r) / lbl_3_rodata_39C0;
     *(f32*)(p + 0x2C) = (f32)(rand() % r) / lbl_3_rodata_39C0;
@@ -585,14 +584,8 @@ void fn_3_148FD0(u8* a, u8* p) {
     p[0x46] = lo + rand() % range;
     p[0x4C] = 0;
 }
-#endif
-#pragma dont_inline on
 
-// NONMATCHING 92% (measured with 148FD0 unwrapped): 148FD0 inlined; the hoisted float constants use one more saved FPR (f22) and the saved GPRs are shifted by one
-// .text:0x00149340 size:0x41C mapped:0x807883D4
-#pragma dont_inline off
-#if NONMATCHING
-void fn_3_149340(u8* o) {
+static inline void Inl149340(u8* o) {
     u8* p;
     u32 i;
     s32 q;
@@ -602,31 +595,53 @@ void fn_3_149340(u8* o) {
         *(s16*)(p + 0x4A) = i;
         *(f32*)(p + 0x38) = (f32)*(s32*)(lbl_3_data_26E7C + 0xC) / lbl_3_rodata_3930;
         *(f32*)(p + 0x3C) = (f32)*(s32*)(lbl_3_data_26E7C + 0x10) / lbl_3_rodata_3930;
-        fn_3_148FD0(o, p);
+        Inl148FD0(o, p);
         q = *(s32*)lbl_3_data_26E7C / 5;
         *(s16*)(p + 0x48) = ((i % 5) * q + rand() % q) * 2;
         i++;
         p = *(u8**)p;
     } while (p != NULL);
 }
-#endif
-#pragma dont_inline on
 
-// NONMATCHING 7%: the original inlines fn_3_149340 (itself with 148FD0 inlined); CW here won't inline two levels deep, so this calls it (nmverify call diff expected)
-// .text:0x0014975C size:0x44C mapped:0x807887F0
-#pragma dont_inline off
-#if NONMATCHING
-void fn_3_14975C(s8 a) {
+static inline void Inl14975C(s8 a) {
     u8* e = fn_80033A24(fn_3_14841C, 0x80, 0, *(s32*)lbl_3_data_26E7C, 1, 0x25);
     if (e != NULL) {
         e[0x18] = a;
-        fn_3_149340(e);
+        Inl149340(e);
     }
+}
+
+// NONMATCHING 89%: 148EF0 inlined; orig computes the clrlwi copy of the colour base early in its own saved reg (r30), ours sinks it to the end, shifting saved regs. Body shared with the inlined copies via Inl148FD0
+// .text:0x00148FD0 size:0x370 mapped:0x80788064
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_148FD0(u8* a, u8* p) {
+    Inl148FD0(a, p);
 }
 #endif
 #pragma dont_inline on
 
-// NONMATCHING 11%: the original inlines fn_3_14975C and through it fn_3_149340/148FD0; CW here won't inline that deep, so this calls it (nmverify call diff expected)
+// NONMATCHING 92%: 148FD0 inlined (via Inl148FD0); the hoisted float constants use one more saved FPR (f22) and the saved GPRs are shifted by one
+// .text:0x00149340 size:0x41C mapped:0x807883D4
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_149340(u8* o) {
+    Inl149340(o);
+}
+#endif
+#pragma dont_inline on
+
+// NONMATCHING 92%: 149340/148FD0 inlined via the Inl* helpers; differences are the 148FD0 register shifts
+// .text:0x0014975C size:0x44C mapped:0x807887F0
+#pragma dont_inline off
+#if NONMATCHING
+void fn_3_14975C(s8 a) {
+    Inl14975C(a);
+}
+#endif
+#pragma dont_inline on
+
+// NONMATCHING 92%: 14975C/149340/148FD0 inlined via the Inl* helpers; differences are the 148FD0 register shifts
 // .text:0x00149BA8 size:0x4C8 mapped:0x80788C3C
 #pragma dont_inline off
 #if NONMATCHING
@@ -639,7 +654,7 @@ void fn_3_149BA8(void) {
     }
     for (i = 0; i < 4; i++) {
         if (lbl_3_bss_B85C[i] > -1) {
-            fn_3_14975C(lbl_3_bss_B85C[i]);
+            Inl14975C(lbl_3_bss_B85C[i]);
         }
     }
 }
@@ -1533,6 +1548,47 @@ void fn_3_14D318(u8* a) {
     *(f32*)(a + 8) = *(f32*)(a + 8) + (rand() % 100 - 50) / 100.0;
 }
 
+// fn_3_14D44C body for fn_3_14D710, which inlines it twice (CW will not auto-inline the real one)
+static inline void Inl14D44C(u8* a, u8 kind) {
+    u8* p = *(u8**)(a + 0xC);
+    s32 n = 0;
+    do {
+        if (p[0x44] == 0 && *(s16*)(p + 0x4A) == 0) {
+            if (n < 3) {
+                f32* d = (f32*)lbl_3_data_21770;
+                f32* q;
+                f32 h = 0.5f;
+                p[0x44] = 1;
+                p[0x45] = kind;
+                p[0x46] = 0xFF;
+                p[0x4D] = lbl_3_data_26D00[0];
+                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)lbl_3_data_26D00[4];
+                p[0x43] = lbl_3_data_26D00[7];
+                q = (f32*)(g_Minigame + p[0x45] * 0x34 + 0x860);
+                *(f32*)(p + 4) = q[0];
+                *(f32*)(p + 8) = -(d[3] * h + q[1]);
+                *(f32*)(p + 0xC) = q[2];
+                *(f32*)(p + 4) = *(f32*)(p + 4) + (rand() % 100 - 50) / 100.0;
+                *(f32*)(p + 8) = *(f32*)(p + 8) + (rand() % 100 - 50) / 100.0;
+                *(s16*)(p + 0x4A) = lbl_3_data_26D00[17];
+                *(s16*)(p + 0x48) = 0;
+            } else {
+                p[0x44] = 2;
+                p[0x45] = kind;
+                p[0x46] = (n - 3) / 5;
+                p[0x4D] = lbl_3_data_26D00[1];
+                *(f32*)(p + 0x38) = *(f32*)(p + 0x3C) = (f32)lbl_3_data_26D00[11];
+                p[0x43] = lbl_3_data_26D00[14];
+                *(s16*)(p + 0x48) = (n - 3) % 5 * 4 + 1;
+                *(s16*)(p + 0x4A) = lbl_3_data_26D00[18];
+            }
+            n++;
+            p[0x40] = p[0x41] = p[0x42] = 0xFF;
+        }
+        p = *(u8**)p;
+    } while (p != NULL && n < 0x2B);
+}
+
 #pragma dont_inline off
 // .text:0x0014D44C size:0x288 mapped:0x8078C4E0
 void fn_3_14D44C(u8* a, u32 kind0) {
@@ -1591,22 +1647,19 @@ void fn_3_14D6D4(u8* p) {
     } while (p != NULL);
 }
 
-// NONMATCHING 13%: the original inlines fn_3_14D44C (twice) and fn_3_14D6D4; CW here inlines 14D6D4 but refuses 14D44C, so this calls it (nmverify call diff expected)
 // .text:0x0014D710 size:0x570 mapped:0x8078C7A4
-#if NONMATCHING
 void fn_3_14D710(s8 a) {
     u8* e = fn_800339F0(NULL, 0x20);
     if (e != NULL) {
-        fn_3_14D44C(e, a);
+        Inl14D44C(e, a);
     } else {
         e = fn_80033A24(fn_3_14CECC, 0xF0, 0, lbl_3_data_26D00[2], 1, 0x20);
         if (e != NULL) {
             fn_3_14D6D4(e);
-            fn_3_14D44C(e, a);
+            Inl14D44C(e, a);
         }
     }
 }
-#endif
 #pragma dont_inline on
 
 // .text:0x0014DC80 size:0x60 mapped:0x8078CD14
@@ -2817,19 +2870,153 @@ void fn_3_1534C0(u8* o) {
     *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BEC + 8) / lbl_3_rodata_3930;
 }
 
-// NONMATCHING 26%: the original inlines 1534C0/1531A4/152794 (one per case); CW only auto-inlines the first. With explicit static-inline copies of the three bodies it reaches 93% (rest is the pooled lbl_3_data_266A8 base), so the structure is right; kept as plain calls
+#if NONMATCHING
+static inline void Inl1534C0(u8* o) {
+    Mtx m;
+    Vec up;
+    Vec axis;
+    Vec dir;
+    Vec off;
+    f32 ang;
+    f32 r;
+    u8* cam;
+    cam = fn_80052734(fn_8005268C());
+    if (o[0x4D] != 0) {
+        r = fn_3_119854(2);
+    } else {
+        r = fn_3_119854(0);
+    }
+    up = lbl_3_rodata_38DC;
+    off.x = lbl_3_rodata_3934[0];
+    off.y = lbl_3_rodata_3934[0];
+    off.z = lbl_3_rodata_3A04 * r;
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECNormalize(&dir, &dir);
+    ang = (f32)acos(PSVECDotProduct(&up, &dir));
+    PSVECCrossProduct(&up, &dir, &axis);
+    if (lbl_3_rodata_3934[0] == PSVECMag(&axis)) {
+        axis.x = lbl_3_rodata_3934[0];
+        axis.z = lbl_3_rodata_3934[0];
+        axis.y = lbl_3_rodata_3948;
+    }
+    PSMTXRotAxisRad(m, &axis, ang);
+    PSMTXMultVec(m, &off, &off);
+    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
+    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
+    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26BEC;
+    o[0x4C] = 1;
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BEC + 0xC);
+    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
+    *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BEC + 8) / lbl_3_rodata_3930;
+}
+#endif
+
+#if NONMATCHING
+static inline void Inl1531A4(u8* o) {
+    Mtx m;
+    Vec up;
+    Vec axis;
+    Vec dir;
+    Vec off;
+    f32 ang;
+    f32 r;
+    u8* cam;
+    cam = fn_80052734(fn_8005268C());
+    if (o[0x4D] != 0) {
+        r = fn_3_119854(2);
+    } else {
+        r = fn_3_119854(0);
+    }
+    up = lbl_3_rodata_38DC;
+    off.x = lbl_3_rodata_3934[0];
+    off.y = lbl_3_rodata_3934[0];
+    off.z = lbl_3_rodata_3A04 * r;
+    off.x += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    off.y += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    off.z += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECNormalize(&dir, &dir);
+    ang = (f32)acos(PSVECDotProduct(&up, &dir));
+    PSVECCrossProduct(&up, &dir, &axis);
+    if (lbl_3_rodata_3934[0] == PSVECMag(&axis)) {
+        axis.x = lbl_3_rodata_3934[0];
+        axis.z = lbl_3_rodata_3934[0];
+        axis.y = lbl_3_rodata_3948;
+    }
+    PSMTXRotAxisRad(m, &axis, ang);
+    PSMTXMultVec(m, &off, &off);
+    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
+    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
+    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26BFC;
+    o[0x4C] = 2;
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BFC + 0xC);
+    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
+    *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BFC + 8) / lbl_3_rodata_3930;
+}
+#endif
+
+#if NONMATCHING
+static inline void Inl152794(u8* o) {
+    Mtx m;
+    Vec up;
+    Vec axis;
+    Vec dir;
+    Vec off;
+    f32 ang;
+    f32 r;
+    u8* cam;
+    cam = fn_80052734(fn_8005268C());
+    if (o[0x4D] != 0) {
+        r = fn_3_119854(2);
+    } else {
+        r = fn_3_119854(0);
+    }
+    up = lbl_3_rodata_38DC;
+    off.x = lbl_3_rodata_3934[0];
+    off.y = lbl_3_rodata_3934[0];
+    off.z = lbl_3_rodata_3A04 * r;
+    off.x += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    off.y += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    off.z += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECNormalize(&dir, &dir);
+    ang = (f32)acos(PSVECDotProduct(&up, &dir));
+    PSVECCrossProduct(&up, &dir, &axis);
+    if (lbl_3_rodata_3934[0] == PSVECMag(&axis)) {
+        axis.x = lbl_3_rodata_3934[0];
+        axis.z = lbl_3_rodata_3934[0];
+        axis.y = lbl_3_rodata_3948;
+    }
+    PSMTXRotAxisRad(m, &axis, ang);
+    PSMTXMultVec(m, &off, &off);
+    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
+    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
+    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26C0C;
+    o[0x4C] = 3;
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26C0C + 0xC);
+    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
+    *(f32*)(o + 0x14) = -((f32)*(s32*)(lbl_3_data_26C0C + 8) / lbl_3_rodata_3930);
+}
+#endif
+
+// NONMATCHING 93%: the original inlines 1534C0/1531A4/152794 (one per case); CW won't auto-inline the last two, and making the
+// standalone functions call shared helpers changes their stack layout, so these are static-inline copies of the three bodies.
+// The rest is the original reaching 26BEC/26BFC/26C0C through the pooled lbl_3_data_266A8 base
 // .text:0x001536A8 size:0x7E4 mapped:0x8079273C
 #if NONMATCHING
 void fn_3_1536A8(u8* obj, u8 mode) {
     switch (mode) {
     case 1:
-        fn_3_1534C0(obj);
+        Inl1534C0(obj);
         break;
     case 2:
-        fn_3_1531A4(obj);
+        Inl1531A4(obj);
         break;
     case 3:
-        fn_3_152794(obj);
+        Inl152794(obj);
         break;
     }
 }
@@ -3101,9 +3288,53 @@ void fn_3_1549F0(u8* a, s16 b, f32* pos, f32* rot) {
     } while (o != NULL);
 }
 
-// NONMATCHING 17%: the original inlines fn_3_1549F0 twice; CW here won't inline it (its Control/Mtx locals?), so this calls it (nmverify call diff expected)
-// .text:0x00154C7C size:0x5A0 mapped:0x80793D10
-#if NONMATCHING
+// fn_3_1549F0's body for fn_3_154C7C, which inlines it twice (CW won't auto-inline the real one; dir/v are declared
+// in the other order here, which the inlined copies' stack layout needs)
+static inline void Inl1549F0(u8* a, s16 b, f32* pos, f32* rot) {
+    struct { Control c; u32 pad[2]; } cc;
+    Mtx m;
+    Vec v;
+    f64 t;
+    Vec dir;
+    u8* o;
+    u8 i = 0;
+    o = *(u8**)(a + 0xC);
+    *(s32*)(a + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    do {
+        *(s16*)(o + 0x18) = b;
+        *(f32**)(o + 0x10) = pos;
+        *(f32**)(o + 0x14) = rot;
+        *(s16*)(o + 0x48) = i++;
+        o[0x4D] = *(s32*)lbl_3_data_26BC0;
+        o[0x4E] = 0;
+        if (*(s16*)(o + 0x48) == 0) {
+            *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+            cc.c.type = 0;
+            CTRLSetRotation(&cc.c, rot[0], rot[1], rot[2]);
+            CTRLBuildMatrix(&cc.c, m);
+            if (g_Minigame[0x1A2A] == 1) {
+                dir = lbl_3_data_26BB4;
+            } else {
+                PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
+            }
+            v.x = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.x);
+            v.y = dir.y;
+            v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
+            PSMTXMultVec(m, &v, &v);
+            v.x = v.x + pos[0];
+            t = __fabs(pos[1]);
+            v.y = v.y - t;
+            v.z = v.z + pos[2];
+            *(f32*)(o + 4) = v.x;
+            *(f32*)(o + 8) = v.y;
+            *(f32*)(o + 0xC) = v.z;
+            *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
+            o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+        }
+        o = *(u8**)o;
+    } while (o != NULL);
+}
+
 void fn_3_154C7C(s16 id, f32* pos, f32* rot) {
     u8 buf[0x5C];
     u8* h;
@@ -3113,7 +3344,7 @@ void fn_3_154C7C(s16 id, f32* pos, f32* rot) {
     if (h != NULL) {
         n = fn_800337CC(buf, *(s32*)(lbl_3_data_26BC0 + 4), 1);
         if (n != NULL) {
-            fn_3_1549F0(n, id, pos, rot);
+            Inl1549F0(n, id, pos, rot);
             p = *(u8**)(h + 0xC);
             if (p != NULL) {
                 while (*(u8**)p != NULL) {
@@ -3128,11 +3359,10 @@ void fn_3_154C7C(s16 id, f32* pos, f32* rot) {
     } else {
         n = fn_80033A24(fn_3_1542F4, 0x80, 0, *(s32*)(lbl_3_data_26BC0 + 4), 1, 0x27);
         if (n != NULL) {
-            fn_3_1549F0(n, id, pos, rot);
+            Inl1549F0(n, id, pos, rot);
         }
     }
 }
-#endif
 
 // .text:0x0015521C size:0x48 mapped:0x807942B0
 void fn_3_15521C(s16 a, f32* b, f32* c) {

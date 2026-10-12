@@ -1377,7 +1377,7 @@ typedef struct _CharacterStats {
     /*0x000*/ StatTable stats;
     /*0x03B*/ ChemistryTable chemistry;
     /*0x071*/ u8 BytesAfterChemistry[3];
-    /*0x074*/ s16 UnusedShorts[21];
+    /*0x074*/ u16 UnusedShorts[21];
 } CharacterStats;
 
 extern CharacterStats inMemRoster[TEAMS_PER_GAME][PLAYERS_PER_TEAM];

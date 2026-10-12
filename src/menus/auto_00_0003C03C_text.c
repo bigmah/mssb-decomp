@@ -11,8 +11,85 @@ extern u8 lbl_2_data_3CC8[];
 extern u32 lbl_803CBD0C[];
 extern u32* lbl_2_data_13374[];
 extern void fn_80031CA4(Vec*, u32*);
-extern u8 lbl_2_bss_15B8[];
-extern void* lbl_2_data_12C0C[];
+u8 lbl_2_bss_15B8[0x4000]; // current message script (copied from lbl_2_data_12C0C)
+// Message scripts, one per lbl_2_data_12C0C entry (u32 command words).
+// PORT: fn_2_422FC copies 0x4000 bytes from a script start (reads past its end).
+u32 lbl_2_data_124A8[44] = {
+    1, 0x42, 1, 0x43, 0x42, 2, 0x44, 0x64, 0x3F, 0x39E, 0x44, 0x14A, 0x40, 0x44, 0x2BC, 0x3F,
+    0x39F, 0x43, 0x40, 0x45, 3, 0x50, 0x41, 0x3A0, 3, 0x50, 0x55, 3, 1, 0x41, 0x3A1, 3, 0x50, 0x55,
+    3, 1, 0x41, 0x3A2, 3, 0x78, 0x55, 3, 1, 2,
+};
+u32 lbl_2_data_12558[48] = {
+    1, 0x42, 1, 0x43, 0x42, 2, 0x44, 0x64, 0x3F, 0x3A8, 0x44, 0x14A, 0x40, 0x44, 0x2BC, 3, 0x50,
+    0x3F, 0x3A9, 3, 0x50, 0x43, 0x40, 0x45, 3, 0x50, 0x41, 0x3AA, 3, 0x3C, 0x55, 3, 1, 0x41, 0x3AB,
+    3, 0x3C, 0x55, 3, 1, 0x41, 0x3AC, 3, 0x3C, 0x55, 3, 1, 2,
+};
+u32 lbl_2_data_12618[4] = {1, 0x1B, 6, 2};
+u32 lbl_2_data_12628[4] = {1, 0x1E, 6, 2};
+u32 lbl_2_data_12638[2] = {1, 2};
+u32 lbl_2_data_12640[18] = {1, 9, 0xA, 0x1C, 6, 0x31, 0x32, 0x56, 0x57, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x6C, 0x6D, 0x4A, 2};
+u32 lbl_2_data_12688[18] = {1, 9, 0xA, 0x1C, 6, 0x31, 0x32, 0x60, 0x61, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x6C, 0x6D, 0x4A, 2};
+u32 lbl_2_data_126D0[14] = {1, 0x1D, 6, 0x33, 0x34, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x6C, 0x6D, 0x4A, 2};
+u32 lbl_2_data_12708[14] = {1, 0x48, 6, 0x35, 0x36, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x6C, 0x6D, 0x4A, 2};
+u32 lbl_2_data_12740[17] = {1, 0x1F, 6, 0x13, 0x14, 0x6B, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x6C, 0x6D, 0x15, 0x16, 0x4B, 2};
+u32 lbl_2_data_12784[16] = {1, 0x20, 6, 0x13, 0x14, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x6C, 0x6D, 0x15, 0x16, 0x4B, 2};
+u32 lbl_2_data_127C4[16] = {1, 0x49, 6, 0x13, 0x14, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x6C, 0x6D, 0x15, 0x16, 0x4B, 2};
+u32 lbl_2_data_12804[14] = {1, 0x2B, 0x2C, 0x46, 0x47, 0x21, 0x22, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x4C, 2};
+u32 lbl_2_data_1283C[14] = {1, 0x2D, 0x2E, 0x46, 0x47, 0x23, 0x24, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x4C, 2};
+u32 lbl_2_data_12874[12] = {1, 0x2F, 0x30, 0x46, 0x47, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x4C, 2};
+u32 lbl_2_data_128A4[14] = {1, 0x31, 0x32, 0x46, 0x47, 0x21, 0x22, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x4D, 2};
+u32 lbl_2_data_128DC[14] = {1, 0x33, 0x34, 0x46, 0x47, 0x23, 0x24, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x4D, 2};
+u32 lbl_2_data_12914[14] = {1, 0x35, 0x36, 0x46, 0x47, 0x23, 0x24, 0x6A, 0x68, 0x69, 0x58, 0x59, 0x4D, 2};
+u32 lbl_2_data_1294C[5] = {1, 5, 0x233, 6, 2};
+u32 lbl_2_data_12960[5] = {1, 5, 0x240, 6, 2};
+u32 lbl_2_data_12974[5] = {1, 5, 0x241, 6, 2};
+u32 lbl_2_data_12988[5] = {1, 5, 0x242, 6, 2};
+u32 lbl_2_data_1299C[5] = {1, 5, 0x243, 6, 2};
+u32 lbl_2_data_129B0[5] = {1, 5, 0x244, 6, 2};
+u32 lbl_2_data_129C4[5] = {1, 5, 0x245, 6, 2};
+u32 lbl_2_data_129D8[5] = {1, 5, 0x246, 6, 2};
+u32 lbl_2_data_129EC[5] = {1, 5, 0x247, 6, 2};
+u32 lbl_2_data_12A00[5] = {1, 5, 0x248, 6, 2};
+u32 lbl_2_data_12A14[5] = {1, 5, 0x249, 6, 2};
+u32 lbl_2_data_12A28[5] = {1, 5, 0x24A, 6, 2};
+u32 lbl_2_data_12A3C[5] = {1, 5, 0x24B, 6, 2};
+u32 lbl_2_data_12A50[5] = {1, 5, 0x24C, 6, 2};
+u32 lbl_2_data_12A64[5] = {1, 5, 0x24D, 6, 2};
+u32 lbl_2_data_12A78[5] = {1, 5, 0x24E, 6, 2};
+u32 lbl_2_data_12A8C[5] = {1, 5, 0x24F, 6, 2};
+u32 lbl_2_data_12AA0[5] = {1, 5, 0x250, 6, 2};
+u32 lbl_2_data_12AB4[5] = {1, 5, 0x251, 6, 2};
+u32 lbl_2_data_12AC8[5] = {1, 5, 0x252, 6, 2};
+u32 lbl_2_data_12ADC[5] = {1, 5, 0x253, 6, 2};
+u32 lbl_2_data_12AF0[5] = {1, 5, 0x254, 6, 2};
+u32 lbl_2_data_12B04[5] = {1, 5, 0x255, 6, 2};
+u32 lbl_2_data_12B18[5] = {1, 5, 0x256, 6, 2};
+u32 lbl_2_data_12B2C[5] = {1, 5, 0x257, 6, 2};
+u32 lbl_2_data_12B40[5] = {1, 5, 0x258, 6, 2};
+u32 lbl_2_data_12B54[5] = {1, 5, 0x25D, 6, 2};
+u32 lbl_2_data_12B68[5] = {1, 5, 0x25F, 6, 2};
+u32 lbl_2_data_12B7C[5] = {1, 5, 0x260, 6, 2};
+u32 lbl_2_data_12B90[4] = {1, 0x29, 0x2A, 2};
+u32 lbl_2_data_12BA0[5] = {1, 5, 0x261, 6, 2};
+u32 lbl_2_data_12BB4[4] = {1, 0x5E, 0x5F, 2};
+u32 lbl_2_data_12BC4[2] = {1, 2};
+u32 lbl_2_data_12BCC[4] = {1, 0x54, 6, 2};
+u32 lbl_2_data_12BDC[4] = {1, 0x62, 0x63, 2};
+u32 lbl_2_data_12BEC[4] = {1, 0x64, 0x65, 2};
+u32 lbl_2_data_12BFC[4] = {1, 0x66, 0x67, 2};
+u32* lbl_2_data_12C0C[55] = {
+    lbl_2_data_124A8, lbl_2_data_12558, lbl_2_data_12618, lbl_2_data_12628, lbl_2_data_12638, lbl_2_data_12640,
+    lbl_2_data_12688, lbl_2_data_126D0, lbl_2_data_12708, lbl_2_data_12740, lbl_2_data_12784, lbl_2_data_127C4,
+    lbl_2_data_12804, lbl_2_data_1283C, lbl_2_data_12874, lbl_2_data_128A4, lbl_2_data_128DC, lbl_2_data_12914,
+    lbl_2_data_1294C, lbl_2_data_12960, lbl_2_data_12974, lbl_2_data_12988, lbl_2_data_1299C, lbl_2_data_129B0,
+    lbl_2_data_129C4, lbl_2_data_129D8, lbl_2_data_129EC, lbl_2_data_12A00, lbl_2_data_12A14, lbl_2_data_12A28,
+    lbl_2_data_12A3C, lbl_2_data_12A50, lbl_2_data_12A64, lbl_2_data_12A78, lbl_2_data_12A8C, lbl_2_data_12AA0,
+    lbl_2_data_12AB4, lbl_2_data_12AC8, lbl_2_data_12ADC, lbl_2_data_12AF0, lbl_2_data_12B04, lbl_2_data_12B18,
+    lbl_2_data_12B2C, lbl_2_data_12B40, lbl_2_data_12B54, lbl_2_data_12B68, lbl_2_data_12B7C, lbl_2_data_12B90,
+    lbl_2_data_12BA0, lbl_2_data_12BB4, lbl_2_data_12BC4, lbl_2_data_12BCC, lbl_2_data_12BDC, lbl_2_data_12BEC,
+    lbl_2_data_12BFC,
+};
+
 extern void* lbl_2_data_12CE8[];
 extern u8* lbl_803CC1B8;
 extern u8 lbl_80366B18[];
@@ -60,7 +137,7 @@ extern void fn_2_42490(void);
 extern int sndFXStartEx(int, int, int, int);
 extern u8 lbl_800EFBA4[];
 extern void fn_8006877C(s32);
-extern u8 lbl_2_data_1056C[];
+extern s16 lbl_2_data_1056C[4][6]; // rep_0788.c
 extern u8 lbl_2_data_3CE8[];
 extern u8 lbl_2_data_3C40[];
 extern s32 fn_2_8CC88(s32);
@@ -1073,7 +1150,7 @@ void fn_2_3D878(void) {
         if ((*(s16*)(o + 0x14))-- == 0) {
             lbl_2_bss_1A8234[0][0x1627AE] = 1;
             lbl_2_bss_1A8230[0][0x32A0F] = 1;
-            *(s16*)(o + 0x14) = *(s16*)(lbl_2_data_1056C + lbl_2_bss_1A8248[0][0x4415] * 0xC + lbl_2_bss_1A8248[0][0x441C] * 2);
+            *(s16*)(o + 0x14) = lbl_2_data_1056C[lbl_2_bss_1A8248[0][0x4415]][lbl_2_bss_1A8248[0][0x441C]];
             o[0x28] = 3;
         }
         break;

@@ -1397,3 +1397,9 @@ void AddVec2iToQuad(SpriteQuad* quad, Mtx mtx, SpriteDrawParams* params) {
     }
 }
 #endif
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .sbss 0x803CBBD8..0x803CBBDC (MWCC lays these out in reverse definition order)
+TexImage* lbl_803CBBD8;
+

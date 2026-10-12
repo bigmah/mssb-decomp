@@ -779,3 +779,39 @@ s32 fn_80036C88(s32* src, s32* dst) {
     return 0;
 }
 #endif
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x800F78E0..0x800F79A0
+Mtx lbl_800F78E0[4] = {
+    {{1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.0f}},
+    {
+        {0.39921874f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 0.39921874f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.39921874f, -511.0f},
+    },
+    {{0.0015625f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0015625f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0015625f, -2.0f}},
+    {
+        {0.20039062f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 0.20039062f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.20039062f, -256.5f},
+    },
+};
+
+// .bss 0x801F8640..0x8023DD80 (MWCC lays these out in reverse definition order)
+s16 lbl_8023D6C0[0x360];
+u8 lbl_801F86C0[];
+Mtx44 lbl_801F8680;
+Mtx44 lbl_801F8640;
+
+// .sdata 0x803CB810..0x803CB818
+s32 lbl_803CB810 = -1;
+s32 lbl_803CB814 = 864;
+
+// .sbss 0x803CBC90..0x803CBCA0 (MWCC lays these out in reverse definition order)
+SpaniObj* lbl_803CBC9C;
+s32 lbl_803CBC98;
+void* lbl_803CBC94;
+u8 lbl_803CBC91;
+u8 lbl_803CBC90;
+

@@ -13,9 +13,10 @@ typedef struct DATA_STACK {
 } DATA_STACK;
 
 static DATA_STACK dataStack0;
-static s32 dataStackNum;
-static DATA_STACK* dataStackCur;
+// .sbss is laid out in reverse definition order.
 static DATA_STACK* dataStackRoot;
+static DATA_STACK* dataStackCur;
+static s32 dataStackNum;
 
 void dataInitStack(u32 aramBase, u32 aramSize) {
   dataStackRoot = NULL;

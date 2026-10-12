@@ -5,13 +5,14 @@
 #endif
 
 static STREAM_INFO streamInfo[64];
-static u32 nextPublicID = 0;
+// Uninitialised statics: MWCC lays these out in reverse definition order.
+static u8 streamCallCnt;
+static u8 streamCallDelay;
 static struct {
   u8 a;
   u32 b;
 } streamUnk294;
-static u8 streamCallDelay = 0;
-static u8 streamCallCnt = 0;
+static u32 nextPublicID;
 
 void streamInit() {
   s32 i;

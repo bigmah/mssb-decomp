@@ -1049,3 +1049,32 @@ void* GetUITexture(void) {
 void* fn_80039AB4(void) {
     return lbl_800F7A40;
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x800F79A0..0x800F7A40
+Vec lbl_800F79A0[2] = {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}};
+BatSim lbl_800F79B8 = {
+    {{1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.0f}},
+    {0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f},
+    {0.0f, -0.89597f, 0.0f},
+    {{0.0f, -0.89597f, 0.0f}, {0.0f, 0.89597f, 0.0f}},
+    {0.23933218f, 0.02711064f, 0.23933218f},
+    0,
+    25,
+    36,
+    0,
+};
+
+// .sdata 0x803CB818..0x803CB828
+s16 lbl_803CB818 = -1;
+f32 lbl_803CB81C = 1.0f;
+s32 lbl_803CB820 = -1;
+f32 lbl_803CB824 = 0.25f;
+
+// .sbss 0x803CBCA0..0x803CBCA8 (MWCC lays these out in reverse definition order)
+u8 lbl_803CBCA2[6];
+u8 lbl_803CBCA1;
+u8 lbl_803CBCA0;
+

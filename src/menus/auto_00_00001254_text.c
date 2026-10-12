@@ -2,11 +2,19 @@
 #include "static/UnknownHomes_Static.h"
 #include <string.h>
 
+// This unit's .bss (emitted in reverse order of definition). Sizes are the
+// distances between the original symbols; TODO type: the buffers are byte views.
+s16 lbl_2_bss_3E4[0x1BA];
+u8 lbl_2_bss_3E0[4];
+u8 lbl_2_bss_3A8[0x38];
+u8 lbl_2_bss_3A0[8];
+u8 lbl_2_bss_20[0x380];
+extern u8 lbl_2_bss_758; // followed by 0x387 unreferenced bytes; stays in the auto split
+
 extern void fn_800625A4(u8, s32);
 
 extern u8 lbl_803297E0[];
 extern u8 lbl_803CB748[];
-extern u8 lbl_2_bss_3A0[];
 extern u8 lbl_803CBD24[];
 extern void fn_8004D0F0(void);
 extern s32 fn_8004CA6C(u16 buttons);
@@ -15,7 +23,6 @@ extern u8 lbl_80108EC4[];
 extern u32 fn_800628D4(s32 id);
 extern void fn_80050FE8(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4, s32 lockMode);
 extern void fn_2_7265C(void);
-extern s16 lbl_2_bss_3E4[];
 extern s16 fn_80067AC8(s16 id, s8 col);
 extern u8 lbl_800EF808[];
 extern void fn_80021AC8(void);
@@ -24,7 +31,6 @@ extern s8 lbl_80108DB8[];
 extern u8 lbl_803CBBC4[];
 extern u8 lbl_803C50E8[];
 extern u8 lbl_800FEF70[];
-extern u8 lbl_2_bss_758;
 extern void fn_2_15A90(s32* value, s32 min, u8 max);
 extern void fn_2_836A4(void);
 extern void fn_2_85108(void);
@@ -37,7 +43,6 @@ extern u8 lbl_2_bss_E8CC[];
 extern u8 lbl_2_bss_DCE8[];
 extern u8 lbl_803C6028[];
 extern s32 fn_80050760(s32 p, s32 held, s32 pressed, s32 dirs, s32 mode);
-extern u8 lbl_2_bss_20[];
 extern u8 lbl_2_data_180[];
 extern u8* lbl_803CC1B8;
 extern u8 lbl_803CBCE0[];
@@ -48,7 +53,6 @@ extern s32 fn_80022B68(void);
 extern void fn_2_12988(void);
 extern s32 fn_800697B0(void);
 extern void fn_8003F23C(void);
-extern u8 lbl_2_bss_3A8[];
 extern void fn_80066EAC(u8 team);
 extern u8 lbl_803CBCD8[];
 extern u8 lbl_80361B20[];
@@ -65,7 +69,6 @@ extern void fn_2_11A0(u16 value);
 extern void fn_80021AC0(s32 team, s32 slot);
 extern u8 lbl_2_data_E64[];
 extern u8 lbl_80366158[];
-extern u8 lbl_2_bss_3E0[];
 extern void fn_800649BC(void);
 extern void fn_800671FC(void);
 extern void fn_800684A4(void);

@@ -68,6 +68,15 @@ typedef struct TrailScratch {
     /* 0x90 */ Vec pos[18];
 } TrailScratch;
 extern TrailScratch lbl_8017EC00;
+
+// .bss
+TrailScratch lbl_8017EC00;
+f32 lbl_8017ED68[0x484];      // cosine table, filled at init
+Mtx lbl_8017FF78[2];
+Mtx lbl_8017FFE0 ATTRIBUTE_ALIGN(32);
+Vec lbl_80180010[4];
+Particle lbl_80180040[0x1400];
+Emitter lbl_801F8040[0x10];
 extern const Vec lbl_800E6784;    // (0, -1, 0)
 extern s32 lbl_803CB800;
 extern s32 lbl_803CB808; // easing iterations
@@ -89,6 +98,31 @@ extern Emitter* lbl_803CBC80;  // free emitter list (linked through next)
 extern EmitterHead lbl_803CBC84; // active list head
 #define EMITTER_HEAD ((Emitter*)&lbl_803CBC84)
 
+// .data
+u8 lbl_800F7840[32] = { // 4x4 RGB565 texture (white)
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+};
+UVCoord lbl_800F7860[7] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}, {1, 0}, {1, 1}};
+ParticleParams lbl_800F787C = {NULL, 6, 0, 1000000, 200, 20, {0, 10, 20, 0, 0, 20, 40, 1, 200, 255, 64}};
+TexCoordF lbl_800F78C0[4] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+
+// .sdata
+s32 lbl_803CB7F8 = 63;
+f32 lbl_803CB7FC = 0.05f;
+s32 lbl_803CB800 = 10;
+f32 lbl_803CB804 = 10.0f;
+s32 lbl_803CB808 = 1;
+f32 lbl_803CB80C = 10.0f;
+
+// .sbss (MWCC lays uninitialised small data out in reverse definition order)
+EmitterHead lbl_803CBC84;
+Emitter* lbl_803CBC80;
+s32 lbl_803CBC7C;
+u8 lbl_803CBC78;
+Particle* lbl_803CBC74;
+LightFlashTask* lbl_803CBC70;
+
 static inline f32 CosIdx(s32 angle) {
     s32 i = __abs(angle) & 0x7FF;
     if (i >= 0x401) {
@@ -98,6 +132,19 @@ static inline f32 CosIdx(s32 angle) {
 }
 
 #define SinIdx(angle) CosIdx((angle) + 0x600)
+
+// CosIdx with a branching abs (the original's form at some call sites).
+static inline f32 CosIdxB(s32 angle) {
+    s32 i = angle;
+    if (i < 0) {
+        i = -i;
+    }
+    i &= 0x7FF;
+    if (i >= 0x401) {
+        i = 0x800 - i;
+    }
+    return lbl_8017ED68[i];
+}
 
 static inline Emitter* FindEmitter(Emitter* e, u8 type) {
     if (e == NULL) {
@@ -218,31 +265,16 @@ static inline void LoadParticleTex(TexArchive* arc, s32 idx, GXTexWrapMode wrapS
     GXLoadTexObj(&texObj, GX_TEXMAP1);
 }
 
-static inline void DrawParticleQuad(Particle* p, TexArchive* arc) {
-    GXTexObj texObj;
-    GXTlutObj tlutObj;
-    TexImage* img;
-    s32 tex = p->texIndex;
-    Vec* corner;
+// Bind particle p's texture from arc.
+static inline void LoadParticleTexOf(Particle* p, TexArchive* arc) {
+    LoadParticleTex(arc, p->texIndex, GX_CLAMP, GX_CLAMP);
+}
+
+static inline void DrawParticleQuad(Particle* p, TexArchive* arc, Vec* corner) {
     s32 i;
 
-    if (arc == NULL) {
-        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-    } else {
-        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
-        img = &arc->entries[arc->entries[tex].index];
-        if (img->tlut != NULL) {
-            GXInitTexObjCI(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE, 0);
-            GXInitTlutObj(&tlutObj, img->tlut, img->tlutFormat, img->tlutEntries);
-            GXLoadTlut(&tlutObj, GX_TLUT0);
-        } else {
-            GXInitTexObj(&texObj, img->data, img->width, img->height, img->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-        }
-        GXInitTexObjLOD(&texObj, GX_LINEAR, GX_LINEAR, (f32)img->minLOD, (f32)img->maxLOD, img->lodBias, GX_FALSE, GX_FALSE, GX_ANISO_1);
-        GXLoadTexObj(&texObj, GX_TEXMAP1);
-    }
+    LoadParticleTex(arc, p->texIndex, GX_CLAMP, GX_CLAMP);
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    corner = lbl_80180010;
     for (i = 0; i < 4; i++) {
         GXPosition3f32(p->pos.x + corner[i].x, p->pos.y + corner[i].y, p->pos.z + corner[i].z);
         GXColor1u32(p->color.rgba);
@@ -250,32 +282,68 @@ static inline void DrawParticleQuad(Particle* p, TexArchive* arc) {
     }
 }
 
-static inline void QuadCorners(f32 width, f32 height) {
+static inline void QuadCorners(Vec* c, f32 width, f32 height) {
     s32 i;
-    f32 x1;
-    f32 x0;
-    f32 y0;
     f32 y1;
+    f32 x0;
+    f32 x1;
+    f32 y0;
 
     x1 = 0.5f * width;
     x0 = 0.5f * -width;
     y0 = 0.5f * -height;
     y1 = 0.5f * height;
-    lbl_80180010[0].z = 0.0f;
-    lbl_80180010[0].x = x0;
-    lbl_80180010[0].y = y0;
-    lbl_80180010[1].x = x1;
-    lbl_80180010[1].y = y0;
-    lbl_80180010[1].z = 0.0f;
-    lbl_80180010[2].x = x1;
-    lbl_80180010[2].y = y1;
-    lbl_80180010[2].z = 0.0f;
-    lbl_80180010[3].x = x0;
-    lbl_80180010[3].y = y1;
-    lbl_80180010[3].z = 0.0f;
+    c[0].z = 0.0f;
+    c[0].x = x0;
+    c[0].y = y0;
+    c[1].x = x1;
+    c[1].y = y0;
+    c[1].z = 0.0f;
+    c[2].x = x1;
+    c[2].y = y1;
+    c[2].z = 0.0f;
+    c[3].x = x0;
+    c[3].y = y1;
+    c[3].z = 0.0f;
     for (i = 0; i < 4; i++) {
-        PSMTXMultVec(lbl_8017FF78[0], &lbl_80180010[i], &lbl_80180010[i]);
+        PSMTXMultVec(lbl_8017FF78[0], &c[i], &c[i]);
     }
+}
+
+// Sort a particle list back to front by view-space z (the body of fn_80031F34,
+// which the original inlines into the draw functions).
+static inline Particle* ZSortParticles(Particle* list, s32 n) {
+    Vec v;
+    s32 i = 0;
+    s32 count = n;
+    ParticleSortEntry* buf;
+    ParticleSortEntry* ent;
+    Particle* p;
+
+    if (n != 0) {
+        buf = _OSAllocFromHeap(0x20, n * 2 * sizeof(ParticleSortEntry));
+        for (p = list, ent = buf; p != NULL; p = p->next) {
+            if (i >= n) {
+                OSReport("zsort particle err.\n");
+                break;
+            }
+            ent->p = p;
+            PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
+            i++;
+            ent->z = v.z;
+            ent++;
+        }
+        fn_800C07BC(buf, buf + n, count, sizeof(ParticleSortEntry), fn_80032038);
+        list = buf[0].p;
+        ent = buf;
+        while (--n != 0) {
+            ent->p->next = ent[1].p;
+            ent++;
+        }
+        ent->p->next = NULL;
+        fn_800ACFB0(buf);
+    }
+    return list;
 }
 
 s32 fn_8002E3DC(Emitter* e);
@@ -358,8 +426,7 @@ static inline u32 Expand4444(u16 c) {
 }
 
 // .text:0x800263FC size:0x59C
-// NONMATCHING 43%: the original inlines the z-sort (fn_80031F34) and the corner setup with the file-static bss base
-// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
+// NONMATCHING 93%: the original addresses the scratch matrices/corners off the file-static bss base (lbl_8017EC00 + offset)
 #if NONMATCHING
 s32 fn_800263FC(Emitter* e) {
     s32 alive = 0;
@@ -369,15 +436,15 @@ s32 fn_800263FC(Emitter* e) {
     Particle* lastDead = NULL;
     Particle* deadHead = NULL;
 
-    p = fn_80031F34(e->particles, e->count);
+    p = ZSortParticles(e->particles, e->count);
     e->particles = p;
     link = &e->particles;
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
     do {
         if (p->life != 0) {
-            QuadCorners(p->sizeX, p->sizeY);
-            DrawParticleQuad(p, e->tex);
+            QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
+            DrawParticleQuad(p, e->tex, lbl_80180010);
             p->sizeX = p->sizeX + p->dSize;
             p->sizeY = p->sizeX;
             a = p->color.c.a + p->dAlpha;
@@ -461,19 +528,17 @@ void fn_80026998(ParticleParamsF* prm) {
 #endif
 
 // .text:0x80026E58 size:0x4A8
-// NONMATCHING 66%: register allocation
+// NONMATCHING 98%: the original keeps the identity-matrix source pointer in r31 (ours r27) for the struct copy
 #if NONMATCHING
 s32 fn_80026E58(Emitter* e) {
     MtxBox ident;
-    Vec tgt;
-    Vec d;
     Vec v;
+    Vec tgt;
+    AttractParticle* p = (AttractParticle*)e->particles;
     s32 done = 0;
     s32 a;
-    AttractParticle* p;
 
     ident = lbl_800E685C;
-    p = (AttractParticle*)e->particles;
     if (e->u.attract.intensity > 0.0f) {
         GXLoadPosMtxImm(ident.m, GX_PNMTX0);
         GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
@@ -488,9 +553,9 @@ s32 fn_80026E58(Emitter* e) {
             } else if (p->life > 0) {
                 if (lbl_80366158._28 == 0) {
                     p->t = p->t + p->dt;
-                    PSVECSubtract(&p->pos, &tgt, &d);
-                    PSVECScale(&d, p->t, &d);
-                    PSVECAdd(&tgt, &d, &p->pos);
+                    PSVECSubtract(&p->pos, &tgt, &v);
+                    PSVECScale(&v, p->t, &v);
+                    PSVECAdd(&tgt, &v, &p->pos);
                 }
                 PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
                 if (p->life > p->life0 - p->fadeIn) {
@@ -635,7 +700,7 @@ void fn_80027918(u8 type, f32 v) {
 #endif
 
 // .text:0x80027968 size:0xBC4
-// NONMATCHING 64%: register allocation; the scratch arrays are addressed off the file-static bss base in the original
+// NONMATCHING 88%: register allocation; the scratch arrays are addressed off the file-static bss base (lbl_8017EC00 + offset) in the original
 #if NONMATCHING
 s32 fn_80027968(Emitter* e) {
     MtxBox ident;
@@ -998,7 +1063,7 @@ void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u3
 #endif
 
 // .text:0x80028F48 size:0x614
-// NONMATCHING 79%: register allocation
+// NONMATCHING 96%: register allocation
 #if NONMATCHING
 s32 fn_80028F48(Emitter* e) {
     MtxBox ident;
@@ -1140,34 +1205,36 @@ void fn_8002955C(Vec* pos, Vec* axis, ParticleParamsC* prm) {
 #endif
 
 // .text:0x800297F0 size:0x4D8
-// NONMATCHING 66%: float register allocation and scheduling
+// NONMATCHING 94%: float register allocation of yaw/pitch and scheduling of the conversions (declaration and conversion order tuned by search)
 #if NONMATCHING
 void fn_800297F0(Emitter* e, Vec* pos, Vec* axis, ParticleParamsC* prm) {
-    s32 lifeRange = prm->unk10 - prm->unkC;
-    SparkParticle* p = (SparkParticle*)e->particles;
+    SparkParticle* p;
+    s32 lifeRange;
     f32 spinMin;
     f32 spinRange;
     f32 speedMin;
     f32 speedRange;
     f32 sizeMin;
     f32 sizeRange;
-    f32 gravity;
-    f32 yaw;
-    f32 yawRange;
     f32 pitch;
+    f32 yaw;
+    f32 gravity;
+    f32 yawRange;
     f32 pitchRange;
     f32 pitchEnd;
     s32 fadeStart;
     u8 alpha;
 
     e->tex = prm->tex;
-    spinMin = ((f32)prm->unk1C / 100000.0f) / 360.0f;
     speedMin = (f32)prm->unk14 / 100000.0f;
-    sizeMin = (f32)prm->unk24 / 100000.0f;
-    gravity = (f32)prm->unk2C / 100000.0f;
     speedRange = (f32)prm->unk18 / 100000.0f - speedMin;
+    sizeMin = (f32)prm->unk24 / 100000.0f;
     sizeRange = (f32)prm->unk28 / 100000.0f - sizeMin;
+    spinMin = ((f32)prm->unk1C / 100000.0f) / 360.0f;
+    lifeRange = prm->unk10 - prm->unkC;
     spinRange = ((f32)prm->unk20 / 100000.0f) / 360.0f - spinMin;
+    gravity = (f32)prm->unk2C / 100000.0f;
+    p = (SparkParticle*)e->particles;
     if (axis != NULL) {
         yaw = (f32)prm->unk48 / 100000.0f;
         yawRange = (f32)(prm->unk4C - prm->unk48) / 100000.0f;
@@ -1225,7 +1292,7 @@ void fn_800297F0(Emitter* e, Vec* pos, Vec* axis, ParticleParamsC* prm) {
 #endif
 
 // .text:0x80029CC8 size:0x504
-// NONMATCHING 62%: register allocation; the original copies the identity matrix word by word
+// NONMATCHING 93%: register allocation and stack layout; the original copies the identity matrix word by word
 #if NONMATCHING
 s32 fn_80029CC8(Emitter* e) {
     MtxBox ident;
@@ -1300,27 +1367,25 @@ s32 fn_80029CC8(Emitter* e) {
 #endif
 
 // .text:0x8002A1CC size:0x690
-// NONMATCHING 44%: float register allocation/scheduling of the 14 parameter conversions
-#if NONMATCHING
 void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
-    Emitter* e;
-    Particle* p;
-    f32 speedMin = (f32)prm->speedMin / 100000.0f;
-    f32 speedRange = (f32)prm->speedMax / 100000.0f - speedMin;
-    f32 velMin = (f32)prm->velMin / 100000.0f;
-    f32 velRange = (f32)prm->velMax / 100000.0f - velMin;
-    f32 sizeXMin = (f32)prm->sizeXMin / 100000.0f;
-    f32 sizeXRange = (f32)prm->sizeXMax / 100000.0f - sizeXMin;
-    f32 sizeYMin = (f32)prm->sizeYMin / 100000.0f;
-    f32 sizeYRange = (f32)prm->sizeYMax / 100000.0f - sizeYMin;
-    f32 endXMin = (f32)prm->endXMin / 100000.0f;
-    f32 endXRange = (f32)prm->endXMax / 100000.0f - endXMin;
-    f32 endYMin;
-    f32 endYRange;
-    s32 lifeRange;
-    s32 instant;
     f32 step;
     f32 yaw;
+    Emitter* e;
+    Particle* p;
+    f32 speedMin;
+    f32 speedRange;
+    f32 velMin;
+    f32 velRange;
+    f32 sizeXMin;
+    f32 sizeXRange;
+    f32 endXMin;
+    f32 endXRange;
+    f32 sizeYMin;
+    f32 sizeYRange;
+    f32 endYMin;
+    f32 endYRange;
+    s32 instant;
+    s32 lifeRange;
     f32 pitch;
 
     e = NewEmitter(fn_80029CC8, 0x80, 0, prm->count, 1, 11);
@@ -1329,10 +1394,20 @@ void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
     }
     e->tex = prm->tex;
     memcpy(&e->u.t9.pos, pos, sizeof(Vec));
-    instant = prm->instant;
-    lifeRange = prm->lifeMax - prm->lifeMin;
+    speedMin = (f32)prm->speedMin / 100000.0f;
+    speedRange = (f32)prm->speedMax / 100000.0f - speedMin;
+    velMin = (f32)prm->velMin / 100000.0f;
+    velRange = (f32)prm->velMax / 100000.0f - velMin;
+    sizeXMin = (f32)prm->sizeXMin / 100000.0f;
+    sizeXRange = (f32)prm->sizeXMax / 100000.0f - sizeXMin;
+    endXMin = (f32)prm->endXMin / 100000.0f;
+    endXRange = (f32)prm->endXMax / 100000.0f - endXMin;
+    sizeYMin = (f32)prm->sizeYMin / 100000.0f;
+    sizeYRange = (f32)prm->sizeYMax / 100000.0f - sizeYMin;
     endYMin = (f32)prm->endYMin / 100000.0f;
     endYRange = (f32)prm->endYMax / 100000.0f - endYMin;
+    instant = prm->instant;
+    lifeRange = prm->lifeMax - prm->lifeMin;
     step = 360.0f / (f32)(s32)(f32)sqrt(prm->instant);
     pitch = -180.0f;
     yaw = -180.0f;
@@ -1344,7 +1419,7 @@ void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
         } else {
             p->delay = (prm->delayMax * rand()) / 32767;
         }
-        p->life = p->colorStep.tB.maxLife = prm->lifeMin + (lifeRange * rand()) / 32767;
+        p->colorStep.tB.maxLife = p->life = prm->lifeMin + (lifeRange * rand()) / 32767;
         memcpy(&p->pos, pos, sizeof(Vec));
         fn_800332B8(NULL, &p->u.tB.dir, yaw, yaw + step, pitch, pitch + step);
         yaw += step;
@@ -1366,18 +1441,17 @@ void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
         p = p->next;
     } while (p != NULL);
 }
-#endif
 
 // .text:0x8002A85C size:0x40C
-// NONMATCHING 67%: register allocation; the original inlines the corner setup and quad draw with different scheduling
+// NONMATCHING 99%: float register allocation of the inlined corner setup
 #if NONMATCHING
 u8 fn_8002A85C(Emitter* e, Particle* p) {
     s32 a;
 
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
-    QuadCorners(p->sizeX, p->sizeY);
-    DrawParticleQuad(p, e->tex);
+    QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
+    DrawParticleQuad(p, e->tex, lbl_80180010);
     a = p->color.c.a;
     if (p->u.tEsub.life0 - p->life < p->u.tEsub.phase1) {
         p->sizeX = p->sizeX + p->u.tEsub.dSizeX1;
@@ -1403,27 +1477,35 @@ u8 fn_8002A85C(Emitter* e, Particle* p) {
 #endif
 
 // .text:0x8002AC68 size:0x3AC
-// NONMATCHING 83%: register allocation
+// NONMATCHING 99%: float register allocation of the corner setup
 #if NONMATCHING
 u8 fn_8002AC68(Emitter* e, Particle* p) {
     Vec c[4];
     s32 a;
     s32 i;
+    f32 x0;
+    f32 x1;
+    f32 z0;
+    f32 z1;
 
     // flat quad on the ground (XZ plane)
+    x0 = 0.5f * -p->sizeX;
+    x1 = 0.5f * p->sizeX;
+    z0 = 0.5f * -p->sizeY;
+    z1 = 0.5f * p->sizeY;
     c[3].y = 0.0f;
-    c[0].x = -p->sizeX * 0.5f;
-    c[0].z = p->sizeY * 0.5f;
-    c[1].x = p->sizeX * 0.5f;
-    c[1].z = p->sizeY * 0.5f;
-    c[2].x = p->sizeX * 0.5f;
-    c[2].z = -p->sizeY * 0.5f;
-    c[3].x = -p->sizeX * 0.5f;
-    c[3].z = -p->sizeY * 0.5f;
+    c[0].x = x0;
+    c[0].z = z1;
+    c[1].x = x1;
+    c[1].z = z1;
+    c[2].x = x1;
+    c[2].z = z0;
+    c[3].x = x0;
+    c[3].z = z0;
     c[2].y = 0.0f;
     c[1].y = 0.0f;
     c[0].y = 0.0f;
-    LoadParticleTex(e->tex, p->texIndex, GX_CLAMP, GX_CLAMP);
+    LoadParticleTexOf(p, e->tex);
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_DSTALPHA, GX_LO_CLEAR);
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -1455,8 +1537,7 @@ u8 fn_8002AC68(Emitter* e, Particle* p) {
 #endif
 
 // .text:0x8002B014 size:0x3EC
-// NONMATCHING 36%: the original inlines the z-sort (fn_80031F34) twice
-// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
+// NONMATCHING 95%: register allocation in the inlined z-sorts (the original keeps the count copy in its own saved reg)
 #if NONMATCHING
 s32 fn_8002B014(Emitter* e) {
     s32 alive = 0;
@@ -1466,7 +1547,7 @@ s32 fn_8002B014(Emitter* e) {
     Particle* deadHead;
 
     if (e->count != 0) {
-        p = fn_80031F34(e->particles, e->count);
+        p = ZSortParticles(e->particles, e->count);
         e->particles = p;
         link = &e->particles;
         lastDead = NULL;
@@ -1474,22 +1555,24 @@ s32 fn_8002B014(Emitter* e) {
         // note: a particle with life 0 here would never be advanced past (as in the original)
         do {
             if (p->life != 0) {
-                if (p->delay > 0) {
-                    link = &p->next;
-                    p->delay--;
-                    alive++;
-                } else if (fn_8002AC68(e, p)) {
-                    *link = p->next;
-                    if (lastDead != NULL) {
-                        lastDead->next = p;
+                if (p->delay <= 0) {
+                    if (fn_8002AC68(e, p)) {
+                        *link = p->next;
+                        if (lastDead != NULL) {
+                            lastDead->next = p;
+                        } else {
+                            deadHead = p;
+                        }
+                        lastDead = p;
+                        p->next = NULL;
+                        e->count--;
                     } else {
-                        deadHead = p;
+                        link = &p->next;
+                        alive++;
                     }
-                    lastDead = p;
-                    p->next = NULL;
-                    e->count--;
                 } else {
                     link = &p->next;
+                    p->delay--;
                     alive++;
                 }
             }
@@ -1504,29 +1587,31 @@ s32 fn_8002B014(Emitter* e) {
         }
     }
     if (e->u.tE.subCount != 0) {
-        p = fn_80031F34(e->u.tE.sub, e->u.tE.subCount);
+        p = ZSortParticles(e->u.tE.sub, e->u.tE.subCount);
         e->u.tE.sub = p;
         link = &e->u.tE.sub;
         lastDead = NULL;
         deadHead = NULL;
         do {
             if (p->life != 0) {
-                if (p->delay > 0) {
-                    link = &p->next;
-                    p->delay--;
-                    alive++;
-                } else if (fn_8002A85C(e, p)) {
-                    *link = p->next;
-                    if (lastDead != NULL) {
-                        lastDead->next = p;
+                if (p->delay <= 0) {
+                    if (fn_8002A85C(e, p)) {
+                        *link = p->next;
+                        if (lastDead != NULL) {
+                            lastDead->next = p;
+                        } else {
+                            deadHead = p;
+                        }
+                        lastDead = p;
+                        p->next = NULL;
+                        e->u.tE.subCount--;
                     } else {
-                        deadHead = p;
+                        link = &p->next;
+                        alive++;
                     }
-                    lastDead = p;
-                    p->next = NULL;
-                    e->u.tE.subCount--;
                 } else {
                     link = &p->next;
+                    p->delay--;
                     alive++;
                 }
             }
@@ -1545,12 +1630,12 @@ s32 fn_8002B014(Emitter* e) {
 #endif
 
 // .text:0x8002B400 size:0x3F8
-// NONMATCHING 64%: float register allocation and scheduling
+// NONMATCHING 95%: register allocation (the delay/uvFrame zero and p in the sub loop)
 #if NONMATCHING
 void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos) {
     Particle* p = e->particles;
-    s32 i = 0;
     s32 delay;
+    s32 i = 0;
     f32 ang;
 
     do {
@@ -1558,8 +1643,8 @@ void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos) {
         p->uvFrame = 0;
         p->life = prm->life;
         p->texIndex = prm->texIndex;
-        p->sizeY = p->sizeX = prm->size[0];
-        p->color.c.b = p->color.c.g = p->color.c.r = 0xFF;
+        p->sizeX = p->sizeY = prm->size[0];
+        p->color.c.r = p->color.c.g = p->color.c.b = 0xFF;
         p->color.c.a = prm->alpha[0];
         p->unk4C = 2;
         p->pos.x = pos->x;
@@ -1580,7 +1665,7 @@ void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos) {
         p->texIndex = prm->subTexIndex;
         p->sizeX = prm->subSizeX[0];
         p->sizeY = prm->subSizeY[0];
-        p->color.c.b = p->color.c.g = p->color.c.r = 0xFF;
+        p->color.c.r = p->color.c.g = p->color.c.b = 0xFF;
         p->color.c.a = prm->subAlpha[0];
         p->unk4C = 1;
         ang = 0.017453292f * prm->angle0 + (f32)i * (0.017453292f * (prm->angleSpan / (f32)prm->subCount));
@@ -1770,7 +1855,7 @@ void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm) {
 #endif
 
 // .text:0x8002C56C size:0x864
-// NONMATCHING 54%: register allocation and float scheduling
+// NONMATCHING 94%: register allocation and float scheduling
 #if NONMATCHING
 s32 fn_8002C56C(Emitter* e) {
     Mtx ident;
@@ -1872,29 +1957,42 @@ void fn_8002CDD0(Vec* end) {
 }
 
 // .text:0x8002CE4C size:0x9E0
-// NONMATCHING 20%: the original converts all parameters up front (many float registers); same calls and stores
+// NONMATCHING 95%: scheduling/registers of the up-front parameter conversions (declaration and conversion order tuned by search); same calls and stores
 #if NONMATCHING
 void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
     Vec n;
     s32 sign = 1;
     s32 total;
-    s32 totalMin;
+    s32 p3Range;
     s32 totalRange;
-    s32 p3Min = prm->unk24;
-    s32 p3Range = prm->unk28 - prm->unk24;
-    s32 fadeMin = prm->unk2C;
-    s32 fadeRange = prm->unk30 - prm->unk2C;
-    s32 a;
+    s32 fadeRange;
+    s32 totalMin;
+    s32 fadeMin;
+    s32 p3Min;
     s32 ang;
     f32 r;
     f32 split;
     f32 splitRange;
     f32 yawMin;
     f32 yawMax;
-    f32 pitchMin;
-    f32 pitchMax;
+    f32 rMin;
+    f32 rRange;
     f32 dirLen;
     f32 dirLenRange;
+    f32 pitchMax;
+    f32 angMin;
+    f32 pitchMin;
+    f32 angRange;
+    f32 spinMin;
+    f32 spinRange;
+    f32 lenAMin;
+    f32 lenARange;
+    f32 lenBMin;
+    f32 lenBRange;
+    f32 reachMin;
+    f32 reachRange;
+    f32 offMin;
+    f32 offRange;
     Emitter* e;
     StreakParticle* p;
 
@@ -1906,12 +2004,30 @@ void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
     totalRange = (s32)((f32)prm->unk10 * ((f32)prm->unk18 / 100000.0f) - (f32)totalMin);
     split = (f32)prm->unk1C / 100000.0f;
     splitRange = (f32)(prm->unk20 - prm->unk1C) / 100000.0f;
-    yawMin = (f32)prm->unk3C / 100000.0f;
+    p3Min = prm->unk24;
+    rMin = (f32)prm->unk34 / 100000.0f;
+    fadeMin = prm->unk2C;
+    fadeRange = prm->unk30 - prm->unk2C;
+    p3Range = prm->unk28 - prm->unk24;
     yawMax = (f32)prm->unk40 / 100000.0f;
-    pitchMin = (f32)prm->unk44 / 100000.0f;
+    yawMin = (f32)prm->unk3C / 100000.0f;
+    rRange = (f32)(prm->unk38 - prm->unk34) / 100000.0f;
     pitchMax = (f32)prm->unk48 / 100000.0f;
+    angMin = (f32)prm->unk54 / 100000.0f;
     dirLen = (f32)prm->unk4C / 100000.0f;
     dirLenRange = (f32)(prm->unk50 - prm->unk4C) / 100000.0f;
+    angRange = (f32)(prm->unk58 - prm->unk54) / 100000.0f;
+    spinMin = (f32)prm->unk5C / 100000.0f;
+    pitchMin = (f32)prm->unk44 / 100000.0f;
+    spinRange = (f32)(prm->unk60 - prm->unk5C) / 100000.0f;
+    lenAMin = (f32)prm->unk64 / 100000.0f;
+    lenARange = (f32)(prm->unk68 - prm->unk64) / 100000.0f;
+    lenBMin = (f32)prm->unk6C / 100000.0f;
+    lenBRange = (f32)(prm->unk70 - prm->unk6C) / 100000.0f;
+    reachMin = (f32)prm->unk74 / 100000.0f;
+    reachRange = (f32)(prm->unk78 - prm->unk74) / 100000.0f;
+    offMin = (f32)prm->unk7C / 100000.0f;
+    offRange = (f32)(prm->unk80 - prm->unk7C) / 100000.0f;
     e->tex = prm->tex;
     e->u.t10.texIndex = prm->texIndex;
     e->u.t10.unk40 = prm->unk10;
@@ -1936,14 +2052,14 @@ void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
         p->dir.x = p->dir.x * (f32)sign;
         sign *= -1;
         PSVECNormalize(&p->dir, &n);
-        PSVECScale(&n, (f32)prm->unk7C / 100000.0f + (((f32)(prm->unk80 - prm->unk7C) / 100000.0f) * (f32)rand()) / 32767.0f, &p->offset);
-        p->lenA = (f32)prm->unk64 / 100000.0f + (((f32)(prm->unk68 - prm->unk64) / 100000.0f) * (f32)rand()) / 32767.0f;
-        p->lenB = ((f32)prm->unk6C / 100000.0f + (((f32)(prm->unk70 - prm->unk6C) / 100000.0f) * (f32)rand()) / 32767.0f) - p->lenA;
-        p->reach = (f32)prm->unk74 / 100000.0f + (((f32)(prm->unk78 - prm->unk74) / 100000.0f) * (f32)rand()) / 32767.0f;
-        p->spin = (f32)prm->unk5C / 100000.0f + (((f32)(prm->unk60 - prm->unk5C) / 100000.0f) * (f32)rand()) / 32767.0f;
-        ang = (s32)(0.5f + (2048.0f * ((f32)prm->unk54 / 100000.0f + (((f32)(prm->unk58 - prm->unk54) / 100000.0f) * (f32)rand()) / 32767.0f)) / 360.0f);
-        r = 1.4142135f * (((f32)prm->unk34 / 100000.0f + (((f32)(prm->unk38 - prm->unk34) / 100000.0f) * (f32)rand()) / 32767.0f) * 0.5f);
-        p->sizeX = r * CosIdx(ang);
+        PSVECScale(&n, offMin + (offRange * (f32)rand()) / 32767.0f, &p->offset);
+        p->lenA = lenAMin + (lenARange * (f32)rand()) / 32767.0f;
+        p->lenB = (lenBMin + (lenBRange * (f32)rand()) / 32767.0f) - p->lenA;
+        p->reach = reachMin + (reachRange * (f32)rand()) / 32767.0f;
+        p->spin = spinMin + (spinRange * (f32)rand()) / 32767.0f;
+        ang = (s32)(0.5f + (2048.0f * (angMin + (angRange * (f32)rand()) / 32767.0f)) / 360.0f);
+        r = 1.4142135f * ((rMin + (rRange * (f32)rand()) / 32767.0f) * 0.5f);
+        p->sizeX = r * CosIdxB(ang);
         p->sizeY = r * SinIdx(ang);
         p->color.rgba = 0xFFFFFFFF;
         p->uvOrder = (rand() & 1) ? 0x123 : 0x321;
@@ -2121,11 +2237,9 @@ void fn_8002DCE4(Vec* from, Vec* to, ParticleParams9* prm) {
 #endif
 
 // .text:0x8002E3DC size:0x44C
-// NONMATCHING 72%: register allocation only (same instructions)
-#if NONMATCHING
 s32 fn_8002E3DC(Emitter* e) {
-    s32 alive = 0;
     Particle* p = e->particles;
+    s32 alive = 0;
     f32 size;
 
     GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
@@ -2138,21 +2252,20 @@ s32 fn_8002E3DC(Emitter* e) {
             p->sizeY = size;
             p->sizeX = size;
         }
-        QuadCorners(p->sizeX, p->sizeY);
-        DrawParticleQuad(p, e->tex);
+        QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
+        DrawParticleQuad(p, e->tex, lbl_80180010);
         alive += (p->life > 0);
         p = p->next;
     } while (p != NULL);
     return alive == 0;
 }
-#endif
 
 // .text:0x8002E828 size:0x478
-// NONMATCHING 72%: register allocation only (same instructions)
+// NONMATCHING 99%: float register allocation of the inlined corner setup
 #if NONMATCHING
 s32 fn_8002E828(Emitter* e) {
-    s32 alive = 0;
     Particle* p = e->particles;
+    s32 alive = 0;
     f32 size;
 
     GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
@@ -2167,8 +2280,8 @@ s32 fn_8002E828(Emitter* e) {
         size = p->u.t6.unk10 + ((p->u.t6.unk14 - p->u.t6.unk10) * (f32)(p->u.t6.unk1C - p->life)) / (f32)p->u.t6.unk1C;
         p->sizeY = size;
         p->sizeX = size;
-        QuadCorners(p->sizeX, p->sizeY);
-        DrawParticleQuad(p, e->tex);
+        QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
+        DrawParticleQuad(p, e->tex, lbl_80180010);
         alive += (p->life > 0);
         p = p->next;
     } while (p != NULL);
@@ -2177,24 +2290,24 @@ s32 fn_8002E828(Emitter* e) {
 #endif
 
 // .text:0x8002ECA0 size:0x50C
-// NONMATCHING 75%: register allocation; same calls and stores
+// NONMATCHING 99%: float load order and the fcmpu operand order of the PSVECMag test
 #if NONMATCHING
 s32 fn_8002ECA0(Emitter* e) {
     Vec d;
-    s32 alive = 0;
     Particle* p = e->particles;
-    Particle** link = &e->particles;
-    Particle* lastDead = NULL;
-    Particle* deadHead = NULL;
+    s32 alive = 0;
     GXPrimitive prim;
+    Particle* deadHead = NULL;
+    Particle* lastDead = NULL;
+    Particle** link = &e->particles;
     s32 a;
 
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     do {
         PSVECSubtract(&p->pos, &p->u.trail.prev, &d);
-        LoadParticleTex(e->tex, p->texIndex, GX_CLAMP, GX_CLAMP);
-        if (PSVECMag(&d) != 0.0f) {
+        LoadParticleTexOf(p, e->tex);
+        if (0.0f != PSVECMag(&d)) {
             PSVECNormalize(&d, &d);
             PSVECScale(&d, p->u.trail.width * 0.5f, &d);
             prim = GX_TRIANGLESTRIP;
@@ -2337,7 +2450,7 @@ void fn_8002F258(Vec* pos, s32 id, ParticleParams* prm) {
 #endif
 
 // .text:0x8002F5F4 size:0x408
-// NONMATCHING 49%: register allocation and float scheduling
+// NONMATCHING 86%: register allocation (prm/i, the inlined allocation) and a 0x10 smaller stack frame
 #if NONMATCHING
 void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm) {
     Vec v;
@@ -2372,7 +2485,7 @@ void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm) {
         }
         p->sizeY = size;
         p->sizeX = size;
-        p->color.rgba = (prm->gray << 24) | (prm->gray << 8) | (prm->gray << 16) | 0xFF;
+        p->color.rgba = (prm->gray << 24) | ((prm->gray << 8) | (prm->gray << 16)) | 0xFF;
         p->texIndex = prm->texIndex;
         p->uvFrame = 0;
         p->uvOrder = 1;
@@ -2382,7 +2495,7 @@ void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm) {
         p->pos.z = v.z;
         p->sizeY = size;
         p->sizeX = size;
-        p->color.rgba = (prm->gray << 24) | (prm->gray << 8) | (prm->gray << 16) | 0xFF;
+        p->color.rgba = (prm->gray << 24) | ((prm->gray << 8) | (prm->gray << 16)) | 0xFF;
         p->texIndex = prm->texIndex2[i];
         p->uvFrame = 0;
         p->uvOrder = 0;
@@ -2393,27 +2506,24 @@ void fn_8002F5F4(Vec* pos, Vec* dir, ParticleParams8* prm) {
 #endif
 
 // .text:0x8002F9FC size:0x3BC
-// NONMATCHING 84%: register allocation only
-#if NONMATCHING
 s32 fn_8002F9FC(Emitter* e) {
     Particle* p = e->particles;
 
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
     do {
-        QuadCorners(p->sizeX, p->sizeY);
+        QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
         // uvOrder selects the blend: nonzero subtracts, zero adds
         if (p->uvOrder != 0) {
             GXSetBlendMode(GX_BM_SUBTRACT, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
         } else {
             GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_ONE, GX_LO_CLEAR);
         }
-        DrawParticleQuad(p, e->tex);
+        DrawParticleQuad(p, e->tex, lbl_80180010);
         p = p->next;
     } while (p != NULL);
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
     return 1;
 }
-#endif
 
 // .text:0x8002FDB8 size:0x6B8
 // NONMATCHING 78%: float register allocation and scheduling
@@ -2483,7 +2593,7 @@ void fn_8002FDB8(Emitter* e, Vec* pos, Vec* dir, Vec* velScale, ParticleParams5*
             }
         }
         PSVECSubtract(&sp, &d, &d);
-        if (PSVECMag(&d) != 0.0f) {
+        if (0.0f != PSVECMag(&d)) {
             PSVECNormalize(&d, &d);
         } else {
             d.x = 0.0f;
@@ -2548,7 +2658,7 @@ void fn_80030470(Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm, u8 typ
 #endif
 
 // .text:0x80030720 size:0x668
-// NONMATCHING 60%: float register allocation and scheduling
+// NONMATCHING 96%: float register allocation and scheduling
 #if NONMATCHING
 void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm) {
     Mtx rot;
@@ -2660,8 +2770,7 @@ void fn_80030D88(Vec* pos, Vec* dir, ParticleParams5* prm, u8 type) {
 #endif
 
 // .text:0x80031034 size:0x790
-// NONMATCHING 43%: the original inlines fn_80031F34 and the corner/draw helpers with the file-static bss base
-// nmverify: fn_80031F34 inlined on one side (calls match once expanded)
+// NONMATCHING 89%: the original addresses the corners/billboard matrix off the file-static bss base (lbl_8017EC00 + offset)
 #if NONMATCHING
 s32 fn_80031034(Emitter* e) {
     Vec a;
@@ -2681,7 +2790,7 @@ s32 fn_80031034(Emitter* e) {
 
     GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
     GXSetZMode(GX_TRUE, GX_LEQUAL, e->u.t5.unk18);
-    e->particles = fn_80031F34(e->particles, e->count);
+    e->particles = ZSortParticles(e->particles, e->count);
     p = e->particles;
     link = &e->particles;
     while (p != NULL) {
@@ -2757,7 +2866,7 @@ s32 fn_80031034(Emitter* e) {
         for (i = 0; i < 4; i++) {
             PSMTXMultVec(lbl_8017FF78[0], &lbl_80180010[i], &lbl_80180010[i]);
         }
-        DrawParticleQuad(p, e->tex);
+        DrawParticleQuad(p, e->tex, lbl_80180010);
         if (alpha < 0) {
             p->life = 0;
         } else if (lbl_80366158._28 == 0) {
@@ -2875,40 +2984,10 @@ void fn_80031CA4(Vec* pos, ParticleParams5* prm) {
 #endif
 
 // .text:0x80031F34 size:0x104
-// NONMATCHING 62%: the original keeps n and the countdown copy in separate saved regs
+// NONMATCHING 92%: the original keeps n and the count copy in separate saved regs
 #if NONMATCHING
 Particle* fn_80031F34(Particle* list, s32 n) {
-    Vec v;
-    s32 i = 0;
-    s32 left = n;
-    ParticleSortEntry* buf;
-    ParticleSortEntry* ent;
-    Particle* p;
-
-    if (n != 0) {
-        buf = _OSAllocFromHeap(0x20, n * 2 * sizeof(ParticleSortEntry));
-        for (p = list, ent = buf; p != NULL; p = p->next) {
-            if (i >= n) {
-                OSReport("zsort particle err.\n");
-                break;
-            }
-            ent->p = p;
-            PSMTXMultVec(lbl_8017FFE0, &p->pos, &v);
-            i++;
-            ent->z = v.z;
-            ent++;
-        }
-        fn_800C07BC(buf, buf + n, n, sizeof(ParticleSortEntry), fn_80032038);
-        list = buf[0].p;
-        ent = buf;
-        while (--left != 0) {
-            ent->p->next = ent[1].p;
-            ent++;
-        }
-        ent->p->next = NULL;
-        fn_800ACFB0(buf);
-    }
-    return list;
+    return ZSortParticles(list, n);
 }
 #endif
 
@@ -2924,35 +3003,34 @@ s32 fn_80032038(const void* a, const void* b) {
 }
 
 // .text:0x80032064 size:0x220
-// NONMATCHING 40%: register allocation of the inlined emitter allocation; the original keeps &lbl_800F787C in a register (stwu)
-#if NONMATCHING
 void fn_80032064(Vec* pos, ParticleParamsB* prm) {
     Emitter* e;
     Particle* p;
     f32 size;
+    ParticleParams* tmpl;
 
-    lbl_800F787C.tex = lbl_803CBD0C;
+    tmpl = &lbl_800F787C;
+    tmpl->tex = lbl_803CBD0C;
     e = NewEmitter(fn_8002E828, 0x80, 0, 1, 1, 6);
     if (e != NULL) {
-        e->tex = lbl_800F787C.tex;
+        e->tex = tmpl->tex;
         p = e->particles;
         p->pos.x = pos->x;
         p->pos.y = pos->y;
         p->pos.z = pos->z;
         p->color.rgba = 0xFFFFFF00;
-        p->u.t6.unk18 = lbl_800F787C.unk10;
-        p->u.t6.unk1C = p->life = lbl_800F787C.life;
-        p->u.t6.unk20 = lbl_800F787C.life / 2;
-        size = (f32)lbl_800F787C.size / 100000.0f;
+        p->u.t6.unk18 = tmpl->unk10;
+        p->u.t6.unk1C = p->life = tmpl->life;
+        p->u.t6.unk20 = tmpl->life / 2;
+        size = (f32)tmpl->size / 100000.0f;
         p->u.t6.unk10 = size;
         p->sizeY = size;
         p->sizeX = size;
-        p->u.t6.unk14 = (f32)lbl_800F787C.unkC / 100000.0f;
-        p->texIndex = lbl_800F787C.texIndex;
+        p->u.t6.unk14 = (f32)tmpl->unkC / 100000.0f;
+        p->texIndex = tmpl->texIndex;
     }
     fn_8002A1CC(pos, prm);
 }
-#endif
 
 // .text:0x80032284 size:0x268
 // NONMATCHING 98%: r6/r7 swapped and one store scheduled differently in the inlined emitter allocation
@@ -2992,14 +3070,15 @@ void fn_80032284(Vec* pos) {
 #endif
 
 // .text:0x800324EC size:0x3F4
-// NONMATCHING 35%: the original also builds an unused 32-entry color table on the stack; inlined emitter allocation registers
-#if NONMATCHING
 void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
-    Vec q;
     Vec pos;
+    Vec q;
+    u32 colors[32];
     Emitter* e;
     Particle* p;
+    u32 i;
     f32 size;
+    ParticleParams* tmpl;
 
     if (a < 0 || a >= 13 || lbl_8036E548.active[a] == NULL) {
         return;
@@ -3012,36 +3091,41 @@ void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
         PSVECScale(&q, 0.5f, &q);
         PSVECAdd(&pos, &q, &pos);
     }
-    // (the original also fills a never-read stack table of 32 colors built from
-    // lbl_800F787C words 0x38/0x3C/0x40 and copies the camera translation; omitted)
-    lbl_800F787C.tex = lbl_803CBD0C;
+    // never read: the camera translation and a table of 32 colors
+    q.x = lbl_8017FFE0[0][3];
+    q.y = lbl_8017FFE0[1][3];
+    q.z = lbl_8017FFE0[2][3];
+    colors[0] = (lbl_800F787C.unk18[8] << 24) | (lbl_800F787C.unk18[9] << 16) | (lbl_800F787C.unk18[10] << 8) | 0xFF;
+    for (i = 1; i < 32; i++) {
+        colors[i] = colors[0];
+    }
+    tmpl = &lbl_800F787C;
+    tmpl->tex = lbl_803CBD0C;
     e = NewEmitter(fn_8002E828, 0x80, 0, 1, 1, 6);
     if (e != NULL) {
-        e->tex = lbl_800F787C.tex;
+        e->tex = tmpl->tex;
         p = e->particles;
         p->pos.x = pos.x;
         p->pos.y = pos.y;
         p->pos.z = pos.z;
         p->color.rgba = 0xFFFFFF00;
-        p->u.t6.unk18 = lbl_800F787C.unk10;
-        p->u.t6.unk1C = p->life = lbl_800F787C.life;
-        p->u.t6.unk20 = lbl_800F787C.life / 2;
-        size = (f32)lbl_800F787C.size / 100000.0f;
+        p->u.t6.unk18 = tmpl->unk10;
+        p->u.t6.unk1C = p->life = tmpl->life;
+        p->u.t6.unk20 = tmpl->life / 2;
+        size = (f32)tmpl->size / 100000.0f;
         p->u.t6.unk10 = size;
         p->sizeY = size;
         p->sizeX = size;
-        p->u.t6.unk14 = (f32)lbl_800F787C.unkC / 100000.0f;
-        p->texIndex = lbl_800F787C.texIndex;
+        p->u.t6.unk14 = (f32)tmpl->unkC / 100000.0f;
+        p->texIndex = tmpl->texIndex;
     }
     if (prm != NULL) {
         fn_8002A1CC(&pos, prm);
     }
 }
-#endif
 
 // .text:0x800328E0 size:0x7EC
-// NONMATCHING 59%: the original inlines fn_8003403C with the file-static bss base (lbl_8017EC00 + offset); calls fn_8003403C here
-// nmverify: fn_8003403C inlined on one side (calls match once expanded)
+// NONMATCHING 88%: the original addresses the corners/billboard matrix off the file-static bss base (lbl_8017EC00 + offset); register allocation
 #if NONMATCHING
 s32 fn_800328E0(Emitter* e) {
     Mtx rotM;
@@ -3065,7 +3149,7 @@ s32 fn_800328E0(Emitter* e) {
     Particle* p = e->particles;
 
     ref = lbl_800E6784;
-    fn_8003403C(p->sizeX, p->sizeY);
+    QuadCorners(lbl_80180010, p->sizeX, p->sizeY);
     memcpy(&dir, &e->u.t1.dir, sizeof(Vec));
     angle = acos(PSVECDotProduct(&ref, &dir));
     PSVECCrossProduct(&ref, &dir, &axis);
@@ -3115,12 +3199,12 @@ s32 fn_800328E0(Emitter* e) {
                     p->life = 0;
                 }
             }
-            DrawParticleQuad(p, e->tex);
+            DrawParticleQuad(p, e->tex, lbl_80180010);
             count++;
         } else if (e->u.t1.spawnLeft != 0) {
             spread = lbl_803CB7FC;
             ang = (s32)(512.0f * (1.0f - spread) + (512.0f * spread * (f32)rand()) / 32767.0f);
-            cosA = CosIdx(ang);
+            cosA = CosIdxB(ang);
             sinA = SinIdx(ang);
             r = rand();
             k = (rand() & 0xF) + 0x5A;
@@ -3131,7 +3215,7 @@ s32 fn_800328E0(Emitter* e) {
             spd = (((e->u.t1.speed / 60.0f) * (f32)k) / 100.0f) / 0.001f;
             h = spd * cosA;
             v.y = -spd * sinA;
-            v.x = h * CosIdx(r);
+            v.x = h * CosIdxB(r);
             v.z = h * SinIdx(r);
             v.y = v.y + 0.16344418f;
             PSMTXMultVec(rotM, &v, &v);
@@ -3481,7 +3565,7 @@ void fn_80034120(Mtx m) {
 }
 
 // .text:0x8003414C size:0xD4
-// NONMATCHING 43%: the original addresses these file-static bss objects off one base (lbl_8017EC00 + offset); needs the .bss split into this unit
+// NONMATCHING 74%: the original addresses these file-static bss objects off one base (lbl_8017EC00 + offset); needs the .bss split into this unit
 #if NONMATCHING
 void fn_8003414C(Mtx view) {
     s32 i;

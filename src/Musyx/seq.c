@@ -1,6 +1,10 @@
 #include "musyx/seq.h"
 #include "musyx/synth.h"
 
+NOTE seqNote[256];
+SEQ_INSTANCE seqInstance[8];
+u16 seqMIDIPriority[8][16];
+
 static u32 seq_next_id = 0;
 static bool8 curFadeOutState = 0;
 static u32 curSeqId = 0;

@@ -1,19 +1,13 @@
 #include "menus/auto_00_00000D08_text.h"
+#include "menus/rep_01A0.h"
 #include "static/UnknownHomes_Static.h"
 
 extern u8 lbl_800EF808[];
 extern u8* lbl_803CC1B8[];
 extern u8* lbl_803CBBCC[];
-extern u8 lbl_2_data_138[];
 extern u32 lbl_2_bss_D974[];
 extern s16 lbl_2_bss_D958[];
 extern u8* lbl_2_bss_D984;
-typedef struct {
-    u16 a;
-    u16 b;
-    u16 c;
-} SeqEnt;
-extern SeqEnt lbl_2_data_128[];
 extern u32 sndSeqGetValid(u32);
 extern void sndSeqStop(u32);
 extern void sndSeqVolume(u8, u16, u32, u8);
@@ -136,5 +130,5 @@ void fn_2_11A0(u16 value) {
 
 // fn_2_11D8, size:0x44
 void fn_2_11D8(void) {
-    ((void (**)(void))lbl_2_data_138)[*(u16*)(lbl_803CBBCC[0] + 2)]();
+    lbl_2_data_138[*(u16*)(lbl_803CBBCC[0] + 2)]();
 }

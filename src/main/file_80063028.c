@@ -305,3 +305,9 @@ void fn_80063958(s8 index) {
     slot->unk18 = 0;
     slot->unk1C = 0;
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .sdata 0x803CB890..0x803CB898
+u32 lbl_803CB890 = 1; // NOTE: type size 0x4 != symbol size 0x8
+

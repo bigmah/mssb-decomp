@@ -59,3 +59,4 @@ void fn_3_912B4(void) {
     p->_18 = 0;
     lbl_803CC1B8->func = fn_3_911A8;
 }
+

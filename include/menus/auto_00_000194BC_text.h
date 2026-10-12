@@ -30,5 +30,6 @@ void fn_2_19778(void);
 void fn_2_197AC(u8 port);
 void fn_2_19D04(void);
 void fn_2_19F2C(void);
+void fn_2_1A1B4(void);
 
 #endif
