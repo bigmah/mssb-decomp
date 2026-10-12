@@ -7,7 +7,7 @@ struct DrawNode; // main/file_80069BDC.h
 
 // Loaded resource handle (freed with fn_800ACF14); data is the loaded file.
 typedef struct ResHandle {
-    /*0x0*/ void* data;
+    /*0x0*/ PTR32(void) data; // file offset until relocated
 } ResHandle;
 
 // Scene/task object (lbl_803CC1B8 is the current one). Tasks that own a run of sprite/layout

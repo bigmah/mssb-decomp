@@ -86,12 +86,17 @@ extern GXColor lbl_803CB8DC;
 
 // Loaded file whose first two words are file-relative offsets.
 typedef struct RelocPair {
-    /*0x0*/ void* a;
-    /*0x4*/ void* b;
+    /*0x0*/ PTR32(void) a;
+    /*0x4*/ PTR32(void) b;
 } RelocPair;
 
 // TODO port: file data stores 32-bit offsets that are turned into pointers in place.
+#ifdef TARGET_PC
+// Big-endian file offset: swap it, then store the PTR32.
+#define RELOCATE(base, field) (swap32_inplace(&(field)), PTR32_SET(field, (u8*)(base) + (field)))
+#else
 #define RELOCATE(base, field) ((field) = (void*)((u8*)(base) + (uintptr_t)(field)))
+#endif
 
 extern void* fn_800ACF34(s32 heap, u32 size);
 extern void fn_80035750(void* a, void* b, s32 c);
@@ -729,7 +734,7 @@ void fn_8006B78C(void) {
     case 7:
     case 8:
         task->nodes[lbl_803CBBC0].kind = 3;
-        task->nodes[lbl_803CBBC0].texSet = task->u14.res->data;
+        task->nodes[lbl_803CBBC0].texSet = PTR32_GET(void, task->u14.res->data);
         task->nodes[lbl_803CBBC0].texIdx = 0;
         task->nodes[lbl_803CBBC0].alpha = task->_38 / 30.0f;
         task->nodes[lbl_803CBBC0].next = NULL;
@@ -740,7 +745,7 @@ void fn_8006B78C(void) {
     case 4:
     case 5:
         task->nodes[lbl_803CBBC0].kind = 2;
-        task->nodes[lbl_803CBBC0].texSet = task->u14.res->data;
+        task->nodes[lbl_803CBBC0].texSet = PTR32_GET(void, task->u14.res->data);
         task->nodes[lbl_803CBBC0].texIdx = 2;
         task->nodes[lbl_803CBBC0].alpha = task->_38 / 30.0f;
         task->nodes[lbl_803CBBC0].next = NULL;
@@ -751,7 +756,7 @@ void fn_8006B78C(void) {
     case 1:
     case 2:
         task->nodes[lbl_803CBBC0].kind = 1;
-        task->nodes[lbl_803CBBC0].texSet = task->u14.res->data;
+        task->nodes[lbl_803CBBC0].texSet = PTR32_GET(void, task->u14.res->data);
         task->nodes[lbl_803CBBC0].texIdx = 1;
         task->nodes[lbl_803CBBC0].alpha = task->_38 / 30.0f;
         task->nodes[lbl_803CBBC0].next = NULL;
@@ -800,7 +805,7 @@ void fn_8006BB60(void) {
         break;
     }
     task->nodes[lbl_803CBBC0].kind = 0;
-    task->nodes[lbl_803CBBC0].texSet = task->u14.res->data;
+    task->nodes[lbl_803CBBC0].texSet = PTR32_GET(void, task->u14.res->data);
     task->nodes[lbl_803CBBC0].texIdx = 6;
     task->nodes[lbl_803CBBC0].alpha = task->_38 / 30.0f;
     task->nodes[lbl_803CBBC0].texIdx2 = 7;
@@ -833,7 +838,7 @@ void fn_8006BE00(void) {
             RelocPair* snd = task->res28;
             RELOCATE(snd, snd->a);
             RELOCATE(snd, snd->b);
-            fn_80035750(snd->b, snd->a, 0x16);
+            fn_80035750(PTR32_GET(void, snd->b), PTR32_GET(void, snd->a), 0x16);
             task->u14.res = fn_800ACF34(0x20, lbl_801092C8[1].sizeFlags & 0x0FFFFFFF);
             ARAMTransfer(&lbl_801092C8[1], task->u14.res, 0, 0);
             task->state++;
@@ -851,7 +856,7 @@ void fn_8006BE00(void) {
             lbl_80109378._40.task = (SoundLoadTask*)lbl_803CC1B8; // the scene task (same task header)
             fn_800215F8(&lbl_80109378._40);
             RELOCATE(task->u14.res, task->u14.res->data);
-            convertTextureHeader(task->u14.res->data);
+            convertTextureHeader(PTR32_GET(void, task->u14.res->data));
             task->state = 0;
             task->_38 = 0;
             task->_39 = 0;
