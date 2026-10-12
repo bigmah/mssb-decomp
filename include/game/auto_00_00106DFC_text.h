@@ -2,6 +2,7 @@
 #define __AUTO_00_00106DFC_TEXT_GAME_H__
 
 #include "mssbTypes.h"
+#include "game/rep_1C0.h" // RandSeedView
 
 // Minigame result / high-score table entry.
 typedef struct {
@@ -40,13 +41,7 @@ typedef struct HudFlagsView {
     /*0xD9*/ u8 _D9[0x124 - 0xD9];
 } HudFlagsView; // size: 0x124
 
-// lbl_3_data_228 (0x14 bytes, RandSeedObj in auto_00_0000FF4C_text.c).
-typedef struct RandSeedView {
-    /*0x00*/ u32 counter;
-    /*0x04*/ u8 _04[0xC];
-    /*0x10*/ u8 _10;
-    /*0x11*/ u8 _11[3];
-} RandSeedView; // size: 0x14
+// RandSeedView (lbl_3_data_228): game/rep_1C0.h, where it is defined.
 
 void fn_3_106EB0(void);
 void fn_3_107078(void);

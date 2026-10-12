@@ -48,7 +48,13 @@ typedef struct PlayerMarkerLayout {
 typedef struct FadeState {
     /*0x000*/ u8 _000[0x4];
     /*0x004*/ u8* effectFile;
-    /*0x008*/ u8 _008[0x468 - 0x8];
+    /*0x008*/ u8 _008[0x3B0 - 0x8];
+    /*0x3B0*/ u8 _3B0; // busy (rep_60 waits for it to clear)
+    /*0x3B1*/ u8 _3B1[0x3B4 - 0x3B1];
+    /*0x3B4*/ struct TexImage* fadeImages; // entries of the stadium's fade texture archive (fn_3_5EC0)
+    /*0x3B8*/ u8 _3B8[0x3E0 - 0x3B8];
+    /*0x3E0*/ u8 _3E0; // set outside scene 1 (fn_3_567C)
+    /*0x3E1*/ u8 _3E1[0x468 - 0x3E1];
     /*0x468*/ s32 level;     // current fade amount (0..fadeScale), drawn as the fade colour
     /*0x46C*/ u8 _46C[4];
     /*0x470*/ u8 active;
