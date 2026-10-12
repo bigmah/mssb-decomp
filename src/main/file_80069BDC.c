@@ -111,7 +111,8 @@ typedef struct PadState {
 extern PadState lbl_803C77B8[4];
 
 typedef struct AnimObj {
-    /*0x00*/ u8 _00[0x54];
+    /*0x00*/ void* _00[3]; // three pointers (GameCube: 0xC bytes)
+    /*0x0C*/ u8 _0C[0x54 - 0x0C];
     /*0x54*/ u32 flags;
     /*0x58*/ u8 _58[4];
     /*0x5C*/ u32 frame; // 16.16
@@ -544,7 +545,6 @@ void fn_8006AF9C(void) {
 void fn_8006B230(void) {
     SceneTask* self = lbl_803CC1B8;
     SceneTask* p = self->parent;
-
     switch (p->state) {
     case 1:
         if (p->_36 != 0) {

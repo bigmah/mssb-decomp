@@ -8,7 +8,8 @@ extern void fn_80035CA4(s32 id);
 extern void fn_1_9AB0(void);
 
 typedef struct ChAnimObj {
-    /*0x00*/ u8 _00[0x5C];
+    /*0x00*/ void* _00[3]; // three pointers (GameCube: 0xC bytes)
+    /*0x0C*/ u8 _0C[0x5C - 0x0C];
     /*0x5C*/ u32 frame; // 16.16
 } ChAnimObj;
 

@@ -5,7 +5,8 @@
 
 // This unit's view of a layout sprite (main/file_8000F150.h LayoutObj); only the fields used here.
 typedef struct RepObj {
-    /*0x00*/ u8 _00[0x48];
+    /*0x00*/ void* _00[3]; // three pointers (GameCube: 0xC bytes)
+    /*0x0C*/ u8 _0C[0x48 - 0x0C];
     /*0x48*/ f32 x;
     /*0x4C*/ f32 y;
     /*0x50*/ u8 _50[0x4];

@@ -49,7 +49,7 @@ typedef struct MinigameCharMgrAssets {
 // Sprite object in lbl_80371C30 (LayoutObj in main/file_8000F150.h), only the fields used here.
 typedef struct PasswordSprite {
     /*0x00*/ struct PasswordSprite* link;
-    /*0x04*/ u8 _04[4];
+    /*0x04*/ void* _04;
     /*0x08*/ struct PasswordSprite* child;
     /*0x0C*/ u8 _0C[0x54 - 0xC];
     /*0x54*/ u32 flags;

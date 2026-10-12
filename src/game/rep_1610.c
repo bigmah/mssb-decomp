@@ -15,7 +15,8 @@ typedef struct {
 } Unk_803CC1B8;
 
 typedef struct {
-    u8 _00[0x4C];
+    void* _00[3]; // three pointers (GameCube: 0xC bytes)
+    u8 _0C[0x4C - 0x0C];
     f32 _4C;
     u8 _50[0xC];
     u32 _5C;
