@@ -41,6 +41,9 @@ typedef struct MenuTask {
     /*0x0C*/ struct MenuTask* parent;
     /*0x10*/ s16 _10;
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    u8 _pcPad[4]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /*0x14*/ u16 baseIdx;
     /*0x16*/ u16 count;
     /*0x18*/ u16 timerA;
