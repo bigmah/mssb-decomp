@@ -27,6 +27,7 @@ ap.add_argument('--name'); ap.add_argument('--static', action='store_true')
 ap.add_argument('--addr'); ap.add_argument('--size')
 ap.add_argument('--per', type=int, default=0)
 ap.add_argument('--noauto', action='store_true', help='do not turn a struct declared once into an array')
+ap.add_argument('--nonmatching', action='store_true', help='preprocess with NONMATCHING=1 (the PC build\'s view)')
 args = ap.parse_args()
 if args.unit:
     here = os.path.dirname(os.path.abspath(__file__))
@@ -89,7 +90,7 @@ if REL: load_syms('config/GYQE01/%s/symbols.txt' % args.module, True)
 sorted_syms = sorted((a, n) for n, a in symaddr.items() if not n.startswith(('jumptable_', '@', 'gap_', 'pad_')))
 
 # ---------------------------------------------------------------- C types
-pp = subprocess.run(['/usr/bin/clang', '-E', '-P', '-Iinclude', '-Iinclude/stl', '-DNONMATCHING=0', '-w', args.src],
+pp = subprocess.run(['/usr/bin/clang', '-E', '-P', '-Iinclude', '-Iinclude/stl', '-DNONMATCHING=%d' % args.nonmatching, '-w', args.src],
                     capture_output=True, text=True).stdout
 pp = re.sub(r'__attribute__\s*\(\((?:[^()]|\([^()]*\))*\)\)', '', pp)
 pp = re.sub(r'__declspec\s*\([^)]*\)', '', pp)
