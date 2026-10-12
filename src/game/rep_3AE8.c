@@ -1,3 +1,7 @@
+// math.h first with dolsqrtf2 static: UnknownHomes_Game.h makes it extern inline,
+// which would emit its _half/_three statics into this unit's .rodata.
+#include "math.h"
+#undef SQRT2_LINKAGE
 #include "game/rep_3AE8.h"
 #define REP_HEADER_FN repHeader_3AE8
 #include "header_rep_inline.h"
@@ -41,24 +45,51 @@ extern T5D6C lbl_3_data_5D6C[];
 
 void fn_3_15C024(VecXYZ* pos, VecXYZ* vel, VecXYZ* add, int flag);
 
-// .text:0x0015B79C size:0x304 mapped:0x8079A830
-void fn_3_15B79C(int flag) {
-    VecXYZ pos;
-    VecXYZ vel;
-    VecXYZ add;
-    f32 limit = (f32)sPitchTrail[flag].unk38 / 100000.0f;
-    memcpy(&pos, &g_Pitcher, sizeof(VecXYZ));
-    memcpy(&vel, &g_Pitcher.ballVelocity, sizeof(VecXYZ));
-    memcpy(&add, &g_Pitcher.pitchCurveVeloV1, sizeof(VecXYZ));
-    while (pos.z > limit) {
-        fn_3_15C024(&pos, &vel, &add, 1);
+// .text:0x0015C024 size:0x20C mapped:0x8079B0B8
+void fn_3_15C024(VecXYZ* pos, VecXYZ* vel, VecXYZ* add, int flag) {
+    f32 dir = 0.0f;
+    f32 v;
+    f32 t;
+    T5D6C* e = &lbl_3_data_5D6C[g_Pitcher.specialPitchTypeCode];
+    if (pos->z <= g_Pitcher.pitchZ_whenAirResistanceStarts) {
+        t = vel->z - vel->z * g_Pitcher.airResistance_veloAdj;
+        if (t < -0.05f) {
+            vel->x -= vel->x * g_Pitcher.airResistance_veloAdj;
+            vel->y -= vel->y * g_Pitcher.airResistance_veloAdj;
+            vel->z = t;
+        }
     }
-    pos.y = -pos.y;
+    vel->x = vel->x * g_Pitcher.decelerationFactor;
+    vel->y = vel->y * g_Pitcher.decelerationFactor;
+    vel->z = vel->z * g_Pitcher.decelerationFactor;
+    vel->x = vel->x + add->x;
+    pos->x = pos->x + vel->x;
+    pos->y = pos->y + vel->y;
+    pos->z = pos->z + vel->z;
     if (flag) {
-        fn_8002CDD0(&pos);
-    } else {
-        fn_8002DC68(&pos);
+        u16 b;
+        v = LinearInterpolateToNewRange(g_Pitcher.calced_curve, 1.0f, 100.0f, e->_2, e->_4);
+        v = 0.00005f * v;
+        b = g_Controls[g_GameLogic.teams[g_GameLogic.teamFielding]].buttonInput;
+        if (b & 1) {
+            dir = -1.0f;
+        } else if (b & 2) {
+            dir = 1.0f;
+        }
+        if (dir) {
+            vel->x = v * dir;
+        }
     }
+}
+
+// .text:0x0015C014 size:0x10 mapped:0x8079B0A8
+u32 fn_3_15C014(void) {
+    return sLineHit.unk10;
+}
+
+// .text:0x0015C000 size:0x14 mapped:0x8079B094
+void fn_3_15C000(void) {
+    sLineHit.unk10 = 2;
 }
 
 // Spawns the ball trail: flag 0 the ground trail, 1 the line trail.
@@ -146,48 +177,22 @@ void fn_3_15BAA0(s32 flag) {
     }
 }
 
-// .text:0x0015C000 size:0x14 mapped:0x8079B094
-void fn_3_15C000(void) {
-    sLineHit.unk10 = 2;
-}
-
-// .text:0x0015C014 size:0x10 mapped:0x8079B0A8
-u32 fn_3_15C014(void) {
-    return sLineHit.unk10;
-}
-
-// .text:0x0015C024 size:0x20C mapped:0x8079B0B8
-void fn_3_15C024(VecXYZ* pos, VecXYZ* vel, VecXYZ* add, int flag) {
-    f32 dir = 0.0f;
-    f32 v;
-    f32 t;
-    T5D6C* e = &lbl_3_data_5D6C[g_Pitcher.specialPitchTypeCode];
-    if (pos->z <= g_Pitcher.pitchZ_whenAirResistanceStarts) {
-        t = vel->z - vel->z * g_Pitcher.airResistance_veloAdj;
-        if (t < -0.05f) {
-            vel->x -= vel->x * g_Pitcher.airResistance_veloAdj;
-            vel->y -= vel->y * g_Pitcher.airResistance_veloAdj;
-            vel->z = t;
-        }
+// .text:0x0015B79C size:0x304 mapped:0x8079A830
+void fn_3_15B79C(int flag) {
+    VecXYZ pos;
+    VecXYZ vel;
+    VecXYZ add;
+    f32 limit = (f32)sPitchTrail[flag].unk38 / 100000.0f;
+    memcpy(&pos, &g_Pitcher, sizeof(VecXYZ));
+    memcpy(&vel, &g_Pitcher.ballVelocity, sizeof(VecXYZ));
+    memcpy(&add, &g_Pitcher.pitchCurveVeloV1, sizeof(VecXYZ));
+    while (pos.z > limit) {
+        fn_3_15C024(&pos, &vel, &add, 1);
     }
-    vel->x = vel->x * g_Pitcher.decelerationFactor;
-    vel->y = vel->y * g_Pitcher.decelerationFactor;
-    vel->z = vel->z * g_Pitcher.decelerationFactor;
-    vel->x = vel->x + add->x;
-    pos->x = pos->x + vel->x;
-    pos->y = pos->y + vel->y;
-    pos->z = pos->z + vel->z;
+    pos.y = -pos.y;
     if (flag) {
-        u16 b;
-        v = 0.00005f * LinearInterpolateToNewRange(g_Pitcher.calced_curve, 1.0f, 100.0f, e->_2, e->_4);
-        b = g_Controls[g_GameLogic.teams[g_GameLogic.teamFielding]].buttonInput;
-        if (b & 1) {
-            dir = -1.0f;
-        } else if (b & 2) {
-            dir = 1.0f;
-        }
-        if (dir) {
-            vel->x = v * dir;
-        }
+        fn_8002CDD0(&pos);
+    } else {
+        fn_8002DC68(&pos);
     }
 }
