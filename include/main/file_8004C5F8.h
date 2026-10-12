@@ -67,7 +67,7 @@ typedef struct RosterSelect {
     /*0x7F*/ s8 _7F[4];
     /*0x83*/ u8 _83[9];
     /*0x8C*/ u8 _8C;
-    /*0x8D*/ s8 _8D;
+    /*0x8D*/ u8 _8D;
     /*0x8E*/ u8 _8E;
     /*0x8F*/ u8 _8F;
     /*0x90*/ u8 _90;
