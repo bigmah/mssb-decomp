@@ -9,7 +9,7 @@
 // Object kinds (StaC6Obj.kind):
 //   0-7   field panels (StaC6Spot, coloured by StaC6Data.kindColors[kind])
 //   8-15  wall panels (StaC6Pad, coloured by StaC6Data.kindColors[kind - 8])
-//   16-22 the 7 targets (StaC6Data2.hit flags)
+//   16-22 the 7 targets (lbl_3_data_196B4 hit flags)
 //   23-26 other scenery; 27 = unused / end of list
 
 // One field panel spot (StaC6Data.spots).
@@ -38,13 +38,6 @@ typedef struct StaC6Data {
     /*0x56C*/ StaC6Pad pads[4][8];
 } StaC6Data; // size: 0x5EC
 
-// lbl_3_data_196B4
-typedef struct StaC6Data2 {
-    /*0x00*/ u8 hit[8];            // targets 16-22 hit (see also fn_3_E587C)
-    /*0x08*/ Vec targetPos[7];
-    /*0x5C*/ f32 targetRotY[7];
-    /*0x78*/ u32 kindResult[16];   // toy field result that lights panel kind n
-} StaC6Data2; // size: 0xB8
 
 // One 0xE8-byte entry of lbl_3_common_bss_350E4.objs.
 typedef struct StaC6Obj {
@@ -80,8 +73,8 @@ typedef struct StaC6Obj {
     /*0xC0*/ u8 index;
     /*0xC1*/ u8 kind;
     /*0xC2*/ u8 lit;
-    /*0xC3*/ u8 slot;               // wall panels: index into StaC6Data2 / lbl_3_data_19644
-    /*0xC4*/ u8 flagIdx;            // wall panels: index into StaC6Data2.hit
+    /*0xC3*/ u8 slot;               // wall panels: index into lbl_3_data_19644
+    /*0xC4*/ u8 flagIdx;            // wall panels: index into lbl_3_data_196B4 (hit flags)
     /*0xC5*/ u8 _C5[0xE8 - 0xC5];
 } StaC6Obj; // size: 0xE8
 
