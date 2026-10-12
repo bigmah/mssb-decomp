@@ -729,8 +729,6 @@ void fn_80036A3C(void) {
 }
 
 // .text:0x80036C88 size:0x3CC
-// NONMATCHING 99.9%: r3/r4 swapped in the final dst[0] update
-#if NONMATCHING
 s32 fn_80036C88(s32* src, s32* dst) {
     s32 i;
     s32 sum;
@@ -774,11 +772,10 @@ s32 fn_80036C88(s32* src, s32* dst) {
         for (j = 0; j < 23; j++) {
             dst[j] += add;
         }
-        dst[0] += diff - add * 23;
+        diff -= add * 23; dst[0] += diff;
     }
     return 0;
 }
-#endif
 
 // ---- Data (initialisers generated from the original DOL) ----
 
