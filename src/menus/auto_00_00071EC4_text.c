@@ -2119,8 +2119,6 @@ void fn_2_72A88(u8* o) {
 #endif
 
 // fn_2_7F8BC, size:0x240
-// NONMATCHING 99%: the loaded roster byte x lands in r4 instead of r11 (see docs/patterns/loops.md)
-#if NONMATCHING
 void fn_2_7F8BC(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
@@ -2136,7 +2134,7 @@ void fn_2_7F8BC(u8* o, s32 index) {
                 break;
             }
         }
-        x = (s8)(lbl_803C6724 + index * 9)[found + 2];
+        x = ((s8*)lbl_803C6724 + index * 9)[found + 2];
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->flags |= 2;
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->frame = 0;
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->state = 1;
@@ -2147,7 +2145,6 @@ void fn_2_7F8BC(u8* o, s32 index) {
         *e = 1;
     }
 }
-#endif
 
 // fn_2_808D8, size:0x284
 // NONMATCHING 85%: original hoists the five slot pointers (base+0x78..0x8B) into registers before the stores; frame/stack layout differs
@@ -2282,8 +2279,6 @@ void fn_2_7630C(u8* o, u8 index) {
 #define F468_S32(off) (*(s32*)(lbl_2_bss_F468 + (off)))
 
 // fn_2_7F2BC, size:0x458
-// NONMATCHING 99%: one add has its operands swapped (add r4,r3,r31 vs r31,r3) when forming &F468[index*4] for the lwzu
-#if NONMATCHING
 void fn_2_7F2BC(u8* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
@@ -2292,8 +2287,8 @@ void fn_2_7F2BC(u8* o, s32 index) {
         s32 cur;
         s32 j;
         s32 fs;
-        cur = F468_S32(8 + index * 4);
-        sel = F468_S32(index * 4);
+        sel = ((s32*)lbl_2_bss_F468)[index];
+        cur = ((s32*)(lbl_2_bss_F468 + 8))[index];
         for (j = 0; j < 9; j++) {
             s8 t = lbl_803C6724[index * 9 + j + 0x14];
             if (t == sel) {
@@ -2313,7 +2308,7 @@ void fn_2_7F2BC(u8* o, s32 index) {
             MN_SLOT(0x22 + BASE(o) + sel + index * 9)->flags |= 2;
         }
         if (cur != 9 && cur != 10) {
-            if (F468_S32(8 + index * 4) != F468_S32(index * 4)) {
+            if (((s32*)(lbl_2_bss_F468 + 8))[index] != ((s32*)lbl_2_bss_F468)[index]) {
                 MN_SLOT(0x46 + BASE(o) + cur + index * 9)->frame = 0xF0000;
                 MN_SLOT(0x46 + BASE(o) + cur + index * 9)->state = 4;
                 if (*(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4) == (s8)(lbl_803C6724 + index * 9)[fc + 2]) {
@@ -2343,7 +2338,6 @@ void fn_2_7F2BC(u8* o, s32 index) {
         *e = 1;
     }
 }
-#endif
 
 // fn_2_75BE4, size:0x4B4
 // Average a stat over the team's non-captain players and show it as 0-5 stars.
