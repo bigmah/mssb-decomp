@@ -57,7 +57,7 @@ typedef struct {
 
 // .bss (laid out last-defined-first)
 static u8 lbl_3_bss_48[0x50]; // unused
-u32 lbl_3_bss_44;
+static u32 lbl_3_bss_44;
 static u8 lbl_3_bss_40[0x4]; // unused
 
 s16 lbl_3_data_A38[2] = { 1, 2 };

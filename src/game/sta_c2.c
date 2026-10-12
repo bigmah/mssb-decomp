@@ -30,34 +30,34 @@ extern f32 lbl_3_rodata_26AC;
 extern f32 lbl_3_rodata_26B0;
 extern f32 lbl_3_rodata_26B8;
 // .bss (laid out last-defined-first)
-void* lbl_3_bss_ADD0[0xC];
-u8 lbl_3_bss_A8D0[0x500];
-u8 lbl_3_bss_A8A8[0x28];
-u8* lbl_3_bss_A8A4;
-u8 lbl_3_bss_A898[0xC];
-Vec lbl_3_bss_A820[0xA];
-u8 lbl_3_bss_A81C;
-u8 lbl_3_bss_A034[0x7E8];
-f32 lbl_3_bss_A030;
-u8 lbl_3_bss_A02D;
-u8 lbl_3_bss_A02C;
-u8 lbl_3_bss_A02B;
-u8 lbl_3_bss_A02A;
+static void* lbl_3_bss_ADD0[0xC];
+static u8 lbl_3_bss_A8D0[0x500];
+static u8 lbl_3_bss_A8A8[0x28];
+static u8* lbl_3_bss_A8A4;
+static u8 lbl_3_bss_A898[0xC];
+static Vec lbl_3_bss_A820[0xA];
+static u8 lbl_3_bss_A81C;
+static u8 lbl_3_bss_A034[0x7E8];
+static f32 lbl_3_bss_A030;
+static u8 lbl_3_bss_A02D;
+static u8 lbl_3_bss_A02C;
+static u8 lbl_3_bss_A02B;
+static u8 lbl_3_bss_A02A;
 static u8 lbl_3_bss_A029; // unused (alignment gap in the original)
 static u8 lbl_3_bss_A028; // unused (alignment gap in the original)
-u8 lbl_3_bss_A027;
-u8 lbl_3_bss_A026;
-u8 lbl_3_bss_A025;
-u8 lbl_3_bss_A024;
-u8 lbl_3_bss_A023;
-u8 lbl_3_bss_A022;
+static u8 lbl_3_bss_A027;
+static u8 lbl_3_bss_A026;
+static u8 lbl_3_bss_A025;
+static u8 lbl_3_bss_A024;
+static u8 lbl_3_bss_A023;
+static u8 lbl_3_bss_A022;
 static u8 lbl_3_bss_A021; // unused (alignment gap in the original)
-u8 lbl_3_bss_A020;
-u8* lbl_3_bss_A01C;
+static u8 lbl_3_bss_A020;
+static u8* lbl_3_bss_A01C;
 static u8 lbl_3_bss_A01B; // unused (alignment gap in the original)
 static u8 lbl_3_bss_A01A; // unused (alignment gap in the original)
 static u8 lbl_3_bss_A019; // unused (alignment gap in the original)
-u8 lbl_3_bss_A018[0x1];
+static u8 lbl_3_bss_A018[0x1];
 typedef struct { f32 f0, f4, f8, f0C[6], f24[3], f30[3]; s32 n3C; } CC438Ent;
 extern void fn_3_8B890(s32);
 extern s32 lbl_3_data_182C4;

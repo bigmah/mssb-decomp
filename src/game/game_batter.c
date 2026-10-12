@@ -52,7 +52,7 @@ extern s16 lbl_3_data_5CD4[4];
 extern s16 buntVerticalAngles[5][2][2][2];
 // .bss (laid out last-defined-first)
 static u8 lbl_3_bss_38[8]; // unused
-int lbl_3_bss_34 = 0;
+static int lbl_3_bss_34 = 0;
 static u8 lbl_3_bss_30[4]; // unused
 extern struct {
     u8 _00[0x28];

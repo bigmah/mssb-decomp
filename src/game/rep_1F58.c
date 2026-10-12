@@ -8,8 +8,8 @@ extern u8 lbl_3_data_17260[];
 extern u8* lbl_3_data_174A0[];
 extern void* fn_800B0A5C_insertQueue(void*, s32);
 // .bss (laid out last-defined-first)
-u8 lbl_3_bss_9D40[0x40];
-u8 lbl_3_bss_9D20[0x20];
+static u8 lbl_3_bss_9D40[0x40];
+static u8 lbl_3_bss_9D20[0x20];
 extern u8* lbl_803CC1B8;
 extern u8 lbl_8036E548[];
 extern u8 lbl_803CBBC0;

@@ -59,9 +59,9 @@ extern const f32 lbl_3_rodata_372C; // 0.001f
 extern f64 __fabs(f64);
 extern u16 lbl_3_data_81FC[]; // sound ids
 // .bss (laid out last-defined-first)
-s32 lbl_3_bss_B798[0xA];
-f32 lbl_3_bss_B794;
-u8 lbl_3_bss_B791;
+static s32 lbl_3_bss_B798[0xA];
+static f32 lbl_3_bss_B794;
+static u8 lbl_3_bss_B791;
 static u8 lbl_3_bss_B790[0x1]; // unused
 extern void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count);
 

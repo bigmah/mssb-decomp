@@ -56,8 +56,8 @@ extern const f32 lbl_3_rodata_A68; // 1 degree in radians
 extern const f32 lbl_3_rodata_A6C; // 3.0f, arrival distance
 // .bss (laid out last-defined-first)
 static u8 lbl_3_bss_A4[0x24]; // unused
-s32 lbl_3_bss_A0;
-s32 lbl_3_bss_9C;
+static s32 lbl_3_bss_A0;
+static s32 lbl_3_bss_9C;
 static u8 lbl_3_bss_98[0x4]; // unused
 
 void fn_80052798(s32 count); // main/file_8004C5F8.h
