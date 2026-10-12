@@ -24,3 +24,4 @@ Call arguments, prototypes, sign/zero extension, tail calls, varargs. One patter
 - **`addi r0, idx, K; lbzx` from a pointer-in-global:** `u8* menu = g[0]; u8* entry = menu + idx * 0x34; entry[K]` (separate base and entry pointers); `g[0][idx*0x34+K]` folds K into the displacement (fn_2_4668C).
 - **Extra `extsh r3,r3` between an s16-returning call and an s16-param call (fn_2_607DC):** the result went through an `s32` local first (`s32 total = fn_8006C268(...); fn_8006C100(total)`); no prototype change needed.
 - **Raw param to one call, `clrlwi` copy to another (fn_2_C484):** the param is `s32`; the call that gets `clrlwi rX, r30, 24` scheduled after the other args takes `owner & 0xFF` (a `(u8)owner` cast puts the clrlwi first); the call that gets `mr r3, r30` takes plain `owner`.
+- **`clrlwi` on a variadic count passed on (fn_8001DD58):** declare the named param as the callee's type (`u8 n, ...`) so no re-truncation happens per call.

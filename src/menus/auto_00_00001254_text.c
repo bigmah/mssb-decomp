@@ -1406,9 +1406,6 @@ void fn_2_102C8(u8 team) {
 }
 #endif
 
-// NONMATCHING 99%: case 3 reloads the s8 timer before the decrement in the original
-// nmverify: fn_2_323C fn_2_8940 inlined on one side (calls match once expanded)
-#if NONMATCHING
 // fn_2_110B0, size:0x244
 void fn_2_110B0(void) {
     u8* scene = lbl_803CBBCC[0];
@@ -1436,12 +1433,10 @@ void fn_2_110B0(void) {
         }
         break;
     case 3:
-        if ((s8)lbl_2_bss_F468[0x36] < 0) {
-            if (lbl_803C66B0[0x5D] == 0 && lbl_803C66B0[0x5E] == 0) {
-                fn_2_72630();
-                lbl_2_bss_F468[0x33] = 0;
-                *(u16*)(lbl_803CBBCC[0] + 4) = 4;
-            }
+        if ((s8)lbl_2_bss_F468[0x36] < 0 && lbl_803C66B0[0x5D] == 0 && lbl_803C66B0[0x5E] == 0) {
+            fn_2_72630();
+            lbl_2_bss_F468[0x33] = 0;
+            *(u16*)(lbl_803CBBCC[0] + 4) = 4;
         } else {
             lbl_2_bss_F468[0x36]--;
         }
@@ -1472,7 +1467,6 @@ void fn_2_110B0(void) {
         break;
     }
 }
-#endif
 
 // fn_2_2FC0, size:0x244
 void fn_2_2FC0(u8 mode, s32 b, s32 c) {
@@ -1672,15 +1666,14 @@ void fn_2_A288(void) {
 }
 #endif
 
-// NONMATCHING 97%: register choice for the three button words (held/down/repeat); inlines fn_2_1DC8
-#if NONMATCHING
 // fn_2_1800, size:0x288
 void fn_2_1800(void) {
     MenuButtons b;
+    u16 repeat;
     memset(&b, 0, sizeof(b));
     b.held = *(u16*)(lbl_8034E9A0 + 0x472C);
     b.down = *(u16*)(lbl_8034E9A0 + 0x472E);
-    b.repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
+    b.repeat = repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
     if (lbl_803C66B0[0x55] != 0) {
         return;
     }
@@ -1695,11 +1688,11 @@ void fn_2_1800(void) {
         sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
     } else if ((b.repeat & 8) || (b.repeat & 4)) {
         ((s32*)lbl_2_bss_F410)[1] = ((s32*)lbl_2_bss_F410)[0];
-        if (b.repeat & 8) {
+        if (repeat & 8) {
             if (--((s32*)lbl_2_bss_F410)[0] < 0) {
                 ((s32*)lbl_2_bss_F410)[0] = 6;
             }
-        } else if (b.repeat & 4) {
+        } else if (repeat & 4) {
             if (++((s32*)lbl_2_bss_F410)[0] == 7) {
                 ((s32*)lbl_2_bss_F410)[0] = 0;
             }
@@ -1708,17 +1701,15 @@ void fn_2_1800(void) {
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
 }
-#endif
 
-// NONMATCHING 97%: same code as fn_2_1800; register choice for the three button words
-#if NONMATCHING
 // fn_2_1578, size:0x288
 void fn_2_1578(void) {
     MenuButtons b;
+    u16 repeat;
     memset(&b, 0, sizeof(b));
     b.held = *(u16*)(lbl_8034E9A0 + 0x472C);
     b.down = *(u16*)(lbl_8034E9A0 + 0x472E);
-    b.repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
+    b.repeat = repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
     if (lbl_803C66B0[0x55] != 0) {
         return;
     }
@@ -1733,11 +1724,11 @@ void fn_2_1578(void) {
         sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
     } else if ((b.repeat & 8) || (b.repeat & 4)) {
         ((s32*)lbl_2_bss_F410)[1] = ((s32*)lbl_2_bss_F410)[0];
-        if (b.repeat & 8) {
+        if (repeat & 8) {
             if (--((s32*)lbl_2_bss_F410)[0] < 0) {
                 ((s32*)lbl_2_bss_F410)[0] = 6;
             }
-        } else if (b.repeat & 4) {
+        } else if (repeat & 4) {
             if (++((s32*)lbl_2_bss_F410)[0] == 7) {
                 ((s32*)lbl_2_bss_F410)[0] = 0;
             }
@@ -1746,7 +1737,6 @@ void fn_2_1578(void) {
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
 }
-#endif
 
 // NONMATCHING 93%: same instructions, scheduling/register rotation in the unrolled pick loop
 #if NONMATCHING

@@ -1192,7 +1192,7 @@ f32 starMissionMenu(s32 team) {
 }
 
 // .text:0x8006CBE4 size:0xC0
-// NONMATCHING 99%: the original copies count into i (mr r30,r31) instead of a second li 0
+// NONMATCHING 98.7%: the original copies count into i (mr r30,r31) instead of a second li 0
 #if NONMATCHING
 s16 challengeRelated(s32 team) {
     s32 count;

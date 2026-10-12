@@ -7225,9 +7225,11 @@ void fn_2_2F544(MenuTableContext* menu, MenuItemState* item) {
 }
 #endif
 
+// Byte pair `i` of roster slot `r` in the menu work buffer (0x34-byte slots, pairs from +9).
+// Written as an array-of-arrays cast: the matching code adds slot*0x34+9 before i*2.
+#define ROSTER_PAIR(r, i) (((s8(*)[2])(((u8(*)[0x34])lbl_2_bss_1A8248)[r] + 9))[i])
+
 // fn_2_2B654, size:0x230
-// NONMATCHING 99%: (row*0x34+9)+index*2 summed in a different order before the lbzx
-#if NONMATCHING
 void fn_2_2B654(MenuTableContext* menu, MenuItemState* item) {
     s16 state = fn_2_53BC8(item);
     if (state != -1) {
@@ -7245,7 +7247,7 @@ void fn_2_2B654(MenuTableContext* menu, MenuItemState* item) {
         s32 row = *(s16*)(lbl_2_bss_1A824C[0] + 0x197706);
         u8* object;
         if (lbl_80109AE8[row][index].type != -1) {
-            if (((s8(*)[0x34])lbl_2_bss_1A8248)[lbl_800E869C[row]][9 + index * 2] < 0) {
+            if (ROSTER_PAIR(lbl_800E869C[row], index)[0] < 0) {
                 object = lbl_80371C30[menu->firstIndex + item->offset].object;
                 *(u32*)(object + 0x54) |= 2;
                 lbl_80371C30[menu->firstIndex + item->offset].object[0x68] = 1;
@@ -7274,11 +7276,8 @@ void fn_2_2B654(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
 }
-#endif
 
 // fn_2_2BB34, size:0x270
-// NONMATCHING 99%: (row*0x34+9)+index*2 summed in a different order before the lbzx
-#if NONMATCHING
 void fn_2_2BB34(MenuTableContext* menu, MenuItemState* item) {
     s16 state = fn_2_53BC8(item);
     if (state != -1) {
@@ -7296,7 +7295,7 @@ void fn_2_2BB34(MenuTableContext* menu, MenuItemState* item) {
         s32 row = *(s16*)(lbl_2_bss_1A824C[0] + 0x197706);
         u8* object;
         if (lbl_80109AE8[row][index].type != -1) {
-            if (((s8(*)[0x34])lbl_2_bss_1A8248)[lbl_800E869C[row]][9 + index * 2] < 0) {
+            if (ROSTER_PAIR(lbl_800E869C[row], index)[0] < 0) {
                 fn_800363D8(menu, item->offset, 1, 0x5A, 1);
             } else {
                 fn_800363D8(menu, item->offset, 1, 0x5A, 0);
@@ -7331,7 +7330,6 @@ void fn_2_2BB34(MenuTableContext* menu, MenuItemState* item) {
         return;
     }
 }
-#endif
 
 // fn_2_2BF20, size:0x288
 void fn_2_2BF20(MenuTableContext* menu, MenuItemState* item) {
@@ -7398,8 +7396,6 @@ void fn_2_2BF20(MenuTableContext* menu, MenuItemState* item) {
 }
 
 // fn_2_2B884, size:0x2B0
-// NONMATCHING 99%: (row*0x34+9)+index*2 summed in a different order before the lbzx
-#if NONMATCHING
 void fn_2_2B884(MenuTableContext* menu, MenuItemState* item) {
     s16 state = fn_2_53BC8(item);
     if (state != -1) {
@@ -7418,7 +7414,7 @@ void fn_2_2B884(MenuTableContext* menu, MenuItemState* item) {
         s32 row = *(s16*)(ctx + 0x7706);
         s32 index = item->index;
         if (lbl_80109AE8[row][index].type != -1) {
-            if (((s8(*)[0x34])lbl_2_bss_1A8248)[lbl_800E869C[row]][9 + index * 2] < 0) {
+            if (ROSTER_PAIR(lbl_800E869C[row], index)[0] < 0) {
                 if (*(s16*)(ctx + 0x7710) == index) {
                     u8* object = lbl_80371C30[menu->firstIndex + item->offset].object;
                     *(u32*)(object + 0x54) |= 2;
@@ -7459,7 +7455,6 @@ void fn_2_2B884(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
 }
-#endif
 
 extern s16 fn_2_53AA4(void* item);
 

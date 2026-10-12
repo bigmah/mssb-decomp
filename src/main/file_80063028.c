@@ -3,22 +3,12 @@
 #include "stl/mem.h"
 #include "stl/math.h"
 
-#if NONMATCHING
 static f32 cosf(f32 v) { return cos(v); }
 static f32 sinf(f32 v) { return sin(v); }
-#endif
-
-extern f32 lbl_803CC8D8; // 1.0f
-extern f32 lbl_803CC8DC; // -1.0f
-extern f32 lbl_803CC8E0; // pi
-extern f32 lbl_803CC8E4; // 0.0f
-extern f32 lbl_803CC8E8; // pi / 180
 
 // Like CTRLBuildMatrix, with a 180-degree rotation about the axes in flipFlags
 // (1 = X, 2 = Y, 4 = Z) and the rotation part mirrored in Y.
 // .text:0x80063028 size:0x384
-// NONMATCHING 99.7%: f1/f2/f3 swapped for the 0.0f/1.0f/cos values in the X-rotation block
-#if NONMATCHING
 void fn_80063028(Control* control, Mtx m, u32 flipFlags) {
     f32 nRad;
     f32 nSin;
@@ -31,16 +21,16 @@ void fn_80063028(Control* control, Mtx m, u32 flipFlags) {
         return;
     }
 
-    PSMTXScale(S, lbl_803CC8D8, lbl_803CC8DC, lbl_803CC8D8);
+    PSMTXScale(S, 1.0f, -1.0f, 1.0f);
     PSMTXIdentity(R);
     if (flipFlags & 1) {
-        PSMTXRotRad(R, 'X', lbl_803CC8E0);
+        PSMTXRotRad(R, 'X', 3.1415927f);
     }
     if (flipFlags & 2) {
-        PSMTXRotRad(R, 'Y', lbl_803CC8E0);
+        PSMTXRotRad(R, 'Y', 3.1415927f);
     }
     if (flipFlags & 4) {
-        PSMTXRotRad(R, 'Z', lbl_803CC8E0);
+        PSMTXRotRad(R, 'Z', 3.1415927f);
     }
 
     PSMTXIdentity(m);
@@ -53,25 +43,25 @@ void fn_80063028(Control* control, Mtx m, u32 flipFlags) {
     if (control->type & CTRL_ROT_QUAT) {
         PSMTXQuat(a, &control->controlParams.srt.r);
     } else if (control->type & CTRL_ROT_EULER) {
-        if (lbl_803CC8E4 != control->controlParams.srt.r.x) {
-            nRad = lbl_803CC8E8 * control->controlParams.srt.r.x;
+        if (0.0f != control->controlParams.srt.r.x) {
+            nRad = 0.0174532925f * control->controlParams.srt.r.x;
             nSin = sinf(nRad);
             nCos = cosf(nRad);
-            a[0][0] = lbl_803CC8D8;
-            a[0][1] = lbl_803CC8E4;
-            a[0][2] = lbl_803CC8E4;
-            a[0][3] = lbl_803CC8E4;
-            a[1][0] = lbl_803CC8E4;
+            a[0][0] = 1.0f;
+            a[0][1] = 0.0f;
+            a[0][2] = 0.0f;
+            a[0][3] = 0.0f;
+            a[1][0] = 0.0f;
             a[1][1] = nCos;
             a[1][2] = -nSin;
-            a[1][3] = lbl_803CC8E4;
-            a[2][0] = lbl_803CC8E4;
+            a[1][3] = 0.0f;
+            a[2][0] = 0.0f;
             a[2][1] = nSin;
             a[2][2] = nCos;
-            a[2][3] = lbl_803CC8E4;
+            a[2][3] = 0.0f;
         }
-        if (lbl_803CC8E4 != control->controlParams.srt.r.y) {
-            nRad = lbl_803CC8E8 * control->controlParams.srt.r.y;
+        if (0.0f != control->controlParams.srt.r.y) {
+            nRad = 0.0174532925f * control->controlParams.srt.r.y;
             nSin = sinf(nRad);
             nCos = cosf(nRad);
             a[0][0] = nCos;
@@ -81,8 +71,8 @@ void fn_80063028(Control* control, Mtx m, u32 flipFlags) {
             a[2][1] = a[2][1] * nCos;
             a[2][2] = a[2][2] * nCos;
         }
-        if (lbl_803CC8E4 != control->controlParams.srt.r.z) {
-            nRad = lbl_803CC8E8 * control->controlParams.srt.r.z;
+        if (0.0f != control->controlParams.srt.r.z) {
+            nRad = 0.0174532925f * control->controlParams.srt.r.z;
             nSin = sinf(nRad);
             nCos = cosf(nRad);
             a[1][0] = a[0][0] * nSin;
@@ -121,12 +111,9 @@ void fn_80063028(Control* control, Mtx m, u32 flipFlags) {
     PSMTXConcat(T, e, e);
     PSMTXCopy(e, m);
 }
-#endif
 
 // Like fn_80063028, but the whole rotation+translation matrix is mirrored in Y.
 // .text:0x800633AC size:0x36C
-// NONMATCHING 99.7%: f1/f2/f3 swapped for the 0.0f/1.0f/cos values in the X-rotation block
-#if NONMATCHING
 void fn_800633AC(Control* control, Mtx m, u32 flipFlags) {
     f32 nRad;
     f32 nSin;
@@ -139,16 +126,16 @@ void fn_800633AC(Control* control, Mtx m, u32 flipFlags) {
         return;
     }
 
-    PSMTXScale(S, lbl_803CC8D8, lbl_803CC8DC, lbl_803CC8D8);
+    PSMTXScale(S, 1.0f, -1.0f, 1.0f);
     PSMTXIdentity(R);
     if (flipFlags & 1) {
-        PSMTXRotRad(R, 'X', lbl_803CC8E0);
+        PSMTXRotRad(R, 'X', 3.1415927f);
     }
     if (flipFlags & 2) {
-        PSMTXRotRad(R, 'Y', lbl_803CC8E0);
+        PSMTXRotRad(R, 'Y', 3.1415927f);
     }
     if (flipFlags & 4) {
-        PSMTXRotRad(R, 'Z', lbl_803CC8E0);
+        PSMTXRotRad(R, 'Z', 3.1415927f);
     }
 
     PSMTXIdentity(m);
@@ -160,25 +147,25 @@ void fn_800633AC(Control* control, Mtx m, u32 flipFlags) {
     if (control->type & CTRL_ROT_QUAT) {
         PSMTXQuat(a, &control->controlParams.srt.r);
     } else if (control->type & CTRL_ROT_EULER) {
-        if (lbl_803CC8E4 != control->controlParams.srt.r.x) {
-            nRad = lbl_803CC8E8 * control->controlParams.srt.r.x;
+        if (0.0f != control->controlParams.srt.r.x) {
+            nRad = 0.0174532925f * control->controlParams.srt.r.x;
             nSin = sinf(nRad);
             nCos = cosf(nRad);
-            a[0][0] = lbl_803CC8D8;
-            a[0][1] = lbl_803CC8E4;
-            a[0][2] = lbl_803CC8E4;
-            a[0][3] = lbl_803CC8E4;
-            a[1][0] = lbl_803CC8E4;
+            a[0][0] = 1.0f;
+            a[0][1] = 0.0f;
+            a[0][2] = 0.0f;
+            a[0][3] = 0.0f;
+            a[1][0] = 0.0f;
             a[1][1] = nCos;
             a[1][2] = -nSin;
-            a[1][3] = lbl_803CC8E4;
-            a[2][0] = lbl_803CC8E4;
+            a[1][3] = 0.0f;
+            a[2][0] = 0.0f;
             a[2][1] = nSin;
             a[2][2] = nCos;
-            a[2][3] = lbl_803CC8E4;
+            a[2][3] = 0.0f;
         }
-        if (lbl_803CC8E4 != control->controlParams.srt.r.y) {
-            nRad = lbl_803CC8E8 * control->controlParams.srt.r.y;
+        if (0.0f != control->controlParams.srt.r.y) {
+            nRad = 0.0174532925f * control->controlParams.srt.r.y;
             nSin = sinf(nRad);
             nCos = cosf(nRad);
             a[0][0] = nCos;
@@ -188,8 +175,8 @@ void fn_800633AC(Control* control, Mtx m, u32 flipFlags) {
             a[2][1] = a[2][1] * nCos;
             a[2][2] = a[2][2] * nCos;
         }
-        if (lbl_803CC8E4 != control->controlParams.srt.r.z) {
-            nRad = lbl_803CC8E8 * control->controlParams.srt.r.z;
+        if (0.0f != control->controlParams.srt.r.z) {
+            nRad = 0.0174532925f * control->controlParams.srt.r.z;
             nSin = sinf(nRad);
             nCos = cosf(nRad);
             a[1][0] = a[0][0] * nSin;
@@ -227,7 +214,6 @@ void fn_800633AC(Control* control, Mtx m, u32 flipFlags) {
     PSMTXConcat(S, e, e);
     PSMTXCopy(e, m);
 }
-#endif
 
 extern u32 lbl_803CB890;
 
