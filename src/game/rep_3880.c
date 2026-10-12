@@ -2870,19 +2870,147 @@ void fn_3_1534C0(u8* o) {
     *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BEC + 8) / lbl_3_rodata_3930;
 }
 
-// NONMATCHING 26%: the original inlines 1534C0/1531A4/152794 (one per case); CW only auto-inlines the first. With explicit static-inline copies of the three bodies it reaches 93% (rest is the pooled lbl_3_data_266A8 base), so the structure is right; kept as plain calls
+// NONMATCHING 93%: the original inlines 1534C0/1531A4/152794 (one per case); CW won't auto-inline the last two, and making the
+// standalone functions call shared helpers changes their stack layout, so these are static-inline copies of the three bodies.
+// The rest is the original reaching 26BEC/26BFC/26C0C through the pooled lbl_3_data_266A8 base
 // .text:0x001536A8 size:0x7E4 mapped:0x8079273C
 #if NONMATCHING
+static inline void Inl1534C0(u8* o) {
+    Mtx m;
+    Vec up;
+    Vec axis;
+    Vec dir;
+    Vec off;
+    f32 ang;
+    f32 r;
+    u8* cam;
+    cam = fn_80052734(fn_8005268C());
+    if (o[0x4D] != 0) {
+        r = fn_3_119854(2);
+    } else {
+        r = fn_3_119854(0);
+    }
+    up = lbl_3_rodata_38DC;
+    off.x = lbl_3_rodata_3934[0];
+    off.y = lbl_3_rodata_3934[0];
+    off.z = lbl_3_rodata_3A04 * r;
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECNormalize(&dir, &dir);
+    ang = (f32)acos(PSVECDotProduct(&up, &dir));
+    PSVECCrossProduct(&up, &dir, &axis);
+    if (lbl_3_rodata_3934[0] == PSVECMag(&axis)) {
+        axis.x = lbl_3_rodata_3934[0];
+        axis.z = lbl_3_rodata_3934[0];
+        axis.y = lbl_3_rodata_3948;
+    }
+    PSMTXRotAxisRad(m, &axis, ang);
+    PSMTXMultVec(m, &off, &off);
+    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
+    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
+    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26BEC;
+    o[0x4C] = 1;
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BEC + 0xC);
+    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
+    *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BEC + 8) / lbl_3_rodata_3930;
+}
+
+static inline void Inl1531A4(u8* o) {
+    Mtx m;
+    Vec up;
+    Vec axis;
+    Vec dir;
+    Vec off;
+    f32 ang;
+    f32 r;
+    u8* cam;
+    cam = fn_80052734(fn_8005268C());
+    if (o[0x4D] != 0) {
+        r = fn_3_119854(2);
+    } else {
+        r = fn_3_119854(0);
+    }
+    up = lbl_3_rodata_38DC;
+    off.x = lbl_3_rodata_3934[0];
+    off.y = lbl_3_rodata_3934[0];
+    off.z = lbl_3_rodata_3A04 * r;
+    off.x += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    off.y += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    off.z += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECNormalize(&dir, &dir);
+    ang = (f32)acos(PSVECDotProduct(&up, &dir));
+    PSVECCrossProduct(&up, &dir, &axis);
+    if (lbl_3_rodata_3934[0] == PSVECMag(&axis)) {
+        axis.x = lbl_3_rodata_3934[0];
+        axis.z = lbl_3_rodata_3934[0];
+        axis.y = lbl_3_rodata_3948;
+    }
+    PSMTXRotAxisRad(m, &axis, ang);
+    PSMTXMultVec(m, &off, &off);
+    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
+    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
+    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26BFC;
+    o[0x4C] = 2;
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BFC + 0xC);
+    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
+    *(f32*)(o + 0x14) = (f32)*(s32*)(lbl_3_data_26BFC + 8) / lbl_3_rodata_3930;
+}
+
+static inline void Inl152794(u8* o) {
+    Mtx m;
+    Vec up;
+    Vec axis;
+    Vec dir;
+    Vec off;
+    f32 ang;
+    f32 r;
+    u8* cam;
+    cam = fn_80052734(fn_8005268C());
+    if (o[0x4D] != 0) {
+        r = fn_3_119854(2);
+    } else {
+        r = fn_3_119854(0);
+    }
+    up = lbl_3_rodata_38DC;
+    off.x = lbl_3_rodata_3934[0];
+    off.y = lbl_3_rodata_3934[0];
+    off.z = lbl_3_rodata_3A04 * r;
+    off.x += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    off.y += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    off.z += r * ((f64)(rand() % 50 - 25) / lbl_3_rodata_39E8);
+    PSVECSubtract((Vec*)(cam + 0x70), (Vec*)(o + 0x1C), &dir);
+    PSVECNormalize(&dir, &dir);
+    ang = (f32)acos(PSVECDotProduct(&up, &dir));
+    PSVECCrossProduct(&up, &dir, &axis);
+    if (lbl_3_rodata_3934[0] == PSVECMag(&axis)) {
+        axis.x = lbl_3_rodata_3934[0];
+        axis.z = lbl_3_rodata_3934[0];
+        axis.y = lbl_3_rodata_3948;
+    }
+    PSMTXRotAxisRad(m, &axis, ang);
+    PSMTXMultVec(m, &off, &off);
+    *(f32*)(o + 4) = *(f32*)(o + 0x1C) + off.x;
+    *(f32*)(o + 8) = *(f32*)(o + 0x20) + off.y;
+    *(f32*)(o + 0xC) = *(f32*)(o + 0x24) + off.z;
+    *(f32*)(o + 0x38) = *(f32*)(o + 0x3C) = (f32)*(s32*)lbl_3_data_26C0C;
+    o[0x4C] = 3;
+    *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26C0C + 0xC);
+    *(f32*)(o + 0x10) = *(f32*)(o + 0x18) = lbl_3_rodata_3934[0];
+    *(f32*)(o + 0x14) = -((f32)*(s32*)(lbl_3_data_26C0C + 8) / lbl_3_rodata_3930);
+}
+
 void fn_3_1536A8(u8* obj, u8 mode) {
     switch (mode) {
     case 1:
-        fn_3_1534C0(obj);
+        Inl1534C0(obj);
         break;
     case 2:
-        fn_3_1531A4(obj);
+        Inl1531A4(obj);
         break;
     case 3:
-        fn_3_152794(obj);
+        Inl152794(obj);
         break;
     }
 }
