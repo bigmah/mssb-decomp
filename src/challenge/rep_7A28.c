@@ -150,44 +150,44 @@ static DebugMenuItem lbl_1_data_111A0[7] = {
 
 // .text:0x00028200 size:0xF4
 void fn_1_28200(void) {
-    u8* object = ((u8*)lbl_803CC1B8);
-    u8* camera;
-    *(s16*)(object + 0x10) = 0;
+    ChParticleTask* object = CUR_TASK;
+    ChallengeDebugCamera* camera;
+    object->h.result = 0;
     fn_800AD038(lbl_80366158[2]);
-    *(void**)(object + 0x14) = _OSAllocFromHeap(0x20, 0xDC);
-    fn_1_273D8(*(void**)(object + 0x14));
-    *(void**)(object + 0x1C) = _OSAllocFromHeap(0x20, 0x1C);
-    *(s32*)(*(u8**)(object + 0x1C) + 8) = 0x10;
-    *(s32*)(*(u8**)(object + 0x1C) + 0x14) = 1;
-    camera = *(u8**)(object + 0x14);
-    *(f32*)(camera + 0x8C) *= -1.0f;
-    *(f32*)(object + 0x20) = 0.0f;
-    *(f32*)(object + 0x24) = -1.0f;
-    *(f32*)(object + 0x28) = 0.0f;
-    *(f32*)(object + 0x2C) = 1.0f;
-    *(f32*)(object + 0x30) = 1.0f;
-    object[0x36] = 0;
-    object[0x37] = 0;
-    *(u16*)(object + 0x34) = 0;
-    *(void**)((u8*)lbl_803CC1B8) = fn_1_28118;
+    object->camera = _OSAllocFromHeap(0x20, 0xDC);
+    fn_1_273D8(object->camera);
+    object->menu = _OSAllocFromHeap(0x20, 0x1C);
+    object->menu->visible = 0x10;
+    object->menu->wrap = 1;
+    camera = object->camera;
+    camera->up.y *= -1.0f;
+    object->pos.x = 0.0f;
+    object->pos.y = -1.0f;
+    object->pos.z = 0.0f;
+    object->length = 1.0f;
+    object->scale = 1.0f;
+    object->mode = 0;
+    object->cursor = 0;
+    object->flags = 0;
+    CUR_TASK->h.func = fn_1_28118;
 }
 
 // .text:0x00028118 size:0xE8
 void fn_1_28118(void) {
-    u8* object = ((u8*)lbl_803CC1B8);
-    s16 state = *(s16*)(object + 0x10);
+    ChParticleTask* object = CUR_TASK;
+    s16 state = object->h.result;
     s32 ready;
     switch (state) {
     case 0:
-        *(s16*)(object + 0x10) = state + 1;
-        *(void**)(object + 0x18) = ARAMTransfer(&lbl_1_data_108F8, 0, 0, 0);
+        object->h.result = state + 1;
+        object->texture = ARAMTransfer(&lbl_1_data_108F8, 0, 0, 0);
     case 1:
         ready = lbl_803C6CF8[0x715];
         if (ready == 1) {
-            *(s32*)(object + 0x18) = *(s32*)(object + 0x18) + **(s32**)(object + 0x18);
-            convertTextureHeader(*(void**)(object + 0x18));
-            fn_1_27560(*(struct TexArchive**)(object + 0x18));
-            *(void**)((u8*)lbl_803CC1B8) = fn_1_27E98;
+            object->texture = (u8*)object->texture + *(s32*)object->texture; // relocate the archive header
+            convertTextureHeader(object->texture);
+            fn_1_27560(object->texture);
+            CUR_TASK->h.func = fn_1_27E98;
         }
     }
 }
@@ -197,67 +197,67 @@ void fn_1_27E98(void) {
     Mtx m;
     Vec v;
     f32 x; f32 y; f32 z;
-    u8* object = ((u8*)lbl_803CC1B8);
+    ChParticleTask* object = CUR_TASK;
     fn_1_27D6C();
-    fn_1_27330(*(void**)(object + 0x14));
-    object = ((u8*)lbl_803CC1B8);
-    fn_8003414C(*(void**)(object + 0x14));
-    fn_1_272DC(*(void**)(object + 0x14), 0);
+    fn_1_27330(object->camera);
+    object = CUR_TASK;
+    fn_8003414C(object->camera);
+    fn_1_272DC(object->camera, 0);
     fn_1_AF4(20, 20, 1.0f);
-    PSMTXScale(m, *(f32*)(object + 0x30), *(f32*)(object + 0x30), *(f32*)(object + 0x30));
-    PSMTXTransApply(m, m, *(f32*)(object + 0x20), *(f32*)(object + 0x24), *(f32*)(object + 0x28));
-    PSMTXConcat(*(void**)(object + 0x14), m, *(void**)(object + 0x14));
-    fn_1_272DC(*(void**)(object + 0x14), 0);
+    PSMTXScale(m, object->scale, object->scale, object->scale);
+    PSMTXTransApply(m, m, object->pos.x, object->pos.y, object->pos.z);
+    PSMTXConcat(object->camera->view, m, object->camera->view);
+    fn_1_272DC(object->camera, 0);
     fn_1_F2C(4, 0, 0);
     GXSetZMode(1, GX_LEQUAL, 1);
     GXDrawSphere1(2);
-    PSMTXTrans(m, *(f32*)(object + 0x20), *(f32*)(object + 0x24), *(f32*)(object + 0x28));
-    PSMTXConcat(*(void**)(object + 0x14), m, *(void**)(object + 0x14));
-    fn_1_272DC(*(void**)(object + 0x14), 0);
+    PSMTXTrans(m, object->pos.x, object->pos.y, object->pos.z);
+    PSMTXConcat(object->camera->view, m, object->camera->view);
+    fn_1_272DC(object->camera, 0);
     fn_1_F2C(4, 0, 0);
     GXBegin(GX_LINES, GX_VTXFMT0, 2);
-    z = *(f32*)(object + 0x28);
-    y = *(f32*)(object + 0x24);
-    x = *(f32*)(object + 0x20);
+    z = object->pos.z;
+    y = object->pos.y;
+    x = object->pos.x;
     GXWGFifo.f32 = x;
     GXWGFifo.f32 = y;
     GXWGFifo.f32 = z;
     GXWGFifo.u32 = 0xFF0000FF;
     v.x = 0.0f;
     v.y = 0.0f;
-    v.z = *(f32*)(object + 0x2C);
-    PSVECAdd((Vec*)(object + 0x20), &v, &v);
+    v.z = object->length;
+    PSVECAdd(&object->pos, &v, &v);
     GXWGFifo.f32 = v.x;
     GXWGFifo.f32 = v.y;
     GXWGFifo.f32 = v.z;
     GXWGFifo.u32 = 0xFF0000FF;
-    lbl_1_data_108F0[*(s8*)(object + 0x36)]();
+    lbl_1_data_108F0[object->mode]();
     minigamesGXStuff();
 }
 
 // .text:0x00027E50 size:0x48
 void fn_1_27E50(void) {
-    u8* parent;
+    ChTaskHeader* parent;
     fn_800AD038(lbl_80366158[2]);
-    parent = *(u8**)(((u8*)lbl_803CC1B8) + 0xC);
-    *(s16*)(parent + 0x10) = 1;
+    parent = CUR_TASK->h.parent;
+    parent->result = 1;
     fn_800B0A14_removeQueue(parent);
 }
 
 // .text:0x00027D6C size:0xE4
 void fn_1_27D6C(void) {
     u8 buf[6];
-    if (*(u16*)(((u8*)lbl_803CC1B8) + 0x34) & 1) {
-        lbl_1_data_108E8[*(s8*)(((u8*)lbl_803CC1B8) + 0x36)](lbl_1_data_108E8);
+    if (CUR_TASK->flags & 1) {
+        lbl_1_data_108E8[CUR_TASK->mode](lbl_1_data_108E8);
     } else {
-        memcpy(buf, (u8*)&lbl_803C77B8 + 0x10, 6);
+        memcpy(buf, &lbl_803C77B8.stickX, 6);
         buf[0] = -buf[0];
-        buf[4] = ((u8*)&lbl_803C77B8)[0x15];
-        buf[5] = ((u8*)&lbl_803C77B8)[0x14];
-        fn_1_26D28(((ChParticleTask*)lbl_803CC1B8)->camera, lbl_803C77B8._00, lbl_803C77B8._02, lbl_803C77B8._04, (ChallengeDebugPad*)buf);
+        buf[4] = lbl_803C77B8.triggerR;
+        buf[5] = lbl_803C77B8.triggerL;
+        fn_1_26D28(CUR_TASK->camera, lbl_803C77B8._00, lbl_803C77B8._02, lbl_803C77B8._04, (ChallengeDebugPad*)buf);
     }
     if (lbl_803C77B8._02 & 0x1000) {
-        *(u16*)(((u8*)lbl_803CC1B8) + 0x34) ^= 1;
+        CUR_TASK->flags ^= 1;
     }
 }
 
@@ -266,56 +266,56 @@ void fn_1_27BB8(void) {
     Mtx m;
     Vec v;
     f32 x; f32 y; f32 z;
-    u8* object = ((u8*)lbl_803CC1B8);
-    fn_8003414C(*(void**)(object + 0x14));
-    fn_1_272DC(*(void**)(object + 0x14), 0);
+    ChParticleTask* object = CUR_TASK;
+    fn_8003414C(object->camera);
+    fn_1_272DC(object->camera, 0);
     fn_1_AF4(20, 20, 1.0f);
-    PSMTXScale(m, *(f32*)(object + 0x30), *(f32*)(object + 0x30), *(f32*)(object + 0x30));
-    PSMTXTransApply(m, m, *(f32*)(object + 0x20), *(f32*)(object + 0x24), *(f32*)(object + 0x28));
-    PSMTXConcat(*(void**)(object + 0x14), m, *(void**)(object + 0x14));
-    fn_1_272DC(*(void**)(object + 0x14), 0);
+    PSMTXScale(m, object->scale, object->scale, object->scale);
+    PSMTXTransApply(m, m, object->pos.x, object->pos.y, object->pos.z);
+    PSMTXConcat(object->camera->view, m, object->camera->view);
+    fn_1_272DC(object->camera, 0);
     fn_1_F2C(4, 0, 0);
     GXSetZMode(1, GX_LEQUAL, 1);
     GXDrawSphere1(2);
-    PSMTXTrans(m, *(f32*)(object + 0x20), *(f32*)(object + 0x24), *(f32*)(object + 0x28));
-    PSMTXConcat(*(void**)(object + 0x14), m, *(void**)(object + 0x14));
-    fn_1_272DC(*(void**)(object + 0x14), 0);
+    PSMTXTrans(m, object->pos.x, object->pos.y, object->pos.z);
+    PSMTXConcat(object->camera->view, m, object->camera->view);
+    fn_1_272DC(object->camera, 0);
     fn_1_F2C(4, 0, 0);
     GXBegin(GX_LINES, GX_VTXFMT0, 2);
-    z = *(f32*)(object + 0x28);
-    y = *(f32*)(object + 0x24);
-    x = *(f32*)(object + 0x20);
+    z = object->pos.z;
+    y = object->pos.y;
+    x = object->pos.x;
     GXWGFifo.f32 = x;
     GXWGFifo.f32 = y;
     GXWGFifo.f32 = z;
     GXWGFifo.u32 = 0xFF0000FF;
     v.x = 0.0f;
     v.y = 0.0f;
-    v.z = *(f32*)(object + 0x2C);
-    PSVECAdd((Vec*)(object + 0x20), &v, &v);
+    v.z = object->length;
+    PSVECAdd(&object->pos, &v, &v);
     GXWGFifo.f32 = v.x;
     GXWGFifo.f32 = v.y;
     GXWGFifo.f32 = v.z;
     GXWGFifo.u32 = 0xFF0000FF;
-    lbl_1_data_108F0[*(s8*)(object + 0x36)]();
+    lbl_1_data_108F0[object->mode]();
     minigamesGXStuff();
 }
 
 // .text:0x00027AD4 size:0xE4
 void fn_1_27AD4(void) {
-    u16 repeated = *(u16*)((u8*)&lbl_803C77B8 + 4);
-    u8* object = ((u8*)lbl_803CC1B8);
+    u16 repeated = lbl_803C77B8._04;
+    ChParticleTask* object = CUR_TASK;
     if (repeated & 8) {
-        *(s8*)(object + 0x37) = (*(s8*)(object + 0x37) + 1) % 2;
+        object->cursor = (object->cursor + 1) % 2;
         return;
     }
     if (repeated & 4) {
-        *(s8*)(object + 0x37) = (*(s8*)(object + 0x37) + 1) % 2;
+        object->cursor = (object->cursor + 1) % 2;
         return;
     }
     if (lbl_803C77B8._02 & 0x100) {
-        object[0x36] = object[0x37] + 1;
-        object[0x37] = 0;
+        object->mode = object->cursor + 1;
+        object->cursor = 0;
         return;
     }
     if (lbl_803C77B8._02 & 0x200) {
@@ -334,9 +334,8 @@ void fn_1_276CC(void) {
     u16 repeat;
 
     if (flags & 8) {
-        // TODO type: lbl_803C77B8 byte 0x15 (PadState.analog.triggerRight)
         fn_80048820(task->menu, lbl_803C77B8._00, lbl_803C77B8._02, lbl_803C77B8._04,
-                    ((u8*)&lbl_803C77B8)[0x15]);
+                    lbl_803C77B8.triggerR);
         if (lbl_803C77B8._00 & 0x100) {
             CUR_TASK->flags &= ~2;
             CUR_TASK->flags |= 2;
@@ -416,27 +415,27 @@ void fn_1_276CC(void) {
 // .text:0x00027594 size:0x138
 void fn_1_27594(void) {
     Vec dir;
-    u8* object = ((u8*)lbl_803CC1B8);
+    ChParticleTask* object = CUR_TASK;
     Vec rest = { 0.0f, 0.0f, 0.0f };
     s32 i;
     u16 flags;
-    flags = *(u16*)(object + 0x34);
+    flags = object->flags;
     if ((flags & 2) || (flags & 4)) {
         i = 1;
         dir.x = 0.0f;
         dir.y = 0.0f;
-        dir.z = *(f32*)(object + 0x2C);
+        dir.z = object->length;
         do {
-            fn_80030D88((Vec*)(object + 0x20), &dir, &lbl_1_data_10908[i], 5);
+            fn_80030D88(&object->pos, &dir, &lbl_1_data_10908[i], 5);
             i++;
         } while (i < 3);
-        fn_8002F5F4((Vec*)(object + 0x20), &dir, &lbl_1_data_109F8);
+        fn_8002F5F4(&object->pos, &dir, &lbl_1_data_109F8);
         PSVECNormalize(&dir, &dir);
-        fn_80030470((Vec*)(object + 0x20), &dir, &rest, lbl_1_data_10908, 5);
-        *(u16*)(((u8*)lbl_803CC1B8) + 0x34) ^= 2;
+        fn_80030470(&object->pos, &dir, &rest, lbl_1_data_10908, 5);
+        CUR_TASK->flags ^= 2;
     }
-    if (*(u16*)(((u8*)lbl_803CC1B8) + 0x34) & 8) {
-        fn_80048BEC(*(void**)(object + 0x1C), 1, 1);
+    if (CUR_TASK->flags & 8) {
+        fn_80048BEC(object->menu, 1, 1);
     }
 }
 
