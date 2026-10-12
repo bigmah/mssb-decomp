@@ -12,6 +12,7 @@
 #include "stl/string.h"
 #include "Unknown/File_0x800a6304.h"
 #include "main/file_800B0724.h"
+#include "main/file_800BDEA0.h"
 
 extern TrailSystem lbl_802D3D80;
 // SoundManager (main/file_80021308.h, whose prototypes clash with UnknownHomes_Static.h).
@@ -47,6 +48,84 @@ void fn_800AC508(char* fileName, void* bannerTpl, s32 bannerSize, void* iconTpl,
                  u32 bannerFlags, char* comment, char* subComment, s32 blocks);
 s32 fn_800ACC6C(s32 mode, s32 a, s32 b);
 u16 fn_800ABB14(u8* data, s32 len);
+
+extern void fn_800BD1E8(void (*func)(Mtx, s32*, s32*, s32*, u8*, u8*));
+extern void* GetUITexture(void); // main/file_80037054.h (clashes with this unit's Model)
+extern TexImage lbl_800F7AE0;
+extern f32 lbl_803CB82C;
+
+// .text:0x8003A37C size:0x14C
+void fn_8003A37C(Mtx mtx, s32* stage, s32* coord, s32* map, u8* count, u8* texMtx) {
+    lbl_800F7AE0.data = GetUITexture();
+    SetDisplayStateTexture(&lbl_800F7AE0, *map, 0);
+    GXSetTevOrder(*stage, *coord, *map, GX_COLOR0A0);
+    GXSetTevColorIn(*stage, GX_CC_ZERO, GX_CC_TEXC, GX_CC_TEXA, GX_CC_CPREV);
+    GXSetTevColorOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GXSetTevAlphaIn(*stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+    GXSetTevAlphaOp(*stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GXSetTexCoordGen2(*coord, GX_TG_MTX3X4, GX_TG_POS, *texMtx * 3 + GX_TEXMTX0, GX_FALSE, GX_PTIDENTITY);
+    GXLoadTexMtxImm(mtx, *texMtx * 3 + GX_TEXMTX0, GX_MTX3x4);
+    (*count)++;
+    (*texMtx)++;
+    (*stage)++;
+    (*coord)++;
+    (*map)++;
+}
+
+// .text:0x8003A4C8 size:0x70
+void fn_8003A4C8(void) {
+    if (GetDrawShadows()) {
+        GXSetTexCopySrc(0, 0, 640, 448);
+        GXSetTexCopyDst(640, 448, GX_TF_RGB565, GX_FALSE);
+        GXCopyTex(GetUITexture(), GX_TRUE);
+        GXPixModeSync();
+        fn_800BEB3C();
+        fn_800BD1E8(fn_8003A37C);
+    }
+}
+
+extern u32 lbl_803CBCB0;
+
+// .text:0x8003A538 size:0x8
+u32 fn_8003A538(void) {
+    return lbl_803CBCB0;
+}
+
+// .text:0x8003A540 size:0x8
+void fn_8003A540(u32 value) {
+    lbl_803CBCB0 = value;
+}
+
+// .text:0x8003A548 size:0x8
+void fn_8003A548(void (*callback)(void)) {
+    lbl_803CBCA8 = callback;
+}
+
+// .text:0x8003A550 size:0x138
+void fn_8003A550(s32 type, Vec* pos, Vec* dir, u8 flag) {
+    f32 tmp;
+    u16 head;
+
+    head = lbl_802D3D80.head;
+    if (lbl_802D3D80.enabled) {
+        lbl_802D3D80.entries[head].type = type;
+        lbl_802D3D80.entries[head].pos = *pos;
+        PSVECNormalize(dir, &lbl_802D3D80.entries[head].dir);
+        PSVECScale(&lbl_802D3D80.entries[head].dir, lbl_802D3D80.params[type].speed, &lbl_802D3D80.entries[head].vel);
+        tmp = -lbl_802D3D80.entries[head].vel.z;
+        lbl_802D3D80.entries[head].vel.z = lbl_802D3D80.entries[head].vel.x;
+        lbl_802D3D80.entries[head].vel.x = tmp;
+        PSVECScale(&lbl_802D3D80.entries[head].dir, lbl_802D3D80.params[type].spread, &lbl_802D3D80.entries[head].dir);
+        lbl_802D3D80.entries[head].dir.y = lbl_803CB82C;
+        lbl_802D3D80.entries[head].alpha = 0xFF;
+        lbl_802D3D80.entries[head].flag = flag;
+        {
+            s32 next = (head + 1) % 64;
+            lbl_802D3D80.head = next;
+            lbl_802D3D80.tail = (lbl_802D3D80.tail + ((u16)next == lbl_802D3D80.tail)) % 64;
+        }
+    }
+}
 
 // .text:0x8003A688 size:0x28
 void fn_8003A688(s32 type, f32 speed, f32 spread) {
@@ -3321,8 +3400,9 @@ copy:
 
 // .data 0x800FADA0..0x800FB3F8
 
-// .bss 0x802D4AC0..0x802E4B00 (MWCC lays these out in reverse definition order)
+// .bss 0x802D3D80..0x802E4B00 (MWCC lays these out in reverse definition order)
 SaveImage lbl_802D4B00;
 u64 lbl_802D4AE0[4];
 ARQRequest lbl_802D4AC0;
+TrailSystem lbl_802D3D80;
 

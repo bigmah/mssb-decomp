@@ -142,18 +142,21 @@ main/file_80037054.c:
 	.sdata2     start:0x803CC720 end:0x803CC7A0
 
 main/file_80039AC0.c:
-	extab       start:0x80005EE8 end:0x80005F38
-	extabindex  start:0x800079BC end:0x80007A34
-	.text       start:0x80039AC0 end:0x8003A688
+	extab       start:0x80005EE8 end:0x80005F20
+	extabindex  start:0x800079BC end:0x80007A10
+	.text       start:0x80039AC0 end:0x8003A37C
+	.data       start:0x800F7A40 end:0x800F7AC0
 	.sdata2     start:0x803CC7A0 end:0x803CC7D8
 
 main/file_8003A688.c:
-	extab       start:0x80005F38 end:0x80005FD8
-	extabindex  start:0x80007A34 end:0x80007B24
-	.text       start:0x8003A688 end:0x8004207C
+	extab       start:0x80005F20 end:0x80005FD8
+	extabindex  start:0x80007A10 end:0x80007B24
+	.text       start:0x8003A37C end:0x8004207C
 	.rodata     start:0x800E6910 end:0x800E6920
-	.data       start:0x800FADA0 end:0x800FB3F8
-	.bss        start:0x802D4AC0 end:0x802E4B00
+	.data       start:0x800F7AC0 end:0x800FB3F8
+	.bss        start:0x802D3D80 end:0x802E4B00
+	.sdata      start:0x803CB828 end:0x803CB838
+	.sbss       start:0x803CBCA8 end:0x803CBCC8
 	.sdata2     start:0x803CC7D8 end:0x803CC7E8
 
 main/file_8004207C.c:

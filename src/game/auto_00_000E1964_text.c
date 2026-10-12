@@ -4,6 +4,7 @@
 #include "static/GameSettings.h"
 #include "main/file_800BD8C4.h"
 #include "main/file_80039AC0.h"
+#include "main/file_8003A688.h"
 #include "Dolphin/gx.h"
 #include "game/rep_1838.h"
 #include "game/rep_1D58.h"
