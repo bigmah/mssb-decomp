@@ -1175,7 +1175,7 @@ f32 lbl_2_data_3BB0[18] = {
     14.0f, 8.0f, 0.001f,
 };
 s16 lbl_2_data_3BF8[2] = {4, 7};
-// TODO type: unreferenced; four values, a pointer to lbl_2_data_3BF8 and one to itself.
+// Unreferenced: four values, a pointer to lbl_2_data_3BF8 and one to itself.
 typedef struct Menu3BFC {
     s16 v[4];
     s16* list;
