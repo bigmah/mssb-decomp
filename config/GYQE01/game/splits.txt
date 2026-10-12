@@ -404,11 +404,13 @@ game/rep_2940.c:
 game/rep_2998.c:
 	.text       start:0x000E1DB8 end:0x000E587C
 	.rodata     start:0x00002998 end:0x00002B40
+	.data       start:0x00018D98 end:0x00019018
 	.bss        start:0x0000AE00 end:0x0000AE50
 
 game/sta_c6.c:
 	.text       start:0x000E59B4 end:0x000E911C
 	.rodata     start:0x00002B40 end:0x00002BF8
+	.data       start:0x00019018 end:0x00019770
 	.bss        start:0x0000AE50 end:0x0000AEE0
 
 game/rep_2BF8.c:
@@ -423,6 +425,7 @@ game/sta_c5.c:
 game/sta_c4.c:
 	.text       start:0x000F8444 end:0x000FBCD0
 	.rodata     start:0x00002F68 end:0x00003090
+	.data       start:0x0001BA88 end:0x0001C0A8
 	.bss        start:0x0000B570 end:0x0000B678
 
 auto_00_000FBCD0_text:
