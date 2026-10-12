@@ -53,7 +53,7 @@ typedef struct MsgTable {
 // Layout (2D scene) object; owned by another unit, only the fields used here.
 typedef struct LayoutObj {
     /*0x00*/ void* _00;
-    /*0x04*/ u8 _04[0x8];
+    /*0x04*/ void* _04[2]; // two pointers (GameCube: 8 bytes)
     /*0x0C*/ Mtx mtx;
     /*0x3C*/ u8 _3C[0xC];
     /*0x48*/ f32 x;

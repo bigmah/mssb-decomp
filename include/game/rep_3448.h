@@ -31,7 +31,7 @@ typedef struct RepSlot {
 // HUD task (lbl_803CC1B8 while one of this unit's tasks runs); only the fields used here.
 typedef struct RepTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x8];
+    /*0x04*/ void* _04[2]; // two pointers (GameCube: 8 bytes)
     /*0x0C*/ struct RepTask* parent;
     /*0x10*/ u8 _10[0x2];
     /*0x12*/ u16 priority;
