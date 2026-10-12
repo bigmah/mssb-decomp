@@ -82,7 +82,11 @@ extern LayoutSlot lbl_80371C30[];
 // Also the queue item that lbl_803CC1B8 points at.
 typedef struct LayoutGroup {
     /*0x00*/ void (*callback)(void);
-    /*0x04*/ u8 _04[0x10];
+    /*0x04*/ void* prev;
+    /*0x08*/ void* next;
+    /*0x0C*/ void* parent;
+    /*0x10*/ s16 _10;
+    /*0x12*/ u16 _12;
     /*0x14*/ u16 start;
     /*0x16*/ u16 count;
     /*0x18*/ u16 timer;

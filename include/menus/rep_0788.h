@@ -2,35 +2,15 @@
 #define __MENUS_REP_0788_H__
 
 #include "mssbTypes.h"
+#include "menus/menu_work.h"
 
-typedef struct {
-    u8 padding[0x1976A0];
-    s32 selection;
-    s32 secondarySelection;
-    u8 padding1976A8[0xFA];
-    s16 frameSetA[5];
-    u8 padding1977AC[0x62];
-    s16 frameSetB[5];
-    s16 frameSetC[5];
-    u8 padding197822[0x41];
-    s8 port;
-} MenuInputContext;
+// Menu screen tasks are MenuTask (menus/menu_work.h): baseIdx is the first
+// sprite in lbl_80371C30, timerA..stateB drive the queued screens.
+typedef MenuTask MenuTableContext;
+typedef MenuTask MenuQueueState;
 
-typedef struct {
-    u8 padding[0x18];
-    u16 timerA;
-    u16 timerB;
-    u16 stateA;
-    u16 stateB;
-} MenuQueueState;
-
-typedef struct {
-    u8 padding[0x14];
-    u16 firstIndex;
-} MenuTableContext;
-
-typedef struct {
-    u8 padding[4];
+typedef struct MenuItemState {
+    void (*func)(MenuTask* menu, struct MenuItemState* item);
     s16 state;
     s16 timer;
     u8 padding08[2];
@@ -58,13 +38,13 @@ s16 fn_2_201E4(s16 row, s16 column);
 
 void fn_2_20218(void);
 
-void fn_2_272BC(u8* menu, u8* item);
+void fn_2_272BC(MenuTableContext* menu, MenuItemState* item);
 
-void fn_2_25D6C(u8* menu, u8* item);
+void fn_2_25D6C(MenuTableContext* menu, MenuItemState* item);
 
-void fn_2_25A1C(u8* menu, u8* item);
+void fn_2_25A1C(MenuTableContext* menu, MenuItemState* item);
 
-void fn_2_25850(u8* menu, u8* item);
+void fn_2_25850(MenuTableContext* menu, MenuItemState* item);
 
 void fn_2_246E0(void);
 

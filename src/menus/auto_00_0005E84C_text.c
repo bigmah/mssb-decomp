@@ -3110,8 +3110,8 @@ void fn_2_68260(MenuTask* task) {
 // NONMATCHING 89%: original keeps the pointer across the stb/sth pair but reloads it before the last store
 #if NONMATCHING
 void fn_2_68308(void) {
-    lbl_2_bss_1A8248->_17AB = 0;
-    lbl_2_bss_1A8248->_177C = 0;
+    lbl_2_bss_1A8248->entries[1].typeC3 = 0;
+    lbl_2_bss_1A8248->entries[1].state = 0;
     lbl_2_bss_1A8248->_442F = 0;
 }
 #endif

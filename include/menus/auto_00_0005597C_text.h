@@ -33,13 +33,7 @@ typedef struct MenuPad {
     /*0x14*/ u8 _14[0x20 - 0x14];
 } MenuPad;
 
-// Menu view of the scene task in lbl_803CC1B8.
-typedef struct MenuTask {
-    /*0x00*/ u8 _00[0xC];
-    /*0x0C*/ SceneTask* parent;
-    /*0x10*/ u8 _10[0x28 - 0x10];
-    /*0x28*/ s8 state;
-} MenuTask;
+// The scene task in lbl_803CC1B8 is a MenuTask (menus/menu_work.h).
 
 s32 fn_2_5597C(void);
 void fn_2_55A40(void);

@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "main/file_80069BDC.h"
+#include "menus/menu_work.h"
 
 // Same layout as MenuSlot / CharSelectLayout in main/file_800639BC.h, which can't be
 // included together with main/file_8004207C.h (both declare lbl_8034E9A0).
@@ -46,14 +47,6 @@ typedef struct MenuSceneState {
     /*0x32*/ s16 state;
     /*0x34*/ u8 _34;
 } MenuSceneState;
-
-// Draw area after the per-layer flags (lbl_2_bss_1A8230 points at it); starts with the
-// MenuDrawEntry[10][864] table used by fn_2_53F04.
-typedef struct MenuDrawArea {
-    /*0x00000*/ u8 _00000[0x32A86];
-    /*0x32A86*/ u8 _32A86;
-    /*0x32A87*/ u8 _32A87;
-} MenuDrawArea;
 
 // Menu work buffer (lbl_2_bss_1A8250; lbl_2_bss_1A8234 and lbl_2_bss_1A824C point at it).
 typedef struct MenuWorkBuf {
