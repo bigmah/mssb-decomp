@@ -1,4 +1,5 @@
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_menus_10C0
+#include "header_rep_inline.h"
 #include "menus/rep_10C0.h"
 #include "Dolphin/vec.h"
 #include "Dolphin/GX/GXTransform.h"

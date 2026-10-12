@@ -300,12 +300,12 @@ def TRKLib(lib_name:str, objects:List[object], flags :list[str]= cflags_base, ex
     }
 
 # Helper function for REL script objects
-def Rel(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+def Rel(lib_name: str, objects: List[Object], extra_cflags: List[str] = []) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         # "progress_category": lib_name,
         "mw_version": "GC/2.6",
-        "cflags": cflags_rel,
+        "cflags": cflags_rel + extra_cflags,
         "host": True,
         "objects": objects,
     }
@@ -958,8 +958,6 @@ config.libs = [
             Object(NonMatching, "auto_00_00001254_text", source="menus/auto_00_00001254_text.c"),
             Object(NonMatching, "auto_00_0004B1AC_text", source="menus/auto_00_0004B1AC_text.c"),
             Object(Matching, "auto_00_00016870_text", source="menus/auto_00_00016870_text.c"),
-            Object(NonMatching, "auto_00_00092394_text", source="menus/auto_00_00092394_text.c"),
-            Object(NonMatching, "auto_00_00094854_text", source="menus/auto_00_00094854_text.c"),
             Object(NonMatching, "auto_00_000194BC_text", source="menus/auto_00_000194BC_text.c"),
             Object(NonMatching, "auto_00_00000D08_text", source="menus/auto_00_00000D08_text.c"),
             Object(NonMatching, "auto_00_0001B1BC_text", source="menus/auto_00_0001B1BC_text.c"),
@@ -1039,7 +1037,10 @@ config.libs = [
             Object(NonMatching, "menus/shared/auto_000919CC.c"),
             Object(NonMatching, "menus/shared/auto_00091C4C.c"),
             Object(NonMatching, "menus/shared/auto_00091D74.c"),
-        ]
+        ],
+        # The original compiled menus with -common on: uninitialised globals are
+        # common symbols, laid out after all .bss (see docs/common_bss.md).
+        extra_cflags=["-common on"],
     )
 ]
 
