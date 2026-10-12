@@ -4729,7 +4729,7 @@ void fn_1_17954(void) {
 }
 
 // .text:0x1770C size:0x248
-// NONMATCHING ~90%: the original reaches lbl_1_data_A9E4..AC7C and 1F1A through one pooled .data base (needs the data split)
+// NONMATCHING ~97%: with the .data statics the pooled bases now match; only the .bss and .data pool base registers are swapped (r29/r30)
 // nmverify: lbl_1_bss_3215 lbl_1_data_1F1A lbl_1_data_A9E4 lbl_1_data_AA54 lbl_1_data_AAC4 lbl_1_data_AB34 lbl_1_data_ABB4 lbl_1_data_AC7C reached through a pooled base in original
 #if NONMATCHING
 void fn_1_1770C(u8* object) {
