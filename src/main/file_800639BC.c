@@ -811,22 +811,25 @@ void fn_800671FC(void) {
 }
 
 // .text:0x80067264 size:0x360
-// NONMATCHING 66%: loop unrolling/scheduling of the class-count loops differs
+// NONMATCHING 73%: the original unrolls the class loop 3x without a zero-trip guard (a for loop
+// here gets the guard, a do-while is not unrolled); otherwise the same operations
 #if NONMATCHING
 u8 fn_80067264(s32 team, s32 captain) {
     s32 counts[4];
     s32 classes[2][9];
     s32 i;
-    u8 cls; // uninitialised if the captain is not in lbl_80108ED0 (as in the original)
+    s32 cls; // uninitialised if the captain is not in lbl_80108ED0 (as in the original)
 
     counts[0] = 0;
     counts[1] = 0;
     counts[2] = 0;
     counts[3] = 0;
-    for (i = 0; i < 9; i++) {
+    i = 0;
+    do {
         classes[team][i] = 0;
         classes[team][i] = lbl_8034E9A0.roster[lbl_803C6724.picks[team][i] / 9][lbl_803C6724.picks[team][i] % 9].stats.CharacterClass;
-    }
+        i++;
+    } while (i < 9);
     for (i = 0; i < 12; i++) {
         if (captain == lbl_80108ED0[i]) {
             cls = lbl_8010902C[i];
