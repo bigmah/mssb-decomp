@@ -1296,7 +1296,7 @@ void fn_3_122334(void) {
 }
 
 // .text:0x001226D4 size:0x650 mapped:0x80761768
-// NONMATCHING 66%: slot accesses use per-k table bases (lbl_80371C30 + k*8) in orig, g_Minigame hoisted into the prelude, inlined fn_3_125424(q, 0, 0x10)
+// NONMATCHING 96%: g_Minigame is hoisted into the prelude in orig, and its first case-4 status test is materialised (subfic/cntlzw); inlined fn_3_125424(q, 0, 0x10)
 #if NONMATCHING
 void fn_3_1226D4(void) {
     RepTask* q = REP_TASK;
@@ -1321,16 +1321,10 @@ void fn_3_1226D4(void) {
         q->state = 1;
         break;
     case 1:
-        REP_OBJ(q, 0)->mode = 0;
-        REP_OBJ(q, 0)->frame = 0;
-        REP_OBJ(q, 1)->mode = 0;
-        REP_OBJ(q, 1)->frame = 0;
-        REP_OBJ(q, 2)->mode = 0;
-        REP_OBJ(q, 2)->frame = 0;
-        REP_OBJ(q, 3)->mode = 0;
-        REP_OBJ(q, 3)->frame = 0;
-        REP_OBJ(q, 4)->mode = 0;
-        REP_OBJ(q, 4)->frame = 0;
+        for (k = 0; k < 5; k++) {
+            ((RepSlot*)lbl_80371C30 + k)[q->baseIdx].obj->mode = 0;
+            ((RepSlot*)lbl_80371C30 + k)[q->baseIdx].obj->frame = 0;
+        }
         if (g_Minigame[0x1DF7] != 0) {
             g_Minigame[0x1DF7] = 0;
             q->timer = 0;
@@ -1339,14 +1333,10 @@ void fn_3_1226D4(void) {
         }
         break;
     case 2:
-        REP_OBJ(q, 1)->mode = 1;
-        REP_OBJ(q, 1)->frame = 0;
-        REP_OBJ(q, 2)->mode = 1;
-        REP_OBJ(q, 2)->frame = 0;
-        REP_OBJ(q, 3)->mode = 1;
-        REP_OBJ(q, 3)->frame = 0;
-        REP_OBJ(q, 4)->mode = 1;
-        REP_OBJ(q, 4)->frame = 0;
+        for (k = 1; k < 5; k++) {
+            ((RepSlot*)lbl_80371C30 + k)[q->baseIdx].obj->mode = 1;
+            ((RepSlot*)lbl_80371C30 + k)[q->baseIdx].obj->frame = 0;
+        }
         q->state = 3;
         break;
     case 3:
