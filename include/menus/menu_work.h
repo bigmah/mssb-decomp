@@ -101,6 +101,10 @@ typedef struct MenuItemState {
     /*0x14*/ s16 unk14;
 } MenuItemState;
 
+// Layout object `i` of `slots` (a LayoutSlot array, main/file_8000F150.h), indexed as
+// ((LayoutObj**)slots)[i * 2] the way much of the original code does it.
+#define MENU_SLOT_OBJ(slots, i) (((LayoutObj**)(slots))[(i) * (s32)(sizeof(LayoutSlot) / sizeof(LayoutObj*))])
+
 #define MENU_SPRITE(task, item) (lbl_80371C30[(task)->baseIdx + (item)->sprite].obj)
 
 // High-score style record: a value and two tags.
@@ -163,7 +167,8 @@ typedef struct MenuEntry {
     /*0xAE*/ s16 _AE;
     /*0xB0*/ s16 targetLocation;
     /*0xB2*/ s16 locationIndex;
-    /*0xB4*/ u8 _B4[6];
+    /*0xB4*/ s16 _B4;
+    /*0xB6*/ u8 _B6[0xBA - 0xB6];
     /*0xBA*/ u8 mode;
     /*0xBB*/ u8 flagBB;
     /*0xBC*/ u8 flagBC;
@@ -181,7 +186,8 @@ typedef struct MenuEntry {
     /*0xCE*/ s8 flagCE;
     /*0xCF*/ s8 flagCF;
     /*0xD0*/ u8 flagD0;
-    /*0xD1*/ u8 _D1[7];
+    /*0xD1*/ u8 _D1[3];
+    /*0xD4*/ void (*update)(struct MenuEntry* entry); // per-type behaviour (lbl_2_data_2A2EC)
 } MenuEntry; // size: 0xD8
 
 // A placed world object / location (0xBC bytes); MenuCtx.objects.

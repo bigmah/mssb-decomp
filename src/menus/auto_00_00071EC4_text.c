@@ -1,22 +1,23 @@
 #include "menus/auto_00_00071EC4_text.h"
 
 #include "static/UnknownHomes_Static.h"
+#include "menus/menu_work.h"
+#include "main/file_8000F150.h"
 
-extern s32 fn_80036214(u8* o, s32 a, s32 b, s32 c);
+extern s32 fn_80036214(MenuTask* o, s32 a, s32 b, s32 c);
 extern s32 fn_8004A34C(u8* a, s32 b, s32 c, s32 d, s32 e);
 extern void fn_80023CF4(s32 a);
 extern void fn_8004C9FC(void);
 extern void fn_2_11A0(u16 v);
 extern void fn_8004CA08(u32 v);
-void fn_2_75BE4(u8* o, s32 index);
+void fn_2_75BE4(MenuTask* o, s32 index);
 extern u8 lbl_803C6724[];
 extern u8 lbl_803CBBC4[];
 extern u8 lbl_803CBCD8[];
-extern u8 lbl_80371C30[];
 extern u8 lbl_2_bss_F468[];
-void fn_2_74F40(u8* o, s32 index);
-extern u8* lbl_2_bss_1A8248[];
-extern u8* lbl_2_bss_1A824C[];
+void fn_2_74F40(MenuTask* o, s32 index);
+extern MenuCtx* lbl_2_bss_1A8248[];
+extern MenuData* lbl_2_bss_1A824C[];
 extern u8 lbl_803C66B0[];
 extern u8 lbl_8034E978[];
 extern void* lbl_2_data_2A1E8[];
@@ -36,7 +37,7 @@ extern void fn_8004F964(void);
 extern void fn_80062674(s32 index);
 extern s32 fn_800626EC(s32 index);
 extern void fn_800625A4(s32 a, s32 b);
-extern u8* lbl_803CC1B8;
+extern MenuTask* lbl_803CC1B8;
 extern s32 fn_80042DA8(void* owner, s32 b, s32 c); // owner: LayoutOwner*
 extern void fn_80034E20(void* object, void* data);
 extern u8 lbl_800FEF70[];
@@ -54,24 +55,24 @@ void fn_2_73028(void) {
 }
 
 // fn_2_71EC4, size:0x38
-void fn_2_71EC4(u8* obj) {
-    ((void (*)(u8*))lbl_2_data_2A1E8[*(s16*)(obj + 0x94)])(obj);
+void fn_2_71EC4(MenuEntry* obj) {
+    ((void (*)(MenuEntry*))lbl_2_data_2A1E8[obj->state])(obj);
 }
 
 // fn_2_71EFC, size:0x24
-void fn_2_71EFC(u8* obj) {
-    s32 i = *(s32*)(obj + 0x80);
-    u8* b = lbl_2_bss_1A8248[0];
-    *(u8*)(b + i * 0xD8 + 0x16D0) = 0;
+void fn_2_71EFC(MenuEntry* obj) {
+    s32 i = obj->objectId;
+    MenuCtx* b = lbl_2_bss_1A8248[0];
+    *((u8*)b + i * sizeof(MenuEntry) + offsetof(MenuCtx, entries[0].flagC0)) = 0;
 }
 
 // fn_2_71F60, size:0xD8
 void fn_2_71F60(void) {
     s32 off;
     s32 i;
-    u8* obj;
-    u8* h;
-    u8 x = lbl_2_bss_1A8248[0][0x44F2];
+    MenuEntry* obj;
+    MenuData* h;
+    u8 x = lbl_2_bss_1A8248[0]->_44F2;
     if (x == 1) {
         return;
     }
@@ -81,28 +82,28 @@ void fn_2_71F60(void) {
     i = 0;
     off = 0;
     for (; i < 8; i++) {
-        obj = lbl_2_bss_1A8248[0] + off + 0x1610;
-        *(void**)(obj + 0xD4) = lbl_2_data_2A2EC[obj[0xC3]];
-        (*(void (**)(u8*))(obj + 0xD4))(obj);
-        off += 0xD8;
+        obj = (MenuEntry*)((u8*)lbl_2_bss_1A8248[0] + off + offsetof(MenuCtx, entries));
+        obj->update = (void (*)(MenuEntry*))lbl_2_data_2A2EC[obj->typeC3];
+        obj->update(obj);
+        off += sizeof(MenuEntry);
     }
-    h = lbl_2_bss_1A824C[0] + 0x190000;
-    if (h[0x72BC] != 0) {
-        h[0x72BC] = 0;
+    h = lbl_2_bss_1A824C[0];
+    if (h->_1972BC != 0) {
+        h->_1972BC = 0;
         REMOVE_QUEUE_NOARG();
     }
 }
 
 // fn_2_72038, size:0x1C
 void fn_2_72038(s32 index, s16 value) {
-    *(s16*)(lbl_2_bss_1A8248[0] + index * 0xD8 + 0x16C4) = value;
+    *(s16*)((u8*)lbl_2_bss_1A8248[0] + index * sizeof(MenuEntry) + offsetof(MenuCtx, entries[0]._B4)) = value;
 }
 
 // fn_2_72054, size:0x28
 void fn_2_72054(s32 index, s8 value) {
-    u8* e = lbl_2_bss_1A8248[0] + index * 0xD8 + 0x1610;
-    e[0xC3] = value;
-    *(s16*)(e + 0x94) = 0;
+    MenuEntry* e = &lbl_2_bss_1A8248[0]->entries[index];
+    e->typeC3 = value;
+    e->state = 0;
 }
 
 // fn_2_72630, size:0x2C
@@ -189,8 +190,8 @@ void fn_2_8515C(void) {
 
 // fn_2_85160, size:0x48
 void fn_2_85160(void) {
-    u8* p = lbl_803CC1B8;
-    if (--*(s16*)(p + 0x10) == 0) {
+    MenuTask* p = lbl_803CC1B8;
+    if (--p->_10 == 0) {
         fn_800625A4(0, 4);
         REMOVE_QUEUE_NOARG();
     }
@@ -213,14 +214,14 @@ s32 fn_2_73B94(s32 a) {
 
 // fn_2_82CF0, size:0xF8
 void fn_2_82CF0(void) {
-    u8* o = *(u8**)(lbl_8034E9A0 + 0x4748);
+    MenuTask* o = *(MenuTask**)(lbl_8034E9A0 + 0x4748);
     if (lbl_803C5EA4[0x36] != 0) {
-        *(s32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-        *(s32*)(((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x280000;
-        *(s16*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x10) + 0x64) = lbl_803C5EA4[0x38] + 0x123;
-        *(s16*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x18) + 0x64) = lbl_803C5EA4[0x37] + 0x123;
-        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 1;
-        ((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2][0x68] = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_5C = 0;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_5C = 0x280000;
+        (&lbl_80371C30[2])[o->baseIdx].obj->_64 = lbl_803C5EA4[0x38] + 0x123;
+        (&lbl_80371C30[3])[o->baseIdx].obj->_64 = lbl_803C5EA4[0x37] + 0x123;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_68 = 1;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_68 = 4;
         lbl_803C5EA4[0x36] = 0;
     }
     if (lbl_8034E9A0[0x48AF] != 0) {
@@ -237,7 +238,7 @@ void fn_2_82DE8(void) {
     lbl_803C5EA4[0x37] = 0;
     lbl_803C5EA4[0x38] = 0;
     fn_80034E20(((u8**)&lbl_803CC1B8)[0], lbl_2_data_2B4DC);
-    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_82CF0;
+    lbl_803CC1B8->func = fn_2_82CF0;
 }
 
 // fn_2_82E58, size:0x68
@@ -249,21 +250,21 @@ void fn_2_82E58(void) {
 }
 
 // fn_2_71F20, size:0x40
-void fn_2_71F20(u8* obj) {
-    *(void**)(obj + 0xD4) = lbl_2_data_2A2EC[obj[0xC3]];
-    (*(void (**)(u8*))(obj + 0xD4))(obj);
+void fn_2_71F20(MenuEntry* obj) {
+    obj->update = (void (*)(MenuEntry*))lbl_2_data_2A2EC[obj->typeC3];
+    obj->update(obj);
 }
 
 // fn_2_72594, size:0x9C
 void fn_2_72594(void) {
-    u8* obj;
+    MenuTask* obj;
     s32 i;
     fn_80034E20(obj = lbl_803CC1B8, lbl_2_data_2AADC);
     for (i = 0; i < 4; i++) {
         fn_800363D8(obj, i + 7, 1, 0x32, 3 - i);
     }
     fn_800363D8(obj, 2, 1, 0x35, 0);
-    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_7207C;
+    lbl_803CC1B8->func = fn_2_7207C;
 }
 
 // fn_2_74DB8, size:0x5C
@@ -311,20 +312,20 @@ s32 fn_2_74DB8(s32 a) {
 }
 
 // fn_2_74E14, size:0x12C
-void fn_2_74E14(u8* o, s32 a, s32 b, u8 c) {
+void fn_2_74E14(MenuTask* o, s32 a, s32 b, u8 c) {
     s32 v = (b - 1) << 16;
     s32 r;
-    *(u32*)(*(u8**)(lbl_80371C30 + (0x97 + *(u16*)(o + 0x14) + a) * 8) + 0x54) |= 2;
-    *(u32*)(*(u8**)(lbl_80371C30 + (0x97 + *(u16*)(o + 0x14) + a) * 8) + 0x5C) = 0;
-    *(u8*)(*(u8**)(lbl_80371C30 + (0x97 + *(u16*)(o + 0x14) + a) * 8) + 0x68) = 1;
-    *(u32*)(*(u8**)(lbl_80371C30 + (0x9B + *(u16*)(o + 0x14) + c + a * 4) * 8) + 0x5C) = v;
+    lbl_80371C30[0x97 + o->baseIdx + a].obj->flags |= 2;
+    lbl_80371C30[0x97 + o->baseIdx + a].obj->_5C = 0;
+    lbl_80371C30[0x97 + o->baseIdx + a].obj->_68 = 1;
+    lbl_80371C30[0x9B + o->baseIdx + c + a * 4].obj->_5C = v;
     r = fn_80036214(o, 0xAB, 0, (b + 1) / 2 - 1);
-    *(u32*)(*(u8**)(lbl_80371C30 + (0xA3 + *(u16*)(o + 0x14) + c + a * 4) * 8) + 0x5C) = v;
-    *(s32*)(*(u8**)(lbl_80371C30 + (0xA3 + *(u16*)(o + 0x14) + c + a * 4) * 8) + 0x58) = r;
+    lbl_80371C30[0xA3 + o->baseIdx + c + a * 4].obj->_5C = v;
+    lbl_80371C30[0xA3 + o->baseIdx + c + a * 4].obj->color = r;
 }
 
 // fn_2_75B58, size:0x8C
-u8 fn_2_75B58(u8* a, s32 index) {
+u8 fn_2_75B58(MenuTask* a, s32 index) {
     s32 i;
     s32 hits;
     s32 total;
@@ -342,7 +343,7 @@ u8 fn_2_75B58(u8* a, s32 index) {
 
 // fn_2_74CD8, size:0xB4
 void fn_2_74CD8(void) {
-    u8* obj;
+    MenuTask* obj;
     s32 i;
     fn_80034E20(obj = lbl_803CC1B8, lbl_2_data_2D33C);
     for (i = 0; i < 7; i++) {
@@ -350,7 +351,7 @@ void fn_2_74CD8(void) {
     }
     fn_800363D8(obj, 0x20, 1, 0x32, 0);
     lbl_2_bss_A840 = lbl_2_bss_F410;
-    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_747FC;
+    lbl_803CC1B8->func = fn_2_747FC;
 }
 
 // fn_2_836A4, size:0xA0
@@ -400,7 +401,7 @@ void fn_2_72A58(void) {
 }
 
 // fn_2_72DDC, size:0x78
-void fn_2_72DDC(u8* a) {
+void fn_2_72DDC(MenuTask* a) {
     if ((lbl_803CBBC4[3] == 1) ? 1 : 0) {
         if ((s32)(fn_80042DA8(a, 0, 0x19) != 0) == 1) {
             lbl_803CBBC4[3] = 0;
@@ -411,7 +412,7 @@ void fn_2_72DDC(u8* a) {
 }
 
 // fn_2_7293C, size:0xA4
-void fn_2_7293C(u8* a) {
+void fn_2_7293C(MenuTask* a) {
     if ((lbl_803CBBC4[3] == 1) ? 1 : 0) {
         s32 n = 0;
         n += fn_80042DA8(a, 0, 0x19) != 0;
@@ -425,43 +426,43 @@ void fn_2_7293C(u8* a) {
 }
 
 // fn_2_728C0, size:0x7C
-void fn_2_728C0(u8* o) {
+void fn_2_728C0(MenuTask* o) {
     if ((lbl_803CBBC4[2] == 0) ? 1 : 0) {
-        *(s32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x190000;
-        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 4;
-        *(s32*)(((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x190000;
-        ((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2][0x68] = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_5C = 0x190000;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_68 = 4;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_5C = 0x190000;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_68 = 4;
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
     }
 }
 
 // fn_2_729E0, size:0x78
-void fn_2_729E0(u8* o) {
+void fn_2_729E0(MenuTask* o) {
     if ((lbl_803CBBC4[2] == 0) ? 1 : 0) {
-        *(s32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x190000;
-        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 1;
-        *(s32*)(((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x190000;
-        ((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2][0x68] = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_5C = 0x190000;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_68 = 1;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_5C = 0x190000;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_68 = 1;
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
     }
 }
 
 // fn_2_72D60, size:0x7C
-void fn_2_72D60(u8* o) {
+void fn_2_72D60(MenuTask* o) {
     if ((lbl_803CBBC4[2] == 0) ? 1 : 0) {
-        *(s32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x190000;
-        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 4;
-        *(s32*)(((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x190000;
-        ((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2][0x68] = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_5C = 0x190000;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_68 = 4;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_5C = 0x190000;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_68 = 4;
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
     }
 }
 
 // fn_2_72814, size:0xAC
-void fn_2_72814(u8* a) {
+void fn_2_72814(MenuTask* a) {
     if ((lbl_803CBBC4[3] == 1) ? 1 : 0) {
         s32 n = 0;
         n += fn_80042DA8(a, 0, 0) != 0;
@@ -476,7 +477,7 @@ void fn_2_72814(u8* a) {
 }
 
 // fn_2_72CB4, size:0xAC
-void fn_2_72CB4(u8* a) {
+void fn_2_72CB4(MenuTask* a) {
     if ((lbl_803CBBC4[3] == 1) ? 1 : 0) {
         s32 n = 0;
         n += fn_80042DA8(a, 0, 0) != 0;
@@ -491,11 +492,11 @@ void fn_2_72CB4(u8* a) {
 }
 
 // fn_2_83744, size:0x94
-void fn_2_83744(u8* o) {
-    if ((*(u32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) >> 16) == 0x14) {
-        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 1;
+void fn_2_83744(MenuTask* o) {
+    if ((MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_5C >> 16) == 0x14) {
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_68 = 1;
     }
-    if ((*(u32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) >> 16) == 0x1E) {
+    if ((MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_5C >> 16) == 0x1E) {
         lbl_803CBCD8[4] = 1;
         fn_80062674(0);
         lbl_803C66B0[0x31] = 2;
@@ -503,7 +504,7 @@ void fn_2_83744(u8* o) {
 }
 
 // fn_2_8082C, size:0xAC
-void fn_2_8082C(u8* a, s32 index) {
+void fn_2_8082C(MenuTask* a, s32 index) {
     if ((lbl_803C66B0[index + 0xD] == 1) ? 1 : 0) {
         s32 n = 0;
         n += fn_80042DA8(a, index + 0x89, 5) != 0;
@@ -516,7 +517,7 @@ void fn_2_8082C(u8* a, s32 index) {
 }
 
 // fn_2_80B5C, size:0xD0
-void fn_2_80B5C(u8* a, s32 index) {
+void fn_2_80B5C(MenuTask* a, s32 index) {
     if ((lbl_803C66B0[index + 0xD] == 1) ? 1 : 0) {
         s32 n = 0;
         n += fn_80042DA8(a, index, 0) != 0;
@@ -530,7 +531,7 @@ void fn_2_80B5C(u8* a, s32 index) {
 }
 
 // fn_2_74564, size:0xD8
-void fn_2_74564(u8* a) {
+void fn_2_74564(MenuTask* a) {
     s32 i;
     s32 hits;
     s32 total;
@@ -555,30 +556,30 @@ void fn_2_74564(u8* a) {
 }
 
 // fn_2_7EF68, size:0xC8
-void fn_2_7EF68(u8* o, s32 index) {
+void fn_2_7EF68(MenuTask* o, s32 index) {
     s32 i;
     for (i = 0; i < 9; i++) {
         if (i == ((s32*)lbl_2_bss_F468)[index]) {
-            *(u32*)(((u8**)lbl_80371C30)[(0x22 + *(u16*)(o + 0x14) + i + index * 9) * 2] + 0x54) |= 2;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x22 + o->baseIdx + i + index * 9)->flags |= 2;
         }
     }
 }
 
 // fn_2_79688, size:0xDC
-void fn_2_79688(u8* o, s32 index) {
+void fn_2_79688(MenuTask* o, s32 index) {
     s32 i;
     if (lbl_803C66B0[index + 0xD] != 0) {
         return;
     }
     for (i = 0; i < 9; i++) {
-        ((u8**)lbl_80371C30)[(0x46 + *(u16*)(o + 0x14) + i + index * 9) * 2][0x68] = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x46 + o->baseIdx + i + index * 9)->_68 = 4;
     }
-    *(s32*)(((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0xA0000;
-    ((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2][0x68] = 1;
+    MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + index)->_5C = 0xA0000;
+    MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + index)->_68 = 1;
 }
 
 // fn_2_79930, size:0x1F4
-void fn_2_79930(u8* o, s32 i) {
+void fn_2_79930(MenuTask* o, s32 i) {
     u8* e = lbl_803C66B0 + i;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         s32 base = i * 9;
@@ -587,19 +588,19 @@ void fn_2_79930(u8* o, s32 i) {
             u8* p = lbl_803C6724 + base + j;
             s32 k = *(s8*)(p + 0x14);
             s32 v = *(s8*)(p + 2);
-            *(u32*)(((u8**)lbl_80371C30)[(0x34 + *(u16*)(o + 0x14) + k + base) * 2] + 0x54) |= 2;
-            *(s32*)(((u8**)lbl_80371C30)[(0x34 + *(u16*)(o + 0x14) + k + base) * 2] + 0x5C) = 0;
-            *(u8*)(((u8**)lbl_80371C30)[(0x34 + *(u16*)(o + 0x14) + k + base) * 2] + 0x68) = 1;
-            *(s32*)(((u8**)lbl_80371C30)[(0x58 + *(u16*)(o + 0x14) + k + base) * 2] + 0x5C) = v << 16;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + k + base)->flags |= 2;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + k + base)->_5C = 0;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + k + base)->_68 = 1;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x58 + o->baseIdx + k + base)->_5C = v << 16;
         }
         fn_2_75BE4(o, i);
         if (((s32*)lbl_2_bss_F468)[i] == 9) {
-            *(s32*)(((u8**)lbl_80371C30)[(0x93 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0;
-            *(u8*)(((u8**)lbl_80371C30)[(0x93 + *(u16*)(o + 0x14) + i) * 2] + 0x68) = 1;
-            *(s32*)(((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0;
-            *(u8*)(((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + i) * 2] + 0x68) = 1;
-            *(s32*)(((u8**)lbl_80371C30)[(0x91 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0xA0000;
-            *(u8*)(((u8**)lbl_80371C30)[(0x91 + *(u16*)(o + 0x14) + i) * 2] + 0x68) = 4;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x93 + o->baseIdx + i)->_5C = 0;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x93 + o->baseIdx + i)->_68 = 1;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + i)->_5C = 0;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + i)->_68 = 1;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x91 + o->baseIdx + i)->_5C = 0xA0000;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x91 + o->baseIdx + i)->_68 = 4;
         }
         fn_800626EC(i);
         *e = 1;
@@ -607,12 +608,12 @@ void fn_2_79930(u8* o, s32 i) {
 }
 
 // fn_2_7EE7C, size:0xEC
-void fn_2_7EE7C(u8* o, s32 index) {
+void fn_2_7EE7C(MenuTask* o, s32 index) {
     s32 v = ((s32*)lbl_2_bss_F468)[index];
     if (lbl_2_bss_F468[index + 0x41] != 0) {
-        *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 0x22 + v + index * 9) * 2] + 0x54) &= ~2;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 0x22 + v + index * 9)->flags &= ~2;
     } else {
-        *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 0x22 + v + index * 9) * 2] + 0x54) |= 2;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 0x22 + v + index * 9)->flags |= 2;
     }
     fn_2_74F40(o, index);
     lbl_803C66B0[index + 0x5D] = 0;
@@ -622,12 +623,12 @@ void fn_2_7EE7C(u8* o, s32 index) {
 }
 
 // fn_2_80500, size:0xDC
-void fn_2_80500(u8* o, s32 index) {
+void fn_2_80500(MenuTask* o, s32 index) {
     u8* p = lbl_803C66B0 + index;
     if ((*(p += 0xD) == 0) ? 1 : 0) {
         u8 b = ((s8)lbl_8034E9A0[0x46F8] == 0) ? 1 : 0;
-        *(s32*)(((u8**)(lbl_80371C30 + 0x3D8))[*(u16*)(o + 0x14) * 2] + 0x5C) = b << 16;
-        *(s32*)(((u8**)(lbl_80371C30 + 0xC8))[*(u16*)(o + 0x14) * 2] + 0x5C) = (b + 4) << 16;
+        MENU_SLOT_OBJ(&lbl_80371C30[123], o->baseIdx)->_5C = b << 16;
+        MENU_SLOT_OBJ(&lbl_80371C30[25], o->baseIdx)->_5C = (b + 4) << 16;
         fn_800626EC(index);
         *p = 1;
     }
@@ -639,7 +640,7 @@ void fn_2_80500(u8* o, s32 index) {
 }
 
 // fn_2_7E860, size:0x114
-void fn_2_7E860(u8* a, s32 index) {
+void fn_2_7E860(MenuTask* a, s32 index) {
     if ((lbl_803C66B0[index + 0xD] == 1) ? 1 : 0) {
         s32 n = 0;
         n += fn_80042DA8(a, index + 0xC, 0xA) != 0;
@@ -655,7 +656,7 @@ void fn_2_7E860(u8* a, s32 index) {
 }
 
 // fn_2_7A460, size:0x158
-void fn_2_7A460(u8* o, s32 index) {
+void fn_2_7A460(MenuTask* o, s32 index) {
     if ((lbl_803C66B0[index + 0xD] == 1) ? 1 : 0) {
         s32 n = 0;
         n += fn_80042DA8(o, index, 0x28) != 0;
@@ -664,8 +665,8 @@ void fn_2_7A460(u8* o, s32 index) {
         n += fn_80042DA8(o, index + 0x1C, 0x1E) != 0;
         n += fn_80042DA8(o, index + 0x6A, 0x32) != 0;
         if (n == 5) {
-            *(u32*)(((u8**)lbl_80371C30)[(0xC + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
-            *(u32*)(((u8**)lbl_80371C30)[(0x12 + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
+            MENU_SLOT_OBJ(lbl_80371C30, 0xC + o->baseIdx + index)->flags &= ~2;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x12 + o->baseIdx + index)->flags &= ~2;
             fn_80062674(index);
             lbl_803C66B0[index + 0xD] = 2;
         }
@@ -693,31 +694,31 @@ extern void fn_2_7308C(void);
 
 // fn_2_73758, size:0x144
 void fn_2_73758(void) {
-    u8* obj;
+    MenuTask* obj;
     s32 i;
     fn_80034E20(obj = lbl_803CC1B8, lbl_2_data_2AF4C);
     for (i = 0; i < 8; i++) {
-        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(obj + 0x14) + i + 4) * 2] + 0x5C) = *(s8*)(lbl_803C6724 + 3 + i) << 16;
+        MENU_SLOT_OBJ(lbl_80371C30, obj->baseIdx + i + 4)->_5C = *(s8*)(lbl_803C6724 + 3 + i) << 16;
     }
     lbl_803CBCD8[5] = 0;
-    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_7308C;
+    lbl_803CC1B8->func = fn_2_7308C;
 }
 
 // fn_2_7A5B8, size:0xDC
-void fn_2_7A5B8(u8* o, s32 index) {
+void fn_2_7A5B8(MenuTask* o, s32 index) {
     if ((lbl_803C66B0[index + 0xD] == 0) ? 1 : 0) {
-        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0x140000;
-        *(s32*)(((u8**)lbl_80371C30)[(2 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0x140000;
-        ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + index) * 2][0x68] = 1;
-        ((u8**)lbl_80371C30)[(2 + *(u16*)(o + 0x14) + index) * 2][0x68] = 1;
-        *(s32*)(((u8**)lbl_80371C30)[(133 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0x140000;
-        ((u8**)lbl_80371C30)[(133 + *(u16*)(o + 0x14) + index) * 2][0x68] = 1;
-        *(s32*)(((u8**)lbl_80371C30)[(28 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0x140000;
-        ((u8**)lbl_80371C30)[(28 + *(u16*)(o + 0x14) + index) * 2][0x68] = 1;
-        *(s32*)(((u8**)lbl_80371C30)[(106 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0x1E0000;
-        ((u8**)lbl_80371C30)[(106 + *(u16*)(o + 0x14) + index) * 2][0x68] = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + index)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, 2 + o->baseIdx + index)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + index)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 2 + o->baseIdx + index)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 133 + o->baseIdx + index)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, 133 + o->baseIdx + index)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 28 + o->baseIdx + index)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, 28 + o->baseIdx + index)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 106 + o->baseIdx + index)->_5C = 0x1E0000;
+        MENU_SLOT_OBJ(lbl_80371C30, 106 + o->baseIdx + index)->_68 = 1;
         if (g_d_GameSettings.GameModeSelected != 5 || index == 0) {
-            *(u32*)(((u8**)lbl_80371C30)[(147 + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
+            MENU_SLOT_OBJ(lbl_80371C30, 147 + o->baseIdx + index)->flags &= ~2;
         }
         fn_800626EC(index);
         lbl_803C66B0[index + 0xD] = 1;
@@ -730,7 +731,7 @@ extern void fn_2_845A8(void);
 
 // fn_2_84FA8, size:0x160
 void fn_2_84FA8(void) {
-    u8* obj;
+    MenuTask* obj;
     s32 i;
     s8 v;
     fn_80034E20(obj = lbl_803CC1B8, lbl_2_data_2DC8C);
@@ -751,8 +752,8 @@ void fn_2_84FA8(void) {
         fn_800363D8(obj, 0, 1, 0x20, v);
     }
     lbl_803CBCD8[4] = 0;
-    *(s16*)(obj + 0x18) = 0;
-    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_845A8;
+    obj->timerA = 0;
+    lbl_803CC1B8->func = fn_2_845A8;
 }
 
 // fn_2_851A8, size:0x168
@@ -760,7 +761,7 @@ void fn_2_851A8(void) {
     switch (*(s16*)(((u8**)&lbl_803CC1B8)[0] + 0x10)) {
     case 0:
         fn_800625A4(0, 0);
-        *(s16*)(lbl_803CC1B8 + 0x10) = *(s16*)(lbl_803CC1B8 + 0x10) + 1;
+        lbl_803CC1B8->_10 = lbl_803CC1B8->_10 + 1;
     case 1:
         if (lbl_803C66B0[1] == 0) {
             lbl_803C66B0[1] = 1;
@@ -787,7 +788,7 @@ void fn_2_851A8(void) {
             case 3:
                 if (lbl_2_bss_F410 == 0) {
                     lbl_803C66B0[1] = 2;
-                    *(s16*)((u8*)fn_800B0A5C_insertQueue((void*)fn_2_85160, *(u16*)(lbl_803CC1B8 + 0x12)) + 0x10) = 0xB4;
+                    ((MenuTask*)fn_800B0A5C_insertQueue((void*)fn_2_85160, lbl_803CC1B8->priority))->_10 = 0xB4;
                 } else {
                     fn_800625A4(0, 4);
                 }
@@ -890,18 +891,18 @@ void fn_2_854B0(void) {
 }
 
 // fn_2_837D8, size:0x19C
-void fn_2_837D8(u8* o) {
+void fn_2_837D8(MenuTask* o) {
     s32 n;
     s32 v;
     if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
-        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 4;
-        *(s32*)(((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-        ((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2][0x68] = 0;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x10))[0x68] = 1;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x28))[0x68] = 1;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x18))[0x68] = 1;
-        *(s32*)(((u8**)(lbl_80371C30 + 0x20))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x280000;
-        ((u8**)(lbl_80371C30 + 0x20))[*(u16*)(o + 0x14) * 2][0x68] = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_68 = 4;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_5C = 0;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_68 = 0;
+        (&lbl_80371C30[2])[o->baseIdx].obj->_68 = 1;
+        (&lbl_80371C30[5])[o->baseIdx].obj->_68 = 1;
+        (&lbl_80371C30[3])[o->baseIdx].obj->_68 = 1;
+        MENU_SLOT_OBJ(&lbl_80371C30[4], o->baseIdx)->_5C = 0x280000;
+        MENU_SLOT_OBJ(&lbl_80371C30[4], o->baseIdx)->_68 = 4;
         fn_800626EC(0);
         lbl_803C66B0[0x2B] = 1;
     }
@@ -928,22 +929,22 @@ extern void fn_80062674(s32 index);
 extern s32 fn_800626EC(s32 index);
 
 // fn_2_78F78, size:0x1B4
-void fn_2_78F78(u8* o, s32 i) {
+void fn_2_78F78(MenuTask* o, s32 i) {
     u8* e = lbl_803C66B0 + i;
     s32 ok = (*(e += 0xD) == 0);
     if (ok) {
-        *(u32*)(((u8**)lbl_80371C30)[(0xA + *(u16*)(o + 0x14) + i) * 2] + 0x54) |= 2;
-        ((u8**)lbl_80371C30)[(0xA + *(u16*)(o + 0x14) + i) * 2][0x68] = 1;
-        ((u8**)lbl_80371C30)[(0x1E + *(u16*)(o + 0x14) + i) * 2][0x68] = 1;
-        *(s32*)(((u8**)lbl_80371C30)[(0x89 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0;
-        ((u8**)lbl_80371C30)[(0x89 + *(u16*)(o + 0x14) + i) * 2][0x68] = 1;
-        *(s32*)(((u8**)lbl_80371C30)[(0x8D + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0;
-        ((u8**)lbl_80371C30)[(0x8D + *(u16*)(o + 0x14) + i) * 2][0x68] = 1;
-        ((u8**)lbl_80371C30)[(0x6A + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0xA + o->baseIdx + i)->flags |= 2;
+        MENU_SLOT_OBJ(lbl_80371C30, 0xA + o->baseIdx + i)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x1E + o->baseIdx + i)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x89 + o->baseIdx + i)->_5C = 0;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x89 + o->baseIdx + i)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x8D + o->baseIdx + i)->_5C = 0;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x8D + o->baseIdx + i)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x6A + o->baseIdx + i)->_68 = 4;
         if (((u8*)&g_d_GameSettings)[7] != 5) {
-            *(s16*)(((u8**)lbl_80371C30)[(0x8F + *(u16*)(o + 0x14) + i) * 2] + 0x64) = 8;
-            *(s32*)(((u8**)lbl_80371C30)[(0x8F + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0;
-            ((u8**)lbl_80371C30)[(0x8F + *(u16*)(o + 0x14) + i) * 2][0x68] = 1;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x8F + o->baseIdx + i)->_64 = 8;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x8F + o->baseIdx + i)->_5C = 0;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x8F + o->baseIdx + i)->_68 = 1;
         }
         fn_800626EC(i);
         *e = 1;
@@ -959,7 +960,7 @@ extern u8 lbl_2_data_2B3A4[];
 extern u8 starMissionCompletionTracker[];
 
 // fn_2_73994, size:0x1C0
-void fn_2_73994(u8* o, s32 i) {
+void fn_2_73994(MenuTask* o, s32 i) {
     s32 a;
     s32 b;
     u8 x;
@@ -976,24 +977,24 @@ void fn_2_73994(u8* o, s32 i) {
     }
     x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
     y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
-    *(s32*)(((u8**)lbl_80371C30)[(0x82 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = lbl_2_data_2B3A4[x] << 16;
-    *(s32*)(((u8**)lbl_80371C30)[(0x7E + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = lbl_2_data_2B3A4[x] << 16;
+    MENU_SLOT_OBJ(lbl_80371C30, 0x82 + o->baseIdx + i)->_5C = lbl_2_data_2B3A4[x] << 16;
+    MENU_SLOT_OBJ(lbl_80371C30, 0x7E + o->baseIdx + i)->_5C = lbl_2_data_2B3A4[x] << 16;
     fn_800363D8(o, i + 0x89, 1, 3, lbl_2_data_2B3A4[x]);
     fn_800363D8(o, i + 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
 }
 
 // fn_2_83974, size:0x168
-void fn_2_83974(u8* o) {
+void fn_2_83974(MenuTask* o) {
     s32 n;
     if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
-        *(s32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) = 0xA0000;
-        *(s32*)(((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 1;
-        ((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2][0x68] = 0;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x10))[0x68] = 4;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x18))[0x68] = 4;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x28))[0x68] = 4;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x20))[0x68] = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_5C = 0xA0000;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_5C = 0;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_68 = 1;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_68 = 0;
+        (&lbl_80371C30[2])[o->baseIdx].obj->_68 = 4;
+        (&lbl_80371C30[3])[o->baseIdx].obj->_68 = 4;
+        (&lbl_80371C30[5])[o->baseIdx].obj->_68 = 4;
+        (&lbl_80371C30[4])[o->baseIdx].obj->_68 = 1;
         fn_800626EC(0);
         lbl_803C66B0[0x2B] = 1;
     }
@@ -1014,29 +1015,29 @@ extern u8 lbl_8037169C[];
 extern void changeScene(s32 a, s32 b);
 
 // fn_2_7463C, size:0x1C0
-s32 fn_2_7463C(u8* o) {
+s32 fn_2_7463C(MenuTask* o) {
     s32 i;
     s32 cur = lbl_2_bss_F410;
     s32 ok = (lbl_803C66B0[7] == 0);
     if (ok) {
         for (i = 0; i < 7; i++) {
             if (cur == i) {
-                *(u32*)(((u8**)lbl_80371C30)[(3 + *(u16*)(o + 0x14) + i) * 2] + 0x54) |= 2;
-                *(s32*)(((u8**)lbl_80371C30)[(3 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0;
-                ((u8**)lbl_80371C30)[(3 + *(u16*)(o + 0x14) + i) * 2][0x68] = 1;
-                *(s32*)(((u8**)lbl_80371C30)[(0x18 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0;
-                ((u8**)lbl_80371C30)[(0x18 + *(u16*)(o + 0x14) + i) * 2][0x68] = 1;
+                MENU_SLOT_OBJ(lbl_80371C30, 3 + o->baseIdx + i)->flags |= 2;
+                MENU_SLOT_OBJ(lbl_80371C30, 3 + o->baseIdx + i)->_5C = 0;
+                MENU_SLOT_OBJ(lbl_80371C30, 3 + o->baseIdx + i)->_68 = 1;
+                MENU_SLOT_OBJ(lbl_80371C30, 0x18 + o->baseIdx + i)->_5C = 0;
+                MENU_SLOT_OBJ(lbl_80371C30, 0x18 + o->baseIdx + i)->_68 = 1;
             } else {
-                *(s32*)(((u8**)lbl_80371C30)[(0x18 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0;
-                ((u8**)lbl_80371C30)[(0x18 + *(u16*)(o + 0x14) + i) * 2][0x68] = 0;
-                *(u32*)(((u8**)lbl_80371C30)[(3 + *(u16*)(o + 0x14) + i) * 2] + 0x54) &= ~2;
+                MENU_SLOT_OBJ(lbl_80371C30, 0x18 + o->baseIdx + i)->_5C = 0;
+                MENU_SLOT_OBJ(lbl_80371C30, 0x18 + o->baseIdx + i)->_68 = 0;
+                MENU_SLOT_OBJ(lbl_80371C30, 3 + o->baseIdx + i)->flags &= ~2;
             }
         }
         if (lbl_8037169C[0x10] != 0) {
             changeScene(1, 6);
         }
-        *(s32*)(((u8**)(lbl_80371C30 + 0x100))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-        ((u8**)(lbl_80371C30 + 0x100))[*(u16*)(o + 0x14) * 2][0x68] = 1;
+        MENU_SLOT_OBJ(&lbl_80371C30[32], o->baseIdx)->_5C = 0;
+        MENU_SLOT_OBJ(&lbl_80371C30[32], o->baseIdx)->_68 = 1;
         ok = fn_800626EC(0);
         lbl_803C66B0[7] = 1;
     }
@@ -1048,7 +1049,7 @@ extern void fn_2_82EC0(void);
 
 // fn_2_834F0, size:0x1B4
 void fn_2_834F0(void) {
-    u8* obj;
+    MenuTask* obj;
     s32 i;
     fn_80034E20(obj = lbl_803CC1B8, lbl_2_data_2E02C);
     for (i = 0; i < 4; i++) {
@@ -1058,24 +1059,24 @@ void fn_2_834F0(void) {
             fn_800363D8(obj, i + 3, 1, 0x6B, i);
         }
     }
-    *(s32*)(((u8**)(lbl_80371C30 + 0x60))[*(u16*)(obj + 0x14) * 2] + 0x5C) = 0;
+    MENU_SLOT_OBJ(&lbl_80371C30[12], obj->baseIdx)->_5C = 0;
     if (lbl_80361B20[0xF4] != 0) {
-        *(s16*)(*(u8**)(lbl_80371C30 + *(u16*)(obj + 0x14) * 8 + 0x8) + 0x64) = 0x22;
-        *(s32*)(*(u8**)(lbl_80371C30 + *(u16*)(obj + 0x14) * 8 + 0x58) + 0x5C) = 0x40000;
+        (&lbl_80371C30[1])[obj->baseIdx].obj->_64 = 0x22;
+        (&lbl_80371C30[11])[obj->baseIdx].obj->_5C = 0x40000;
     } else {
-        *(s16*)(*(u8**)(lbl_80371C30 + *(u16*)(obj + 0x14) * 8 + 0x8) + 0x64) = 0x21;
-        *(s32*)(*(u8**)(lbl_80371C30 + *(u16*)(obj + 0x14) * 8 + 0x58) + 0x5C) = 0;
+        (&lbl_80371C30[1])[obj->baseIdx].obj->_64 = 0x21;
+        (&lbl_80371C30[11])[obj->baseIdx].obj->_5C = 0;
     }
     if (lbl_80361B20[0xE4] != 0) {
-        *(u32*)(((u8**)(lbl_80371C30 + 0x48))[*(u16*)(obj + 0x14) * 2] + 0x54) |= 2;
-        ((u8**)(lbl_80371C30 + 0x48))[*(u16*)(obj + 0x14) * 2][0x68] = 1;
+        MENU_SLOT_OBJ(&lbl_80371C30[9], obj->baseIdx)->flags |= 2;
+        MENU_SLOT_OBJ(&lbl_80371C30[9], obj->baseIdx)->_68 = 1;
         fn_800363D8(obj, 9, 1, 0x27, 0);
     }
-    *(void**)((u8**)&lbl_803CC1B8)[0] = fn_2_82EC0;
+    lbl_803CC1B8->func = fn_2_82EC0;
 }
 
 // fn_2_80C2C, size:0x1E0
-void fn_2_80C2C(u8* o, s32 i) {
+void fn_2_80C2C(MenuTask* o, s32 i) {
     u8* e = lbl_803C66B0 + i;
     s32 ok = (*(e += 0xD) == 0);
     if (ok) {
@@ -1083,36 +1084,36 @@ void fn_2_80C2C(u8* o, s32 i) {
             fn_80062674(i);
             (lbl_803C66B0 + i)[0x5D] = 2;
         }
-        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0x140000;
-        *(s32*)(((u8**)lbl_80371C30)[(2 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0x140000;
-        ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        ((u8**)lbl_80371C30)[(2 + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        *(s32*)(((u8**)lbl_80371C30)[(4 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0x1E0000;
-        ((u8**)lbl_80371C30)[(4 + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        ((u8**)lbl_80371C30)[(0x89 + *(u16*)(o + 0x14) + i) * 2][0x68] = 1;
-        ((u8**)lbl_80371C30)[(0x80 + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        ((u8**)lbl_80371C30)[(0x78 + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        ((u8**)lbl_80371C30)[(0x7C + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        ((u8**)lbl_80371C30)[(0x97 + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        ((u8**)lbl_80371C30)[(0xAC + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x420) + 0x54) &= ~2;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + i)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, 2 + o->baseIdx + i)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + i)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 2 + o->baseIdx + i)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 4 + o->baseIdx + i)->_5C = 0x1E0000;
+        MENU_SLOT_OBJ(lbl_80371C30, 4 + o->baseIdx + i)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x89 + o->baseIdx + i)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x80 + o->baseIdx + i)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x78 + o->baseIdx + i)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x7C + o->baseIdx + i)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x97 + o->baseIdx + i)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0xAC + o->baseIdx + i)->_68 = 4;
+        (&lbl_80371C30[132])[o->baseIdx].obj->flags &= ~2;
         fn_800626EC(i);
         *e = 1;
     }
 }
 
 // fn_2_84194, size:0x1F4
-void fn_2_84194(u8* o) {
+void fn_2_84194(MenuTask* o) {
     s32 n;
     if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
-        *(s32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) = 0xA0000;
-        *(s32*)(((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0xA0000;
-        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 4;
-        ((u8**)(lbl_80371C30 + 8))[*(u16*)(o + 0x14) * 2][0x68] = 4;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x10))[0x68] = 4;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x18))[0x68] = 4;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x28))[0x68] = 4;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x20))[0x68] = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_5C = 0xA0000;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_5C = 0xA0000;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_68 = 4;
+        MENU_SLOT_OBJ(&lbl_80371C30[1], o->baseIdx)->_68 = 4;
+        (&lbl_80371C30[2])[o->baseIdx].obj->_68 = 4;
+        (&lbl_80371C30[3])[o->baseIdx].obj->_68 = 4;
+        (&lbl_80371C30[5])[o->baseIdx].obj->_68 = 4;
+        (&lbl_80371C30[4])[o->baseIdx].obj->_68 = 4;
         fn_800626EC(0);
         lbl_803C66B0[0x2B] = 1;
     }
@@ -1136,21 +1137,21 @@ void fn_2_84194(u8* o) {
 
 
 // fn_2_802EC, size:0x214
-void fn_2_802EC(u8* o) {
+void fn_2_802EC(MenuTask* o) {
     s32 n;
     if ((lbl_803C66B0[0xE] == 0) ? 1 : 0) {
-        *(u32*)(((u8**)(lbl_80371C30 + 0x408))[*(u16*)(o + 0x14) * 2] + 0x54) |= 2;
-        *(s32*)(((u8**)(lbl_80371C30 + 0x408))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-        ((u8**)(lbl_80371C30 + 0x408))[*(u16*)(o + 0x14) * 2][0x68] = 1;
-        *(u32*)(((u8**)(lbl_80371C30 + 0x420))[*(u16*)(o + 0x14) * 2] + 0x54) &= ~2;
-        ((u8**)(lbl_80371C30 + 0x420))[*(u16*)(o + 0x14) * 2][0x68] = 0;
-        *(s32*)(((u8**)(lbl_80371C30 + 0x3E8))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-        ((u8**)(lbl_80371C30 + 0x3E8))[*(u16*)(o + 0x14) * 2][0x68] = 1;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x4C0) + 0x54) |= 2;
-        *(s32*)(((u8**)(lbl_80371C30 + 0x430))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-        ((u8**)(lbl_80371C30 + 0x430))[*(u16*)(o + 0x14) * 2][0x68] = 1;
-        *(s32*)(((u8**)(lbl_80371C30 + 0x450))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-        ((u8**)(lbl_80371C30 + 0x450))[*(u16*)(o + 0x14) * 2][0x68] = 1;
+        MENU_SLOT_OBJ(&lbl_80371C30[129], o->baseIdx)->flags |= 2;
+        MENU_SLOT_OBJ(&lbl_80371C30[129], o->baseIdx)->_5C = 0;
+        MENU_SLOT_OBJ(&lbl_80371C30[129], o->baseIdx)->_68 = 1;
+        MENU_SLOT_OBJ(&lbl_80371C30[132], o->baseIdx)->flags &= ~2;
+        MENU_SLOT_OBJ(&lbl_80371C30[132], o->baseIdx)->_68 = 0;
+        MENU_SLOT_OBJ(&lbl_80371C30[125], o->baseIdx)->_5C = 0;
+        MENU_SLOT_OBJ(&lbl_80371C30[125], o->baseIdx)->_68 = 1;
+        (&lbl_80371C30[152])[o->baseIdx].obj->flags |= 2;
+        MENU_SLOT_OBJ(&lbl_80371C30[134], o->baseIdx)->_5C = 0;
+        MENU_SLOT_OBJ(&lbl_80371C30[134], o->baseIdx)->_68 = 1;
+        MENU_SLOT_OBJ(&lbl_80371C30[138], o->baseIdx)->_5C = 0;
+        MENU_SLOT_OBJ(&lbl_80371C30[138], o->baseIdx)->_68 = 1;
         fn_2_7630C(o, 1);
         fn_2_74F40(o, 1);
         fn_800626EC(1);
@@ -1169,23 +1170,23 @@ void fn_2_802EC(u8* o) {
 }
 
 // fn_2_84388, size:0x220
-void fn_2_84388(u8* o) {
+void fn_2_84388(MenuTask* o) {
     s32 n;
     s32 cur;
     if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
-        *(s32*)(((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-        ((u8**)lbl_80371C30)[*(u16*)(o + 0x14) * 2][0x68] = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_5C = 0;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx)->_68 = 1;
         cur = *(s32*)((u8*)&lbl_2_bss_F410 + 0x44);
-        *(s32*)(((u8**)(lbl_80371C30 + 0x20))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-        ((u8**)(lbl_80371C30 + 0x20))[*(u16*)(o + 0x14) * 2][0x68] = 1;
-        *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 6) * 2] + 0x58) = (*(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 6) * 2] + 0x58) & ~0xFF) | 0xFF;
-        *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 7) * 2] + 0x58) = (*(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 7) * 2] + 0x58) & ~0xFF) | 0xFF;
-        *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 8) * 2] + 0x58) = (*(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 8) * 2] + 0x58) & ~0xFF) | 0xFF;
-        *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 9) * 2] + 0x58) = (*(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 9) * 2] + 0x58) & ~0xFF) | 0xFF;
-        *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 10) * 2] + 0x58) = (*(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 10) * 2] + 0x58) & ~0xFF) | 0xFF;
-        *(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 11) * 2] + 0x58) = (*(u32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + 11) * 2] + 0x58) & ~0xFF) | 0xFF;
-        *(s32*)(((u8**)lbl_80371C30)[(6 + *(u16*)(o + 0x14) + cur) * 2] + 0x5C) = 0x10000;
-        ((u8**)lbl_80371C30)[(6 + *(u16*)(o + 0x14) + cur) * 2][0x68] = 1;
+        MENU_SLOT_OBJ(&lbl_80371C30[4], o->baseIdx)->_5C = 0;
+        MENU_SLOT_OBJ(&lbl_80371C30[4], o->baseIdx)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 6)->color = (MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 6)->color & ~0xFF) | 0xFF;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 7)->color = (MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 7)->color & ~0xFF) | 0xFF;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 8)->color = (MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 8)->color & ~0xFF) | 0xFF;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 9)->color = (MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 9)->color & ~0xFF) | 0xFF;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 10)->color = (MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 10)->color & ~0xFF) | 0xFF;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 11)->color = (MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + 11)->color & ~0xFF) | 0xFF;
+        MENU_SLOT_OBJ(lbl_80371C30, 6 + o->baseIdx + cur)->_5C = 0x10000;
+        MENU_SLOT_OBJ(lbl_80371C30, 6 + o->baseIdx + cur)->_68 = 1;
         fn_800626EC(0);
         lbl_803C66B0[0x2B] = 1;
     }
@@ -1200,24 +1201,24 @@ void fn_2_84388(u8* o) {
 }
 
 // fn_2_800B0, size:0x23C
-void fn_2_800B0(u8* o, s32 i) {
+void fn_2_800B0(MenuTask* o, s32 i) {
     u8* e = lbl_803C66B0 + i;
     s32 n;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
-        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0x140000;
-        *(s32*)(((u8**)lbl_80371C30)[(2 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0x140000;
-        ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + i) * 2][0x68] = 1;
-        ((u8**)lbl_80371C30)[(2 + *(u16*)(o + 0x14) + i) * 2][0x68] = 1;
-        *(s32*)(((u8**)lbl_80371C30)[(0x80 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0x140000;
-        ((u8**)lbl_80371C30)[(0x80 + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        *(s32*)(((u8**)lbl_80371C30)[(0x78 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0x140000;
-        ((u8**)lbl_80371C30)[(0x78 + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        *(s32*)(((u8**)lbl_80371C30)[(0x7C + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0x140000;
-        ((u8**)lbl_80371C30)[(0x7C + *(u16*)(o + 0x14) + i) * 2][0x68] = 4;
-        *(s16*)(((u8**)lbl_80371C30)[(0x97 + *(u16*)(o + 0x14) + i) * 2] + 0x64) = 0x77;
-        *(s32*)(((u8**)lbl_80371C30)[(0x97 + *(u16*)(o + 0x14) + i) * 2] + 0x5C) = 0;
-        *(u32*)(((u8**)lbl_80371C30)[(0x97 + *(u16*)(o + 0x14) + i) * 2] + 0x54) &= ~2;
-        *(u32*)(((u8**)lbl_80371C30)[(0xB0 + *(u16*)(o + 0x14) + i) * 2] + 0x54) &= ~2;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + i)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, 2 + o->baseIdx + i)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + i)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 2 + o->baseIdx + i)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x80 + o->baseIdx + i)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x80 + o->baseIdx + i)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x78 + o->baseIdx + i)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x78 + o->baseIdx + i)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x7C + o->baseIdx + i)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x7C + o->baseIdx + i)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x97 + o->baseIdx + i)->_64 = 0x77;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x97 + o->baseIdx + i)->_5C = 0;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x97 + o->baseIdx + i)->flags &= ~2;
+        MENU_SLOT_OBJ(lbl_80371C30, 0xB0 + o->baseIdx + i)->flags &= ~2;
         fn_800626EC(i);
         *e = 1;
     }
@@ -1231,7 +1232,7 @@ void fn_2_800B0(u8* o, s32 i) {
 }
 
 // fn_2_760CC, size:0x240
-void fn_2_760CC(u8* o) {
+void fn_2_760CC(MenuTask* o) {
     s32 a;
     s32 b;
     u8 x;
@@ -1240,45 +1241,45 @@ void fn_2_760CC(u8* o) {
     b = (lbl_800FE930 + lbl_80361B20[0xF4] * 6)[lbl_803C6724[0]];
     x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
     y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
-    *(s32*)(((u8**)(lbl_80371C30 + 0x410))[*(u16*)(o + 0x14) * 2] + 0x5C) = lbl_2_data_2B3A4[x] << 16;
+    MENU_SLOT_OBJ(&lbl_80371C30[130], o->baseIdx)->_5C = lbl_2_data_2B3A4[x] << 16;
     fn_800363D8(o, 0x89, 1, 3, lbl_2_data_2B3A4[x]);
     fn_800363D8(o, 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
-    *(s32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x3F0) + 0x5C) = lbl_2_data_2B3A4[x] << 16;
-    *(s32*)(((u8**)(lbl_80371C30 + 0x400))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-    *(s32*)(((u8**)(lbl_80371C30 + 0x448))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-    *(s32*)(((u8**)(lbl_80371C30 + 0x458))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0xA0000;
-    *(s32*)(((u8**)(lbl_80371C30 + 0x3C0))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-    *(s32*)(((u8**)(lbl_80371C30 + 0x3E0))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0;
-    ((u8**)(lbl_80371C30 + 0x400))[*(u16*)(o + 0x14) * 2][0x68] = 1;
-    ((u8**)(lbl_80371C30 + 0x448))[*(u16*)(o + 0x14) * 2][0x68] = 1;
-    ((u8**)(lbl_80371C30 + 0x458))[*(u16*)(o + 0x14) * 2][0x68] = 4;
-    ((u8**)(lbl_80371C30 + 0x3C0))[*(u16*)(o + 0x14) * 2][0x68] = 1;
-    ((u8**)(lbl_80371C30 + 0x3E0))[*(u16*)(o + 0x14) * 2][0x68] = 1;
+    (&lbl_80371C30[126])[o->baseIdx].obj->_5C = lbl_2_data_2B3A4[x] << 16;
+    MENU_SLOT_OBJ(&lbl_80371C30[128], o->baseIdx)->_5C = 0;
+    MENU_SLOT_OBJ(&lbl_80371C30[137], o->baseIdx)->_5C = 0;
+    MENU_SLOT_OBJ(&lbl_80371C30[139], o->baseIdx)->_5C = 0xA0000;
+    MENU_SLOT_OBJ(&lbl_80371C30[120], o->baseIdx)->_5C = 0;
+    MENU_SLOT_OBJ(&lbl_80371C30[124], o->baseIdx)->_5C = 0;
+    MENU_SLOT_OBJ(&lbl_80371C30[128], o->baseIdx)->_68 = 1;
+    MENU_SLOT_OBJ(&lbl_80371C30[137], o->baseIdx)->_68 = 1;
+    MENU_SLOT_OBJ(&lbl_80371C30[139], o->baseIdx)->_68 = 4;
+    MENU_SLOT_OBJ(&lbl_80371C30[120], o->baseIdx)->_68 = 1;
+    MENU_SLOT_OBJ(&lbl_80371C30[124], o->baseIdx)->_68 = 1;
 }
 
 extern void fn_2_16A74(s32 a, s32 b);
 extern u8 lbl_2_bss_100B8[];
 
 // fn_2_805DC, size:0x250
-void fn_2_805DC(u8* o, s32 i) {
+void fn_2_805DC(MenuTask* o, s32 i) {
     u8* e = lbl_803C66B0 + i;
     u8 f;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x408) + 0x54) &= ~2;
-        *(u32*)(((u8**)(lbl_80371C30 + 0x420))[*(u16*)(o + 0x14) * 2] + 0x54) |= 2;
-        ((u8**)(lbl_80371C30 + 0x420))[*(u16*)(o + 0x14) * 2][0x68] = 1;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x4C0) + 0x54) &= ~2;
-        *(s32*)(((u8**)(lbl_80371C30 + 0x430))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0xA0000;
-        ((u8**)(lbl_80371C30 + 0x430))[*(u16*)(o + 0x14) * 2][0x68] = 4;
-        *(s32*)(((u8**)(lbl_80371C30 + 0x450))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x50000;
-        ((u8**)(lbl_80371C30 + 0x450))[*(u16*)(o + 0x14) * 2][0x68] = 4;
-        *(s32*)(((u8**)(lbl_80371C30 + 0x3C8))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x140000;
-        ((u8**)(lbl_80371C30 + 0x3C8))[*(u16*)(o + 0x14) * 2][0x68] = 4;
-        *(s32*)(((u8**)(lbl_80371C30 + 0x3E8))[*(u16*)(o + 0x14) * 2] + 0x5C) = 0x140000;
-        ((u8**)(lbl_80371C30 + 0x3E8))[*(u16*)(o + 0x14) * 2][0x68] = 4;
+        (&lbl_80371C30[129])[o->baseIdx].obj->flags &= ~2;
+        MENU_SLOT_OBJ(&lbl_80371C30[132], o->baseIdx)->flags |= 2;
+        MENU_SLOT_OBJ(&lbl_80371C30[132], o->baseIdx)->_68 = 1;
+        (&lbl_80371C30[152])[o->baseIdx].obj->flags &= ~2;
+        MENU_SLOT_OBJ(&lbl_80371C30[134], o->baseIdx)->_5C = 0xA0000;
+        MENU_SLOT_OBJ(&lbl_80371C30[134], o->baseIdx)->_68 = 4;
+        MENU_SLOT_OBJ(&lbl_80371C30[138], o->baseIdx)->_5C = 0x50000;
+        MENU_SLOT_OBJ(&lbl_80371C30[138], o->baseIdx)->_68 = 4;
+        MENU_SLOT_OBJ(&lbl_80371C30[121], o->baseIdx)->_5C = 0x140000;
+        MENU_SLOT_OBJ(&lbl_80371C30[121], o->baseIdx)->_68 = 4;
+        MENU_SLOT_OBJ(&lbl_80371C30[125], o->baseIdx)->_5C = 0x140000;
+        MENU_SLOT_OBJ(&lbl_80371C30[125], o->baseIdx)->_68 = 4;
         f = ((s8)lbl_8034E9A0[0x46F8] == 0);
-        *(s32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x3D8) + 0x5C) = f << 16;
-        *(s32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0xC8) + 0x5C) = (f + 4) << 16;
+        (&lbl_80371C30[123])[o->baseIdx].obj->_5C = f << 16;
+        (&lbl_80371C30[25])[o->baseIdx].obj->_5C = (f + 4) << 16;
         fn_800626EC(i);
         *e = 1;
     }
@@ -1296,7 +1297,7 @@ void fn_2_805DC(u8* o, s32 i) {
 }
 
 // fn_2_80E0C, size:0x150
-void fn_2_80E0C(u8* a, s32 index) {
+void fn_2_80E0C(MenuTask* a, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 1) ? 1 : 0) {
         s32 n;
@@ -1325,7 +1326,7 @@ void fn_2_80E0C(u8* a, s32 index) {
 }
 
 // fn_2_79B24, size:0x1D4
-void fn_2_79B24(u8* a, s32 index) {
+void fn_2_79B24(MenuTask* a, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 1) ? 1 : 0) {
         s32 n;
@@ -1354,7 +1355,7 @@ void fn_2_79B24(u8* a, s32 index) {
 }
 
 // fn_2_79FAC, size:0x1E8
-void fn_2_79FAC(u8* a, s32 index) {
+void fn_2_79FAC(MenuTask* a, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 1) ? 1 : 0) {
         s32 n;
@@ -1386,7 +1387,7 @@ void fn_2_79FAC(u8* a, s32 index) {
 // fn_2_79764, size:0x1CC
 
 
-static inline s32 CheckRowHits(u8* a, s32 base, u8 count) {
+static inline s32 CheckRowHits(MenuTask* a, s32 base, u8 count) {
     s32 i;
     s32 n = 0;
     s32 k = 0;
@@ -1397,7 +1398,7 @@ static inline s32 CheckRowHits(u8* a, s32 base, u8 count) {
     return n == k;
 }
 
-void fn_2_79764(u8* a, s32 index) {
+void fn_2_79764(MenuTask* a, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 1) ? 1 : 0) {
         s32 j;
@@ -1425,7 +1426,7 @@ void fn_2_79764(u8* a, s32 index) {
 extern void fn_2_CCE0(u8 a);
 
 // fn_2_7F714, size:0x1A8
-void fn_2_7F714(u8* a, s32 index) {
+void fn_2_7F714(MenuTask* a, s32 index) {
     s32 n;
     s32 k;
     s32 j;
@@ -1452,7 +1453,7 @@ void fn_2_7F714(u8* a, s32 index) {
 }
 
 // fn_2_7AC64, size:0x1D8
-void fn_2_7AC64(u8* a, s32 index) {
+void fn_2_7AC64(MenuTask* a, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 1) ? 1 : 0) {
         s32 n;
@@ -1485,7 +1486,7 @@ void fn_2_7AC64(u8* a, s32 index) {
 }
 
 // fn_2_7F030, size:0x28C
-void fn_2_7F030(u8* o, s32 index) {
+void fn_2_7F030(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     s32 n;
     s32 k;
@@ -1519,7 +1520,7 @@ void fn_2_7F030(u8* o, s32 index) {
         }
         if (CheckRowHits(o, index * 5, lbl_8034E9A0[index + 0x470F]) && n == k) {
             if (v0 == v1) {
-                *(u32*)(((u8**)lbl_80371C30)[(0x34 + *(u16*)(o + 0x14) + v0 + index * 9) * 2] + 0x54) &= ~2;
+                MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + v0 + index * 9)->flags &= ~2;
             }
             fn_80062674(index);
             *e = 2;
@@ -1530,7 +1531,7 @@ void fn_2_7F030(u8* o, s32 index) {
 extern void fn_2_102C8(u8 a);
 
 // fn_2_7912C, size:0x268
-void fn_2_7912C(u8* o, s32 index) {
+void fn_2_7912C(MenuTask* o, s32 index) {
     s32 j;
     u8* e;
     s32 n;
@@ -1540,10 +1541,10 @@ void fn_2_7912C(u8* o, s32 index) {
         if (lbl_803C66B0[0] == 2) {
             for (j = 1; j < 9; j++) {
                 if ((s8)(lbl_803C6724 + index * 9)[(s8)lbl_803C6724[index * 9 + j + 0x14] + 2] != -1 && (s8)(lbl_803C6724 + index * 9)[(s8)lbl_803C6724[index * 9 + j + 0x14] + 2] != 0x36) {
-                    ((u8**)lbl_80371C30)[(0x34 + *(u16*)((u8*)o + 0x14) + j + index * 9) * 2][0x68] = 4;
+                    MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + j + index * 9)->_68 = 4;
                 }
             }
-            fn_2_75BE4((u8*)o, index);
+            fn_2_75BE4(o, index);
         }
         fn_800626EC(index);
         *e = 1;
@@ -1572,7 +1573,7 @@ void fn_2_7912C(u8* o, s32 index) {
 }
 
 // fn_2_7A748, size:0x290
-void fn_2_7A748(u8* o, s32 index) {
+void fn_2_7A748(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 1) ? 1 : 0) {
         s32 n;
@@ -1582,21 +1583,21 @@ void fn_2_7A748(u8* o, s32 index) {
         n += fn_80042DA8(o, index + 0x85, 0) != 0;
         n += fn_80042DA8(o, index + 0x6A, 0) != 0;
         if (n == 4) {
-        *(s16*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + index) * 2] + 0x64) = 0x47;
-        *(s16*)(((u8**)lbl_80371C30)[(2 + *(u16*)(o + 0x14) + index) * 2] + 0x64) = 0x47;
-        *(s16*)(((u8**)lbl_80371C30)[(151 + *(u16*)(o + 0x14) + index) * 2] + 0x64) = 0x78;
-        *(s16*)(((u8**)lbl_80371C30)[(153 + *(u16*)(o + 0x14) + index) * 2] + 0x64) = 0x79;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0xe0) + 0x54) &= ~2;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0xe8) + 0x54) &= ~2;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0xf0) + 0x54) &= ~2;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0xf8) + 0x54) &= ~2;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x3c0) + 0x54) |= 2;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x3c8) + 0x54) |= 2;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x3e0) + 0x54) |= 2;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x3e8) + 0x54) |= 2;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x400) + 0x54) |= 2;
-        *(u32*)(*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x408) + 0x54) |= 2;
-        (*(u8**)(lbl_80371C30 + *(u16*)(o + 0x14) * 8 + 0x78))[0x68] = 0;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + index)->_64 = 0x47;
+        MENU_SLOT_OBJ(lbl_80371C30, 2 + o->baseIdx + index)->_64 = 0x47;
+        MENU_SLOT_OBJ(lbl_80371C30, 151 + o->baseIdx + index)->_64 = 0x78;
+        MENU_SLOT_OBJ(lbl_80371C30, 153 + o->baseIdx + index)->_64 = 0x79;
+        (&lbl_80371C30[28])[o->baseIdx].obj->flags &= ~2;
+        (&lbl_80371C30[29])[o->baseIdx].obj->flags &= ~2;
+        (&lbl_80371C30[30])[o->baseIdx].obj->flags &= ~2;
+        (&lbl_80371C30[31])[o->baseIdx].obj->flags &= ~2;
+        (&lbl_80371C30[120])[o->baseIdx].obj->flags |= 2;
+        (&lbl_80371C30[121])[o->baseIdx].obj->flags |= 2;
+        (&lbl_80371C30[124])[o->baseIdx].obj->flags |= 2;
+        (&lbl_80371C30[125])[o->baseIdx].obj->flags |= 2;
+        (&lbl_80371C30[128])[o->baseIdx].obj->flags |= 2;
+        (&lbl_80371C30[129])[o->baseIdx].obj->flags |= 2;
+        (&lbl_80371C30[15])[o->baseIdx].obj->_68 = 0;
             fn_80062674(index);
             *e = 2;
         }
@@ -1604,7 +1605,7 @@ void fn_2_7A748(u8* o, s32 index) {
 }
 
 // fn_2_7D85C, size:0x25C
-void fn_2_7D85C(u8* o, s32 index) {
+void fn_2_7D85C(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     s32 n;
     s32 k;
@@ -1650,7 +1651,7 @@ void fn_2_7D85C(u8* o, s32 index) {
 }
 
 // fn_2_79CF8, size:0x2B4
-void fn_2_79CF8(u8* o, s32 index) {
+void fn_2_79CF8(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         s8 v0;
@@ -1666,17 +1667,17 @@ void fn_2_79CF8(u8* o, s32 index) {
             }
         }
         if (v1 == 9) {
-            *(s32*)(((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0xA0000;
-            ((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + index)->_5C = 0xA0000;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + index)->_68 = 4;
         } else if (v1 == 10) {
-            *(s32*)(((u8**)lbl_80371C30)[(0x91 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0xA0000;
-            ((u8**)lbl_80371C30)[(0x91 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x91 + o->baseIdx + index)->_5C = 0xA0000;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x91 + o->baseIdx + index)->_68 = 4;
         }
-        *(s32*)(((u8**)lbl_80371C30)[(0x46 + *(u16*)(o + 0x14) + v0 + index * 9) * 2] + 0x5C) = 0;
-        ((u8**)lbl_80371C30)[(0x46 + *(u16*)(o + 0x14) + v0 + index * 9) * 2][0x68] = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x46 + o->baseIdx + v0 + index * 9)->_5C = 0;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x46 + o->baseIdx + v0 + index * 9)->_68 = 1;
         if ((s8)(lbl_803C6724 + index * 9)[found + 2] != -1) {
-            *(s32*)(((u8**)lbl_80371C30)[(0x34 + *(u16*)(o + 0x14) + v0 + index * 9) * 2] + 0x5C) = 0x140000;
-            ((u8**)lbl_80371C30)[(0x34 + *(u16*)(o + 0x14) + v0 + index * 9) * 2][0x68] = 4;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + v0 + index * 9)->_5C = 0x140000;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + v0 + index * 9)->_68 = 4;
         }
         fn_800626EC(index);
         *e = 1;
@@ -1684,21 +1685,21 @@ void fn_2_79CF8(u8* o, s32 index) {
 }
 
 // fn_2_79394, size:0x2A0
-void fn_2_79394(u8* o, s32 index) {
+void fn_2_79394(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     s32 n;
     s32 k;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         if (((s32*)lbl_2_bss_F468)[index] == 9) {
-            *(s32*)(((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0;
-            ((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2][0x68] = 1;
-            *(s32*)(((u8**)lbl_80371C30)[(0x91 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0xA0000;
-            ((u8**)lbl_80371C30)[(0x91 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + index)->_5C = 0;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + index)->_68 = 1;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x91 + o->baseIdx + index)->_5C = 0xA0000;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x91 + o->baseIdx + index)->_68 = 4;
         } else if (((s32*)lbl_2_bss_F468)[index] == 10) {
-            *(s32*)(((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0xA0000;
-            ((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
-            *(s32*)(((u8**)lbl_80371C30)[(0x91 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0;
-            ((u8**)lbl_80371C30)[(0x91 + *(u16*)(o + 0x14) + index) * 2][0x68] = 1;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + index)->_5C = 0xA0000;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + index)->_68 = 4;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x91 + o->baseIdx + index)->_5C = 0;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x91 + o->baseIdx + index)->_68 = 1;
         }
         fn_800626EC(index);
         *e = 1;
@@ -1708,14 +1709,14 @@ void fn_2_79394(u8* o, s32 index) {
         k = 0;
         if (((s32*)lbl_2_bss_F468)[index] == 9) {
             k++;
-            n += (*(u32*)(((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) >> 16) >= 10;
+            n += (MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + index)->_5C >> 16) >= 10;
             k++;
-            n += (*(u32*)(((u8**)lbl_80371C30)[(0x91 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) >> 16) == 0;
+            n += (MENU_SLOT_OBJ(lbl_80371C30, 0x91 + o->baseIdx + index)->_5C >> 16) == 0;
         } else if (((s32*)lbl_2_bss_F468)[index] == 10) {
             k++;
-            n += (*(u32*)(((u8**)lbl_80371C30)[(0x95 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) >> 16) == 0;
+            n += (MENU_SLOT_OBJ(lbl_80371C30, 0x95 + o->baseIdx + index)->_5C >> 16) == 0;
             k++;
-            n += (*(u32*)(((u8**)lbl_80371C30)[(0x91 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) >> 16) >= 10;
+            n += (MENU_SLOT_OBJ(lbl_80371C30, 0x91 + o->baseIdx + index)->_5C >> 16) >= 10;
         }
         if (n == k) {
             ((s32*)(lbl_2_bss_F468 + 8))[index] = ((s32*)lbl_2_bss_F468)[index];
@@ -1726,7 +1727,7 @@ void fn_2_79394(u8* o, s32 index) {
 }
 
 // fn_2_7A194, size:0x2CC
-void fn_2_7A194(u8* o, s32 index) {
+void fn_2_7A194(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         s32 v;
@@ -1740,19 +1741,19 @@ void fn_2_7A194(u8* o, s32 index) {
                 break;
             }
         }
-        *(s32*)(((u8**)lbl_80371C30)[(147 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0;
-        ((u8**)lbl_80371C30)[(147 + *(u16*)(o + 0x14) + index) * 2][0x68] = 1;
-        *(s32*)(((u8**)lbl_80371C30)[(149 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0;
-        ((u8**)lbl_80371C30)[(149 + *(u16*)(o + 0x14) + index) * 2][0x68] = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 147 + o->baseIdx + index)->_5C = 0;
+        MENU_SLOT_OBJ(lbl_80371C30, 147 + o->baseIdx + index)->_68 = 1;
+        MENU_SLOT_OBJ(lbl_80371C30, 149 + o->baseIdx + index)->_5C = 0;
+        MENU_SLOT_OBJ(lbl_80371C30, 149 + o->baseIdx + index)->_68 = 1;
         if (v == 10) {
-            *(s32*)(((u8**)lbl_80371C30)[(145 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0xA0000;
-            ((u8**)lbl_80371C30)[(145 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
+            MENU_SLOT_OBJ(lbl_80371C30, 145 + o->baseIdx + index)->_5C = 0xA0000;
+            MENU_SLOT_OBJ(lbl_80371C30, 145 + o->baseIdx + index)->_68 = 4;
         } else if (v != 9) {
-            *(s32*)(((u8**)lbl_80371C30)[(70 + *(u16*)(o + 0x14) + v + index * 9) * 2] + 0x5C) = 0xF0000;
-            ((u8**)lbl_80371C30)[(70 + *(u16*)(o + 0x14) + v + index * 9) * 2][0x68] = 4;
+            MENU_SLOT_OBJ(lbl_80371C30, 70 + o->baseIdx + v + index * 9)->_5C = 0xF0000;
+            MENU_SLOT_OBJ(lbl_80371C30, 70 + o->baseIdx + v + index * 9)->_68 = 4;
             if ((s8)(lbl_803C6724 + index * 9)[found + 2] != -1 && (s8)(lbl_803C6724 + index * 9)[found + 2] != 0x36) {
-                *(s32*)(((u8**)lbl_80371C30)[(52 + *(u16*)(o + 0x14) + v + index * 9) * 2] + 0x5C) = 0xA0000;
-                ((u8**)lbl_80371C30)[(52 + *(u16*)(o + 0x14) + v + index * 9) * 2][0x68] = 1;
+                MENU_SLOT_OBJ(lbl_80371C30, 52 + o->baseIdx + v + index * 9)->_5C = 0xA0000;
+                MENU_SLOT_OBJ(lbl_80371C30, 52 + o->baseIdx + v + index * 9)->_68 = 1;
             }
         }
         fn_800626EC(index);
@@ -1761,30 +1762,30 @@ void fn_2_7A194(u8* o, s32 index) {
 }
 
 // fn_2_7A9D8, size:0x28C
-void fn_2_7A9D8(u8* o, s32 index) {
+void fn_2_7A9D8(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
-        *(s32*)(((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0x140000;
-        *(s32*)(((u8**)lbl_80371C30)[(0x2 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0x140000;
-        ((u8**)lbl_80371C30)[(*(u16*)(o + 0x14) + index) * 2][0x68] = 4;
-        ((u8**)lbl_80371C30)[(0x2 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
-        *(s32*)(((u8**)lbl_80371C30)[(0x4 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0x1E0000;
-        ((u8**)lbl_80371C30)[(0x4 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
-        *(s32*)(((u8**)lbl_80371C30)[(0x85 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0xA0000;
-        ((u8**)lbl_80371C30)[(0x85 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
-        *(s32*)(((u8**)lbl_80371C30)[(0x89 + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0x50000;
-        ((u8**)lbl_80371C30)[(0x89 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
-        *(s32*)(((u8**)lbl_80371C30)[(0x6a + *(u16*)(o + 0x14) + index) * 2] + 0x5C) = 0xA0000;
-        ((u8**)lbl_80371C30)[(0x6a + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
-        ((u8**)lbl_80371C30)[(0x34 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
-        ((u8**)lbl_80371C30)[(0x93 + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
-        ((u8**)lbl_80371C30)[(0x8f + *(u16*)(o + 0x14) + index) * 2][0x68] = 4;
-        *(u32*)(((u8**)lbl_80371C30)[(0xb2 + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
-        *(u32*)(((u8**)lbl_80371C30)[(0xae + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
-        *(u32*)(((u8**)lbl_80371C30)[(0x97 + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
-        *(u32*)(((u8**)lbl_80371C30)[(0xac + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
-        *(u32*)(((u8**)lbl_80371C30)[(0xc + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
-        *(u32*)(((u8**)lbl_80371C30)[(0x12 + *(u16*)(o + 0x14) + index) * 2] + 0x54) &= ~2;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + index)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x2 + o->baseIdx + index)->_5C = 0x140000;
+        MENU_SLOT_OBJ(lbl_80371C30, o->baseIdx + index)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x2 + o->baseIdx + index)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x4 + o->baseIdx + index)->_5C = 0x1E0000;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x4 + o->baseIdx + index)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x85 + o->baseIdx + index)->_5C = 0xA0000;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x85 + o->baseIdx + index)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x89 + o->baseIdx + index)->_5C = 0x50000;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x89 + o->baseIdx + index)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x6a + o->baseIdx + index)->_5C = 0xA0000;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x6a + o->baseIdx + index)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + index)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x93 + o->baseIdx + index)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x8f + o->baseIdx + index)->_68 = 4;
+        MENU_SLOT_OBJ(lbl_80371C30, 0xb2 + o->baseIdx + index)->flags &= ~2;
+        MENU_SLOT_OBJ(lbl_80371C30, 0xae + o->baseIdx + index)->flags &= ~2;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x97 + o->baseIdx + index)->flags &= ~2;
+        MENU_SLOT_OBJ(lbl_80371C30, 0xac + o->baseIdx + index)->flags &= ~2;
+        MENU_SLOT_OBJ(lbl_80371C30, 0xc + o->baseIdx + index)->flags &= ~2;
+        MENU_SLOT_OBJ(lbl_80371C30, 0x12 + o->baseIdx + index)->flags &= ~2;
         fn_800626EC(index);
         *e = 1;
     }
@@ -1793,7 +1794,7 @@ void fn_2_7A9D8(u8* o, s32 index) {
 extern void* memset(void* dst, int c, unsigned long n);
 
 // fn_2_76650, size:0x224
-void fn_2_76650(u8* o, u8 k, u32 mask) {
+void fn_2_76650(MenuTask* o, u8 k, u32 mask) {
     s32 buf[2];
     s32 i;
     s32 n;
@@ -1853,13 +1854,13 @@ void fn_2_76650(u8* o, u8 k, u32 mask) {
             buf[i] = 12;
         }
     }
-    *(s32*)(((u8**)lbl_80371C30)[(0xCE + *(u16*)(o + 0x14) + k) * 2] + 0x5C) = buf[0] << 16;
-    *(s32*)(((u8**)lbl_80371C30)[(0xD0 + *(u16*)(o + 0x14) + k) * 2] + 0x5C) = buf[1] << 16;
+    MENU_SLOT_OBJ(lbl_80371C30, 0xCE + o->baseIdx + k)->_5C = buf[0] << 16;
+    MENU_SLOT_OBJ(lbl_80371C30, 0xD0 + o->baseIdx + k)->_5C = buf[1] << 16;
 }
 
 
 // fn_2_73CBC, size:0x240
-void fn_2_73CBC(u8* o) {
+void fn_2_73CBC(MenuTask* o) {
     s32 i;
     s32 n;
     s32 k;
@@ -1961,33 +1962,9 @@ void fn_2_7265C(void) {
     fn_800B0A5C_insertQueue((void*)fn_80051D00, 0x3000);
 }
 
-// Layout objects in lbl_80371C30 (see LayoutObj in main/file_8000F150.h).
-typedef struct MnObj {
-    /*0x00*/ u8 _00[0x54];
-    /*0x54*/ u32 flags;
-    /*0x58*/ u32 color;
-    /*0x5C*/ u32 frame; // 16.16 fixed
-    /*0x60*/ u8 _60[4];
-    /*0x64*/ s16 anim;
-    /*0x66*/ u8 _66[2];
-    /*0x68*/ u8 state;
-} MnObj;
 
-typedef struct MnSlot {
-    /*0x0*/ MnObj* obj;
-    /*0x4*/ void* owner;
-} MnSlot;
-
-// Owner of a run of layout objects starting at baseIdx.
-typedef struct MnOwner {
-    /*0x00*/ u8 _00[0x14];
-    /*0x14*/ u16 baseIdx;
-    /*0x16*/ u16 count;
-    /*0x18*/ u16 _18;
-} MnOwner;
-
-#define MN_SLOTS ((MnSlot*)lbl_80371C30)
-#define BASE(o) (((MnOwner*)(o))->baseIdx)
+#define MN_SLOTS (lbl_80371C30)
+#define BASE(o) ((o)->baseIdx)
 // Write the index constant first (K + BASE(o) + i): CW keeps that order.
 #define MN_SLOT(i) (MN_SLOTS[i].obj)
 #define F410_S32(off) (*(s32*)((u8*)&lbl_2_bss_F410 + (off)))
@@ -1996,19 +1973,19 @@ extern u8 lbl_80108EC4[];
 extern u8 lbl_2_data_2AF08[];
 
 // Body of fn_2_72E54; also inlined into fn_2_7308C.
-static inline void setupHeaderSlots(u8* o) {
+static inline void setupHeaderSlots(MenuTask* o) {
     s32 j;
     s32 found = -1;
     u8 v;
     if ((lbl_803CBBC4[2] == 0) ? 1 : 0) {
-        MnSlot* slots = MN_SLOTS;
-        MnSlot* next = slots + 1;
+        LayoutSlot* slots = MN_SLOTS;
+        LayoutSlot* next = slots + 1;
         s32 zero = 0;
         u8* tbl = lbl_80108EC4;
-        slots[((MnOwner*)o)->baseIdx].obj->frame = zero;
-        slots[((MnOwner*)o)->baseIdx].obj->state = 1;
-        next[((MnOwner*)o)->baseIdx].obj->frame = zero;
-        next[((MnOwner*)o)->baseIdx].obj->state = 1;
+        slots[o->baseIdx].obj->_5C = zero;
+        slots[o->baseIdx].obj->_68 = 1;
+        next[o->baseIdx].obj->_5C = zero;
+        next[o->baseIdx].obj->_68 = 1;
         v = lbl_800FE930[lbl_80361B20[0xF4] * 6 + F410_S32(0x10)];
         for (j = 0; j < 6; j++) {
             if (tbl[j] == v) {
@@ -2016,7 +1993,7 @@ static inline void setupHeaderSlots(u8* o) {
                 break;
             }
         }
-        MN_SLOT(2 + BASE(o))->frame = lbl_2_data_2AF08[found] << 18;
+        MN_SLOT(2 + BASE(o))->_5C = lbl_2_data_2AF08[found] << 18;
         v = lbl_800FE5D4[F410_S32(0x10)];
         for (j = 0; j < 6; j++) {
             if (tbl[j] == v) {
@@ -2031,7 +2008,7 @@ static inline void setupHeaderSlots(u8* o) {
 // fn_2_72E54, size:0x1D4
 // NONMATCHING 83%: zero kept in r30/slot base in r31 swapped vs ours, search loop uses lbz not lbzu
 #if NONMATCHING
-void fn_2_72E54(u8* o) {
+void fn_2_72E54(MenuTask* o) {
     setupHeaderSlots(o);
 }
 #endif
@@ -2049,7 +2026,7 @@ typedef struct TeamTbl {
 // fn_2_7E194, size:0x1EC
 // NONMATCHING 94%: unrolled roster search addresses each entry from the base instead of a walking pointer
 #if NONMATCHING
-void fn_2_7E194(u8* o, s32 index) {
+void fn_2_7E194(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     s32 n;
     s32 k;
@@ -2088,7 +2065,7 @@ void fn_2_7E194(u8* o, s32 index) {
 #endif
 
 // Body of fn_2_72A88; also inlined into fn_2_7308C.
-static inline void setupHeaderRoster(u8* o) {
+static inline void setupHeaderRoster(MenuTask* o) {
     s32 j;
     s32 found = -1;
     u8 v;
@@ -2100,10 +2077,10 @@ static inline void setupHeaderRoster(u8* o) {
                 break;
             }
         }
-        MN_SLOT(2 + BASE(o))->frame = lbl_2_data_2AF08[found] << 18;
-        MN_SLOT(3 + BASE(o))->frame = lbl_2_data_2AF08[found] << 18;
+        MN_SLOT(2 + BASE(o))->_5C = lbl_2_data_2AF08[found] << 18;
+        MN_SLOT(3 + BASE(o))->_5C = lbl_2_data_2AF08[found] << 18;
         for (j = 0; j < 8; j++) {
-            MN_SLOT(4 + BASE(o) + j)->frame = TEAM_TBL->roster[0][j + 1] << 16;
+            MN_SLOT(4 + BASE(o) + j)->_5C = TEAM_TBL->roster[0][j + 1] << 16;
         }
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
@@ -2113,13 +2090,13 @@ static inline void setupHeaderRoster(u8* o) {
 // fn_2_72A88, size:0x22C
 // NONMATCHING 94%: character search loop uses lbz instead of the original lbzu walker; register order differs
 #if NONMATCHING
-void fn_2_72A88(u8* o) {
+void fn_2_72A88(MenuTask* o) {
     setupHeaderRoster(o);
 }
 #endif
 
 // fn_2_7F8BC, size:0x240
-void fn_2_7F8BC(u8* o, s32 index) {
+void fn_2_7F8BC(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         s8 v;
@@ -2136,9 +2113,9 @@ void fn_2_7F8BC(u8* o, s32 index) {
         }
         x = ((s8*)lbl_803C6724 + index * 9)[found + 2];
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->flags |= 2;
-        MN_SLOT(0x34 + BASE(o) + v + index * 9)->frame = 0;
-        MN_SLOT(0x34 + BASE(o) + v + index * 9)->state = 1;
-        MN_SLOT(0x58 + BASE(o) + v + index * 9)->frame = x << 16;
+        MN_SLOT(0x34 + BASE(o) + v + index * 9)->_5C = 0;
+        MN_SLOT(0x34 + BASE(o) + v + index * 9)->_68 = 1;
+        MN_SLOT(0x58 + BASE(o) + v + index * 9)->_5C = x << 16;
         fn_2_75BE4(o, index);
         fn_2_74F40(o, index);
         fn_800626EC(index);
@@ -2149,7 +2126,7 @@ void fn_2_7F8BC(u8* o, s32 index) {
 // fn_2_808D8, size:0x284
 // NONMATCHING 85%: original hoists the five slot pointers (base+0x78..0x8B) into registers before the stores; frame/stack layout differs
 #if NONMATCHING
-void fn_2_808D8(u8* o, s32 index) {
+void fn_2_808D8(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         if (g_d_GameSettings.GameModeSelected != 5) {
@@ -2160,20 +2137,20 @@ void fn_2_808D8(u8* o, s32 index) {
             s32 b = chars[lbl_803C6724[0]];
             u8 x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
             u8 y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
-            MN_SLOT(0x82 + BASE(o))->frame = lbl_2_data_2B3A4[x] << 16;
+            MN_SLOT(0x82 + BASE(o))->_5C = lbl_2_data_2B3A4[x] << 16;
             fn_800363D8(o, 0x89, 1, 3, lbl_2_data_2B3A4[x]);
             fn_800363D8(o, 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
-            MN_SLOT(0x7E + BASE(o))->frame = lbl_2_data_2B3A4[x] << 16;
-            MN_SLOT(0x80 + BASE(o))->frame = 0;
-            MN_SLOT(0x89 + BASE(o))->frame = 0;
-            MN_SLOT(0x8B + BASE(o))->frame = 0xA0000;
-            MN_SLOT(0x78 + BASE(o))->frame = 0;
-            MN_SLOT(0x7C + BASE(o))->frame = 0;
-            MN_SLOT(0x80 + BASE(o))->state = 1;
-            MN_SLOT(0x89 + BASE(o))->state = 1;
-            MN_SLOT(0x8B + BASE(o))->state = 4;
-            MN_SLOT(0x78 + BASE(o))->state = 1;
-            MN_SLOT(0x7C + BASE(o))->state = 1;
+            MN_SLOT(0x7E + BASE(o))->_5C = lbl_2_data_2B3A4[x] << 16;
+            MN_SLOT(0x80 + BASE(o))->_5C = 0;
+            MN_SLOT(0x89 + BASE(o))->_5C = 0;
+            MN_SLOT(0x8B + BASE(o))->_5C = 0xA0000;
+            MN_SLOT(0x78 + BASE(o))->_5C = 0;
+            MN_SLOT(0x7C + BASE(o))->_5C = 0;
+            MN_SLOT(0x80 + BASE(o))->_68 = 1;
+            MN_SLOT(0x89 + BASE(o))->_68 = 1;
+            MN_SLOT(0x8B + BASE(o))->_68 = 4;
+            MN_SLOT(0x78 + BASE(o))->_68 = 1;
+            MN_SLOT(0x7C + BASE(o))->_68 = 1;
         }
         fn_2_74F40(o, index);
         fn_800626EC(index);
@@ -2185,7 +2162,7 @@ void fn_2_808D8(u8* o, s32 index) {
 // fn_2_7805C, size:0x310
 // NONMATCHING 88%: original re-extsb's the prev byte at each use; CW CSEs our (s8) cast
 #if NONMATCHING
-void fn_2_7805C(u8* o, s32 index) {
+void fn_2_7805C(MenuTask* o, s32 index) {
     u8* sel = lbl_2_bss_F468 + index;
     u8 prev = *(sel += 0x61); // F468[0x61 + index]
     s8 found;
@@ -2201,15 +2178,15 @@ void fn_2_7805C(u8* o, s32 index) {
     e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         if ((s8)prev != ((s32*)lbl_2_bss_F468)[index]) {
-            MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->state = 4;
+            MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->_68 = 4;
             if ((s8)(lbl_803C6724 + index * 9)[found + 2] != -1 && (s8)(lbl_803C6724 + index * 9)[found + 2] != 0x36) {
-                MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->state = 1;
+                MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->_68 = 1;
             }
         }
         if (lbl_2_bss_F468[index + 0x37] != 0) {
-            MN_SLOT(0x93 + BASE(o) + index)->anim = 9;
-            MN_SLOT(0x93 + BASE(o) + index)->frame = 0xA0000;
-            MN_SLOT(0x93 + BASE(o) + index)->state = 0;
+            MN_SLOT(0x93 + BASE(o) + index)->_64 = 9;
+            MN_SLOT(0x93 + BASE(o) + index)->_5C = 0xA0000;
+            MN_SLOT(0x93 + BASE(o) + index)->_68 = 0;
         }
         fn_800626EC(index);
         *e = 1;
@@ -2236,7 +2213,7 @@ void fn_2_7805C(u8* o, s32 index) {
 // fn_2_7630C, size:0x340
 // NONMATCHING 97%: registers only (team byte in r7 vs r6, a/b swapped r0/r3)
 #if NONMATCHING
-void fn_2_7630C(u8* o, u8 index) {
+void fn_2_7630C(MenuTask* o, u8 index) {
     u8 team;
     s32 a;
     s32 b;
@@ -2252,26 +2229,26 @@ void fn_2_7630C(u8* o, u8 index) {
     b = lbl_800FE5D4[b];
     x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
     y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
-    MN_SLOT(0x82 + BASE(o) + team)->frame = lbl_2_data_2B3A4[x] << 16;
-    MN_SLOT(0x85 + BASE(o) + team)->frame = 0xA0000;
-    MN_SLOT(0x87 + BASE(o) + team)->frame = 0xA0000;
-    MN_SLOT(0x85 + BASE(o) + team)->state = 0;
-    MN_SLOT(0x87 + BASE(o) + team)->state = 0;
+    MN_SLOT(0x82 + BASE(o) + team)->_5C = lbl_2_data_2B3A4[x] << 16;
+    MN_SLOT(0x85 + BASE(o) + team)->_5C = 0xA0000;
+    MN_SLOT(0x87 + BASE(o) + team)->_5C = 0xA0000;
+    MN_SLOT(0x85 + BASE(o) + team)->_68 = 0;
+    MN_SLOT(0x87 + BASE(o) + team)->_68 = 0;
     fn_800363D8(o, team + 0x89, 1, 3, lbl_2_data_2B3A4[x]);
     fn_800363D8(o, team + 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
-    MN_SLOT(0x7E + BASE(o) + team)->frame = lbl_2_data_2B3A4[x] << 16;
+    MN_SLOT(0x7E + BASE(o) + team)->_5C = lbl_2_data_2B3A4[x] << 16;
     MN_SLOT(0x1A + BASE(o) + team)->flags |= 2;
-    MN_SLOT(0x1A + BASE(o) + team)->state = 1;
-    MN_SLOT(0x80 + BASE(o) + team)->frame = 0;
-    MN_SLOT(0x89 + BASE(o) + team)->frame = 0;
-    MN_SLOT(0x8B + BASE(o) + team)->frame = 0xA0000;
-    MN_SLOT(0x78 + BASE(o) + team)->frame = 0;
-    MN_SLOT(0x7C + BASE(o) + team)->frame = 0;
-    MN_SLOT(0x80 + BASE(o) + team)->state = 1;
-    MN_SLOT(0x89 + BASE(o) + team)->state = 1;
-    MN_SLOT(0x8B + BASE(o) + team)->state = 4;
-    MN_SLOT(0x78 + BASE(o) + team)->state = 1;
-    MN_SLOT(0x7C + BASE(o) + team)->state = 1;
+    MN_SLOT(0x1A + BASE(o) + team)->_68 = 1;
+    MN_SLOT(0x80 + BASE(o) + team)->_5C = 0;
+    MN_SLOT(0x89 + BASE(o) + team)->_5C = 0;
+    MN_SLOT(0x8B + BASE(o) + team)->_5C = 0xA0000;
+    MN_SLOT(0x78 + BASE(o) + team)->_5C = 0;
+    MN_SLOT(0x7C + BASE(o) + team)->_5C = 0;
+    MN_SLOT(0x80 + BASE(o) + team)->_68 = 1;
+    MN_SLOT(0x89 + BASE(o) + team)->_68 = 1;
+    MN_SLOT(0x8B + BASE(o) + team)->_68 = 4;
+    MN_SLOT(0x78 + BASE(o) + team)->_68 = 1;
+    MN_SLOT(0x7C + BASE(o) + team)->_68 = 1;
 }
 #endif
 
@@ -2279,7 +2256,7 @@ void fn_2_7630C(u8* o, u8 index) {
 #define F468_S32(off) (*(s32*)(lbl_2_bss_F468 + (off)))
 
 // fn_2_7F2BC, size:0x458
-void fn_2_7F2BC(u8* o, s32 index) {
+void fn_2_7F2BC(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         s32 fc;
@@ -2300,39 +2277,39 @@ void fn_2_7F2BC(u8* o, s32 index) {
         }
         if (sel != 9 && sel != 10) {
             if ((s8)(lbl_803C6724 + index * 9)[fs + 2] != -1 && (s8)(lbl_803C6724 + index * 9)[fs + 2] != 0x36) {
-                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->frame = 0;
-                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->state = 1;
+                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->_5C = 0;
+                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->_68 = 1;
             }
-            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->frame = 0;
-            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->state = 1;
+            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->_5C = 0;
+            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->_68 = 1;
             MN_SLOT(0x22 + BASE(o) + sel + index * 9)->flags |= 2;
         }
         if (cur != 9 && cur != 10) {
             if (((s32*)(lbl_2_bss_F468 + 8))[index] != ((s32*)lbl_2_bss_F468)[index]) {
-                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->frame = 0xF0000;
-                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->state = 4;
+                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->_5C = 0xF0000;
+                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->_68 = 4;
                 if (*(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4) == (s8)(lbl_803C6724 + index * 9)[fc + 2]) {
-                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->state = 1;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->_68 = 1;
                 } else {
-                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->state = 4;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->_68 = 4;
                 }
             }
             MN_SLOT(0x22 + BASE(o) + cur + index * 9)->flags &= ~2;
         }
         fn_2_75BE4(o, index);
         fn_2_74F40(o, index);
-        if ((MN_SLOT(0x93 + BASE(o) + index)->frame >> 16) == 10 &&
+        if ((MN_SLOT(0x93 + BASE(o) + index)->_5C >> 16) == 10 &&
             *(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4) != (s8)(lbl_803C6724 + index * 9)[fc + 2]) {
-            MN_SLOT(0x93 + BASE(o) + index)->frame = 0xA0000;
-            MN_SLOT(0x93 + BASE(o) + index)->state = 4;
-            MN_SLOT(0x95 + BASE(o) + index)->frame = 0xA0000;
-            MN_SLOT(0x95 + BASE(o) + index)->state = 4;
-        } else if ((MN_SLOT(0x8F + BASE(o) + index)->frame >> 16) == 10 && sel == 10) {
-            MN_SLOT(0x91 + BASE(o) + index)->frame = 0xA0000;
-            MN_SLOT(0x91 + BASE(o) + index)->state = 4;
+            MN_SLOT(0x93 + BASE(o) + index)->_5C = 0xA0000;
+            MN_SLOT(0x93 + BASE(o) + index)->_68 = 4;
+            MN_SLOT(0x95 + BASE(o) + index)->_5C = 0xA0000;
+            MN_SLOT(0x95 + BASE(o) + index)->_68 = 4;
+        } else if ((MN_SLOT(0x8F + BASE(o) + index)->_5C >> 16) == 10 && sel == 10) {
+            MN_SLOT(0x91 + BASE(o) + index)->_5C = 0xA0000;
+            MN_SLOT(0x91 + BASE(o) + index)->_68 = 4;
         }
         if (sel == cur) {
-            MN_SLOT(0x34 + BASE(o) + sel + index * 9)->state = 4;
+            MN_SLOT(0x34 + BASE(o) + sel + index * 9)->_68 = 4;
         }
         fn_800626EC(index);
         *e = 1;
@@ -2343,7 +2320,7 @@ void fn_2_7F2BC(u8* o, s32 index) {
 // Average a stat over the team's non-captain players and show it as 0-5 stars.
 // NONMATCHING 85%: stars kept in a different register (extsb. vs cmpwi), register allocation
 #if NONMATCHING
-void fn_2_75BE4(u8* o, s32 index) {
+void fn_2_75BE4(MenuTask* o, s32 index) {
     s32 sum = 0;
     s32 avg = 0;
     s32 count = 0;
@@ -2372,14 +2349,14 @@ void fn_2_75BE4(u8* o, s32 index) {
     }
     lbl_8034E9A0[0x470F + index] = stars;
     for (j = 0; j < 5; j++) {
-        MnObj* star = MN_SLOT(0x6E + BASE(o) + j + index * 5);
-        if ((star->frame >> 16) == 30) {
-            star->state = 1;
+        LayoutObj* star = MN_SLOT(0x6E + BASE(o) + j + index * 5);
+        if ((star->_5C >> 16) == 30) {
+            star->_68 = 1;
         }
     }
     for (j = 0; j < stars; j++) {
-        MN_SLOT(0x6E + BASE(o) + j + index * 5)->frame = 0;
-        MN_SLOT(0x6E + BASE(o) + j + index * 5)->state = 1;
+        MN_SLOT(0x6E + BASE(o) + j + index * 5)->_5C = 0;
+        MN_SLOT(0x6E + BASE(o) + j + index * 5)->_68 = 1;
     }
 }
 #endif
@@ -2387,7 +2364,7 @@ void fn_2_75BE4(u8* o, s32 index) {
 // fn_2_78AC0, size:0x4B8
 // NONMATCHING 85%: prev byte kept raw and re-extended in the original; register allocation
 #if NONMATCHING
-void fn_2_78AC0(u8* o, s32 index) {
+void fn_2_78AC0(MenuTask* o, s32 index) {
     u8* sel = lbl_2_bss_F468 + index;
     s8 prev = sel[0x61];
     s32 cur = F468_S32(index * 4);
@@ -2406,23 +2383,23 @@ void fn_2_78AC0(u8* o, s32 index) {
     }
     e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
-        MN_SLOT(0xA + BASE(o) + index)->frame = 0xF0000;
-        MN_SLOT(0xA + BASE(o) + index)->state = 4;
-        MN_SLOT(0x1E + BASE(o) + index)->state = 4;
-        MN_SLOT(0x93 + BASE(o) + index)->anim = 9;
-        MN_SLOT(0x89 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0x89 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x8D + BASE(o) + index)->frame = 0x140000;
-        MN_SLOT(0x8D + BASE(o) + index)->state = 4;
-        MN_SLOT(0x6A + BASE(o) + index)->state = 1;
+        MN_SLOT(0xA + BASE(o) + index)->_5C = 0xF0000;
+        MN_SLOT(0xA + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0x1E + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0x93 + BASE(o) + index)->_64 = 9;
+        MN_SLOT(0x89 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0x89 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x8D + BASE(o) + index)->_5C = 0x140000;
+        MN_SLOT(0x8D + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0x6A + BASE(o) + index)->_68 = 1;
         if (g_d_GameSettings.GameModeSelected != 5) {
-            MN_SLOT(0x8F + BASE(o) + index)->anim = 7;
+            MN_SLOT(0x8F + BASE(o) + index)->_64 = 7;
         }
         if (prev != -1 && prev != (s8)cur) {
-            MN_SLOT(0x46 + BASE(o) + prev + index * 9)->state = 4;
+            MN_SLOT(0x46 + BASE(o) + prev + index * 9)->_68 = 4;
             if (TEAM_TBL->roster[index][found] != -1 && TEAM_TBL->roster[index][found] != 0x36) {
-                MN_SLOT(0x34 + BASE(o) + prev + index * 9)->frame = 0xA0000;
-                MN_SLOT(0x34 + BASE(o) + prev + index * 9)->state = 1;
+                MN_SLOT(0x34 + BASE(o) + prev + index * 9)->_5C = 0xA0000;
+                MN_SLOT(0x34 + BASE(o) + prev + index * 9)->_68 = 1;
             }
         }
         fn_800626EC(index);
@@ -2467,7 +2444,7 @@ void fn_2_78AC0(u8* o, s32 index) {
 // NONMATCHING 80%: slot base+0x20 not hoisted as in the original; frame size and register allocation differ
 #if NONMATCHING
 void fn_2_747FC(void) {
-    u8* o = lbl_803CC1B8;
+    MenuTask* o = lbl_803CC1B8;
     s32 mode = lbl_2_bss_F410;
     s32 i;
     s32 n;
@@ -2484,21 +2461,21 @@ void fn_2_747FC(void) {
             for (i = 0; i < 7; i++) {
                 if (mode == i) {
                     MN_SLOT(3 + BASE(o) + i)->flags |= 2;
-                    MN_SLOT(3 + BASE(o) + i)->frame = 0;
-                    MN_SLOT(3 + BASE(o) + i)->state = 1;
-                    MN_SLOT(0x18 + BASE(o) + i)->frame = 0;
-                    MN_SLOT(0x18 + BASE(o) + i)->state = 1;
+                    MN_SLOT(3 + BASE(o) + i)->_5C = 0;
+                    MN_SLOT(3 + BASE(o) + i)->_68 = 1;
+                    MN_SLOT(0x18 + BASE(o) + i)->_5C = 0;
+                    MN_SLOT(0x18 + BASE(o) + i)->_68 = 1;
                 } else {
-                    MN_SLOT(0x18 + BASE(o) + i)->frame = 0;
-                    MN_SLOT(0x18 + BASE(o) + i)->state = 0;
+                    MN_SLOT(0x18 + BASE(o) + i)->_5C = 0;
+                    MN_SLOT(0x18 + BASE(o) + i)->_68 = 0;
                     MN_SLOT(3 + BASE(o) + i)->flags &= ~2;
                 }
             }
             if (lbl_8037169C[0x10] != 0) {
                 changeScene(1, 6);
             }
-            MN_SLOT(0x20 + BASE(o))->frame = 0;
-            MN_SLOT(0x20 + BASE(o))->state = 1;
+            MN_SLOT(0x20 + BASE(o))->_5C = 0;
+            MN_SLOT(0x20 + BASE(o))->_68 = 1;
             fn_800626EC(0);
             lbl_803C66B0[7] = 1;
         }
@@ -2537,8 +2514,8 @@ void fn_2_747FC(void) {
         break;
     case 0x57:
         if ((lbl_803C66B0[7] == 0) ? 1 : 0) {
-            MN_SLOT(0x11 + BASE(o) + mode)->frame = 0xE0000;
-            MN_SLOT(0x11 + BASE(o) + mode)->state = 1;
+            MN_SLOT(0x11 + BASE(o) + mode)->_5C = 0xE0000;
+            MN_SLOT(0x11 + BASE(o) + mode)->_68 = 1;
             lbl_803C66B0[7] = 1;
         }
         if (lbl_803C66B0[7] == 1) {
@@ -2550,15 +2527,15 @@ void fn_2_747FC(void) {
                 lbl_8034E9A0[0x4751] = 0;
                 lbl_2_bss_A840 = lbl_2_bss_A844;
             } else if ((fn_80042DA8(o, mode + 0x11, 0x37) != 0) == 1) {
-                MN_SLOT(0x11 + BASE(o) + mode)->frame = 0xE0000;
-                MN_SLOT(0x11 + BASE(o) + mode)->state = 1;
+                MN_SLOT(0x11 + BASE(o) + mode)->_5C = 0xE0000;
+                MN_SLOT(0x11 + BASE(o) + mode)->_68 = 1;
             }
         }
         break;
     case 0x58:
         if ((lbl_803C66B0[7] == 0) ? 1 : 0) {
-            MN_SLOT(0x11 + BASE(o) + mode)->frame = 0x370000;
-            MN_SLOT(0x11 + BASE(o) + mode)->state = 1;
+            MN_SLOT(0x11 + BASE(o) + mode)->_5C = 0x370000;
+            MN_SLOT(0x11 + BASE(o) + mode)->_68 = 1;
             fn_800626EC(0);
             lbl_803C66B0[7] = 1;
         }
@@ -2574,7 +2551,7 @@ void fn_2_747FC(void) {
 // fn_2_7E380, size:0x4E0
 // NONMATCHING 97%: unrolled roster search addresses each entry from the base instead of a walking pointer (see fn_2_7E194)
 #if NONMATCHING
-void fn_2_7E380(u8* o, s32 index) {
+void fn_2_7E380(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         s8 pos;
@@ -2582,24 +2559,24 @@ void fn_2_7E380(u8* o, s32 index) {
         s32 j;
         MN_SLOT(0xC + BASE(o) + index)->flags |= 2;
         MN_SLOT(0x12 + BASE(o) + index)->flags |= 2;
-        MN_SLOT(0xC + BASE(o) + index)->state = 4;
-        MN_SLOT(0xE + BASE(o) + index)->state = 4;
-        MN_SLOT(0x12 + BASE(o) + index)->frame = 0xA0000;
-        MN_SLOT(0x12 + BASE(o) + index)->state = 4;
+        MN_SLOT(0xC + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0xE + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0x12 + BASE(o) + index)->_5C = 0xA0000;
+        MN_SLOT(0x12 + BASE(o) + index)->_68 = 4;
         MN_SLOT(0xB6 + BASE(o) + index)->flags |= 2;
-        MN_SLOT(0x1C + BASE(o) + index)->frame = 0x140000;
-        MN_SLOT(0x1C + BASE(o) + index)->state = 4;
-        MN_SLOT(0x6A + BASE(o) + index)->frame = 0x1E0000;
-        MN_SLOT(0x6A + BASE(o) + index)->state = 4;
-        MN_SLOT(0x93 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0x93 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x95 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x8F + BASE(o) + index)->frame = 0;
-        MN_SLOT(0x8F + BASE(o) + index)->state = 1;
-        MN_SLOT(0x89 + BASE(o) + index)->frame = 0xA0000;
-        MN_SLOT(0x89 + BASE(o) + index)->state = 4;
-        MN_SLOT(0x97 + BASE(o) + index)->state = 1;
-        MN_SLOT(0xAC + BASE(o) + index)->state = 1;
+        MN_SLOT(0x1C + BASE(o) + index)->_5C = 0x140000;
+        MN_SLOT(0x1C + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0x6A + BASE(o) + index)->_5C = 0x1E0000;
+        MN_SLOT(0x6A + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0x93 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0x93 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x95 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x8F + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0x8F + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x89 + BASE(o) + index)->_5C = 0xA0000;
+        MN_SLOT(0x89 + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0x97 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0xAC + BASE(o) + index)->_68 = 1;
         if (g_d_GameSettings._10 == 0 && index == 0) {
             // single player: also set up team 1's (CPU) objects
             player = *(s32*)(lbl_8034E9A0 + 0x46E4);
@@ -2613,17 +2590,17 @@ void fn_2_7E380(u8* o, s32 index) {
                     if (j != pos) {
                         MN_SLOT(9 + 0x46 + BASE(o) + j)->flags &= ~2;
                     } else {
-                        MN_SLOT(9 + 0x34 + BASE(o) + pos)->state = 1;
-                        MN_SLOT(9 + 0x46 + BASE(o) + pos)->state = 4;
+                        MN_SLOT(9 + 0x34 + BASE(o) + pos)->_68 = 1;
+                        MN_SLOT(9 + 0x46 + BASE(o) + pos)->_68 = 4;
                         MN_SLOT(9 + 0x46 + BASE(o) + pos)->flags |= 2;
                     }
                 }
                 MN_SLOT(0x22 + BASE(o) + j + 9)->flags &= ~2;
             }
-            MN_SLOT(0x93 + BASE(o) + 1)->state = 4;
-            MN_SLOT(0x95 + BASE(o) + 1)->state = 4;
-            MN_SLOT(0x8F + BASE(o) + 1)->state = 4;
-            MN_SLOT(0x91 + BASE(o) + 1)->state = 4;
+            MN_SLOT(0x93 + BASE(o) + 1)->_68 = 4;
+            MN_SLOT(0x95 + BASE(o) + 1)->_68 = 4;
+            MN_SLOT(0x8F + BASE(o) + 1)->_68 = 4;
+            MN_SLOT(0x91 + BASE(o) + 1)->_68 = 4;
             MN_SLOT(0x97 + BASE(o) + 1)->flags &= ~2;
             MN_SLOT(0xAC + BASE(o) + 1)->flags &= ~2;
         }
@@ -2636,50 +2613,50 @@ void fn_2_7E380(u8* o, s32 index) {
 // fn_2_7E974, size:0x508
 // NONMATCHING 80%: orig unrolls the 9-slot loop by 3, ours stays rolled
 #if NONMATCHING
-void fn_2_7E974(u8* o, s32 index) {
+void fn_2_7E974(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         s8 other;
         s32 j;
         MN_SLOT(0xC + BASE(o) + index)->flags |= 2;
         MN_SLOT(0x12 + BASE(o) + index)->flags |= 2;
-        MN_SLOT(0xC + BASE(o) + index)->frame = 0;
-        MN_SLOT(0xC + BASE(o) + index)->state = 1;
-        MN_SLOT(0xE + BASE(o) + index)->frame = 0;
-        MN_SLOT(0xE + BASE(o) + index)->state = 1;
-        MN_SLOT(0x10 + BASE(o) + index)->frame = lbl_8034E9A0[0x470D + index] << 16;
-        MN_SLOT(0x12 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0x12 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x14 + BASE(o) + index)->frame = lbl_8034E9A0[0x470D + index] << 16;
+        MN_SLOT(0xC + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0xC + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0xE + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0xE + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x10 + BASE(o) + index)->_5C = lbl_8034E9A0[0x470D + index] << 16;
+        MN_SLOT(0x12 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0x12 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x14 + BASE(o) + index)->_5C = lbl_8034E9A0[0x470D + index] << 16;
         MN_SLOT(0xB6 + BASE(o) + index)->flags &= ~2;
-        MN_SLOT(0x1C + BASE(o) + index)->frame = 0xA0000;
-        MN_SLOT(0x1C + BASE(o) + index)->state = 1;
-        MN_SLOT(0x6A + BASE(o) + index)->frame = 0xA0000;
-        MN_SLOT(0x6A + BASE(o) + index)->state = 1;
-        MN_SLOT(0x93 + BASE(o) + index)->frame = 0xA0000;
-        MN_SLOT(0x93 + BASE(o) + index)->state = 4;
-        MN_SLOT(0x8F + BASE(o) + index)->frame = 0xA0000;
-        MN_SLOT(0x8F + BASE(o) + index)->state = 4;
-        MN_SLOT(0x89 + BASE(o) + index)->frame = 0x50000;
-        MN_SLOT(0x89 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x97 + BASE(o) + index)->state = 4;
-        MN_SLOT(0xAC + BASE(o) + index)->state = 4;
+        MN_SLOT(0x1C + BASE(o) + index)->_5C = 0xA0000;
+        MN_SLOT(0x1C + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x6A + BASE(o) + index)->_5C = 0xA0000;
+        MN_SLOT(0x6A + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x93 + BASE(o) + index)->_5C = 0xA0000;
+        MN_SLOT(0x93 + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0x8F + BASE(o) + index)->_5C = 0xA0000;
+        MN_SLOT(0x8F + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0x89 + BASE(o) + index)->_5C = 0x50000;
+        MN_SLOT(0x89 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x97 + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0xAC + BASE(o) + index)->_68 = 4;
         if (g_d_GameSettings._10 == 0) {
             other = (s8)lbl_8034E9A0[0x46F8] == 0;
             if (lbl_2_bss_F468[0x38] != 0) {
-                MN_SLOT(0x98 + BASE(o))->state = 4;
+                MN_SLOT(0x98 + BASE(o))->_68 = 4;
             }
         }
         if (g_d_GameSettings._10 == 0 && lbl_2_bss_F468[0x37] != 0 && index == 0) {
             for (j = 0; j < 9; j++) {
                 MN_SLOT(9 + 0x46 + BASE(o) + j)->flags |= 2;
-                MN_SLOT(9 + 0x46 + BASE(o) + j)->anim = other + 0x11;
-                MN_SLOT(9 + 0x46 + BASE(o) + j)->frame = 0;
-                MN_SLOT(9 + 0x46 + BASE(o) + j)->state = 0;
+                MN_SLOT(9 + 0x46 + BASE(o) + j)->_64 = other + 0x11;
+                MN_SLOT(9 + 0x46 + BASE(o) + j)->_5C = 0;
+                MN_SLOT(9 + 0x46 + BASE(o) + j)->_68 = 0;
             }
-            MN_SLOT(0x8F + BASE(o) + other)->state = 1;
-            MN_SLOT(0x91 + BASE(o) + other)->frame = 0;
-            MN_SLOT(0x91 + BASE(o) + other)->state = 1;
+            MN_SLOT(0x8F + BASE(o) + other)->_68 = 1;
+            MN_SLOT(0x91 + BASE(o) + other)->_5C = 0;
+            MN_SLOT(0x91 + BASE(o) + other)->_68 = 1;
         }
         fn_800626EC(index);
         *e = 1;
@@ -2691,22 +2668,22 @@ extern u8 lbl_803CB8D0[];
 
 // fn_2_7207C, size:0x518
 void fn_2_7207C(void) {
-    u8* o = lbl_803CC1B8;
+    MenuTask* o = lbl_803CC1B8;
     s32 i;
     s32 n;
     switch (lbl_803C66B0[0x5D]) {
     case 30:
         if ((lbl_803C66B0[0x1F] == 0) ? 1 : 0) {
-            MN_SLOT(BASE(o))->frame = 0;
-            MN_SLOT(BASE(o))->state = 1;
-            MN_SLOT(2 + BASE(o))->state = 1;
+            MN_SLOT(BASE(o))->_5C = 0;
+            MN_SLOT(BASE(o))->_68 = 1;
+            MN_SLOT(2 + BASE(o))->_68 = 1;
             for (i = 0; i < 4; i++) {
                 MN_SLOT(3 + BASE(o) + i)->color &= ~0xFF;
             }
-            MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->state = 1;
+            MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->_68 = 1;
             MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->color = (MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->color & ~0xFF) | 0xFF;
-            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->frame = 0;
-            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->state = 1;
+            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->_5C = 0;
+            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->_68 = 1;
             fn_800626EC(0);
             lbl_803C66B0[0x1F] = 1;
         }
@@ -2721,7 +2698,7 @@ void fn_2_7207C(void) {
         break;
     case 31:
         if ((lbl_803C66B0[0x1F] == 0) ? 1 : 0) {
-            MN_SLOT(BASE(o))->state = 1;
+            MN_SLOT(BASE(o))->_68 = 1;
             fn_800626EC(0);
             lbl_803C66B0[0x1F] = 1;
         }
@@ -2733,16 +2710,16 @@ void fn_2_7207C(void) {
     case 32:
         if ((lbl_803C66B0[0x1F] == 0) ? 1 : 0) {
             for (i = 0; i < 4; i++) {
-                MN_SLOT(3 + BASE(o) + i)->state = 0;
-                MN_SLOT(7 + BASE(o) + i)->state = 0;
-                MN_SLOT(3 + BASE(o) + i)->frame = 0;
-                MN_SLOT(7 + BASE(o) + i)->frame = 0;
+                MN_SLOT(3 + BASE(o) + i)->_68 = 0;
+                MN_SLOT(7 + BASE(o) + i)->_68 = 0;
+                MN_SLOT(3 + BASE(o) + i)->_5C = 0;
+                MN_SLOT(7 + BASE(o) + i)->_5C = 0;
                 MN_SLOT(3 + BASE(o) + i)->color &= ~0xFF;
             }
-            MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->state = 1;
+            MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->_68 = 1;
             MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->color = (MN_SLOT(3 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->color & ~0xFF) | 0xFF;
-            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->frame = 0;
-            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->state = 1;
+            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->_5C = 0;
+            MN_SLOT(7 + BASE(o) + lbl_803CB8D0[F410_S32(0x4C)])->_68 = 1;
             fn_800626EC(0);
             lbl_803C66B0[0x1F] = 1;
         }
@@ -2753,7 +2730,7 @@ void fn_2_7207C(void) {
         break;
     case 33:
         if ((lbl_803C66B0[0x1F] == 0) ? 1 : 0) {
-            MN_SLOT(BASE(o))->state = 1;
+            MN_SLOT(BASE(o))->_68 = 1;
             fn_800626EC(0);
             lbl_803C66B0[0x1F] = 1;
         }
@@ -2776,14 +2753,14 @@ extern u8 lbl_2_data_2B59C[];
 // NONMATCHING 93%: CW sign-extends the team icon differently (extsb vs extsh); register allocation
 #if NONMATCHING
 void fn_2_8279C(void) {
-    u8* o = lbl_803CC1B8;
+    MenuTask* o = lbl_803CC1B8;
     u8* w;
     s32 i;
     s8 other;
     s8 icon;
     s32 cpu;
     u8 x;
-    *(u8**)(lbl_8034E9A0 + 0x474C) = o; // TODO type
+    *(MenuTask**)(lbl_8034E9A0 + 0x474C) = o; // TODO type: lbl_8034E9A0
     fn_80034E20(o, lbl_2_data_2B59C);
     w = lbl_8034E9A0;
     for (i = 0; i < 2; i++) {
@@ -2795,11 +2772,11 @@ void fn_2_8279C(void) {
                     other = 0;
                 }
             }
-            MN_SLOT(0x7A + BASE(o) + i)->frame = other << 16;
-            MN_SLOT(0x18 + BASE(o) + i)->frame = (other + 4) << 16;
+            MN_SLOT(0x7A + BASE(o) + i)->_5C = other << 16;
+            MN_SLOT(0x18 + BASE(o) + i)->_5C = (other + 4) << 16;
         } else {
             cpu = 0;
-            MN_SLOT(0x7A + BASE(o) + i)->frame = (s8)w[0x46F8] << 16;
+            MN_SLOT(0x7A + BASE(o) + i)->_5C = (s8)w[0x46F8] << 16;
             if (g_d_GameSettings._10 == 0 && i != 0) {
                 cpu = 1;
             }
@@ -2812,7 +2789,7 @@ void fn_2_8279C(void) {
             } else {
                 icon = (s8)w[0x46F8];
             }
-            MN_SLOT(0x18 + BASE(o) + i)->frame = icon << 16;
+            MN_SLOT(0x18 + BASE(o) + i)->_5C = icon << 16;
         }
         w++;
         MN_SLOT(0x1A + BASE(o) + i)->flags &= ~2;
@@ -2830,8 +2807,8 @@ void fn_2_8279C(void) {
     for (i = 0; i < 2; i++) {
         s32 j;
         for (j = 0; j < 5; j++) {
-            MN_SLOT(0x6E + BASE(o) + i * 5 + j)->frame = 0;
-            MN_SLOT(0x6E + BASE(o) + i * 5 + j)->state = 0;
+            MN_SLOT(0x6E + BASE(o) + i * 5 + j)->_5C = 0;
+            MN_SLOT(0x6E + BASE(o) + i * 5 + j)->_68 = 0;
         }
     }
     MN_SLOT(0x1C + BASE(o))->flags &= ~2;
@@ -2856,7 +2833,7 @@ extern u8 translateStarSwing(u8 star);
 // Show the selected character's star swing / star pitch icons.
 // NONMATCHING 85%: roster search and stats pointer scheduled differently; register allocation
 #if NONMATCHING
-void fn_2_76874(u8* o, u8 index) {
+void fn_2_76874(MenuTask* o, u8 index) {
     u8* shown = lbl_2_bss_F468 + index;
     if (*(shown += 0x49) == 0) {
         s32 c;
@@ -2868,9 +2845,9 @@ void fn_2_76874(u8* o, u8 index) {
         u8 swing;
         u8 pitch;
         MN_SLOT(0xE0 + BASE(o) + index)->flags &= ~2;
-        MN_SLOT(0xE0 + BASE(o) + index)->state = 0;
-        MN_SLOT(0xB6 + BASE(o) + index)->state = 4;
-        MN_SLOT(0xC6 + BASE(o) + index)->state = 4;
+        MN_SLOT(0xE0 + BASE(o) + index)->_68 = 0;
+        MN_SLOT(0xB6 + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0xC6 + BASE(o) + index)->_68 = 4;
         if (*(u16*)(lbl_803CBBCC[0] + 2) == 9) {
             if (g_d_GameSettings.GameModeSelected != 5) {
                 c = lbl_800FE5D4[F410_S32(0x10 + index * 4)];
@@ -2919,15 +2896,15 @@ void fn_2_76874(u8* o, u8 index) {
         }
         swing = translateStarSwing(swing);
         pitch = translateStarPitch(pitch);
-        MN_SLOT(0xE6 + BASE(o) + index)->anim = swing;
-        MN_SLOT(0xE6 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0xE6 + BASE(o) + index)->state = 1;
-        MN_SLOT(0xE8 + BASE(o) + index)->anim = pitch;
-        MN_SLOT(0xE8 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0xE8 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xE6 + BASE(o) + index)->_64 = swing;
+        MN_SLOT(0xE6 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0xE6 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0xE8 + BASE(o) + index)->_64 = pitch;
+        MN_SLOT(0xE8 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0xE8 + BASE(o) + index)->_68 = 1;
         MN_SLOT(0xEA + BASE(o) + index)->flags |= 2;
-        MN_SLOT(0xEA + BASE(o) + index)->state = 1;
-        MN_SLOT(0xE2 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xEA + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0xE2 + BASE(o) + index)->_68 = 1;
         *shown = 1;
     }
     if (*(u16*)(lbl_803CBBCC[0] + 2) == 0xA) {
@@ -2941,7 +2918,7 @@ void fn_2_76874(u8* o, u8 index) {
 #endif
 
 // fn_2_7FAFC, size:0x5B4
-void fn_2_7FAFC(u8* o, s32 index) {
+void fn_2_7FAFC(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     s32 n;
     s32 k;
@@ -2950,27 +2927,27 @@ void fn_2_7FAFC(u8* o, s32 index) {
         s32 b;
         u8 y;
         u8 x;
-        MN_SLOT(BASE(o) + index)->frame = 0x1E0000;
-        MN_SLOT(2 + BASE(o) + index)->frame = 0x1E0000;
-        MN_SLOT(BASE(o) + index)->state = 4;
-        MN_SLOT(2 + BASE(o) + index)->state = 4;
-        MN_SLOT(4 + BASE(o) + index)->anim = 0x50;
-        MN_SLOT(4 + BASE(o) + index)->frame = 0;
-        MN_SLOT(4 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x85 + BASE(o) + index)->frame = 0x140000;
-        MN_SLOT(0x85 + BASE(o) + index)->state = 4;
-        MN_SLOT(0x89 + BASE(o) + index)->frame = 0xA0000;
-        MN_SLOT(0x89 + BASE(o) + index)->state = 4;
+        MN_SLOT(BASE(o) + index)->_5C = 0x1E0000;
+        MN_SLOT(2 + BASE(o) + index)->_5C = 0x1E0000;
+        MN_SLOT(BASE(o) + index)->_68 = 4;
+        MN_SLOT(2 + BASE(o) + index)->_68 = 4;
+        MN_SLOT(4 + BASE(o) + index)->_64 = 0x50;
+        MN_SLOT(4 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(4 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x85 + BASE(o) + index)->_5C = 0x140000;
+        MN_SLOT(0x85 + BASE(o) + index)->_68 = 4;
+        MN_SLOT(0x89 + BASE(o) + index)->_5C = 0xA0000;
+        MN_SLOT(0x89 + BASE(o) + index)->_68 = 4;
         MN_SLOT(0x82 + BASE(o) + index)->flags |= 2;
         MN_SLOT(0x7A + BASE(o) + index)->flags |= 2;
         if (g_d_GameSettings._10 == 0 && index != 0) {
             if ((s8)lbl_8034E9A0[0x46F8] == 0) {
-                MN_SLOT(0x7A + BASE(o) + index)->frame = 0x10000;
+                MN_SLOT(0x7A + BASE(o) + index)->_5C = 0x10000;
             } else {
-                MN_SLOT(0x7A + BASE(o) + index)->frame = 0;
+                MN_SLOT(0x7A + BASE(o) + index)->_5C = 0;
             }
         } else {
-            MN_SLOT(0x7A + BASE(o) + index)->frame = (s8)lbl_8034E9A0[0x46F8 + index] << 16;
+            MN_SLOT(0x7A + BASE(o) + index)->_5C = (s8)lbl_8034E9A0[0x46F8 + index] << 16;
         }
         if (g_d_GameSettings.GameModeSelected != 5) {
             b = lbl_803C6724[index];
@@ -2984,22 +2961,22 @@ void fn_2_7FAFC(u8* o, s32 index) {
         }
         x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
         y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
-        MN_SLOT(0x82 + BASE(o) + index)->frame = lbl_2_data_2B3A4[x] << 16;
-        MN_SLOT(0x7E + BASE(o) + index)->frame = lbl_2_data_2B3A4[x] << 16;
+        MN_SLOT(0x82 + BASE(o) + index)->_5C = lbl_2_data_2B3A4[x] << 16;
+        MN_SLOT(0x7E + BASE(o) + index)->_5C = lbl_2_data_2B3A4[x] << 16;
         fn_800363D8(o, index + 0x89, 1, 3, lbl_2_data_2B3A4[x]);
         fn_800363D8(o, index + 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
-        MN_SLOT(0x80 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0x80 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x78 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0x78 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x7C + BASE(o) + index)->frame = 0;
-        MN_SLOT(0x7C + BASE(o) + index)->state = 1;
-        MN_SLOT(0x97 + BASE(o) + index)->anim = 0x78;
-        MN_SLOT(0x97 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0x97 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x99 + BASE(o) + index)->anim = 0x79;
+        MN_SLOT(0x80 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0x80 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x78 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0x78 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x7C + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0x7C + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x97 + BASE(o) + index)->_64 = 0x78;
+        MN_SLOT(0x97 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0x97 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x99 + BASE(o) + index)->_64 = 0x79;
         fn_2_74F40(o, index);
-        MN_SLOT(0xAC + BASE(o) + index)->state = 4;
+        MN_SLOT(0xAC + BASE(o) + index)->_68 = 4;
         fn_800626EC(index);
         *e = 1;
     }
@@ -3024,7 +3001,7 @@ void fn_2_7FAFC(u8* o, s32 index) {
 // fn_2_73EFC, size:0x5CC
 // NONMATCHING 88%: inlined fn_2_73BF0/fn_2_73B54 results allocated differently; register allocation
 #if NONMATCHING
-void fn_2_73EFC(u8* o) {
+void fn_2_73EFC(MenuTask* o) {
     s32 mode = lbl_2_bss_F410;
     s32 prev = F410_S32(4);
     s32 i;
@@ -3034,17 +3011,17 @@ void fn_2_73EFC(u8* o) {
                 lbl_8034E9A0[0x4751] = 1;
                 if (mode == i) {
                     MN_SLOT(3 + BASE(o) + i)->flags |= 2;
-                    MN_SLOT(3 + BASE(o) + i)->frame = 0xE0000;
-                    MN_SLOT(3 + BASE(o) + i)->state = 0;
+                    MN_SLOT(3 + BASE(o) + i)->_5C = 0xE0000;
+                    MN_SLOT(3 + BASE(o) + i)->_68 = 0;
                 } else {
                     MN_SLOT(3 + BASE(o) + i)->flags &= ~2;
                 }
-                MN_SLOT(0x20 + BASE(o))->frame = 0xA0000;
-                MN_SLOT(0x21 + BASE(o))->frame = 0;
+                MN_SLOT(0x20 + BASE(o))->_5C = 0xA0000;
+                MN_SLOT(0x21 + BASE(o))->_5C = 0;
                 fn_800363D8(o, 0x20, 1, 0x32, mode);
                 fn_800363D8(o, 0x21, 1, 0x32, prev);
-                MN_SLOT(0x20 + BASE(o))->state = 0;
-                MN_SLOT(0x21 + BASE(o))->state = 0;
+                MN_SLOT(0x20 + BASE(o))->_68 = 0;
+                MN_SLOT(0x21 + BASE(o))->_68 = 0;
             } else {
                 s32 frame;
                 s8 state;
@@ -3053,38 +3030,38 @@ void fn_2_73EFC(u8* o) {
                 state = fn_2_73B54(mode);
                 if (mode == i) {
                     MN_SLOT(3 + BASE(o) + i)->flags |= 2;
-                    MN_SLOT(3 + BASE(o) + i)->frame = frame << 16;
-                    MN_SLOT(3 + BASE(o) + i)->state = state;
+                    MN_SLOT(3 + BASE(o) + i)->_5C = frame << 16;
+                    MN_SLOT(3 + BASE(o) + i)->_68 = state;
                 } else {
                     MN_SLOT(3 + BASE(o) + i)->flags &= ~2;
                 }
                 if (lbl_2_bss_A840 == 0 && mode == 6 && i == lbl_2_bss_A840) {
                     MN_SLOT(3 + BASE(o) + i)->flags |= 2;
-                    MN_SLOT(3 + BASE(o) + i)->frame = 0x80000;
-                    MN_SLOT(3 + BASE(o) + i)->state = 4;
+                    MN_SLOT(3 + BASE(o) + i)->_5C = 0x80000;
+                    MN_SLOT(3 + BASE(o) + i)->_68 = 4;
                 } else if (lbl_2_bss_A840 == 6 && mode == 0 && i == lbl_2_bss_A840) {
                     MN_SLOT(3 + BASE(o) + i)->flags |= 2;
-                    MN_SLOT(3 + BASE(o) + i)->frame = 0x2D0000;
-                    MN_SLOT(3 + BASE(o) + i)->state = 1;
+                    MN_SLOT(3 + BASE(o) + i)->_5C = 0x2D0000;
+                    MN_SLOT(3 + BASE(o) + i)->_68 = 1;
                 }
-                MN_SLOT(0x20 + BASE(o))->frame = 0;
-                MN_SLOT(0x21 + BASE(o))->frame = 0xA0000;
+                MN_SLOT(0x20 + BASE(o))->_5C = 0;
+                MN_SLOT(0x21 + BASE(o))->_5C = 0xA0000;
                 fn_800363D8(o, 0x20, 1, 0x32, mode);
                 fn_800363D8(o, 0x21, 1, 0x32, prev);
-                MN_SLOT(0x20 + BASE(o))->state = 1;
-                MN_SLOT(0x21 + BASE(o))->state = 1;
+                MN_SLOT(0x20 + BASE(o))->_68 = 1;
+                MN_SLOT(0x21 + BASE(o))->_68 = 1;
             }
         }
-        MN_SLOT(0x18 + BASE(o) + mode)->frame = 0;
-        MN_SLOT(0x18 + BASE(o) + mode)->state = 1;
-        MN_SLOT(0x18 + BASE(o) + prev)->frame = 0;
-        MN_SLOT(0x18 + BASE(o) + prev)->state = 0;
+        MN_SLOT(0x18 + BASE(o) + mode)->_5C = 0;
+        MN_SLOT(0x18 + BASE(o) + mode)->_68 = 1;
+        MN_SLOT(0x18 + BASE(o) + prev)->_5C = 0;
+        MN_SLOT(0x18 + BASE(o) + prev)->_68 = 0;
         if (lbl_8034E9A0[0x4751] == 0) {
-            MN_SLOT(0x11 + BASE(o) + mode)->frame = 0;
-            MN_SLOT(0x11 + BASE(o) + mode)->state = 1;
+            MN_SLOT(0x11 + BASE(o) + mode)->_5C = 0;
+            MN_SLOT(0x11 + BASE(o) + mode)->_68 = 1;
         } else {
-            MN_SLOT(0x11 + BASE(o) + mode)->frame = 0;
-            MN_SLOT(0x11 + BASE(o) + mode)->state = 0;
+            MN_SLOT(0x11 + BASE(o) + mode)->_5C = 0;
+            MN_SLOT(0x11 + BASE(o) + mode)->_68 = 0;
         }
         if (lbl_8034E9A0[0x4751] == 0) {
             fn_800626EC(0);
@@ -3096,7 +3073,7 @@ void fn_2_73EFC(u8* o) {
 
 // fn_2_82EC0, size:0x630
 void fn_2_82EC0(void) {
-    u8* o = lbl_803CC1B8;
+    MenuTask* o = lbl_803CC1B8;
     s32 sel = F410_S32(0x44);
     s32 prev = lbl_803CBBC4[1];
     s32 f;
@@ -3106,10 +3083,10 @@ void fn_2_82EC0(void) {
     switch (lbl_803CBBC4[0]) {
     case 0x5D:
         if ((lbl_803CBBC4[2] == 0) ? 1 : 0) {
-            MN_SLOT(BASE(o))->state = 1;
-            MN_SLOT(1 + BASE(o))->state = 1;
-            MN_SLOT(2 + BASE(o))->state = 1;
-            MN_SLOT(3 + BASE(o) + sel)->state = 1;
+            MN_SLOT(BASE(o))->_68 = 1;
+            MN_SLOT(1 + BASE(o))->_68 = 1;
+            MN_SLOT(2 + BASE(o))->_68 = 1;
+            MN_SLOT(3 + BASE(o) + sel)->_68 = 1;
             lbl_803CBBC4[2] = 1;
             lbl_803CBBC4[3] = 1;
         }
@@ -3121,29 +3098,29 @@ void fn_2_82EC0(void) {
         }
         break;
     case 0x5F:
-        if ((MN_SLOT(3 + BASE(o) + sel)->frame >> 16) >= 0x37) {
-            MN_SLOT(3 + BASE(o) + sel)->frame = 0x50000;
-            MN_SLOT(3 + BASE(o) + sel)->state = 1;
+        if ((MN_SLOT(3 + BASE(o) + sel)->_5C >> 16) >= 0x37) {
+            MN_SLOT(3 + BASE(o) + sel)->_5C = 0x50000;
+            MN_SLOT(3 + BASE(o) + sel)->_68 = 1;
         }
-        if ((MN_SLOT(BASE(o))->frame >> 16) >= 0x23) {
-            MN_SLOT(BASE(o))->frame = 0x230000;
-            MN_SLOT(BASE(o))->state = 0;
+        if ((MN_SLOT(BASE(o))->_5C >> 16) >= 0x23) {
+            MN_SLOT(BASE(o))->_5C = 0x230000;
+            MN_SLOT(BASE(o))->_68 = 0;
         }
         break;
     case 0x5E:
         if ((lbl_803CBBC4[2] == 0) ? 1 : 0) {
-            MN_SLOT(3 + BASE(o) + sel)->state = 1;
+            MN_SLOT(3 + BASE(o) + sel)->_68 = 1;
             if (lbl_2_bss_F468[0x57] >= sel) {
                 f = sel << 16;
-                MN_SLOT(0xC + BASE(o))->frame = f;
+                MN_SLOT(0xC + BASE(o))->_5C = f;
                 if (lbl_80361B20[0xF4] != 0) {
-                    MN_SLOT(0xB + BASE(o))->frame = (sel + 4) << 16;
+                    MN_SLOT(0xB + BASE(o))->_5C = (sel + 4) << 16;
                 } else {
-                    MN_SLOT(0xB + BASE(o))->frame = f;
+                    MN_SLOT(0xB + BASE(o))->_5C = f;
                 }
             } else {
-                MN_SLOT(0xC + BASE(o))->frame = 0x80000;
-                MN_SLOT(0xB + BASE(o))->frame = 0x80000;
+                MN_SLOT(0xC + BASE(o))->_5C = 0x80000;
+                MN_SLOT(0xB + BASE(o))->_5C = 0x80000;
             }
             if (lbl_80361B20[0xE4 + sel] != 0) {
                 fn_800363D8(o, 9, 1, 0x27, sel);
@@ -3151,8 +3128,8 @@ void fn_2_82EC0(void) {
                 fn_800363D8(o, 9, 1, 0x27, 4);
             }
             if (prev != -1) {
-                MN_SLOT(3 + BASE(o) + prev)->frame = 0;
-                MN_SLOT(3 + BASE(o) + prev)->state = 0;
+                MN_SLOT(3 + BASE(o) + prev)->_5C = 0;
+                MN_SLOT(3 + BASE(o) + prev)->_68 = 0;
             }
             lbl_803CBBC4[2] = 1;
             lbl_803CBBC4[3] = 1;
@@ -3166,15 +3143,15 @@ void fn_2_82EC0(void) {
         break;
     case 0x60:
         if ((lbl_803CBBC4[2] == 0) ? 1 : 0) {
-            MN_SLOT(BASE(o))->frame = 0x230000;
-            MN_SLOT(BASE(o))->state = 1;
-            MN_SLOT(1 + BASE(o))->state = 4;
-            MN_SLOT(3 + BASE(o) + sel)->frame = 0x370000;
-            MN_SLOT(3 + BASE(o) + sel)->state = 1;
-            MN_SLOT(7 + BASE(o))->state = 4;
-            MN_SLOT(8 + BASE(o))->state = 4;
-            MN_SLOT(0xA + BASE(o))->state = 4;
-            MN_SLOT(9 + BASE(o))->state = 4;
+            MN_SLOT(BASE(o))->_5C = 0x230000;
+            MN_SLOT(BASE(o))->_68 = 1;
+            MN_SLOT(1 + BASE(o))->_68 = 4;
+            MN_SLOT(3 + BASE(o) + sel)->_5C = 0x370000;
+            MN_SLOT(3 + BASE(o) + sel)->_68 = 1;
+            MN_SLOT(7 + BASE(o))->_68 = 4;
+            MN_SLOT(8 + BASE(o))->_68 = 4;
+            MN_SLOT(0xA + BASE(o))->_68 = 4;
+            MN_SLOT(9 + BASE(o))->_68 = 4;
             lbl_803CBBC4[2] = 1;
             lbl_803CBBC4[3] = 1;
         }
@@ -3193,10 +3170,10 @@ void fn_2_82EC0(void) {
         break;
     case 0x61:
         if ((lbl_803CBBC4[2] == 0) ? 1 : 0) {
-            MN_SLOT(2 + BASE(o))->state = 4;
+            MN_SLOT(2 + BASE(o))->_68 = 4;
             for (i = 0; i < 4; i++) {
-                MN_SLOT(3 + BASE(o) + i)->frame = 0;
-                MN_SLOT(3 + BASE(o) + i)->state = 0;
+                MN_SLOT(3 + BASE(o) + i)->_5C = 0;
+                MN_SLOT(3 + BASE(o) + i)->_68 = 0;
             }
             lbl_803CBBC4[2] = 1;
             lbl_803CBBC4[3] = 1;
@@ -3237,36 +3214,36 @@ static inline s16 SelIcon(s8 v, u8 alt) {
 }
 
 // fn_2_83B34, size:0x660
-void fn_2_83B34(u8* o, s8 sel) {
+void fn_2_83B34(MenuTask* o, s8 sel) {
     s32 i;
     s32 n;
     s32 k;
     if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
         for (i = 0; i < 6; i++) {
-            MN_SLOT(6 + BASE(o) + i)->state = 0;
-            MN_SLOT(6 + BASE(o) + i)->frame = 0;
+            MN_SLOT(6 + BASE(o) + i)->_68 = 0;
+            MN_SLOT(6 + BASE(o) + i)->_5C = 0;
         }
         if (lbl_803CBCD8[0] != 0) {
             if ((s8)lbl_803CBCD8[1] == 0) {
                 MN_SLOT(BASE(o))->color = (MN_SLOT(BASE(o))->color & ~0xFF) | 0xFF;
                 MN_SLOT(1 + BASE(o))->color = (MN_SLOT(1 + BASE(o))->color & ~0xFF) | 0xFF;
-                MN_SLOT(BASE(o))->frame = 0;
-                MN_SLOT(1 + BASE(o))->frame = 0xA0000;
+                MN_SLOT(BASE(o))->_5C = 0;
+                MN_SLOT(1 + BASE(o))->_5C = 0xA0000;
                 fn_800363D8(o, 0, 1, 0x20, lbl_2_data_2D998[0x2EC + sel]);
                 if ((s8)lbl_2_data_2D998[0x954] == -1) {
                     fn_800363D8(o, 1, 1, 0x20, lbl_2_data_2D998[0x2EC + sel]);
                 } else {
                     fn_800363D8(o, 1, 1, 0x20, lbl_2_data_2D998[0x2EC + (s8)lbl_2_data_2D998[0x954]]);
                 }
-                MN_SLOT(BASE(o))->state = 1;
-                MN_SLOT(1 + BASE(o))->state = 1;
+                MN_SLOT(BASE(o))->_68 = 1;
+                MN_SLOT(1 + BASE(o))->_68 = 1;
                 sel = lbl_2_data_2D998[0x954];
             }
         } else {
             MN_SLOT(BASE(o))->color = (MN_SLOT(BASE(o))->color & ~0xFF) | 0xFF;
             MN_SLOT(1 + BASE(o))->color = (MN_SLOT(1 + BASE(o))->color & ~0xFF) | 0xFF;
-            MN_SLOT(BASE(o))->frame = 0;
-            MN_SLOT(1 + BASE(o))->frame = 0xA0000;
+            MN_SLOT(BASE(o))->_5C = 0;
+            MN_SLOT(1 + BASE(o))->_5C = 0xA0000;
             fn_800363D8(o, 0, 1, 0x20, SelIcon(sel, 0x12));
             if ((s8)lbl_2_data_2D998[0x954] == -1) {
                 fn_800363D8(o, 1, 1, 0x20, SelIcon(sel, 0x12));
@@ -3274,22 +3251,22 @@ void fn_2_83B34(u8* o, s8 sel) {
                 u8 t = lbl_2_data_2D998[0x2EC + (s8)lbl_2_data_2D998[0x954]];
                 fn_800363D8(o, 1, 1, 0x20, (s16)((t == 1 && lbl_80361B20[0xF5] == 0) ? 0x12 : t));
             }
-            MN_SLOT(BASE(o))->state = 1;
-            MN_SLOT(1 + BASE(o))->state = 4;
+            MN_SLOT(BASE(o))->_68 = 1;
+            MN_SLOT(1 + BASE(o))->_68 = 4;
         }
-        MN_SLOT(6 + BASE(o) + sel)->frame = 0x10000;
-        MN_SLOT(6 + BASE(o) + sel)->state = 1;
+        MN_SLOT(6 + BASE(o) + sel)->_5C = 0x10000;
+        MN_SLOT(6 + BASE(o) + sel)->_68 = 1;
         {
             s16 icon = SelIcon(sel, 6);
-            MN_SLOT(2 + BASE(o))->frame = 0;
+            MN_SLOT(2 + BASE(o))->_5C = 0;
             fn_800363D8(o, 2, 1, 0x22, icon);
         }
         {
             s16 icon = SelIcon(sel, 6);
-            MN_SLOT(3 + BASE(o))->frame = 0;
+            MN_SLOT(3 + BASE(o))->_5C = 0;
             fn_800363D8(o, 3, 1, 0x25, icon);
             fn_800363D8(o, 3, 3, 0x24, icon);
-            MN_SLOT(3 + BASE(o))->state = 1;
+            MN_SLOT(3 + BASE(o))->_68 = 1;
         }
         lbl_803C66B0[0x2B] = 1;
     }
@@ -3307,7 +3284,7 @@ void fn_2_83B34(u8* o, s8 sel) {
         if (n == k) {
             lbl_2_data_2D998[0x955] = lbl_2_data_2D998[0x954];
             lbl_2_data_2D998[0x954] = sel;
-            ((MnOwner*)o)->_18 = 0;
+            o->timerA = 0;
             if ((s8)lbl_803CBCD8[1] < 0) {
                 lbl_803CBCD8[1] = 0;
                 lbl_803CBCD8[0] = 0;
@@ -3320,52 +3297,52 @@ void fn_2_83B34(u8* o, s8 sel) {
 #endif
 
 // fn_2_80F5C, size:0x6CC
-void fn_2_80F5C(u8* o, s32 index) {
+void fn_2_80F5C(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + 0xD;
     if ((e[index] == 0) ? 1 : 0) {
-        MN_SLOT(BASE(o) + index)->anim = 0x47;
-        MN_SLOT(2 + BASE(o) + index)->anim = 0x47;
-        MN_SLOT(4 + BASE(o) + index)->anim = 0x50;
-        MN_SLOT(BASE(o) + index)->frame = 0;
-        MN_SLOT(2 + BASE(o) + index)->frame = 0;
-        MN_SLOT(BASE(o) + index)->state = 1;
-        MN_SLOT(2 + BASE(o) + index)->state = 1;
-        MN_SLOT(4 + BASE(o) + index)->frame = 0;
-        MN_SLOT(4 + BASE(o) + index)->state = 1;
-        MN_SLOT(6 + BASE(o))->state = 1;
-        MN_SLOT(8 + BASE(o))->state = 1;
+        MN_SLOT(BASE(o) + index)->_64 = 0x47;
+        MN_SLOT(2 + BASE(o) + index)->_64 = 0x47;
+        MN_SLOT(4 + BASE(o) + index)->_64 = 0x50;
+        MN_SLOT(BASE(o) + index)->_5C = 0;
+        MN_SLOT(2 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(BASE(o) + index)->_68 = 1;
+        MN_SLOT(2 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(4 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(4 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(6 + BASE(o))->_68 = 1;
+        MN_SLOT(8 + BASE(o))->_68 = 1;
         MN_SLOT(0x12 + BASE(o) + index)->flags &= ~2;
         MN_SLOT(0xC + BASE(o) + index)->flags &= ~2;
-        MN_SLOT(0x99 + BASE(o) + index)->anim = 0x79;
+        MN_SLOT(0x99 + BASE(o) + index)->_64 = 0x79;
         if (index != 0 && lbl_2_bss_100B8[0x10] == 0 && g_d_GameSettings._10 == 0) {
-            MnSlot* s84 = MN_SLOTS + 0x84;
+            LayoutSlot* s84 = MN_SLOTS + 0x84;
             MN_SLOT(0x80 + BASE(o) + index)->flags &= ~2;
-            MN_SLOT(0x7A + BASE(o) + index)->state = 0;
+            MN_SLOT(0x7A + BASE(o) + index)->_68 = 0;
             MN_SLOT(0x97 + BASE(o) + index)->flags &= ~2;
             s84[BASE(o)].obj->flags |= 2;
-            s84[BASE(o)].obj->state = 1;
+            s84[BASE(o)].obj->_68 = 1;
         } else {
             if (g_d_GameSettings.GameModeSelected == 5) {
                 MN_SLOT(0x84 + BASE(o))->flags &= ~2;
                 MN_SLOT(0x98 + BASE(o))->flags &= ~2;
                 MN_SLOT(0xAD + BASE(o))->flags &= ~2;
             } else if (index != 0 && lbl_803C5EA4[5] != 0) {
-                MN_SLOT(BASE(o) + index)->anim = 0x47;
-                MN_SLOT(2 + BASE(o) + index)->anim = 0x47;
-                MN_SLOT(4 + BASE(o) + index)->anim = 0x50;
-                MN_SLOT(BASE(o) + index)->frame = 0x140000;
-                MN_SLOT(2 + BASE(o) + index)->frame = 0x140000;
-                MN_SLOT(BASE(o) + index)->state = 1;
-                MN_SLOT(2 + BASE(o) + index)->state = 1;
-                MN_SLOT(4 + BASE(o) + index)->state = 1;
+                MN_SLOT(BASE(o) + index)->_64 = 0x47;
+                MN_SLOT(2 + BASE(o) + index)->_64 = 0x47;
+                MN_SLOT(4 + BASE(o) + index)->_64 = 0x50;
+                MN_SLOT(BASE(o) + index)->_5C = 0x140000;
+                MN_SLOT(2 + BASE(o) + index)->_5C = 0x140000;
+                MN_SLOT(BASE(o) + index)->_68 = 1;
+                MN_SLOT(2 + BASE(o) + index)->_68 = 1;
+                MN_SLOT(4 + BASE(o) + index)->_68 = 1;
                 MN_SLOT(0x84 + BASE(o))->flags &= ~2;
                 MN_SLOT(0x97 + BASE(o) + index)->flags |= 2;
-                MN_SLOT(0x97 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x97 + BASE(o) + index)->state = 1;
-                MN_SLOT(0x7A + BASE(o) + index)->frame = (s8)lbl_8034E9A0[0x46F9] << 16;
-                MN_SLOT(0x19 + BASE(o))->frame = (s8)lbl_8034E9A0[0x46F9] << 16;
+                MN_SLOT(0x97 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x97 + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0x7A + BASE(o) + index)->_5C = (s8)lbl_8034E9A0[0x46F9] << 16;
+                MN_SLOT(0x19 + BASE(o))->_5C = (s8)lbl_8034E9A0[0x46F9] << 16;
                 MN_SLOT(0x1A + BASE(o) + index)->flags |= 2;
-                MN_SLOT(0x1A + BASE(o) + index)->state = 1;
+                MN_SLOT(0x1A + BASE(o) + index)->_68 = 1;
                 if (lbl_803C66B0[0x5D] == 4 && lbl_803C66B0[0xD] == 1) {
                     fn_80062674(0);
                     lbl_803C66B0[0xD] = 2;
@@ -3373,20 +3350,20 @@ void fn_2_80F5C(u8* o, s32 index) {
             }
             fn_2_7630C(o, index);
             MN_SLOT(0x80 + BASE(o) + index)->flags |= 2;
-            MN_SLOT(0x80 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x80 + BASE(o) + index)->state = 1;
-            MN_SLOT(0x85 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x87 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x85 + BASE(o) + index)->state = 1;
-            MN_SLOT(0x87 + BASE(o) + index)->state = 1;
-            MN_SLOT(0x89 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x8B + BASE(o) + index)->frame = 0x50000;
-            MN_SLOT(0x89 + BASE(o) + index)->state = 1;
-            MN_SLOT(0x8B + BASE(o) + index)->state = 1;
-            MN_SLOT(0x78 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x78 + BASE(o) + index)->state = 1;
-            MN_SLOT(0x7C + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x7C + BASE(o) + index)->state = 1;
+            MN_SLOT(0x80 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x80 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x85 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x87 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x85 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x87 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x89 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x8B + BASE(o) + index)->_5C = 0x50000;
+            MN_SLOT(0x89 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x8B + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x78 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x78 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x7C + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x7C + BASE(o) + index)->_68 = 1;
             fn_2_74F40(o, index);
         }
         MN_SLOT(0xAC + BASE(o) + index)->flags &= ~2;
@@ -3401,7 +3378,7 @@ void fn_2_80F5C(u8* o, s32 index) {
 // original lbzu search walker, register order)
 #if NONMATCHING
 void fn_2_7308C(void) {
-    u8* o = lbl_803CC1B8;
+    MenuTask* o = lbl_803CC1B8;
     switch (lbl_803CBBC4[0]) {
     case 1:
         setupHeaderSlots(o);
@@ -3431,7 +3408,7 @@ void fn_2_7308C(void) {
 // fn_2_7DAB8, size:0x6DC
 // NONMATCHING 85%: second position search stays a ctr loop (orig fully unrolled); register allocation
 #if NONMATCHING
-void fn_2_7DAB8(u8* o, s32 index) {
+void fn_2_7DAB8(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         s32 cur = F468_S32(8 + index * 4);
@@ -3452,40 +3429,40 @@ void fn_2_7DAB8(u8* o, s32 index) {
         }
         if (cur != 9 && cur != 10 && cur < 9) {
             if (cur != (s8)lbl_2_bss_F468[0x61 + index]) {
-                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->frame = 0xF0000;
-                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->state = 4;
+                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->_5C = 0xF0000;
+                MN_SLOT(0x46 + BASE(o) + cur + index * 9)->_68 = 4;
                 if (TEAM_TBL->roster[index][fc] != -1 && TEAM_TBL->roster[index][fc] != 0x36) {
-                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->frame = 0xA0000;
-                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->state = 1;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->_5C = 0xA0000;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->_68 = 1;
                 }
             }
             MN_SLOT(0x22 + BASE(o) + cur + index * 9)->flags &= ~2;
         }
         if (sel != 9 && sel != 10 && sel < 9 && sel != (s8)lbl_2_bss_F468[0x61 + index]) {
-            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->frame = 0;
-            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->state = 1;
+            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->_5C = 0;
+            MN_SLOT(0x46 + BASE(o) + sel + index * 9)->_68 = 1;
             if (TEAM_TBL->roster[index][fs] != -1 && TEAM_TBL->roster[index][fs] != 0x36) {
-                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->frame = 0x140000;
-                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->state = 4;
+                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->_5C = 0x140000;
+                MN_SLOT(0x34 + BASE(o) + sel + index * 9)->_68 = 4;
             }
             if (lbl_2_bss_F468[0x41 + index] == 0) {
                 MN_SLOT(0x22 + BASE(o) + sel + index * 9)->flags |= 2;
-                MN_SLOT(0x22 + BASE(o) + sel + index * 9)->state = 1;
+                MN_SLOT(0x22 + BASE(o) + sel + index * 9)->_68 = 1;
             }
         }
         fn_2_74F40(o, index);
         if (sel == 9) {
-            MN_SLOT(0x95 + BASE(o) + index)->state = 1;
+            MN_SLOT(0x95 + BASE(o) + index)->_68 = 1;
         } else if (sel == 10) {
-            MN_SLOT(0x91 + BASE(o) + index)->state = 1;
+            MN_SLOT(0x91 + BASE(o) + index)->_68 = 1;
         } else {
-            if ((MN_SLOT(0x95 + BASE(o) + index)->frame >> 16) > 10) {
-                MN_SLOT(0x95 + BASE(o) + index)->frame = 0xA0000;
-                MN_SLOT(0x95 + BASE(o) + index)->state = 4;
+            if ((MN_SLOT(0x95 + BASE(o) + index)->_5C >> 16) > 10) {
+                MN_SLOT(0x95 + BASE(o) + index)->_5C = 0xA0000;
+                MN_SLOT(0x95 + BASE(o) + index)->_68 = 4;
             }
-            if ((MN_SLOT(0x91 + BASE(o) + index)->frame >> 16) > 10 || cur == 10) {
-                MN_SLOT(0x91 + BASE(o) + index)->frame = 0xA0000;
-                MN_SLOT(0x91 + BASE(o) + index)->state = 4;
+            if ((MN_SLOT(0x91 + BASE(o) + index)->_5C >> 16) > 10 || cur == 10) {
+                MN_SLOT(0x91 + BASE(o) + index)->_5C = 0xA0000;
+                MN_SLOT(0x91 + BASE(o) + index)->_68 = 4;
             }
         }
         p = lbl_2_bss_F468 + index;
@@ -3498,11 +3475,11 @@ void fn_2_7DAB8(u8* o, s32 index) {
                     }
                 }
                 if (TEAM_TBL->roster[index][fp] != -1 && TEAM_TBL->roster[index][fp] != 0x36) {
-                    MN_SLOT(0x34 + BASE(o) + (s8)*p + index * 9)->frame = 0xA0000;
-                    MN_SLOT(0x34 + BASE(o) + (s8)*p + index * 9)->state = 0;
+                    MN_SLOT(0x34 + BASE(o) + (s8)*p + index * 9)->_5C = 0xA0000;
+                    MN_SLOT(0x34 + BASE(o) + (s8)*p + index * 9)->_68 = 0;
                 }
-                MN_SLOT(0x46 + BASE(o) + (s8)*p + index * 9)->frame = 0xF0000;
-                MN_SLOT(0x46 + BASE(o) + (s8)*p + index * 9)->state = 0;
+                MN_SLOT(0x46 + BASE(o) + (s8)*p + index * 9)->_5C = 0xF0000;
+                MN_SLOT(0x46 + BASE(o) + (s8)*p + index * 9)->_68 = 0;
                 if (sel == (s8)*p) {
                     MN_SLOT(0x22 + BASE(o) + (s8)*p + index * 9)->flags |= 2;
                 }
@@ -3519,7 +3496,7 @@ void fn_2_7DAB8(u8* o, s32 index) {
 // fn_2_7836C, size:0x754
 // NONMATCHING 75%: TEAM_TBL[index] indexing computed with mulli per access; orig hoists index*9 and walks with lbzu
 #if NONMATCHING
-void fn_2_7836C(u8* o, s8 index) {
+void fn_2_7836C(MenuTask* o, s8 index) {
     u8* sel = lbl_2_bss_F468 + index;
     s8 fp;
     s8 fs;
@@ -3537,16 +3514,16 @@ void fn_2_7836C(u8* o, s8 index) {
         e = lbl_803C66B0 + index;
         if ((*(e += 0xD) == 0) ? 1 : 0) {
             if ((s8)prev != -1) {
-                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->frame = 0;
-                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->state = 1;
+                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->_5C = 0;
+                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->_68 = 1;
                 if (TEAM_TBL->roster[index][fp] != -1 && TEAM_TBL->roster[index][fp] != 0x36) {
-                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->frame = 0x140000;
-                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->state = 4;
+                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->_5C = 0x140000;
+                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->_68 = 4;
                 }
             }
             if (lbl_2_bss_F468[0x37 + index] != 0) {
-                MN_SLOT(0x93 + BASE(o) + index)->anim = 0xA;
-                MN_SLOT(0x93 + BASE(o) + index)->state = 1;
+                MN_SLOT(0x93 + BASE(o) + index)->_64 = 0xA;
+                MN_SLOT(0x93 + BASE(o) + index)->_68 = 1;
             }
             fn_800626EC(index);
             *e = 1;
@@ -3582,10 +3559,10 @@ void fn_2_7836C(u8* o, s8 index) {
             if ((s8)prev != -1) {
                 s8 r = TEAM_TBL->roster[index][fp];
                 if (r != -1 && r != 0x36) {
-                    MN_SLOT(0x58 + BASE(o) + (s8)prev + index * 9)->frame = r << 16;
+                    MN_SLOT(0x58 + BASE(o) + (s8)prev + index * 9)->_5C = r << 16;
                     MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->flags |= 2;
-                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->frame = 0xA0000;
-                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->state = 1;
+                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->_5C = 0xA0000;
+                    MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->_68 = 1;
                 } else {
                     MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->flags &= ~2;
                 }
@@ -3593,22 +3570,22 @@ void fn_2_7836C(u8* o, s8 index) {
             {
                 s8 r = TEAM_TBL->roster[index][fs];
                 if (r != -1 && r != 0x36) {
-                    MN_SLOT(0x58 + BASE(o) + cur + index * 9)->frame = r << 16;
-                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->frame = 0xA0000;
-                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->state = 0;
+                    MN_SLOT(0x58 + BASE(o) + cur + index * 9)->_5C = r << 16;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->_5C = 0xA0000;
+                    MN_SLOT(0x34 + BASE(o) + cur + index * 9)->_68 = 0;
                     MN_SLOT(0x34 + BASE(o) + cur + index * 9)->flags |= 2;
                 } else {
                     MN_SLOT(0x34 + BASE(o) + cur + index * 9)->flags &= ~2;
                 }
             }
             if ((s8)prev != cur && (s8)prev != -1) {
-                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->frame = 0xF0000;
-                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->state = 4;
+                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->_5C = 0xF0000;
+                MN_SLOT(0x46 + BASE(o) + (s8)prev + index * 9)->_68 = 4;
             }
             if (lbl_2_bss_F468[0x37 + index] != 0) {
-                MN_SLOT(0x93 + BASE(o) + index)->anim = 9;
-                MN_SLOT(0x93 + BASE(o) + index)->frame = 0xA0000;
-                MN_SLOT(0x93 + BASE(o) + index)->state = 0;
+                MN_SLOT(0x93 + BASE(o) + index)->_64 = 9;
+                MN_SLOT(0x93 + BASE(o) + index)->_5C = 0xA0000;
+                MN_SLOT(0x93 + BASE(o) + index)->_68 = 0;
             }
             fn_2_74F40(o, index);
             fn_800626EC(index);
@@ -3638,7 +3615,7 @@ extern u8 fn_80064918(s16 charId);
 // Show the selected character's stat page (bat/throw hands, ability icons).
 // NONMATCHING 90%: register allocation (index kept in r31 vs r29) and the shown-flag pointer walk
 #if NONMATCHING
-void fn_2_76DF0(u8* o, u8 index) {
+void fn_2_76DF0(MenuTask* o, u8 index) {
     u8* shown = lbl_2_bss_F468 + index;
     if (*(shown += 0x49) == 0) {
         s32 c;
@@ -3678,72 +3655,72 @@ void fn_2_76DF0(u8* o, u8 index) {
         bat = stats[0x2D];
         thr = stats[0x2E];
         flag = stats[0x27];
-        MN_SLOT(0xB4 + BASE(o) + index)->state = 1;
-        MN_SLOT(0xCA + BASE(o) + index)->frame = frame;
-        MN_SLOT(0xCC + BASE(o) + index)->frame = fn_80064918(c) << 16;
-        MN_SLOT(0xC6 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0xDE + BASE(o) + index)->frame = frame;
+        MN_SLOT(0xB4 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0xCA + BASE(o) + index)->_5C = frame;
+        MN_SLOT(0xCC + BASE(o) + index)->_5C = fn_80064918(c) << 16;
+        MN_SLOT(0xC6 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0xDE + BASE(o) + index)->_5C = frame;
         fn_2_76650(o, index, mask);
         for (j = 0; j < 6; j++) {
-            MN_SLOT(0xD2 + BASE(o) + index + j * 2)->frame = j << 16;
+            MN_SLOT(0xD2 + BASE(o) + index + j * 2)->_5C = j << 16;
         }
         for (j = 0; j < 6; j++) {
-            MN_SLOT(0xBA + BASE(o) + index + j * 2)->frame = 0;
+            MN_SLOT(0xBA + BASE(o) + index + j * 2)->_5C = 0;
         }
         switch (bat) {
         case 0:
-            MN_SLOT(0xBA + BASE(o) + index)->state = 1;
-            MN_SLOT(0xBC + BASE(o) + index)->state = 0;
-            MN_SLOT(0xBE + BASE(o) + index)->state = 0;
+            MN_SLOT(0xBA + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0xBC + BASE(o) + index)->_68 = 0;
+            MN_SLOT(0xBE + BASE(o) + index)->_68 = 0;
             break;
         case 1:
             if (flag == 0) {
-                MN_SLOT(0xBA + BASE(o) + index)->state = 0;
-                MN_SLOT(0xBC + BASE(o) + index)->state = 1;
-                MN_SLOT(0xBE + BASE(o) + index)->state = 0;
+                MN_SLOT(0xBA + BASE(o) + index)->_68 = 0;
+                MN_SLOT(0xBC + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0xBE + BASE(o) + index)->_68 = 0;
             } else {
-                MN_SLOT(0xBA + BASE(o) + index)->state = 0;
-                MN_SLOT(0xBC + BASE(o) + index)->state = 0;
-                MN_SLOT(0xBE + BASE(o) + index)->state = 1;
+                MN_SLOT(0xBA + BASE(o) + index)->_68 = 0;
+                MN_SLOT(0xBC + BASE(o) + index)->_68 = 0;
+                MN_SLOT(0xBE + BASE(o) + index)->_68 = 1;
             }
             break;
         case 2:
             if (flag == 0) {
-                MN_SLOT(0xBA + BASE(o) + index)->state = 0;
-                MN_SLOT(0xBC + BASE(o) + index)->state = 0;
-                MN_SLOT(0xBE + BASE(o) + index)->state = 1;
+                MN_SLOT(0xBA + BASE(o) + index)->_68 = 0;
+                MN_SLOT(0xBC + BASE(o) + index)->_68 = 0;
+                MN_SLOT(0xBE + BASE(o) + index)->_68 = 1;
             } else {
-                MN_SLOT(0xBA + BASE(o) + index)->state = 0;
-                MN_SLOT(0xBC + BASE(o) + index)->state = 1;
-                MN_SLOT(0xBE + BASE(o) + index)->state = 0;
+                MN_SLOT(0xBA + BASE(o) + index)->_68 = 0;
+                MN_SLOT(0xBC + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0xBE + BASE(o) + index)->_68 = 0;
             }
             break;
         }
         switch (thr) {
         case 0:
-            MN_SLOT(0xC0 + BASE(o) + index)->state = 1;
-            MN_SLOT(0xC2 + BASE(o) + index)->state = 0;
-            MN_SLOT(0xC4 + BASE(o) + index)->state = 0;
+            MN_SLOT(0xC0 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0xC2 + BASE(o) + index)->_68 = 0;
+            MN_SLOT(0xC4 + BASE(o) + index)->_68 = 0;
             break;
         case 1:
-            MN_SLOT(0xC0 + BASE(o) + index)->state = 0;
-            MN_SLOT(0xC2 + BASE(o) + index)->state = 1;
-            MN_SLOT(0xC4 + BASE(o) + index)->state = 0;
+            MN_SLOT(0xC0 + BASE(o) + index)->_68 = 0;
+            MN_SLOT(0xC2 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0xC4 + BASE(o) + index)->_68 = 0;
             break;
         case 2:
-            MN_SLOT(0xC0 + BASE(o) + index)->state = 0;
-            MN_SLOT(0xC2 + BASE(o) + index)->state = 0;
-            MN_SLOT(0xC4 + BASE(o) + index)->state = 1;
+            MN_SLOT(0xC0 + BASE(o) + index)->_68 = 0;
+            MN_SLOT(0xC2 + BASE(o) + index)->_68 = 0;
+            MN_SLOT(0xC4 + BASE(o) + index)->_68 = 1;
             break;
         }
         MN_SLOT(0xE0 + BASE(o) + index)->flags |= 2;
-        MN_SLOT(0xE0 + BASE(o) + index)->state = 1;
-        MN_SLOT(0xB6 + BASE(o) + index)->state = 1;
-        MN_SLOT(0xC6 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0xC6 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xE0 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0xB6 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0xC6 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0xC6 + BASE(o) + index)->_68 = 1;
         MN_SLOT(0xEA + BASE(o) + index)->flags &= ~2;
-        MN_SLOT(0xEA + BASE(o) + index)->state = 0;
-        MN_SLOT(0xE2 + BASE(o) + index)->state = 4;
+        MN_SLOT(0xEA + BASE(o) + index)->_68 = 0;
+        MN_SLOT(0xE2 + BASE(o) + index)->_68 = 4;
         *shown = 1;
     }
     if (*(u16*)(lbl_803CBBCC[0] + 2) == 0xA) {
@@ -3771,7 +3748,7 @@ static inline u8 CaptainPos(s32 team, u8 pos) {
 }
 
 // fn_2_776A0, size:0x994
-void fn_2_776A0(u8* o, s32 port) {
+void fn_2_776A0(MenuTask* o, s32 port) {
     u8 team = lbl_803C66B0[0x59 + port];
     u16 buttons = *(u16*)(lbl_8034E9A0 + 0x472E + port * 6);
     u8 pos;
@@ -3808,23 +3785,23 @@ void fn_2_776A0(u8* o, s32 port) {
             pos = CaptainPos(team, pos);
             for (j = 0; j < 9; j++) {
                 if (j != (s8)pos) {
-                    MN_SLOT(0x34 + BASE(o) + j + team * 9)->state = 4;
+                    MN_SLOT(0x34 + BASE(o) + j + team * 9)->_68 = 4;
                 }
             }
-            MN_SLOT(0x34 + BASE(o) + (s8)pos + team * 9)->state = 1;
+            MN_SLOT(0x34 + BASE(o) + (s8)pos + team * 9)->_68 = 1;
             fn_2_75BE4(o, team);
-            MN_SLOT(0x91 + BASE(o) + team)->state = 1;
+            MN_SLOT(0x91 + BASE(o) + team)->_68 = 1;
             cur = F468_S32(8 + team * 4);
             if (cur == 9) {
-                MN_SLOT(0x93 + BASE(o) + team)->state = 4;
-                MN_SLOT(0x95 + BASE(o) + port)->frame = 0xA0000;
-                MN_SLOT(0x95 + BASE(o) + team)->state = 4;
+                MN_SLOT(0x93 + BASE(o) + team)->_68 = 4;
+                MN_SLOT(0x95 + BASE(o) + port)->_5C = 0xA0000;
+                MN_SLOT(0x95 + BASE(o) + team)->_68 = 4;
             } else if (cur == 10) {
-                MN_SLOT(0x93 + BASE(o) + team)->state = 4;
+                MN_SLOT(0x93 + BASE(o) + team)->_68 = 4;
             } else {
-                MN_SLOT(0x46 + BASE(o) + cur + team * 9)->frame = 0xF0000;
-                MN_SLOT(0x46 + BASE(o) + cur + team * 9)->state = 4;
-                MN_SLOT(0x93 + BASE(o) + team)->state = 4;
+                MN_SLOT(0x46 + BASE(o) + cur + team * 9)->_5C = 0xF0000;
+                MN_SLOT(0x46 + BASE(o) + cur + team * 9)->_68 = 4;
+                MN_SLOT(0x93 + BASE(o) + team)->_68 = 4;
             }
             for (j = 0; j < 9; j++) {
                 MN_SLOT(0x97 + BASE(o) + team)->flags &= ~2;
@@ -3843,7 +3820,7 @@ void fn_2_776A0(u8* o, s32 port) {
                     break;
                 }
             }
-            MN_SLOT(0x58 + BASE(o) + sp + team * 9)->frame = TEAM_TBL->roster[team][j] << 16;
+            MN_SLOT(0x58 + BASE(o) + sp + team * 9)->_5C = TEAM_TBL->roster[team][j] << 16;
             fn_2_74F40(o, team);
             t[0x50] = 0;
         }
@@ -3871,12 +3848,12 @@ void fn_2_776A0(u8* o, s32 port) {
         } else {
             if (u[0x47] == 0) {
                 s32 n;
-                if ((MN_SLOT(0xB4 + BASE(o) + team)->frame >> 16) > 5) {
-                    MN_SLOT(0xB4 + BASE(o) + team)->frame = 0x50000;
+                if ((MN_SLOT(0xB4 + BASE(o) + team)->_5C >> 16) > 5) {
+                    MN_SLOT(0xB4 + BASE(o) + team)->_5C = 0x50000;
                 }
-                MN_SLOT(0xB4 + BASE(o) + team)->state = 4;
-                MN_SLOT(0xB6 + BASE(o) + team)->state = 4;
-                MN_SLOT(0xC6 + BASE(o) + team)->state = 4;
+                MN_SLOT(0xB4 + BASE(o) + team)->_68 = 4;
+                MN_SLOT(0xB6 + BASE(o) + team)->_68 = 4;
+                MN_SLOT(0xC6 + BASE(o) + team)->_68 = 4;
                 n = fn_80042DA8(o, team + 0xB4, 0) != 0;
                 n += fn_80042DA8(o, team + 0xB6, 0) != 0;
                 n += fn_80042DA8(o, team + 0xC6, 0) != 0;
@@ -3884,11 +3861,11 @@ void fn_2_776A0(u8* o, s32 port) {
                     t[0x4B] = 0;
                 }
             } else {
-                if ((MN_SLOT(0xB4 + BASE(o) + team)->frame >> 16) > 5) {
-                    MN_SLOT(0xB4 + BASE(o) + team)->frame = 0x50000;
+                if ((MN_SLOT(0xB4 + BASE(o) + team)->_5C >> 16) > 5) {
+                    MN_SLOT(0xB4 + BASE(o) + team)->_5C = 0x50000;
                 }
-                MN_SLOT(0xB4 + BASE(o) + team)->state = 4;
-                MN_SLOT(0xE2 + BASE(o) + team)->state = 4;
+                MN_SLOT(0xB4 + BASE(o) + team)->_68 = 4;
+                MN_SLOT(0xE2 + BASE(o) + team)->_68 = 4;
                 if ((fn_80042DA8(o, team + 0xE2, 0) != 0) == 1) {
                     t[0x4B] = 0;
                 }
@@ -3904,7 +3881,7 @@ void fn_2_776A0(u8* o, s32 port) {
 // NONMATCHING 85%: switch arms schedule slot loads differently; register allocation
 #if NONMATCHING
 void fn_2_845A8(void) {
-    u8* o = lbl_803CC1B8;
+    MenuTask* o = lbl_803CC1B8;
     s32 i;
     s32 n;
     s32 k;
@@ -3919,15 +3896,15 @@ void fn_2_845A8(void) {
     switch (lbl_803C66B0[0x5D]) {
     case 39:
         if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
-            MN_SLOT(BASE(o))->frame = 0;
-            MN_SLOT(BASE(o))->state = 1;
-            MN_SLOT(4 + BASE(o))->frame = 0;
-            MN_SLOT(4 + BASE(o))->state = 1;
+            MN_SLOT(BASE(o))->_5C = 0;
+            MN_SLOT(BASE(o))->_68 = 1;
+            MN_SLOT(4 + BASE(o))->_5C = 0;
+            MN_SLOT(4 + BASE(o))->_68 = 1;
             for (i = 0; i < 6; i++) {
                 MN_SLOT(6 + BASE(o) + i)->color = (MN_SLOT(6 + BASE(o) + i)->color & ~0xFF) | 0xFF;
             }
-            MN_SLOT(6 + BASE(o) + F410_S32(0x44))->frame = 0x10000;
-            MN_SLOT(6 + BASE(o) + F410_S32(0x44))->state = 1;
+            MN_SLOT(6 + BASE(o) + F410_S32(0x44))->_5C = 0x10000;
+            MN_SLOT(6 + BASE(o) + F410_S32(0x44))->_68 = 1;
             fn_800626EC(0);
             lbl_803C66B0[0x2B] = 1;
         }
@@ -3943,14 +3920,14 @@ void fn_2_845A8(void) {
         break;
     case 36:
         if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
-            MN_SLOT(BASE(o))->frame = 0xA0000;
-            MN_SLOT(1 + BASE(o))->frame = 0xA0000;
-            MN_SLOT(BASE(o))->state = 4;
-            MN_SLOT(1 + BASE(o))->state = 4;
-            MN_SLOT(2 + BASE(o))->state = 4;
-            MN_SLOT(3 + BASE(o))->state = 4;
-            MN_SLOT(5 + BASE(o))->state = 4;
-            MN_SLOT(4 + BASE(o))->state = 4;
+            MN_SLOT(BASE(o))->_5C = 0xA0000;
+            MN_SLOT(1 + BASE(o))->_5C = 0xA0000;
+            MN_SLOT(BASE(o))->_68 = 4;
+            MN_SLOT(1 + BASE(o))->_68 = 4;
+            MN_SLOT(2 + BASE(o))->_68 = 4;
+            MN_SLOT(3 + BASE(o))->_68 = 4;
+            MN_SLOT(5 + BASE(o))->_68 = 4;
+            MN_SLOT(4 + BASE(o))->_68 = 4;
             fn_800626EC(0);
             lbl_803C66B0[0x2B] = 1;
         }
@@ -3972,14 +3949,14 @@ void fn_2_845A8(void) {
         break;
     case 38:
         if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
-            MN_SLOT(BASE(o))->state = 4;
-            MN_SLOT(1 + BASE(o))->frame = 0;
-            MN_SLOT(1 + BASE(o))->state = 0;
-            MN_SLOT(2 + BASE(o))->state = 1;
-            MN_SLOT(5 + BASE(o))->state = 1;
-            MN_SLOT(3 + BASE(o))->state = 1;
-            MN_SLOT(4 + BASE(o))->frame = 0x280000;
-            MN_SLOT(4 + BASE(o))->state = 4;
+            MN_SLOT(BASE(o))->_68 = 4;
+            MN_SLOT(1 + BASE(o))->_5C = 0;
+            MN_SLOT(1 + BASE(o))->_68 = 0;
+            MN_SLOT(2 + BASE(o))->_68 = 1;
+            MN_SLOT(5 + BASE(o))->_68 = 1;
+            MN_SLOT(3 + BASE(o))->_68 = 1;
+            MN_SLOT(4 + BASE(o))->_5C = 0x280000;
+            MN_SLOT(4 + BASE(o))->_68 = 4;
             fn_800626EC(0);
             lbl_803C66B0[0x2B] = 1;
         }
@@ -3999,14 +3976,14 @@ void fn_2_845A8(void) {
         break;
     case 37:
         if ((lbl_803C66B0[0x2B] == 0) ? 1 : 0) {
-            MN_SLOT(BASE(o))->frame = 0xA0000;
-            MN_SLOT(1 + BASE(o))->frame = 0;
-            MN_SLOT(BASE(o))->state = 1;
-            MN_SLOT(1 + BASE(o))->state = 0;
-            MN_SLOT(2 + BASE(o))->state = 4;
-            MN_SLOT(3 + BASE(o))->state = 4;
-            MN_SLOT(5 + BASE(o))->state = 4;
-            MN_SLOT(4 + BASE(o))->state = 1;
+            MN_SLOT(BASE(o))->_5C = 0xA0000;
+            MN_SLOT(1 + BASE(o))->_5C = 0;
+            MN_SLOT(BASE(o))->_68 = 1;
+            MN_SLOT(1 + BASE(o))->_68 = 0;
+            MN_SLOT(2 + BASE(o))->_68 = 4;
+            MN_SLOT(3 + BASE(o))->_68 = 4;
+            MN_SLOT(5 + BASE(o))->_68 = 4;
+            MN_SLOT(4 + BASE(o))->_68 = 1;
             fn_800626EC(0);
             lbl_803C66B0[0x2B] = 1;
         }
@@ -4023,10 +4000,10 @@ void fn_2_845A8(void) {
         }
         break;
     case 49:
-        if ((MN_SLOT(BASE(o))->frame >> 16) == 0x14) {
-            MN_SLOT(BASE(o))->state = 1;
+        if ((MN_SLOT(BASE(o))->_5C >> 16) == 0x14) {
+            MN_SLOT(BASE(o))->_68 = 1;
         }
-        if ((MN_SLOT(BASE(o))->frame >> 16) == 0x1E) {
+        if ((MN_SLOT(BASE(o))->_5C >> 16) == 0x1E) {
             lbl_803CBCD8[4] = 1;
             fn_80062674(0);
             lbl_803C66B0[0x31] = 2;
@@ -4051,7 +4028,7 @@ void fn_2_845A8(void) {
             }
             // Cycle the icon animation every 100 frames.
             for (t = 0, off = 0, i = 0; i < 3; i++, off += 6, t += 100) {
-                if (((MnOwner*)o)->_18 == t) {
+                if (o->timerA == t) {
                     icon = lbl_2_data_2D998[0x2EC + sel];
                     if (lbl_2_bss_ABC0 != 0) {
                         icon2 = icon + 0xC;
@@ -4061,21 +4038,21 @@ void fn_2_845A8(void) {
                     } else {
                         icon2 = icon;
                     }
-                    MN_SLOT(BASE(o))->frame = 0;
-                    MN_SLOT(1 + BASE(o))->frame = 0xA0000;
+                    MN_SLOT(BASE(o))->_5C = 0;
+                    MN_SLOT(1 + BASE(o))->_5C = 0xA0000;
                     fn_800363D8(o, 0, 1, 0x20, icon + off);
                     fn_800363D8(o, 1, 1, 0x20, icon2);
                     MN_SLOT(BASE(o))->color = (MN_SLOT(BASE(o))->color & ~0xFF) | 0xFF;
                     MN_SLOT(1 + BASE(o))->color = (MN_SLOT(1 + BASE(o))->color & ~0xFF) | 0xFF;
-                    MN_SLOT(BASE(o))->state = 1;
-                    MN_SLOT(1 + BASE(o))->state = 4;
+                    MN_SLOT(BASE(o))->_68 = 1;
+                    MN_SLOT(1 + BASE(o))->_68 = 4;
                 }
             }
             fn_80042DA8(o, 0, 0xA);
             fn_80042DA8(o, 1, 0);
-            ((MnOwner*)o)->_18++;
-            if (((MnOwner*)o)->_18 > 300) {
-                ((MnOwner*)o)->_18 = 0;
+            o->timerA++;
+            if (o->timerA > 300) {
+                o->timerA = 0;
                 lbl_2_bss_ABC0 = 1;
             }
         }
@@ -4089,7 +4066,7 @@ extern BOOL fn_80067B40(s32 unused, u8 charId, u8 flag);
 // Refresh the selected character's stat bars (fn_2_74E14) and ability icon.
 // NONMATCHING 85%: same calls and stores; fn_2_74E14 inlined with different register allocation, BOOL test codegen differs
 #if NONMATCHING
-void fn_2_74F40(u8* o, s32 index) {
+void fn_2_74F40(MenuTask* o, s32 index) {
     s32 c;
     u8* stats;
     if (*(u16*)(lbl_803CBBCC[0] + 2) == 9 || lbl_803C66B0[0x5D + index] == 0xB) {
@@ -4124,15 +4101,15 @@ void fn_2_74F40(u8* o, s32 index) {
     }
     if (c != -1 && fn_80067B40(0, c, 2) && g_d_GameSettings.GameModeSelected != 5) {
         MN_SLOT(0xB2 + BASE(o) + index)->flags |= 2;
-        MN_SLOT(0xB2 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0xB2 + BASE(o) + index)->state = 1;
+        MN_SLOT(0xB2 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0xB2 + BASE(o) + index)->_68 = 1;
         MN_SLOT(0xAE + BASE(o) + index)->flags |= 2;
-        MN_SLOT(0xAE + BASE(o) + index)->frame = fn_2_74DB8(c) << 16;
+        MN_SLOT(0xAE + BASE(o) + index)->_5C = fn_2_74DB8(c) << 16;
     } else {
         MN_SLOT(0xB2 + BASE(o) + index)->flags &= ~2;
         if (F468_S32(index * 4) != 9 && F468_S32(index * 4) != 10) {
             MN_SLOT(0xAE + BASE(o) + index)->flags |= 2;
-            MN_SLOT(0xAE + BASE(o) + index)->frame = 0;
+            MN_SLOT(0xAE + BASE(o) + index)->_5C = 0;
         }
     }
     MN_SLOT(0xAC + BASE(o) + index)->flags |= 2;
@@ -4148,9 +4125,9 @@ void fn_2_74F40(u8* o, s32 index) {
             pwr = stats[0x38];
             fld = stats[0x3A];
             MN_SLOT(0xB0 + BASE(o) + index)->flags |= 2;
-            MN_SLOT(0xB0 + BASE(o) + index)->frame = c << 16;
-            MN_SLOT(0xAC + BASE(o) + index)->frame = 0;
-            MN_SLOT(0xAC + BASE(o) + index)->state = 1;
+            MN_SLOT(0xB0 + BASE(o) + index)->_5C = c << 16;
+            MN_SLOT(0xAC + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0xAC + BASE(o) + index)->_68 = 1;
         } else {
             pwr = 0;
             fld = 0;
@@ -4176,7 +4153,7 @@ void fn_2_74F40(u8* o, s32 index) {
 // original calls them); the frame is 0x10 bigger (four spills) and the saved registers are coloured differently
 #if NONMATCHING
 void fn_2_81628(void) {
-    u8* o = *(u8**)(lbl_8034E9A0 + 0x474C); // TODO type
+    MenuTask* o = *(MenuTask**)(lbl_8034E9A0 + 0x474C); // TODO type
     u8* st;
     s32 i;
     s32 j;
@@ -4213,7 +4190,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 2:
-                ((void (*)(u8*, s32))fn_2_80C2C)(o, i);
+                ((void (*)(MenuTask*, s32))fn_2_80C2C)(o, i);
                 if (st[0xD] == 1) {
                     n = fn_80042DA8(o, i, 0) != 0;
                     n += fn_80042DA8(o, i + 2, 0) != 0;
@@ -4236,12 +4213,12 @@ void fn_2_81628(void) {
                 }
                 break;
             case 4:
-                ((void (*)(u8*, s32))fn_2_805DC)(o, i);
+                ((void (*)(MenuTask*, s32))fn_2_805DC)(o, i);
                 break;
             case 5:
                 if (st[0xD] == 0) {
-                    MN_SLOT(0x7B + BASE(o))->frame = ((s8)lbl_8034E9A0[0x46F8] == 0) << 16;
-                    MN_SLOT(0x19 + BASE(o))->frame = (((s8)lbl_8034E9A0[0x46F8] == 0) + 4) << 16;
+                    MN_SLOT(0x7B + BASE(o))->_5C = ((s8)lbl_8034E9A0[0x46F8] == 0) << 16;
+                    MN_SLOT(0x19 + BASE(o))->_5C = (((s8)lbl_8034E9A0[0x46F8] == 0) + 4) << 16;
                     fn_800626EC(i);
                     st[0xD] = 1;
                 }
@@ -4252,19 +4229,19 @@ void fn_2_81628(void) {
                 }
                 break;
             case 6:
-                ((void (*)(u8*))fn_2_802EC)(o);
+                ((void (*)(MenuTask*))fn_2_802EC)(o);
                 break;
             case 7:
-                ((void (*)(u8*, s32))fn_2_800B0)(o, i);
+                ((void (*)(MenuTask*, s32))fn_2_800B0)(o, i);
                 break;
             case 8:
                 fn_2_7FAFC(o, i);
                 break;
             }
             fn_2_776A0(o, i);
-            if (i != 0 && (MN_SLOT(6 + BASE(o))->frame >> 16) == 0x3C) {
-                MN_SLOT(7 + BASE(o))->state = 1;
-                MN_SLOT(9 + BASE(o))->state = 1;
+            if (i != 0 && (MN_SLOT(6 + BASE(o))->_5C >> 16) == 0x3C) {
+                MN_SLOT(7 + BASE(o))->_68 = 1;
+                MN_SLOT(9 + BASE(o))->_68 = 1;
             }
         }
     } else if (lbl_803C66B0[0] == 2) {
@@ -4275,11 +4252,11 @@ void fn_2_81628(void) {
                 break;
             case 10:
                 fn_2_7AE3C(o, i);
-                ((void (*)(u8*, s32))fn_2_7AC64)(o, i);
+                ((void (*)(MenuTask*, s32))fn_2_7AC64)(o, i);
                 break;
             case 11:
                 fn_2_7A9D8(o, i);
-                ((void (*)(u8*, s32))fn_2_7A748)(o, i);
+                ((void (*)(MenuTask*, s32))fn_2_7A748)(o, i);
                 break;
             case 14:
                 fn_2_7DAB8(o, i);
@@ -4361,7 +4338,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 19:
-                ((void (*)(u8*, s32))fn_2_7A5B8)(o, i);
+                ((void (*)(MenuTask*, s32))fn_2_7A5B8)(o, i);
                 if (st[0xD] == 1) {
                     n = fn_80042DA8(o, i, 0x28) != 0;
                     n += fn_80042DA8(o, i + 2, 0x28) != 0;
@@ -4377,7 +4354,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 20:
-                ((void (*)(u8*, s32))fn_2_7A194)(o, i);
+                ((void (*)(MenuTask*, s32))fn_2_7A194)(o, i);
                 if (st[0xD] == 1) {
                     s32 cur = F468_S32(8 + i * 4);
                     n = 0;
@@ -4399,7 +4376,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 21:
-                ((void (*)(u8*, s32))fn_2_79CF8)(o, i);
+                ((void (*)(MenuTask*, s32))fn_2_79CF8)(o, i);
                 if (st[0xD] == 1) {
                     s32 sel = F468_S32(i * 4);
                     n = 0;
@@ -4421,7 +4398,7 @@ void fn_2_81628(void) {
                 }
                 break;
             case 22:
-                ((void (*)(u8*, s32))fn_2_79930)(o, i);
+                ((void (*)(MenuTask*, s32))fn_2_79930)(o, i);
                 if (st[0xD] == 1) {
                     s32 hits = 0;
                     s32 total = 0;
@@ -4443,10 +4420,10 @@ void fn_2_81628(void) {
             case 23:
                 if (st[0xD] == 0) {
                     for (j = 0; j < 9; j++) {
-                        MN_SLOT(0x46 + BASE(o) + j + i * 9)->state = 4;
+                        MN_SLOT(0x46 + BASE(o) + j + i * 9)->_68 = 4;
                     }
-                    MN_SLOT(0x95 + BASE(o) + i)->frame = 0xA0000;
-                    MN_SLOT(0x95 + BASE(o) + i)->state = 1;
+                    MN_SLOT(0x95 + BASE(o) + i)->_5C = 0xA0000;
+                    MN_SLOT(0x95 + BASE(o) + i)->_68 = 1;
                 }
                 if (st[0xD] == 1) {
                     fn_80062674(i);
@@ -4460,7 +4437,7 @@ void fn_2_81628(void) {
                 fn_2_7912C(o, i);
                 break;
             case 26:
-                ((void (*)(u8*, s32))fn_2_78F78)(o, i);
+                ((void (*)(MenuTask*, s32))fn_2_78F78)(o, i);
                 break;
             case 27:
                 fn_2_78AC0(o, i);
@@ -4474,9 +4451,9 @@ void fn_2_81628(void) {
             }
             fn_2_776A0(o, i);
         }
-        if (i != 0 && (MN_SLOT(6 + BASE(o))->frame >> 16) == 0x3C) {
-            MN_SLOT(7 + BASE(o))->state = 1;
-            MN_SLOT(9 + BASE(o))->state = 1;
+        if (i != 0 && (MN_SLOT(6 + BASE(o))->_5C >> 16) == 0x3C) {
+            MN_SLOT(7 + BASE(o))->_68 = 1;
+            MN_SLOT(9 + BASE(o))->_68 = 1;
         }
     }
     if (lbl_8034E9A0[0x48B1] != 0) {
@@ -4489,14 +4466,14 @@ void fn_2_81628(void) {
 // fn_2_7AE3C, size:0x11BC
 // NONMATCHING 88%: same stores and calls; register allocation and some slot-index scheduling differ
 #if NONMATCHING
-void fn_2_7AE3C(u8* o, s32 index) {
+void fn_2_7AE3C(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     if ((*(e += 0xD) == 0) ? 1 : 0) {
         s32 j;
         s8 cpos;
         s32 other;
-        MN_SLOT(6 + BASE(o))->state = 1;
-        MN_SLOT(8 + BASE(o))->state = 1;
+        MN_SLOT(6 + BASE(o))->_68 = 1;
+        MN_SLOT(8 + BASE(o))->_68 = 1;
         MN_SLOT(0x1C + BASE(o))->flags |= 2;
         MN_SLOT(0x1D + BASE(o))->flags |= 2;
         MN_SLOT(0x1E + BASE(o))->flags |= 2;
@@ -4507,26 +4484,26 @@ void fn_2_7AE3C(u8* o, s32 index) {
         MN_SLOT(0x7D + BASE(o))->flags &= ~2;
         MN_SLOT(0x80 + BASE(o))->flags &= ~2;
         MN_SLOT(0x81 + BASE(o))->flags &= ~2;
-        MN_SLOT(0x97 + BASE(o) + index)->anim = 0x77;
-        MN_SLOT(0x99 + BASE(o) + index)->anim = 0x76;
+        MN_SLOT(0x97 + BASE(o) + index)->_64 = 0x77;
+        MN_SLOT(0x99 + BASE(o) + index)->_64 = 0x76;
         for (j = 0; j < 9; j++) {
             MN_SLOT(0x22 + BASE(o) + j + index * 9)->flags &= ~2;
         }
-        MN_SLOT(BASE(o) + index)->anim = 0x48;
-        MN_SLOT(2 + BASE(o) + index)->anim = 0x48;
-        MN_SLOT(4 + BASE(o) + index)->anim = 0x51;
-        MN_SLOT(BASE(o) + index)->frame = 0;
-        MN_SLOT(2 + BASE(o) + index)->frame = 0;
-        MN_SLOT(4 + BASE(o) + index)->frame = 0;
-        MN_SLOT(BASE(o) + index)->state = 1;
-        MN_SLOT(2 + BASE(o) + index)->state = 1;
-        MN_SLOT(4 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x12 + BASE(o) + index)->frame = 0xA0000;
-        MN_SLOT(0x12 + BASE(o) + index)->state = 4;
+        MN_SLOT(BASE(o) + index)->_64 = 0x48;
+        MN_SLOT(2 + BASE(o) + index)->_64 = 0x48;
+        MN_SLOT(4 + BASE(o) + index)->_64 = 0x51;
+        MN_SLOT(BASE(o) + index)->_5C = 0;
+        MN_SLOT(2 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(4 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(BASE(o) + index)->_68 = 1;
+        MN_SLOT(2 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(4 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x12 + BASE(o) + index)->_5C = 0xA0000;
+        MN_SLOT(0x12 + BASE(o) + index)->_68 = 4;
         if (g_d_GameSettings.GameModeSelected != 5) {
             s32 captain;
-            MN_SLOT(0x1C + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x1C + BASE(o) + index)->state = 1;
+            MN_SLOT(0x1C + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x1C + BASE(o) + index)->_68 = 1;
             captain = *(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4);
             for (j = 0; j < 9; j++) {
                 if (TEAM_TBL->roster[index][j] == captain) {
@@ -4540,7 +4517,7 @@ void fn_2_7AE3C(u8* o, s32 index) {
                     // single player: only the CPU captain's marker is shown
                     if (j == cpos) {
                         other = (s8)lbl_8034E9A0[0x46F8] == 0;
-                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->anim = other + 0x11;
+                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->_64 = other + 0x11;
                         MN_SLOT(0x46 + BASE(o) + j + index * 9)->flags |= 2;
                     } else {
                         MN_SLOT(0x46 + BASE(o) + j + index * 9)->flags &= ~2;
@@ -4554,64 +4531,64 @@ void fn_2_7AE3C(u8* o, s32 index) {
                         }
                     }
                     if (g_d_GameSettings._10 == 0 && index != 0) {
-                        MN_SLOT(0x46 + BASE(o) + p + index * 9)->anim = other + 0x11;
+                        MN_SLOT(0x46 + BASE(o) + p + index * 9)->_64 = other + 0x11;
                     } else {
-                        MN_SLOT(0x46 + BASE(o) + p + index * 9)->anim = (s8)lbl_8034E9A0[0x46F8 + index] + 0x11;
+                        MN_SLOT(0x46 + BASE(o) + p + index * 9)->_64 = (s8)lbl_8034E9A0[0x46F8 + index] + 0x11;
                     }
-                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->frame = 0;
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->_5C = 0;
                     MN_SLOT(0x46 + BASE(o) + p + index * 9)->flags |= 2;
-                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->state = 0;
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->_68 = 0;
                 }
                 if (TEAM_TBL->roster[index][j] != -1) {
                     MN_SLOT(0x34 + BASE(o) + p + index * 9)->flags |= 2;
                     if (j == F468_S32(index * 4)) {
-                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->frame = 0xA0000;
-                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->state = 0;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->_5C = 0xA0000;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->_68 = 0;
                         MN_SLOT(0x22 + BASE(o) + p + index * 9)->flags |= 2;
-                        MN_SLOT(0x22 + BASE(o) + p + index * 9)->state = 1;
+                        MN_SLOT(0x22 + BASE(o) + p + index * 9)->_68 = 1;
                     } else {
-                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->frame = 0x140000;
-                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->state = 0;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->_5C = 0x140000;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->_68 = 0;
                         MN_SLOT(0x22 + BASE(o) + p + index * 9)->flags &= ~2;
                     }
-                    MN_SLOT(0x58 + BASE(o) + p + index * 9)->frame = TEAM_TBL->roster[index][j] << 16;
-                    MN_SLOT(0x58 + BASE(o) + p + index * 9)->state = 0;
+                    MN_SLOT(0x58 + BASE(o) + p + index * 9)->_5C = TEAM_TBL->roster[index][j] << 16;
+                    MN_SLOT(0x58 + BASE(o) + p + index * 9)->_68 = 0;
                 } else {
                     MN_SLOT(0x34 + BASE(o) + p + index * 9)->flags &= ~2;
                     MN_SLOT(0x22 + BASE(o) + p + index * 9)->flags &= ~2;
                 }
             }
-            MN_SLOT(0x6A + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x6A + BASE(o) + index)->state = 1;
+            MN_SLOT(0x6A + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x6A + BASE(o) + index)->_68 = 1;
             for (j = 0; j < 5; j++) {
-                MN_SLOT(0x6E + BASE(o) + index * 5 + j)->frame = 0;
-                MN_SLOT(0x6E + BASE(o) + index * 5 + j)->state = 0;
+                MN_SLOT(0x6E + BASE(o) + index * 5 + j)->_5C = 0;
+                MN_SLOT(0x6E + BASE(o) + index * 5 + j)->_68 = 0;
             }
             if (g_d_GameSettings._10 != 0 || index == 0) {
-                MN_SLOT(0x8F + BASE(o) + index)->state = 1;
-                MN_SLOT(0x91 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x91 + BASE(o) + index)->state = 1;
+                MN_SLOT(0x8F + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0x91 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x91 + BASE(o) + index)->_68 = 1;
             }
         } else {
-            MN_SLOT(0x80 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x80 + BASE(o) + index)->state = 0;
-            MN_SLOT(0x82 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x82 + BASE(o) + index)->state = 0;
-            MN_SLOT(0x78 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x78 + BASE(o) + index)->state = 0;
-            MN_SLOT(0x7A + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x7A + BASE(o) + index)->state = 0;
-            MN_SLOT(0x97 + BASE(o) + index)->anim = 0x77;
+            MN_SLOT(0x80 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x80 + BASE(o) + index)->_68 = 0;
+            MN_SLOT(0x82 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x82 + BASE(o) + index)->_68 = 0;
+            MN_SLOT(0x78 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x78 + BASE(o) + index)->_68 = 0;
+            MN_SLOT(0x7A + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x7A + BASE(o) + index)->_68 = 0;
+            MN_SLOT(0x97 + BASE(o) + index)->_64 = 0x77;
             MN_SLOT(0x98 + BASE(o))->flags &= ~2;
-            MN_SLOT(0x97 + BASE(o))->frame = 0;
+            MN_SLOT(0x97 + BASE(o))->_5C = 0;
             MN_SLOT(0x97 + BASE(o))->flags &= ~2;
             MN_SLOT(0xB0 + BASE(o) + index)->flags &= ~2;
-            MN_SLOT(0x89 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x89 + BASE(o) + index)->state = 1;
-            MN_SLOT(0x85 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x85 + BASE(o) + index)->state = 1;
-            MN_SLOT(0x1C + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x1C + BASE(o) + index)->state = 1;
+            MN_SLOT(0x89 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x89 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x85 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x85 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x1C + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x1C + BASE(o) + index)->_68 = 1;
             if (g_d_GameSettings._10 == 0) {
                 if ((s8)lbl_8034E9A0[0x46F8] == 0) {
                     other = 1;
@@ -4622,61 +4599,61 @@ void fn_2_7AE3C(u8* o, s32 index) {
             for (j = 0; j < 9; j++) {
                 s8 p = TEAM_TBL->pos[index][j];
                 if (index != 0) {
-                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->anim = other + 0x11;
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->_64 = other + 0x11;
                 } else {
-                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->anim = (s8)lbl_8034E9A0[0x46F8 + index] + 0x11;
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->_64 = (s8)lbl_8034E9A0[0x46F8 + index] + 0x11;
                 }
                 if (j == F468_S32(index * 4)) {
                     MN_SLOT(0x46 + BASE(o) + p + index * 9)->flags |= 2;
-                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->state = 1;
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->_68 = 1;
                 } else {
                     MN_SLOT(0x46 + BASE(o) + p + index * 9)->flags |= 2;
-                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->state = 0;
+                    MN_SLOT(0x46 + BASE(o) + p + index * 9)->_68 = 0;
                 }
                 if (TEAM_TBL->roster[index][j] != -1) {
                     MN_SLOT(0x34 + BASE(o) + p + index * 9)->flags |= 2;
                     if (j == F468_S32(index * 4)) {
-                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->frame = 0xA0000;
-                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->state = 0;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->_5C = 0xA0000;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->_68 = 0;
                     } else {
-                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->frame = 0x140000;
-                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->state = 0;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->_5C = 0x140000;
+                        MN_SLOT(0x34 + BASE(o) + p + index * 9)->_68 = 0;
                     }
-                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->frame = TEAM_TBL->roster[index][j] << 16;
-                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->state = 0;
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_5C = TEAM_TBL->roster[index][j] << 16;
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_68 = 0;
                 } else {
                     MN_SLOT(0x34 + BASE(o) + j + index * 9)->flags &= ~2;
                 }
             }
             if (*(u16*)(lbl_803CBBCC[0] + 6) == 0xB && index == 0 && g_d_GameSettings._10 == 0) {
-                MN_SLOT(0x6A + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x6A + BASE(o) + index)->state = 0;
+                MN_SLOT(0x6A + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x6A + BASE(o) + index)->_68 = 0;
             } else {
-                MN_SLOT(0x6A + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x6A + BASE(o) + index)->state = 1;
+                MN_SLOT(0x6A + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x6A + BASE(o) + index)->_68 = 1;
             }
             fn_2_75BE4(o, index);
         }
         if (*(u16*)(lbl_803CBBCC[0] + 6) == 0xB || g_d_GameSettings.GameModeSelected == 5) {
             if (g_d_GameSettings.GameModeSelected != 5 || index == 0) {
-                MN_SLOT(0x93 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x93 + BASE(o) + index)->state = 1;
-                MN_SLOT(0x95 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x95 + BASE(o) + index)->state = 1;
+                MN_SLOT(0x93 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x93 + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0x95 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x95 + BASE(o) + index)->_68 = 1;
             }
             if (g_d_GameSettings.GameModeSelected != 5) {
-                MN_SLOT(0x8F + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x8F + BASE(o) + index)->state = 1;
-                MN_SLOT(0x91 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x91 + BASE(o) + index)->state = 0;
+                MN_SLOT(0x8F + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x8F + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0x91 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x91 + BASE(o) + index)->_68 = 0;
             }
         }
         if (lbl_2_bss_F468[0x3F] != 0 && lbl_2_bss_F468[0x37] != 0 && g_d_GameSettings.GameModeSelected == 5) {
             if (index == 0) {
-                MN_SLOT(0x93 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x93 + BASE(o) + index)->state = 1;
-                MN_SLOT(0x95 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x95 + BASE(o) + index)->state = 1;
+                MN_SLOT(0x93 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x93 + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0x95 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x95 + BASE(o) + index)->_68 = 1;
             } else {
                 MN_SLOT(0x93 + BASE(o) + index)->flags &= ~2;
             }
@@ -4692,7 +4669,7 @@ extern u8 lbl_80108ED0[];
 // fn_2_7BFF8, size:0x1864
 // NONMATCHING 90%: same stores and calls; register allocation, a few constants CSE'd
 #if NONMATCHING
-void fn_2_7BFF8(u8* o, s32 index) {
+void fn_2_7BFF8(MenuTask* o, s32 index) {
     u8* e = lbl_803C66B0 + index;
     s32 n;
     s32 k;
@@ -4716,42 +4693,42 @@ void fn_2_7BFF8(u8* o, s32 index) {
         }
         x = lbl_8034E9A0[0x34 + (a / 9) * 0x5A0 + (a % 9) * 0xA0];
         y = lbl_8034E9A0[0x34 + (b / 9) * 0x5A0 + (b % 9) * 0xA0];
-        MN_SLOT(0x82 + BASE(o) + index)->frame = lbl_2_data_2B3A4[x] << 16;
-        MN_SLOT(0x7E + BASE(o) + index)->frame = lbl_2_data_2B3A4[x] << 16;
+        MN_SLOT(0x82 + BASE(o) + index)->_5C = lbl_2_data_2B3A4[x] << 16;
+        MN_SLOT(0x7E + BASE(o) + index)->_5C = lbl_2_data_2B3A4[x] << 16;
         fn_800363D8(o, index + 0x89, 1, 3, lbl_2_data_2B3A4[x]);
         fn_800363D8(o, index + 0x8B, 1, 3, lbl_2_data_2B3A4[y]);
-        MN_SLOT(6 + BASE(o))->state = 1;
-        MN_SLOT(8 + BASE(o))->state = 1;
+        MN_SLOT(6 + BASE(o))->_68 = 1;
+        MN_SLOT(8 + BASE(o))->_68 = 1;
         MN_SLOT(0x1A + BASE(o) + index)->flags |= 2;
-        MN_SLOT(0x1A + BASE(o) + index)->state = 1;
-        MN_SLOT(0x89 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0x89 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x85 + BASE(o) + index)->frame = 0;
-        MN_SLOT(0x85 + BASE(o) + index)->state = 1;
+        MN_SLOT(0x1A + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x89 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0x89 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x85 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(0x85 + BASE(o) + index)->_68 = 1;
         MN_SLOT(0x82 + BASE(o) + index)->flags &= ~2;
         MN_SLOT(0x7A + BASE(o) + index)->flags &= ~2;
-        MN_SLOT(0x82 + BASE(o) + index)->frame = lbl_80108ED0[*(s32*)(lbl_8034E9A0 + 0x46E4)] << 16;
-        MN_SLOT(0x7E + BASE(o) + index)->frame = F410_S32(0x10 + index * 4) << 16;
-        MN_SLOT(0x7A + BASE(o) + index)->frame = (s8)lbl_8034E9A0[0x46F9] << 16;
+        MN_SLOT(0x82 + BASE(o) + index)->_5C = lbl_80108ED0[*(s32*)(lbl_8034E9A0 + 0x46E4)] << 16;
+        MN_SLOT(0x7E + BASE(o) + index)->_5C = F410_S32(0x10 + index * 4) << 16;
+        MN_SLOT(0x7A + BASE(o) + index)->_5C = (s8)lbl_8034E9A0[0x46F9] << 16;
         MN_SLOT(0x84 + BASE(o))->flags &= ~2;
-        MN_SLOT(0x97 + BASE(o) + index)->anim = 0x77;
-        MN_SLOT(0x97 + BASE(o) + index)->frame = 0;
+        MN_SLOT(0x97 + BASE(o) + index)->_64 = 0x77;
+        MN_SLOT(0x97 + BASE(o) + index)->_5C = 0;
         MN_SLOT(0x97 + BASE(o) + index)->flags &= ~2;
         MN_SLOT(0xB0 + BASE(o) + index)->flags &= ~2;
         for (j = 0; j < 9; j++) {
             MN_SLOT(0x22 + BASE(o) + j + index * 9)->flags &= ~2;
         }
-        MN_SLOT(BASE(o) + index)->anim = 0x48;
-        MN_SLOT(2 + BASE(o) + index)->anim = 0x48;
-        MN_SLOT(4 + BASE(o) + index)->anim = 0x51;
-        MN_SLOT(BASE(o) + index)->frame = 0x280000;
-        MN_SLOT(2 + BASE(o) + index)->frame = 0x280000;
-        MN_SLOT(4 + BASE(o) + index)->frame = 0;
-        MN_SLOT(BASE(o) + index)->state = 4;
-        MN_SLOT(2 + BASE(o) + index)->state = 4;
-        MN_SLOT(4 + BASE(o) + index)->state = 1;
-        MN_SLOT(0x10 + BASE(o) + index)->frame = lbl_8034E9A0[0x470D + index] << 16;
-        MN_SLOT(0x14 + BASE(o) + index)->frame = lbl_8034E9A0[0x470D + index] << 16;
+        MN_SLOT(BASE(o) + index)->_64 = 0x48;
+        MN_SLOT(2 + BASE(o) + index)->_64 = 0x48;
+        MN_SLOT(4 + BASE(o) + index)->_64 = 0x51;
+        MN_SLOT(BASE(o) + index)->_5C = 0x280000;
+        MN_SLOT(2 + BASE(o) + index)->_5C = 0x280000;
+        MN_SLOT(4 + BASE(o) + index)->_5C = 0;
+        MN_SLOT(BASE(o) + index)->_68 = 4;
+        MN_SLOT(2 + BASE(o) + index)->_68 = 4;
+        MN_SLOT(4 + BASE(o) + index)->_68 = 1;
+        MN_SLOT(0x10 + BASE(o) + index)->_5C = lbl_8034E9A0[0x470D + index] << 16;
+        MN_SLOT(0x14 + BASE(o) + index)->_5C = lbl_8034E9A0[0x470D + index] << 16;
         MN_SLOT(0x1C + BASE(o))->flags |= 2;
         MN_SLOT(0x1D + BASE(o))->flags |= 2;
         MN_SLOT(0x1E + BASE(o))->flags |= 2;
@@ -4764,34 +4741,34 @@ void fn_2_7BFF8(u8* o, s32 index) {
         MN_SLOT(0x81 + BASE(o))->flags &= ~2;
         if (g_d_GameSettings.GameModeSelected != 5) {
             s32 captain;
-            MN_SLOT(4 + BASE(o) + index)->frame = 0;
-            MN_SLOT(4 + BASE(o) + index)->state = 1;
+            MN_SLOT(4 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(4 + BASE(o) + index)->_68 = 1;
             if (g_d_GameSettings._10 == 0 && index == 0) {
-                MN_SLOT(0x1C + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x1C + BASE(o) + index)->state = 0;
-                MN_SLOT(0xC + BASE(o) + index)->frame = 0x140000;
-                MN_SLOT(0xC + BASE(o) + index)->state = 4;
-                MN_SLOT(0xE + BASE(o) + index)->frame = 0x180000;
-                MN_SLOT(0xE + BASE(o) + index)->state = 4;
-                MN_SLOT(0x12 + BASE(o) + index)->frame = 0x140000;
-                MN_SLOT(0x12 + BASE(o) + index)->state = 4;
+                MN_SLOT(0x1C + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x1C + BASE(o) + index)->_68 = 0;
+                MN_SLOT(0xC + BASE(o) + index)->_5C = 0x140000;
+                MN_SLOT(0xC + BASE(o) + index)->_68 = 4;
+                MN_SLOT(0xE + BASE(o) + index)->_5C = 0x180000;
+                MN_SLOT(0xE + BASE(o) + index)->_68 = 4;
+                MN_SLOT(0x12 + BASE(o) + index)->_5C = 0x140000;
+                MN_SLOT(0x12 + BASE(o) + index)->_68 = 4;
             } else {
-                MN_SLOT(0x1C + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x1C + BASE(o) + index)->state = 1;
-                MN_SLOT(0x89 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x89 + BASE(o) + index)->state = 1;
+                MN_SLOT(0x1C + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x1C + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0x89 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x89 + BASE(o) + index)->_68 = 1;
                 MN_SLOT(0x97 + BASE(o) + index)->flags &= ~2;
                 MN_SLOT(0xC + BASE(o) + index)->flags |= 2;
                 MN_SLOT(0x12 + BASE(o) + index)->flags |= 2;
-                MN_SLOT(0xC + BASE(o) + index)->frame = 0x140000;
-                MN_SLOT(0xC + BASE(o) + index)->state = 1;
-                MN_SLOT(0xE + BASE(o) + index)->frame = 0x180000;
-                MN_SLOT(0xE + BASE(o) + index)->state = 4;
-                MN_SLOT(0x12 + BASE(o) + index)->frame = 0x140000;
-                MN_SLOT(0x12 + BASE(o) + index)->state = 1;
+                MN_SLOT(0xC + BASE(o) + index)->_5C = 0x140000;
+                MN_SLOT(0xC + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0xE + BASE(o) + index)->_5C = 0x180000;
+                MN_SLOT(0xE + BASE(o) + index)->_68 = 4;
+                MN_SLOT(0x12 + BASE(o) + index)->_5C = 0x140000;
+                MN_SLOT(0x12 + BASE(o) + index)->_68 = 1;
             }
-            MN_SLOT(0x6A + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x6A + BASE(o) + index)->state = 1;
+            MN_SLOT(0x6A + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x6A + BASE(o) + index)->_68 = 1;
             captain = *(s32*)(lbl_8034E9A0 + 0x46E0 + index * 4);
             for (j = 0; j < 9; j++) {
                 if (TEAM_TBL->roster[index][j] == captain) {
@@ -4803,7 +4780,7 @@ void fn_2_7BFF8(u8* o, s32 index) {
                 if (g_d_GameSettings._10 == 0 && lbl_2_bss_F468[0x37 + index] == 0 && index == 1) {
                     if (j == cpos) {
                         other = (s8)lbl_8034E9A0[0x46F8] == 0;
-                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->anim = other + 0x11;
+                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->_64 = other + 0x11;
                         MN_SLOT(0x46 + BASE(o) + j + index * 9)->flags |= 2;
                     } else {
                         MN_SLOT(0x46 + BASE(o) + j + index * 9)->flags &= ~2;
@@ -4817,45 +4794,45 @@ void fn_2_7BFF8(u8* o, s32 index) {
                         }
                     }
                     if (g_d_GameSettings._10 == 0 && index != 0) {
-                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->anim = other + 0x11;
+                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->_64 = other + 0x11;
                     } else {
-                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->anim = (s8)lbl_8034E9A0[0x46F8 + index] + 0x11;
+                        MN_SLOT(0x46 + BASE(o) + j + index * 9)->_64 = (s8)lbl_8034E9A0[0x46F8 + index] + 0x11;
                     }
-                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->frame = 0;
+                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->_5C = 0;
                     MN_SLOT(0x46 + BASE(o) + j + index * 9)->flags |= 2;
-                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->state = 0;
+                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->_68 = 0;
                 }
                 if (TEAM_TBL->roster[index][j] != -1) {
                     MN_SLOT(0x34 + BASE(o) + j + index * 9)->flags |= 2;
                     if (j == F468_S32(index * 4)) {
-                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->frame = 0xA0000;
-                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->state = 0;
+                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->_5C = 0xA0000;
+                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->_68 = 0;
                     } else {
-                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->frame = 0x140000;
-                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->state = 0;
+                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->_5C = 0x140000;
+                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->_68 = 0;
                     }
-                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->frame = TEAM_TBL->roster[index][j] << 16;
-                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->state = 0;
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_5C = TEAM_TBL->roster[index][j] << 16;
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_68 = 0;
                 } else {
                     MN_SLOT(0x34 + BASE(o) + j + index * 9)->flags &= ~2;
                 }
             }
             fn_2_75BE4(o, index);
             if (g_d_GameSettings._10 != 0 || index == 0) {
-                MN_SLOT(0x93 + BASE(o) + index)->state = 1;
-                MN_SLOT(0x95 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x91 + BASE(o) + index)->state = 1;
-                MN_SLOT(0x8F + BASE(o) + index)->state = 1;
-                MN_SLOT(0x91 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x91 + BASE(o) + index)->state = 0;
+                MN_SLOT(0x93 + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0x95 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x91 + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0x8F + BASE(o) + index)->_68 = 1;
+                MN_SLOT(0x91 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x91 + BASE(o) + index)->_68 = 0;
             }
             MN_SLOT(0xAE + BASE(o))->flags |= 2;
             MN_SLOT(0xAF + BASE(o))->flags |= 2;
         } else {
-            MN_SLOT(0x1C + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x1C + BASE(o) + index)->state = 1;
-            MN_SLOT(0x89 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x89 + BASE(o) + index)->state = 1;
+            MN_SLOT(0x1C + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x1C + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x89 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x89 + BASE(o) + index)->_68 = 1;
             if (g_d_GameSettings._10 == 0) {
                 if ((s8)lbl_8034E9A0[0x46F8] == 0) {
                     other = 1;
@@ -4865,36 +4842,36 @@ void fn_2_7BFF8(u8* o, s32 index) {
             }
             for (j = 0; j < 9; j++) {
                 if (index != 0) {
-                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->anim = other + 0x11;
+                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->_64 = other + 0x11;
                 } else {
-                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->anim = (s8)lbl_8034E9A0[0x46F8 + index] + 0x11;
+                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->_64 = (s8)lbl_8034E9A0[0x46F8 + index] + 0x11;
                 }
-                MN_SLOT(0x46 + BASE(o) + j + index * 9)->frame = 0;
+                MN_SLOT(0x46 + BASE(o) + j + index * 9)->_5C = 0;
                 if (j == F468_S32(index * 4)) {
                     MN_SLOT(0x46 + BASE(o) + j + index * 9)->flags |= 2;
-                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->state = 1;
+                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->_68 = 1;
                 } else {
                     MN_SLOT(0x46 + BASE(o) + j + index * 9)->flags |= 2;
-                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->state = 0;
+                    MN_SLOT(0x46 + BASE(o) + j + index * 9)->_68 = 0;
                 }
                 if (TEAM_TBL->roster[index][j] != -1) {
                     MN_SLOT(0x34 + BASE(o) + j + index * 9)->flags |= 2;
                     if (j == F468_S32(index * 4)) {
-                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->frame = 0xA0000;
-                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->state = 0;
+                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->_5C = 0xA0000;
+                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->_68 = 0;
                     } else {
-                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->frame = 0x140000;
-                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->state = 0;
+                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->_5C = 0x140000;
+                        MN_SLOT(0x34 + BASE(o) + j + index * 9)->_68 = 0;
                     }
-                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->frame = TEAM_TBL->roster[index][j] << 16;
-                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->state = 0;
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_5C = TEAM_TBL->roster[index][j] << 16;
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_68 = 0;
                 } else {
                     MN_SLOT(0x34 + BASE(o) + j + index * 9)->flags &= ~2;
                 }
             }
             fn_2_75BE4(o, index);
-            MN_SLOT(0x6A + BASE(o) + index)->frame = 0xA0000;
-            MN_SLOT(0x6A + BASE(o) + index)->state = 1;
+            MN_SLOT(0x6A + BASE(o) + index)->_5C = 0xA0000;
+            MN_SLOT(0x6A + BASE(o) + index)->_68 = 1;
         }
         if (*(u16*)(lbl_803CBBCC[0] + 6) == 0xB) {
             if (g_d_GameSettings.GameModeSelected != 5) {
@@ -4910,36 +4887,36 @@ void fn_2_7BFF8(u8* o, s32 index) {
                     s95 = 1;
                     s8f = 1;
                 }
-                MN_SLOT(0x93 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x93 + BASE(o) + index)->state = s93;
-                MN_SLOT(0x95 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x95 + BASE(o) + index)->state = s95;
-                MN_SLOT(0x8F + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x8F + BASE(o) + index)->state = s8f;
-                MN_SLOT(0x91 + BASE(o) + index)->frame = 0;
-                MN_SLOT(0x91 + BASE(o) + index)->state = 0;
+                MN_SLOT(0x93 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x93 + BASE(o) + index)->_68 = s93;
+                MN_SLOT(0x95 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x95 + BASE(o) + index)->_68 = s95;
+                MN_SLOT(0x8F + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x8F + BASE(o) + index)->_68 = s8f;
+                MN_SLOT(0x91 + BASE(o) + index)->_5C = 0;
+                MN_SLOT(0x91 + BASE(o) + index)->_68 = 0;
             } else {
                 if (index == 1) {
                     MN_SLOT(0x93 + BASE(o) + index)->flags &= ~2;
                 } else {
                     MN_SLOT(0x93 + BASE(o) + index)->flags |= 2;
-                    MN_SLOT(0x93 + BASE(o) + index)->frame = 0;
-                    MN_SLOT(0x93 + BASE(o) + index)->state = 1;
-                    MN_SLOT(0x95 + BASE(o) + index)->frame = 0;
-                    MN_SLOT(0x95 + BASE(o) + index)->state = 1;
+                    MN_SLOT(0x93 + BASE(o) + index)->_5C = 0;
+                    MN_SLOT(0x93 + BASE(o) + index)->_68 = 1;
+                    MN_SLOT(0x95 + BASE(o) + index)->_5C = 0;
+                    MN_SLOT(0x95 + BASE(o) + index)->_68 = 1;
                 }
                 MN_SLOT(0x8F + BASE(o) + index)->flags &= ~2;
             }
         }
         if (lbl_2_bss_F468[0x3F] != 0 && lbl_2_bss_F468[0x37] != 0 && index == 0 &&
             g_d_GameSettings.GameModeSelected == 5) {
-            MN_SLOT(0x93 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x93 + BASE(o) + index)->state = 1;
-            MN_SLOT(0x95 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x95 + BASE(o) + index)->state = 1;
-            MN_SLOT(0x8F + BASE(o) + index)->state = 1;
-            MN_SLOT(0x91 + BASE(o) + index)->frame = 0;
-            MN_SLOT(0x91 + BASE(o) + index)->state = 0;
+            MN_SLOT(0x93 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x93 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x95 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x95 + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x8F + BASE(o) + index)->_68 = 1;
+            MN_SLOT(0x91 + BASE(o) + index)->_5C = 0;
+            MN_SLOT(0x91 + BASE(o) + index)->_68 = 0;
         }
         fn_800626EC(index);
         *e = 1;
