@@ -13,11 +13,22 @@
 #include "Unknown/File_0x800a6304.h"
 #include "main/file_800B0724.h"
 #include "main/file_800BDEA0.h"
+#ifdef TARGET_PC
+#include "musyx/musyx.h" // SND_AUX_* (SoundManager views)
+#endif
 
 extern TrailSystem lbl_802D3D80;
 // SoundManager (main/file_80021308.h, whose prototypes clash with UnknownHomes_Static.h).
 typedef struct SoundManagerView {
+#ifdef TARGET_PC // SoundManager's head (main/file_80021308.h): pointers are 8 bytes here
+    /*0x000*/ u32 _000_unk0;
+    /*0x004*/ void* _004_groups[48];
+    /*0x0C4*/ SND_AUX_REVERBHI _0C4_reverb;
+    /*0x2A4*/ SND_AUX_CHORUS _2A4_chorus;
+    /*0x340*/ u8 _340[0x397 - 0x340];
+#else
     /*0x000*/ u8 _000[0x397];
+#endif
     /*0x397*/ u8 outputMode;
     /*0x398*/ u8 unk398;
 } SoundManagerView;

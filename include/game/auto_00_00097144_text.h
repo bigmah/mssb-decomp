@@ -170,7 +170,7 @@ extern void fn_8004CC4C(u8 first, u8 second, u8 third, s32 selection, u16 value)
 extern void fn_8004D0F0(void);
 extern void fn_800486E0(s32 priority, s8 a, u8 b);
 #ifndef _MUSYX_MUSYX
-extern void sndFXKeyOff(u32); // musyx.h has the real prototype
+extern u32 sndFXKeyOff(u32); // musyx.h: bool32 sndFXKeyOff(SND_VOICEID)
 #endif
 
 void fn_3_97144(void);

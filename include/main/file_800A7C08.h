@@ -205,10 +205,12 @@ typedef struct ThpMovie {
     /*0x0C*/ u32 _0C;
 } ThpMovie;
 
+// lbl_803C7A00 (MovMramRing in main/file_800ADC40.h): same field types.
 typedef struct ThpBufferInfo {
-    /*0x0*/ u8 _0[8];
+    /*0x0*/ void* _0;
+    /*0x4*/ u32 _4;
     /*0x8*/ void* buffer;
-    /*0xC*/ u8 _C[4];
+    /*0xC*/ void* _C;
 } ThpBufferInfo;
 
 typedef struct ThpPlayer {

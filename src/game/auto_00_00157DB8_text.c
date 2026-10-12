@@ -15,6 +15,9 @@
 #include "game/auto_00_0009143C_text.h"
 #include "main/file_800527C4.h"
 #include "main/file_8004C5F8.h"
+#ifdef TARGET_PC
+#include "musyx/musyx.h" // SND_AUX_* (SoundManager views)
+#endif
 
 extern s16 lbl_3_data_FC1C;
 extern u8 lbl_3_data_BD90[];
@@ -22,7 +25,15 @@ extern u8 lbl_3_data_BD50[];
 extern u8 lbl_3_data_B3F4[];
 // SoundManager (main/file_80021308.h, which clashes with this file's MusyX prototypes): only the field used here.
 typedef struct PracticeSoundView {
+#ifdef TARGET_PC // SoundManager's head (main/file_80021308.h): pointers are 8 bytes here
+    /*0x000*/ u32 _000_unk0;
+    /*0x004*/ void* _004_groups[48];
+    /*0x0C4*/ SND_AUX_REVERBHI _0C4_reverb;
+    /*0x2A4*/ SND_AUX_CHORUS _2A4_chorus;
+    /*0x340*/ u8 _340[0x398 - 0x340];
+#else
     /*0x000*/ u8 _000[0x398];
+#endif
     /*0x398*/ u8 unk398;
 } PracticeSoundView;
 extern PracticeSoundView lbl_800EF808;

@@ -63,13 +63,7 @@ extern void fn_8000FEE8(u8 idx);
 extern void fn_8000F8F4(void* task);
 extern void changeScene(s32 scene, s32 state);
 
-typedef struct Unk803716B8 {
-    /*0x000*/ u8 _000[0x1E9];
-    /*0x1E9*/ u8 _1E9;
-    /*0x1EA*/ u8 _1EA[0x578 - 0x1EA];
-} Unk803716B8;
-
-extern Unk803716B8 lbl_803716B8;
+extern AramLoader lbl_803716B8; // main/file_80021308.h
 extern SpaniDesc lbl_801092F8[4];
 
 extern DiskFileEntry lbl_801092C8[2]; // [0]: intro movie, [1]: logo textures
@@ -644,7 +638,7 @@ void fn_8006B230(void) {
 void fn_8006B668(void) {
     SceneTask* task = lbl_803CC1B8;
 
-    if (lbl_803716B8._1E9 == 0 && task->state != 6) {
+    if (lbl_803716B8.loading == 0 && task->state != 6) {
         fn_80022B68();
     }
     switch (task->state) {

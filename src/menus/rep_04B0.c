@@ -33,7 +33,7 @@ typedef struct PadState04B0 {
 typedef struct CharSel04B0 {
     /*0x0000*/ u8 _0000[0x46E0];
     /*0x46E0*/ s32 captain[2]; // captain character id per team, -1: none
-    /*0x46E8*/ u8 _46E8[0x46F8 - 0x46E8];
+    /*0x46E8*/ u8* _46E8[4]; // heap marks (CharSelectState, main/charsel_state_type.h)
     /*0x46F8*/ s8 teamPort[4]; // controller port per player
     /*0x46FC*/ s8 joined[4];   // port pressed A to join
     /*0x4700*/ u8 _4700[0x4704 - 0x4700];

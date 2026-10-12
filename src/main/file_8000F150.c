@@ -37,7 +37,9 @@ typedef struct LayoutInfo {
 } LayoutInfo; // size: 0x50
 
 typedef struct LayoutAnimSlot {
-    /*0x00*/ u8 _00[0x38];
+    /*0x00*/ Mtx _00; // same layout as SpaniTexSlot (main/file_80034F50.h)
+    /*0x30*/ void* _30;
+    /*0x34*/ void* _34;
     /*0x38*/ void* anim;
 } LayoutAnimSlot; // size: 0x3C
 
