@@ -9,21 +9,7 @@ typedef struct FielderStateEntry {
     void (*update)(int i);
 } FielderStateEntry;
 
-// *(FieldingBoost**)(g_FieldingLogic + 0x70): fielder speed-boost / charge state (fn_3_51220)
-typedef struct FieldingBoost {
-    f32 dirX;      // 0x00
-    f32 dirZ;      // 0x04
-    f32 scale;     // 0x08
-    s16 timer;     // 0x0C
-    s16 timer2;    // 0x0E
-    s16 power;     // 0x10
-    s16 frames;    // 0x12
-    s16 fielder;   // 0x14
-    s16 taps;      // 0x16
-    s16 decay;     // 0x18
-    u8 state;      // 0x1A
-} FieldingBoost;
-#define FIELDING_BOOST (*(FieldingBoost**)(g_FieldingLogic + 0x70))
+#include "game/fielding_types.h" // FieldingBoost (g_FieldingLogic.curBoost)
 
 // lbl_3_data_4B9C
 typedef struct FieldingBoostParams {

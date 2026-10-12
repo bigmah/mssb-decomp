@@ -76,7 +76,14 @@ typedef struct {
     /* 0x00 */ u16 _00;
     /* 0x02 */ u16 _02;
     /* 0x04 */ u16 _04; // repeat (PadState in static/Pad.h)
-    artificial_padding(4, 0x22, u16);
+    artificial_padding(4, 0x10, u16);
+    /* 0x10 */ s8 stickX; // PadState.sticks
+    /* 0x11 */ s8 stickY;
+    /* 0x12 */ s8 substickX;
+    /* 0x13 */ s8 substickY;
+    /* 0x14 */ u8 triggerL; // PadState.analog
+    /* 0x15 */ u8 triggerR;
+    artificial_padding(0x15, 0x22, u8);
     /* 0x22 */ u16 _22;
     artificial_padding(0x22, 0x42, u16);
     /* 0x42 */ u16 _42;

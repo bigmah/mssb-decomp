@@ -10,7 +10,7 @@
 // dvdsys.c: streams files from disc (optionally LZSS-compressed, see File_0x800a64e0.c)
 // into RAM, ARAM, or a ring buffer, using a monitor thread and a read thread.
 
-#include "main/aram_loader.h" // ARAMLoader, lbl_803C6CF8
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8, DVDSYS_MODE_*, DVDSYS_STATE_*
 
 u32 fn_800A6870(u8 enable, u32 limit);
 void fn_800A6890(u32 request);

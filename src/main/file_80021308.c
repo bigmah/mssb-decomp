@@ -1,6 +1,6 @@
 #include "main/file_80021308.h"
 #include "main/file_800B0724.h"
-#include "main/aram_loader.h" // lbl_803C6CF8
+#include "main/aramloader.h" // lbl_803C6CF8
 
 // Sound heap, disc/ARAM loader queue and sound group management.
 

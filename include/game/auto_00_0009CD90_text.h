@@ -4,21 +4,7 @@
 #include "mssbTypes.h"
 #include "game/UnknownHomes_Game.h"
 
-// g_RunningLogic (0x20 bytes); only the fields used here.
-typedef struct GameRunningLogic {
-    /*0x00*/ s16 _00; // play-event flags (0x10, 0x1000, ...)
-    /*0x02*/ s16 occupiedBases; // one nibble per base (0x1, 0x10, 0x100, 0x1000)
-    /*0x04*/ u8 _04[0x10 - 0x4];
-    /*0x10*/ u8 _10;
-    /*0x11*/ u8 _11;
-    /*0x12*/ u8 _12;
-    /*0x13*/ u8 _13;
-    /*0x14*/ u8 _14;
-    /*0x15*/ u8 _15; // runners on base
-    /*0x16*/ u8 _16[0x20 - 0x16];
-} GameRunningLogic; // size: 0x20
-
-extern GameRunningLogic g_RunningLogic;
+#include "game/running_logic.h" // GameRunningLogic g_RunningLogic
 
 // g_Fielders entry (0x268 bytes); only the fields used here.
 typedef struct GameFielder {
