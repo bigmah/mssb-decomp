@@ -217,8 +217,9 @@ void fn_3_6A83C(void) {
                     lbl_3_common_bss_32724.pitchEffect = 2;
                     return;
                 }
-                // TODO type: called through the old (int, int, void*) prototype, which keeps the original scheduling
-                ((int (*)(int, int, void*))getAnimRelatedCoordinates)(who, g_Pitcher.handedness != 0 ? 0x14 : 0x1A, &v);
+                // TODO type: called as (int, int, Vec*): the shared prototype takes s32 (long), and the
+                // argument conversion to int is what keeps the original scheduling here
+                ((BOOL (*)(int, int, Vec*))getAnimRelatedCoordinates)(who, g_Pitcher.handedness != 0 ? 0x14 : 0x1A, &v);
                 fn_3_CB284(who, g_Pitcher.windupCountdownUntilBallReleased, g_Pitcher.pitchChargeUpAnimationProportion);
             }
         }
