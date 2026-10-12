@@ -20,6 +20,72 @@
 #include "game/rep_28A8.h"
 #include "game/sta_c6.h"
 #include <stdlib.h>
+#include "game/auto_00_000D8A10_text.h" // MinigameSlotData
+
+// The minigame tables (0x188E8-0x18C48), defined here: the original reaches them through one pooled base.
+u8 lbl_3_data_188E8[0x14] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x02, 0x03, 0x04, 0x05, 0x00, 0x00, 0x02, 0x03, 0x05, 0x00, 0x00, 0x00, 0x00 };
+u8 lbl_3_data_188FC[0x10] = { 0x00, 0x02, 0x01, 0x03, 0x04, 0x05, 0x00, 0x01, 0x03, 0x04, 0x00, 0x01, 0x03, 0x04, 0x00, 0x00 };
+u8 aILevel[4] = { 0x03, 0x02, 0x01, 0x00 };
+u8 lbl_3_data_18910[8] = { 0x06, 0x00, 0x04, 0x05, 0x02, 0x03, 0x01, 0x00 }; // stadium ids, index into lbl_3_data_2130C
+u8 lbl_3_data_18918[8] = { 0x00, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x00 };
+u8 lbl_3_data_18920[0x24] = { 0x04, 0x04, 0x04, 0x04, 0x04, 0x01, 0x01, 0x01, 0x01, 0x02, 0x04, 0x04, 0x04, 0x01, 0x04, 0x01, 0x01, 0x01, 0x01, 0x02, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x00 };
+u8 lbl_3_data_18944[8] = { 0x03, 0x00, 0x00, 0x00, 0x03, 0x03, 0x00, 0x00 }; // per minigame: number of participants - 1
+u8 lbl_3_data_1894C[0x2C] = { 0x03, 0x13, 0x30, 0x32, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x04, 0x0C, 0x2A, 0x14, 0x2B, 0xFF, 0xFF, 0x05, 0x10, 0x2C, 0x2D, 0x2E, 0x2F, 0xFF, 0x00, 0x00 };
+u8 lbl_3_data_18978[8] = { 0x00, 0x01, 0x02, 0x03, 0x03, 0x00, 0x00, 0x00 };
+u8 lbl_3_data_18980[1] = { 0x02 }; // AI strength of each CPU player
+f32 lbl_3_data_18984[6] = { 0.0f, 70.0f, 12.0f, 40.0f, -12.0f, 40.0f };
+s16 lbl_3_data_1899C[4] = { 120, 90, 20, 0 }; // turn-over fade countdown: start, minimum
+u8 lbl_3_data_189A4[8] = { 0x0A, 0x14, 0x1E, 0x28, 0x32, 0x0A, 0x00, 0x00 }; // toy field turn counts
+s16 lbl_3_data_189AC[12] = { 2, 772, 1286, 2314, 2816, 0, 10, 20, 30, 10, 100, 0 };
+MinigameSlotData lbl_3_data_189C4 = {
+    { { 0, 2, 3, 4, 5, 6, 7 }, { 5, 0, 3, 2, 7, 4, 6 }, { 4, 0, 6, 3, 5, 7, 2 } },
+    { 0x00, 0x00 },
+    { { { { 0x14, 0x00, 0x0D, 0x14, 0x00, 0x02, 0x05, 0x28 }, { 0x14, 0x00, 0x0F, 0x0F, 0x0C, 0x03, 0x0A, 0x19 }, { 0x1E, 0x00, 0x19, 0x00, 0x14, 0x05, 0x0A, 0x0A } }, { { 0x0A, 0x00, 0x05, 0x0A, 0x00, 0x00, 0x05, 0x46 }, { 0x14, 0x00, 0x0F, 0x0F, 0x0C, 0x03, 0x0A, 0x19 }, { 0x1E, 0x00, 0x19, 0x00, 0x14, 0x05, 0x0A, 0x0A } }, { { 0x05, 0x00, 0x05, 0x05, 0x00, 0x00, 0x05, 0x50 }, { 0x14, 0x00, 0x0F, 0x0F, 0x0C, 0x03, 0x0A, 0x19 }, { 0x1E, 0x00, 0x19, 0x00, 0x14, 0x05, 0x0A, 0x0A } } },
+      { { { 0x14, 0x00, 0x0D, 0x14, 0x00, 0x02, 0x05, 0x28 }, { 0x14, 0x00, 0x0F, 0x0F, 0x0C, 0x03, 0x0A, 0x19 }, { 0x1E, 0x00, 0x19, 0x00, 0x14, 0x05, 0x0A, 0x0A } }, { { 0x0A, 0x00, 0x05, 0x0A, 0x00, 0x00, 0x05, 0x46 }, { 0x14, 0x00, 0x0F, 0x0F, 0x0C, 0x03, 0x0A, 0x19 }, { 0x1E, 0x00, 0x19, 0x00, 0x14, 0x05, 0x0A, 0x0A } }, { { 0x05, 0x00, 0x05, 0x05, 0x00, 0x00, 0x05, 0x50 }, { 0x14, 0x00, 0x0F, 0x0F, 0x0C, 0x03, 0x0A, 0x19 }, { 0x1E, 0x00, 0x19, 0x00, 0x14, 0x05, 0x0A, 0x0A } } },
+      { { { 0x14, 0x00, 0x0B, 0x1E, 0x00, 0x00, 0x00, 0x27 }, { 0x0F, 0x00, 0x0F, 0x1E, 0x1E, 0x00, 0x00, 0x0A }, { 0x14, 0x00, 0x14, 0x1E, 0x1E, 0x00, 0x00, 0x00 } }, { { 0x0A, 0x00, 0x0A, 0x14, 0x00, 0x00, 0x0A, 0x32 }, { 0x0F, 0x00, 0x05, 0x14, 0x28, 0x00, 0x0A, 0x0A }, { 0x0A, 0x00, 0x0A, 0x0A, 0x32, 0x0A, 0x0A, 0x00 } }, { { 0x0A, 0x00, 0x0A, 0x0F, 0x00, 0x00, 0x05, 0x3C }, { 0x0F, 0x00, 0x05, 0x14, 0x1E, 0x05, 0x0A, 0x0A }, { 0x0A, 0x00, 0x0A, 0x0A, 0x32, 0x0A, 0x0A, 0x00 } } } },
+};
+f32 lbl_3_data_18AC8[10][4] = {
+    { 17.7f, 37.1f, 9.0f, 14.0f },
+    { 0.0f, 52.0f, 9.0f, 14.0f },
+    { -17.7f, 37.1f, 9.0f, 14.0f },
+    { 34.2f, 53.6f, 9.0f, 14.0f },
+    { 20.0f, 71.0f, 9.0f, 14.0f },
+    { 0.0f, 76.8f, 9.0f, 14.0f },
+    { -20.0f, 71.0f, 9.0f, 14.0f },
+    { -34.2f, 53.6f, 9.0f, 14.0f },
+    { 21.0f, 96.5f, 9.0f, 15.0f },
+    { -21.0f, 96.5f, 9.0f, 15.0f }
+};
+u8 lbl_3_data_18B68[0x20] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00 };
+f32 lbl_3_data_18B88[10] = { 0.84f, 0.88f, 0.92f, 0.96f, 1.0f, 0.004f, 0.985f, 0.65f, 0.5f, 1.5f };
+MinigameCoinTiming lbl_3_data_18BB0[2] = { { 240, 180 }, { 180, 150 } };
+MinigamePointsAward lbl_3_data_18BB8[24] = {
+    { 10, 0, 0 },
+    { 20, 0, 0 },
+    { 30, 0, 0 },
+    { 40, 0, -20 },
+    { 40, -40, 0 },
+    { 30, -10, -10 },
+    { 60, -20, -20 },
+    { 90, -30, -30 },
+    { 120, -40, -40 },
+    { 0, 0, 0 },
+    { 0, 0, 0 },
+    { 0, 0, 0 },
+    { 200, 0, 0 },
+    { 50, 0, 0 },
+    { 100, 0, 0 },
+    { 30, 0, 0 },
+    { 0, 0, 0 },
+    { 0, 0, 0 },
+    { -90, 30, 30 },
+    { 0, 0, 0 },
+    { -50, 0, 50 },
+    { 0, 0, 0 },
+    { -30, 30, 0 },
+    { 20, -20, 0 }
+};
+
 
 extern void possiblyTransitionBlackScreen(void);
 
@@ -35,20 +101,13 @@ extern MinigameBss37400View lbl_3_common_bss_37400;
 extern MinigameSceneFadeView lbl_8037169C;
 
 extern f32 lbl_3_data_18D98[];
-extern MinigameCoinTiming lbl_3_data_18BB0[];
 extern f32 lbl_3_data_18DD0; // coin spin per frame
 extern s16 lbl_3_data_18C48[]; // minigame starting points
-extern u8 lbl_3_data_189A4[];  // toy field turn counts
-extern u8 lbl_3_data_18944[];
 extern u8 lbl_3_data_21270[];
-extern u8 lbl_3_data_18910[];                   // stadium ids, index into lbl_3_data_2130C
 extern MinigameStageCamera lbl_3_data_2130C[];  // [stadium] / [minigame]
 extern VecXYZ lbl_3_data_18E04[][4];            // actor offsets: [participants - 1][slot]
 extern f32 lbl_3_data_18EC4[];                  // z offsets for winners / losers
 extern s16 lbl_3_data_2137C;                    // frame the result jingle starts
-extern s16 lbl_3_data_1899C[];                 // turn-over fade countdown: start, minimum
-extern MinigamePointsAward lbl_3_data_18BB8[]; // indexed by turn result + 4 // per minigame: number of participants - 1
-extern u8 lbl_3_data_18980[]; // AI strength of each CPU player
 
 // NONMATCHING 95%: the fieldOrder fill loops address it as (&g_Minigame + 1 + n)->0x18F4 in the original
 // (ours: pointer to fieldOrder[1]); r5/r6 swapped there
@@ -502,14 +561,46 @@ void fn_3_DFA20(void) {
     }
 }
 
-// NONMATCHING 77%: the original inlines fn_3_DF820 (case 27) and fn_3_DF6D4 (case 37), and reaches the .data tables
-// (lbl_3_data_18980/18944/1899C/18BB8) through one pooled base lbl_3_data_188E8
+// Inline copy of fn_3_DF608 (NONMATCHING; inlined in fn_3_DF6D4 and so in fn_3_DFBAC).
+static inline void fn_3_DF608_inline(void) {
+    u8* aiStrength = lbl_3_data_18980;
+    s32 i;
+
+    g_Minigame._19DA[g_d_GameSettings._35] = 0;
+    for (i = 0; i < 4; i++) {
+        if (g_d_GameSettings._35 != i) {
+            g_Minigame.minigameControlStruct[0].aIStrength[i] = *aiStrength++;
+        }
+    }
+    g_Minigame.miniGameNumberOfParticipants = lbl_3_data_18944[g_Minigame.GameMode_MiniGame] + 1;
+    g_Minigame._1907 = 1;
+    g_Minigame.multiPlayerInd = 1;
+    g_Scores.minigameRelated = 1;
+}
+
+// Inline copy of fn_3_DF6D4 (NONMATCHING; the original expands it in fn_3_DFBAC).
+static inline void fn_3_DF6D4_inline(void) {
+    switch (g_GameLogic._125) {
+    case 0:
+        fn_3_DF608_inline();
+        g_GameLogic._125++;
+    }
+    g_Minigame._190A = 1;
+    g_Minigame._19DA[g_d_GameSettings._35] = g_d_GameSettings._35;
+    lbl_3_common_bss_37400.humanPlayer = g_d_GameSettings._35;
+    g_Minigame.GameMode_MiniGame = g_d_GameSettings._33;
+    g_Minigame._19DF = 30;
+    fn_3_5A6D4(0x1B);
+}
+
+// NONMATCHING 99.8%: the pause loop's index and g_Minigame cursor registers are swapped, and the
+// fielder's rosterID (s8 here) is read as a u8 in the original
 // .text:0x000DFBAC size:0xABC mapped:0x8071EC40
 #if NONMATCHING
 void fn_3_DFBAC(void) {
-    MinigamePointsAward* award;
     s32 i;
     u8 mult;
+    s32 idx;
 
     g_GameLogic.hudElementLoadingInd = 0;
     g_GameLogic.hudLoadingRelated = 0;
@@ -525,6 +616,24 @@ void fn_3_DFBAC(void) {
     }
 
     switch (g_GameLogic.gameStatus) {
+    case 27:
+        fn_3_DF820(); // inlined in the original
+        break;
+    case 29:
+        fn_3_10F3D8();
+        break;
+    case 30:
+        fn_3_10E60C();
+        break;
+    case 33:
+        fn_3_10B8D0();
+        break;
+    case 34:
+        fn_3_DC6E8();
+        break;
+    case 37:
+        fn_3_DF6D4_inline(); // inlined in the original
+        break;
     case 0:
         fn_3_DE744();
         break;
@@ -562,18 +671,14 @@ void fn_3_DFBAC(void) {
         atBat_batter();
         fn_3_2EA24();
         if (g_Minigame.toyFieldBallStateResult2 == 0) {
-            switch (g_Pitcher.strikeOutOrWalk) {
-            case 0:
-                break;
-            case 1:
+            if (g_Pitcher.strikeOutOrWalk == 0) {
+                // no strikeout or walk
+            } else if (g_Pitcher.strikeOutOrWalk == 1) {
                 g_Minigame.toyFieldBallStateResult2 = 2;
-                break;
-            case 2:
+            } else if (g_Pitcher.strikeOutOrWalk == 2) {
                 g_Minigame.toyFieldBallStateResult2 = 7;
-                break;
-            default:
+            } else {
                 g_Minigame.toyFieldBallStateResult2 = 8;
-                break;
             }
         }
         if (g_Minigame.toyFieldBallStateResult2 != 0) {
@@ -663,6 +768,12 @@ void fn_3_DFBAC(void) {
     case 9:
         fn_3_DD000();
         break;
+    case 14:
+        fn_3_10A0A0();
+        break;
+    case 36:
+        fn_3_109254();
+        break;
     case 11:
         fn_3_DCC80();
         break;
@@ -678,48 +789,24 @@ void fn_3_DFBAC(void) {
         lbl_3_common_bss_34C90.repeatButtons = g_Controls[lbl_3_common_bss_34C90.team]._08;
         fn_3_ACAF8();
         break;
-    case 14:
-        fn_3_10A0A0();
-        break;
-    case 27:
-        fn_3_DF820(); // inlined in the original
-        break;
-    case 29:
-        fn_3_10F3D8();
-        break;
-    case 30:
-        fn_3_10E60C();
-        break;
-    case 33:
-        fn_3_10B8D0();
-        break;
-    case 34:
-        fn_3_DC6E8();
-        break;
-    case 36:
-        fn_3_109254();
-        break;
-    case 37:
-        fn_3_DF6D4(); // inlined in the original
-        break;
     }
 
     // Award this turn's points once.
     if (g_Minigame._19CD == 1) {
-        award = &lbl_3_data_18BB8[g_Minigame._1921 + 4];
-        if (g_Minigame._1921 + 4 == 20 || g_Minigame._1921 + 4 == 21) {
+        idx = g_Minigame._1921 + 4;
+        if (idx == 20 || idx == 21) {
             mult = g_Minigame.toyField_pointMultiplier;
-            g_Minigame.miniGameLatestPoints[g_Minigame.rosterID] += mult * award->batter;
-            g_Minigame.miniGameLatestPoints[g_Minigame.minigamePlayerSelectedOrder] += g_Minigame.toyField_pointMultiplier * award->pitcher;
+            g_Minigame.miniGameLatestPoints[g_Minigame.rosterID] += mult * lbl_3_data_18BB8[idx].batter;
+            g_Minigame.miniGameLatestPoints[g_Minigame.minigamePlayerSelectedOrder] += g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[idx].pitcher;
             g_Minigame.miniGameLatestPoints[(u8)g_Fielders[g_Ball.fielderWBallIndex].rosterID] +=
-                g_Minigame.toyField_pointMultiplier * award->fielder;
+                g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[idx].fielder;
         } else {
-            g_Minigame.miniGameLatestPoints[g_Minigame.rosterID] += g_Minigame.toyField_pointMultiplier * award->batter;
-            g_Minigame.miniGameLatestPoints[g_Minigame.minigamePlayerSelectedOrder] += g_Minigame.toyField_pointMultiplier * award->pitcher;
+            g_Minigame.miniGameLatestPoints[g_Minigame.rosterID] += g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[idx].batter;
+            g_Minigame.miniGameLatestPoints[g_Minigame.minigamePlayerSelectedOrder] += g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[idx].pitcher;
             g_Minigame.miniGameLatestPoints[g_Minigame.minigameControlStruct[0].fieldOrder[1]] +=
-                g_Minigame.toyField_pointMultiplier * award->fielder;
+                g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[idx].fielder;
             g_Minigame.miniGameLatestPoints[g_Minigame.minigameControlStruct[0].fieldOrder[2]] +=
-                g_Minigame.toyField_pointMultiplier * award->fielder;
+                g_Minigame.toyField_pointMultiplier * lbl_3_data_18BB8[idx].fielder;
         }
         for (i = 0; i < 4; i++) {
             if (g_Minigame.miniGameLatestPoints[i] != 0) {
