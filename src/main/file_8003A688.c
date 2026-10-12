@@ -551,7 +551,7 @@ void fn_8003AECC(void) {
 
 // .text:0x8003B5B0 size:0x5E0
 // Save task: creates the save file if needed and writes lbl_802D4B00 to the card.
-// NONMATCHING 99%: the original reaches the banner comment strings through a pooled .data base (addi 0x3220; addi 0x20), unsplit data
+// NONMATCHING 99.1%: the original reaches the banner comment strings through a pooled .data base (addi 0x3220; addi 0x20), unsplit data
 #if NONMATCHING
 void fn_8003B5B0(void) {
     SaveTask* task = (SaveTask*)lbl_803CC1B8;
@@ -2085,7 +2085,7 @@ static inline s32 SaveImage_ChallengeValid(void) {
 // .text:0x8003F2B8 size:0x1284
 // Boot-time card check (queued by fn_8003F23C): loads the save, or offers to create /
 // format one.
-// NONMATCHING 96%: state 13 keeps &lbl_802D4B00 in r30 and loops over the block sizes; the inlined challenge-save check differs in register use
+// NONMATCHING 96.4%: state 13 keeps &lbl_802D4B00 in r30 and loops over the block sizes; the inlined challenge-save check differs in register use
 #if NONMATCHING
 void fn_8003F2B8(void) {
     SaveTask* task = (SaveTask*)lbl_803CC1B8;
@@ -2852,7 +2852,7 @@ void fn_8004053C(void) {
 
 // .text:0x80040C14 size:0x3CC
 // Load task: reads the save file from the card into lbl_802D4B00.
-// NONMATCHING 99%: register allocation only in the inlined block-mask/size checks (r6/r7/r8/r9 rotated)
+// NONMATCHING 99.0%: register allocation only in the inlined block-mask/size checks (r6/r7/r8/r9 rotated)
 #if NONMATCHING
 void fn_80040C14(void) {
     SaveTask* task = (SaveTask*)lbl_803CC1B8;
@@ -3031,7 +3031,7 @@ void fn_80041150(u8 mask, u8 slot) {
 
 // .text:0x80041348 size:0x1F4
 // Sanity-checks the loaded challenge save; returns 0 if it is corrupt.
-// NONMATCHING 96%: duplicate-id loop keeps &teams[i] as a separate base register in the original (r6 = r7 + 0x40B8)
+// NONMATCHING 95.9%: duplicate-id loop keeps &teams[i] as a separate base register in the original (r6 = r7 + 0x40B8)
 #if NONMATCHING
 s32 fn_80041348(void) {
     s32 ok = 1;
@@ -3316,3 +3316,13 @@ copy:
     }
 }
 #endif
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x800FADA0..0x800FB3F8
+
+// .bss 0x802D4AC0..0x802E4B00 (MWCC lays these out in reverse definition order)
+SaveImage lbl_802D4B00;
+u64 lbl_802D4AE0[4];
+ARQRequest lbl_802D4AC0;
+

@@ -18,7 +18,7 @@ extern OSThread* GXSetCurrentGXThread(void);
 extern s32 OSSignalSemaphore(OSSemaphore* sem);
 
 // .text:0x800A7C08 size:0x144
-// NONMATCHING 99%: int->float magic constant and 0.0f/1.0f live in unsplit .sdata2 (reloc names differ); r3/r4 swapped in the callback loop
+// NONMATCHING 99.6%: int->float magic constant and 0.0f/1.0f live in unsplit .sdata2 (reloc names differ); r3/r4 swapped in the callback loop
 #if NONMATCHING
 void* fn_800A7C08(void* arg) {
     GXRenderModeObj* rmode;
@@ -83,7 +83,7 @@ void fn_800A7DB0(void) {
 }
 
 // .text:0x800A7E00 size:0x110
-// NONMATCHING 98%: int->float magic constant lives in unsplit .sdata2 (reloc name differs); lis order of &GXNtsc480Int vs &lbl_803C7420 swapped
+// NONMATCHING 98.0%: int->float magic constant lives in unsplit .sdata2 (reloc name differs); lis order of &GXNtsc480Int vs &lbl_803C7420 swapped
 #if NONMATCHING
 void fn_800A7E00(void) {
     GXRenderModeObj* rmode = &lbl_803C7420.renderModeCopy;
@@ -104,14 +104,11 @@ void fn_800A7E00(void) {
 #endif
 
 // .text:0x800A7F10 size:0x1D8
-// NONMATCHING 99%: int->float magic constant lives in unsplit .sdata2 (reloc name differs); lis order of &GXNtsc480Int vs &lbl_803C7420 swapped
-#if NONMATCHING
 void fn_800A7F10(BOOL reset) {
     if (reset) {
-        GXRenderModeObj* rmode = &lbl_803C7420.renderModeCopy;
-        GXAdjustForOverscan(&GXNtsc480Int, rmode, 0, 16);
-        lbl_803C7420.renderMode = rmode;
-        VIConfigure(rmode);
+        GXAdjustForOverscan(&GXNtsc480Int, &lbl_803C7420.renderModeCopy, 0, 16);
+        lbl_803C7420.renderMode = &lbl_803C7420.renderModeCopy;
+        VIConfigure(&lbl_803C7420.renderModeCopy);
         VIFlush();
         VIWaitForRetrace();
         VIWaitForRetrace();
@@ -136,7 +133,6 @@ void fn_800A7F10(BOOL reset) {
                         lbl_803C7420.renderMode->vfilter);
     }
 }
-#endif
 
 extern u8 lbl_802ED140[0x2000];       // draw thread stack
 extern GXColor lbl_803CBAD0;          // EFB clear color
@@ -144,7 +140,7 @@ extern char lbl_800E77C8[];
 extern char lbl_800E77D4[];
 
 // .text:0x800A80E8 size:0x3DC
-// NONMATCHING 98%: int->float magic constant and 0.0f/1.0f live in unsplit .sdata2 (reloc names differ); xfb address computation scheduled slightly differently
+// NONMATCHING 98.1%: int->float magic constant and 0.0f/1.0f live in unsplit .sdata2 (reloc names differ); xfb address computation scheduled slightly differently
 #if NONMATCHING
 void initRenderMode(GXRenderModeObj* rmode, u32 fifoSize, u32 overscan) {
     OSThread* thread = &lbl_803C7420.drawThread;
@@ -372,15 +368,10 @@ u32 fn_800A88D0(void) {
 }
 
 // .text:0x800A88D8 size:0x1D8
-// NONMATCHING 99%: the early 'state == BUSY' return compiles to beq instead of the original's bne/b pair
-#if NONMATCHING
 void fn_800A88D8(u32 state) {
     StreamTrack* track;
 
-    if (lbl_803CC148 == state) {
-        return;
-    }
-    if (lbl_803CC148 == STREAM_STATE_BUSY) {
+    if (lbl_803CC148 == state || lbl_803CC148 == STREAM_STATE_BUSY) {
         return;
     }
     switch (state) {
@@ -431,7 +422,6 @@ void fn_800A88D8(u32 state) {
         break;
     }
 }
-#endif
 
 // fn_800A8AB0, size:0x8
 void fn_800A8AB0(u32 value) {
@@ -1864,7 +1854,7 @@ u16 fn_800ABB14(u8* data, s32 len) {
 }
 
 // .text:0x800ABB60 size:0x70
-// NONMATCHING 96%: removeQueue is called with whatever r3 holds; our call passes &lbl_803C7838 explicitly
+// NONMATCHING 94.1%: removeQueue is called with whatever r3 holds; our call passes &lbl_803C7838 explicitly
 #if NONMATCHING
 void fn_800ABB60(void) {
     CardSlot* slot = lbl_803C7838.slots;
@@ -1880,9 +1870,16 @@ void fn_800ABB60(void) {
 }
 #endif
 
+// fn_800ABB14 as inlined into fn_800ABBD0 (the length argument is evaluated first).
+static inline u16 cardCrcInline(s32 len, u8* data) {
+    u16 crc = 0xFFFF;
+    while (--len >= 0) {
+        crc = (crc << 8) ^ lbl_800E7800[(u8)(crc >> 8) ^ *data++];
+    }
+    return ~crc;
+}
+
 // .text:0x800ABBD0 size:0x374
-// NONMATCHING 99%: r7/r8 swapped in the inlined fn_800ABB14 CRC loop
-#if NONMATCHING
 void fn_800ABBD0(void) {
     CARDStat* stat = &lbl_802EF330;
     CardMountTask* task = (CardMountTask*)lbl_803CC1B8;
@@ -1964,7 +1961,7 @@ void fn_800ABBD0(void) {
     case 3:
         if (!(lbl_803CC160 & 1)) {
             header = file->buffer;
-            if (header->crc != fn_800ABB14((u8*)(header + 1), file->length - sizeof(CardSaveHeader))) {
+            if (header->crc != cardCrcInline(file->length - sizeof(CardSaveHeader), (u8*)(header + 1))) {
                 Task* parent;
                 lbl_803C7838.status = 0xB;
                 parent = task->parent;
@@ -1979,7 +1976,6 @@ void fn_800ABBD0(void) {
         break;
     }
 }
-#endif
 
 // .text:0x800ABF44 size:0x5C4
 // NONMATCHING 92%: switch jump table lives in unsplit .data (reloc names differ); register allocation differs
@@ -2418,7 +2414,7 @@ void fn_800ACF14(void* block) {
 }
 
 // .text:0x800ACF34 size:0x44
-// NONMATCHING 97%: register allocation (heap pointer in r4 instead of r5, lo/result regs differ)
+// NONMATCHING 97.3%: register allocation (heap pointer in r4 instead of r5, lo/result regs differ)
 #if NONMATCHING
 void* fn_800ACF34(s32 align, s32 size) {
     HeapArena* heap = &lbl_803C7898;
@@ -2440,7 +2436,7 @@ void* fn_800ACF34(s32 align, s32 size) {
 #endif
 
 // .text:0x800ACF78 size:0x38
-// NONMATCHING 96%: register allocation (base/total/diff registers rotated)
+// NONMATCHING 96.4%: register allocation (base/total/diff registers rotated)
 #if NONMATCHING
 void fn_800ACF78(void* block, s32 size) {
     HeapArena* heap;
@@ -2820,3 +2816,50 @@ void fn_800ADBFC(void) {
         OSSendMessage(&lbl_802FB870, (OSMessage)4, OS_MESSAGE_NOBLOCK);
     }
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x80110080..0x801101B0
+PadConfig lbl_80110080 = {0, 12, 2, 0, 32, -50, 50}; // NOTE: type size 0xC != symbol size 0x10
+
+// .bss 0x802ED140..0x802F93A0 (MWCC lays these out in reverse definition order)
+CARDMemoryCard lbl_802EF3A0;
+CARDStat lbl_802EF330;
+CardSaveHeader lbl_802EF2F0;
+char lbl_802EF2D0[(32)];
+u64 lbl_802EF2C0[2];
+DVDCommandBlock lbl_802EF290;
+DVDCommandBlock lbl_802EF260;
+DVDCommandBlock lbl_802EF230;
+DVDCommandBlock lbl_802EF200;
+DVDCommandBlock lbl_802EF1D0;
+DVDCommandBlock lbl_802EF1A0;
+DVDCommandBlock lbl_802EF170;
+DVDCommandBlock lbl_802EF140;
+u8 lbl_802ED140[0x2000];
+
+// .sdata 0x803CBAD0..0x803CBAE0
+GXColor lbl_803CBAD0 = {0, 0, 0, 255}; // NOTE: type size 0x4 != symbol size 0x8
+GXTexFmt lbl_803CBAD8[2] = {4, 6};
+
+// .sbss 0x803CC128..0x803CC170 (MWCC lays these out in reverse definition order)
+u8* lbl_803CC16C;
+s32 lbl_803CC168;
+u8* lbl_803CC164;
+u32 lbl_803CC160;
+u8 (*lbl_803CC15C)(void* buffer, s32 length, u32 arg);
+u32 lbl_803CC158;
+StreamTrack* lbl_803CC154;
+StreamTrack* lbl_803CC150;
+StreamTrack* lbl_803CC14C;
+volatile u32 lbl_803CC148;
+volatile u32 lbl_803CC144;
+volatile u32 lbl_803CC140;
+volatile u32 lbl_803CC13C;
+volatile u32 lbl_803CC138;
+volatile u8 lbl_803CC135;
+volatile u8 lbl_803CC134;
+volatile u32 lbl_803CC130;
+volatile u32 lbl_803CC12C;
+void (*lbl_803CC128)(void);
+

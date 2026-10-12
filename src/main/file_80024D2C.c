@@ -384,7 +384,7 @@ void fn_80024FA4(ShapeModel** model, ShapeData* shape, ShapeAnimState* st, s32 f
 
 // .text:0x80025C58 size:0x184
 // Binds the shape data to a model: caches each target's vertex array slot and data pointer.
-// NONMATCHING 96%: r5/r6 swapped for geo/arrays vs posSlot; original copies the zero with mr
+// NONMATCHING 96.3%: r5/r6 swapped for geo/arrays vs posSlot; original copies the zero with mr
 #if NONMATCHING
 void fn_80025C58(ShapeData* shape, ShapeModel** model) {
     ShapeModel* m;
@@ -539,15 +539,12 @@ void fn_80025EEC(ShapeAnimPlayer* p, s32 table, s32 entry) {
 
 // .text:0x80025FFC size:0x134
 // Relocates the player's animation set and binds it to model.
-// NONMATCHING 95%: `p == NULL` early return emitted as bne/blr; st in r7 instead of r6
+// NONMATCHING 96.5%: st in r6 instead of r7 (and the tail stores scheduled differently)
 #if NONMATCHING
 void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
     ShapeAnimState* st;
     u32 i;
-    if (model == NULL) {
-        return;
-    }
-    if (p == NULL) {
+    if (model == NULL || p == NULL) {
         return;
     }
     if (p->set == NULL) {
@@ -573,3 +570,14 @@ void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
     p->active = 1;
 }
 #endif
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .sdata 0x803CB7E8..0x803CB7F8
+ShapeKey lbl_803CB7E8[2] = {{0, 0, 0, 0, 0, 100, 0}, {0, 0, 0, 0, 100, 100, 0}}; // default sequence keys
+ShapeSeqHdr lbl_803CB7F0 = {100, 2};
+ShapeKey* lbl_803CB7F4 = lbl_803CB7E8;
+
+// .sbss 0x803CBC68..0x803CBC70 (MWCC lays these out in reverse definition order)
+s32 lbl_803CBC68;
+

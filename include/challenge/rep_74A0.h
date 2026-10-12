@@ -46,19 +46,6 @@ typedef struct {
     ChallengeDrawNode nodes[1];
 } ChallengeDrawCollection;
 
-typedef struct {
-    u16 selectedBone;
-    u8 selectedActor;
-    u8 confetti;  // viewer menu toggles
-    u8 fog;
-    u8 colorEdit; // material colour items visible in the menu
-    u8 matAlpha; // material colour for fn_1_19D60, stored a, b, g, r
-    u8 matBlue;
-    u8 matGreen;
-    u8 matRed;
-    u8 padding0A[0x182];
-    Mtx matrix; // lbl_1_bss_6B7C (camera view)
-} ChallengeBoneSelection;
 
 typedef struct {
     void (*update)(u8*);

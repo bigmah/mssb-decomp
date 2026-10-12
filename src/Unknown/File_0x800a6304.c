@@ -29,7 +29,7 @@ void fn_800A6304(void)
     }
 }
 
-// NONMATCHING 97%: register numbering of new_val/base differs (orig: base r6, new_val r5)
+// NONMATCHING 97.0%: register numbering of new_val/base differs (orig: base r6, new_val r5)
 #if NONMATCHING
 u32 fn_800A6354(u32 param_1)
 {

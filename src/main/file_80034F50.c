@@ -352,10 +352,8 @@ void fn_80035750(void* data, void* tex, s16 id) {
 
 
 // .text:0x80035838 size:0x1C8
-// NONMATCHING 99.7%: r0/r4 pick for the slot index in case 1
-#if NONMATCHING
 s32 fn_80035838(void* aramAddr, u8 id) {
-    s32 done = 0;
+    u8 done = 0;
 
     if (lbl_803CBC90 == 2) {
         lbl_803CBC90 = 0;
@@ -377,9 +375,12 @@ s32 fn_80035838(void* aramAddr, u8 id) {
         break;
     case 1:
         if ((s8)lbl_803C6CF8[0x715] == 1) {
-            SpaniTexSlot* s = &lbl_803C4BE0[lbl_803CBC91];
-            SpaniAnim** pa = &s->anim;
-            s32* hdr = s->data;
+            SpaniTexSlot* s = lbl_803C4BE0;
+            SpaniAnim** pa;
+            s32* hdr;
+            s += lbl_803CBC91;
+            pa = &s->anim;
+            hdr = s->data;
             s->tex = (u8*)hdr + hdr[0];
             *pa = (SpaniAnim*)((u8*)hdr + hdr[1]);
             convertTextureHeader(s->tex);
@@ -391,7 +392,6 @@ s32 fn_80035838(void* aramAddr, u8 id) {
     }
     return done;
 }
-#endif
 
 
 // .text:0x80035A00 size:0x150
@@ -729,8 +729,6 @@ void fn_80036A3C(void) {
 }
 
 // .text:0x80036C88 size:0x3CC
-// NONMATCHING 99.9%: r3/r4 swapped in the final dst[0] update
-#if NONMATCHING
 s32 fn_80036C88(s32* src, s32* dst) {
     s32 i;
     s32 sum;
@@ -774,8 +772,43 @@ s32 fn_80036C88(s32* src, s32* dst) {
         for (j = 0; j < 23; j++) {
             dst[j] += add;
         }
-        dst[0] += diff - add * 23;
+        diff -= add * 23; dst[0] += diff;
     }
     return 0;
 }
-#endif
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x800F78E0..0x800F79A0
+Mtx lbl_800F78E0[4] = {
+    {{1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.0f}},
+    {
+        {0.39921874f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 0.39921874f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.39921874f, -511.0f},
+    },
+    {{0.0015625f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0015625f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0015625f, -2.0f}},
+    {
+        {0.20039062f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 0.20039062f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.20039062f, -256.5f},
+    },
+};
+
+// .bss 0x801F8640..0x8023DD80 (MWCC lays these out in reverse definition order)
+s16 lbl_8023D6C0[0x360];
+u8 lbl_801F86C0[];
+Mtx44 lbl_801F8680;
+Mtx44 lbl_801F8640;
+
+// .sdata 0x803CB810..0x803CB818
+s32 lbl_803CB810 = -1;
+s32 lbl_803CB814 = 864;
+
+// .sbss 0x803CBC90..0x803CBCA0 (MWCC lays these out in reverse definition order)
+SpaniObj* lbl_803CBC9C;
+s32 lbl_803CBC98;
+void* lbl_803CBC94;
+u8 lbl_803CBC91;
+u8 lbl_803CBC90;
+

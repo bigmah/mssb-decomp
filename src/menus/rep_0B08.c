@@ -130,7 +130,9 @@ void fn_2_6F78C(MenuEntry* entry) {
 }
 
 extern u8* lbl_2_bss_1A824C[];
-extern f32 lbl_2_bss_A170;
+// .bss 0xA170..0xA840 (mwcc emits file statics in reverse order of definition).
+static u8 lbl_2_bss_A174[0x6CC]; // unreferenced
+static f32 lbl_2_bss_A170;
 extern Vec lbl_2_data_2A340;
 extern const f32 lbl_2_rodata_BB0;
 extern const f32 lbl_2_rodata_C10;

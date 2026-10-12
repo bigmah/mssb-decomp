@@ -137,7 +137,7 @@ void SetDisplayStateTexture(TexImage* tex, s32 map, u32 tlutName) {
 
 // .text:0x800245EC size:0xE8
 // Project `count` points to normalized [0,1] screen coordinates.
-// NONMATCHING 99%: f0/f1 swapped in the y-coordinate fmuls
+// NONMATCHING 99.4%: f0/f1 swapped in the y-coordinate fmuls
 #if NONMATCHING
 void fn_800245EC(Mtx44 proj, Mtx view, Vec* points, f32* out, s32 count, s32 ySign) {
     Vec p;
@@ -158,7 +158,7 @@ void fn_800245EC(Mtx44 proj, Mtx view, Vec* points, f32* out, s32 count, s32 ySi
 
 // .text:0x800246D4 size:0x110
 // Sort `count` elements of `size` bytes from src into dst (binary insertion sort, stable).
-// NONMATCHING 98%: saved-register assignment differs; same instructions
+// NONMATCHING 98.0%: saved-register assignment differs; same instructions
 #if NONMATCHING
 void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 size, s32 count) {
     s32 mid;
@@ -209,15 +209,13 @@ void fn_800246D4(s32 (*compare)(void* key, void* elem), u8* src, u8* dst, s32 si
 
 // .text:0x800247E4 size:0x5C
 // Byte offset of texel (x, y) in a texture of 4x4 texel tiles.
-// NONMATCHING 58%: same arithmetic, the original schedules the y terms first
-#if NONMATCHING
 s32 fn_800247E4(s32 x, s32 y, s32 width, s32 bytesPerTexel) {
-    return bytesPerTexel * (width * (y / 4 * 4) + (x / 4 * 16 + y % 4 * 4 + x % 4));
+    s32 row = ((y / 4) * 4) * width;
+    return bytesPerTexel * ((x % 4) + (((y % 4) << 2) + (row + ((x / 4) << 4))));
 }
-#endif
 
 // .text:0x80024840 size:0x134
-// NONMATCHING 99%: r0/r3 swapped loading the mission status
+// NONMATCHING 99.7%: r0/r3 swapped loading the mission status
 #if NONMATCHING
 s32 challengeStarRelatedInd(s32 team, s32 mission) {
     u8 status = starMissionCompletionTracker[team].inGameMissionTracker[mission].starMissionStatus;
@@ -262,7 +260,7 @@ static inline s32 scaleByte(u32 b, u32 a) {
 
 // .text:0x80024974 size:0x64
 // Scale the low byte of color by scale/255.
-// NONMATCHING 99%: int-to-float temps use swapped stack slots
+// NONMATCHING 98.5%: int-to-float temps use swapped stack slots
 #if NONMATCHING
 u32 multBottomBits_asFloat(u32 color, u32 scale) {
     return (color & ~0xFF) | scaleByte(color, scale);
@@ -280,7 +278,7 @@ u32 byteWiseMultiply(u32 scale, u32 color) {
 #endif
 
 // .text:0x80024B00 size:0xB4
-// NONMATCHING 99%: f1/f2 swapped between the 0.0 constant and the int-to-float magic
+// NONMATCHING 99.0%: f1/f2 swapped between the 0.0 constant and the int-to-float magic
 #if NONMATCHING
 s32 LERPToNewRange_Float(s32 value, s32 inMin, s32 inMax, s32 outMin, s32 outMax) {
     f32 t;
@@ -372,3 +370,13 @@ s32 fn_80024C6C(FielderSortInfo* info, s32 team) {
         }
     }
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x800F76E0..0x800F7830
+u8 lbl_800F76E0[32] = {
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+}; // 4x4 texture data
+TexImage lbl_800F7700 = {lbl_800F76E0, NULL, 4, 4, 0, 0, 1, 1, 0.0f, 0, 0, 0, 5, 0, 0, 0, 0, {0, 0}};
+

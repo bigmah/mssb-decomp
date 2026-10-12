@@ -34,7 +34,7 @@ typedef struct GridPoint {
     f32 y;
 } GridPoint;
 
-// NONMATCHING 96%: the original reads r/g/b as one (big-endian) word for the vertex color, and
+// NONMATCHING 93.3%: the original reads r/g/b as one (big-endian) word for the vertex color, and
 // the float constants / u16 texture coordinates get different registers.
 #if NONMATCHING
 void fn_80039AC0(void) {

@@ -1,4 +1,6 @@
 #include "challenge/rep_0138.h"
+#define REP_HEADER_FN repHeader_0138
+#include "header_rep_inline.h"
 
 
 #include "static/UnknownHomes_Static.h"
@@ -38,7 +40,6 @@ typedef struct ChallengeFog {
     f32 end;
 } ChallengeFog;
 
-extern ChallengeFog* lbl_1_bss_4E0[];
 
 // Per-stage viewer settings; lbl_1_bss_4E0 points at fog[variant] of the current stage.
 typedef struct ChalStageParams {
@@ -88,10 +89,8 @@ static ChalStageParams lbl_1_data_2A8[15] = {
     {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0070010A}, {80.0f, 1.0f, 1.0f, 0x004001C0}, {80.0f, 1.0f, 1.0f, 0x004001C0}}, 0x37F403C5, 0x00000000, 0x08800000},
     {{{{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}, {{{0xAA, 0xBE, 0xD2, 0x00}}, 80.0f, 450.0f}}, {{40.0f, 1.0f, 1.0f, 0x0070010A}, {80.0f, 1.0f, 1.0f, 0x004001C0}, {80.0f, 1.0f, 1.0f, 0x004001C0}}, 0x37F403C5, 0x00000000, 0x08800000},
 };
-static struct {
-    void* lights[3];
-    s32 normalMapSize;
-} lbl_1_data_848 = {{NULL, NULL, NULL}, 64};
+static void* lbl_1_data_848[3] = {NULL, NULL, NULL}; // LIT lights
+static s32 sNormalMapSize = 64;
 static ChallengeColor lbl_1_data_858[1] = {{{0xFF, 0x80, 0x80, 0x00}}};
 static u8 lbl_1_data_85C = 1; // fog on
 // Pad handler of each debug-menu item, run by fn_1_6E14 while the item is active.
@@ -156,22 +155,7 @@ extern const f32 lbl_1_rodata_23C;
 extern const f32 lbl_1_rodata_240;
 extern const f32 lbl_1_rodata_244;
 
-// fn_1_7E04, size:0xF4
-void fn_1_7E04(f32 scale) {
-    Mtx44 projection;
-    f32 inverse = lbl_1_rodata_1D8 / scale;
-    C_MTXFrustum(projection, lbl_1_rodata_21C[0] * inverse, lbl_1_rodata_220[0] * inverse,
-                 lbl_1_rodata_224[0] * inverse, lbl_1_rodata_228[0] * inverse,
-                 lbl_1_rodata_1D8, lbl_1_rodata_208);
-    GXSetProjection(projection, GX_PERSPECTIVE);
-    fn_800B806C(0, lbl_1_rodata_22C[0] * inverse, lbl_1_rodata_230[0] * inverse,
-               lbl_1_rodata_234[0] * inverse, lbl_1_rodata_238[0] * inverse,
-               lbl_1_rodata_23C, lbl_1_rodata_240, lbl_1_rodata_244);
-}
 
-extern s32 lbl_1_bss_C4;
-
-extern u8 lbl_1_bss_C2[];
 
 extern ChallengeWork lbl_1_common_bss_472B4;
 extern ChalTask* lbl_803CC1B8;
@@ -192,266 +176,86 @@ extern const f32 lbl_1_rodata_1DC;
 extern const f32 lbl_1_rodata_1E0;
 extern const f64 lbl_1_rodata_1E8;
 
-// fn_1_717C, size:0x104
-void fn_1_717C(ChallengeModelOffsets* model) {
-    u8* geometry;
-    u8* actor;
-    u8* textures;
-    actor = (u8*)model + model->mainActor;
-    geometry = (u8*)model + model->mainGeometry;
-    textures = (u8*)model + model->textures;
-    fn_1_4DD8((u16*)((u8*)model + model->effects));
-    fn_800B49E4((struct ActorLayout *)actor); // TODO type
-    fn_800BCE38((struct DODisplayData *)geometry); // TODO type
-    convertTextureHeader(textures);
-    lbl_1_common_bss_472B4.texBank = textures + 4;
-    fn_800BD190((struct GQRValueGroups*)geometry, textures);
-    haveActLayoutPointToGeoHeader(actor, geometry);
-    lbl_1_common_bss_472B4.totalBones = ((struct ActorLayout*)actor)->totalBones;
-    lbl_1_common_bss_472B4.stage[1].layout = (struct ActorLayout*)actor;
-    lbl_1_common_bss_472B4.stage[0].layout = (struct ActorLayout*)actor;
-    actor = (u8*)model + model->secondaryActor;
-    geometry = (u8*)model + model->secondaryGeometry;
-    fn_800B49E4((struct ActorLayout *)actor); // TODO type
-    fn_800BCE38((struct DODisplayData *)geometry); // TODO type
-    fn_800BD190((struct GQRValueGroups*)geometry, textures);
-    haveActLayoutPointToGeoHeader(actor, geometry);
-    lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
-    lbl_1_common_bss_472B4.object[0].layout = (struct ActorLayout*)actor;
-}
-
-// fn_1_7EF8, size:0x100
-void fn_1_7EF8(void) {
-    switch ((s32)*(u16*)((u8*)&lbl_803C77B8 + 4)) {
-    case 4:
-    case 8:
-        lbl_1_bss_C2[0] = !lbl_1_bss_C2[0];
-        break;
-    case 1: {
-        s32 value = (s32)fn_80048EA8(lbl_1_bss_C2[0]);
-        fn_80048E00(lbl_1_bss_C2[0], value - 1);
-        break;
-    }
-    case 2: {
-        s32 value = (s32)fn_80048EA8(lbl_1_bss_C2[0]);
-        fn_80048E00(lbl_1_bss_C2[0], value + 1);
-        break;
-    }
-    case 0x100: {
-        u8 enabled = !lbl_1_data_85C;
-        lbl_1_data_85C = enabled;
-        if (enabled != 0) {
-            fn_80048C14(0x3F);
-        } else {
-            fn_80048C14(0);
-        }
-        break;
-    }
-    }
-}
-
-// fn_1_78E4, size:0x7C
-void fn_1_78E4(void) {
-    GXColor clear = lbl_1_data_858[0].color;
-    GXSetCopyClear(clear, 0xFFFFFF);
-    if (lbl_1_bss_C4 != 0) {
-        GXSetCullMode(GX_CULL_NONE);
-    } else {
-        GXSetCullMode(GX_CULL_BACK);
-    }
-    SetFogNoneAgain();
-    GXSetAlphaCompare(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
-}
-
-// fn_1_786C, size:0x78
-void fn_1_786C(void) {
-    GXColor clear;
-    GXColor color;
-    ChallengeFog* fog;
-    fn_80048D4C();
-    clear = lbl_1_data_858[0].color;
-    GXSetCopyClear(clear, 0xFFFFFF);
-    fog = lbl_1_bss_4E0[0];
-    color = fog->color.color;
-#if NONMATCHING
-    SetFog((GXFogType)fog->color.color.a, &color, fog->start, fog->end, lbl_1_rodata_1D8, lbl_1_rodata_208);
-#else
-    // The original passes the colour by value (PPC: pointer to a copy) and the
-    // distances as floats; same registers as SetFog's (GXFogType, GXColor*, f64...).
-    ((void (*)(u8, GXColor, f32, f32, f32, f32))SetFog)(fog->color.color.a, color, fog->start, fog->end, lbl_1_rodata_1D8, lbl_1_rodata_208);
-#endif
-}
-
-// fn_1_54E0, size:0x60
-void fn_1_54E0(MtxPtr view) {
-    s32 i;
-    for (i = 0; i < 3; i++) {
-        LITXForm(lbl_1_data_848.lights[i], view);
-    }
-}
-
-// fn_1_77EC, size:0x5C
-void fn_1_77EC(ChallengeModel* model) {
-    GXSetCullMode(lbl_1_data_8C4[0]);
-    fn_1_73B8(model, 3, lbl_1_data_848.lights[0], lbl_1_data_848.lights[1], lbl_1_data_848.lights[2]);
-}
-
-// .text:0x5540 size:0x4
-void fn_1_5540(void) {
-}
-
-// fn_1_7848, size:0x24
-void fn_1_7848(void) {
-    fn_80048C28();
-    fn_80048C1C();
-}
-
-// fn_1_7280, size:0x138
-void fn_1_7280(void) {
-    ChallengeModel* p;
-    ChallengeModel* q;
-    p = &lbl_1_common_bss_472B4.stage[lbl_803CBBC0];
-    PSMTXCopy(lbl_1_common_bss_472B4.view, p->camera);
-    fn_800A7D4C(0, &sTabC[lbl_803CBBC0]);
-    fn_800A7D4C(0, p);
-    fn_800A7D4C(0, &sTabB[lbl_803CBBC0]);
-    q = &lbl_1_common_bss_472B4.object[lbl_803CBBC0];
-    PSMTXRotRad(q->world, 'Y', lbl_1_rodata_204 * (f32)lbl_1_common_bss_472B4.spin);
-    PSMTXCopy(lbl_1_common_bss_472B4.view, q->camera);
-    fn_800A7D4C(0, q);
-    fn_800A7D4C(0, &sTabA[lbl_803CBBC0]);
-}
-
-// fn_1_6578, size:0x14C
-void fn_1_6578(GXTexObj* obj, void* image, s32 w, s32 h) {
-    GXTexFilter filter;
-    f32* scale;
-    s32 w0;
-    s32 h0;
-    s32 offset;
-    s32 level;
-    w0 = w;
-    h0 = h;
-    offset = 0;
-    if (sMipCount == 0) {
-        w = w / 4;
-        h = h / 4;
-        fn_1_6050((u16*)image, w, h, lbl_1_rodata_1D8);
-        filter = GX_LINEAR;
-    } else {
-        scale = sMipScale;
-        for (level = 0; level <= sMipCount; level++) {
-            fn_1_6050((u16*)image + offset, w0, h0, *scale);
-            offset += w0 * h0;
-            w0 /= 2;
-            h0 /= 2;
-            scale++;
-        }
-        filter = sMinFilter;
-    }
-    GXInitTexObj(obj, image, w, h, GX_TF_IA8, GX_REPEAT, GX_REPEAT, sMipCount);
-    GXInitTexObjLOD(obj, filter, GX_LINEAR, lbl_1_rodata_1A8, (f32)sMipCount, sLodBias, 0, 0, GX_ANISO_1);
-}
-
-// fn_1_66C4, size:0x184
-void fn_1_66C4(void) {
-    ChalTask* task = lbl_803CC1B8;
-    s32 a;
-    s32 b;
-    fn_800AD038(lbl_80366158[2]);
-    task->state = 0;
-    a = lbl_1_common_bss_472B4.stageSel;
-    b = lbl_1_common_bss_472B4.variantSel;
-    memset(&lbl_1_common_bss_472B4, 0, sizeof(ChallengeWork));
-    lbl_1_common_bss_472B4.stageSel = a;
-    lbl_1_common_bss_472B4.variantSel = b;
-    lbl_1_common_bss_472B4.heapBuf = _OSAllocFromHeap(0x20, 0x80000);
-    lbl_1_common_bss_472B4.pos.y = lbl_1_rodata_1F0;
-    lbl_1_common_bss_472B4.pos.z = lbl_1_rodata_1F4;
-    lbl_1_common_bss_472B4.pitch = 0xF36C;
-    lbl_1_common_bss_472B4.zoom = lbl_1_rodata_1F8;
-    lbl_1_common_bss_472B4.selBone = -1;
-    lbl_1_common_bss_472B4._234 = 0;
-    PSMTXIdentity(lbl_1_common_bss_472B4.stage[0].world);
-    lbl_1_common_bss_472B4.stage[0].draw = fn_1_77EC;
-    lbl_1_common_bss_472B4.stage[1] = lbl_1_common_bss_472B4.stage[0];
-    lbl_1_common_bss_472B4.object[0].draw = (void (*)(ChallengeModel*))fn_800B472C;
-    lbl_1_common_bss_472B4.object[1] = lbl_1_common_bss_472B4.object[0];
-    lbl_803CC1B8->func = fn_1_6848;
-}
-
-typedef struct ChalTexState {
-    u8 indWarp; // lbl_1_bss_C0: use the normal map as an indirect warp (fn_1_5544)
-    u8 pad1[0x10];
-    u8 replace;
-    u8 pad12[2];
-    GXIndTexScale tScale;
-    GXIndTexScale sScale;
-    u8 flags;
-    u8 pad1d[0x420-0x1d];
-    ChallengeFog* fog;  // lbl_1_bss_4E0
-    GXTexObj obj;       // lbl_1_bss_4E4
-    u8 pad444[0x460-0x444];
-    u16 image[(0x2FA8 - 0x520) / 2]; // normal map (IA8, with mipmaps)
-} ChalTexState;
-static ChalTexState lbl_1_bss_C0;
-
-
-void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, GXTexCoordID coord, GXTexMapID map) {
-    ChalTexState* st = (ChalTexState*)((u8*)&lbl_1_bss_C0 + 0);
-    u8 flags;
-    GXLoadTexObj(&st->obj, map);
-    flags = st->flags;
-    if (flags != 0) {
-        if (flags & 2) {
-            map--;
-        }
-        if (flags & 4) {
-            coord--;
-        }
-        GXSetTevOrder(stage, coord, map, GX_COLOR_NULL);
-        GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
-        GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
-        GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
-        GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
-        return;
-    }
-    GXSetNumIndStages(1);
-    GXSetIndTexMtx(mtx, sIndMtx, (s8)sIndScaleExp);
-    GXSetIndTexOrder(indStage, coord, map);
-    GXSetIndTexCoordScale(indStage, st->sScale, st->tScale);
-    GXSetTevIndWarp(stage, indStage, sIndSignedOffsets, st->replace, mtx);
-}
-
-// fn_1_5924, size:0x19C
-// Byte/texel offset of (x, y) in a GX 4x4/8x4/8x8-tiled texture with the given bits per pixel.
-// NONMATCHING 62%: same instructions, the x terms are scheduled before the y terms
-#if NONMATCHING
-s32 fn_1_5924(s32 width, s32 x, s32 y, s32 bpp, s32 alt) {
-    s32 offset;
-    switch (bpp) {
-    case 4:
-        return (y / 8) * width * 8 + ((y % 8) * 8 + x % 8) + (x / 8) * 32;
-    case 8:
-        return (y / 4) * width * 4 + ((y % 4) * 8 + x % 8) + (x / 8) * 32;
-    case 16:
-        return (y / 4) * width * 4 + ((y % 4) * 4 + x % 4) + (x / 4) * 16;
-    case 32:
-        offset = (y / 4) * width * 4 + ((y % 4) * 8 + x % 4) + (x / 8) * 16;
-        if (alt != 0) {
-            offset += 16;
-        }
-        return offset;
-    }
-    return width;
-}
-#endif
+// .bss of this file (0xC0-0x2FA8): separate statics, laid out in reverse definition order.
+// Functions touching three or more of them address them from one pooled base.
+static u16 sNormalMap[(0x2FA8 - 0x520) / 2]; // 0x520: normal map (IA8, with mipmaps)
+static u8 sFill504[0x1C];
+static GXTexObj lbl_1_bss_4E4;               // normal-map texture object
+static ChallengeFog* lbl_1_bss_4E0;          // fog[variant] of the current stage
+static u8 lbl_1_bss_2E0[0x200];              // per-bone hide flags
+static u8 sFillE0[0x200];
+static u8 sFillDF;
+static u8 sFillDE;
+static u8 sFillDD;
+static u8 sIndFlags;                         // 0xDC: fn_1_5544 plain texture (bit 1: map - 1, bit 2: coord - 1)
+static GXIndTexScale sIndSScale;             // 0xD8
+static GXIndTexScale sIndTScale;             // 0xD4
+static u8 sFillD3;
+static u8 sFillD2;
+static u8 sIndReplace;                       // 0xD1
+static u8 sFillC8[9];
+static s32 lbl_1_bss_C4;                     // fn_1_78E4: GX_CULL_NONE when set
+static u8 lbl_1_bss_C2;
+static u8 lbl_1_bss_C1;                      // draw vertex normals (fn_1_4E98)
+static u8 lbl_1_bss_C0;                      // use the normal map as an indirect warp (fn_1_5544)
 
 extern f32 lbl_1_data_200[];
 extern const f32 lbl_1_rodata_210;
 extern const f32 lbl_1_rodata_218;
 
-// fn_1_8368, size:0x240
+extern const f32 lbl_1_rodata_1AC;
+extern const f32 lbl_1_rodata_1B0;
+extern const f32 lbl_1_rodata_1B4;
+extern const f32 lbl_1_rodata_1B8;
+extern const f32 lbl_1_rodata_1BC;
+extern const f32 lbl_1_rodata_1C0;
+extern const f32 lbl_1_rodata_1C4;
+
+// Display-list opcodes not in GXEnum.h.
+#define DL_NOP 0x00
+#define DL_LOAD_CP_REG 0x08
+#define DL_LOAD_XF_REG 0x10
+#define DL_LOAD_INDX_A 0x20
+#define DL_LOAD_INDX_B 0x28
+#define DL_LOAD_INDX_C 0x30
+#define DL_LOAD_INDX_D 0x38
+#define DL_LOAD_BP_REG 0x61
+
+
+// A layout file: the header followed by header.totalBones bones.
+typedef struct ChalLayoutFile {
+    /*0x00*/ ActorLayout header;
+    /*0x20*/ ActorBone bones[1];
+} ChalLayoutFile;
+
+extern const Vec lbl_1_rodata_188; // {0, 0, 100}
+extern const f32 lbl_1_rodata_20C;
+extern void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target);
+extern void fn_80011640(MtxPtr src, MtxPtr dst);
+extern void fn_800B9950(u32 mask, f32 first, f32 second);
+
+extern void fn_1_196C(void);
+
+typedef struct ChalLightColors {
+    GXColor c[3];
+} ChalLightColors;
+extern const ChalLightColors lbl_1_rodata_194; // red, blue, green
+extern const f32 lbl_1_rodata_1FC;
+extern const f32 lbl_1_rodata_200;
+extern struct {
+    u8 pad[0x715];
+    volatile s8 idle;
+} lbl_803C6CF8; // main.dol's DVD/ARAM loader
+extern void LITAlloc(void** light);
+extern void LITInitAttn(void* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
+extern void LITInitPos(void* light, f32 x, f32 y, f32 z);
+extern void LITInitDir(void* light, f32 x, f32 y, f32 z);
+extern void LITInitColor(void* light, GXColor* color);
+
+extern const f32 lbl_1_rodata_1D0;
+extern const f32 lbl_1_rodata_1D4;
+
+// .text:0x00008368 size:0x240
 // Debug pad control: steps the selected bone and moves the two points in lbl_1_data_200.
 // NONMATCHING 99%: int->float magic constant and the scale constant swap f6/f7
 #if NONMATCHING
@@ -489,16 +293,948 @@ void fn_1_8368(void) {
 }
 #endif
 
-extern GXTexObj lbl_1_bss_4E4;
-extern const f32 lbl_1_rodata_1AC;
-extern const f32 lbl_1_rodata_1B0;
-extern const f32 lbl_1_rodata_1B4;
-extern const f32 lbl_1_rodata_1B8;
-extern const f32 lbl_1_rodata_1BC;
-extern const f32 lbl_1_rodata_1C0;
-extern const f32 lbl_1_rodata_1C4;
+// .text:0x00007FF8 size:0x370
+// Debug pad editor for the current fog (mode, colour, start, end).
+// NONMATCHING 99%: in the two `+1` clamps the 512 limit and the field load swap f0/f2
+#if NONMATCHING
+void fn_1_7FF8(void) {
+    s32 t;
+    s32 u;
+    f32 f;
+    switch (PAD0.repeat) {
+    case PAD_BUTTON_UP:
+        t = (u8)lbl_1_common_bss_472B4.fogItem - 1;
+        lbl_1_common_bss_472B4.fogItem = t;
+        if ((s8)t < 0) {
+            lbl_1_common_bss_472B4.fogItem = 5;
+        }
+        return;
+    case PAD_BUTTON_DOWN:
+        t = (u8)lbl_1_common_bss_472B4.fogItem + 1;
+        lbl_1_common_bss_472B4.fogItem = t;
+        if ((s8)t >= 6) {
+            lbl_1_common_bss_472B4.fogItem = 0;
+            return;
+        }
+        break;
+    case PAD_BUTTON_LEFT:
+        switch (lbl_1_common_bss_472B4.fogItem) {
+        case 0:
+            u = lbl_1_bss_4E0->color.color.a - 1;
+            lbl_1_bss_4E0->color.color.a = u;
+            switch ((u8)u) {
+            case 0xFF:
+                lbl_1_bss_4E0->color.color.a = 7;
+                return;
+            case 3:
+                lbl_1_bss_4E0->color.color.a = 2;
+                return;
+            case 1:
+                lbl_1_bss_4E0->color.color.a = 0;
+                return;
+            }
+            break;
+        case 1:
+            lbl_1_bss_4E0->color.color.r = lbl_1_bss_4E0->color.color.r - 1;
+            return;
+        case 2:
+            lbl_1_bss_4E0->color.color.g = lbl_1_bss_4E0->color.color.g - 1;
+            return;
+        case 3:
+            lbl_1_bss_4E0->color.color.b = lbl_1_bss_4E0->color.color.b - 1;
+            return;
+        case 4:
+            lbl_1_bss_4E0->start = f = lbl_1_bss_4E0->start - 1.0f;
+            if (f < 0.0f) {
+                lbl_1_bss_4E0->start = 0.0f;
+                return;
+            }
+            break;
+        case 5:
+            lbl_1_bss_4E0->end = f = lbl_1_bss_4E0->end - 1.0f;
+            if (f < 0.0f) {
+                lbl_1_bss_4E0->end = 0.0f;
+                return;
+            }
+            break;
+        }
+        break;
+    case PAD_BUTTON_RIGHT:
+        switch (lbl_1_common_bss_472B4.fogItem) {
+        case 0:
+            u = lbl_1_bss_4E0->color.color.a + 1;
+            lbl_1_bss_4E0->color.color.a = u;
+            switch ((u8)u) {
+            case 1:
+                lbl_1_bss_4E0->color.color.a = 2;
+                return;
+            case 3:
+                lbl_1_bss_4E0->color.color.a = 4;
+                return;
+            case 8:
+                lbl_1_bss_4E0->color.color.a = 0;
+                return;
+            }
+            break;
+        case 1:
+            lbl_1_bss_4E0->color.color.r = lbl_1_bss_4E0->color.color.r + 1;
+            return;
+        case 2:
+            lbl_1_bss_4E0->color.color.g = lbl_1_bss_4E0->color.color.g + 1;
+            return;
+        case 3:
+            lbl_1_bss_4E0->color.color.b = lbl_1_bss_4E0->color.color.b + 1;
+            return;
+        case 4:
+            lbl_1_bss_4E0->start = f = lbl_1_bss_4E0->start + 1.0f;
+            if (f > lbl_1_rodata_208) {
+                lbl_1_bss_4E0->start = lbl_1_rodata_208;
+                return;
+            }
+            break;
+        case 5:
+            lbl_1_bss_4E0->end = f = lbl_1_bss_4E0->end + 1.0f;
+            if (f > lbl_1_rodata_208) {
+                lbl_1_bss_4E0->end = lbl_1_rodata_208;
+                return;
+            }
+            break;
+        }
+        break;
+    }
+}
+#endif
 
-// fn_1_5698, size:0x28C
+// .text:0x00007EF8 size:0x100
+void fn_1_7EF8(void) {
+    switch ((s32)*(u16*)((u8*)&lbl_803C77B8 + 4)) {
+    case 4:
+    case 8:
+        lbl_1_bss_C2 = !lbl_1_bss_C2;
+        break;
+    case 1: {
+        s32 value = (s32)fn_80048EA8(lbl_1_bss_C2);
+        fn_80048E00(lbl_1_bss_C2, value - 1);
+        break;
+    }
+    case 2: {
+        s32 value = (s32)fn_80048EA8(lbl_1_bss_C2);
+        fn_80048E00(lbl_1_bss_C2, value + 1);
+        break;
+    }
+    case 0x100: {
+        u8 enabled = !lbl_1_data_85C;
+        lbl_1_data_85C = enabled;
+        if (enabled != 0) {
+            fn_80048C14(0x3F);
+        } else {
+            fn_80048C14(0);
+        }
+        break;
+    }
+    }
+}
+
+// .text:0x00007E04 size:0xF4
+void fn_1_7E04(f32 scale) {
+    Mtx44 projection;
+    f32 inverse = lbl_1_rodata_1D8 / scale;
+    C_MTXFrustum(projection, lbl_1_rodata_21C[0] * inverse, lbl_1_rodata_220[0] * inverse,
+                 lbl_1_rodata_224[0] * inverse, lbl_1_rodata_228[0] * inverse,
+                 lbl_1_rodata_1D8, lbl_1_rodata_208);
+    GXSetProjection(projection, GX_PERSPECTIVE);
+    fn_800B806C(0, lbl_1_rodata_22C[0] * inverse, lbl_1_rodata_230[0] * inverse,
+               lbl_1_rodata_234[0] * inverse, lbl_1_rodata_238[0] * inverse,
+               lbl_1_rodata_23C, lbl_1_rodata_240, lbl_1_rodata_244);
+}
+
+// NONMATCHING 99%: float regs of the trigger scale and magic constant swapped in the pos.y branch
+#if NONMATCHING
+void fn_1_7960(void) {
+    Mtx44 proj;
+    Mtx rotX;
+    Mtx rotY;
+    Mtx m;
+    Vec rot;
+    Vec dir;
+    f32 cosY;
+    f32 sinY;
+
+    dir = lbl_1_rodata_188;
+    lbl_1_common_bss_472B4.pitch -= PAD0.substickY * 2;
+    lbl_1_common_bss_472B4.yaw += PAD0.substickX * 2;
+    lbl_1_common_bss_472B4.strafe = PAD0.stickX / lbl_1_rodata_20C;
+    lbl_1_common_bss_472B4.forward = PAD0.stickY * lbl_1_rodata_210;
+    if (PAD0.held & PAD_TRIGGER_Z) {
+        lbl_1_common_bss_472B4.zoom -= PAD0.triggerLeft / 4096.0f;
+        lbl_1_common_bss_472B4.zoom += PAD0.triggerRight / 4096.0f;
+    } else {
+        lbl_1_common_bss_472B4.pos.y = -(PAD0.triggerRight * lbl_1_rodata_218 - lbl_1_common_bss_472B4.pos.y);
+        lbl_1_common_bss_472B4.pos.y = PAD0.triggerLeft * lbl_1_rodata_218 + lbl_1_common_bss_472B4.pos.y;
+    }
+    rot.x = lbl_1_common_bss_472B4.pitch;
+    rot.y = lbl_1_common_bss_472B4.yaw;
+    rot.z = lbl_1_rodata_1A8;
+    PSVECScale(&rot, lbl_1_rodata_204, &rot);
+    PSMTXRotRad(rotX, 'X', rot.x);
+    PSMTXRotRad(rotY, 'Y', rot.y);
+    sinY = rotY[0][2];
+    cosY = rotY[0][0];
+    PSMTXConcat(rotY, rotX, m);
+    PSMTXMultVec(m, &dir, &lbl_1_common_bss_472B4.at);
+    lbl_1_common_bss_472B4.pos.x += lbl_1_common_bss_472B4.forward * sinY - lbl_1_common_bss_472B4.strafe * cosY;
+    lbl_1_common_bss_472B4.pos.z += lbl_1_common_bss_472B4.forward * cosY + lbl_1_common_bss_472B4.strafe * sinY;
+    lbl_1_common_bss_472B4.at.x += lbl_1_common_bss_472B4.pos.x;
+    lbl_1_common_bss_472B4.at.y += lbl_1_common_bss_472B4.pos.y;
+    lbl_1_common_bss_472B4.at.z += lbl_1_common_bss_472B4.pos.z;
+    makeLookAtMatrix(lbl_1_common_bss_472B4.view, &lbl_1_common_bss_472B4.pos, &lbl_1_data_87C.up,
+                     &lbl_1_common_bss_472B4.at);
+    fn_1_7E04(lbl_1_common_bss_472B4.zoom);
+    fn_1_54E0(lbl_1_common_bss_472B4.view);
+    fn_80011640(lbl_1_common_bss_472B4.view, lbl_1_common_bss_472B4.view);
+    if (lbl_1_bss_C0 != 0) {
+        fn_800B9950(3, (0xFFFF - lbl_1_common_bss_472B4.yaw) / 32768.0f,
+                    (s16)lbl_1_common_bss_472B4.pitch / 32768.0f);
+    } else {
+        fn_800B9950(3, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+    }
+}
+#endif
+
+// .text:0x000078E4 size:0x7C
+void fn_1_78E4(void) {
+    GXColor clear = lbl_1_data_858[0].color;
+    GXSetCopyClear(clear, 0xFFFFFF);
+    if (lbl_1_bss_C4 != 0) {
+        GXSetCullMode(GX_CULL_NONE);
+    } else {
+        GXSetCullMode(GX_CULL_BACK);
+    }
+    SetFogNoneAgain();
+    GXSetAlphaCompare(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
+}
+
+// .text:0x0000786C size:0x78
+void fn_1_786C(void) {
+    GXColor clear;
+    GXColor color;
+    ChallengeFog* fog;
+    fn_80048D4C();
+    clear = lbl_1_data_858[0].color;
+    GXSetCopyClear(clear, 0xFFFFFF);
+    fog = lbl_1_bss_4E0;
+    color = fog->color.color;
+#if NONMATCHING
+    SetFog((GXFogType)fog->color.color.a, &color, fog->start, fog->end, lbl_1_rodata_1D8, lbl_1_rodata_208);
+#else
+    // The original passes the colour by value (PPC: pointer to a copy) and the
+    // distances as floats; same registers as SetFog's (GXFogType, GXColor*, f64...).
+    ((void (*)(u8, GXColor, f32, f32, f32, f32))SetFog)(fog->color.color.a, color, fog->start, fog->end, lbl_1_rodata_1D8, lbl_1_rodata_208);
+#endif
+}
+
+// .text:0x00007848 size:0x24
+void fn_1_7848(void) {
+    fn_80048C28();
+    fn_80048C1C();
+}
+
+// .text:0x000077EC size:0x5C
+void fn_1_77EC(ChallengeModel* model) {
+    GXSetCullMode(lbl_1_data_8C4[0]);
+    fn_1_73B8(model, 3, lbl_1_data_848[0], lbl_1_data_848[1], lbl_1_data_848[2]);
+}
+
+// .text:0x000073B8 size:0x434
+// Draw callback of the stage model: like fn_800B472C, but bones can be hidden or
+// isolated (selBone), each drawn bone is counted, and lights are passed through.
+// NONMATCHING 99%: callee-saved registers permuted (model/obj r21, numLights r29 in the original)
+#if NONMATCHING
+void fn_1_73B8(ChallengeModel* model, u8 numLights, ...) {
+    va_list list;
+    Mtx m;
+    Vec box[8];
+    ChalLayoutFile* file;
+    DODisplayData* pal;
+    MtxPtr world;
+    MtxPtr camera;
+    ActorBone* bone;
+    u8* hidden;
+    struct DODisplayObj* obj;
+    s32 i;
+    s32 count;
+    u16 geoID;
+
+    file = (ChalLayoutFile*)model->layout;
+    pal = file->header.geoPalette;
+    if (lbl_1_data_8C8 == 1) {
+        memset(lbl_1_bss_2E0, 0, sizeof(lbl_1_bss_2E0));
+        lbl_1_data_8C8 = 0;
+    } else if (lbl_1_data_8C8 == 2) {
+        memset(lbl_1_bss_2E0, 1, sizeof(lbl_1_bss_2E0));
+        lbl_1_data_8C8 = 0;
+    }
+    count = file->header.totalBones;
+    lbl_1_common_bss_472B4.drawnBones = 0;
+    if (lbl_1_common_bss_472B4.selBone < 0) {
+        i = 0;
+    } else {
+        i = lbl_1_common_bss_472B4.selBone;
+        count = i + 1;
+    }
+    world = model->world;
+    camera = model->camera;
+    for (; i < count; i++) {
+        if (lbl_1_bss_2E0[i] != 0) {
+            continue;
+        }
+        bone = &file->bones[i];
+        geoID = bone->geoFileID;
+        if (geoID == 0xFFFF) {
+            continue;
+        }
+        if (bone->flags & 1) {
+            GXSetZMode(GX_FALSE, GX_ALWAYS, GX_TRUE);
+        } else {
+            GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+        }
+        switch (bone->flags & 6) {
+        case 2:
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
+            break;
+        case 4:
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_DSTCOL, GX_BL_ZERO, GX_LO_CLEAR);
+            break;
+        default:
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+            break;
+        }
+        obj = pal->descriptorArray[geoID].dispObj;
+        CTRLBuildMatrix(bone->orientationCtrl, obj->worldMatrix);
+        PSMTXConcat(world, obj->worldMatrix, obj->worldMatrix);
+        PSMTXConcat(camera, obj->worldMatrix, m);
+        box[0].x = obj->bounds[1];
+        box[0].y = obj->bounds[3];
+        box[0].z = obj->bounds[4];
+        box[1].x = obj->bounds[0];
+        box[1].y = obj->bounds[3];
+        box[1].z = obj->bounds[4];
+        box[2].x = obj->bounds[0];
+        box[2].y = obj->bounds[3];
+        box[2].z = obj->bounds[5];
+        box[3].x = obj->bounds[1];
+        box[3].y = obj->bounds[3];
+        box[3].z = obj->bounds[5];
+        box[4].x = obj->bounds[1];
+        box[4].y = obj->bounds[2];
+        box[4].z = obj->bounds[4];
+        box[5].x = obj->bounds[0];
+        box[5].y = obj->bounds[2];
+        box[5].z = obj->bounds[4];
+        box[6].x = obj->bounds[0];
+        box[6].y = obj->bounds[2];
+        box[6].z = obj->bounds[5];
+        box[7].x = obj->bounds[1];
+        box[7].y = obj->bounds[2];
+        box[7].z = obj->bounds[5];
+        if (fn_800B7D3C(0, box, m)) {
+            lbl_1_common_bss_472B4.drawnBones++;
+            va_start(list, numLights);
+            DOVARender(obj, camera, numLights, &list);
+        }
+    }
+    if (lbl_1_bss_C1 != 0) {
+        count = file->header.totalBones;
+        if (lbl_1_common_bss_472B4.selBone < 0) {
+            i = 0;
+        } else {
+            i = lbl_1_common_bss_472B4.selBone;
+            count = i + 1;
+        }
+        for (; i < count; i++) {
+            if (lbl_1_bss_2E0[i] != 0) {
+                continue;
+            }
+            bone = &file->bones[i];
+            geoID = bone->geoFileID;
+            if (geoID == 0xFFFF) {
+                continue;
+            }
+            obj = pal->descriptorArray[geoID].dispObj;
+            CTRLBuildMatrix(bone->orientationCtrl, obj->worldMatrix);
+            PSMTXConcat(world, obj->worldMatrix, obj->worldMatrix);
+            PSMTXConcat(camera, obj->worldMatrix, m);
+            box[0].x = obj->bounds[1];
+            box[0].y = obj->bounds[3];
+            box[0].z = obj->bounds[4];
+            box[1].x = obj->bounds[0];
+            box[1].y = obj->bounds[3];
+            box[1].z = obj->bounds[4];
+            box[2].x = obj->bounds[0];
+            box[2].y = obj->bounds[3];
+            box[2].z = obj->bounds[5];
+            box[3].x = obj->bounds[1];
+            box[3].y = obj->bounds[3];
+            box[3].z = obj->bounds[5];
+            box[4].x = obj->bounds[1];
+            box[4].y = obj->bounds[2];
+            box[4].z = obj->bounds[4];
+            box[5].x = obj->bounds[0];
+            box[5].y = obj->bounds[2];
+            box[5].z = obj->bounds[4];
+            box[6].x = obj->bounds[0];
+            box[6].y = obj->bounds[2];
+            box[6].z = obj->bounds[5];
+            box[7].x = obj->bounds[1];
+            box[7].y = obj->bounds[2];
+            box[7].z = obj->bounds[5];
+            if (fn_800B7D3C(0, box, m)) {
+                fn_1_4E98(obj, camera);
+            }
+        }
+    }
+}
+#endif
+
+// .text:0x00007280 size:0x138
+void fn_1_7280(void) {
+    ChallengeModel* p;
+    ChallengeModel* q;
+    p = &lbl_1_common_bss_472B4.stage[lbl_803CBBC0];
+    PSMTXCopy(lbl_1_common_bss_472B4.view, p->camera);
+    fn_800A7D4C(0, &sTabC[lbl_803CBBC0]);
+    fn_800A7D4C(0, p);
+    fn_800A7D4C(0, &sTabB[lbl_803CBBC0]);
+    q = &lbl_1_common_bss_472B4.object[lbl_803CBBC0];
+    PSMTXRotRad(q->world, 'Y', lbl_1_rodata_204 * (f32)lbl_1_common_bss_472B4.spin);
+    PSMTXCopy(lbl_1_common_bss_472B4.view, q->camera);
+    fn_800A7D4C(0, q);
+    fn_800A7D4C(0, &sTabA[lbl_803CBBC0]);
+}
+
+// .text:0x0000717C size:0x104
+void fn_1_717C(ChallengeModelOffsets* model) {
+    u8* geometry;
+    u8* actor;
+    u8* textures;
+    actor = (u8*)model + model->mainActor;
+    geometry = (u8*)model + model->mainGeometry;
+    textures = (u8*)model + model->textures;
+    fn_1_4DD8((u16*)((u8*)model + model->effects));
+    fn_800B49E4((struct ActorLayout *)actor); // TODO type
+    fn_800BCE38((struct DODisplayData *)geometry); // TODO type
+    convertTextureHeader(textures);
+    lbl_1_common_bss_472B4.texBank = textures + 4;
+    fn_800BD190((struct GQRValueGroups*)geometry, textures);
+    haveActLayoutPointToGeoHeader(actor, geometry);
+    lbl_1_common_bss_472B4.totalBones = ((struct ActorLayout*)actor)->totalBones;
+    lbl_1_common_bss_472B4.stage[1].layout = (struct ActorLayout*)actor;
+    lbl_1_common_bss_472B4.stage[0].layout = (struct ActorLayout*)actor;
+    actor = (u8*)model + model->secondaryActor;
+    geometry = (u8*)model + model->secondaryGeometry;
+    fn_800B49E4((struct ActorLayout *)actor); // TODO type
+    fn_800BCE38((struct DODisplayData *)geometry); // TODO type
+    fn_800BD190((struct GQRValueGroups*)geometry, textures);
+    haveActLayoutPointToGeoHeader(actor, geometry);
+    lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
+    lbl_1_common_bss_472B4.object[0].layout = (struct ActorLayout*)actor;
+}
+
+// .text:0x00006E14 size:0x368
+// Viewer main loop: camera, model queueing, START to restart, B for the debug menu.
+void fn_1_6E14(void) {
+    fn_1_7960();
+    if (lbl_1_common_bss_472B4._238 == 0) {
+        fn_1_7280();
+    } else {
+        fn_1_196C();
+    }
+    if (PAD0.down & PAD_BUTTON_START) {
+        SetFogNoneAgain();
+        lbl_803CC1B8->func = fn_1_66C4;
+    } else if (PAD0.down & PAD_BUTTON_B) {
+        lbl_1_common_bss_472B4.menuActive = 0;
+        lbl_1_common_bss_472B4._238 = 0;
+        lbl_1_common_bss_472B4.menuOpen ^= 1;
+        lbl_1_common_bss_472B4.selBone = -1;
+    }
+    if (lbl_1_common_bss_472B4.menuOpen) {
+        switch (PAD0.repeat) {
+        case PAD_BUTTON_UP:
+            if (--lbl_1_common_bss_472B4.menuItem < 0) {
+                lbl_1_common_bss_472B4.menuItem = 7;
+            }
+            break;
+        case PAD_BUTTON_DOWN:
+            if (++lbl_1_common_bss_472B4.menuItem >= 8) {
+                lbl_1_common_bss_472B4.menuItem = 0;
+            }
+            break;
+        case PAD_BUTTON_A:
+            switch (lbl_1_common_bss_472B4.menuItem) {
+            case 0:
+                lbl_1_common_bss_472B4.menuActive = 1;
+                lbl_1_common_bss_472B4.menuOpen = 0;
+                break;
+            case 1:
+                lbl_1_common_bss_472B4.selBone = -1;
+                lbl_1_common_bss_472B4.menuActive = 1;
+                lbl_1_common_bss_472B4.menuOpen = 0;
+                break;
+            case 2:
+                lbl_1_common_bss_472B4.menuActive = 1;
+                lbl_1_common_bss_472B4.menuOpen = 0;
+                break;
+            case 3:
+                lbl_1_common_bss_472B4.menuActive = 1;
+                lbl_1_common_bss_472B4.menuOpen = 0;
+                break;
+            case 4:
+                lbl_1_common_bss_472B4._234 ^= 1;
+                break;
+            case 5:
+                lbl_1_common_bss_472B4.menuActive = 1;
+                lbl_1_common_bss_472B4.menuOpen = 0;
+                break;
+            case 6:
+                lbl_1_bss_C0 ^= 1;
+                break;
+            case 7:
+                lbl_1_bss_C1 ^= 1;
+                break;
+            }
+            break;
+        }
+    }
+    if (lbl_1_common_bss_472B4.menuActive) {
+        sDebugItemFuncs[lbl_1_common_bss_472B4.menuItem]();
+    }
+    if (lbl_1_bss_C0 != 0) {
+        fn_800B996C((DOTevPass)fn_1_5544); // GX enums vs s32: same ABI
+    } else {
+        fn_800B996C(0);
+    }
+}
+
+// .text:0x00006848 size:0x5CC
+// Viewer setup task: builds the normal map and lights, lets pad 0 pick a stage and
+// variant, loads that model from ARAM and then hands over to fn_1_6E14.
+// NONMATCHING 91%: the original addresses .data/.bss through pooled base registers in a different register order
+#if NONMATCHING
+void fn_1_6848(void) {
+    ChalLightColors colors;
+    GXColor color;
+    ChalTask* task;
+    ChallengeModelOffsets* model;
+    u8* actor;
+    u8* geometry;
+    u8* textures;
+    s32 size;
+
+    task = lbl_803CC1B8;
+    switch (task->state) {
+    case 0:
+        fn_800B9AA8(NULL);
+        size = sNormalMapSize;
+        fn_1_6578(&lbl_1_bss_4E4, sNormalMap, size, size);
+        fn_800B996C((DOTevPass)fn_1_5544); // GX enums vs s32: same ABI
+        LITAlloc(&lbl_1_data_848[0]);
+        LITAlloc(&lbl_1_data_848[1]);
+        LITAlloc(&lbl_1_data_848[2]);
+        colors = lbl_1_rodata_194;
+        LITInitAttn(lbl_1_data_848[0], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
+                    lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        LITInitPos(lbl_1_data_848[0], lbl_1_rodata_1FC, lbl_1_rodata_200, lbl_1_rodata_1A8);
+        LITInitDir(lbl_1_data_848[0], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        color = colors.c[0];
+        LITInitColor(lbl_1_data_848[0], &color);
+        LITInitAttn(lbl_1_data_848[1], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
+                    lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        LITInitPos(lbl_1_data_848[1], lbl_1_rodata_1A8, lbl_1_rodata_200, lbl_1_rodata_1FC);
+        LITInitDir(lbl_1_data_848[1], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        color = colors.c[1];
+        LITInitColor(lbl_1_data_848[1], &color);
+        LITInitAttn(lbl_1_data_848[2], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
+                    lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        LITInitPos(lbl_1_data_848[2], lbl_1_rodata_1FC, lbl_1_rodata_200, lbl_1_rodata_1FC);
+        LITInitDir(lbl_1_data_848[2], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
+        color = colors.c[2];
+        LITInitColor(lbl_1_data_848[2], &color);
+        task->state = 1;
+        // fallthrough
+    case 1:
+        switch (PAD0.repeat) {
+        case PAD_BUTTON_UP:
+            if (--lbl_1_common_bss_472B4.stageSel < 0) {
+                lbl_1_common_bss_472B4.stageSel = lbl_1_data_8CC - 1;
+            }
+            break;
+        case PAD_BUTTON_DOWN:
+            if (++lbl_1_common_bss_472B4.stageSel >= lbl_1_data_8CC) {
+                lbl_1_common_bss_472B4.stageSel = 0;
+            }
+            break;
+        case PAD_BUTTON_B:
+            if (++lbl_1_common_bss_472B4.variantSel > 2) {
+                lbl_1_common_bss_472B4.variantSel = 0;
+            }
+            break;
+        case PAD_BUTTON_A:
+            task->state = 2;
+            break;
+        case PAD_BUTTON_START:
+            fn_800B996C(0);
+            task->parent->state = 1;
+            break;
+        }
+        break;
+    case 2:
+        task->modelIdx = lbl_1_common_bss_472B4.variantSel + lbl_1_common_bss_472B4.stageSel * 3;
+        task->model = (ChallengeModelOffsets*)ARAMTransfer(&lbl_1_data_8D0[task->modelIdx], 0, 0, 0);
+        task->state = 3;
+        lbl_1_bss_4E0 = &lbl_1_data_2A8[lbl_1_common_bss_472B4.stageSel].fog[lbl_1_common_bss_472B4.variantSel];
+        break;
+    case 3:
+        if (lbl_803C6CF8.idle == 1) {
+            model = task->model;
+            actor = (u8*)model + model->mainActor;
+            geometry = (u8*)model + model->mainGeometry;
+            textures = (u8*)model + model->textures;
+            fn_1_4DD8((u16*)((u8*)model + model->effects));
+            fn_800B49E4((struct ActorLayout *)actor); // TODO type
+            fn_800BCE38((struct DODisplayData *)geometry); // TODO type
+            convertTextureHeader(textures);
+            lbl_1_common_bss_472B4.texBank = textures + 4;
+            fn_800BD190((struct GQRValueGroups*)geometry, textures);
+            haveActLayoutPointToGeoHeader(actor, geometry);
+            lbl_1_common_bss_472B4.totalBones = ((struct ActorLayout*)actor)->totalBones;
+            lbl_1_common_bss_472B4.stage[1].layout = (struct ActorLayout*)actor;
+            lbl_1_common_bss_472B4.stage[0].layout = (struct ActorLayout*)actor;
+            actor = (u8*)model + model->secondaryActor;
+            geometry = (u8*)model + model->secondaryGeometry;
+            fn_800B49E4((struct ActorLayout *)actor); // TODO type
+            fn_800BCE38((struct DODisplayData *)geometry); // TODO type
+            fn_800BD190((struct GQRValueGroups*)geometry, textures);
+            haveActLayoutPointToGeoHeader(actor, geometry);
+            lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
+            lbl_1_common_bss_472B4.object[0].layout = (struct ActorLayout*)actor;
+            DCFlushRangeNoSync(task->model, lbl_1_data_8D0[task->modelIdx].sizeInfo & 0x0FFFFFFF);
+            lbl_803CC1B8->func = fn_1_6E14;
+        }
+        break;
+    }
+}
+#endif
+
+// .text:0x000066C4 size:0x184
+void fn_1_66C4(void) {
+    ChalTask* task = lbl_803CC1B8;
+    s32 a;
+    s32 b;
+    fn_800AD038(lbl_80366158[2]);
+    task->state = 0;
+    a = lbl_1_common_bss_472B4.stageSel;
+    b = lbl_1_common_bss_472B4.variantSel;
+    memset(&lbl_1_common_bss_472B4, 0, sizeof(ChallengeWork));
+    lbl_1_common_bss_472B4.stageSel = a;
+    lbl_1_common_bss_472B4.variantSel = b;
+    lbl_1_common_bss_472B4.heapBuf = _OSAllocFromHeap(0x20, 0x80000);
+    lbl_1_common_bss_472B4.pos.y = lbl_1_rodata_1F0;
+    lbl_1_common_bss_472B4.pos.z = lbl_1_rodata_1F4;
+    lbl_1_common_bss_472B4.pitch = 0xF36C;
+    lbl_1_common_bss_472B4.zoom = lbl_1_rodata_1F8;
+    lbl_1_common_bss_472B4.selBone = -1;
+    lbl_1_common_bss_472B4._234 = 0;
+    PSMTXIdentity(lbl_1_common_bss_472B4.stage[0].world);
+    lbl_1_common_bss_472B4.stage[0].draw = fn_1_77EC;
+    lbl_1_common_bss_472B4.stage[1] = lbl_1_common_bss_472B4.stage[0];
+    lbl_1_common_bss_472B4.object[0].draw = (void (*)(ChallengeModel*))fn_800B472C;
+    lbl_1_common_bss_472B4.object[1] = lbl_1_common_bss_472B4.object[0];
+    lbl_803CC1B8->func = fn_1_6848;
+}
+
+// .text:0x00006578 size:0x14C
+void fn_1_6578(GXTexObj* obj, void* image, s32 w, s32 h) {
+    GXTexFilter filter;
+    f32* scale;
+    s32 w0;
+    s32 h0;
+    s32 offset;
+    s32 level;
+    w0 = w;
+    h0 = h;
+    offset = 0;
+    if (sMipCount == 0) {
+        w = w / 4;
+        h = h / 4;
+        fn_1_6050((u16*)image, w, h, lbl_1_rodata_1D8);
+        filter = GX_LINEAR;
+    } else {
+        scale = sMipScale;
+        for (level = 0; level <= sMipCount; level++) {
+            fn_1_6050((u16*)image + offset, w0, h0, *scale);
+            offset += w0 * h0;
+            w0 /= 2;
+            h0 /= 2;
+            scale++;
+        }
+        filter = sMinFilter;
+    }
+    GXInitTexObj(obj, image, w, h, GX_TF_IA8, GX_REPEAT, GX_REPEAT, sMipCount);
+    GXInitTexObjLOD(obj, filter, GX_LINEAR, lbl_1_rodata_1A8, (f32)sMipCount, sLodBias, 0, 0, GX_ANISO_1);
+}
+
+// .text:0x00006050 size:0x528
+// Fills an IA8 (4x4-tiled) normal-map texture of a hemisphere, optionally bent towards sUpAxis by scale.
+// NONMATCHING 97%: hoisted float constants land in rotated registers (f26-f31)
+#if NONMATCHING
+void fn_1_6050(u16* image, s32 width, s32 height, f32 scale) {
+    Mtx rot;
+    Vec normal;
+    Vec flat;
+    Vec axis;
+    Quaternion quat;
+    u32 size;
+    s32 y;
+    s32 x;
+    f32 u;
+    f32 v;
+    f32 fy2;
+    f32 fx;
+    f32 fy;
+    f32 baseU;
+    f32 baseV;
+    f32 d;
+    f32 angle;
+    f32 s;
+    f32 mag;
+
+    size = height * (width * 2);
+    memset(image, 0, size);
+    for (y = 0; y < height; y++) {
+        fy = lbl_1_rodata_1C8 * ((f32)y / (f32)height - lbl_1_rodata_1CC);
+        baseV = fy * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
+        fy2 = fy * fy;
+        for (x = 0; x < width; x++) {
+            fx = lbl_1_rodata_1C8 * ((f32)x / (f32)width - lbl_1_rodata_1CC);
+            baseU = fx * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
+            if (y == height / 2) {
+                d = lbl_1_rodata_1D8 - fx * fx;
+            } else {
+                d = lbl_1_rodata_1D8 - fx * fx - fy2;
+            }
+            if (d < lbl_1_rodata_1A8) {
+                normal.x = fx;
+                normal.y = fy;
+                normal.z = lbl_1_rodata_1A8;
+                PSVECNormalize(&normal, &normal);
+            } else {
+                f64 z = -sqrt(d);
+                normal.x = fx;
+                normal.y = fy;
+                normal.z = z;
+            }
+            if (lbl_1_rodata_1D8 != scale) {
+                PSVECCrossProduct(&lbl_1_data_A3C, &normal, &axis);
+                mag = PSVECMag(&axis);
+                if (mag != lbl_1_rodata_1A8) {
+                    PSVECNormalize(&axis, &axis);
+                    angle = acos(PSVECDotProduct(&lbl_1_data_A3C, &normal));
+                    angle = angle * scale * lbl_1_rodata_1CC;
+                    s = sin(angle);
+                    quat.w = cos(angle);
+                    quat.x = axis.x * s;
+                    quat.y = axis.y * s;
+                    quat.z = axis.z * s;
+                    PSMTXQuat(rot, &quat);
+                    PSMTXMultVec(rot, &lbl_1_data_A3C, &normal);
+                }
+            }
+            flat.x = normal.x;
+            flat.y = lbl_1_rodata_1A8;
+            flat.z = normal.z;
+            mag = PSVECMag(&flat);
+            if (mag == lbl_1_rodata_1A8) {
+                u = lbl_1_rodata_1A8;
+                v = lbl_1_rodata_1A8;
+            } else {
+                PSVECNormalize(&flat, &flat);
+                if (lbl_1_rodata_1A8 == fy) {
+                    v = lbl_1_rodata_1CC;
+                } else {
+                    v = acos(PSVECDotProduct(&flat, &normal));
+                    PSVECCrossProduct(&flat, &normal, &axis);
+                    mag = PSVECMag(&axis);
+                    if (mag == lbl_1_rodata_1A8) {
+                        v = lbl_1_rodata_1A8;
+                    } else if (axis.x < lbl_1_rodata_1A8) {
+                        v = -v;
+                    }
+                    v = v / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
+                }
+                if (lbl_1_rodata_1A8 == fx) {
+                    u = lbl_1_rodata_1CC;
+                } else {
+                    u = acos(PSVECDotProduct(&lbl_1_data_A3C, &flat));
+                    PSVECCrossProduct(&lbl_1_data_A3C, &flat, &axis);
+                    mag = PSVECMag(&axis);
+                    if (mag == lbl_1_rodata_1A8) {
+                        u = lbl_1_rodata_1A8;
+                    } else if (axis.y > lbl_1_rodata_1A8) {
+                        u = -u;
+                    }
+                    u = u / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
+                }
+                u -= baseU;
+                v -= baseV;
+            }
+            image[(y / 4) * width * 4 + (x / 4) * 16 + (y % 4) * 4 + x % 4] =
+                (((s32)(lbl_1_rodata_1E0 * u + lbl_1_rodata_1E0) << 8) & 0xFF00) | (u8)(s32)(lbl_1_rodata_1E0 * v + lbl_1_rodata_1E0);
+        }
+    }
+    DCFlushRange(image, size);
+}
+#endif
+
+// .text:0x00005AC0 size:0x590
+// Same as fn_1_6050 (bent towards lbl_1_data_A48), but only texels inside the middle 0.2-0.8 square are bent.
+// NONMATCHING 84%: hoisted float constants land in rotated registers (see fn_1_6050)
+#if NONMATCHING
+void fn_1_5AC0(u16* image, s32 width, s32 height, f32 scale) {
+    Mtx rot;
+    Vec normal;
+    Vec flat;
+    Vec axis;
+    Quaternion quat;
+    u32 size;
+    s32 y;
+    s32 x;
+    f32 u;
+    f32 v;
+    f32 fy2;
+    f32 fx;
+    f32 fy;
+    f32 baseU;
+    f32 baseV;
+    f32 d;
+    f32 angle;
+    f32 s;
+    f32 mag;
+    u8 inside;
+
+    size = height * (width * 2);
+    memset(image, 0, size);
+    for (y = 0; y < height; y++) {
+        fy = lbl_1_rodata_1C8 * ((f32)y / (f32)height - lbl_1_rodata_1CC);
+        baseV = fy * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
+        fy2 = fy * fy;
+        for (x = 0; x < width; x++) {
+            fx = lbl_1_rodata_1C8 * ((f32)x / (f32)width - lbl_1_rodata_1CC);
+            baseU = fx * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
+            inside = fy > lbl_1_rodata_1D0 & fy < lbl_1_rodata_1D4 & fx > lbl_1_rodata_1D0 & fx < lbl_1_rodata_1D4;
+            if (y == height / 2) {
+                d = lbl_1_rodata_1D8 - fx * fx;
+            } else {
+                d = lbl_1_rodata_1D8 - fx * fx - fy2;
+            }
+            if (d < lbl_1_rodata_1A8) {
+                normal.x = fx;
+                normal.y = fy;
+                normal.z = lbl_1_rodata_1A8;
+                PSVECNormalize(&normal, &normal);
+            } else {
+                f64 z = -sqrt(d);
+                normal.x = fx;
+                normal.y = fy;
+                normal.z = z;
+            }
+            if (inside && lbl_1_rodata_1D8 != scale) {
+                PSVECCrossProduct(&lbl_1_data_A48, &normal, &axis);
+                mag = PSVECMag(&axis);
+                if (mag != lbl_1_rodata_1A8) {
+                    PSVECNormalize(&axis, &axis);
+                    angle = acos(PSVECDotProduct(&lbl_1_data_A48, &normal));
+                    angle = angle * scale * lbl_1_rodata_1CC;
+                    s = sin(angle);
+                    quat.w = cos(angle);
+                    quat.x = axis.x * s;
+                    quat.y = axis.y * s;
+                    quat.z = axis.z * s;
+                    PSMTXQuat(rot, &quat);
+                    PSMTXMultVec(rot, &lbl_1_data_A48, &normal);
+                }
+            }
+            flat.x = normal.x;
+            flat.y = lbl_1_rodata_1A8;
+            flat.z = normal.z;
+            mag = PSVECMag(&flat);
+            if (mag == lbl_1_rodata_1A8) {
+                u = lbl_1_rodata_1A8;
+                v = lbl_1_rodata_1A8;
+            } else {
+                PSVECNormalize(&flat, &flat);
+                if (lbl_1_rodata_1A8 == fy) {
+                    v = lbl_1_rodata_1CC;
+                } else {
+                    v = acos(PSVECDotProduct(&flat, &normal));
+                    PSVECCrossProduct(&flat, &normal, &axis);
+                    mag = PSVECMag(&axis);
+                    if (mag == lbl_1_rodata_1A8) {
+                        v = lbl_1_rodata_1A8;
+                    } else if (axis.x < lbl_1_rodata_1A8) {
+                        v = -v;
+                    }
+                    v = v / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
+                }
+                if (lbl_1_rodata_1A8 == fx) {
+                    u = lbl_1_rodata_1CC;
+                } else {
+                    u = acos(PSVECDotProduct(&lbl_1_data_A48, &flat));
+                    PSVECCrossProduct(&lbl_1_data_A48, &flat, &axis);
+                    mag = PSVECMag(&axis);
+                    if (mag == lbl_1_rodata_1A8) {
+                        u = lbl_1_rodata_1A8;
+                    } else if (axis.y > lbl_1_rodata_1A8) {
+                        u = -u;
+                    }
+                    u = u / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
+                }
+                u -= baseU;
+                v -= baseV;
+            }
+            image[(y / 4) * width * 4 + (x / 4) * 16 + (y % 4) * 4 + x % 4] =
+                (((s32)(lbl_1_rodata_1E0 * u + lbl_1_rodata_1E0) << 8) & 0xFF00) | (u8)(s32)(lbl_1_rodata_1E0 * v + lbl_1_rodata_1E0);
+        }
+    }
+    DCFlushRange(image, size);
+}
+#endif
+
+// .text:0x00005924 size:0x19C
+// Byte/texel offset of (x, y) in a GX 4x4/8x4/8x8-tiled texture with the given bits per pixel.
+// NONMATCHING 62%: same instructions, the x terms are scheduled before the y terms
+#if NONMATCHING
+s32 fn_1_5924(s32 width, s32 x, s32 y, s32 bpp, s32 alt) {
+    s32 offset;
+    switch (bpp) {
+    case 4:
+        return (y / 8) * width * 8 + ((y % 8) * 8 + x % 8) + (x / 8) * 32;
+    case 8:
+        return (y / 4) * width * 4 + ((y % 4) * 8 + x % 8) + (x / 8) * 32;
+    case 16:
+        return (y / 4) * width * 4 + ((y % 4) * 4 + x % 4) + (x / 4) * 16;
+    case 32:
+        offset = (y / 4) * width * 4 + ((y % 4) * 8 + x % 4) + (x / 8) * 16;
+        if (alt != 0) {
+            offset += 16;
+        }
+        return offset;
+    }
+    return width;
+}
+#endif
+
+// .text:0x00005698 size:0x28C
 void fn_1_5698(void) {
     Mtx44 proj;
     Mtx pos;
@@ -550,127 +1286,42 @@ void fn_1_5698(void) {
     GXSetTevDirect(GX_TEVSTAGE0);
 }
 
-// fn_1_7FF8, size:0x370
-// Debug pad editor for the current fog (mode, colour, start, end).
-// NONMATCHING 99%: in the two `+1` clamps the 512 limit and the field load swap f0/f2
-#if NONMATCHING
-void fn_1_7FF8(void) {
-    s32 t;
-    s32 u;
-    f32 f;
-    switch (PAD0.repeat) {
-    case PAD_BUTTON_UP:
-        t = (u8)lbl_1_common_bss_472B4.fogItem - 1;
-        lbl_1_common_bss_472B4.fogItem = t;
-        if ((s8)t < 0) {
-            lbl_1_common_bss_472B4.fogItem = 5;
+void fn_1_5544(GXTevStageID stage, GXIndTexStageID indStage, GXIndTexMtxID mtx, GXTexCoordID coord, GXTexMapID map) {
+    u8 flags;
+    GXLoadTexObj(&lbl_1_bss_4E4, map);
+    flags = sIndFlags;
+    if (flags != 0) {
+        if (flags & 2) {
+            map--;
         }
+        if (flags & 4) {
+            coord--;
+        }
+        GXSetTevOrder(stage, coord, map, GX_COLOR_NULL);
+        GXSetTevColorIn(stage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+        GXSetTevColorOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
+        GXSetTevAlphaIn(stage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
+        GXSetTevAlphaOp(stage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
         return;
-    case PAD_BUTTON_DOWN:
-        t = (u8)lbl_1_common_bss_472B4.fogItem + 1;
-        lbl_1_common_bss_472B4.fogItem = t;
-        if ((s8)t >= 6) {
-            lbl_1_common_bss_472B4.fogItem = 0;
-            return;
-        }
-        break;
-    case PAD_BUTTON_LEFT:
-        switch (lbl_1_common_bss_472B4.fogItem) {
-        case 0:
-            u = lbl_1_bss_4E0[0]->color.color.a - 1;
-            lbl_1_bss_4E0[0]->color.color.a = u;
-            switch ((u8)u) {
-            case 0xFF:
-                lbl_1_bss_4E0[0]->color.color.a = 7;
-                return;
-            case 3:
-                lbl_1_bss_4E0[0]->color.color.a = 2;
-                return;
-            case 1:
-                lbl_1_bss_4E0[0]->color.color.a = 0;
-                return;
-            }
-            break;
-        case 1:
-            lbl_1_bss_4E0[0]->color.color.r = lbl_1_bss_4E0[0]->color.color.r - 1;
-            return;
-        case 2:
-            lbl_1_bss_4E0[0]->color.color.g = lbl_1_bss_4E0[0]->color.color.g - 1;
-            return;
-        case 3:
-            lbl_1_bss_4E0[0]->color.color.b = lbl_1_bss_4E0[0]->color.color.b - 1;
-            return;
-        case 4:
-            lbl_1_bss_4E0[0]->start = f = lbl_1_bss_4E0[0]->start - 1.0f;
-            if (f < 0.0f) {
-                lbl_1_bss_4E0[0]->start = 0.0f;
-                return;
-            }
-            break;
-        case 5:
-            lbl_1_bss_4E0[0]->end = f = lbl_1_bss_4E0[0]->end - 1.0f;
-            if (f < 0.0f) {
-                lbl_1_bss_4E0[0]->end = 0.0f;
-                return;
-            }
-            break;
-        }
-        break;
-    case PAD_BUTTON_RIGHT:
-        switch (lbl_1_common_bss_472B4.fogItem) {
-        case 0:
-            u = lbl_1_bss_4E0[0]->color.color.a + 1;
-            lbl_1_bss_4E0[0]->color.color.a = u;
-            switch ((u8)u) {
-            case 1:
-                lbl_1_bss_4E0[0]->color.color.a = 2;
-                return;
-            case 3:
-                lbl_1_bss_4E0[0]->color.color.a = 4;
-                return;
-            case 8:
-                lbl_1_bss_4E0[0]->color.color.a = 0;
-                return;
-            }
-            break;
-        case 1:
-            lbl_1_bss_4E0[0]->color.color.r = lbl_1_bss_4E0[0]->color.color.r + 1;
-            return;
-        case 2:
-            lbl_1_bss_4E0[0]->color.color.g = lbl_1_bss_4E0[0]->color.color.g + 1;
-            return;
-        case 3:
-            lbl_1_bss_4E0[0]->color.color.b = lbl_1_bss_4E0[0]->color.color.b + 1;
-            return;
-        case 4:
-            lbl_1_bss_4E0[0]->start = f = lbl_1_bss_4E0[0]->start + 1.0f;
-            if (f > lbl_1_rodata_208) {
-                lbl_1_bss_4E0[0]->start = lbl_1_rodata_208;
-                return;
-            }
-            break;
-        case 5:
-            lbl_1_bss_4E0[0]->end = f = lbl_1_bss_4E0[0]->end + 1.0f;
-            if (f > lbl_1_rodata_208) {
-                lbl_1_bss_4E0[0]->end = lbl_1_rodata_208;
-                return;
-            }
-            break;
-        }
-        break;
+    }
+    GXSetNumIndStages(1);
+    GXSetIndTexMtx(mtx, sIndMtx, (s8)sIndScaleExp);
+    GXSetIndTexOrder(indStage, coord, map);
+    GXSetIndTexCoordScale(indStage, sIndSScale, sIndTScale);
+    GXSetTevIndWarp(stage, indStage, sIndSignedOffsets, sIndReplace, mtx);
+}
+
+// .text:0x5540 size:0x4
+void fn_1_5540(void) {
+}
+
+// .text:0x000054E0 size:0x60
+void fn_1_54E0(MtxPtr view) {
+    s32 i;
+    for (i = 0; i < 3; i++) {
+        LITXForm(lbl_1_data_848[i], view);
     }
 }
-#endif
-
-// Display-list opcodes not in GXEnum.h.
-#define DL_NOP 0x00
-#define DL_LOAD_CP_REG 0x08
-#define DL_LOAD_XF_REG 0x10
-#define DL_LOAD_INDX_A 0x20
-#define DL_LOAD_INDX_B 0x28
-#define DL_LOAD_INDX_C 0x30
-#define DL_LOAD_INDX_D 0x38
-#define DL_LOAD_BP_REG 0x61
 
 void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
     Mtx m;
@@ -866,655 +1517,3 @@ void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
         }
     }
 }
-
-// fn_1_6050, size:0x528
-// Fills an IA8 (4x4-tiled) normal-map texture of a hemisphere, optionally bent towards sUpAxis by scale.
-// NONMATCHING 97%: hoisted float constants land in rotated registers (f26-f31)
-#if NONMATCHING
-void fn_1_6050(u16* image, s32 width, s32 height, f32 scale) {
-    Mtx rot;
-    Vec normal;
-    Vec flat;
-    Vec axis;
-    Quaternion quat;
-    u32 size;
-    s32 y;
-    s32 x;
-    f32 u;
-    f32 v;
-    f32 fy2;
-    f32 fx;
-    f32 fy;
-    f32 baseU;
-    f32 baseV;
-    f32 d;
-    f32 angle;
-    f32 s;
-    f32 mag;
-
-    size = height * (width * 2);
-    memset(image, 0, size);
-    for (y = 0; y < height; y++) {
-        fy = lbl_1_rodata_1C8 * ((f32)y / (f32)height - lbl_1_rodata_1CC);
-        baseV = fy * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
-        fy2 = fy * fy;
-        for (x = 0; x < width; x++) {
-            fx = lbl_1_rodata_1C8 * ((f32)x / (f32)width - lbl_1_rodata_1CC);
-            baseU = fx * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
-            if (y == height / 2) {
-                d = lbl_1_rodata_1D8 - fx * fx;
-            } else {
-                d = lbl_1_rodata_1D8 - fx * fx - fy2;
-            }
-            if (d < lbl_1_rodata_1A8) {
-                normal.x = fx;
-                normal.y = fy;
-                normal.z = lbl_1_rodata_1A8;
-                PSVECNormalize(&normal, &normal);
-            } else {
-                f64 z = -sqrt(d);
-                normal.x = fx;
-                normal.y = fy;
-                normal.z = z;
-            }
-            if (lbl_1_rodata_1D8 != scale) {
-                PSVECCrossProduct(&lbl_1_data_A3C, &normal, &axis);
-                mag = PSVECMag(&axis);
-                if (mag != lbl_1_rodata_1A8) {
-                    PSVECNormalize(&axis, &axis);
-                    angle = acos(PSVECDotProduct(&lbl_1_data_A3C, &normal));
-                    angle = angle * scale * lbl_1_rodata_1CC;
-                    s = sin(angle);
-                    quat.w = cos(angle);
-                    quat.x = axis.x * s;
-                    quat.y = axis.y * s;
-                    quat.z = axis.z * s;
-                    PSMTXQuat(rot, &quat);
-                    PSMTXMultVec(rot, &lbl_1_data_A3C, &normal);
-                }
-            }
-            flat.x = normal.x;
-            flat.y = lbl_1_rodata_1A8;
-            flat.z = normal.z;
-            mag = PSVECMag(&flat);
-            if (mag == lbl_1_rodata_1A8) {
-                u = lbl_1_rodata_1A8;
-                v = lbl_1_rodata_1A8;
-            } else {
-                PSVECNormalize(&flat, &flat);
-                if (lbl_1_rodata_1A8 == fy) {
-                    v = lbl_1_rodata_1CC;
-                } else {
-                    v = acos(PSVECDotProduct(&flat, &normal));
-                    PSVECCrossProduct(&flat, &normal, &axis);
-                    mag = PSVECMag(&axis);
-                    if (mag == lbl_1_rodata_1A8) {
-                        v = lbl_1_rodata_1A8;
-                    } else if (axis.x < lbl_1_rodata_1A8) {
-                        v = -v;
-                    }
-                    v = v / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
-                }
-                if (lbl_1_rodata_1A8 == fx) {
-                    u = lbl_1_rodata_1CC;
-                } else {
-                    u = acos(PSVECDotProduct(&lbl_1_data_A3C, &flat));
-                    PSVECCrossProduct(&lbl_1_data_A3C, &flat, &axis);
-                    mag = PSVECMag(&axis);
-                    if (mag == lbl_1_rodata_1A8) {
-                        u = lbl_1_rodata_1A8;
-                    } else if (axis.y > lbl_1_rodata_1A8) {
-                        u = -u;
-                    }
-                    u = u / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
-                }
-                u -= baseU;
-                v -= baseV;
-            }
-            image[(y / 4) * width * 4 + (x / 4) * 16 + (y % 4) * 4 + x % 4] =
-                (((s32)(lbl_1_rodata_1E0 * u + lbl_1_rodata_1E0) << 8) & 0xFF00) | (u8)(s32)(lbl_1_rodata_1E0 * v + lbl_1_rodata_1E0);
-        }
-    }
-    DCFlushRange(image, size);
-}
-#endif
-
-extern u8 lbl_1_bss_C1;        // draw vertex normals (fn_1_4E98)
-extern u8 lbl_1_bss_2E0[0x200]; // per-bone hide flags
-
-// A layout file: the header followed by header.totalBones bones.
-typedef struct ChalLayoutFile {
-    /*0x00*/ ActorLayout header;
-    /*0x20*/ ActorBone bones[1];
-} ChalLayoutFile;
-
-// fn_1_73B8, size:0x434
-// Draw callback of the stage model: like fn_800B472C, but bones can be hidden or
-// isolated (selBone), each drawn bone is counted, and lights are passed through.
-// NONMATCHING 99%: callee-saved registers permuted (model/obj r21, numLights r29 in the original)
-#if NONMATCHING
-void fn_1_73B8(ChallengeModel* model, u8 numLights, ...) {
-    va_list list;
-    Mtx m;
-    Vec box[8];
-    ChalLayoutFile* file;
-    DODisplayData* pal;
-    MtxPtr world;
-    MtxPtr camera;
-    ActorBone* bone;
-    u8* hidden;
-    struct DODisplayObj* obj;
-    s32 i;
-    s32 count;
-    u16 geoID;
-
-    file = (ChalLayoutFile*)model->layout;
-    pal = file->header.geoPalette;
-    if (lbl_1_data_8C8 == 1) {
-        memset(lbl_1_bss_2E0, 0, sizeof(lbl_1_bss_2E0));
-        lbl_1_data_8C8 = 0;
-    } else if (lbl_1_data_8C8 == 2) {
-        memset(lbl_1_bss_2E0, 1, sizeof(lbl_1_bss_2E0));
-        lbl_1_data_8C8 = 0;
-    }
-    count = file->header.totalBones;
-    lbl_1_common_bss_472B4.drawnBones = 0;
-    if (lbl_1_common_bss_472B4.selBone < 0) {
-        i = 0;
-    } else {
-        i = lbl_1_common_bss_472B4.selBone;
-        count = i + 1;
-    }
-    world = model->world;
-    camera = model->camera;
-    for (; i < count; i++) {
-        if (lbl_1_bss_2E0[i] != 0) {
-            continue;
-        }
-        bone = &file->bones[i];
-        geoID = bone->geoFileID;
-        if (geoID == 0xFFFF) {
-            continue;
-        }
-        if (bone->flags & 1) {
-            GXSetZMode(GX_FALSE, GX_ALWAYS, GX_TRUE);
-        } else {
-            GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
-        }
-        switch (bone->flags & 6) {
-        case 2:
-            GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
-            break;
-        case 4:
-            GXSetBlendMode(GX_BM_BLEND, GX_BL_DSTCOL, GX_BL_ZERO, GX_LO_CLEAR);
-            break;
-        default:
-            GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-            break;
-        }
-        obj = pal->descriptorArray[geoID].dispObj;
-        CTRLBuildMatrix(bone->orientationCtrl, obj->worldMatrix);
-        PSMTXConcat(world, obj->worldMatrix, obj->worldMatrix);
-        PSMTXConcat(camera, obj->worldMatrix, m);
-        box[0].x = obj->bounds[1];
-        box[0].y = obj->bounds[3];
-        box[0].z = obj->bounds[4];
-        box[1].x = obj->bounds[0];
-        box[1].y = obj->bounds[3];
-        box[1].z = obj->bounds[4];
-        box[2].x = obj->bounds[0];
-        box[2].y = obj->bounds[3];
-        box[2].z = obj->bounds[5];
-        box[3].x = obj->bounds[1];
-        box[3].y = obj->bounds[3];
-        box[3].z = obj->bounds[5];
-        box[4].x = obj->bounds[1];
-        box[4].y = obj->bounds[2];
-        box[4].z = obj->bounds[4];
-        box[5].x = obj->bounds[0];
-        box[5].y = obj->bounds[2];
-        box[5].z = obj->bounds[4];
-        box[6].x = obj->bounds[0];
-        box[6].y = obj->bounds[2];
-        box[6].z = obj->bounds[5];
-        box[7].x = obj->bounds[1];
-        box[7].y = obj->bounds[2];
-        box[7].z = obj->bounds[5];
-        if (fn_800B7D3C(0, box, m)) {
-            lbl_1_common_bss_472B4.drawnBones++;
-            va_start(list, numLights);
-            DOVARender(obj, camera, numLights, &list);
-        }
-    }
-    if (lbl_1_bss_C1 != 0) {
-        count = file->header.totalBones;
-        if (lbl_1_common_bss_472B4.selBone < 0) {
-            i = 0;
-        } else {
-            i = lbl_1_common_bss_472B4.selBone;
-            count = i + 1;
-        }
-        for (; i < count; i++) {
-            if (lbl_1_bss_2E0[i] != 0) {
-                continue;
-            }
-            bone = &file->bones[i];
-            geoID = bone->geoFileID;
-            if (geoID == 0xFFFF) {
-                continue;
-            }
-            obj = pal->descriptorArray[geoID].dispObj;
-            CTRLBuildMatrix(bone->orientationCtrl, obj->worldMatrix);
-            PSMTXConcat(world, obj->worldMatrix, obj->worldMatrix);
-            PSMTXConcat(camera, obj->worldMatrix, m);
-            box[0].x = obj->bounds[1];
-            box[0].y = obj->bounds[3];
-            box[0].z = obj->bounds[4];
-            box[1].x = obj->bounds[0];
-            box[1].y = obj->bounds[3];
-            box[1].z = obj->bounds[4];
-            box[2].x = obj->bounds[0];
-            box[2].y = obj->bounds[3];
-            box[2].z = obj->bounds[5];
-            box[3].x = obj->bounds[1];
-            box[3].y = obj->bounds[3];
-            box[3].z = obj->bounds[5];
-            box[4].x = obj->bounds[1];
-            box[4].y = obj->bounds[2];
-            box[4].z = obj->bounds[4];
-            box[5].x = obj->bounds[0];
-            box[5].y = obj->bounds[2];
-            box[5].z = obj->bounds[4];
-            box[6].x = obj->bounds[0];
-            box[6].y = obj->bounds[2];
-            box[6].z = obj->bounds[5];
-            box[7].x = obj->bounds[1];
-            box[7].y = obj->bounds[2];
-            box[7].z = obj->bounds[5];
-            if (fn_800B7D3C(0, box, m)) {
-                fn_1_4E98(obj, camera);
-            }
-        }
-    }
-}
-#endif
-
-extern const Vec lbl_1_rodata_188; // {0, 0, 100}
-extern const f32 lbl_1_rodata_20C;
-extern void makeLookAtMatrix(Mtx m, Vec* camPos, Vec* camUp, Vec* target);
-extern void fn_80011640(MtxPtr src, MtxPtr dst);
-extern void fn_800B9950(u32 mask, f32 first, f32 second);
-
-// NONMATCHING 99%: float regs of the trigger scale and magic constant swapped in the pos.y branch
-#if NONMATCHING
-void fn_1_7960(void) {
-    Mtx44 proj;
-    Mtx rotX;
-    Mtx rotY;
-    Mtx m;
-    Vec rot;
-    Vec dir;
-    f32 cosY;
-    f32 sinY;
-
-    dir = lbl_1_rodata_188;
-    lbl_1_common_bss_472B4.pitch -= PAD0.substickY * 2;
-    lbl_1_common_bss_472B4.yaw += PAD0.substickX * 2;
-    lbl_1_common_bss_472B4.strafe = PAD0.stickX / lbl_1_rodata_20C;
-    lbl_1_common_bss_472B4.forward = PAD0.stickY * lbl_1_rodata_210;
-    if (PAD0.held & PAD_TRIGGER_Z) {
-        lbl_1_common_bss_472B4.zoom -= PAD0.triggerLeft / 4096.0f;
-        lbl_1_common_bss_472B4.zoom += PAD0.triggerRight / 4096.0f;
-    } else {
-        lbl_1_common_bss_472B4.pos.y = -(PAD0.triggerRight * lbl_1_rodata_218 - lbl_1_common_bss_472B4.pos.y);
-        lbl_1_common_bss_472B4.pos.y = PAD0.triggerLeft * lbl_1_rodata_218 + lbl_1_common_bss_472B4.pos.y;
-    }
-    rot.x = lbl_1_common_bss_472B4.pitch;
-    rot.y = lbl_1_common_bss_472B4.yaw;
-    rot.z = lbl_1_rodata_1A8;
-    PSVECScale(&rot, lbl_1_rodata_204, &rot);
-    PSMTXRotRad(rotX, 'X', rot.x);
-    PSMTXRotRad(rotY, 'Y', rot.y);
-    sinY = rotY[0][2];
-    cosY = rotY[0][0];
-    PSMTXConcat(rotY, rotX, m);
-    PSMTXMultVec(m, &dir, &lbl_1_common_bss_472B4.at);
-    lbl_1_common_bss_472B4.pos.x += lbl_1_common_bss_472B4.forward * sinY - lbl_1_common_bss_472B4.strafe * cosY;
-    lbl_1_common_bss_472B4.pos.z += lbl_1_common_bss_472B4.forward * cosY + lbl_1_common_bss_472B4.strafe * sinY;
-    lbl_1_common_bss_472B4.at.x += lbl_1_common_bss_472B4.pos.x;
-    lbl_1_common_bss_472B4.at.y += lbl_1_common_bss_472B4.pos.y;
-    lbl_1_common_bss_472B4.at.z += lbl_1_common_bss_472B4.pos.z;
-    makeLookAtMatrix(lbl_1_common_bss_472B4.view, &lbl_1_common_bss_472B4.pos, &lbl_1_data_87C.up,
-                     &lbl_1_common_bss_472B4.at);
-    fn_1_7E04(lbl_1_common_bss_472B4.zoom);
-    fn_1_54E0(lbl_1_common_bss_472B4.view);
-    fn_80011640(lbl_1_common_bss_472B4.view, lbl_1_common_bss_472B4.view);
-    if (lbl_1_bss_C0.indWarp != 0) {
-        fn_800B9950(3, (0xFFFF - lbl_1_common_bss_472B4.yaw) / 32768.0f,
-                    (s16)lbl_1_common_bss_472B4.pitch / 32768.0f);
-    } else {
-        fn_800B9950(3, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
-    }
-}
-#endif
-
-extern void fn_1_196C(void);
-
-// fn_1_6E14, size:0x368
-// Viewer main loop: camera, model queueing, START to restart, B for the debug menu.
-void fn_1_6E14(void) {
-    fn_1_7960();
-    if (lbl_1_common_bss_472B4._238 == 0) {
-        fn_1_7280();
-    } else {
-        fn_1_196C();
-    }
-    if (PAD0.down & PAD_BUTTON_START) {
-        SetFogNoneAgain();
-        lbl_803CC1B8->func = fn_1_66C4;
-    } else if (PAD0.down & PAD_BUTTON_B) {
-        lbl_1_common_bss_472B4.menuActive = 0;
-        lbl_1_common_bss_472B4._238 = 0;
-        lbl_1_common_bss_472B4.menuOpen ^= 1;
-        lbl_1_common_bss_472B4.selBone = -1;
-    }
-    if (lbl_1_common_bss_472B4.menuOpen) {
-        switch (PAD0.repeat) {
-        case PAD_BUTTON_UP:
-            if (--lbl_1_common_bss_472B4.menuItem < 0) {
-                lbl_1_common_bss_472B4.menuItem = 7;
-            }
-            break;
-        case PAD_BUTTON_DOWN:
-            if (++lbl_1_common_bss_472B4.menuItem >= 8) {
-                lbl_1_common_bss_472B4.menuItem = 0;
-            }
-            break;
-        case PAD_BUTTON_A:
-            switch (lbl_1_common_bss_472B4.menuItem) {
-            case 0:
-                lbl_1_common_bss_472B4.menuActive = 1;
-                lbl_1_common_bss_472B4.menuOpen = 0;
-                break;
-            case 1:
-                lbl_1_common_bss_472B4.selBone = -1;
-                lbl_1_common_bss_472B4.menuActive = 1;
-                lbl_1_common_bss_472B4.menuOpen = 0;
-                break;
-            case 2:
-                lbl_1_common_bss_472B4.menuActive = 1;
-                lbl_1_common_bss_472B4.menuOpen = 0;
-                break;
-            case 3:
-                lbl_1_common_bss_472B4.menuActive = 1;
-                lbl_1_common_bss_472B4.menuOpen = 0;
-                break;
-            case 4:
-                lbl_1_common_bss_472B4._234 ^= 1;
-                break;
-            case 5:
-                lbl_1_common_bss_472B4.menuActive = 1;
-                lbl_1_common_bss_472B4.menuOpen = 0;
-                break;
-            case 6:
-                lbl_1_bss_C0.indWarp ^= 1;
-                break;
-            case 7:
-                lbl_1_bss_C1 ^= 1;
-                break;
-            }
-            break;
-        }
-    }
-    if (lbl_1_common_bss_472B4.menuActive) {
-        sDebugItemFuncs[lbl_1_common_bss_472B4.menuItem]();
-    }
-    if (lbl_1_bss_C0.indWarp != 0) {
-        fn_800B996C((DOTevPass)fn_1_5544); // GX enums vs s32: same ABI
-    } else {
-        fn_800B996C(0);
-    }
-}
-
-typedef struct ChalLightColors {
-    GXColor c[3];
-} ChalLightColors;
-extern const ChalLightColors lbl_1_rodata_194; // red, blue, green
-extern const f32 lbl_1_rodata_1FC;
-extern const f32 lbl_1_rodata_200;
-extern struct {
-    u8 pad[0x715];
-    volatile s8 idle;
-} lbl_803C6CF8; // main.dol's DVD/ARAM loader
-extern void LITAlloc(void** light);
-extern void LITInitAttn(void* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
-extern void LITInitPos(void* light, f32 x, f32 y, f32 z);
-extern void LITInitDir(void* light, f32 x, f32 y, f32 z);
-extern void LITInitColor(void* light, GXColor* color);
-
-// fn_1_6848, size:0x5CC
-// Viewer setup task: builds the normal map and lights, lets pad 0 pick a stage and
-// variant, loads that model from ARAM and then hands over to fn_1_6E14.
-// NONMATCHING 91%: the original addresses .data/.bss through pooled base registers in a different register order
-#if NONMATCHING
-void fn_1_6848(void) {
-    ChalLightColors colors;
-    GXColor color;
-    ChalTask* task;
-    ChallengeModelOffsets* model;
-    u8* actor;
-    u8* geometry;
-    u8* textures;
-    s32 size;
-
-    task = lbl_803CC1B8;
-    switch (task->state) {
-    case 0:
-        fn_800B9AA8(NULL);
-        size = lbl_1_data_848.normalMapSize;
-        fn_1_6578(&lbl_1_bss_C0.obj, lbl_1_bss_C0.image, size, size);
-        fn_800B996C((DOTevPass)fn_1_5544); // GX enums vs s32: same ABI
-        LITAlloc(&lbl_1_data_848.lights[0]);
-        LITAlloc(&lbl_1_data_848.lights[1]);
-        LITAlloc(&lbl_1_data_848.lights[2]);
-        colors = lbl_1_rodata_194;
-        LITInitAttn(lbl_1_data_848.lights[0], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
-                    lbl_1_rodata_1A8, lbl_1_rodata_1A8);
-        LITInitPos(lbl_1_data_848.lights[0], lbl_1_rodata_1FC, lbl_1_rodata_200, lbl_1_rodata_1A8);
-        LITInitDir(lbl_1_data_848.lights[0], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
-        color = colors.c[0];
-        LITInitColor(lbl_1_data_848.lights[0], &color);
-        LITInitAttn(lbl_1_data_848.lights[1], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
-                    lbl_1_rodata_1A8, lbl_1_rodata_1A8);
-        LITInitPos(lbl_1_data_848.lights[1], lbl_1_rodata_1A8, lbl_1_rodata_200, lbl_1_rodata_1FC);
-        LITInitDir(lbl_1_data_848.lights[1], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
-        color = colors.c[1];
-        LITInitColor(lbl_1_data_848.lights[1], &color);
-        LITInitAttn(lbl_1_data_848.lights[2], lbl_1_rodata_1D8, lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1D8,
-                    lbl_1_rodata_1A8, lbl_1_rodata_1A8);
-        LITInitPos(lbl_1_data_848.lights[2], lbl_1_rodata_1FC, lbl_1_rodata_200, lbl_1_rodata_1FC);
-        LITInitDir(lbl_1_data_848.lights[2], lbl_1_rodata_1A8, lbl_1_rodata_1A8, lbl_1_rodata_1A8);
-        color = colors.c[2];
-        LITInitColor(lbl_1_data_848.lights[2], &color);
-        task->state = 1;
-        // fallthrough
-    case 1:
-        switch (PAD0.repeat) {
-        case PAD_BUTTON_UP:
-            if (--lbl_1_common_bss_472B4.stageSel < 0) {
-                lbl_1_common_bss_472B4.stageSel = lbl_1_data_8CC - 1;
-            }
-            break;
-        case PAD_BUTTON_DOWN:
-            if (++lbl_1_common_bss_472B4.stageSel >= lbl_1_data_8CC) {
-                lbl_1_common_bss_472B4.stageSel = 0;
-            }
-            break;
-        case PAD_BUTTON_B:
-            if (++lbl_1_common_bss_472B4.variantSel > 2) {
-                lbl_1_common_bss_472B4.variantSel = 0;
-            }
-            break;
-        case PAD_BUTTON_A:
-            task->state = 2;
-            break;
-        case PAD_BUTTON_START:
-            fn_800B996C(0);
-            task->parent->state = 1;
-            break;
-        }
-        break;
-    case 2:
-        task->modelIdx = lbl_1_common_bss_472B4.variantSel + lbl_1_common_bss_472B4.stageSel * 3;
-        task->model = (ChallengeModelOffsets*)ARAMTransfer(&lbl_1_data_8D0[task->modelIdx], 0, 0, 0);
-        task->state = 3;
-        lbl_1_bss_C0.fog = &lbl_1_data_2A8[lbl_1_common_bss_472B4.stageSel].fog[lbl_1_common_bss_472B4.variantSel];
-        break;
-    case 3:
-        if (lbl_803C6CF8.idle == 1) {
-            model = task->model;
-            actor = (u8*)model + model->mainActor;
-            geometry = (u8*)model + model->mainGeometry;
-            textures = (u8*)model + model->textures;
-            fn_1_4DD8((u16*)((u8*)model + model->effects));
-            fn_800B49E4((struct ActorLayout *)actor); // TODO type
-            fn_800BCE38((struct DODisplayData *)geometry); // TODO type
-            convertTextureHeader(textures);
-            lbl_1_common_bss_472B4.texBank = textures + 4;
-            fn_800BD190((struct GQRValueGroups*)geometry, textures);
-            haveActLayoutPointToGeoHeader(actor, geometry);
-            lbl_1_common_bss_472B4.totalBones = ((struct ActorLayout*)actor)->totalBones;
-            lbl_1_common_bss_472B4.stage[1].layout = (struct ActorLayout*)actor;
-            lbl_1_common_bss_472B4.stage[0].layout = (struct ActorLayout*)actor;
-            actor = (u8*)model + model->secondaryActor;
-            geometry = (u8*)model + model->secondaryGeometry;
-            fn_800B49E4((struct ActorLayout *)actor); // TODO type
-            fn_800BCE38((struct DODisplayData *)geometry); // TODO type
-            fn_800BD190((struct GQRValueGroups*)geometry, textures);
-            haveActLayoutPointToGeoHeader(actor, geometry);
-            lbl_1_common_bss_472B4.object[1].layout = (struct ActorLayout*)actor;
-            lbl_1_common_bss_472B4.object[0].layout = (struct ActorLayout*)actor;
-            DCFlushRangeNoSync(task->model, lbl_1_data_8D0[task->modelIdx].sizeInfo & 0x0FFFFFFF);
-            lbl_803CC1B8->func = fn_1_6E14;
-        }
-        break;
-    }
-}
-#endif
-
-extern const f32 lbl_1_rodata_1D0;
-extern const f32 lbl_1_rodata_1D4;
-
-// fn_1_5AC0, size:0x590
-// Same as fn_1_6050 (bent towards lbl_1_data_A48), but only texels inside the middle 0.2-0.8 square are bent.
-// NONMATCHING 84%: hoisted float constants land in rotated registers (see fn_1_6050)
-#if NONMATCHING
-void fn_1_5AC0(u16* image, s32 width, s32 height, f32 scale) {
-    Mtx rot;
-    Vec normal;
-    Vec flat;
-    Vec axis;
-    Quaternion quat;
-    u32 size;
-    s32 y;
-    s32 x;
-    f32 u;
-    f32 v;
-    f32 fy2;
-    f32 fx;
-    f32 fy;
-    f32 baseU;
-    f32 baseV;
-    f32 d;
-    f32 angle;
-    f32 s;
-    f32 mag;
-    u8 inside;
-
-    size = height * (width * 2);
-    memset(image, 0, size);
-    for (y = 0; y < height; y++) {
-        fy = lbl_1_rodata_1C8 * ((f32)y / (f32)height - lbl_1_rodata_1CC);
-        baseV = fy * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
-        fy2 = fy * fy;
-        for (x = 0; x < width; x++) {
-            fx = lbl_1_rodata_1C8 * ((f32)x / (f32)width - lbl_1_rodata_1CC);
-            baseU = fx * lbl_1_rodata_1CC + lbl_1_rodata_1CC;
-            inside = fy > lbl_1_rodata_1D0 & fy < lbl_1_rodata_1D4 & fx > lbl_1_rodata_1D0 & fx < lbl_1_rodata_1D4;
-            if (y == height / 2) {
-                d = lbl_1_rodata_1D8 - fx * fx;
-            } else {
-                d = lbl_1_rodata_1D8 - fx * fx - fy2;
-            }
-            if (d < lbl_1_rodata_1A8) {
-                normal.x = fx;
-                normal.y = fy;
-                normal.z = lbl_1_rodata_1A8;
-                PSVECNormalize(&normal, &normal);
-            } else {
-                f64 z = -sqrt(d);
-                normal.x = fx;
-                normal.y = fy;
-                normal.z = z;
-            }
-            if (inside && lbl_1_rodata_1D8 != scale) {
-                PSVECCrossProduct(&lbl_1_data_A48, &normal, &axis);
-                mag = PSVECMag(&axis);
-                if (mag != lbl_1_rodata_1A8) {
-                    PSVECNormalize(&axis, &axis);
-                    angle = acos(PSVECDotProduct(&lbl_1_data_A48, &normal));
-                    angle = angle * scale * lbl_1_rodata_1CC;
-                    s = sin(angle);
-                    quat.w = cos(angle);
-                    quat.x = axis.x * s;
-                    quat.y = axis.y * s;
-                    quat.z = axis.z * s;
-                    PSMTXQuat(rot, &quat);
-                    PSMTXMultVec(rot, &lbl_1_data_A48, &normal);
-                }
-            }
-            flat.x = normal.x;
-            flat.y = lbl_1_rodata_1A8;
-            flat.z = normal.z;
-            mag = PSVECMag(&flat);
-            if (mag == lbl_1_rodata_1A8) {
-                u = lbl_1_rodata_1A8;
-                v = lbl_1_rodata_1A8;
-            } else {
-                PSVECNormalize(&flat, &flat);
-                if (lbl_1_rodata_1A8 == fy) {
-                    v = lbl_1_rodata_1CC;
-                } else {
-                    v = acos(PSVECDotProduct(&flat, &normal));
-                    PSVECCrossProduct(&flat, &normal, &axis);
-                    mag = PSVECMag(&axis);
-                    if (mag == lbl_1_rodata_1A8) {
-                        v = lbl_1_rodata_1A8;
-                    } else if (axis.x < lbl_1_rodata_1A8) {
-                        v = -v;
-                    }
-                    v = v / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
-                }
-                if (lbl_1_rodata_1A8 == fx) {
-                    u = lbl_1_rodata_1CC;
-                } else {
-                    u = acos(PSVECDotProduct(&lbl_1_data_A48, &flat));
-                    PSVECCrossProduct(&lbl_1_data_A48, &flat, &axis);
-                    mag = PSVECMag(&axis);
-                    if (mag == lbl_1_rodata_1A8) {
-                        u = lbl_1_rodata_1A8;
-                    } else if (axis.y > lbl_1_rodata_1A8) {
-                        u = -u;
-                    }
-                    u = u / lbl_1_rodata_1DC + lbl_1_rodata_1CC;
-                }
-                u -= baseU;
-                v -= baseV;
-            }
-            image[(y / 4) * width * 4 + (x / 4) * 16 + (y % 4) * 4 + x % 4] =
-                (((s32)(lbl_1_rodata_1E0 * u + lbl_1_rodata_1E0) << 8) & 0xFF00) | (u8)(s32)(lbl_1_rodata_1E0 * v + lbl_1_rodata_1E0);
-        }
-    }
-    DCFlushRange(image, size);
-}
-#endif

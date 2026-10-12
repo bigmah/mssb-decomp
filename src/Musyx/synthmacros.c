@@ -3,20 +3,15 @@
 #include "musyx/synth.h"
 #include "musyx/synth_dbtab.h"
 
-extern u32 dspARIndexTab[129];
-extern f32 lbl_803CD178;
 
 #define rdLE16(p) ((u16)((*(u16*)(p) >> 8) | (*(u16*)(p) << 8)))
 #define rdLE32(p) (((u8*)(p))[0] | (((u8*)(p))[1] << 8) | (((u8*)(p))[2] << 16) | (((u8*)(p))[3] << 24))
 
-extern f32 lbl_803CD158;
-extern f32 lbl_803CD15C;
-extern f32 lbl_803CD160;
 
-static u8 DebugMacroSteps = 0;
+static u8 DebugMacroSteps;
 
-static SYNTH_VOICE* macActiveMacroRoot = NULL;
-static SYNTH_VOICE* macTimeQueueRoot = NULL;
+static SYNTH_VOICE* macActiveMacroRoot;
+static SYNTH_VOICE* macTimeQueueRoot;
 static u64 macRealTime;
 
 static void TimeQueueAdd(SYNTH_VOICE* svoice);
@@ -713,16 +708,16 @@ static void mcmdSetADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
       sScale = dspDLSVolTab[rdLE16((u8*)adsr_ptr + 8) >> 5];
       adsr.data.dls.atime = rdLE32((u8*)adsr_ptr + 0);
       adsr.data.dls.dtime = rdLE32((u8*)adsr_ptr + 4);
-      adsr.data.dls.slevel = lbl_803CD158 * sScale;
+      adsr.data.dls.slevel = 4096.0f * sScale;
       adsr.data.dls.rtime = rdLE16((u8*)adsr_ptr + 0xA);
       ascale = rdLE32((u8*)adsr_ptr + 0xC);
       dscale = rdLE32((u8*)adsr_ptr + 0x10);
       if (ascale != 0x80000000) {
-        sScale = lbl_803CD15C * svoice->orgVolume;
+        sScale = (1.0f / 8388608.0f) * svoice->orgVolume;
         adsr.data.dls.atime += (s32)(sScale * ascale);
       }
       if (dscale != 0x80000000) {
-        sScale = lbl_803CD160 * svoice->orgNote;
+        sScale = (1.0f / 128.0f) * svoice->orgNote;
         adsr.data.dls.dtime += (s32)(sScale * dscale);
       }
       hwSetADSR(svoice->id & 0xFF, &adsr, 1);
@@ -732,7 +727,7 @@ static void mcmdSetADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
 }
 #pragma dont_inline reset
 
-static s32 midi2TimeTab[128] = {
+u32 dspARIndexTab[128] = {
     0,      10,     20,     30,     40,     50,     60,     70,     80,     90,     100,    110,
     110,    120,    130,    140,    150,    160,    170,    190,    200,    220,    230,    250,
     270,    290,    310,    330,    350,    380,    410,    440,    470,    500,    540,    580,
@@ -753,7 +748,7 @@ static void mcmdSetADSRFromCtrl(SYNTH_VOICE* svoice, MSTEP* cstep) {
   sScale = dspDLSVolTab[inpGetMidiCtrl(cstep->para[0] >> 24, svoice->midi, svoice->midiSet) >> 7];
   adsr.data.dls.atime = dspARIndexTab[inpGetMidiCtrl((u8)(cstep->para[0] >> 8), svoice->midi, svoice->midiSet) >> 7];
   adsr.data.dls.dtime = dspARIndexTab[inpGetMidiCtrl((cstep->para[0] >> 16) & 0xFF, svoice->midi, svoice->midiSet) >> 7];
-  adsr.data.dls.slevel = 193 - dspScale2IndexTab[(u32)(lbl_803CD178 * sScale)];
+  adsr.data.dls.slevel = 193 - dspScale2IndexTab[(u32)(1023.0f * sScale)];
   adsr.data.dls.rtime = dspARIndexTab[inpGetMidiCtrl(cstep->para[1] & 0xFF, svoice->midi, svoice->midiSet) >> 7];
   adsr.data.dls.ascale = 0x80000000;
   adsr.data.dls.dscale = 0x80000000;
@@ -788,11 +783,11 @@ void mcmdSetPitchADSR(SYNTH_VOICE* svoice, MSTEP* cstep) {
   dscale = rdLE32(&adsr_ptr->data.dls.dscale);
 
   if (ascale != 0x80000000) {
-    f32 sScale = lbl_803CD15C * svoice->orgVolume;
+    f32 sScale = (1.0f / 8388608.0f) * svoice->orgVolume;
     adsr.data.dls.atime += (s32)(sScale * ascale);
   }
   if (dscale != 0x80000000) {
-    f32 sScale = lbl_803CD160 * svoice->orgNote;
+    f32 sScale = (1.0f / 128.0f) * svoice->orgNote;
     adsr.data.dls.dtime += (s32)(sScale * dscale);
   }
 

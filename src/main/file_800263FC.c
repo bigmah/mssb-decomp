@@ -68,6 +68,15 @@ typedef struct TrailScratch {
     /* 0x90 */ Vec pos[18];
 } TrailScratch;
 extern TrailScratch lbl_8017EC00;
+
+// .bss
+TrailScratch lbl_8017EC00;
+f32 lbl_8017ED68[0x484];      // cosine table, filled at init
+Mtx lbl_8017FF78[2];
+Mtx lbl_8017FFE0 ATTRIBUTE_ALIGN(32);
+Vec lbl_80180010[4];
+Particle lbl_80180040[0x1400];
+Emitter lbl_801F8040[0x10];
 extern const Vec lbl_800E6784;    // (0, -1, 0)
 extern s32 lbl_803CB800;
 extern s32 lbl_803CB808; // easing iterations
@@ -88,6 +97,31 @@ extern s32 lbl_803CBC7C;
 extern Emitter* lbl_803CBC80;  // free emitter list (linked through next)
 extern EmitterHead lbl_803CBC84; // active list head
 #define EMITTER_HEAD ((Emitter*)&lbl_803CBC84)
+
+// .data
+u8 lbl_800F7840[32] = { // 4x4 RGB565 texture (white)
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+};
+UVCoord lbl_800F7860[7] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}, {1, 0}, {1, 1}};
+ParticleParams lbl_800F787C = {NULL, 6, 0, 1000000, 200, 20, {0, 10, 20, 0, 0, 20, 40, 1, 200, 255, 64}};
+TexCoordF lbl_800F78C0[4] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+
+// .sdata
+s32 lbl_803CB7F8 = 63;
+f32 lbl_803CB7FC = 0.05f;
+s32 lbl_803CB800 = 10;
+f32 lbl_803CB804 = 10.0f;
+s32 lbl_803CB808 = 1;
+f32 lbl_803CB80C = 10.0f;
+
+// .sbss (MWCC lays uninitialised small data out in reverse definition order)
+EmitterHead lbl_803CBC84;
+Emitter* lbl_803CBC80;
+s32 lbl_803CBC7C;
+u8 lbl_803CBC78;
+Particle* lbl_803CBC74;
+LightFlashTask* lbl_803CBC70;
 
 static inline f32 CosIdx(s32 angle) {
     s32 i = __abs(angle) & 0x7FF;
@@ -456,7 +490,7 @@ s32 fn_800263FC(Emitter* e) {
 #endif
 
 // .text:0x80026998 size:0x4C0
-// NONMATCHING 96%: register allocation in the inlined allocations
+// NONMATCHING 98.7%: register allocation in the inlined allocations
 #if NONMATCHING
 void fn_80026998(ParticleParamsF* prm) {
     Emitter tmp;
@@ -494,7 +528,7 @@ void fn_80026998(ParticleParamsF* prm) {
 #endif
 
 // .text:0x80026E58 size:0x4A8
-// NONMATCHING 98%: the original keeps the identity-matrix source pointer in r31 (ours r27) for the struct copy
+// NONMATCHING 98.2%: the original keeps the identity-matrix source pointer in r31 (ours r27) for the struct copy
 #if NONMATCHING
 s32 fn_80026E58(Emitter* e) {
     MtxBox ident;
@@ -620,7 +654,7 @@ void fn_80027300(Emitter* e, Vec* center, Vec* target, ParticleParamsAttract* pr
 #endif
 
 // .text:0x80027674 size:0x2A4
-// NONMATCHING 96%: register allocation in the inlined allocations
+// NONMATCHING 94.2%: register allocation in the inlined allocations
 #if NONMATCHING
 void fn_80027674(Vec* center, Vec* target, ParticleParamsAttract* prm, u8 type, f32 radius) {
     Emitter tmp;
@@ -654,7 +688,7 @@ void fn_80027674(Vec* center, Vec* target, ParticleParamsAttract* prm, u8 type, 
 #endif
 
 // .text:0x80027918 size:0x50
-// NONMATCHING 96%: the store goes through r4 instead of the copied r3
+// NONMATCHING 99.7%: the store goes through r4 instead of the copied r3
 #if NONMATCHING
 void fn_80027918(u8 type, f32 v) {
     Emitter* e;
@@ -1029,7 +1063,7 @@ void fn_80028628(Vec* from, Vec* to, ParticleParams4* prm, TrailShape* shape, u3
 #endif
 
 // .text:0x80028F48 size:0x614
-// NONMATCHING 96%: register allocation
+// NONMATCHING 96.0%: register allocation
 #if NONMATCHING
 s32 fn_80028F48(Emitter* e) {
     MtxBox ident;
@@ -1144,7 +1178,7 @@ s32 fn_80028F48(Emitter* e) {
 #endif
 
 // .text:0x8002955C size:0x294
-// NONMATCHING 98%: register allocation in the inlined allocations
+// NONMATCHING 98.3%: register allocation in the inlined allocations
 #if NONMATCHING
 void fn_8002955C(Vec* pos, Vec* axis, ParticleParamsC* prm) {
     Emitter tmp;
@@ -1409,7 +1443,7 @@ void fn_8002A1CC(Vec* pos, ParticleParamsB* prm) {
 }
 
 // .text:0x8002A85C size:0x40C
-// NONMATCHING 99%: float register allocation of the inlined corner setup
+// NONMATCHING 99.5%: float register allocation of the inlined corner setup
 #if NONMATCHING
 u8 fn_8002A85C(Emitter* e, Particle* p) {
     s32 a;
@@ -1443,7 +1477,7 @@ u8 fn_8002A85C(Emitter* e, Particle* p) {
 #endif
 
 // .text:0x8002AC68 size:0x3AC
-// NONMATCHING 99%: float register allocation of the corner setup
+// NONMATCHING 99.4%: float register allocation of the corner setup
 #if NONMATCHING
 u8 fn_8002AC68(Emitter* e, Particle* p) {
     Vec c[4];
@@ -1503,7 +1537,7 @@ u8 fn_8002AC68(Emitter* e, Particle* p) {
 #endif
 
 // .text:0x8002B014 size:0x3EC
-// NONMATCHING 95%: register allocation in the inlined z-sorts (the original keeps the count copy in its own saved reg)
+// NONMATCHING 94.6%: register allocation in the inlined z-sorts (the original keeps the count copy in its own saved reg)
 #if NONMATCHING
 s32 fn_8002B014(Emitter* e) {
     s32 alive = 0;
@@ -1596,7 +1630,7 @@ s32 fn_8002B014(Emitter* e) {
 #endif
 
 // .text:0x8002B400 size:0x3F8
-// NONMATCHING 95%: register allocation (the delay/uvFrame zero and p in the sub loop)
+// NONMATCHING 95.8%: register allocation (the delay/uvFrame zero and p in the sub loop)
 #if NONMATCHING
 void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos) {
     Particle* p = e->particles;
@@ -1655,7 +1689,7 @@ void fn_8002B400(Emitter* e, ParticleParamsE* prm, Vec* pos) {
 #endif
 
 // .text:0x8002B7F8 size:0x48C
-// NONMATCHING 96%: register allocation in the inlined allocations
+// NONMATCHING 96.3%: register allocation in the inlined allocations
 #if NONMATCHING
 void fn_8002B7F8(Vec* pos, ParticleParamsE* prm, u8 withSub) {
     Emitter tmp;
@@ -1793,7 +1827,7 @@ void fn_8002BC84(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm) {
 #endif
 
 // .text:0x8002C2D0 size:0x29C
-// NONMATCHING 98%: register allocation in the inlined allocations
+// NONMATCHING 98.4%: register allocation in the inlined allocations
 #if NONMATCHING
 void fn_8002C2D0(Vec* pos, Vec* dir, ParticleParams5* prm) {
     Emitter tmp;
@@ -1923,7 +1957,7 @@ void fn_8002CDD0(Vec* end) {
 }
 
 // .text:0x8002CE4C size:0x9E0
-// NONMATCHING 95%: scheduling/registers of the up-front parameter conversions (declaration and conversion order tuned by search); same calls and stores
+// NONMATCHING 95.5%: scheduling/registers of the up-front parameter conversions (declaration and conversion order tuned by search); same calls and stores
 #if NONMATCHING
 void fn_8002CE4C(Vec* start, Vec* end, ParticleParamsA* prm) {
     Vec n;
@@ -2227,7 +2261,7 @@ s32 fn_8002E3DC(Emitter* e) {
 }
 
 // .text:0x8002E828 size:0x478
-// NONMATCHING 99%: float register allocation of the inlined corner setup
+// NONMATCHING 99.8%: float register allocation of the inlined corner setup
 #if NONMATCHING
 s32 fn_8002E828(Emitter* e) {
     Particle* p = e->particles;
@@ -2256,7 +2290,7 @@ s32 fn_8002E828(Emitter* e) {
 #endif
 
 // .text:0x8002ECA0 size:0x50C
-// NONMATCHING 99%: float load order and the fcmpu operand order of the PSVECMag test
+// NONMATCHING 99.5%: float load order and the fcmpu operand order of the PSVECMag test
 #if NONMATCHING
 s32 fn_8002ECA0(Emitter* e) {
     Vec d;
@@ -2355,7 +2389,7 @@ s32 fn_8002F1AC(Vec* pos, s32 id) {
 }
 
 // .text:0x8002F258 size:0x39C
-// NONMATCHING 98%: one lbl_803CBC74 load is hoisted in the original inlined particle allocation
+// NONMATCHING 97.3%: one lbl_803CBC74 load is hoisted in the original inlined particle allocation
 #if NONMATCHING
 void fn_8002F258(Vec* pos, s32 id, ParticleParams* prm) {
     Emitter tmp;
@@ -2596,7 +2630,7 @@ void fn_8002FDB8(Emitter* e, Vec* pos, Vec* dir, Vec* velScale, ParticleParams5*
 #endif
 
 // .text:0x80030470 size:0x2B0
-// NONMATCHING 95%: register allocation in the inlined allocations
+// NONMATCHING 97.1%: register allocation in the inlined allocations
 #if NONMATCHING
 void fn_80030470(Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm, u8 type) {
     Emitter tmp;
@@ -2624,7 +2658,7 @@ void fn_80030470(Vec* pos, Vec* dir, Vec* velScale, ParticleParams5* prm, u8 typ
 #endif
 
 // .text:0x80030720 size:0x668
-// NONMATCHING 96%: float register allocation and scheduling
+// NONMATCHING 96.7%: float register allocation and scheduling
 #if NONMATCHING
 void fn_80030720(Emitter* e, Vec* pos, Vec* dir, ParticleParams5* prm) {
     Mtx rot;
@@ -2921,7 +2955,7 @@ void fn_800317C4(Emitter* e, Vec* pos, ParticleParams5* prm) {
 #endif
 
 // .text:0x80031CA4 size:0x290
-// NONMATCHING 98%: register allocation in the inlined allocations
+// NONMATCHING 98.3%: register allocation in the inlined allocations
 #if NONMATCHING
 void fn_80031CA4(Vec* pos, ParticleParams5* prm) {
     Emitter tmp;
@@ -2999,8 +3033,6 @@ void fn_80032064(Vec* pos, ParticleParamsB* prm) {
 }
 
 // .text:0x80032284 size:0x268
-// NONMATCHING 98%: r6/r7 swapped and one store scheduled differently in the inlined emitter allocation
-#if NONMATCHING
 void fn_80032284(Vec* pos) {
     ParticleParams prm;
     Emitter* e;
@@ -3008,8 +3040,8 @@ void fn_80032284(Vec* pos) {
     f32 size;
 
     memcpy(&prm, &lbl_800F787C, sizeof(ParticleParams));
-    prm.unk10 = 0xFF;
     prm.tex = lbl_803CBD0C;
+    prm.unk10 = 0xFF;
     prm.size = 500000;
     prm.unkC = 700000;
     prm.life = 0x20;
@@ -3033,7 +3065,6 @@ void fn_80032284(Vec* pos) {
         p->texIndex = prm.texIndex;
     }
 }
-#endif
 
 // .text:0x800324EC size:0x3F4
 void fn_800324EC(u16 anim, s32 a, s32 b, ParticleParamsB* prm) {
@@ -3655,7 +3686,7 @@ void minigamesGXStuff(void) {
 }
 
 // .text:0x800348C8 size:0x304
-// NONMATCHING 98%: extra mr for the cos table pointer
+// NONMATCHING 98.0%: extra mr for the cos table pointer
 #if NONMATCHING
 void minigamesSetSomePointers2(void) {
     s32 i;

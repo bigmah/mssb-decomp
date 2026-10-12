@@ -48,7 +48,7 @@ typedef struct {
 } MenuSlots;
 
 extern MenuSlots* lbl_2_bss_1A8248[];
-extern MenuStateCallback lbl_2_data_308A4[3];
+extern MenuStateCallback lbl_2_data_308A4[4];
 extern MenuStateCallback lbl_2_data_30898[3];
 extern MenuStateCallback lbl_2_data_3088C[3];
 extern MenuStateCallback lbl_2_data_30810[3];
@@ -67,7 +67,7 @@ extern const f32 lbl_2_rodata_1084;
 extern const f64 lbl_2_rodata_1088;
 extern const f32 lbl_2_rodata_10B8[];
 extern const f32 lbl_2_rodata_10BC;
-extern u8 lbl_2_data_30900[];
+extern void* lbl_2_data_30900[];
 extern const f32 lbl_2_rodata_10A8[];
 extern const f32 lbl_2_rodata_10AC[];
 extern const f32 lbl_2_rodata_10B4[];
@@ -1353,7 +1353,9 @@ void fn_2_91788(u8* object) {
 }
 
 extern f32 fn_2_4A1E8(f32 x, f32 y);
-extern f32 lbl_2_bss_B640;
+// .bss (mwcc emits file statics in reverse order of definition).
+static f32 lbl_2_bss_B640;
+static u8 lbl_2_bss_B2C8[0x378]; // unreferenced
 extern Vec lbl_2_data_308F4;
 extern const f32 lbl_2_rodata_1090;
 extern const f32 lbl_2_rodata_1094;
@@ -1426,3 +1428,263 @@ void fn_2_9007C(void) {
     }
 }
 #endif
+
+// ---- 0x92394..0x927C8: the object state handlers at the end of this unit's .text
+// (once a separate auto split; they share this unit's pooled lbl_2_data_30900
+// statics and the lbl_2_data_308B4 handler table).
+#include "menus/auto_00_00092394_text.h"
+
+typedef struct MenuObject {
+    u8 pad0[0x90];
+    s16 phase;
+    u8 pad92[0x19];
+    u8 state;
+    u8 padAC[0x10];
+} MenuObject;
+
+extern void (*lbl_2_data_308B4[])(u8* object);
+extern void (*lbl_2_data_307F0[])(u8* object);
+extern void (*lbl_2_data_307F8[])(u8* object);
+extern void (*lbl_2_data_30804[])(u8* object);
+
+// fn_2_923CC, size:0xC
+void fn_2_923CC(u8* object) {
+    *(s16*)(object + 0x90) = 2;
+}
+
+// fn_2_923D8, size:0xC
+void fn_2_923D8(u8* object) {
+    *(s16*)(object + 0x90) = 2;
+}
+
+// fn_2_923E4, size:0x88
+void fn_2_923E4(u8* object) {
+    s32 index;
+    u8* slot;
+    u8* p;
+    fn_2_8AC84(*(s32*)(object + 0x78), 1);
+    index = *(s32*)(object + 0x78);
+    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    p = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    if (p != NULL) {
+        *(s16*)(slot + 0xA6) = 0;
+        *(u32*)(p + index * 0x28) = *(u32*)lbl_2_data_30900;
+    }
+    *(s16*)(object + 0x90) = 1;
+}
+
+// fn_2_924A4, size:0xC
+void fn_2_924A4(u8* object) {
+    *(s16*)(object + 0x90) = 1;
+}
+
+// fn_2_92394, size:0x38
+void fn_2_92394(u8* object) {
+    lbl_2_data_30804[*(s16*)(object + 0x90)](object);
+}
+
+// fn_2_9246C, size:0x38
+void fn_2_9246C(u8* object) {
+    lbl_2_data_307F8[*(s16*)(object + 0x90)](object);
+}
+
+// fn_2_92504, size:0x38
+void fn_2_92504(u8* object) {
+    lbl_2_data_307F0[*(s16*)(object + 0x90)](object);
+}
+
+// fn_2_9253C, size:0x40
+void fn_2_9253C(u8* object) {
+    *(void (**)(u8*))(object + 0xB8) = lbl_2_data_308B4[object[0xAB]];
+    (*(void (**)(u8*))(object + 0xB8))(object);
+}
+
+// fn_2_9257C, size:0xD8
+void fn_2_9257C(void) {
+    s32 i;
+    u8* work;
+
+    // TODO type: lbl_2_bss_1A8248[0] state byte 0x44F2
+    if (((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 1 || ((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 2 ||
+        ((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 3) {
+        return;
+    }
+    for (i = 0; i < 29; i++) {
+        fn_2_9253C((u8*)lbl_2_bss_1A8248[0] + i * 0xBC + 0x21E0);
+    }
+    work = lbl_2_bss_1A824C[0];
+    if (work[0x1972C0] != 0) {
+        work[0x1972C0] = 0;
+#if NONMATCHING
+        fn_800B0A14_removeQueue(NULL); // the argument is unused
+#else
+        REMOVE_QUEUE_NOARG(); // original passes a stale r3
+#endif
+    }
+}
+
+// fn_2_92654, size:0x28
+void fn_2_92654(s32 index, u8 state) {
+    MenuObject* object = (MenuObject*)((u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0);
+    object->state = state;
+    object->phase = 0;
+}
+
+// fn_2_924B0, size:0x54
+void fn_2_924B0(u8* object) {
+    GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
+    fn_2_8AC84(*(s32*)(object + 0x78), 0);
+    color.a = 0xFF;
+    fn_800BD2CC(0, color);
+}
+
+
+// fn_2_9267C, size:0x14C
+void fn_2_9267C(Vec* result, Vec* position, Vec* anchor, Vec* target,
+               f32 step, f32 spring, f32 damping, f32 restDistance) {
+    Vec direction;
+    Vec velocity;
+    Vec displacement;
+    f32 distance;
+    f32 force;
+    PSVECSubtract(position, anchor, &direction);
+    distance = PSVECDistance(position, anchor);
+    PSVECSubtract(target, anchor, &displacement);
+    PSVECScale(&displacement, step, &velocity);
+    force = spring * (restDistance - distance) +
+            damping * (PSVECDotProduct(&velocity, &direction) / distance);
+    PSVECNormalize(&direction, &direction);
+    PSVECScale(&direction, force * step, &direction);
+    PSVECAdd(position, &direction, position);
+    *result = *position;
+}
+
+// ---- .data 0x307F0..0x30918 (the .data before it, 0x2FFF8..0x307EC, is rep_0FD8's)
+
+void (*lbl_2_data_307F0[2])(u8* object) = {
+    (void (*)(u8*))fn_2_924B0,
+    (void (*)(u8*))fn_2_924A4,
+};
+
+void (*lbl_2_data_307F8[3])(u8* object) = {
+    (void (*)(u8*))fn_2_923E4,
+    (void (*)(u8*))fn_2_923D8,
+    (void (*)(u8*))fn_2_923CC,
+};
+
+void (*lbl_2_data_30804[3])(u8* object) = {
+    (void (*)(u8*))fn_2_91D74,
+    (void (*)(u8*))fn_2_91C4C,
+    (void (*)(u8*))fn_2_91C40,
+};
+
+MenuStateCallback lbl_2_data_30810[3] = {
+    (MenuStateCallback)fn_2_91B80,
+    (MenuStateCallback)fn_2_91B7C,
+    (MenuStateCallback)fn_2_91B70,
+};
+
+MenuStateCallback lbl_2_data_3081C[3] = {
+    (MenuStateCallback)fn_2_91B2C,
+    (MenuStateCallback)fn_2_91B28,
+    (MenuStateCallback)fn_2_91B1C,
+};
+
+MenuStateCallback lbl_2_data_30828[3] = {
+    (MenuStateCallback)fn_2_919CC,
+    (MenuStateCallback)fn_2_919C0,
+    (MenuStateCallback)fn_2_919B4,
+};
+
+MenuStateCallback lbl_2_data_30834[3] = {
+    (MenuStateCallback)fn_2_918F4,
+    (MenuStateCallback)fn_2_918E8,
+    (MenuStateCallback)fn_2_918DC,
+};
+
+MenuStateCallback lbl_2_data_30840[3] = {
+    (MenuStateCallback)fn_2_91788,
+    (MenuStateCallback)fn_2_9177C,
+    (MenuStateCallback)fn_2_916F8,
+};
+
+MenuStateCallback lbl_2_data_3084C[3] = {
+    (MenuStateCallback)fn_2_91518,
+    (MenuStateCallback)fn_2_9150C,
+    (MenuStateCallback)fn_2_91488,
+};
+
+MenuStateCallback lbl_2_data_30858[3] = {
+    (MenuStateCallback)fn_2_912A8,
+    (MenuStateCallback)fn_2_9129C,
+    (MenuStateCallback)fn_2_91218,
+};
+
+MenuStateCallback lbl_2_data_30864[3] = {
+    (MenuStateCallback)fn_2_91058,
+    (MenuStateCallback)fn_2_90EC4,
+    (MenuStateCallback)fn_2_90E98,
+};
+
+MenuStateCallback lbl_2_data_30870[4] = {
+    (MenuStateCallback)fn_2_90CD0,
+    (MenuStateCallback)fn_2_90C4C,
+    (MenuStateCallback)fn_2_90C14,
+    (MenuStateCallback)fn_2_90C08,
+};
+
+MenuStateCallback lbl_2_data_30880[3] = {
+    (MenuStateCallback)fn_2_90ABC,
+    (MenuStateCallback)fn_2_90AB0,
+    (MenuStateCallback)fn_2_90A2C,
+};
+
+MenuStateCallback lbl_2_data_3088C[3] = {
+    (MenuStateCallback)fn_2_9094C,
+    (MenuStateCallback)fn_2_90940,
+    (MenuStateCallback)fn_2_90934,
+};
+
+MenuStateCallback lbl_2_data_30898[3] = {
+    (MenuStateCallback)fn_2_90888,
+    (MenuStateCallback)fn_2_90838,
+    (MenuStateCallback)fn_2_9082C,
+};
+
+MenuStateCallback lbl_2_data_308A4[4] = {
+    (MenuStateCallback)fn_2_90718,
+    (MenuStateCallback)fn_2_90698,
+    (MenuStateCallback)fn_2_90628,
+    (MenuStateCallback)fn_2_9061C,
+};
+
+void (*lbl_2_data_308B4[16])(u8* object) = {
+    (void (*)(u8*))fn_2_92504,
+    (void (*)(u8*))fn_2_9246C,
+    (void (*)(u8*))fn_2_92394,
+    (void (*)(u8*))fn_2_91C08,
+    (void (*)(u8*))fn_2_91B38,
+    (void (*)(u8*))fn_2_91AE4,
+    (void (*)(u8*))fn_2_9197C,
+    (void (*)(u8*))fn_2_918A4,
+    (void (*)(u8*))fn_2_916C0,
+    (void (*)(u8*))fn_2_91450,
+    (void (*)(u8*))fn_2_911E0,
+    (void (*)(u8*))fn_2_90DAC,
+    (void (*)(u8*))fn_2_90BD0,
+    (void (*)(u8*))fn_2_909F4,
+    (void (*)(u8*))fn_2_908FC,
+    (void (*)(u8*))fn_2_907F4,
+};
+
+Vec lbl_2_data_308F4 = {0.0f, 0.0f, 0.0f};
+
+// Stored into the animation slots (fn_2_8F7B0..); first entries of this unit's pooled statics.
+void* lbl_2_data_30900[6] = {
+    (void*)fn_2_8F688,
+    (void*)fn_2_8F640,
+    (void*)fn_2_8F528,
+    (void*)fn_2_8F3D4,
+    (void*)fn_2_8F27C,
+    (void*)fn_2_8F0F4,
+};

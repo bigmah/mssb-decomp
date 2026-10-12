@@ -1613,8 +1613,7 @@ void fn_3_27738(s32 i) {
     g_Ball[0x1BF0] = 0;
 }
 
-// .text:0x00027764 size:0xFC mapped:0x806667F8
-void fn_3_27764(int i) {
+static inline void Inl27764(int i) {
     u8* f = g_Fielders + i * 0x268;
     if (g_d_GameSettings[7] != 6 && i != *(s16*)(g_FieldingLogic + 0xB0) && i != -1) {
         f[0x1D3] = 0xC;
@@ -1645,10 +1644,13 @@ void fn_3_27764(int i) {
     }
 }
 
+// .text:0x00027764 size:0xFC mapped:0x806667F8
+void fn_3_27764(int i) {
+    Inl27764(i);
+}
+
 // .text:0x00027860 size:0x508 mapped:0x806668F4
-// NONMATCHING 65%: the original inlines fn_3_27764 in both cancel branches; we call it (same behaviour)
-// nmverify: fn_3_27764 inlined on one side (calls match once expanded)
-#if NONMATCHING
+// The original inlines fn_3_27764 in both cancel branches (Inl27764 is its body)
 void fn_3_27860(int i) {
     u8* f = g_Fielders + i * 0x268;
     u8* m;
@@ -1660,9 +1662,9 @@ void fn_3_27860(int i) {
             f[0x252] = 0;
         }
     } else if (*(s16*)(g_Ball + 0x1B78) >= 0) {
-        fn_3_27764(i);
+        Inl27764(i);
     } else if (g_Ball[0x1BD1] != 0) {
-        fn_3_27764(i);
+        Inl27764(i);
     } else if (*(s16*)(f + 0x24C) > 0) {
         if (f[0x264] != 0) {
             d = DIST2_XZ(*(f32*)(g_Ball + 0x348), *(f32*)(g_Ball + 0x34C), *(f32*)f, *(f32*)(f + 8));
@@ -1704,7 +1706,6 @@ void fn_3_27860(int i) {
         }
     }
 }
-#endif
 
 // .text:0x00027D68 size:0x28C mapped:0x80666DFC
 // NONMATCHING 92%: registers only; the loop-invariant height window lo/hi gets f5/f4 instead of f0/f1, shifting every float reg
@@ -1762,14 +1763,12 @@ found:
 }
 #endif
 
-// .text:0x00027FF4 size:0x230 mapped:0x80667088
-// NONMATCHING 97%: f2/f5 swapped for fielder z and the 0x70 scale in the segment setup
 #if NONMATCHING
-int fn_3_27FF4(int i) {
+static inline int Inl27FF4(int i) {
     u8* f = g_Fielders + i * 0x268;
     VecSrcDst seg;
     CollisionStruct hit;
-    f32 x, y, z;
+    f32 z, y, x;
     f32 d;
     if ((0.0f == *(f32*)(f + 0x38) && 0.0f == *(f32*)(f + 0x3C)) || *(s16*)(f + 0x19A) < 0) {
         return 0;
@@ -1798,6 +1797,14 @@ int fn_3_27FF4(int i) {
     *(f32*)(f + 0x144) = hit.normal.z / d;
     *(f32*)(f + 0x50) = 0.0f;
     return 1;
+}
+#endif
+
+// .text:0x00027FF4 size:0x230 mapped:0x80667088
+// NONMATCHING 99%: float registers differ in the segment setup (x/z/0x70 scale); body in Inl27FF4, shared with fn_3_2A288
+#if NONMATCHING
+int fn_3_27FF4(int i) {
+    return Inl27FF4(i);
 }
 #endif
 
@@ -2365,8 +2372,7 @@ int fn_3_2A164(int i) {
 }
 
 // .text:0x0002A288 size:0x414 mapped:0x8066931C
-// NONMATCHING 50%: the original inlines fn_3_27FF4 for the type-1 wall check; we call it (same behaviour)
-// nmverify: fn_3_27FF4 inlined on one side (calls match once expanded)
+// NONMATCHING 99.5%: fn_3_27FF4 inlined for the type-1 wall check via Inl27FF4; only float registers in that body differ
 #if NONMATCHING
 int fn_3_2A288(int i) {
     int who = i;
@@ -2386,32 +2392,31 @@ int fn_3_2A288(int i) {
     if (*(s16*)(g_Ball + 0x1B7A) == -1) {
         return 0;
     }
-    if (*(s16*)(g_Ball + 0x1B66) < f[0x1D2] + 5) {
-        return 0;
-    }
-    if (f[0x1C5] == 0) {
-        if (f[0x1CB] == 2) {
-            if (fn_3_28224(i) != 0) {
-                (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-                fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 1);
-                return 1;
-            }
-        } else if (f[0x1CB] == 1) {
-            if (fn_3_27FF4(i) != 0) {
-                (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-                return 1;
-            }
-        } else if (f[0x1CB] == 3) {
-            if (fn_3_30214(i) != 0) {
-                (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-                fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 2);
-                return 1;
+    if (*(s16*)(g_Ball + 0x1B66) >= f[0x1D2] + 5) {
+        if (f[0x1C5] == 0) {
+            if (f[0x1CB] == 2) {
+                if (fn_3_28224(i) != 0) {
+                    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+                    fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 1);
+                    return 1;
+                }
+            } else if (f[0x1CB] == 1) {
+                if (Inl27FF4(i) != 0) {
+                    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+                    return 1;
+                }
+            } else if (f[0x1CB] == 3) {
+                if (fn_3_30214(i) != 0) {
+                    (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+                    fn_3_1682AC(((void**)(lbl_8036E548 + 0x2C50))[who], 2);
+                    return 1;
+                }
             }
         }
-    }
-    if (fn_3_28CA8(i) != 0) {
-        (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
-        return 1;
+        if (fn_3_28CA8(i) != 0) {
+            (*(u8**)(g_FieldingLogic + 0x8C))[2] = 0;
+            return 1;
+        }
     }
     return 0;
 }
@@ -10384,6 +10389,36 @@ void fn_3_47778(void) {
 #undef FL_STATE
 #undef IS_CHASING
 
+#if NONMATCHING
+static inline void Inl480B8(int i) {
+    u8* f = g_Fielders + i * 0x268;
+    int base;
+    f32 x;
+    f32 z;
+    f32 dx, dz, d;
+    base = fn_3_47628();
+    if (base != -1) {
+        *(s16*)(f + 0x18E) = base;
+        if (fn_3_46E08(i, &x, &z) != 0) {
+            *(f32*)(f + 0x14) = x;
+            *(f32*)(f + 0x1C) = z;
+            dx = x - *(f32*)f;
+            dz = z - *(f32*)(f + 8);
+            if (0.0f == dx && 0.0f == dz) {
+                *(f32*)(f + 0x50) = 0.0f;
+                *(f32*)(f + 0x68) = 0.0f;
+            } else {
+                *(f32*)(f + 0x64) = atan2(dz, dx);
+                d = dx * dx + dz * dz;
+                SQRT_L(d);
+                *(f32*)(f + 0x68) = d;
+            }
+            f[0x1D9] = 1;
+        }
+    }
+}
+#endif
+
 // .text:0x000480B8 size:0x314 mapped:0x8068714C
 // NONMATCHING 99.9%: f0/f1 swapped for the 3.7f constant vs runner+0x64 in the inlined fn_3_47628 loop (same issue as fn_3_47628)
 #if NONMATCHING
@@ -10438,7 +10473,8 @@ void fn_3_483CC(int i) {
 }
 
 // .text:0x00048480 size:0x5D4 mapped:0x80687514
-// NONMATCHING 50%: the original inlines fn_3_480B8 (lead-runner cover + set target); we call it (expected nmverify flag). The rest matches apart from registers
+// NONMATCHING 99.5%: fn_3_480B8 (lead-runner cover + set target) inlined via Inl480B8; f0/f1 swapped in the inlined
+// fn_3_47628 loop (same issue as fn_3_47628) and a few other float registers
 #if NONMATCHING
 // Infielder i during a hit: cover the lead runner's base (fn_3_480B8), then react to the ball state.
 void fn_3_48480(int i) {
@@ -10452,7 +10488,7 @@ void fn_3_48480(int i) {
             fn_3_46ABC(i);
             fn_3_A7C88();
         } else if (*(int*)(g_Strikes + 8) < 3) {
-            fn_3_480B8(i);
+            Inl480B8(i);
             fn_3_526DC(i);
         }
         if (0.0f != *(f32*)(f + 0x50)) {

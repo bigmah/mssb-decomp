@@ -11,7 +11,7 @@ extern const f32 lbl_803CC450; // pi / 2
 extern const f32 lbl_803CC454; // pi / 180
 
 
-// NONMATCHING 99%: r9/r10/r11 assignment of the handle pointers and &pts[1] differs
+// NONMATCHING 99.3%: r9/r10/r11 assignment of the handle pointers and &pts[1] differs
 // .text:0x8000A0AC size:0x13C
 #if NONMATCHING
 void fn_8000A0AC(f32 t, BezierPoint* out, LayoutKey* a, LayoutKey* b) {
@@ -195,7 +195,7 @@ BOOL fn_8000A3EC(Mtx out, LayoutFrame* frame, LayoutKey* a, LayoutKey* b, f32* o
 }
 #endif
 
-// NONMATCHING 96%: register allocation and the pivot compares (xor. in the original) differ
+// NONMATCHING 96.1%: register allocation and the pivot compares (xor. in the original) differ
 // .text:0x8000AF1C size:0xAAC
 #if NONMATCHING
 BOOL fn_8000AF1C(Mtx out, LayoutFrame* frame, LayoutKey2* a, LayoutKey2* b, void* palette, f32* offset, f32 t) {

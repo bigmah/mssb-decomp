@@ -28,7 +28,7 @@ extern SoundManager lbl_800EF808;
 extern SoundGroupRequest lbl_80108B84;
 extern u8 lbl_80108B18[0x24];
 extern u8 lbl_80108B3C[0x48];
-extern void* lbl_80108B90[0x14]; // ParticleParamsB template ([0] = tex)
+extern ParticleParamsB lbl_80108B90; // spawn template (.tex set before use)
 extern u16 lbl_80108BE0[8];
 extern s8 lbl_80108BF0[][0x36];
 extern u16 lbl_80108DF4[0x22];
@@ -49,14 +49,14 @@ extern Unk803C60BC lbl_803C60BC;
 extern s32 lbl_803CB880; // number of active cameras
 extern MenuDef lbl_800FEF70[0x5D];
 extern u8 lbl_80361B20[0xF8];
-extern struct SpaniDesc lbl_80108048;
-extern struct SpaniDesc lbl_800FEB30;
-extern struct SpaniDesc lbl_80107688;
-extern struct SpaniDesc lbl_801000A8;
-extern struct SpaniDesc lbl_801041C8;
-extern struct SpaniDesc lbl_800FF540;
+extern struct SpaniDesc lbl_80108048[];
+extern struct SpaniDesc lbl_800FEB30[];
+extern struct SpaniDesc lbl_80107688[];
+extern struct SpaniDesc lbl_801000A8[];
+extern struct SpaniDesc lbl_801041C8[];
+extern struct SpaniDesc lbl_800FF540[];
 extern u8 lbl_802E4BB0[16];
-extern ChallengeMission lbl_8010A768[20][10];
+extern ChallengeMission lbl_8010A768[32][10];
 extern s16 lbl_8010B3E8[];
 extern s32 determineIfMissionDescriptionIsShown(s16 charID);
 extern s32 challengeRelated(s16 team);
@@ -74,6 +74,8 @@ extern s16 translateStarSwing(u8 star);
 
 // Layout object number n of a task's sprite run.
 #define TASK_OBJ(task, n) (lbl_80371C30[(task)->u14.objIdx + (n)].obj)
+// Same object as TASK_OBJ(task, x + k), with the index summed as k + objIdx + x.
+#define TASK_OBJ_AT(task, x, k) (lbl_80371C30[(k) + (task)->u14.objIdx + (x)].obj)
 
 // Pause-menu object index: the in-game layout puts the same object 0x69 earlier.
 #define PAUSE_OBJ(n) (g_d_GameSettings._06 == 2 ? (n) - 0x69 : (n))
@@ -133,13 +135,12 @@ void fn_800528C0(s16* screenX, s16* screenY, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x80052968 size:0x408
-// NONMATCHING 99%: r29/r30 swapped for the view matrix pointer in the two-camera branch
-#if NONMATCHING
 void fn_80052968(void) {
     MtxPtr view;
     camera_803c639c_s* cam;
     MtxPtr view2;
     f32 scale;
+    MtxPtr view3;
 
     if (lbl_803CB880 == 1) {
         if (lbl_803CBD10 != NULL) {
@@ -173,12 +174,12 @@ void fn_80052968(void) {
             lbl_803CBD10(&lbl_803C639C[0]);
         }
         cam = &lbl_803C639C[0];
-        view = cam->view;
-        makeLookAtMatrix(view, &cam->eye, &cam->Up, &cam->target);
+        view3 = cam->view;
+        makeLookAtMatrix(view3, &cam->eye, &cam->Up, &cam->target);
         scale = 1.0f / lbl_803C639C[0].zoom;
         C_MTXFrustum(lbl_803C639C[0].proj, -0.175f * scale, 0.175f * scale, 0.25f * scale, -0.25f * scale, 1.0f, 512.0f);
         fn_800B806C(0, -240.0f * scale, 240.0f * scale, -320.0f * scale, 320.0f * scale, -512.0f, -1.0f, 1280.0f);
-        fn_80011640(view, view);
+        fn_80011640(view3, view3);
         scale = 1.0f / lbl_803C639C[0].zoom;
         C_MTXFrustum(lbl_803C639C[0].proj, -0.175f * scale, 0.175f * scale, 0.125f * scale, -0.375f * scale, 1.0f, 512.0f);
         fn_800B806C(0, -240.0f * scale, 240.0f * scale, -160.0f * scale, 160.0f * scale, -512.0f, -1.0f, 1280.0f);
@@ -186,7 +187,6 @@ void fn_80052968(void) {
     memcpy(&lbl_803C639C[2], &lbl_803C639C[0], sizeof(camera_803c639c_s) * 2);
     fn_800369DC(lbl_803C639C[0].zoom);
 }
-#endif
 
 static inline void InitCameras(void) {
     s32 i;
@@ -236,8 +236,6 @@ void possiblyTransitionBlackScreen(void) {
 }
 
 // .text:0x800531D0 size:0x640
-// NONMATCHING 97%: only add operand order (objIdx + n) and register swaps differ
-#if NONMATCHING
 void fn_800531D0(SceneTask* task) {
     s32 i;
     u32 len;
@@ -245,7 +243,7 @@ void fn_800531D0(SceneTask* task) {
     if (lbl_800FEF70[lbl_8034E978.menu].textStart != 0xFFFF) {
         if (lbl_8034E978.descState == 0) {
             for (i = 0; i < lbl_8034E978.textCount; i++) {
-                TASK_OBJ(task, i + 0x16)->flags |= 2;
+                TASK_OBJ_AT(task, i, 0x16)->flags |= 2;
             }
             TASK_OBJ(task, 9)->flags |= 2;
             if ((TASK_OBJ(task, 9)->_5C >> 16) == 15) {
@@ -280,22 +278,22 @@ void fn_800531D0(SceneTask* task) {
             }
         } else if (lbl_8034E978.descState == 2) {
             fn_8000FA9C(lbl_8034E978.text[lbl_8034E978.textCur]);
-            if ((TASK_OBJ(task, lbl_8034E978.textCur + 10)->_5C >> 16) > fn_8000FA9C(lbl_8034E978.text[lbl_8034E978.textCur])) {
+            if ((TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->_5C >> 16) > fn_8000FA9C(lbl_8034E978.text[lbl_8034E978.textCur])) {
                 lbl_8034E978.textDone[lbl_8034E978.textCur] = lbl_8034E978.textCur;
                 if (++lbl_8034E978.textCur == lbl_8034E978.textCount) {
                     lbl_8034E978.textCur = 0;
                 }
-                TASK_OBJ(task, lbl_8034E978.textCur + 10)->flags |= 2;
-                TASK_OBJ(task, lbl_8034E978.textCur + 10)->_5C = 0;
-                TASK_OBJ(task, lbl_8034E978.textCur + 10)->_68 = 1;
+                TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->flags |= 2;
+                TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->_5C = 0;
+                TASK_OBJ_AT(task, lbl_8034E978.textCur, 10)->_68 = 1;
             }
             for (i = 0; i < 10; i++) {
                 if (lbl_8034E978.textDone[i] != 0xFF) {
-                    LayoutObj* obj = TASK_OBJ(task, lbl_8034E978.textDone[i] + 10);
+                    LayoutObj* obj = TASK_OBJ_AT(task, lbl_8034E978.textDone[i], 10);
                     if ((obj->_5C >> 16) == 0x500) {
                         obj->_5C = 0;
-                        TASK_OBJ(task, lbl_8034E978.textDone[i] + 10)->_68 = 0;
-                        TASK_OBJ(task, lbl_8034E978.textDone[i] + 10)->flags &= ~2;
+                        TASK_OBJ_AT(task, lbl_8034E978.textDone[i], 10)->_68 = 0;
+                        TASK_OBJ_AT(task, lbl_8034E978.textDone[i], 10)->flags &= ~2;
                     }
                 }
             }
@@ -303,9 +301,9 @@ void fn_800531D0(SceneTask* task) {
         }
     } else if (lbl_8034E978.descState != 0) {
         for (i = 0; i < 10; i++) {
-            TASK_OBJ(task, i + 0x16)->flags &= ~2;
-            TASK_OBJ(task, i + 10)->_5C = 0;
-            TASK_OBJ(task, i + 10)->_68 = 0;
+            TASK_OBJ_AT(task, i, 0x16)->flags &= ~2;
+            TASK_OBJ_AT(task, i, 10)->_5C = 0;
+            TASK_OBJ_AT(task, i, 10)->_68 = 0;
         }
         TASK_OBJ(task, 9)->flags &= ~2;
         TASK_OBJ(task, 21)->_5C = 0;
@@ -313,7 +311,6 @@ void fn_800531D0(SceneTask* task) {
         lbl_8034E978.descState = 0;
     }
 }
-#endif
 
 // .text:0x80053810 size:0x7D8
 // The original inlines fn_80042D68/fn_80042DA8 (frame checks) here.
@@ -438,7 +435,7 @@ void fn_80053810(void) {
 #endif
 
 // .text:0x80053FE8 size:0x2DC
-// NONMATCHING 97%: r28/r29 swapped and the loop's zero init scheduled differently
+// NONMATCHING 98.5%: r28/r29 swapped and the loop's zero init scheduled differently
 #if NONMATCHING
 void fn_80053FE8(void) {
     s32 i;
@@ -452,7 +449,7 @@ void fn_80053FE8(void) {
     for (i = 0; i < 10; i++) {
         lbl_8034E978.text[i] = -1;
     }
-    fn_80034E20((SpaniGroup *)task, &lbl_800FEB30); // TODO type
+    fn_80034E20((SpaniGroup *)task, lbl_800FEB30); // TODO type
     TASK_OBJ(task, 6)->_5C = (lbl_8034E978._03 + lbl_800FEF70[lbl_8034E978.menu]._00) << 16;
     TASK_OBJ(task, 5)->_5C = lbl_800FEF70[lbl_8034E978.menu]._06 << 16;
     fn_800363D8((SpaniOwner *)task, 5, 1, 0xEF, lbl_800FEF70[lbl_8034E978.menu]._02); // TODO type
@@ -564,7 +561,7 @@ void fn_800542C4(u8 cur, u8 target, SceneTask* task) {
 #endif
 
 // .text:0x80054910 size:0x1F0
-// NONMATCHING 96%: expected=TRUE scheduled before the call args and a missing mr for done
+// NONMATCHING 86.3%: expected=TRUE scheduled before the call args and a missing mr for done
 #if NONMATCHING
 void fn_80054910(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[8][port + 1]
@@ -1013,7 +1010,7 @@ void fn_80056120(void) {
     lbl_803C5EE0.cursor[1] = lbl_803C5F04.cursor[1];
     lbl_803C5EE0.cursor[2] = lbl_803C5F04.cursor[2];
     lbl_803C5EE0.cursor[3] = lbl_803C5F04.cursor[3];
-    fn_80034E20((SpaniGroup *)task, &lbl_800FF540); // TODO type
+    fn_80034E20((SpaniGroup *)task, lbl_800FF540); // TODO type
     for (i = 1; i < 5; i++) {
         fn_800363D8((SpaniOwner *)task, i + 1, 1, 0x110, i - 1); // TODO type
         if (i > 1) {
@@ -1237,7 +1234,7 @@ void someChallengeStarFunction(SceneTask* task) {
 #endif
 
 // .text:0x800572C0 size:0x430
-// NONMATCHING 95%: shownOnPauseMenu read as s8 in the original; register numbering differs
+// NONMATCHING 98.0%: shownOnPauseMenu read as s8 in the original; register numbering differs
 #if NONMATCHING
 void someChallengeStarFunction2(SceneTask* task) {
     u8 set;
@@ -1288,7 +1285,7 @@ void someChallengeStarFunction2(SceneTask* task) {
 #endif
 
 // .text:0x800576F0 size:0x518
-// NONMATCHING 97%: register swaps; text release written as three calls (original is a 3-iteration loop)
+// NONMATCHING 96.4%: register swaps; text release written as three calls (original is a 3-iteration loop)
 // nmverify: fn_8000FEE8 called from a 3-iteration loop in original, three calls here
 // nmverify:  inlined on one side (calls match once expanded)
 #if NONMATCHING
@@ -1392,7 +1389,7 @@ void starMenu(void) {
     SceneTask* task;
     s32 i;
 
-    fn_80034E20((SpaniGroup*)(task = lbl_803CC1B8), &lbl_80108048); // TODO type
+    fn_80034E20((SpaniGroup*)(task = lbl_803CC1B8), lbl_80108048); // TODO type
     for (i = 0; i < 9; i++) {
         lbl_80371C30[12 + task->u14.objIdx + i].obj->_5C = i << 16;
         fn_800363D8((SpaniOwner *)task, i + 0x15, 1, 0x83, inMemRoster[0][i].stats.CharID); // TODO type
@@ -1401,7 +1398,7 @@ void starMenu(void) {
 }
 
 // .text:0x80057CAC size:0x3A4
-// NONMATCHING 96%: the scout-flag loop counters start from the any-flag register; loop registers differ
+// NONMATCHING 94.3%: the scout-flag loop counters start from the any-flag register; loop registers differ
 #if NONMATCHING
 void fn_80057CAC(void) {
     SceneTask* task = lbl_803CC1B8;
@@ -1475,7 +1472,7 @@ void fn_80058050(void) {
     s32 base;
     ChallengeTrackingStruct* tracker;
 
-    fn_80034E20((SpaniGroup *)task, &lbl_80107688); // TODO type
+    fn_80034E20((SpaniGroup *)task, lbl_80107688); // TODO type
     for (i = 0, base = 0, player = inMemRoster[1]; i < 9; i++, player++, base += 5) {
         tracker = &gChallengeState.trackers[player->stats.CharID];
         lbl_803297E0.scoutTotal[i] = ((ScoutFlagTable*)tracker->scoutFlagPointer)->flags[gChallengeState._4415][gChallengeState._441C];
@@ -1511,7 +1508,7 @@ void fn_80058050(void) {
 #endif
 
 // .text:0x80058394 size:0x2B0
-// NONMATCHING 97%: star-1 kept untruncated in r26 in the challenge branch; ours truncates early
+// NONMATCHING 93.4%: star-1 kept untruncated in r26 in the challenge branch; ours truncates early
 #if NONMATCHING
 void fn_80058394(SceneTask* task) {
     CharacterStats* player;
@@ -1567,7 +1564,7 @@ void fn_80058394(SceneTask* task) {
 #endif
 
 // .text:0x80058644 size:0x4DC
-// NONMATCHING 99%: the roster address adds are scheduled in a different order
+// NONMATCHING 99.2%: the roster address adds are scheduled in a different order
 #if NONMATCHING
 void fn_80058644(SceneTask* task) {
     CharacterStats* player;
@@ -1660,7 +1657,7 @@ void fn_80058644(SceneTask* task) {
 #endif
 
 // .text:0x80058B20 size:0x2EC
-// NONMATCHING 95%: same star-select register differences as fn_80058394
+// NONMATCHING 79.9%: same star-select register differences as fn_80058394
 #if NONMATCHING
 void fn_80058B20(SceneTask* task, u8 port) {
     CharacterStats* player;
@@ -1812,8 +1809,6 @@ void fn_80058E0C(SceneTask* task, u8 port) {
 
 // .text:0x80059458 size:0x27C
 // Shows the two set bits of mask (bit 0 also skips bit 1) as frames on two objects.
-// NONMATCHING 98%: li r0,12 hoisted above the first compare in the original; register swaps in the store tail
-#if NONMATCHING
 void fn_80059458(SceneTask* task, u8 port, u32 mask) {
     s32 digits[2];
     s32 i;
@@ -1870,21 +1865,19 @@ void fn_80059458(SceneTask* task, u8 port, u32 mask) {
     }
     digits[0]--;
     digits[1]--;
-    if (digits[0] < 0) {
-        digits[0] = 12;
-    }
-    if (digits[1] < 0) {
-        digits[1] = 12;
+    for (i = 0; i < 2; i++) {
+        if (digits[i] < 0) {
+            digits[i] = 12;
+        }
     }
     if (g_d_GameSettings._06 != 2) {
-        TASK_OBJ(task, port + 0x1B4)->_5C = digits[0] << 16;
-        TASK_OBJ(task, port + 0x1B6)->_5C = digits[1] << 16;
+        lbl_80371C30[port + (task->u14.objIdx + 0x1B4)].obj->_5C = digits[0] << 16;
+        lbl_80371C30[port + (task->u14.objIdx + 0x1B6)].obj->_5C = digits[1] << 16;
     } else {
         TASK_OBJ(task, 0x125)->_5C = digits[0] << 16;
         TASK_OBJ(task, 0x126)->_5C = digits[1] << 16;
     }
 }
-#endif
 
 // .text:0x800596D4 size:0x464
 // NONMATCHING 92%: register numbering and index-sum order differ
@@ -2570,7 +2563,7 @@ void fn_8005C2B0(SceneTask* task) {
 #endif
 
 // .text:0x8005C5C4 size:0x26C
-// NONMATCHING 97%: r5/r7 and r0/r4 swapped in the frame-30 branch
+// NONMATCHING 99.4%: r5/r7 and r0/r4 swapped in the frame-30 branch
 #if NONMATCHING
 void fn_8005C5C4(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
@@ -3156,8 +3149,6 @@ void fn_8005F068(SceneTask* task, s32 port) {
 #endif
 
 // .text:0x8005F734 size:0x29C
-// NONMATCHING 95%: add operand order objIdx+port and r4/r8 swapped throughout
-#if NONMATCHING
 void fn_8005F734(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
 
@@ -3165,35 +3156,34 @@ void fn_8005F734(SceneTask* task, s32 port) {
         TASK_OBJ(task, port)->_64 = 0x49;
         TASK_OBJ(task, port)->_5C = 50 << 16;
         TASK_OBJ(task, port)->_68 = 4;
-        TASK_OBJ(task, port + 2)->_64 = 0x52;
-        TASK_OBJ(task, port + 2)->_5C = 0;
-        TASK_OBJ(task, port + 2)->_68 = 1;
-        TASK_OBJ(task, port + 4)->_5C = 0;
-        TASK_OBJ(task, port + 4)->_68 = 1;
-        TASK_OBJ(task, port + 6)->_5C = 14 << 16;
-        TASK_OBJ(task, port + 6)->_68 = 1;
-        TASK_OBJ(task, port + 10)->flags |= 2;
-        TASK_OBJ(task, port + 10)->_5C = 0;
-        TASK_OBJ(task, port + 10)->_68 = 1;
-        TASK_OBJ(task, port + 20)->_5C = 0;
-        TASK_OBJ(task, port + 20)->_68 = 1;
+        TASK_OBJ_AT(task, port, 2)->_64 = 0x52;
+        TASK_OBJ_AT(task, port, 2)->_5C = 0;
+        TASK_OBJ_AT(task, port, 2)->_68 = 1;
+        TASK_OBJ_AT(task, port, 4)->_5C = 0;
+        TASK_OBJ_AT(task, port, 4)->_68 = 1;
+        TASK_OBJ_AT(task, port, 6)->_5C = 14 << 16;
+        TASK_OBJ_AT(task, port, 6)->_68 = 1;
+        TASK_OBJ_AT(task, port, 10)->flags |= 2;
+        TASK_OBJ_AT(task, port, 10)->_5C = 0;
+        TASK_OBJ_AT(task, port, 10)->_68 = 1;
+        TASK_OBJ_AT(task, port, 20)->_5C = 0;
+        TASK_OBJ_AT(task, port, 20)->_68 = 1;
         if (((u8*)&g_d_GameSettings)[0x10] == 0 && port == 0) { // TODO type
-            TASK_OBJ(task, port + 18)->_5C = 30 << 16;
-            TASK_OBJ(task, port + 18)->_68 = 4;
-            TASK_OBJ(task, port + 24)->_5C = 0;
-            TASK_OBJ(task, port + 24)->_68 = 0;
+            TASK_OBJ_AT(task, port, 18)->_5C = 30 << 16;
+            TASK_OBJ_AT(task, port, 18)->_68 = 4;
+            TASK_OBJ_AT(task, port, 24)->_5C = 0;
+            TASK_OBJ_AT(task, port, 24)->_68 = 0;
         } else {
-            TASK_OBJ(task, port + 18)->_5C = 0;
-            TASK_OBJ(task, port + 18)->_68 = 1;
+            TASK_OBJ_AT(task, port, 18)->_5C = 0;
+            TASK_OBJ_AT(task, port, 18)->_68 = 1;
         }
         fn_800626EC(port);
         *state = 1;
     }
 }
-#endif
 
 // .text:0x8005F9D0 size:0x2D0
-// NONMATCHING 96%: the original keeps the constant 5 in r27 (set in each branch) and tests ready[] with bne/b
+// NONMATCHING 97.3%: the original keeps the constant 5 in r27 (set in each branch) and tests ready[] with bne/b
 #if NONMATCHING
 void fn_8005F9D0(SceneTask* task, s32 port) {
     u8* states = &lbl_803C66B0.steps[9][1];
@@ -3246,52 +3236,50 @@ void fn_8005F9D0(SceneTask* task, s32 port) {
 #endif
 
 // .text:0x8005FCA0 size:0x4E4
-// NONMATCHING 97%: r4/r7 swapped (objIdx+port operand order), as in fn_8005F734
-#if NONMATCHING
 void fn_8005FCA0(SceneTask* task, s32 port) {
     u8* state = (u8*)&lbl_803C66B0 + port; // becomes &steps[9][port + 1]
 
     if ((*(state += 0x37) == 0) ? TRUE : FALSE) {
-        TASK_OBJ(task, port + 4)->_5C = 0;
-        TASK_OBJ(task, port + 4)->_68 = 1;
-        TASK_OBJ(task, port + 6)->_5C = 14 << 16;
-        TASK_OBJ(task, port + 6)->_68 = 1;
+        TASK_OBJ_AT(task, port, 4)->_5C = 0;
+        TASK_OBJ_AT(task, port, 4)->_68 = 1;
+        TASK_OBJ_AT(task, port, 6)->_5C = 14 << 16;
+        TASK_OBJ_AT(task, port, 6)->_68 = 1;
         if (g_d_GameSettings.GameModeSelected != 5) {
             if (((u8*)&g_d_GameSettings)[0x10] == 0 && port != 0) { // TODO type
                 TASK_OBJ(task, port)->_5C = 0;
                 TASK_OBJ(task, port)->_68 = 1;
-                TASK_OBJ(task, port + 2)->_5C = 0;
-                TASK_OBJ(task, port + 2)->_68 = 1;
-                TASK_OBJ(task, port + 18)->_5C = 30 << 16;
-                TASK_OBJ(task, port + 18)->_68 = 4;
-                TASK_OBJ(task, port + 20)->_5C = 0;
-                TASK_OBJ(task, port + 20)->_68 = 1;
-                TASK_OBJ(task, port + 24)->_5C = 0;
-                TASK_OBJ(task, port + 24)->_68 = 0;
-                TASK_OBJ(task, port + 10)->flags |= 2;
-                TASK_OBJ(task, port + 10)->_5C = 0;
-                TASK_OBJ(task, port + 10)->_68 = 1;
+                TASK_OBJ_AT(task, port, 2)->_5C = 0;
+                TASK_OBJ_AT(task, port, 2)->_68 = 1;
+                TASK_OBJ_AT(task, port, 18)->_5C = 30 << 16;
+                TASK_OBJ_AT(task, port, 18)->_68 = 4;
+                TASK_OBJ_AT(task, port, 20)->_5C = 0;
+                TASK_OBJ_AT(task, port, 20)->_68 = 1;
+                TASK_OBJ_AT(task, port, 24)->_5C = 0;
+                TASK_OBJ_AT(task, port, 24)->_68 = 0;
+                TASK_OBJ_AT(task, port, 10)->flags |= 2;
+                TASK_OBJ_AT(task, port, 10)->_5C = 0;
+                TASK_OBJ_AT(task, port, 10)->_68 = 1;
             } else {
                 TASK_OBJ(task, port)->_5C = 0;
                 TASK_OBJ(task, port)->_68 = 1;
-                TASK_OBJ(task, port + 2)->_5C = 0;
-                TASK_OBJ(task, port + 2)->_68 = 1;
-                TASK_OBJ(task, port + 10)->flags |= 2;
-                TASK_OBJ(task, port + 10)->_5C = 0;
-                TASK_OBJ(task, port + 10)->_68 = 1;
-                TASK_OBJ(task, port + 2)->_5C = 0;
-                TASK_OBJ(task, port + 2)->_68 = 1;
-                TASK_OBJ(task, port + 18)->_5C = 0;
-                TASK_OBJ(task, port + 18)->_68 = 1;
-                TASK_OBJ(task, port + 20)->_5C = 0;
-                TASK_OBJ(task, port + 20)->_68 = 1;
+                TASK_OBJ_AT(task, port, 2)->_5C = 0;
+                TASK_OBJ_AT(task, port, 2)->_68 = 1;
+                TASK_OBJ_AT(task, port, 10)->flags |= 2;
+                TASK_OBJ_AT(task, port, 10)->_5C = 0;
+                TASK_OBJ_AT(task, port, 10)->_68 = 1;
+                TASK_OBJ_AT(task, port, 2)->_5C = 0;
+                TASK_OBJ_AT(task, port, 2)->_68 = 1;
+                TASK_OBJ_AT(task, port, 18)->_5C = 0;
+                TASK_OBJ_AT(task, port, 18)->_68 = 1;
+                TASK_OBJ_AT(task, port, 20)->_5C = 0;
+                TASK_OBJ_AT(task, port, 20)->_68 = 1;
             }
         } else {
             TASK_OBJ(task, port)->_5C = 0;
             TASK_OBJ(task, port)->_68 = 1;
-            TASK_OBJ(task, port + 10)->flags |= 2;
-            TASK_OBJ(task, port + 10)->_5C = 0;
-            TASK_OBJ(task, port + 10)->_68 = 1;
+            TASK_OBJ_AT(task, port, 10)->flags |= 2;
+            TASK_OBJ_AT(task, port, 10)->_5C = 0;
+            TASK_OBJ_AT(task, port, 10)->_68 = 1;
             TASK_OBJ(task, 18)->_5C = 0;
             TASK_OBJ(task, 18)->_68 = 1;
             TASK_OBJ(task, 20)->_5C = 0;
@@ -3310,7 +3298,6 @@ void fn_8005FCA0(SceneTask* task, s32 port) {
         *state = 1;
     }
 }
-#endif
 
 // .text:0x80060184 size:0x1A18
 // NONMATCHING 80%: tutorial step dispatcher; state tests, index sums and registers differ
@@ -3746,7 +3733,7 @@ void fn_80061B9C(void) {
     lbl_803297E0._CF45 = 0;
     team = lbl_803297E0._CF3B;
     if (g_d_GameSettings._06 != 2) {
-        fn_80034E20((SpaniGroup *)task, &lbl_801000A8); // TODO type
+        fn_80034E20((SpaniGroup *)task, lbl_801000A8); // TODO type
         TASK_OBJ(task, 16)->_5C = lbl_8034E9A0.teamPort[0] << 16;
         if (((u8*)&g_d_GameSettings)[0x10] == 0) { // TODO type
             TASK_OBJ(task, 17)->_5C = ((s8)(lbl_8034E9A0.teamPort[0] == 0) + 4) << 16;
@@ -3791,7 +3778,7 @@ void fn_80061B9C(void) {
             TASK_OBJ(task, 23)->flags &= ~2;
         }
     } else {
-        fn_80034E20((SpaniGroup *)task, &lbl_801041C8); // TODO type
+        fn_80034E20((SpaniGroup *)task, lbl_801041C8); // TODO type
         if (g_d_GameSettings.home_AwaySetting != 0) {
             if (g_d_GameSettings.GameModeSelected == 5 && gChallengeState._441F == 0x13) {
                 show = team != 0;
@@ -3892,7 +3879,7 @@ BOOL fn_80062578(void) {
 }
 
 // .text:0x800625A4 size:0xD0
-// NONMATCHING 98%: the unrolled clear stores the loop counter's zero register (r4) instead of a fresh li r0,0
+// NONMATCHING 96.7%: the unrolled clear stores the loop counter's zero register (r4) instead of a fresh li r0,0
 #if NONMATCHING
 void fn_800625A4(s32 index, s32 step) {
     s32 i;
@@ -3964,7 +3951,7 @@ s32 fn_800627F8(u8* state) {
 }
 
 // .text:0x8006282C size:0x30
-void fn_8006282C(void) {
+void fn_8006282C(SoundGroupRequest* req, SoundGroupData* data) {
     fn_80021518(0x20, lbl_800EF808.groups[37]);
 }
 
@@ -4075,8 +4062,8 @@ void fn_80062A94(void) {
 // .text:0x80062BE4 size:0x40
 void fn_80062BE4(Vec* pos) {
     if (lbl_80366158._28 != 1) {
-        lbl_80108B90[0] = lbl_803CBD0C;
-        fn_80032064(pos, (ParticleParamsB *)lbl_80108B90); // TODO type
+        lbl_80108B90.tex = lbl_803CBD0C;
+        fn_80032064(pos, &lbl_80108B90);
     }
 }
 
@@ -4102,14 +4089,14 @@ static inline void PlayCharJointSound(CharActor* obj) {
         for (i = 0; lbl_80108BE0[i] != 0xFFFF && CharJointSound(obj, lbl_80108BE0[i]) == 0xFFFF; i++) {
         }
         if (lbl_80108BE0[i] != 0xFFFF) {
-            lbl_80108B90[0] = lbl_803CBD0C;
-            fn_800324EC(lbl_80108BE0[i], obj->index, -1, (ParticleParamsB *)lbl_80108B90); // TODO type
+            lbl_80108B90.tex = lbl_803CBD0C;
+            fn_800324EC(lbl_80108BE0[i], obj->index, -1, &lbl_80108B90);
         }
     }
 }
 
 // .text:0x80062C60 size:0x134
-// NONMATCHING 95%: r7/r8 swapped in the inlined joint loop (see docs/patterns/regalloc.md)
+// NONMATCHING 99.5%: r7/r8 swapped in the inlined joint loop (see docs/patterns/regalloc.md)
 #if NONMATCHING
 void fn_80062C60(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     if (lbl_80366158._28 != 1) {
@@ -4122,7 +4109,7 @@ void fn_80062C60(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
 #endif
 
 // .text:0x80062D94 size:0xD8
-// NONMATCHING 95%: r7/r9/r10 rotated in the joint loop (see docs/patterns/regalloc.md)
+// NONMATCHING 98.9%: r7/r9/r10 rotated in the joint loop (see docs/patterns/regalloc.md)
 #if NONMATCHING
 void fn_80062D94(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     PlayCharJointSound(model);
@@ -4186,3 +4173,1409 @@ s32 fn_80063010(CharActor* player, ActorObject* obj) {
     obj->actor->boneCallback = fn_80062F38;
     return 0;
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x800FEB30..0x80108D2C
+struct SpaniDesc lbl_800FEB30[34] = {
+    {0, 236, 0.0f, 0.0f, -1, 1, 4, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 184, 0.0f, 0.0f, -1, 1, 4, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 184, 0.0f, 0.0f, -1, 1, 4, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 232, 0.0f, 0.0f, -1, 0, 4, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 237, 0.0f, 0.0f, -1, 0, 4, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 240, 0.0f, 0.0f, -1, 0, 4, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 238, 0.0f, 0.0f, -1, 0, 4, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 183, 0.0f, 0.0f, -1, 0, 4, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 183, 0.0f, 0.0f, -1, 0, 4, {0, 2}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 234, 0.0f, 0.0f, -1, 1, 4, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 229, 0.0f, 0.0f, -1, 0, 3, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 230, 0.0f, 0.0f, -1, 0, 3, {0, 10}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 21}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 11}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 12}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 13}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 14}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 15}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 17}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 18}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 19}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 228, 0.0f, 0.0f, -1, 0, 3, {0, 20}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {3, 0, 0.0f, 0.0f, 0, 0, 0, {0, 0}, 0, {0, 0, 0}, 0.0f, 0, 0, 0},
+};
+MenuDef lbl_800FEF70[0x5D] = {
+    {0, 0, 0, 0, 2, 241, 245, 1},
+    {0, 1, 0, 0, 3, 245, 252, 1},
+    {0, 1, 0, 0, 3, 437, 446, 1},
+    {0, 4, 0, 0, 2, 420, 426, 1},
+    {0, 4, 0, 0, 5, 252, 258, 1},
+    {0, 2, 0, 0, 2, 258, 261, 1},
+    {0, 20, 0, 0, 2, 261, 270, 1},
+    {0, 36, 0, 0, 1, 270, 278, 1},
+    {0, 32, 0, 0, 2, 285, 288, 1},
+    {0, 36, 0, 0, 0, 278, 285, 1},
+    {0, 8, 0, 0, 2, 401, 404, 1},
+    {1, 33, 1, 1, 2, 65535, 65535, 0},
+    {1, 7, 1, 1, 2, 335, 336, 0},
+    {1, 0, 1, 1, 2, 336, 339, 1},
+    {1, 34, 1, 1, 2, 339, 340, 0},
+    {1, 34, 1, 1, 1, 340, 341, 0},
+    {1, 33, 1, 1, 2, 65535, 65535, 0},
+    {1, 35, 1, 1, 2, 372, 373, 1},
+    {1, 34, 1, 1, 2, 373, 374, 1},
+    {1, 1, 1, 1, 4, 341, 345, 1},
+    {1, 20, 1, 1, 2, 351, 354, 1},
+    {1, 36, 1, 1, 1, 354, 362, 1},
+    {1, 4, 1, 1, 2, 345, 351, 1},
+    {1, 5, 1, 1, 2, 65535, 65535, 0},
+    {1, 8, 1, 1, 2, 65535, 65535, 0},
+    {1, 9, 1, 1, 2, 65535, 65535, 0},
+    {1, 28, 1, 1, 2, 65535, 65535, 0},
+    {1, 36, 1, 1, 0, 362, 369, 1},
+    {1, 32, 1, 1, 2, 369, 372, 1},
+    {1, 8, 1, 1, 2, 404, 408, 1},
+    {1, 19, 1, 1, 1, 418, 419, 0},
+    {1, 28, 1, 1, 2, 419, 420, 0},
+    {1, 11, 1, 1, 0, 374, 378, 1},
+    {1, 18, 1, 1, 2, 378, 382, 1},
+    {1, 31, 1, 1, 2, 382, 385, 1},
+    {1, 11, 1, 1, 0, 385, 389, 1},
+    {1, 7, 1, 1, 2, 436, 437, 0},
+    {1, 18, 1, 1, 2, 389, 392, 1},
+    {1, 31, 1, 1, 2, 392, 395, 1},
+    {1, 35, 1, 1, 0, 395, 396, 0},
+    {1, 35, 1, 1, 0, 396, 397, 0},
+    {1, 35, 1, 1, 0, 397, 398, 0},
+    {1, 35, 1, 1, 0, 398, 399, 0},
+    {1, 34, 1, 1, 0, 399, 400, 0},
+    {1, 34, 1, 1, 0, 400, 401, 0},
+    {1, 35, 1, 1, 0, 408, 409, 0},
+    {2, 11, 2, 2, 2, 426, 431, 1},
+    {2, 11, 2, 2, 2, 288, 293, 1},
+    {2, 18, 2, 2, 2, 322, 326, 1},
+    {2, 5, 2, 2, 2, 65535, 65535, 0},
+    {2, 31, 2, 2, 2, 326, 329, 1},
+    {3, 12, 3, 3, 2, 301, 302, 0},
+    {3, 11, 3, 3, 2, 431, 436, 1},
+    {3, 11, 3, 3, 2, 302, 307, 1},
+    {3, 7, 3, 3, 2, 436, 446, 0},
+    {3, 18, 3, 3, 2, 329, 332, 1},
+    {3, 31, 3, 3, 2, 332, 335, 1},
+    {3, 18, 3, 3, 2, 409, 412, 1},
+    {3, 31, 3, 3, 2, 412, 415, 1},
+    {3, 18, 3, 3, 0, 415, 418, 1},
+    {4, 13, 4, 4, 2, 307, 308, 0},
+    {4, 14, 4, 4, 2, 308, 309, 0},
+    {4, 11, 4, 4, 2, 309, 313, 1},
+    {4, 22, 4, 4, 2, 65535, 65535, 0},
+    {4, 23, 4, 4, 2, 65535, 65535, 0},
+    {4, 22, 4, 4, 2, 65535, 65535, 0},
+    {4, 23, 4, 4, 2, 65535, 65535, 0},
+    {4, 24, 4, 4, 2, 65535, 65535, 0},
+    {4, 25, 4, 4, 2, 65535, 65535, 0},
+    {4, 22, 4, 4, 2, 65535, 65535, 0},
+    {4, 23, 4, 4, 2, 65535, 65535, 0},
+    {4, 24, 4, 4, 2, 65535, 65535, 0},
+    {4, 25, 4, 4, 2, 65535, 65535, 0},
+    {4, 22, 4, 4, 2, 65535, 65535, 0},
+    {4, 23, 4, 4, 2, 65535, 65535, 0},
+    {4, 24, 4, 4, 2, 65535, 65535, 0},
+    {4, 25, 4, 4, 2, 65535, 65535, 0},
+    {4, 22, 4, 4, 2, 65535, 65535, 0},
+    {4, 23, 4, 4, 2, 65535, 65535, 0},
+    {4, 24, 4, 4, 2, 65535, 65535, 0},
+    {4, 25, 4, 4, 2, 65535, 65535, 0},
+    {4, 22, 4, 4, 2, 65535, 65535, 0},
+    {4, 23, 4, 4, 2, 65535, 65535, 0},
+    {5, 6, 5, 5, 2, 313, 314, 0},
+    {5, 29, 5, 5, 2, 314, 315, 0},
+    {5, 15, 5, 5, 1, 316, 317, 0},
+    {5, 15, 5, 5, 1, 317, 318, 0},
+    {5, 16, 5, 5, 1, 318, 319, 0},
+    {5, 17, 5, 5, 1, 320, 321, 0},
+    {5, 17, 5, 5, 1, 319, 320, 0},
+    {5, 29, 5, 5, 2, 317, 318, 0},
+    {7, 3, 7, 7, 2, 321, 322, 0},
+    {6, 21, 6, 6, 2, 65535, 65535, 0},
+};
+struct SpaniDesc lbl_800FF540[90] = {
+    {0, 270, 0.0f, 0.0f, -1, 1, 19, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 269, 0.0f, 0.0f, -1, 1, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 271, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 271, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 271, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 271, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 6, 0.0f, 0.0f, -1, 0, 18, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 266, 0.0f, 0.0f, -1, 0, 18, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 266, 0.0f, 0.0f, -1, 0, 18, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 267, 0.0f, 0.0f, -1, 0, 18, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 266, 0.0f, 0.0f, -1, 0, 18, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 21, 0.0f, 0.0f, -1, 0, 7, {0, 6}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 262, 0.0f, 0.0f, -1, 0, 7, {0, 7}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 262, 0.0f, 0.0f, -1, 0, 7, {0, 7}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 262, 0.0f, 0.0f, -1, 0, 7, {0, 8}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 262, 0.0f, 0.0f, -1, 0, 7, {0, 8}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 264, 0.0f, 0.0f, -1, 0, 7, {0, 9}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 264, 0.0f, 0.0f, -1, 0, 7, {0, 9}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 264, 0.0f, 0.0f, -1, 0, 7, {0, 9}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 264, 0.0f, 0.0f, -1, 0, 7, {0, 9}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 264, 0.0f, 0.0f, -1, 0, 7, {0, 9}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 262, 0.0f, 0.0f, -1, 0, 7, {0, 10}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 262, 0.0f, 0.0f, -1, 0, 7, {0, 10}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 308, 0.0f, 0.0f, -1, 1, 7, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 1, 0.0f, 0.0f, -1, 0, 7, {0, 23}, 15, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 1, 0.0f, 0.0f, -1, 0, 7, {0, 23}, 15, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 268, 0.0f, 0.0f, -1, 0, 7, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 273, 0.0f, 0.0f, -1, 0, 7, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 247, 0.0f, 0.0f, -1, 0, 8, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 250, 0.0f, 0.0f, -1, 0, 7, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 250, 0.0f, 0.0f, -1, 0, 7, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 250, 0.0f, 0.0f, -1, 0, 7, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 248, 0.0f, 0.0f, -1, 0, 7, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 248, 0.0f, 0.0f, -1, 0, 7, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 248, 0.0f, 0.0f, -1, 0, 7, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 248, 0.0f, 0.0f, -1, 0, 7, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 248, 0.0f, 0.0f, -1, 0, 7, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 248, 0.0f, 0.0f, -1, 0, 7, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 285, 0.0f, 0.0f, -1, 0, 20, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 284, 0.0f, 0.0f, -1, 1, 7, {0, 38}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 284, 0.0f, 0.0f, -1, 1, 7, {0, 38}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 276, 0.0f, 0.0f, -1, 0, 7, {0, 38}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 276, 0.0f, 0.0f, -1, 0, 7, {0, 38}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 275, 0.0f, 0.0f, -1, 0, 7, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 275, 0.0f, 0.0f, -1, 0, 7, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 275, 0.0f, 0.0f, -1, 0, 7, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 275, 0.0f, 0.0f, -1, 0, 7, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 275, 0.0f, 0.0f, -1, 0, 7, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 275, 0.0f, 0.0f, -1, 0, 7, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 275, 0.0f, 0.0f, -1, 0, 7, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 275, 0.0f, 0.0f, -1, 0, 7, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 277, 0.0f, 0.0f, -1, 0, 7, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 277, 0.0f, 0.0f, -1, 0, 7, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 277, 0.0f, 0.0f, -1, 0, 7, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 277, 0.0f, 0.0f, -1, 0, 7, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 277, 0.0f, 0.0f, -1, 0, 7, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 277, 0.0f, 0.0f, -1, 0, 7, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 277, 0.0f, 0.0f, -1, 0, 7, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 277, 0.0f, 0.0f, -1, 0, 7, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 274, 0.0f, 0.0f, -1, 1, 7, {0, 38}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 274, 0.0f, 0.0f, -1, 1, 7, {0, 38}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 131, 0.0f, 0.0f, -1, 0, 7, {0, 59}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 131, 0.0f, 0.0f, -1, 0, 7, {0, 60}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 281, 0.0f, 0.0f, -1, 0, 19, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 281, 0.0f, 0.0f, -1, 0, 19, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 281, 0.0f, 0.0f, -1, 0, 19, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 281, 0.0f, 0.0f, -1, 0, 19, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 281, 0.0f, 0.0f, -1, 0, 19, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 281, 0.0f, 0.0f, -1, 0, 19, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 281, 0.0f, 0.0f, -1, 0, 19, {0, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 281, 0.0f, 0.0f, -1, 0, 19, {0, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 279, 0.0f, 0.0f, -1, 1, 7, {0, 63}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 279, 0.0f, 0.0f, -1, 1, 7, {0, 64}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 280, 0.0f, 0.0f, -1, 1, 7, {0, 63}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 280, 0.0f, 0.0f, -1, 1, 7, {0, 64}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 279, 0.0f, 0.0f, -1, 1, 7, {0, 65}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 279, 0.0f, 0.0f, -1, 1, 7, {0, 66}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 280, 0.0f, 0.0f, -1, 1, 7, {0, 65}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 280, 0.0f, 0.0f, -1, 1, 7, {0, 66}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 279, 0.0f, 0.0f, -1, 1, 7, {0, 67}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 279, 0.0f, 0.0f, -1, 1, 7, {0, 68}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 280, 0.0f, 0.0f, -1, 1, 7, {0, 67}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 280, 0.0f, 0.0f, -1, 1, 7, {0, 68}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 279, 0.0f, 0.0f, -1, 1, 7, {0, 69}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 279, 0.0f, 0.0f, -1, 1, 7, {0, 70}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 280, 0.0f, 0.0f, -1, 1, 7, {0, 69}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 280, 0.0f, 0.0f, -1, 1, 7, {0, 70}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 31, 0.0f, 0.0f, -1, 0, 20, {0, 255}, 6, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 185, 0.0f, 0.0f, -1, 0, 20, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {3, 0, 0.0f, 0.0f, 0, 0, 0, {0, 0}, 0, {0, 0, 0}, 0.0f, 0, 0, 0},
+};
+struct SpaniDesc lbl_801000A8[521] = {
+    {0, 73, 0.0f, 0.0f, -1, 0, 7, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 73, 0.0f, 0.0f, -1, 0, 7, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 82, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 82, 0.0f, 0.0f, -1, 0, 7, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 306, 0.0f, 0.0f, -1, 0, 19, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 306, 0.0f, 0.0f, -1, 0, 19, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 307, 0.0f, 0.0f, -1, 0, 7, {0, 4}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 307, 0.0f, 0.0f, -1, 0, 7, {0, 5}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 2, 0.0f, 0.0f, -1, 0, 7, {0, 6}, 15, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 2, 0.0f, 0.0f, -1, 0, 7, {0, 7}, 15, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 309, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 309, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0, 0.0f, 0.0f, -1, 0, 6, {0, 10}, 15, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0, 0.0f, 0.0f, -1, 0, 6, {0, 11}, 15, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 69, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 69, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 70, 0.0f, 0.0f, -1, 0, 6, {0, 14}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 70, 0.0f, 0.0f, -1, 0, 6, {0, 15}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 84, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 84, 0.0f, 0.0f, -1, 0, 7, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 83, 0.0f, 0.0f, -1, 0, 7, {0, 18}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 83, 0.0f, 0.0f, -1, 0, 7, {0, 19}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 4, 0.0f, 0.0f, -1, 1, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 4, 0.0f, 0.0f, -1, 1, 7, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 17, 0.0f, 0.0f, -1, 1, 7, {0, 22}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 17, 0.0f, 0.0f, -1, 1, 7, {0, 23}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 38, 0.0f, 0.0f, -1, 1, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 38, 0.0f, 0.0f, -1, 1, 7, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 51, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 41, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 45, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 82}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 83}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 84}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 85}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 86}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 87}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 88}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 89}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 90}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 91}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 92}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 93}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 94}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 95}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 96}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 97}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 98}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {0, 99}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 50, 0.0f, 0.0f, -1, 0, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 118}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 119}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 120}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 121}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 122}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 123}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 124}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 125}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 126}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 127}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 128}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 129}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 130}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 131}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 132}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 133}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 134}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 7, {0, 135}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 46, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 154}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 155}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 158}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 159}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 160}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 161}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 162}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 163}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 164}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 165}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 166}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 167}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 168}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 169}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 170}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 7, {0, 171}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 52, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 190}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 191}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 192}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 193}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 194}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 195}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 196}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 197}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 198}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 199}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 200}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 201}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 202}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 203}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 204}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 205}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 206}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 7, {0, 207}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 28, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 28, 0.0f, 0.0f, -1, 0, 7, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 34, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 34, 0.0f, 0.0f, -1, 0, 7, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 35, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 30, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 27, 0.0f, 0.0f, -1, 0, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 29, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 29}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 32}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 33}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 34}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 35}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 36}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 37}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 38}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 39}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 40}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 41}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 42}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 43}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 44}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 7, {1, 45}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 36, 0.0f, 0.0f, -1, 1, 7, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 64}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 65}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 66}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 67}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 68}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 69}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 70}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 71}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 72}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 73}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 74}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 75}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 76}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 77}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 78}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 79}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 7, {1, 81}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 100}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 100}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 100}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 100}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 100}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 101}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 101}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 101}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 101}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 101}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 102}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 102}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 102}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 102}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 102}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 103}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 103}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 103}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 103}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 103}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 104}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 104}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 104}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 104}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 104}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 105}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 105}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 105}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 105}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 105}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 106}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 106}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 106}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 106}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 106}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 108}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 108}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 108}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 108}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 108}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 171, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 171, 0.0f, 0.0f, -1, 0, 7, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 164, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 164, 0.0f, 0.0f, -1, 0, 7, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 170, 0.0f, 0.0f, -1, 1, 7, {1, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 170, 0.0f, 0.0f, -1, 1, 7, {1, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 7, {1, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 169, 0.0f, 0.0f, -1, 1, 7, {1, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 169, 0.0f, 0.0f, -1, 1, 7, {1, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 166, 0.0f, 0.0f, -1, 1, 7, {1, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 166, 0.0f, 0.0f, -1, 1, 7, {1, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 130, 0.0f, 0.0f, -1, 0, 7, {1, 158}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 130, 0.0f, 0.0f, -1, 0, 7, {1, 159}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 175, 0.0f, 0.0f, -1, 0, 7, {1, 158}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 175, 0.0f, 0.0f, -1, 0, 7, {1, 159}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 176, 0.0f, 0.0f, -1, 0, 7, {1, 158}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 176, 0.0f, 0.0f, -1, 0, 7, {1, 159}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 176, 0.0f, 0.0f, -1, 0, 7, {1, 158}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 176, 0.0f, 0.0f, -1, 0, 7, {1, 159}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 160}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 161}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 162}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 163}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 164}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 165}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 166}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 167}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 168}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 169}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 170}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 168, 0.0f, 0.0f, -1, 0, 7, {1, 171}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 131, 0.0f, 0.0f, -1, 0, 7, {1, 172}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 131, 0.0f, 0.0f, -1, 0, 7, {1, 173}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 174, 0.0f, 0.0f, -1, 2, 7, {1, 156}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 174, 0.0f, 0.0f, -1, 2, 7, {1, 157}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 164, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 164, 0.0f, 0.0f, -1, 0, 7, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 156, 0.0f, 0.0f, -1, 0, 7, {1, 200}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 156, 0.0f, 0.0f, -1, 0, 7, {1, 201}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 133, 0.0f, 0.0f, -1, 0, 7, {1, 200}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 133, 0.0f, 0.0f, -1, 0, 7, {1, 201}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 132, 0.0f, 0.0f, -1, 0, 7, {1, 200}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 132, 0.0f, 0.0f, -1, 0, 7, {1, 201}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 173, 0.0f, 0.0f, -1, 1, 7, {1, 200}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 173, 0.0f, 0.0f, -1, 1, 7, {1, 201}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 129, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 100, 0.0f, 0.0f, -1, 2, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 105, 0.0f, 0.0f, -1, 2, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 108, 0.0f, 0.0f, -1, 2, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 99, 0.0f, 0.0f, -1, 0, 6, {1, 213}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 97, 0.0f, 0.0f, -1, 2, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 98, 0.0f, 0.0f, -1, 0, 6, {1, 211}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 107, 0.0f, 0.0f, -1, 0, 6, {1, 211}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 109, 0.0f, 0.0f, -1, 0, 6, {1, 211}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 131, 0.0f, 0.0f, -1, 0, 6, {1, 214}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 110, 0.0f, 0.0f, -1, 0, 6, {1, 211}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 102, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 102, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 102, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 102, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 102, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 102, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 102, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 102, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 102, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 102, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 106, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 106, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 106, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 106, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 106, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 106, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 106, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 106, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 106, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 106, 0.0f, 0.0f, -1, 1, 6, {1, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 88, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 88, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 87, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {3, 0, 0.0f, 0.0f, 0, 0, 0, {0, 0}, 0, {0, 0, 0}, 0.0f, 0, 0, 0},
+};
+struct SpaniDesc lbl_801041C8[415] = {
+    {0, 79, 0.0f, 0.0f, -1, 0, 7, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 79, 0.0f, 0.0f, -1, 0, 7, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 71, 0.0f, 0.0f, -1, 0, 7, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 78, 0.0f, 0.0f, -1, 0, 7, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 306, 0.0f, 0.0f, -1, 0, 19, {0, 2}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 307, 0.0f, 0.0f, -1, 0, 7, {0, 4}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0, 0.0f, 0.0f, -1, 0, 7, {0, 5}, 15, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0, 0.0f, 0.0f, -1, 0, 7, {0, 5}, 16, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 309, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 2, 0.0f, 0.0f, -1, 0, 6, {0, 8}, 15, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 2, 0.0f, 0.0f, -1, 0, 6, {0, 8}, 16, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 69, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 70, 0.0f, 0.0f, -1, 0, 6, {0, 11}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 5, 0.0f, 0.0f, -1, 1, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 17, 0.0f, 0.0f, -1, 1, 6, {0, 13}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 28, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 34, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 35, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 35, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 35, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 35, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 35, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 35, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 35, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 35, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 35, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 30, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 30, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 30, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 30, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 30, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 30, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 30, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 30, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 30, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 27, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 27, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 27, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 27, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 27, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 27, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 27, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 27, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 27, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 29, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 29, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 29, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 29, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 29, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 29, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 29, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 29, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 29, 0.0f, 0.0f, -1, 1, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 44}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 45}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 46}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 47}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 48}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 49}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 50}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 51}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 52}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 36, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 36, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 36, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 36, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 36, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 36, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 36, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 36, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 36, 0.0f, 0.0f, -1, 0, 6, {0, 16}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 6, {0, 62}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 6, {0, 63}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 6, {0, 64}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 6, {0, 65}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 6, {0, 66}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 6, {0, 67}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 6, {0, 68}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 6, {0, 69}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 1, 6, {0, 70}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 39, 0.0f, 0.0f, -1, 1, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 108}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 109}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 110}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 111}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 112}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 113}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 114}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 115}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 116}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 126}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 127}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 128}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 129}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 130}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 131}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 132}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 133}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 134}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 144}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 145}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 146}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 147}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 148}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 149}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 150}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 151}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 152}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {0, 162}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {0, 163}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {0, 164}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {0, 165}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {0, 166}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {0, 167}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {0, 168}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {0, 169}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {0, 170}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 40, 0.0f, 0.0f, -1, 2, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 48, 0.0f, 0.0f, -1, 0, 7, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 45, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 208}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 209}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 210}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 211}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 212}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 213}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 214}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 215}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 44, 0.0f, 0.0f, -1, 1, 6, {0, 216}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 50, 0.0f, 0.0f, -1, 0, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 226}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 227}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 228}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 229}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 230}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 231}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 232}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 233}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 49, 0.0f, 0.0f, -1, 0, 6, {0, 234}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 46, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 244}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 245}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 246}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 247}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 248}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 249}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 250}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 251}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 47, 0.0f, 0.0f, -1, 0, 6, {0, 252}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 52, 0.0f, 0.0f, -1, 1, 6, {0, 180}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {1, 6}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {1, 7}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {1, 8}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {1, 9}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {1, 10}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {1, 11}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {1, 12}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {1, 13}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 53, 0.0f, 0.0f, -1, 0, 6, {1, 14}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 171, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 164, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 170, 0.0f, 0.0f, -1, 1, 6, {1, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 6, {1, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 6, {1, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 6, {1, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 6, {1, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 6, {1, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 167, 0.0f, 0.0f, -1, 1, 6, {1, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 169, 0.0f, 0.0f, -1, 1, 6, {1, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 166, 0.0f, 0.0f, -1, 1, 6, {1, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 130, 0.0f, 0.0f, -1, 0, 6, {1, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 175, 0.0f, 0.0f, -1, 0, 6, {1, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 176, 0.0f, 0.0f, -1, 0, 6, {1, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 176, 0.0f, 0.0f, -1, 0, 6, {1, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 168, 0.0f, 0.0f, -1, 0, 6, {1, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 168, 0.0f, 0.0f, -1, 0, 6, {1, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 168, 0.0f, 0.0f, -1, 0, 6, {1, 29}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 168, 0.0f, 0.0f, -1, 0, 6, {1, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 168, 0.0f, 0.0f, -1, 0, 6, {1, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 168, 0.0f, 0.0f, -1, 0, 6, {1, 32}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 131, 0.0f, 0.0f, -1, 0, 6, {1, 33}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 174, 0.0f, 0.0f, -1, 2, 6, {1, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 164, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 156, 0.0f, 0.0f, -1, 0, 6, {1, 47}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 133, 0.0f, 0.0f, -1, 0, 6, {1, 47}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 132, 0.0f, 0.0f, -1, 0, 6, {1, 47}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 173, 0.0f, 0.0f, -1, 1, 6, {1, 47}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 24, 0.0f, 0.0f, -1, 1, 7, {0, 80}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 52}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 52}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 52}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 52}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 52}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 53}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 53}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 53}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 53}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 53}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 54}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 54}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 54}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 54}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 54}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 55}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 55}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 55}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 55}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 55}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 56}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 56}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 56}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 56}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 56}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 57}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 57}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 57}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 57}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 57}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 58}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 58}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 58}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 58}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 58}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 59}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 59}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 59}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 59}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 59}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 60}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 60}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 60}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 60}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 7, {1, 60}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 100, 0.0f, 0.0f, -1, 2, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 105, 0.0f, 0.0f, -1, 2, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 108, 0.0f, 0.0f, -1, 2, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 99, 0.0f, 0.0f, -1, 1, 6, {1, 108}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 97, 0.0f, 0.0f, -1, 2, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 98, 0.0f, 0.0f, -1, 0, 6, {1, 106}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 107, 0.0f, 0.0f, -1, 0, 6, {1, 106}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 109, 0.0f, 0.0f, -1, 0, 6, {1, 106}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 131, 0.0f, 0.0f, -1, 0, 6, {1, 109}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {1, 107}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 88, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 88, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 87, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {3, 0, 0.0f, 0.0f, 0, 0, 0, {0, 0}, 0, {0, 0, 0}, 0.0f, 0, 0, 0},
+};
+u8 lbl_801075A8[0xE0] = {
+    0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
+    1, 6, 0, 255, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+    0, 0, 0, 127, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
+    1, 7, 0, 255, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+    0, 1, 0, 126, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
+    0, 6, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3,
+    0, 1, 0, 126, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
+    0, 6, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2,
+    0, 1, 0, 126, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
+    0, 6, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
+    0, 1, 0, 126, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
+    0, 6, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+    0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+struct SpaniDesc lbl_80107688[78] = {
+    {0, 26, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 25, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 2, 0.0f, 0.0f, -1, 2, 6, {0, 0}, 15, {0, 0, 0}, 0.0f, 0, 1, 10},
+    {0, 2, 0.0f, 0.0f, -1, 2, 6, {0, 0}, 16, {0, 0, 0}, 0.0f, 0, 1, 10},
+    {0, 70, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 11},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 41, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 24, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 24, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 24, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 24, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 24, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 24, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 24, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 24, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 24, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 23}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 23}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 23}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 23}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 23}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 24}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 24}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 24}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 24}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 24}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 25}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 26}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 27}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 28}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 29}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 29}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 29}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 29}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 29}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 23, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {3, 0, 0.0f, 0.0f, 0, 0, 0, {0, 0}, 0, {0, 0, 0}, 0.0f, 0, 0, 0},
+};
+struct SpaniDesc lbl_80108048[83] = {
+    {0, 95, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 96, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 97, 0.0f, 0.0f, -1, 0, 6, {0, 255}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 101, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 101, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 101, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 101, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 101, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 101, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 101, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 101, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 101, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 51, 0.0f, 0.0f, -1, 0, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 41, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 41, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 41, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 41, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 41, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 41, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 41, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 41, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 41, 0.0f, 0.0f, -1, 1, 6, {0, 1}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 100, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 105, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 108, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 99, 0.0f, 0.0f, -1, 1, 6, {0, 32}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 98, 0.0f, 0.0f, -1, 0, 6, {0, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 107, 0.0f, 0.0f, -1, 0, 6, {0, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 109, 0.0f, 0.0f, -1, 0, 6, {0, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 131, 0.0f, 0.0f, -1, 0, 6, {0, 33}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 110, 0.0f, 0.0f, -1, 0, 6, {0, 30}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 111, 0.0f, 0.0f, -1, 0, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 103, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 102, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 9},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 8},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 7},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 6},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 5},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 4},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 3},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 2},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 106, 0.0f, 0.0f, -1, 2, 6, {0, 31}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 88, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 88, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {1, 87, 0.0f, 0.0f, -1, 0, 6, {0, 0}, 1, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {3, 0, 0.0f, 0.0f, 0, 0, 0, {0, 0}, 0, {0, 0, 0}, 0.0f, 0, 0, 0},
+};
+u8 lbl_80108B18[0x24] = {
+    110, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 0, 0,
+};
+u8 lbl_80108B3C[0x48] = {
+    75, 127, 70, 127, 107, 127, 100, 107, 117, 117, 127, 92, 127, 127, 127, 107,
+    127, 100, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 115,
+    127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127, 127, 127, 127, 107, 105, 117, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127, 127, 127, 0, 0, 0,
+};
+SoundGroupRequest lbl_80108B84 = {37, fn_8006282C, NULL};
+ParticleParamsB lbl_80108B90 = {
+    NULL, 24, 30, 25, 1, 8, 10, 4000, 5000, 10000, 12000,
+    30000, 40000, 50000, 60000, 100, 100, 50000, 50000, 0xFFFFFFFF,
+};
+u16 lbl_80108BE0[8] = {7, 8, 4, 5, 6, 65535, 0, 0};
+s8 lbl_80108BF0[5][0x36] = {
+    {
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11,
+    },
+    {
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11,
+    },
+    {
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11,
+    },
+    {
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11,
+    },
+    {
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        11, 11, 11, 11, 11, 11,
+    },
+}; // NOTE: type size 0x10E != symbol size 0x110
+
+// .bss 0x802E4BB0..0x802E4BC0 (MWCC lays these out in reverse definition order)
+u8 lbl_802E4BB0[16];
+
+// .sdata 0x803CB888..0x803CB890
+u8 lbl_803CB888 = 105;
+u8 lbl_803CB889 = 125; // NOTE: type size 0x1 != symbol size 0x7
+

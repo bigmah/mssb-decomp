@@ -300,12 +300,16 @@ def TRKLib(lib_name:str, objects:List[object], flags :list[str]= cflags_base, ex
     }
 
 # Helper function for REL script objects
-def Rel(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+def Rel(lib_name: str, objects: List[Object], extra_cflags: List[str] = []) -> Dict[str, Any]:
+    if lib_name == "challenge":
+        # challenge.rel was also built with -common on (its .bss ends with common blocks,
+        # see docs/common_bss.md).
+        extra_cflags = ["-common on", *extra_cflags]
     return {
         "lib": lib_name,
         # "progress_category": lib_name,
         "mw_version": "GC/2.6",
-        "cflags": cflags_rel,
+        "cflags": cflags_rel + extra_cflags,
         "host": True,
         "objects": objects,
     }
@@ -317,25 +321,23 @@ Equivalent = config.non_matching  # Object should be linked when configured with
 config.warn_missing_config = True
 config.warn_missing_source = False
 config.libs = [
-    Rel("challenge", [Object(NonMatching, "challenge/rep_7920.c")]),
+    Rel("challenge", [Object(Matching, "challenge/rep_7920.c")]),
     Rel("challenge", [Object(NonMatching, "challenge/rep_7BF0.c")]),
-    Rel("challenge", [Object(NonMatching, "challenge/rep_0010.c")]),
     Rel("challenge", [Object(NonMatching, "challenge/rep_00B0.c")]),
-    Rel("challenge", [Object(NonMatching, "challenge/rep_7978.c")]),
-    Rel("challenge", [Object(NonMatching, "challenge/rep_7BA0.c")]),
+    Rel("challenge", [Object(Matching, "challenge/rep_7978.c")]),
+    Rel("challenge", [Object(Matching, "challenge/rep_7BA0.c")]),
     Rel("challenge", [
-        Object(NonMatching, "auto_00_00001538_text", source="challenge/auto_00_00001538_text.c"),
-        Object(NonMatching, "auto_00_00004DD8_text", source="challenge/auto_00_00004DD8_text.c"),
-        Object(NonMatching, "auto_00_000085A8_text", source="challenge/auto_00_000085A8_text.c"),
-        Object(NonMatching, "auto_00_00009EA0_text", source="challenge/auto_00_00009EA0_text.c"),
-        Object(NonMatching, "auto_00_0000C2A4_text", source="challenge/auto_00_0000C2A4_text.c"),
-        Object(NonMatching, "auto_00_00017EFC_text", source="challenge/auto_00_00017EFC_text.c"),
-        Object(NonMatching, "auto_00_0001D590_text", source="challenge/auto_00_0001D590_text.c"),
-        Object(NonMatching, "auto_00_00026AF8_text", source="challenge/auto_00_00026AF8_text.c"),
+        Object(Matching, "auto_00_00004DD8_text", source="challenge/auto_00_00004DD8_text.c"),
+        Object(Matching, "auto_00_000085A8_text", source="challenge/auto_00_000085A8_text.c"),
+        Object(Matching, "auto_00_00009EA0_text", source="challenge/auto_00_00009EA0_text.c"),
+        Object(Matching, "auto_00_0000C2A4_text", source="challenge/auto_00_0000C2A4_text.c"),
+        Object(Matching, "auto_00_00017EFC_text", source="challenge/auto_00_00017EFC_text.c"),
+        Object(Matching, "auto_00_0001D590_text", source="challenge/auto_00_0001D590_text.c"),
+        Object(Matching, "auto_00_00026AF8_text", source="challenge/auto_00_00026AF8_text.c"),
     ]),
     Rel(
         "challenge",
-        [Object(NonMatching, "challenge/rep_7A28.c")]
+        [Object(Matching, "challenge/rep_7A28.c")]
     ),
     Rel(
         "challenge",
@@ -343,7 +345,7 @@ config.libs = [
     ),
     Rel(
         "challenge",
-        [Object(NonMatching, "challenge/rep_0000.c")]
+        [Object(Matching, "challenge/rep_0000.c")]
     ),
     Rel(
         "challenge",
@@ -351,11 +353,11 @@ config.libs = [
     ),
     Rel(
         "challenge",
-        [Object(NonMatching, "challenge/rep_02A8.c")]
+        [Object(Matching, "challenge/rep_02A8.c")]
     ),
     Rel(
         "challenge",
-        [Object(NonMatching, "challenge/rep_0250.c")]
+        [Object(Matching, "challenge/rep_0250.c")]
     ),
     Rel(
         "challenge",
@@ -669,7 +671,8 @@ config.libs = [
     {
         "lib": "unk",
         "mw_version": "GC/2.6",
-        "cflags": cflags_base + ["-O4,p", "-sym on"],
+        # The game code has extab/extabindex entries: built as C with C++ exceptions on.
+        "cflags": cflags_base + ["-O4,p", "-sym on", "-Cpp_exceptions on"],
         "host": False,
         "objects": [
             Object(NonMatching, "main/file_80008E00.c"),
@@ -682,7 +685,7 @@ config.libs = [
             Object(NonMatching, "main/file_80022DAC.c"),
             Object(NonMatching, "main/file_80024184.c"),
             Object(NonMatching, "main/file_80024D2C.c"),
-            Object(NonMatching, "main/file_80026134.c"),
+            Object(Matching, "main/file_80026134.c"),
             Object(NonMatching, "main/file_800263FC.c"),
             Object(NonMatching, "main/file_80034F50.c"),
             Object(NonMatching, "main/file_80037054.c"),
@@ -690,15 +693,15 @@ config.libs = [
             Object(NonMatching, "main/file_8003A688.c"),
             Object(NonMatching, "main/file_8004207C.c"),
             Object(NonMatching, "main/file_8004B284.c"),
-            Object(NonMatching, "main/file_8004BEB0.c"),
+            Object(Matching, "main/file_8004BEB0.c"),
             Object(NonMatching, "main/file_8004C19C.c"),
             Object(NonMatching, "main/file_8004C5F8.c"),
             Object(NonMatching, "main/file_800527C4.c"),
-            Object(NonMatching, "main/file_80063028.c"),
+            Object(Matching, "main/file_80063028.c"),
             Object(NonMatching, "main/file_800639BC.c"),
             Object(NonMatching, "main/file_80069BDC.c"),
-            Object(NonMatching, "main/file_80091450.c"),
-            Object(NonMatching, "main/file_800A1A70.c", mw_version="GC/1.2.5n", cflags=cflags_base),  # Dolphin SDK GD library
+            Object(Matching, "main/file_80091450.c", mw_version="GC/1.2.5"),  # charPipeline (DSList/TEX)
+            Object(Matching, "main/file_800A1A70.c", mw_version="GC/1.2.5n", cflags=cflags_base),  # Dolphin SDK GD library
             Object(NonMatching, "main/file_800A6870.c"),
             Object(NonMatching, "main/file_800A7C08.c"),
             Object(NonMatching, "main/file_800ADC40.c"),
@@ -706,11 +709,11 @@ config.libs = [
             Object(NonMatching, "main/file_800B2C44.c"),
             Object(NonMatching, "main/file_800B4A44.c"),
             Object(NonMatching, "main/file_800B516C.c"),
-            Object(NonMatching, "main/file_800B79D0.c"),
-            Object(NonMatching, "main/file_800B993C.c"),
+            Object(Matching, "main/file_800B79D0.c"),
+            Object(Matching, "main/file_800B993C.c"),
             Object(NonMatching, "main/file_800B9974.c"),
             Object(NonMatching, "main/file_800BD3EC.c"),
-            Object(NonMatching, "main/file_800BD8C4.c"),
+            Object(Matching, "main/file_800BD8C4.c"),
             Object(NonMatching, "main/file_800BDEA0.c"),
             Object(NonMatching, "main/file_800DFDD4.c", mw_version="GC/1.2.5", cflags=cflags_base),  # HVQM4 library
             Object(NonMatching, "Unknown/File_0x800a6304.c", extra_cflags=["-cpp_exceptions on"]),
@@ -730,27 +733,28 @@ config.libs = [
         "musyx",
         [
             Object(Matching, "Musyx/seq.c"),
-            Object(NonMatching, "Musyx/synth.c"),
+            Object(Matching, "Musyx/synth.c"),
             Object(Matching, "Musyx/seq_api.c"),
             Object(Matching, "Musyx/snd_synthapi.c"),
-            Object(NonMatching, "Musyx/stream.c"),
-            Object(NonMatching, "Musyx/synthdata.c"),
-            Object(NonMatching, "Musyx/synthmacros.c"),
-            Object(NonMatching, "Musyx/synthvoice.c"),
+            Object(Matching, "Musyx/stream.c"),
+            Object(Matching, "Musyx/synthdata.c"),
+            Object(Matching, "Musyx/synthmacros.c"),
+            Object(Matching, "Musyx/synthvoice.c"),
             Object(Matching, "Musyx/synth_ac.c"),
-            Object(NonMatching, "Musyx/synth_adsr.c"),
-            Object(NonMatching, "Musyx/synth_vsamples.c"),
-            Object(NonMatching, "Musyx/s_data.c"),
-            Object(NonMatching, "Musyx/hw_dspctrl.c"),
+            Object(Matching, "Musyx/synth_dbtab.c"),
+            Object(Matching, "Musyx/synth_adsr.c"),
+            Object(Matching, "Musyx/synth_vsamples.c"),
+            Object(Matching, "Musyx/s_data.c"),
+            Object(Matching, "Musyx/hw_dspctrl.c"),
             Object(NonMatching, "Musyx/hw_volconv.c"),
-            Object(NonMatching, "Musyx/snd3d.c"),
+            Object(Matching, "Musyx/snd3d.c"),
             Object(Matching, "Musyx/snd_init.c"),
-            Object(NonMatching, "Musyx/snd_math.c"),
-            Object(NonMatching, "Musyx/snd_midictrl.c"),
-            Object(NonMatching, "Musyx/snd_service.c"),
-            Object(NonMatching, "Musyx/hardware.c"),
-            Object(NonMatching, "Musyx/hw_aramdma.c"),
-            Object(NonMatching, "Musyx/hw_dolphin.c"),
+            Object(Matching, "Musyx/snd_math.c"),
+            Object(Matching, "Musyx/snd_midictrl.c"),
+            Object(Matching, "Musyx/snd_service.c"),
+            Object(Matching, "Musyx/hardware.c"),
+            Object(Matching, "Musyx/hw_aramdma.c"),
+            Object(Matching, "Musyx/hw_dolphin.c"),
             Object(Matching, "Musyx/hw_memory.c"),
             Object(Matching, "Musyx/reverb_fx.c"),
             Object(Matching, "Musyx/reverb.c"),
@@ -958,9 +962,6 @@ config.libs = [
             Object(NonMatching, "auto_00_00001254_text", source="menus/auto_00_00001254_text.c"),
             Object(NonMatching, "auto_00_0004B1AC_text", source="menus/auto_00_0004B1AC_text.c"),
             Object(Matching, "auto_00_00016870_text", source="menus/auto_00_00016870_text.c"),
-            Object(NonMatching, "auto_00_00092394_text", source="menus/auto_00_00092394_text.c"),
-            Object(NonMatching, "auto_00_00094854_text", source="menus/auto_00_00094854_text.c"),
-            Object(NonMatching, "auto_00_000194BC_text", source="menus/auto_00_000194BC_text.c"),
             Object(NonMatching, "auto_00_00000D08_text", source="menus/auto_00_00000D08_text.c"),
             Object(NonMatching, "auto_00_0001B1BC_text", source="menus/auto_00_0001B1BC_text.c"),
             Object(NonMatching, "auto_00_00000000_text", source="menus/auto_00_00000000_text.c"),
@@ -971,7 +972,6 @@ config.libs = [
             Object(NonMatching, "auto_00_0005597C_text", source="menus/auto_00_0005597C_text.c"),
             Object(NonMatching, "auto_00_0005E84C_text", source="menus/auto_00_0005E84C_text.c"),
             Object(NonMatching, "auto_00_0008782C_text", source="menus/auto_00_0008782C_text.c"),
-            Object(NonMatching, "auto_00_0008E6A4_text", source="menus/auto_00_0008E6A4_text.c"),
             Object(NonMatching, "menus/rep_0788.c"),
             Object(Matching, "menus/rep_07F0.c"),
             Object(Matching, "menus/rep_0840.c"),
@@ -1039,7 +1039,10 @@ config.libs = [
             Object(NonMatching, "menus/shared/auto_000919CC.c"),
             Object(NonMatching, "menus/shared/auto_00091C4C.c"),
             Object(NonMatching, "menus/shared/auto_00091D74.c"),
-        ]
+        ],
+        # The original compiled menus with -common on: uninitialised globals are
+        # common symbols, laid out after all .bss (see docs/common_bss.md).
+        extra_cflags=["-common on"],
     )
 ]
 

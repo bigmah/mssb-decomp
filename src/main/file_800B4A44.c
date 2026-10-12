@@ -159,7 +159,7 @@ void ACTSetAnimation(GameActor* actor, ANIMBank* animBank, char* sequenceName, u
 }
 
 // .text:0x800B4E9C size:0x100
-// NONMATCHING 98%: r8/r9 swapped between (u16)i and total - 1 (see docs/patterns/regalloc.md)
+// NONMATCHING 99.5%: r8/r9 swapped between (u16)i and total - 1 (see docs/patterns/regalloc.md)
 #if NONMATCHING
 void ANIMGetKeyFrameFromTrack(struct ANIMAnimTrack* animTrack, f32 time, KeyFrame** currentFrame, KeyFrame** nextFrame, u16* frameIndex) {
     KeyFrame* keyFrames;

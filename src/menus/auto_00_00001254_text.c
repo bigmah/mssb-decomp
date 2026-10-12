@@ -4,11 +4,11 @@
 
 // This unit's .bss (emitted in reverse order of definition). Sizes are the
 // distances between the original symbols; TODO type: the buffers are byte views.
-s16 lbl_2_bss_3E4[0x1BA];
-u8 lbl_2_bss_3E0[4];
-u8 lbl_2_bss_3A8[0x38];
-u8 lbl_2_bss_3A0[8];
-u8 lbl_2_bss_20[0x380];
+static s16 lbl_2_bss_3E4[0x1BA];
+static u8 lbl_2_bss_3E0[4];
+static u8 lbl_2_bss_3A8[0x38];
+static u8 lbl_2_bss_3A0[8];
+static u8 lbl_2_bss_20[0x380];
 extern u8 lbl_2_bss_758; // followed by 0x387 unreferenced bytes; stays in the auto split
 
 extern void fn_800625A4(u8, s32);
@@ -161,7 +161,7 @@ void fn_2_6138(void) {
 }
 
 // fn_2_35D0, size:0x54
-s32 fn_2_35D0(u8 index) {
+u8 fn_2_35D0(u8 index) {
     u8* flag = (u8*)((u32)lbl_2_bss_F468 + 0x45 + index); // TODO port: pointer math through u32 (needed to match)
     if (*flag != 0) {
         *flag = 0;
@@ -1406,9 +1406,6 @@ void fn_2_102C8(u8 team) {
 }
 #endif
 
-// NONMATCHING 99%: case 3 reloads the s8 timer before the decrement in the original
-// nmverify: fn_2_323C fn_2_8940 inlined on one side (calls match once expanded)
-#if NONMATCHING
 // fn_2_110B0, size:0x244
 void fn_2_110B0(void) {
     u8* scene = lbl_803CBBCC[0];
@@ -1436,12 +1433,10 @@ void fn_2_110B0(void) {
         }
         break;
     case 3:
-        if ((s8)lbl_2_bss_F468[0x36] < 0) {
-            if (lbl_803C66B0[0x5D] == 0 && lbl_803C66B0[0x5E] == 0) {
-                fn_2_72630();
-                lbl_2_bss_F468[0x33] = 0;
-                *(u16*)(lbl_803CBBCC[0] + 4) = 4;
-            }
+        if ((s8)lbl_2_bss_F468[0x36] < 0 && lbl_803C66B0[0x5D] == 0 && lbl_803C66B0[0x5E] == 0) {
+            fn_2_72630();
+            lbl_2_bss_F468[0x33] = 0;
+            *(u16*)(lbl_803CBBCC[0] + 4) = 4;
         } else {
             lbl_2_bss_F468[0x36]--;
         }
@@ -1472,7 +1467,6 @@ void fn_2_110B0(void) {
         break;
     }
 }
-#endif
 
 // fn_2_2FC0, size:0x244
 void fn_2_2FC0(u8 mode, s32 b, s32 c) {
@@ -1672,15 +1666,14 @@ void fn_2_A288(void) {
 }
 #endif
 
-// NONMATCHING 97%: register choice for the three button words (held/down/repeat); inlines fn_2_1DC8
-#if NONMATCHING
 // fn_2_1800, size:0x288
 void fn_2_1800(void) {
     MenuButtons b;
+    u16 repeat;
     memset(&b, 0, sizeof(b));
     b.held = *(u16*)(lbl_8034E9A0 + 0x472C);
     b.down = *(u16*)(lbl_8034E9A0 + 0x472E);
-    b.repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
+    b.repeat = repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
     if (lbl_803C66B0[0x55] != 0) {
         return;
     }
@@ -1695,11 +1688,11 @@ void fn_2_1800(void) {
         sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
     } else if ((b.repeat & 8) || (b.repeat & 4)) {
         ((s32*)lbl_2_bss_F410)[1] = ((s32*)lbl_2_bss_F410)[0];
-        if (b.repeat & 8) {
+        if (repeat & 8) {
             if (--((s32*)lbl_2_bss_F410)[0] < 0) {
                 ((s32*)lbl_2_bss_F410)[0] = 6;
             }
-        } else if (b.repeat & 4) {
+        } else if (repeat & 4) {
             if (++((s32*)lbl_2_bss_F410)[0] == 7) {
                 ((s32*)lbl_2_bss_F410)[0] = 0;
             }
@@ -1708,17 +1701,15 @@ void fn_2_1800(void) {
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
 }
-#endif
 
-// NONMATCHING 97%: same code as fn_2_1800; register choice for the three button words
-#if NONMATCHING
 // fn_2_1578, size:0x288
 void fn_2_1578(void) {
     MenuButtons b;
+    u16 repeat;
     memset(&b, 0, sizeof(b));
     b.held = *(u16*)(lbl_8034E9A0 + 0x472C);
     b.down = *(u16*)(lbl_8034E9A0 + 0x472E);
-    b.repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
+    b.repeat = repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
     if (lbl_803C66B0[0x55] != 0) {
         return;
     }
@@ -1733,11 +1724,11 @@ void fn_2_1578(void) {
         sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
     } else if ((b.repeat & 8) || (b.repeat & 4)) {
         ((s32*)lbl_2_bss_F410)[1] = ((s32*)lbl_2_bss_F410)[0];
-        if (b.repeat & 8) {
+        if (repeat & 8) {
             if (--((s32*)lbl_2_bss_F410)[0] < 0) {
                 ((s32*)lbl_2_bss_F410)[0] = 6;
             }
-        } else if (b.repeat & 4) {
+        } else if (repeat & 4) {
             if (++((s32*)lbl_2_bss_F410)[0] == 7) {
                 ((s32*)lbl_2_bss_F410)[0] = 0;
             }
@@ -1746,7 +1737,6 @@ void fn_2_1578(void) {
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
 }
-#endif
 
 // NONMATCHING 93%: same instructions, scheduling/register rotation in the unrolled pick loop
 #if NONMATCHING
@@ -2478,8 +2468,10 @@ void fn_2_A6E0(void) {
 }
 #endif
 
-// NONMATCHING 60%: only computes colours/slots into locals (the draw calls that used them
-// are compiled out), so it has no side effects; kept as a readable reconstruction.
+// NONMATCHING 87%: only computes colours/slots into locals (the draw calls that used them
+// are compiled out), so it has no side effects; kept as a readable reconstruction. The original
+// reloads starMissionCompletionTracker[0x441F] per team and ends with a dead compare chain on
+// lbl_803CBBCC[0]+4 (2..3, 9, 0x13, 4) that no C form here reproduces.
 #if NONMATCHING
 // fn_2_95D8, size:0x4F4
 void fn_2_95D8(void) {
@@ -2494,15 +2486,25 @@ void fn_2_95D8(void) {
     s32 n;
     if (*(u16*)(lbl_803CBBCC[0] + 4) < 4) {
         for (t = 0; t < 2; t++) {
-            sel = (t == 0) ? ((s32*)lbl_2_bss_F468)[t] : ((s32*)lbl_2_bss_F468)[t] - 10;
-            color[t] = (t == 0) ? 0xFF0F : 0xF00F;
+            if (t == 0) {
+                sel = ((s32*)lbl_2_bss_F468)[t];
+            } else {
+                sel = ((s32*)lbl_2_bss_F468)[t] - 10;
+            }
+            if (t == 0) {
+                color[t] = 0xFF0F;
+            } else {
+                color[t] = 0xF00F;
+            }
             for (i = 0; i < 9; i++) {
                 for (j = 0; j < 9; j++) {
                     if (i == (s8)lbl_80354720[t * 0x24 + j * 4 + 1]) {
                         break;
                     }
                 }
-                if (g_d_GameSettings.GameModeSelected != 5 || t == 0) {
+                if (g_d_GameSettings.GameModeSelected != 5) {
+                    cap = *(s32*)(lbl_8034E9A0 + t * 4 + 0x46E0);
+                } else if (t == 0) {
                     cap = *(s32*)(lbl_8034E9A0 + t * 4 + 0x46E0);
                 } else {
                     cap = (s8)starMissionCompletionTracker[0x441F];
@@ -2536,9 +2538,13 @@ void fn_2_95D8(void) {
             }
             for (t = 0; t < 2; t++) {
                 for (j = 0; j < 9; j++) {
-                    if (i == (s8)lbl_803C6724[t * 9 + j + 2] && color[0] != 0xFFF) {
+                    if (i == (s8)lbl_803C6724[t * 9 + j + 2] && t == 0 && color[0] != 0xFFF) {
                         used[i] = i;
-                        color[0] = (t == 0) ? 0x88F : 0x808F;
+                        color[0] = 0x88F;
+                        slot[t][j] = i;
+                    } else if (i == (s8)lbl_803C6724[t * 9 + j + 2] && t != 0 && color[0] != 0xFFF) {
+                        used[i] = i;
+                        color[0] = 0x808F;
                         slot[t][j] = i;
                     }
                 }
@@ -3178,79 +3184,124 @@ void fn_2_11698(void) {
     }
 }
 
-// NONMATCHING 50%: written as plain C; the original unrolls the per-class candidate scan four
-// times (one copy per class) and keeps every counter in its own register.
+// NONMATCHING 87%: the original strength-reduces the roster index into a walking pointer
+// (ours indexes) and its prologue/register order differs.
 #if NONMATCHING
 #define CHAR_CLASS(id) (lbl_8034E9A0[((id) / 9) * 0x5A0 + ((id) % 9) * 0xA0 + 0x31])
 
-// Collects up to 32 unused character ids of one class from lbl_80108DB8; returns count - 1.
-static s32 fn_2_F200_collect(s8* cand, u8 cls) {
+// Collects the unused character ids of one class from lbl_80108DB8 into cand; returns count - 1.
+// cand is only 8 bytes in the original; a longer run spills into the next stack array.
+static inline s32 collectClass(s8* cand, u8 cls, s32 last) {
     s32 i;
-    s32 last = -1;
+    s8* p = cand;
     for (i = 0; i < 32; i++) {
-        s8 id = lbl_80108DB8[i];
+        s16 id = (u8)lbl_80108DB8[i];
         if (CHAR_CLASS(id) == cls && lbl_8034E9A0[id + 0x4757] == 0) {
-            cand[++last] = id;
+            *p++ = id;
+            last++;
         }
     }
     return last;
 }
 
-// nmverify: randRange_FUN_80042bf0 original has one pick per unrolled class copy (4) plus the fallback
 // fn_2_F200, size:0x8A0
-// nmverify:  inlined on one side (calls match once expanded)
+// Fills the empty roster slots of a team with random unused characters, preferring a class
+// (lbl_8034E9A0 +0x31) the team has fewer than two of.
 void fn_2_F200(u8 team) {
-    u8 count[4];
-    u8 full[4];
+    s8 cand[8];
     s8 classes[9];
-    s8 cand[32];
+    u8 n1 = 0;
+    u8 n2 = 0;
+    u8 n3 = 0;
+    u8 n0 = 0;
+    u8 full1 = 0;
+    u8 full2 = 0;
+    u8 full3 = 0;
+    u8 full0 = 0;
     s32 cap = *(s32*)(lbl_8034E9A0 + team * 4 + 0x46E0);
-    u8* row = lbl_803C6724 + team * 9;
+    s8* row;
     s32 i;
-    s32 c;
     s32 g;
     s32 k;
     s32 last;
-    s8 id;
-    for (c = 0; c < 4; c++) {
-        count[c] = 0;
-        full[c] = 0;
-    }
+    s16 id;
+
     memset(classes, -1, 9);
+    row = (s8*)lbl_803C6724 + team * 9;
     for (i = 0; i < 9; i++) {
-        s32 v = (s8)row[i + 2];
+        s32 v = row[i + 2];
         if (v != -1 && v != 0x36) {
-            classes[i] = CHAR_CLASS((s8)row[i + 2]);
-            c = classes[i];
-            if (c >= 0 && c < 4) {
-                if (++count[c] >= 2) {
-                    full[c] = 1;
+            classes[i] = CHAR_CLASS(v);
+            switch (classes[i]) {
+            case 0:
+                if (++n0 >= 2) {
+                    full0 = 1;
                 }
+                break;
+            case 1:
+                if (++n1 >= 2) {
+                    full1 = 1;
+                }
+                break;
+            case 2:
+                if (++n2 >= 2) {
+                    full2 = 1;
+                }
+                break;
+            case 3:
+                if (++n3 >= 2) {
+                    full3 = 1;
+                }
+                break;
             }
         }
     }
     for (i = 0; i < 9; i++) {
-        s32 v = (s8)row[i + 2];
+        s32 v = row[i + 2];
         if (v != -1 && v != 0x36) {
             continue;
         }
         memset(cand, -1, 8);
-        id = -1;
-        for (c = 0; c < 4; c++) {
-            if (full[c] == 0) {
-                break;
+        last = -1;
+        if (full0 == 0) {
+            last = collectClass(cand, 0, last);
+            if (cand[0] == -1) {
+                goto random;
             }
-        }
-        if (c < 4) {
-            last = fn_2_F200_collect(cand, c);
-            if (cand[0] != -1) {
-                if (++count[c] >= 2) {
-                    full[c] = 1;
-                }
-                id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            if (++n0 >= 2) {
+                full0 = 1;
             }
-        }
-        if (id == -1) {
+        } else if (full1 == 0) {
+            last = collectClass(cand, 1, last);
+            if (cand[0] == -1) {
+                goto random;
+            }
+            id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            if (++n1 >= 2) {
+                full1 = 1;
+            }
+        } else if (full2 == 0) {
+            last = collectClass(cand, 2, last);
+            if (cand[0] == -1) {
+                goto random;
+            }
+            id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            if (++n2 >= 2) {
+                full2 = 1;
+            }
+        } else if (full3 == 0) {
+            last = collectClass(cand, 3, last);
+            if (cand[0] == -1) {
+                goto random;
+            }
+            id = cand[randRange_FUN_80042bf0(0, (s8)last)];
+            if (++n3 >= 2) {
+                full3 = 1;
+            }
+        } else {
+        random:
+            // no class short of two, or none of its characters left: any unused character
             do {
                 id = randRange_FUN_80042bf0(0, 0x35);
             } while (lbl_8034E9A0[id + 0x4757] != 0);
@@ -4137,16 +4188,16 @@ void fn_2_104FC(u16 port) {
 }
 #endif
 
-// NONMATCHING 60%: plain C; the original inlines fn_2_EC54/fn_2_C698 at every use, unrolls
-// the slot searches and shares one fn_2_1C34(0x200) tail.
+// NONMATCHING 85%: register allocation differs throughout and the original walks the roster
+// with pointers where ours indexes it; fn_2_EC54/fn_2_C698 inline as in the original.
 #if NONMATCHING
 static void fn_2_CE44_clear_ratings(void) {
     s32 i;
-    for (i = 0; i < 9; i++) {
-        lbl_803C6724[0x26 + i] = 0;
-    }
-    for (i = 0; i < 9; i++) {
-        lbl_803C6724[0x2F + i] = 0;
+    s32 j;
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 9; j++) {
+            lbl_803C6724[i * 9 + 0x26 + j] = 0;
+        }
     }
 }
 
@@ -4162,7 +4213,7 @@ static void fn_2_CE44_reset_both(void) {
 }
 
 // fn_2_CE44, size:0x1168
-void fn_2_CE44(s8 team) {
+void fn_2_CE44(u8 team) {
     s32* state = (s32*)lbl_2_bss_F468;
     s32 cap;
     u8* row;
@@ -4172,7 +4223,7 @@ void fn_2_CE44(s8 team) {
     s32 st;
     s32 i;
     s32 t;
-    if (g_d_GameSettings.GameModeSelected == 5 && lbl_2_bss_F468[0x3F] != 0) {
+    if ((g_d_GameSettings.GameModeSelected == 5 && lbl_2_bss_F468[0x3F] != 0) ? 1 : 0) {
         sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
         return;
     }
@@ -4305,112 +4356,120 @@ void fn_2_CE44(s8 team) {
                 state[team] = 8;
             }
         }
+        st = state[team + 2];
         for (i = 0; i < 9; i++) {
-            if ((s8)row[i + 0x14] == state[team + 2]) {
+            if ((s8)row[i + 0x14] == st) {
                 slot = i;
             }
         }
         if ((s8)row[slot + 2] != -1) {
+            s32 old;
             fn_2_C698(slot, team);
             fn_800506E8(team, (s8)row[slot + 2], 0);
             fn_80067B40(team, row[slot + 2], 0);
+            old = (s8)row[slot + 2]; // the removed character, read before the slot is cleared
             row[slot + 0x26] = 0;
             row[slot + 2] = -1;
             lbl_2_bss_F468[0x3D] = 0;
-            lbl_8034E9A0[(s8)row[slot + 2] + 0x4757] = 0;
+            lbl_8034E9A0[old + 0x4757] = 0;
             row[slot + 0x4A] = 0;
             lbl_2_bss_F468[0x37 + team] = 0;
         }
         fn_800625A4(team, 0x10);
         goto end;
     }
-    if (lbl_2_bss_100B8[0x2E + team] != 0) {
-        lbl_2_bss_100B8[0x2E + team] = 0;
-        fn_800625A4(team, 0x12);
-        ((void (*)(u32))fn_2_1C34)(0x200);
-        return;
-    }
-    if (n != 0) {
-        state[team + 2] = state[team];
-        state[team] = 8;
-        if (cap == (s8)row[8 + 2]) {
-            state[team]--;
+    if (st == 9 || st == 10) {
+        if (lbl_2_bss_100B8[0x2E + team] != 0) {
+            lbl_2_bss_100B8[0x2E + team] = 0;
+            fn_800625A4(team, 0x12);
+            ((void (*)(u32))fn_2_1C34)(0x200);
+            return;
         }
-        fn_800625A4(team, 0x15);
-        ((void (*)(u32))fn_2_1C34)(0x200);
-        return;
-    }
-    if (lbl_803C66B0[0x55] != 0 || lbl_803C66B0[0x56] != 0) {
-        return;
-    }
-    fn_2_CE44_clear_ratings();
-    lbl_2_bss_F468[0x46] = 0;
-    lbl_2_bss_F468[0x45] = 0;
-    state[1] = 0;
-    state[0] = 0;
-    lbl_2_bss_F468[0x60] = 0;
-    lbl_2_bss_F468[0x5F] = 0;
-    for (t = 0; t < 2; t++) {
-        u8* r = lbl_803C6724 + t * 9;
-        for (i = 1; i < 9; i++) {
-            s8 id = r[i + 2];
-            lbl_8034E9A0[id + 0x4757] = 0;
-            fn_800506E8(*(s8*)(lbl_8034E9A0 + 0x46F8 + t), id, 0);
-            fn_80067B40(t, r[i + 2], 0);
-            r[i + 2] = -1;
-            r[i + 0x4A] = 0;
-            r[i + 0x26] = 0;
-        }
-        lbl_2_bss_F468[0x37 + t] = 0;
-        if (state[t] == 9) {
-            state[t] = 0;
-            switch (t) {
-            case 0:
-                if ((s8)lbl_803C6724[2] == *(s32*)(lbl_8034E9A0 + 0x46E0)) {
-                    state[0] = 1;
-                }
-                break;
-            case 1:
-                if ((s8)lbl_803C6724[0xB] == *(s32*)(lbl_8034E9A0 + 0x46E4)) {
-                    state[1] = 0xB;
-                }
-                break;
+        if (n != 0) {
+            state[team + 2] = state[team];
+            state[team] = 8;
+            if (cap == (s8)row[8 + 2]) {
+                state[team]--;
             }
+            fn_800625A4(team, 0x15);
+            ((void (*)(u32))fn_2_1C34)(0x200);
+            return;
         }
-        lbl_2_bss_F468[0x3D + t] = 0;
+        if (lbl_803C66B0[0x55] != 0 || lbl_803C66B0[0x56] != 0) {
+            return;
+        }
+        fn_2_CE44_clear_ratings();
+        lbl_2_bss_F468[0x46] = 0;
+        lbl_2_bss_F468[0x45] = 0;
+        state[1] = 0;
+        state[0] = 0;
+        lbl_2_bss_F468[0x60] = 0;
+        lbl_2_bss_F468[0x5F] = 0;
+        for (t = 0; t < 2; t++) {
+            u8* r = lbl_803C6724 + t * 9;
+            for (i = 1; i < 9; i++) {
+                s8 id = r[i + 2];
+                lbl_8034E9A0[id + 0x4757] = 0;
+                fn_800506E8(*(s8*)(lbl_8034E9A0 + 0x46F8 + t), id, 0);
+                fn_80067B40(t, r[i + 2], 0);
+                r[i + 2] = -1;
+                r[i + 0x4A] = 0;
+                r[i + 0x26] = 0;
+            }
+            lbl_2_bss_F468[0x37 + t] = 0;
+            if (state[t] == 9) {
+                state[t] = 0;
+                switch (t) {
+                case 0:
+                    if ((s8)lbl_803C6724[2] == *(s32*)(lbl_8034E9A0 + 0x46E0)) {
+                        state[0] = 1;
+                    }
+                    break;
+                case 1:
+                    if ((s8)lbl_803C6724[0xB] == *(s32*)(lbl_8034E9A0 + 0x46E4)) {
+                        state[1] = 0xB;
+                    }
+                    break;
+                }
+            }
+            lbl_2_bss_F468[0x3D + t] = 0;
+        }
+        fn_2_EC54(team);
     }
-    fn_2_EC54(team);
 end:
     ((void (*)(u32))fn_2_1C34)(0x200);
 }
 #endif
 
-// NONMATCHING 60%: plain C; the original inlines fn_2_35D0/fn_2_52CC/fn_2_A040/fn_2_C698,
-// unrolls the slot searches and repeats the cursor-sound tail per branch.
+// NONMATCHING 88%: register allocation and scheduling; the inlined fn_2_35D0/fn_2_52CC/
+// fn_2_A040/fn_2_C698 bodies and the per-branch cursor sounds are laid out as in the original.
 #if NONMATCHING
+// Per-team views used by fn_2_3624 (written out at every use like the original, which
+// recomputes each address instead of keeping a team base pointer).
+#define CUR_POS ((s32*)lbl_2_bss_F468) // [team] cursor position, [team + 2] previous
+#define TEAM_FLAG(off) (lbl_2_bss_F468[(off) + team])
+#define TEAM_ROW(off) (lbl_803C6724[team * 9 + (off)])
+
 #define FN_2_3624_FIND_SLOT(row, value, out)              \
     do {                                                  \
         s32 j_;                                           \
+        s8 want_ = (value);                               \
         for (j_ = 0; j_ < 9; j_++) {                      \
-            if ((s8)(row)[j_ + 0x14] == (s8)(value)) {    \
+            if ((s8)(row)[j_ + 0x14] == want_) {          \
                 (out) = j_;                               \
                 break;                                    \
             }                                             \
         }                                                 \
     } while (0)
 
-// nmverify: sndFXStartEx cursor-sound tail repeated per branch in original
 // fn_2_3624, size:0x134C
 // nmverify:  inlined on one side (calls match once expanded)
 void fn_2_3624(u8 port) {
     u8 team = lbl_803C66B0[0x59 + port];
-    s32* state = (s32*)lbl_2_bss_F468;
-    u8* row = lbl_803C6724 + team * 9;
-    u8* f = lbl_2_bss_F468 + team;
     u16 btn[3];
     u16 repeat;
     u16 down;
-    s32 slot = 0;
+    s8 slot = 0;
     s32 i;
     s32 g;
     s32 k;
@@ -4422,162 +4481,167 @@ void fn_2_3624(u8 port) {
     btn[1] = down = *(u16*)(lbl_8034E9A0 + port * 6 + 0x472E);
     btn[2] = repeat = *(u16*)(lbl_8034E9A0 + port * 6 + 0x4730);
     if (repeat & 8) {
-        if (f[0x45] != 0) {
+        if (TEAM_FLAG(0x45) != 0) {
             return;
         }
-        if (state[team] == 9) {
-            state[team] = 2;
+        if (CUR_POS[team] == 9) {
+            CUR_POS[team] = 2;
             fn_800625A4(team, 0xE);
-        } else if (state[team] == 10) {
-            if (f[0x37] != 0) {
-                state[team] = 9;
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
+        } else if (CUR_POS[team] == 10) {
+            if (TEAM_FLAG(0x37) != 0) {
+                CUR_POS[team] = 9;
                 fn_800625A4(team, 0x18);
             } else {
-                state[team] = 2;
+                CUR_POS[team] = 2;
                 fn_800625A4(team, 0xE);
             }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else {
-            state[team + 2] = state[team];
-            switch (state[team]) {
-            case 0: state[team] = 5; break;
-            case 1: state[team] = 0; break;
-            case 2: state[team] = 8; break;
-            case 3: state[team] = 7; break;
-            case 4: state[team] = 6; break;
-            case 5: state[team] = 7; break;
-            case 6: state[team] = 4; break;
-            case 7: state[team] = 1; break;
+            CUR_POS[team + 2] = CUR_POS[team];
+            switch (CUR_POS[team]) {
+            case 0: CUR_POS[team] = 5; break;
+            case 1: CUR_POS[team] = 0; break;
+            case 2: CUR_POS[team] = 8; break;
+            case 3: CUR_POS[team] = 7; break;
+            case 4: CUR_POS[team] = 6; break;
+            case 5: CUR_POS[team] = 7; break;
+            case 6: CUR_POS[team] = 4; break;
+            case 7: CUR_POS[team] = 1; break;
             case 8:
-                if (f[0x37] != 0 && f[0x5F] == 0) {
-                    state[team] = 9;
+                if (TEAM_FLAG(0x37) != 0 && TEAM_FLAG(0x5F) == 0) {
+                    CUR_POS[team] = 9;
                 } else {
-                    state[team] = 2;
+                    CUR_POS[team] = 2;
                 }
                 break;
             }
-            if (state[team + 2] != state[team]) {
+            if (CUR_POS[team + 2] != CUR_POS[team]) {
                 fn_800625A4(team, 0xE);
             }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     } else if (repeat & 4) {
-        if (f[0x45] != 0) {
+        if (TEAM_FLAG(0x45) != 0) {
             return;
         }
-        if (state[team] == 9) {
-            state[team] = 8;
+        if (CUR_POS[team] == 9) {
+            CUR_POS[team] = 8;
             fn_800625A4(team, 0xE);
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else {
-            state[team + 2] = state[team];
-            switch (state[team]) {
-            case 0: state[team] = 1; break;
-            case 1: state[team] = 7; break;
+            CUR_POS[team + 2] = CUR_POS[team];
+            switch (CUR_POS[team]) {
+            case 0: CUR_POS[team] = 1; break;
+            case 1: CUR_POS[team] = 7; break;
             case 2:
-                if (f[0x37] != 0 && f[0x5F] == 0) {
-                    state[team] = 9;
+                if (TEAM_FLAG(0x37) != 0 && TEAM_FLAG(0x5F) == 0) {
+                    CUR_POS[team] = 9;
                 } else {
-                    state[team] = 8;
+                    CUR_POS[team] = 8;
                 }
                 break;
-            case 3: state[team] = 0; break;
-            case 4: state[team] = 6; break;
-            case 5: state[team] = 0; break;
-            case 6: state[team] = 4; break;
-            case 7: state[team] = 5; break;
-            case 8: state[team] = 2; break;
+            case 3: CUR_POS[team] = 0; break;
+            case 4: CUR_POS[team] = 6; break;
+            case 5: CUR_POS[team] = 0; break;
+            case 6: CUR_POS[team] = 4; break;
+            case 7: CUR_POS[team] = 5; break;
+            case 8: CUR_POS[team] = 2; break;
             }
-            if (state[team + 2] != state[team]) {
+            if (CUR_POS[team + 2] != CUR_POS[team]) {
                 fn_800625A4(team, 0xE);
             }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     } else if (repeat & 1) {
-        if (f[0x45] != 0) {
-            if (f[0x47] == 1) {
-                f[0x47] = 0;
-                f[0x49] = 0;
+        if (TEAM_FLAG(0x45) != 0) {
+            if (TEAM_FLAG(0x47) == 1) {
+                TEAM_FLAG(0x47) = 0;
+                TEAM_FLAG(0x49) = 0;
                 sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
             }
             return;
         }
-        if (state[team] == 9) {
-            state[team] = 0;
+        if (CUR_POS[team] == 9) {
+            CUR_POS[team] = 0;
             fn_800625A4(team, 0xE);
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else {
-            state[team + 2] = state[team];
-            switch (state[team]) {
-            case 0: state[team] = 4; break;
+            CUR_POS[team + 2] = CUR_POS[team];
+            switch (CUR_POS[team]) {
+            case 0: CUR_POS[team] = 4; break;
             case 1:
-                if (f[0x37] != 0 && f[0x5F] == 0) {
-                    state[team] = 9;
+                if (TEAM_FLAG(0x37) != 0 && TEAM_FLAG(0x5F) == 0) {
+                    CUR_POS[team] = 9;
                     break;
                 }
                 return;
-            case 2: state[team] = 3; break;
-            case 3: state[team] = 5; break;
-            case 4: state[team] = 2; break;
-            case 5: state[team] = 4; break;
-            case 6: state[team] = 8; break;
-            case 7: state[team] = 6; break;
-            case 8: state[team] = 7; break;
-            case 10: state[team] = 1; break;
+            case 2: CUR_POS[team] = 3; break;
+            case 3: CUR_POS[team] = 5; break;
+            case 4: CUR_POS[team] = 2; break;
+            case 5: CUR_POS[team] = 4; break;
+            case 6: CUR_POS[team] = 8; break;
+            case 7: CUR_POS[team] = 6; break;
+            case 8: CUR_POS[team] = 7; break;
+            case 10: CUR_POS[team] = 1; break;
             }
-            if (state[team + 2] != state[team]) {
+            if (CUR_POS[team + 2] != CUR_POS[team]) {
                 fn_800625A4(team, 0xE);
             }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     } else if (repeat & 2) {
-        if (f[0x45] != 0) {
-            if (f[0x47] == 0) {
-                f[0x47] = 1;
-                f[0x49] = 0;
+        if (TEAM_FLAG(0x45) != 0) {
+            if (TEAM_FLAG(0x47) == 0) {
+                TEAM_FLAG(0x47) = 1;
+                TEAM_FLAG(0x49) = 0;
                 sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
             }
             return;
         }
-        if (state[team] == 9) {
-            state[team] = 0;
+        if (CUR_POS[team] == 9) {
+            CUR_POS[team] = 0;
             fn_800625A4(team, 0xE);
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         } else {
-            state[team + 2] = state[team];
-            switch (state[team]) {
+            CUR_POS[team + 2] = CUR_POS[team];
+            switch (CUR_POS[team]) {
             case 0:
-                if (f[0x37] != 0 && f[0x5F] == 0) {
-                    state[team] = 9;
+                if (TEAM_FLAG(0x37) != 0 && TEAM_FLAG(0x5F) == 0) {
+                    CUR_POS[team] = 9;
                     fn_800625A4(team, 0x18);
                 } else {
-                    state[team] = 2;
+                    CUR_POS[team] = 2;
                     fn_800625A4(team, 0xE);
                 }
                 break;
             case 1:
-                if (f[0x37] != 0 && f[0x5F] == 0) {
-                    state[team] = 9;
+                if (TEAM_FLAG(0x37) != 0 && TEAM_FLAG(0x5F) == 0) {
+                    CUR_POS[team] = 9;
                     break;
                 }
                 return;
-            case 2: state[team] = 4; break;
-            case 3: state[team] = 2; break;
-            case 4: state[team] = 5; break;
-            case 5: state[team] = 3; break;
-            case 6: state[team] = 7; break;
-            case 7: state[team] = 8; break;
-            case 8: state[team] = 6; break;
+            case 2: CUR_POS[team] = 4; break;
+            case 3: CUR_POS[team] = 2; break;
+            case 4: CUR_POS[team] = 5; break;
+            case 5: CUR_POS[team] = 3; break;
+            case 6: CUR_POS[team] = 7; break;
+            case 7: CUR_POS[team] = 8; break;
+            case 8: CUR_POS[team] = 6; break;
             }
-            if (state[team + 2] != state[team]) {
+            if (CUR_POS[team + 2] != CUR_POS[team]) {
                 fn_800625A4(team, 0xE);
             }
+            sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
         }
-        sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     } else if (down & 0x100) {
         if (fn_2_35D0(team)) {
             return;
         }
-        if (state[team] == 9) {
-            f[0x59] = 0;
-            f[0x61] = -1;
-            f[0x65] = 1;
+        if (CUR_POS[team] == 9) {
+            TEAM_FLAG(0x59) = 0;
+            TEAM_FLAG(0x61) = -1;
+            TEAM_FLAG(0x65) = 1;
             if (g_d_GameSettings.GameModeSelected == 5) {
                 for (i = 0; i < 9; i++) {
                     s16 id = (s8)lbl_803C6724[i + 2];
@@ -4607,8 +4671,8 @@ void fn_2_3624(u8 port) {
                 }
             }
             fn_800625A4(team, 0x1B);
-        } else if (f[0x5F] == 0) {
-            f[0x61] = state[team];
+        } else if (TEAM_FLAG(0x5F) == 0) {
+            TEAM_FLAG(0x61) = CUR_POS[team];
             fn_800625A4(team, 0x1C);
         } else {
             s32 j1 = 0;
@@ -4616,17 +4680,17 @@ void fn_2_3624(u8 port) {
             s8 v1 = 0;
             s32 v2 = 0;
             for (i = 0; i < 9; i++) {
-                if ((s8)row[i + 0x14] == (s8)f[0x61]) {
+                if ((s8)TEAM_ROW(i + 0x14) == (s8)TEAM_FLAG(0x61)) {
                     j1 = i;
-                    v1 = f[0x61];
+                    v1 = TEAM_FLAG(0x61);
                 }
-                if ((s8)row[i + 0x14] == state[team]) {
+                if ((s8)TEAM_ROW(i + 0x14) == CUR_POS[team]) {
                     j2 = i;
-                    v2 = state[team];
+                    v2 = CUR_POS[team];
                 }
             }
-            row[j1 + 0x14] = v2;
-            row[j2 + 0x14] = v1;
+            TEAM_ROW(j1 + 0x14) = v2;
+            TEAM_ROW(j2 + 0x14) = v1;
             fn_800625A4(team, 0x1C);
         }
         sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
@@ -4634,7 +4698,7 @@ void fn_2_3624(u8 port) {
         if (fn_2_35D0(team)) {
             return;
         }
-        if (f[0x5F] != 0) {
+        if (TEAM_FLAG(0x5F) != 0) {
             fn_800625A4(team, 0x1D);
         }
         sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
@@ -4642,38 +4706,38 @@ void fn_2_3624(u8 port) {
         if (fn_2_35D0(team)) {
             return;
         }
-        if (f[0x5F] != 0) {
-            f[0x5F] = 0;
+        if (TEAM_FLAG(0x5F) != 0) {
+            TEAM_FLAG(0x5F) = 0;
         }
         fn_800625A4(team, 0x1B);
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
-        f[0x59] = 0;
+        TEAM_FLAG(0x59) = 0;
     } else if (down & 0x40) {
         s8 v;
         if (fn_2_35D0(team) || g_d_GameSettings.GameModeSelected == 5) {
             return;
         }
-        FN_2_3624_FIND_SLOT(row, state[team], slot);
-        v = row[slot + 2];
+        FN_2_3624_FIND_SLOT(lbl_803C6724 + team * 9, CUR_POS[team], slot);
+        v = TEAM_ROW(slot + 2);
         if (v == -1 || v == 0x36) {
             sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
             return;
         }
-        if (state[team] == 9) {
+        if (CUR_POS[team] == 9) {
             sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
             return;
         }
-        f[0x50] = 0;
+        TEAM_FLAG(0x50) = 0;
         for (g = 0; g < 9; g++) {
             for (k = 0; k < 5; k++) {
                 if (v == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
-                    f[0x50] = 1;
+                    TEAM_FLAG(0x50) = 1;
                     goto found;
                 }
             }
         }
     found:
-        if (f[0x50] != 0) {
+        if (TEAM_FLAG(0x50) != 0) {
             fn_2_A040(g, k, team, slot);
             fn_2_C698(slot, team);
             sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
@@ -4682,16 +4746,19 @@ void fn_2_3624(u8 port) {
         if (fn_2_35D0(team)) {
             return;
         }
-        FN_2_3624_FIND_SLOT(row, state[team], slot);
-        if (state[team] != 9) {
-            s8 v = row[slot + 2];
-            if (v != -1 && v != 0x36 && f[0x41] == 0) {
-                f[0x45] = 1;
-                f[0x4B] = 1;
-                f[0x47] = 0;
+        FN_2_3624_FIND_SLOT(lbl_803C6724 + team * 9, CUR_POS[team], slot);
+        if (CUR_POS[team] != 9) {
+            s8 v = TEAM_ROW(slot + 2);
+            if (v != -1 && v != 0x36 && TEAM_FLAG(0x41) == 0) {
+                TEAM_FLAG(0x45) = 1;
+                TEAM_FLAG(0x4B) = 1;
+                TEAM_FLAG(0x47) = 0;
                 sndFXStartEx(0x1BF, lbl_800EFBA4[8], 0x3F, 0);
             }
         }
     }
 }
+#undef CUR_POS
+#undef TEAM_FLAG
+#undef TEAM_ROW
 #endif

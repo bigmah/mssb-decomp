@@ -414,7 +414,7 @@ void PrepFilesToBeLoaded(void) {
     lbl_80366158._1D = 1;
 }
 
-// NONMATCHING 95%: the original addresses lbl_800E8AA8 and the tables after it through one pooled
+// NONMATCHING 95.1%: the original addresses lbl_800E8AA8 and the tables after it through one pooled
 // base register (they are data of this unit, not split yet); fn_80009144 is not inlined (pragma)
 // .text:0x800097A0 size:0x6F4
 #if NONMATCHING
@@ -658,3 +658,106 @@ QuadCallback fn_8000A094(QuadCallback value) {
     lbl_80366188.callback = value;
     return previous;
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x800E8AA8..0x800E8F44
+FileTable lbl_800E8AA8 = {
+    {
+        {1035, {0x401027E4}, {2048}, 0x5A818},
+        {1035, {0x402220F8}, {0x5B800}, 0xF4450},
+        {1035, {0x4005912C}, {0x150000}, 0x271C0},
+    },
+    {
+        {1294, {0x4003E1A0}, {0x8E77000}, 0x143EC},
+        {0, {46550}, {0x8E8B800}, 46552},
+        {0, {4064}, {0x8E97000}, 4064},
+    },
+    {
+        {1035, {0x4013764C}, {0x1A635000}, 0x7DB48},
+        {1035, {0x4003E3DC}, {0x1A6B3000}, 0x21420},
+        {1035, {0x4002EC10}, {0x1A6D4800}, 0x13108},
+        {1035, {0x400E72C0}, {0x1A6E8000}, 0x60768},
+        {1035, {0x40049404}, {0x1A748800}, 0x20E34},
+        {1035, {0x40076AE0}, {0x18ED7000}, 0x36BC8},
+        {1035, {0x4010FD70}, {0x1A769800}, 0x5E284},
+        {1035, {0x400DB738}, {0x1A7C8000}, 0x49AB4},
+        {1035, {0x400E9864}, {0x1A812000}, 0x59DC0},
+        {1035, {0x400B7718}, {0x1A86C000}, 0x50288},
+        {1035, {0x400D87FC}, {0x1A8BC800}, 0x47BC4},
+        {1035, {0x400D643C}, {0x1A904800}, 0x4E3AC},
+        {1035, {0x400D5C7C}, {0x1A953000}, 0x48D9C},
+        {1035, {0x400B767C}, {0x1A99C000}, 0x47518},
+        {1035, {0x400441F8}, {0x1A9E3800}, 0x1AA84},
+        {1035, {0x40106568}, {0x1A9FE800}, 0x68C10},
+        {1035, {0x4010E5A0}, {0xE97A800}, 0x9BCAC},
+        {1035, {0x40016980}, {0xEA16800}, 54980},
+        {1035, {0x40016980}, {0xEA24000}, 51524},
+        {1035, {0x40016980}, {0xEA31000}, 59136},
+        {1035, {0x40016980}, {0xEA3F800}, 54860},
+        {1035, {0x40016980}, {0xEA4D000}, 51456},
+        {1035, {0x40016980}, {0xEA5A000}, 53244},
+        {1035, {0x40016980}, {0xEA67000}, 55072},
+        {1035, {0x40016980}, {0xEA74800}, 54988},
+        {1035, {0x40016980}, {0xEA82000}, 53788},
+        {1035, {0x40016980}, {0xEA8F800}, 53436},
+        {1035, {0x40016980}, {0xEA9D000}, 46404},
+        {1035, {0x40016980}, {0xEAA8800}, 50424},
+        {1035, {0x400ADFFC}, {0x18AEE800}, 0x4BAB0},
+        {1035, {0x4037CF5C}, {0x18B3A800}, 0x208AF0},
+        {1035, {0x4000A820}, {0x18ED3800}, 14168},
+        {1035, {0x4011EC24}, {0x18F0E000}, 0xD8818},
+        {1035, {0x400193E8}, {0x191B8800}, 35288},
+        {1035, {0x4006C850}, {0x6C96000}, 0x2C884},
+        {1035, {0x4005B178}, {0x6CC3000}, 0x3555C},
+        {1035, {0x401EB174}, {0x18D43800}, 0xFB220},
+        {1035, {0x4001ED60}, {0x1AA67800}, 53232},
+        {1035, {0x4000BF30}, {0x1AA74800}, 9952},
+        {1035, {0x40003498}, {0x1AA77000}, 3624},
+        {1035, {0x4000BDE0}, {0x1AA78000}, 9460},
+        {1035, {0x40006088}, {0x1AA7A800}, 4752},
+        {1035, {0x400049F0}, {0x1AA7C000}, 6388},
+        {1035, {0x40005ECC}, {0x1AA7E000}, 7480},
+        {1035, {0x40002670}, {0x1AA80000}, 3048},
+        {0, {0x28240}, {0x1AA81000}, 0x28240},
+        {0, {0x28240}, {0x1AAA9800}, 0x28240},
+        {0, {0x28240}, {0x1AAD2000}, 0x28240},
+        {0, {0x28240}, {0x1AAFA800}, 0x28240},
+        {0, {0x28240}, {0x1AB23000}, 0x28240},
+        {0, {0x28240}, {0x1AB4B800}, 0x28240},
+        {0, {0x28240}, {0x1AB74000}, 0x28240},
+        {0, {0x28240}, {0x1AB9C800}, 0x28240},
+        {0, {0x28240}, {0x1ABC5000}, 0x28240},
+        {0, {0x28240}, {0x1ABED800}, 0x28240},
+        {0, {0x28240}, {0x1AC16000}, 0x28240},
+        {0, {0x28240}, {0x1AC3E800}, 0x28240},
+        {0, {0x28240}, {0x1AC67000}, 0x28240},
+        {0, {0x28240}, {0x1AC8F800}, 0x28240},
+        {0, {0x28240}, {0x1ACB8000}, 0x28240},
+        {0, {0x28240}, {0x1ACE0800}, 0x28240},
+        {0, {0x28240}, {0x1AD09000}, 0x28240},
+    },
+};
+FilePath lbl_800E8EE8 = {"aaaa.dat", {0, 0, 0}};
+FilePath lbl_800E8EF8 = {"ZZZZ.dat", {0, 0, 0}};
+
+// .bss 0x801181A0..0x80118220 (MWCC lays these out in reverse definition order)
+u8 lbl_801181A0[2][0x40];
+
+// .sbss 0x803CBBA0..0x803CBBD8 (MWCC lays these out in reverse definition order)
+s32 lbl_803CBBD4;
+s32 lbl_803CBBD0;
+struct SceneFlow* lbl_803CBBCC; // current menu scene flow (main/menu_globals.h)
+u8 lbl_803CBBC4[8]; // menu flags (menus/rep_04B0)
+u8 lbl_803CBBC2;
+u8 lbl_803CBBC1;
+u8 lbl_803CBBC0;
+ThpPlayer* lbl_803CBBBC;
+void (*lbl_803CBBB8)(s32 alt);
+u8 lbl_803CBBB4;
+u32 lbl_803CBBB0;
+s32 lbl_803CBBAC;
+s32 lbl_803CBBA8;
+u8 lbl_803CBBA4;
+s32 lbl_803CBBA0;
+

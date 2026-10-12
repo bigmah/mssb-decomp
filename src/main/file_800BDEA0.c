@@ -3,7 +3,7 @@
 #include "Dolphin/os.h"
 #include "Dolphin/stl.h"
 
-extern const f32 lbl_803CBB68; // 20.0f
+extern f32 lbl_803CBB68; // 20.0f (writable .sdata in the original)
 extern const f32 lbl_803CD068; // 1e8f
 extern const f32 lbl_803CD06C; // -1e8f
 extern const f32 lbl_803CD070; // 0.0f
@@ -106,7 +106,7 @@ void fn_800BDF70(ActorObject* obj) {
 }
 
 // .text:0x800BDFE0 size:0xBC
-// NONMATCHING 95%: table/index saved registers swapped (r28/r29)
+// NONMATCHING 95.0%: table/index saved registers swapped (r28/r29)
 #if NONMATCHING
 void fn_800BDFE0(ActorObjectTable* table) {
     ShadowState* state = &lbl_803009F8;
@@ -127,7 +127,7 @@ void fn_800BDFE0(ActorObjectTable* table) {
 #endif
 
 // .text:0x800BE09C size:0xBC
-// NONMATCHING 99.8%: shadow-state address lands in r3 instead of r4 before the begin callback
+// NONMATCHING 99.7%: shadow-state address lands in r3 instead of r4 before the begin callback
 #if NONMATCHING
 void fn_800BE09C(void* arg, ShadowCamera* cam) {
     if (lbl_803009F8.enabled) {
@@ -143,7 +143,7 @@ void fn_800BE09C(void* arg, ShadowCamera* cam) {
 #endif
 
 // .text:0x800BE158 size:0x340
-// NONMATCHING 99%: f-register allocation; int->float magic constant is DATA (no .sdata2 split)
+// NONMATCHING 99.0%: f-register allocation; int->float magic constant is DATA (no .sdata2 split)
 #if NONMATCHING
 void fn_800BE158(ShadowCamera* shadow, ShadowCamera* cam) {
     Vec ground;
@@ -418,7 +418,7 @@ void fn_800BEBCC(u8 index, Vec dir) {
 }
 
 // .text:0x800BEC30 size:0x3D8
-// NONMATCHING 99%: register allocation of the arena pointers and the rodata Vec copy
+// NONMATCHING 99.0%: register allocation of the arena pointers and the rodata Vec copy
 #if NONMATCHING
 void fn_800BEC30(u8 numCameras) {
     ShadowDirTable dirs = lbl_800E8030;
@@ -1615,7 +1615,8 @@ void convertTextureHeader(TexArchive* hdr) {
 }
 
 // .text:0x800C07BC size:0x2D0
-// NONMATCHING 61%: original keeps half*size and the second-half pointers live across the self-inlined recursion
+// NONMATCHING 72%: the original keeps half*size and the second-half pointers live across the self-inlined
+// recursion and recomputes the memcpy addresses with mullw instead of strength-reducing them
 #if NONMATCHING
 void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(const void*, const void*)) {
     u32 half;
@@ -1623,25 +1624,26 @@ void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(cons
     u32 j;
     u32 k;
     void* src;
+    u32 hs;
 
     if (count > 1) {
         half = count >> 1;
+        hs = half * size;
         fn_800C07BC(base, tmp, half, size, compare);
-        fn_800C07BC((u8*)base + half * size, (u8*)tmp + half * size, count - half, size, compare);
-        memcpy(tmp, base, half * size);
-        k = 0;
+        fn_800C07BC((u8*)base + hs, (u8*)tmp + hs, count - half, size, compare);
+        memcpy(tmp, base, hs);
         j = half;
         i = 0;
+        k = 0;
         while (i < half && j < count) {
-            if (compare((u8*)tmp + i * size, (u8*)base + j * size) <= 0) {
+            if (compare((u8*)tmp + size * i, (u8*)base + size * j) <= 0) {
                 src = (u8*)tmp + i * size;
                 i++;
             } else {
                 src = (u8*)base + j * size;
                 j++;
             }
-            memcpy((u8*)base + k * size, src, size);
-            k++;
+            memcpy((u8*)base + size * k++, src, size);
         }
         if (i < half) {
             memcpy((u8*)base + k * size, (u8*)tmp + i * size, size * (half - i));
@@ -1649,3 +1651,9 @@ void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(cons
     }
 }
 #endif
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .sdata 0x803CBB68..0x803CBB70
+f32 lbl_803CBB68 = 20.0f;
+

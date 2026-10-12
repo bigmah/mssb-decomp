@@ -445,7 +445,7 @@ static inline void detachOwnedParts(s32 index) {
     }
 }
 
-// NONMATCHING 97%: r7/r8 swapped (active[i] pointer vs parts)
+// NONMATCHING 98.6%: r7/r8 swapped (active[i] pointer vs parts)
 #if NONMATCHING
 void fn_8001196C(void) {
     s32 i;
@@ -461,7 +461,7 @@ void fn_8001196C(void) {
 #endif
 
 // .text:0x80011A60 size:0x104
-// NONMATCHING 97%: register allocation only
+// NONMATCHING 99.0%: register allocation only
 #if NONMATCHING
 void fn_80011A60(void) {
     s32 i;
@@ -643,7 +643,7 @@ void fn_800126EC(CharPart* part, void* tex, u8* fileIdx) {
 
 // .text:0x800127F8 size:0x398
 
-// NONMATCHING 99%: register allocation only (actor/tex, joint-copy temps)
+// NONMATCHING 98.9%: register allocation only (actor/tex, joint-copy temps)
 #if NONMATCHING
 u8 LoadModel(CharActor* actor) {
     CharParts* parts;
@@ -2168,7 +2168,7 @@ s32 fn_80017340(s32 actorIdx) {
 #endif
 
 // .text:0x8001758C size:0x228
-// NONMATCHING 99%: actor->kind reload scheduled later, r9/r11 swap
+// NONMATCHING 98.2%: actor->kind reload scheduled later, r9/r11 swap
 #if NONMATCHING
 s32 fn_8001758C(u8* state, s32 actorIdx, u8 kind, u8 team, u8 roster, s8 arg5, u8 index, u8 arg7) {
     CharActor* actor = &lbl_8036E548.actors[actorIdx];
@@ -2219,20 +2219,17 @@ s32 fn_8001758C(u8* state, s32 actorIdx, u8 kind, u8 team, u8 roster, s8 arg5, u
 #endif
 
 // .text:0x800177B4 size:0x60
-// NONMATCHING 96%: argument load order (0x1A loaded first in original)
-#if NONMATCHING
 void fn_800177B4(void) {
     CharLoadTask* task = lbl_803CC1B8;
 
-    if (fn_8001758C(&task->state, task->actor, task->kind, task->team, task->roster, task->_1B, task->index, task->_1D) != 0) {
+    if (fn_8001758C(&task->state, task->actor, task->kind, task->team, (s32)task->roster, task->_1B, task->index, task->_1D) != 0) {
         lbl_8036E548.state = 2;
         fn_800B0A14_removeQueue(&lbl_8036E548);
     }
 }
-#endif
 
 // .text:0x80017814 size:0x514
-// NONMATCHING 95%: register allocation (joint temps, relocation base)
+// NONMATCHING 93.2%: register allocation (joint temps, relocation base)
 #if NONMATCHING
 void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(ActorObject*)) {
     ActorObject* slot = &lbl_8036E548.slots->objects[modelIndex];
@@ -2435,7 +2432,7 @@ void fn_80017D28(CharActor* src) {
 }
 
 // .text:0x80017DBC size:0x268
-// NONMATCHING 97%: argument load order around fn_800B2B74
+// NONMATCHING 97.4%: argument load order around fn_800B2B74
 #if NONMATCHING
 void fn_80017DBC(CharActor* actor, s32 modelIndex) {
     ActorObject* slot = &lbl_8036E548.slots->objects[modelIndex];
@@ -2704,7 +2701,7 @@ void fn_80018B38(void) {
 }
 
 // .text:0x80018B74 size:0x278
-// NONMATCHING 96%: size temporaries register allocation
+// NONMATCHING 95.7%: size temporaries register allocation
 #if NONMATCHING
 void fn_80018B74(void) {
     u32 max0 = 0;
@@ -2984,7 +2981,7 @@ void fn_80018DEC(s32 mode) {
 #endif
 
 // .text:0x800196D8 size:0x388
-// NONMATCHING 99%: relocation loop counter register
+// NONMATCHING 99.5%: relocation loop counter register
 #if NONMATCHING
 void fn_800196D8(void) {
     CharLoadTask* task = lbl_803CC1B8;
@@ -3049,7 +3046,7 @@ void fn_800196D8(void) {
 #endif
 
 // .text:0x80019A60 size:0x1A0
-// NONMATCHING 97%: light-table base register and colour temp stack slots
+// NONMATCHING 99.0%: light-table base register and colour temp stack slots
 #if NONMATCHING
 void fn_80019A60(void) {
     LightPos* lights = lbl_80367318;
@@ -3224,7 +3221,7 @@ void fn_80019C00(void) {
 #endif
 
 // .text:0x8001A25C size:0x1A0
-// NONMATCHING 99%: light-table base register and colour temp stack slots
+// NONMATCHING 99.0%: light-table base register and colour temp stack slots
 #if NONMATCHING
 void fn_8001A25C(void) {
     LightPos* lights = lbl_80367318;
@@ -3265,7 +3262,8 @@ void fn_8001A25C(void) {
 #endif
 
 // .text:0x8001A3FC size:0x2B4
-// NONMATCHING 62%: unrolled init loops and the 13-actor reset loop are laid out differently
+// NONMATCHING 73%: the original keeps count in a register (not folded) and unrolls the 13-actor reset
+// loop 3x with four peeled iterations; as a for loop it unrolls 6x, as a do-while not at all
 #if NONMATCHING
 void fn_8001A3FC(s32 arg) {
     s32 count;
@@ -3300,19 +3298,19 @@ void fn_8001A3FC(s32 arg) {
         p = _OSAllocFromHeap(0x20, (max + 0x1F) & ~0x1F);
         lbl_80118220[0].files = p;
         lbl_803CBC30 = p;
-        lbl_80118220[0]._61 = -1;
-        lbl_80118220[0].slot = 0xFF;
+        lbl_80118220[0].slot = lbl_80118220[0]._61 = -1;
     }
     fn_800145F8(arg);
     lbl_8036E548.partSlots = fn_80023AA4();
     fn_80018DEC(arg);
     fn_80023B04(0xD);
-    for (i = 0; i < 13; i++) {
+    i = 0;
+    do {
         lbl_8036E548.actors[i].modelIndex = i;
         lbl_8036E548.active[i] = NULL;
-        lbl_8036E548._2D6A[i] = -1;
-        lbl_8036E548.actors[i].roster = -1;
-    }
+        lbl_8036E548.actors[i].roster = lbl_8036E548._2D6A[i] = -1;
+        i++;
+    } while (i < 13);
     for (i = 0; i < 9; i++) {
         lbl_8036E548._2D7F[i] = -1;
     }
@@ -3324,7 +3322,7 @@ void fn_8001A3FC(s32 arg) {
 #endif
 
 // .text:0x8001A6B0 size:0x3F4
-// NONMATCHING 95%: mixed saved/rematerialised lbl_8036E548 base registers
+// NONMATCHING 99.5%: mixed saved/rematerialised lbl_8036E548 base registers
 #if NONMATCHING
 void challengeMapRelated(void) {
     CharLoadTask* task = lbl_803CC1B8;
@@ -3425,7 +3423,7 @@ void fn_8001AAF0(void) {
 }
 
 // .text:0x8001AB10 size:0x488
-// NONMATCHING 98%: early-return branch layout and register allocation
+// NONMATCHING 98.4%: early-return branch layout and register allocation
 #if NONMATCHING
 void fn_8001AB10(ActorObject* slot, Mtx view) {
     CharActor* actor = &lbl_8036E548.actors[slot->id];
@@ -3937,7 +3935,7 @@ void fn_8001BA44(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
 #endif
 
 // .text:0x8001BE50 size:0x3E4
-// NONMATCHING 96%: register allocation and joint-lookup scheduling
+// NONMATCHING 95.8%: register allocation and joint-lookup scheduling
 #if NONMATCHING
 void fn_8001BE50(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
     CharActor* actor = lbl_8036E548.active[index];
@@ -3991,15 +3989,13 @@ void fn_8001BE50(s32 index, s32 anim, u8 a, u8 b, s16 c, u8 d, u8 e) {
 #endif
 
 // .text:0x8001C234 size:0x2F4
-// NONMATCHING 98%: register allocation
-#if NONMATCHING
 void fn_8001C234(u32* doneMask) {
-    s32 i;
     CharActor* actor;
-    s32 j;
-    s32 n;
     f32 frames;
+    s32 i;
     f32 t;
+    s32 n;
+    s32 j;
 
     *doneMask = 0;
     for (i = 0; i < 13; i++) {
@@ -4063,7 +4059,6 @@ void fn_8001C234(u32* doneMask) {
         }
     }
 }
-#endif
 
 // .text:0x8001C528 size:0x60
 void fn_8001C528(void) {
@@ -4111,7 +4106,7 @@ fail:
 }
 
 // .text:0x8001C67C size:0x2A4
-// NONMATCHING 99%: joint offset/list registers swapped, mfcr scheduling
+// NONMATCHING 99.7%: joint offset/list registers swapped, mfcr scheduling
 #if NONMATCHING
 int fn_8001C67C_animation(int id, int index) {
     ActorObjectTable* list;
@@ -4264,7 +4259,7 @@ void fn_8001CBD4(void) {
 }
 
 // .text:0x8001CCC8 size:0x1AC
-// NONMATCHING 98%: scheduling of the stadium light setup
+// NONMATCHING 98.7%: scheduling of the stadium light setup
 #if NONMATCHING
 void fn_8001CCC8(void) {
     LightPos* lights = lbl_80367318;
@@ -4295,7 +4290,7 @@ void fn_8001CCC8(void) {
 #endif
 
 // .text:0x8001CE74 size:0x200
-// NONMATCHING 96%: light-table base register and scheduling
+// NONMATCHING 96.1%: light-table base register and scheduling
 #if NONMATCHING
 void fn_8001CE74(void) {
     LightPos* lp = lbl_80367318;
@@ -4359,7 +4354,7 @@ void fn_8001D148(s32 index, f32 x, f32 y, f32 z) {
 }
 
 // .text:0x8001D180 size:0x154
-// NONMATCHING 98%: register allocation only
+// NONMATCHING 96.2%: register allocation only
 #if NONMATCHING
 void fn_8001D180(s32 index, s32 which, s32 enable) {
     CharActor* actor = lbl_8036E548.active[index];
@@ -4644,7 +4639,7 @@ void fn_8001D2D4(void) {
 #endif
 
 // .text:0x8001DB74 size:0x1E4
-// NONMATCHING 95%: register allocation of the slot/camera loops
+// NONMATCHING 96.2%: register allocation of the slot/camera loops
 #if NONMATCHING
 void fn_8001DB74(ActorObjectTable* list) {
     u16 i;
@@ -4704,9 +4699,7 @@ void fn_8001DB74(ActorObjectTable* list) {
 #endif
 
 // .text:0x8001DD58 size:0x14C
-// NONMATCHING 98%: register allocation only
-#if NONMATCHING
-void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, s32 n, ...) {
+void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, u8 n, ...) {
     va_list args;
     GameBone* joint;
 
@@ -4729,7 +4722,6 @@ void fn_8001DD58(GameActor* model, s32 pass, MtxPtr view, s32 n, ...) {
         }
     }
 }
-#endif
 
 // .text:0x8001DEA4 size:0x234
 void fn_8001DEA4(ActorObject* slot, s32 pass, MtxPtr view) {
@@ -4737,7 +4729,7 @@ void fn_8001DEA4(ActorObject* slot, s32 pass, MtxPtr view) {
 }
 
 // .text:0x8001E0D8 size:0x388
-// NONMATCHING 99%: slot/loop-counter registers swapped
+// NONMATCHING 98.9%: slot/loop-counter registers swapped
 #if NONMATCHING
 void fn_8001E0D8(ActorObjectTable* list, s32 pass, Mtx view) {
     u8 last = 0xFF;
@@ -4797,12 +4789,12 @@ void fn_8001E474(void) {
 }
 
 // .text:0x8001E488 size:0x2FC
-// NONMATCHING 99%: slot/loop-counter registers swapped
+// NONMATCHING 99.4%: r25/r26 (view, slot->actor) swapped in the inlined drawSlot
 #if NONMATCHING
 void fn_8001E488(void) {
-    s32 i;
     CharActor* actor;
     ActorObject* slot;
+    s32 i;
     f32 x;
     f32 y;
     Mtx44 proj;
@@ -4852,7 +4844,8 @@ static inline void drawMinigameLayer(void) {
     minigamesGXStuff();
 }
 
-// NONMATCHING 64%: the original inlines fn_8001E488 (not compiled in the matching build since it is NONMATCHING); otherwise register allocation
+// NONMATCHING 93%: register allocation (measured with fn_8001E488 compiled, as in the NONMATCHING build;
+// the original inlines it, so this function only reaches 64% while fn_8001E488 is left out)
 #if NONMATCHING
 void fn_8001E784(void) {
     LightPos* lp;
@@ -4948,7 +4941,7 @@ void fn_8001E784(void) {
 #endif
 
 // .text:0x8001F16C size:0xBC
-// NONMATCHING 96%: loop counter and active[] walker swap r28/r30
+// NONMATCHING 99.1%: loop counter and active[] walker swap r28/r30
 #if NONMATCHING
 void fn_8001F16C(void) {
     ActorObjectTable* list;
@@ -5260,3 +5253,53 @@ void fn_8001FDD4(ActorObject* slot) {
         fn_800B9AA8(slot->lights[0]);
     }
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .bss 0x80118220..0x80118740 (MWCC lays these out in reverse definition order)
+CharPart lbl_80118220[13];
+
+// .sdata 0x803CB790..0x803CB7C8
+extern DiskFileEntry lbl_800F1D78[];
+DiskFileEntry *lbl_803CB790 = lbl_800F1D78;
+extern DiskFileEntry lbl_800F71D8[];
+DiskFileEntry *lbl_803CB794 = lbl_800F71D8;
+u16 lbl_803CB798[4] = {74, 75, 65535, 0};
+u16 lbl_803CB7A0[4] = {47, 52, 65535, 0};
+extern DiskFileEntry lbl_800F5D98[];
+DiskFileEntry *lbl_803CB7A8 = lbl_800F5D98;
+CharDrawCallback lbl_803CB7AC[2] = {NULL, NULL};
+u8 lbl_803CB7B4[8] = {19, 25, 20, 26, 74, 75, 60, 61};
+f32 lbl_803CB7BC = 2.0f;
+u8 lbl_803CB7C0 = 32;
+u8 lbl_803CB7C1 = 255;
+u8 lbl_803CB7C2 = 1;
+u8 lbl_803CB7C4[4] = {0, 1, 2, 3}; // NOTE: type size 0x4 != symbol size 0x1
+// lbl_803CB7C5 is part of the object above
+
+// .sbss 0x803CBBF0..0x803CBC40 (MWCC lays these out in reverse definition order)
+u8 lbl_803CBC3C[4];
+u8 lbl_803CBC34[8];
+void* lbl_803CBC30;
+u8 lbl_803CBC2C;
+s32 lbl_803CBC28;
+u8* lbl_803CBC24;
+CharParts* lbl_803CBC20;
+CharPart* lbl_803CBC1C;
+CharActor* lbl_803CBC18;
+u8 lbl_803CBC15;
+u8 lbl_803CBC14;
+CharPart* lbl_803CBC10;
+u8 lbl_803CBC0C;
+void* lbl_803CBC08;
+u8 lbl_803CBC04;
+void* lbl_803CBC00;
+u8 lbl_803CBBFD;
+u8 lbl_803CBBFC;
+u8 lbl_803CBBFB;
+u8 lbl_803CBBFA;
+u8 lbl_803CBBF9;
+u8 lbl_803CBBF8;
+void (*lbl_803CBBF4)(void);
+u32 lbl_803CBBF0;
+

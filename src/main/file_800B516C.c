@@ -141,7 +141,7 @@ static inline void QuatSlerp(Quaternion* p, Quaternion* q, Quaternion* r, f32 t)
     }
 }
 
-// NONMATCHING 97%: float register allocation only (original also uses f20)
+// NONMATCHING 97.3%: float register allocation only (original also uses f20)
 // .text:0x800B516C size:0x4A0
 #if NONMATCHING
 void Squad(Quaternion* p, Quaternion* a, Quaternion* b, Quaternion* q, Quaternion* r, f32 t) {
@@ -614,3 +614,12 @@ void ANIMBind(struct ANIMPipe* pipe, Control* control, struct ANIMAnimTrack* tra
         pipe->keyFrameCache = 0;
     }
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .sdata 0x803CBB48..0x803CBB58
+f32 lbl_803CBB48 = 6.1035156e-05f;
+f32 lbl_803CBB4C = 6.1035156e-05f;
+u8 lbl_803CBB50 = 3;
+u8 lbl_803CBB51 = 3; // NOTE: type size 0x1 != symbol size 0x7
+
