@@ -28,36 +28,36 @@ typedef struct ChTexViewTask {
     /*0x18*/ ChTexArchive* tex; // inside file
 } ChTexViewTask;
 
-// lbl_1_data_0
-typedef struct ChMenuData {
-    /*0x00*/ AssetLoadInstructions files[7];
-    /*0x70*/ ChTexDrawNode nodes[2]; // per frame buffer
-    /*0xA0*/ u32 mode;
-    /*0xA4*/ GXColor color;
-} ChMenuData;
-
-extern ChMenuData lbl_1_data_0;
 extern s32 lbl_1_bss_0; // texture shown by the viewer
 extern ChDrawNode lbl_1_data_298[2];
 
+// lbl_1_data_0 (0xA8 bytes): ARAM files of the challenge menu, the viewer's draw nodes and colour mode.
+// The original addresses all four through one .data base.
+// AssetLoadInstructions words (the stadium archive table, as lbl_3_data_10ACC in game).
+static u32 ch_files[7][4] = {
+    0x0000040B, 0x40022EF0, 0x07684800, 0x00016B18,
+    0x0000040B, 0x40020260, 0x0769B800, 0x00012864,
+    0x0000040B, 0x4002FDC0, 0x076AE800, 0x000207F8,
+    0x0000040B, 0x40024E2C, 0x076CF000, 0x000159AC,
+    0x0000040B, 0x4001CB88, 0x076E5000, 0x0000EE60,
+    0x0000040B, 0x40035BD0, 0x076F4000, 0x000257FC,
+    0x0000040B, 0x400397CC, 0x07719800, 0x00023FF4,
+};
+static ChTexDrawNode ch_nodes[2] = {{NULL, fn_1_1240}, {NULL, fn_1_1240}}; // per frame buffer
+static u32 ch_mode = 2; // ChTexDrawNode.mode
+static GXColor ch_color = {0xFF, 0xFF, 0xFF, 0xFF};
+
 // .text:0x00001538 size:0x94
 // Queues this frame's texture draw node.
-// NONMATCHING 59%: original keeps &lbl_1_data_0 in r31 across the call (needs the .data
-// split into this unit, see docs/patterns/regalloc.md)
-#if NONMATCHING
 void fn_1_1538(void) {
-    ChMenuData* data = &lbl_1_data_0;
     ChTexViewTask* task = lbl_803CC1B8;
-    ChTexDrawNode* node;
 
-    fn_800A7D4C(0, &data->nodes[lbl_803CBBC0]);
-    node = &data->nodes[lbl_803CBBC0];
-    node->tex = task->tex;
-    node->texIdx = lbl_1_bss_0;
-    node->mode = data->mode;
-    node->color = data->color;
+    fn_800A7D4C(0, &ch_nodes[lbl_803CBBC0]);
+    ch_nodes[lbl_803CBBC0].tex = task->tex;
+    ch_nodes[lbl_803CBBC0].texIdx = lbl_1_bss_0;
+    ch_nodes[lbl_803CBBC0].mode = ch_mode;
+    ch_nodes[lbl_803CBBC0].color = ch_color;
 }
-#endif
 
 // .text:0x000015CC size:0x68
 void fn_1_15CC(void) {
@@ -73,7 +73,7 @@ void fn_1_15CC(void) {
 // .text:0x00001634 size:0x6C
 void fn_1_1634(void) {
     if ((s32)lbl_803C6CF8[0x715] == 1) {
-        ((ChTexViewTask*)lbl_803CC1B8)->file = (s32*)ARAMTransfer(&lbl_1_data_0.files[3], 0, 0, 0);
+        ((ChTexViewTask*)lbl_803CC1B8)->file = (s32*)ARAMTransfer(ch_files[3], 0, 0, 0);
         ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_15CC;
     }
 }
