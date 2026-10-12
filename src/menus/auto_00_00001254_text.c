@@ -4,6 +4,8 @@
 #include "main/menu_globals.h"
 #include "menus/menu_work.h"
 #include "main/charsel_state.h"
+#include "main/file_8001FE00.h"
+#include "main/file_80008E00.h"
 #include <string.h>
 
 // This unit's .bss (emitted in reverse order of definition). Sizes are the
@@ -27,12 +29,10 @@ extern u32 fn_800628D4(s32 id);
 extern void fn_80050FE8(s32 p0, s32 p1, s32 p2, s32 p3, s32 arg4, s32 lockMode);
 extern void fn_2_7265C(void);
 extern s16 fn_80067AC8(s16 id, s8 col);
-extern u8 lbl_800EF808[];
 extern void fn_80021AC8(void);
 extern void fn_2_74D8C(void);
 extern s8 lbl_80108DB8[];
 extern u8 lbl_803CBBC4[];
-extern u8 lbl_800FEF70[];
 extern void fn_2_15A90(s32* value, s32 min, u8 max);
 extern void fn_2_836A4(void);
 extern void fn_2_85108(void);
@@ -46,7 +46,7 @@ extern u8 lbl_2_bss_DCE8[];
 extern u8 lbl_803C6028[];
 extern s32 fn_80050760(s32 p, s32 held, s32 pressed, s32 dirs, s32 mode);
 extern u8 lbl_2_data_180[];
-extern u8* lbl_803CC1B8;
+extern MenuTask* lbl_803CC1B8;
 extern u8 lbl_803CBCE0[];
 extern u8 lbl_803C6714[];
 extern void initializeUnknown(void);
@@ -70,7 +70,6 @@ extern void fn_80035CA4(s32 id);
 extern void fn_2_11A0(u16 value);
 extern void fn_80021AC0(s32 team, s32 slot);
 extern u8 lbl_2_data_E64[];
-extern u8 lbl_80366158[];
 extern void fn_800649BC(void);
 extern void fn_800671FC(void);
 extern void fn_800684A4(void);
@@ -101,14 +100,27 @@ extern MenuSelVars lbl_2_bss_F410;
 extern u8 lbl_800FDE84[];
 extern void fn_800506E8(s32, s32, s32);
 extern void fn_80050138(s32, s32, s32, s32, s32, s32);
-extern u8 lbl_80353B98[];
-extern u8 lbl_80354720[];
+extern MenuOrderEntry lbl_80353B98[2][9];
+extern MenuOrderEntry lbl_80354720[2][9];
 extern u8 lbl_803CB8D0[];
 extern u8 lbl_800E8754[];
 extern s16 randRange_FUN_80042bf0(s32, s32);
 extern u8 lbl_80109038[];
 extern s32 fn_80067B40(s32, u8, s32);
-extern u8 lbl_80108EDC[];
+// lbl_800EF808 is SoundManager (main/file_80021308.h), lbl_800FEF70 MenuDef[]
+// (main/file_800527C4.h); both headers clash with this unit's prototypes.
+typedef struct MenuSoundMgr1254 {
+    /*0x00*/ u32 _00;
+    /*0x04*/ void* groups[48];
+} MenuSoundMgr1254;
+extern MenuSoundMgr1254 lbl_800EF808;
+typedef struct MenuDef1254 {
+    /*0x00*/ u16 _00[4];
+    /*0x08*/ u16 track;
+    /*0x0A*/ u16 _0A[3];
+} MenuDef1254; // size: 0x10
+extern MenuDef1254 lbl_800FEF70[];
+extern s16 lbl_80108EDC[][5]; // character groups (5 ids each)
 extern u8 lbl_800EFBA4[];
 extern int sndFXStartEx(int, int, int, int);
 extern void fn_8004EEF4(s32, s32, s32, s32, s32);
@@ -119,8 +131,6 @@ extern void fn_800670A0(u8);
 #define CHALLENGE ((MenuCtx*)starMissionCompletionTracker)
 #define CHALLENGE_B ((u8*)starMissionCompletionTracker)
 extern u8 lbl_2_data_3CE0[];
-extern u8 lbl_8037169C[];
-extern void fn_800203E0(s32, s8);
 extern CaptainSelMenu lbl_2_bss_100B8;
 extern void fn_2_16A74(s32, s32);
 
@@ -310,7 +320,7 @@ void fn_2_2BB8(void) {
     for (i = 0; i < 2; i++) {
         s16* t = (s16*)lbl_2_data_E88;
         u8* pa = lbl_803C6724 + i * 9;
-        u8* pb = lbl_80354720 + i * 0x24;
+        MenuOrderEntry* pb = lbl_80354720[i];
         s32* pw = &lbl_8034E9A0.captain[i];
         s32 j;
         for (j = 0; j < 9; j++) {
@@ -325,12 +335,12 @@ void fn_2_2BB8(void) {
                 pa[2] = v;
                 pa[0x26] = CS_STATS(v)->chem[w];
             }
-            pb[2] = j;
-            pb[1] = j;
-            pb[0] = j;
+            pb->slot = j;
+            pb->_1 = j;
+            pb->_0 = j;
             t++;
             pa++;
-            pb += 4;
+            pb++;
         }
         fn_800670A0(i);
     }
@@ -349,7 +359,7 @@ void fn_2_5F80(void) {
     for (i = 0; i < 2; i++) {
         for (j = 0; j < 9; j++) {
             for (k = 0; k < 9; k++) {
-                if (*(s8*)(lbl_80354720 + i * 0x24 + j * 4 + 2) == *(s8*)(lbl_80354720 + i * 0x24 + k * 4 + 2)) {
+                if (*(s8*)&lbl_80354720[i][j].slot == *(s8*)&lbl_80354720[i][k].slot) {
                     (lbl_803C6724 + i * 9 + j)[2] = inMemRoster[i][k].stats.CharID;
                 }
             }
@@ -600,7 +610,7 @@ s8 fn_2_C324(s32 id) {
     r = -1;
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 5; j++) {
-            if (id == *(s16*)(lbl_80108EDC + i * 10 + j * 2)) {
+            if (id == lbl_80108EDC[i][j]) {
                 r = i;
                 goto found;
             }
@@ -613,7 +623,7 @@ found:
     for (k = 0; k < 9; k++) {
         v = inMemRoster[0][k].stats.CharID;
         for (j = 0; j < 5; j++) {
-            if (v == *(s16*)(lbl_80108EDC + r * 10 + j * 2) && v != id) {
+            if (v == lbl_80108EDC[r][j] && v != id) {
                 return r;
             }
         }
@@ -627,7 +637,7 @@ void fn_2_A040(s32 a, s32 b, u8 c, u8 d) {
     s32 n;
     s32 i;
     s32 j;
-    t = (s16*)(lbl_80108EDC + a * 10);
+    t = lbl_80108EDC[a];
     if (t[b] != -1 && b < 4) {
         n = b + 1;
         if (n == 5 || t[n] == -1) {
@@ -660,8 +670,8 @@ void fn_2_B508(void) {
         }
     }
     for (i = 1; i < 9; i++) {
-        lbl_80354720[0x26 + i * 4] = i;
-        lbl_80353B98[0x26 + i * 4] = i;
+        lbl_80354720[1][i].slot = i;
+        lbl_80353B98[1][i].slot = i;
         lbl_803C6724[0xB + i] = 0x36;
         lbl_803C6724[0x53 + i] = 0;
     }
@@ -703,7 +713,7 @@ void fn_2_52CC(void) {
 
 // fn_2_86EC, size:0x94
 void fn_2_86EC(void) {
-    if (g_d_GameSettings.GameModeSelected == 5 && lbl_8037169C[0x12] == 0) {
+    if (g_d_GameSettings.GameModeSelected == 5 && lbl_8037169C.done == 0) {
         fn_800203E0(0xA, lbl_2_data_3CE0[CHALLENGE->_441E]);
     }
     fn_2_7DDC();
@@ -922,18 +932,18 @@ void fn_2_6784(void) {
             lbl_803C6724[i + 0x53] = 1;
             lbl_8034E9A0.charFlag[v] = 1;
         }
-        lbl_80354720[i * 4 + 0x24] = i;
-        lbl_80354720[i * 4 + 0x26] = i;
-        lbl_80354720[i * 4 + 0x25] = i;
+        lbl_80354720[1][i]._0 = i;
+        lbl_80354720[1][i].slot = i;
+        lbl_80354720[1][i]._1 = i;
     }
 }
 
 static inline void fn_2_87A8_work(s32 prev) {
-    u8* pad;
+    MenuPad* pad;
     u16 b;
-    pad = (u8*)&lbl_803C77B8;
-    pad += *(s8*)&lbl_8034E9A0.ports[0] * 0x20;
-    b = *(u16*)(pad + 4);
+    pad = (MenuPad*)&lbl_803C77B8;
+    pad += *(s8*)&lbl_8034E9A0.ports[0];
+    b = pad->repeat;
     if (b & 8) {
         if ((lbl_2_bss_F410._4C = prev - 1) < 0) {
             lbl_2_bss_F410._4C = 3;
@@ -950,14 +960,14 @@ static inline void fn_2_87A8_work(s32 prev) {
             fn_800625A4(0, 0x20);
         }
         ((void (*)(u32))fn_2_1C34)(4);
-    } else if (*(u16*)(pad + 2) & 0x200) {
+    } else if (pad->down & 0x200) {
         lbl_2_bss_F468._33 = 2;
         lbl_2_bss_F468._34 = 0;
         lbl_2_bss_F468._35 = 1;
         lbl_803C5EA4._0E = 1;
         fn_800625A4(1, 0x1F);
         ((void (*)(u32))fn_2_1C34)(0x200);
-    } else if (*(u16*)(pad + 2) & 0x100) {
+    } else if (pad->down & 0x100) {
         lbl_800E8754[3] = lbl_803CB8D0[prev];
         fn_800625A4(0, 0x21);
         lbl_2_bss_F468._33 = 2;
@@ -1207,38 +1217,38 @@ void fn_2_B324(void) {
     s32 base0 = lbl_8034E9A0.captain[0];
     s32 base1 = lbl_8034E9A0.captain[1];
     for (i = 0; i < 9; i++) {
-        lbl_80354720[i * 4 + 0] = i;
-        lbl_80354720[i * 4 + 0x24] = i;
-        lbl_80354720[i * 4 + 1] = i;
-        lbl_80354720[i * 4 + 0x25] = i;
-        lbl_80354720[i * 4 + 2] = i;
-        lbl_80354720[i * 4 + 0x26] = i;
-        lbl_80354720[i * 4 + 3] = 1;
-        lbl_80354720[i * 4 + 0x27] = 1;
-        lbl_80353B98[i * 4 + 0] = i;
-        lbl_80353B98[i * 4 + 0x24] = i;
-        lbl_80353B98[i * 4 + 1] = i;
-        lbl_80353B98[i * 4 + 0x25] = i;
-        lbl_80353B98[i * 4 + 2] = i;
-        lbl_80353B98[i * 4 + 0x26] = i;
+        lbl_80354720[0][i]._0 = i;
+        lbl_80354720[1][i]._0 = i;
+        lbl_80354720[0][i]._1 = i;
+        lbl_80354720[1][i]._1 = i;
+        lbl_80354720[0][i].slot = i;
+        lbl_80354720[1][i].slot = i;
+        lbl_80354720[0][i]._3 = 1;
+        lbl_80354720[1][i]._3 = 1;
+        lbl_80353B98[0][i]._0 = i;
+        lbl_80353B98[1][i]._0 = i;
+        lbl_80353B98[0][i]._1 = i;
+        lbl_80353B98[1][i]._1 = i;
+        lbl_80353B98[0][i].slot = i;
+        lbl_80353B98[1][i].slot = i;
         inMemRoster[0][i].stats.CharID = base0 + i;
         inMemRoster[1][i].stats.CharID = base1 + i;
     }
     for (; i < 9; i++) {
-        lbl_80354720[i * 4 + 0] = i;
-        lbl_80354720[i * 4 + 0x24] = i;
-        lbl_80354720[i * 4 + 1] = -1;
-        lbl_80354720[i * 4 + 0x25] = -1;
-        lbl_80354720[i * 4 + 2] = -1;
-        lbl_80354720[i * 4 + 0x26] = -1;
-        lbl_80354720[i * 4 + 3] = -1;
-        lbl_80354720[i * 4 + 0x27] = -1;
-        lbl_80353B98[i * 4 + 0] = i;
-        lbl_80353B98[i * 4 + 0x24] = i;
-        lbl_80353B98[i * 4 + 1] = -1;
-        lbl_80353B98[i * 4 + 0x25] = -1;
-        lbl_80353B98[i * 4 + 2] = -1;
-        lbl_80353B98[i * 4 + 0x26] = -1;
+        lbl_80354720[0][i]._0 = i;
+        lbl_80354720[1][i]._0 = i;
+        lbl_80354720[0][i]._1 = -1;
+        lbl_80354720[1][i]._1 = -1;
+        lbl_80354720[0][i].slot = -1;
+        lbl_80354720[1][i].slot = -1;
+        lbl_80354720[0][i]._3 = -1;
+        lbl_80354720[1][i]._3 = -1;
+        lbl_80353B98[0][i]._0 = i;
+        lbl_80353B98[1][i]._0 = i;
+        lbl_80353B98[0][i]._1 = -1;
+        lbl_80353B98[1][i]._1 = -1;
+        lbl_80353B98[0][i].slot = -1;
+        lbl_80353B98[1][i].slot = -1;
         inMemRoster[0][i].stats.CharID = 0;
         inMemRoster[1][i].stats.CharID = 0;
     }
@@ -1264,8 +1274,8 @@ void fn_2_FAA0(s32 team) {
             fn_80067B40(team, id, 1);
             for (g = 0; g < 9; g++) {
                 for (k = 0; k < 5; k++) {
-                    if (id == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
-                        s16* grp = (s16*)(lbl_80108EDC + g * 10);
+                    if (id == lbl_80108EDC[g][k]) {
+                        s16* grp = lbl_80108EDC[g];
                         lbl_8034E9A0.charFlag[grp[1]] = 1;
                         lbl_8034E9A0.charFlag[grp[2]] = 1;
                         lbl_8034E9A0.charFlag[grp[3]] = 1;
@@ -1324,9 +1334,9 @@ void fn_2_11EA8(void) {
         sel = *(s8*)(lbl_803C6724 + i + 2);
         src = CS_STATS(sel);
         MENU_COPY_CHAR_STATS(&g_Roster[i], src);
-        lbl_80354720[i * 4 + 2] = i;
-        lbl_80354720[i * 4 + 1] = i;
-        lbl_80354720[i * 4 + 0] = i;
+        lbl_80354720[0][i].slot = i;
+        lbl_80354720[0][i]._1 = i;
+        lbl_80354720[0][i]._0 = i;
     }
 }
 
@@ -1403,7 +1413,7 @@ void fn_2_110B0(void) {
         break;
     case 2:
         if (g_d_GameSettings.GameModeSelected == 5) {
-            ok = lbl_8037169C[0x12];
+            ok = lbl_8037169C.done;
         } else {
             ok = 1;
         }
@@ -1499,9 +1509,9 @@ void fn_2_6AF4(void) {
     }
     for (i = 0; i < 9; i++) {
         id = lbl_8034E9A0.presets[idx][i];
-        lbl_80354720[0x24 + i * 4] = i;
-        lbl_80354720[0x26 + i * 4] = i;
-        lbl_80354720[0x25 + i * 4] = i;
+        lbl_80354720[1][i]._0 = i;
+        lbl_80354720[1][i].slot = i;
+        lbl_80354720[1][i]._1 = i;
         lbl_803C6724[0xB + i] = ((MenuCharStats*)&lbl_8034E9A0.roster[(u8)(id / 9)][(u8)(id % 9)])->h24;
         lbl_803C6724[0x53 + i] = 1;
     }
@@ -1521,9 +1531,9 @@ void fn_2_6AF4(void) {
 void fn_2_CA60(u8 slot, s32 team) {
     s32 v = (s8)(lbl_803C6724 + (u8)team * 9)[slot + 2];
     if (v != -1 && v != 0x36) {
-        u8* order = lbl_80354720 + (u8)team * 0x24;
-        order[slot * 4 + 1] = slot;
-        order[slot * 4 + 0] = slot;
+        MenuOrderEntry* order = lbl_80354720[(u8)team];
+        order[slot]._1 = slot;
+        order[slot]._0 = slot;
         g_Roster[(u8)team * 9 + slot].h24 = v;
     } else {
         fn_2_A1A0(slot, team);
@@ -1542,15 +1552,15 @@ void fn_2_6884(void) {
     for (i = 0; i < 9; i++) {
         s16 id = CHALLENGE->order[i].charId;
         lbl_803C6724[i + 2] = id;
-        lbl_80354720[i * 4 + 1] = CHALLENGE->order[i]._2;
-        lbl_80354720[i * 4 + 0] = i;
+        lbl_80354720[0][i]._1 = CHALLENGE->order[i]._2;
+        lbl_80354720[0][i]._0 = i;
         lbl_803C6724[i + 0x4A] = 1;
-        lbl_80354720[i * 4 + 2] = i;
+        lbl_80354720[0][i].slot = i;
         lbl_8034E9A0.charFlag[(u8)id] = 1;
         g = fn_2_C324((u8)id);
         if (g != -1) {
             for (k = 0; k < 5; k++) {
-                s16 v = *(s16*)(lbl_80108EDC + g * 10 + k * 2);
+                s16 v = lbl_80108EDC[g][k];
                 if (v != -1) {
                     lbl_8034E9A0.charFlag[v] = 1;
                 }
@@ -1567,18 +1577,18 @@ void fn_2_6884(void) {
 void fn_2_C7DC(u8 slot, s32 team) {
     s32 id;
     s32 j;
-    u8* order;
-    u8* order2;
+    MenuOrderEntry* order;
+    MenuOrderEntry* order2;
     if (slot == 0) {
-        order = lbl_80354720 + (u8)team * 0x24 + slot * 4;
-        order2 = lbl_80353B98 + (u8)team * 0x24 + slot * 4;
-        order[1] = slot;
-        order2[1] = slot;
-        order2[0] = slot;
-        order[0] = slot;
-        order[2] = slot;
+        order = &lbl_80354720[(u8)team][slot];
+        order2 = &lbl_80353B98[(u8)team][slot];
+        order->_1 = slot;
+        order2->_1 = slot;
+        order2->_0 = slot;
+        order->_0 = slot;
+        order->slot = slot;
         g_Roster[(u8)team * 9 + slot].h24 = lbl_8034E9A0.captain[(u8)team];
-        order2[2] = slot;
+        order2->slot = slot;
         return;
     }
 retry:
@@ -1591,15 +1601,15 @@ retry:
             goto retry;
         }
     }
-    order = lbl_80354720 + (u8)team * 0x24 + slot * 4;
-    order2 = lbl_80353B98 + (u8)team * 0x24 + slot * 4;
-    order[1] = slot;
-    order[0] = slot;
-    order2[1] = slot;
-    order2[0] = slot;
-    order[2] = slot;
+    order = &lbl_80354720[(u8)team][slot];
+    order2 = &lbl_80353B98[(u8)team][slot];
+    order->_1 = slot;
+    order->_0 = slot;
+    order2->_1 = slot;
+    order2->_0 = slot;
+    order->slot = slot;
     g_Roster[(u8)team * 9 + slot].h24 = id;
-    order2[2] = slot;
+    order2->slot = slot;
     fn_2_C698(slot, team);
 }
 #endif
@@ -1658,10 +1668,10 @@ void fn_2_1800(void) {
     }
     if (b.down & 0x100) {
         fn_2_1DC8();
-        lbl_80366158[0x27] = 0;
+        lbl_80366158._27 = 0;
         sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
     } else if (b.down & 0x200) {
-        lbl_80366158[0x29] = 2;
+        lbl_80366158._29 = 2;
         lbl_8034E9A0._472A = 0;
         lbl_803CBBCC->step = 6;
         sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
@@ -1694,10 +1704,10 @@ void fn_2_1578(void) {
     }
     if (b.down & 0x100) {
         fn_2_1DC8();
-        lbl_80366158[0x27] = 0;
+        lbl_80366158._27 = 0;
         sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
     } else if (b.down & 0x200) {
-        lbl_80366158[0x29] = 2;
+        lbl_80366158._29 = 2;
         lbl_8034E9A0._472A = 0;
         lbl_803CBBCC->step = 6;
         sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
@@ -1736,9 +1746,9 @@ void fn_2_2D1C(void) {
     }
     for (t = 0; t < 2; t++) {
         for (i = 0; i < 9; i++) {
-            lbl_80354720[t * 0x24 + i * 4 + 2] = i;
-            lbl_80354720[t * 0x24 + i * 4 + 1] = i;
-            lbl_80354720[t * 0x24 + i * 4 + 0] = i;
+            lbl_80354720[t][i].slot = i;
+            lbl_80354720[t][i]._1 = i;
+            lbl_80354720[t][i]._0 = i;
         }
     }
 }
@@ -2027,7 +2037,7 @@ void fn_2_5444(u8 team) {
             CHALLENGE->order[i]._2 = i;
             CHALLENGE->order[i]._3 = pos;
             g_Roster[i].h24 = id;
-            lbl_80354720[i * 4 + 2] = pos;
+            lbl_80354720[0][i].slot = pos;
         }
         fn_800625A4(0, 0x13);
         fn_800625A4(1, 0x13);
@@ -2072,7 +2082,7 @@ void fn_2_8940(void) {
             src = CS_STATS(sel);
             dst = &g_Roster[t * 9 + i];
             MENU_COPY_CHAR_STATS(dst, src);
-            lbl_80354720[t * 0x24 + i * 4 + 2] = lbl_803C6724[t * 9 + i + 0x14];
+            lbl_80354720[t][i].slot = lbl_803C6724[t * 9 + i + 0x14];
             if (t == 0 && g_d_GameSettings.GameModeSelected == 5) {
                 s32 v = lbl_2_bss_3A8[CHALLENGE->order[i].charId];
                 dst->b26 = v >> 1;
@@ -2191,7 +2201,7 @@ void fn_2_27E0(void) {
         break;
     case 10:
         if (lbl_803CBCE0[0] == 0) {
-            v = *(s16*)(lbl_803CC1B8 + 0x10);
+            v = lbl_803CC1B8->_10;
             if (v == 1 || v == 0xB) {
                 lbl_803CBCE0[0] = 1;
                 lbl_80361B20._DE[0] = 1;
@@ -2352,14 +2362,14 @@ s32 fn_2_ED94(u8 team, u16 held, u16 pressed, s32 dirs) {
     do {                                                                          \
         MenuCharStats* dst = &g_Roster[(t) * 9 + (i)];                            \
         MenuCharStats* src = &((MenuCharStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
-        u8* order = lbl_80354720 + (t) * 0x24 + (i) * 4;                          \
-        u8* saved = lbl_2_bss_DCE8 + (t) * 0x24 + (i) * 4;                        \
+        MenuOrderEntry* order = &lbl_80354720[(t)][(i)];                          \
+        MenuOrderEntry* saved = &((MenuOrderEntry(*)[9])lbl_2_bss_DCE8)[(t)][(i)];                        \
         MENU_COPY_CHAR_STATS(dst, src);                                           \
-        order[0] = saved[0];                                                      \
-        order[1] = saved[1];                                                      \
-        order[2] = saved[2];                                                      \
+        order->_0 = saved->_0;                                                      \
+        order->_1 = saved->_1;                                                      \
+        order->slot = saved->slot;                                                      \
         dst->h24 = lbl_8034E9A0.captain[(t)];                      \
-        order[3] = saved[3];                                                      \
+        order->_3 = saved->_3;                                                      \
     } while (0)
 
 // NONMATCHING 90%: same instructions modulo induction registers (r18-r22 vs r26-r31)
@@ -2477,7 +2487,7 @@ void fn_2_95D8(void) {
             }
             for (i = 0; i < 9; i++) {
                 for (j = 0; j < 9; j++) {
-                    if (i == (s8)lbl_80354720[t * 0x24 + j * 4 + 1]) {
+                    if (i == (s8)lbl_80354720[t][j]._1) {
                         break;
                     }
                 }
@@ -2565,7 +2575,7 @@ void fn_2_FCB4(u8 team) {
     for (i = 0; i < 0x36; i++) {
         for (g = 0; g < 9; g++) {
             for (k = 1; k < 5; k++) {
-                if (lbl_8034E9A0.chemOrder[team][i] == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
+                if (lbl_8034E9A0.chemOrder[team][i] == lbl_80108EDC[g][k]) {
                     lbl_8034E9A0.charFlag[lbl_8034E9A0.chemOrder[team][i]] = 1;
                 }
             }
@@ -2613,8 +2623,8 @@ void fn_2_FCB4(u8 team) {
         fn_80067B40(team, id, 1);
         for (g = 0; g < 9; g++) {
             for (k = 0; k < 5; k++) {
-                if (id == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
-                    grp = (s16*)(lbl_80108EDC + g * 10);
+                if (id == lbl_80108EDC[g][k]) {
+                    grp = lbl_80108EDC[g];
                     id = grp[0];
                     for (k = 0; k < 5; k++) {
                         s16 m = grp[k];
@@ -2636,7 +2646,7 @@ void fn_2_FCB4(u8 team) {
         row[i + 0x26] = CS_STATS(id)->chem[cap];
     }
     for (i = 0; i < 45; i++) {
-        lbl_8034E9A0.charFlag[((s16*)lbl_80108EDC)[i]] = 0;
+        lbl_8034E9A0.charFlag[lbl_80108EDC[0][i]] = 0;
     }
     ot = team ^ 1;
     other = lbl_803C6724 + ot * 9;
@@ -2718,8 +2728,8 @@ void fn_2_B920(void) {
         fn_2_CA60(i, 0);
     }
     for (i = 0; i < 9; i++) {
-        lbl_80354720[0x26 + i * 4] = i;
-        lbl_80353B98[0x26 + i * 4] = i;
+        lbl_80354720[1][i].slot = i;
+        lbl_80353B98[1][i].slot = i;
         lbl_803C6724[0xB + i] = (i == 0) ? (s8)lbl_8034E9A0.captain[1] : 0x36;
         lbl_803C6724[0x53 + i] = (i == 0) ? 1 : 0;
     }
@@ -2908,10 +2918,10 @@ void fn_2_6D3C(void) {
                 return;
             }
             if (lbl_2_bss_F468._2D == 1) {
-                if (*(s16*)(lbl_803CC1B8 + 0x10) == 0) {
+                if (lbl_803CC1B8->_10 == 0) {
                     return;
                 }
-                *(s16*)(lbl_803CC1B8 + 0x10) = 0;
+                lbl_803CC1B8->_10 = 0;
                 initializeUnknown();
                 fn_800B0A5C_insertQueue(fn_80062A94, 0x1000);
                 lbl_2_bss_F468._2D = 0;
@@ -2999,7 +3009,7 @@ void fn_2_11698(void) {
         if (lbl_803C66B0.active[0] == 0 && lbl_803C66B0.active[1] == 0) {
             lbl_8034E978.menu = 5;
             lbl_8034E978.prevTrack = lbl_8034E978.track;
-            lbl_8034E978.track = *(u16*)(lbl_800FEF70 + 0x58);
+            lbl_8034E978.track = lbl_800FEF70[5].track;
             lbl_803C5EA4._36 = 1;
             lbl_803C5EA4.prevMode = lbl_803C5EA4.mode;
             lbl_803C5EA4.mode = 2;
@@ -3291,8 +3301,8 @@ void fn_2_F200(u8 team) {
         fn_80067B40(team, id, 1);
         for (g = 0; g < 9; g++) {
             for (k = 0; k < 5; k++) {
-                if (id == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
-                    s16* grp = (s16*)(lbl_80108EDC + g * 10);
+                if (id == lbl_80108EDC[g][k]) {
+                    s16* grp = lbl_80108EDC[g];
                     lbl_8034E9A0.charFlag[grp[1]] = 1;
                     lbl_8034E9A0.charFlag[grp[2]] = 1;
                     id = grp[0];
@@ -3371,7 +3381,7 @@ void fn_2_1F30(void) {
             fn_80062A74();
             fn_2_1F30_unload();
             fn_80021410();
-            fn_800ACFB0(*(void**)(lbl_800EF808 + 0x98));
+            fn_800ACFB0(lbl_800EF808.groups[37]);
             fn_2_11A0(4);
         }
         lbl_2_bss_20[0] = 0;
@@ -3440,7 +3450,7 @@ void fn_2_1F30(void) {
         fn_80062A74();
         fn_2_1F30_unload();
         fn_80021410();
-        fn_800ACFB0(*(void**)(lbl_800EF808 + 0x98));
+        fn_800ACFB0(lbl_800EF808.groups[37]);
         fn_2_11A0(7);
         lbl_2_bss_20[0] = 0;
         break;
@@ -3470,7 +3480,7 @@ static void fn_2_4970_release(u8 team, s32 slot) {
     } else if (fn_80067B40(team, row[slot + 2], 2) != 0) {
         for (i = 0; i < 9; i++) {
             for (k = 0; k < 5; k++) {
-                if ((s8)row[slot + 2] == *(s16*)(lbl_80108EDC + i * 10 + k * 2)) {
+                if ((s8)row[slot + 2] == lbl_80108EDC[i][k]) {
                     g = i;
                     goto found;
                 }
@@ -3479,7 +3489,7 @@ static void fn_2_4970_release(u8 team, s32 slot) {
     found:
         for (i = 0; i < 9; i++) {
             for (k = 0; k < 5; k++) {
-                s16 m = *(s16*)(lbl_80108EDC + g * 10 + k * 2);
+                s16 m = lbl_80108EDC[g][k];
                 if ((s8)row[i + 2] == m && m != -1 && (s8)row[i + 2] != (s8)row[slot + 2]) {
                     dup = 1;
                 }
@@ -3642,13 +3652,13 @@ void fn_2_7504(void) {
     do {                                                                          \
         MenuCharStats* src = &g_Roster[(t) * 9 + (i)];                            \
         MenuCharStats* dst = &((MenuCharStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
-        u8* order = lbl_80354720 + (t) * 0x24 + (i) * 4;                          \
-        u8* saved = lbl_2_bss_DCE8 + (t) * 0x24 + (i) * 4;                        \
+        MenuOrderEntry* order = &lbl_80354720[(t)][(i)];                          \
+        MenuOrderEntry* saved = &((MenuOrderEntry(*)[9])lbl_2_bss_DCE8)[(t)][(i)];                        \
         MENU_COPY_CHAR_STATS(dst, src);                                           \
-        saved[0] = order[0];                                                      \
-        saved[1] = order[1];                                                      \
-        saved[2] = order[2];                                                      \
-        saved[3] = order[3];                                                      \
+        saved->_0 = order->_0;                                                      \
+        saved->_1 = order->_1;                                                      \
+        saved->slot = order->slot;                                                      \
+        saved->_3 = order->_3;                                                      \
         lbl_2_bss_3E4[(t) * 9 + (i)] = src->h24;                                  \
     } while (0)
 
@@ -3656,13 +3666,13 @@ void fn_2_7504(void) {
     do {                                                                          \
         MenuCharStats* dst = &g_Roster[(t) * 9 + (i)];                            \
         MenuCharStats* src = &((MenuCharStats*)lbl_2_bss_E8CC)[(t) * 9 + (i)];    \
-        u8* order = lbl_80354720 + (t) * 0x24 + (i) * 4;                          \
-        u8* saved = lbl_2_bss_DCE8 + (t) * 0x24 + (i) * 4;                        \
+        MenuOrderEntry* order = &lbl_80354720[(t)][(i)];                          \
+        MenuOrderEntry* saved = &((MenuOrderEntry(*)[9])lbl_2_bss_DCE8)[(t)][(i)];                        \
         MENU_COPY_CHAR_STATS(dst, src);                                           \
-        order[0] = saved[0];                                                      \
-        order[1] = saved[1];                                                      \
-        order[2] = saved[2];                                                      \
-        order[3] = saved[3];                                                      \
+        order->_0 = saved->_0;                                                      \
+        order->_1 = saved->_1;                                                      \
+        order->slot = saved->slot;                                                      \
+        order->_3 = saved->_3;                                                      \
         dst->h24 = lbl_2_bss_3E4[(t) * 9 + (i)];                                  \
     } while (0)
 
@@ -3775,8 +3785,8 @@ void fn_2_7DDC(void) {
             if (fn_80067B40(0, lbl_803C6724[i + 2], 2) != 0) {
                 for (g = 0; g < 9; g++) {
                     for (k = 0; k < 5; k++) {
-                        if ((s8)lbl_803C6724[i + 2] == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
-                            s16* grp = (s16*)(lbl_80108EDC + g * 10);
+                        if ((s8)lbl_803C6724[i + 2] == lbl_80108EDC[g][k]) {
+                            s16* grp = lbl_80108EDC[g];
                             s32 m;
                             for (m = 0; m < 5; m++) {
                                 if (grp[m] == -1) {
@@ -3961,7 +3971,7 @@ void fn_2_DFAC(u8 team) {
             if (fn_80067B40(team, row[slot + 2], 2) != 0) {
                 for (i = 0; i < 9 && g == -1; i++) {
                     for (k = 0; k < 5; k++) {
-                        if ((s8)row[slot + 2] == *(s16*)(lbl_80108EDC + i * 10 + k * 2)) {
+                        if ((s8)row[slot + 2] == lbl_80108EDC[i][k]) {
                             g = i;
                             break;
                         }
@@ -3970,7 +3980,7 @@ void fn_2_DFAC(u8 team) {
                 if (g != -1) {
                     for (i = 0; i < 9; i++) {
                         for (k = 0; k < 5; k++) {
-                            s16 m = *(s16*)(lbl_80108EDC + g * 10 + k * 2);
+                            s16 m = lbl_80108EDC[g][k];
                             if ((s8)row[i + 2] == m && i != slot && m != -1) {
                                 goto assign;
                             }
@@ -4071,7 +4081,7 @@ void fn_2_104FC(u16 port) {
             lbl_2_bss_F468._50[team] = 0;
             for (g = 0; g < 9; g++) {
                 for (k = 0; k < 5; k++) {
-                    if (v == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
+                    if (v == lbl_80108EDC[g][k]) {
                         lbl_2_bss_F468._50[team] = 1;
                         goto found;
                     }
@@ -4630,7 +4640,7 @@ void fn_2_3624(u8 port) {
                     CHALLENGE->order[i]._2 = i;
                     CHALLENGE->order[i]._3 = pos;
                     g_Roster[i].h24 = id;
-                    lbl_80354720[i * 4 + 2] = pos;
+                    lbl_80354720[0][i].slot = pos;
                 }
                 lbl_2_bss_F468._2E = 0;
                 lbl_2_bss_100B4 = 1;
@@ -4710,7 +4720,7 @@ void fn_2_3624(u8 port) {
         lbl_2_bss_F468._50[team] = 0;
         for (g = 0; g < 9; g++) {
             for (k = 0; k < 5; k++) {
-                if (v == *(s16*)(lbl_80108EDC + g * 10 + k * 2)) {
+                if (v == lbl_80108EDC[g][k]) {
                     lbl_2_bss_F468._50[team] = 1;
                     goto found;
                 }
