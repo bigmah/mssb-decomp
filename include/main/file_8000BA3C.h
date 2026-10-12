@@ -44,6 +44,15 @@ typedef TexArchive SpriteBank;
 
 // Generic sprite element header.
 typedef struct SpriteElem {
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /* 0x00 */ u8 type : 4;
+    /* 0x00 */ u8 unk0_b0 : 4;
+    /* 0x01 */ u8 unk1_b4 : 4;
+    /* 0x01 */ u8 perCorner : 1; // per-corner vertex colors
+    /* 0x01 */ u8 unk1_b2 : 1;
+    /* 0x01 */ u8 flipY : 1;
+    /* 0x01 */ u8 flipX : 1;
+#else
     /* 0x00 */ u8 unk0_b0 : 4;
     /* 0x00 */ u8 type : 4;
     /* 0x01 */ u8 flipX : 1;
@@ -51,6 +60,7 @@ typedef struct SpriteElem {
     /* 0x01 */ u8 unk1_b2 : 1;
     /* 0x01 */ u8 perCorner : 1; // per-corner vertex colors
     /* 0x01 */ u8 unk1_b4 : 4;
+#endif
     /* 0x02 */ u16 texIdx;
 } SpriteElem;
 
@@ -58,10 +68,17 @@ typedef struct SpriteElem {
 typedef struct SpriteRectElem {
     /* 0x00 */ u8 pad0[6];
     /* 0x06 */ u16 texIdx;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /* 0x08 */ u8 unk8_b4 : 5;
+    /* 0x08 */ u8 perCorner : 1; // per-corner vertex colors
+    /* 0x08 */ u8 flipY : 1;
+    /* 0x08 */ u8 flipX : 1;
+#else
     /* 0x08 */ u8 flipX : 1;
     /* 0x08 */ u8 flipY : 1;
     /* 0x08 */ u8 perCorner : 1; // per-corner vertex colors
     /* 0x08 */ u8 unk8_b4 : 5;
+#endif
 } SpriteRectElem;
 
 // Filled circle element.
@@ -70,8 +87,13 @@ typedef struct CircleElem {
     /* 0x18 */ s16 unk18;
     /* 0x1A */ s16 z;
     /* 0x1C */ u8 pad1C[0xD];
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /* 0x29 */ u8 unk29_b1 : 7;
+    /* 0x29 */ u8 hidden : 1;
+#else
     /* 0x29 */ u8 hidden : 1;
     /* 0x29 */ u8 unk29_b1 : 7;
+#endif
 } CircleElem;
 
 // Circle element (screen-space variant).
@@ -80,8 +102,13 @@ typedef struct Circle2DElem {
     /* 0x14 */ s16 x;
     /* 0x16 */ s16 y;
     /* 0x18 */ u8 pad18[0xD];
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /* 0x25 */ u8 unk25_b1 : 7;
+    /* 0x25 */ u8 hidden : 1;
+#else
     /* 0x25 */ u8 hidden : 1;
     /* 0x25 */ u8 unk25_b1 : 7;
+#endif
 } Circle2DElem;
 
 // Keyframe animation data.
@@ -154,6 +181,17 @@ typedef struct Anim {
 
 // Old-format (anim->unk6 == 0) keyframe: an uncompressed sprite element.
 typedef struct AnimKeyV0 {
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /* 0x00 */ u8 kind : 4;  // 1, 2: quad, 3: circle, 4: sprite, 5: nested track
+    /* 0x00 */ u8 blend : 4; // 0..2: blend mode 1..3
+    /* 0x01 */ u8 unk1_b6 : 2;
+    /* 0x01 */ u8 useCallback : 1;
+    /* 0x01 */ u8 curved : 1;
+    /* 0x01 */ u8 perCorner : 1;
+    /* 0x01 */ u8 linked : 1; // continues the previous key's segment
+    /* 0x01 */ u8 flipY : 1;
+    /* 0x01 */ u8 flipX : 1;
+#else
     /* 0x00 */ u8 blend : 4; // 0..2: blend mode 1..3
     /* 0x00 */ u8 kind : 4;  // 1, 2: quad, 3: circle, 4: sprite, 5: nested track
     /* 0x01 */ u8 flipX : 1;
@@ -163,6 +201,7 @@ typedef struct AnimKeyV0 {
     /* 0x01 */ u8 curved : 1;
     /* 0x01 */ u8 useCallback : 1;
     /* 0x01 */ u8 unk1_b6 : 2;
+#endif
     /* 0x02 */ u16 subTrack; // nested track, or texture index for sprites
     /* 0x04 */ u8 pad4[8];
     /* 0x0C */ u16 time;

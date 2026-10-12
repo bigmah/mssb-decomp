@@ -120,11 +120,21 @@ typedef struct Emitter {
     /* 0x08 */ EmitterUpdateFn update; // NULL: emitter is free
     /* 0x0C */ Particle* particles;
     /* 0x10 */ TexArchive* tex;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /* 0x14 */ u16 count : 12;
+    /* 0x14 */ u16 unk14 : 4;
+#else
     /* 0x14 */ u16 unk14 : 4;
     /* 0x14 */ u16 count : 12;
+#endif
     /* 0x16 */ u8 priority;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /* 0x17 */ u8 type : 7;
+    /* 0x17 */ u8 active : 1;
+#else
     /* 0x17 */ u8 active : 1;
     /* 0x17 */ u8 type : 7;
+#endif
     /* 0x18 */ union {
         struct {
             /* 0x18 */ Vec pos;       // spawn position

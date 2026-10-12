@@ -13,9 +13,15 @@ typedef struct AssetLoadInstructions
     /* 0x4 */ union {
         u32 sizeFlags; // low 28 bits: size, top 4 bits: flags (first: tables initialise this member)
         struct {
+#ifdef TARGET_PC // MWCC (big-endian) bit order: the flags are the top bits of sizeFlags
+            u32 originalDiskSize:28;
+            u32 unused:2;
+            u32 compressionFlag:2;
+#else
             u8 compressionFlag:2;
             u8 unused:2;
             u32 originalDiskSize:28;
+#endif
         };
     };
     /* 0x8 */ union {

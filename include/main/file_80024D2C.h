@@ -8,11 +8,19 @@
 
 // One keyframe (4 bytes).
 typedef struct ShapeKey {
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /*0x0*/ u16 frame : 12;
+    /*0x0*/ u16 unk0_3 : 1;
+    /*0x0*/ u16 override : 1; // target index may be overridden by the caller
+    /*0x0*/ u16 hold : 1;     // don't blend toward the next key
+    /*0x0*/ u16 ease : 1;     // weight comes from `weight` instead of 0/1
+#else
     /*0x0*/ u16 ease : 1;     // weight comes from `weight` instead of 0/1
     /*0x0*/ u16 hold : 1;     // don't blend toward the next key
     /*0x0*/ u16 override : 1; // target index may be overridden by the caller
     /*0x0*/ u16 unk0_3 : 1;
     /*0x0*/ u16 frame : 12;
+#endif
     /*0x2*/ u8 weight;        // percent
     /*0x3*/ u8 target;        // morph target index
 } ShapeKey;
@@ -41,10 +49,17 @@ typedef struct ShapeAnimState {
     /*0x0C*/ u16 keyIdx;
     /*0x0E*/ s16 loops; // < 0: forever
     /*0x10*/ u8 unk10;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /*0x11*/ u8 unk11_5 : 3;
+    /*0x11*/ u8 dirtyB : 2;
+    /*0x11*/ u8 dirtyA : 2; // per frame buffer (bit = lbl_803CBBC0 != 0)
+    /*0x11*/ u8 active : 1;
+#else
     /*0x11*/ u8 active : 1;
     /*0x11*/ u8 dirtyA : 2; // per frame buffer (bit = lbl_803CBBC0 != 0)
     /*0x11*/ u8 dirtyB : 2;
     /*0x11*/ u8 unk11_5 : 3;
+#endif
     /*0x14*/ u32 unk14;
     /*0x18*/ ShapeSeq seqs[1];
 } ShapeAnimState;
@@ -126,10 +141,17 @@ typedef struct ShapeModel {
 // Morph target: a vertex array of the model that gets written.
 typedef struct ShapeTarget {
     /*0x0*/ u16 idx;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /*0x2*/ u8 type : 7;  // 0: geo array, 1: pos, 2: clr, 3: nrm, 4+: tex
+    /*0x2*/ u8 useBuf1 : 1;
+    /*0x3*/ u8 fmtLo : 4; // component size
+    /*0x3*/ u8 fmtHi : 4; // components
+#else
     /*0x2*/ u8 useBuf1 : 1;
     /*0x2*/ u8 type : 7;  // 0: geo array, 1: pos, 2: clr, 3: nrm, 4+: tex
     /*0x3*/ u8 fmtHi : 4; // components
     /*0x3*/ u8 fmtLo : 4; // component size
+#endif
     /*0x4*/ void** dataSlot;
     /*0x8*/ void* buf[2];
 } ShapeTarget;
@@ -143,8 +165,13 @@ typedef struct ShapeRange {
 typedef struct ShapeEntry {
     /*0x0*/ u8 unk0[4];
     /*0x4*/ u8 id;
+#ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
+    /*0x5*/ u8 type : 7;
+    /*0x5*/ u8 copyOnly : 1;
+#else
     /*0x5*/ u8 copyOnly : 1;
     /*0x5*/ u8 type : 7;
+#endif
     /*0x6*/ u8 compCount;
     /*0x7*/ u8 compSize;
     /*0x8*/ ShapeRange* ranges;

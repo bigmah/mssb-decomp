@@ -576,7 +576,11 @@ void fn_80025FFC(void* model, ShapeAnimPlayer* p) {
 // ---- Data (initialisers generated from the original DOL) ----
 
 // .sdata 0x803CB7E8..0x803CB7F8
-ShapeKey lbl_803CB7E8[2] = {{0, 0, 0, 0, 0, 100, 0}, {0, 0, 0, 0, 100, 100, 0}}; // default sequence keys
+#ifdef TARGET_PC // the bitfields are declared in reverse on PC
+ShapeKey lbl_803CB7E8[2] = {{.frame = 0, .weight = 100}, {.frame = 100, .weight = 100}}; // default
+#else
+ShapeKey lbl_803CB7E8[2] = {{0, 0, 0, 0, 0, 100, 0}, {0, 0, 0, 0, 100, 100, 0}}; // default
+#endif sequence keys
 ShapeSeqHdr lbl_803CB7F0 = {100, 2};
 ShapeKey* lbl_803CB7F4 = lbl_803CB7E8;
 
