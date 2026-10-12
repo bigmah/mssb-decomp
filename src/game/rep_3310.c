@@ -8,13 +8,21 @@
 #include "C3/anim.h"
 #include "Dolphin/GX.h"
 #include "static/Camera.h"
+#include "game/UnknownHomes_Game.h"
+#include "static/GameSettings.h"
+#include "game/auto_00_0011D3AC_text.h"
+#include "main/file_80008E00.h"
+#include "main/file_80069BDC.h"
+#include "main/file_8000F150.h"
+#include "main/file_80024D2C.h"
+#include "main/file_800527C4.h"
+extern MinigameAssets lbl_3_common_bss_32724;
 
 extern Rep3310CharMgr lbl_8036E548;
 
 extern f32 lbl_3_data_2262C;
 extern f32 lbl_3_data_22650[];
 extern u8 lbl_3_data_22670[];
-extern u8 g_Minigame[];
 extern const f32 lbl_3_rodata_33AC;
 extern const f32 lbl_3_rodata_33B0;
 extern f32 lbl_3_data_21A64[];
@@ -54,16 +62,11 @@ extern f64 acos(f64);
 extern f64 sin(f64);
 extern f64 cos(f64);
 extern void* memcpy(void* dst, const void* src, u32 n);
-extern u8 lbl_3_common_bss_32724[];
-extern u8 g_GameLogic[];
-extern u8 g_Pitcher[];
-extern u8 lbl_80366158[];
 extern s16 lbl_3_data_217A4[];
 extern u32 fn_3_90064(s32 id);
 extern f32 lbl_3_data_21A48[];
 extern void fn_8001D0D0(int, f32);
 extern f32 shortAngleToRad(s16 ang);
-extern u8 g_d_GameSettings[];
 extern void minigamesSetSomePointers(void);
 extern void minigamesGXStuff(void);
 extern void minigamesSetSomePointers2(void);
@@ -73,10 +76,7 @@ extern void fn_3_909B0(void);
 extern void fn_3_9081C(void);
 extern void fn_800BD548(ActorObject* obj, u8 numLights, ...);
 extern void fn_80034E20(void*, void*);
-extern void* lbl_803CC1B8[];
-extern u8 lbl_80371C30[];
 extern u8 lbl_3_data_69D0[];
-extern s32 fn_80024DB0(void*);
 extern void fn_80034CEC(void*);
 extern void fn_800B0A14_removeQueue(void*);
 
@@ -90,9 +90,7 @@ extern void fn_800B0A14_removeQueue(void*);
 #define REMOVE_QUEUE_NOARG() ((void (*)(void))fn_800B0A14_removeQueue)()
 #endif
 #endif
-extern void fn_80024FA4(void* model, void* data, void* state, s32 frame);
 extern void* _OSAllocFromHeap(int, int);
-extern void fn_80025C58(void*, void*);
 
 
 // .text:0x00116840 size:0x190 mapped:0x807558D4
@@ -100,23 +98,23 @@ extern void fn_80025C58(void*, void*);
 // gets its idle animation.
 void fn_3_116840(void) {
     Rep3310Sprite* e;
-    u8* g;
+    Rep3310Racer* g;
     s32 i;
     for (i = 0; i < 3; i++) {
-        g = g_Minigame + i * 0x38;
+        g = &MG3310.racers[i];
         e = &lbl_8036E548.sprites[i + 0x82];
         e->visible = 0;
-        if (g[0x2A] != 0) {
+        if (g->state != 0) {
             e->visible = 1;
-            e->pos[0] = *(f32*)g;
-            e->pos[1] = -*(f32*)(g + 4);
-            e->pos[2] = *(f32*)(g + 8);
-            fn_8001D0D0(i + 0x82, lbl_3_data_22678[g[0x2B]]);
+            e->pos[0] = g->pos.x;
+            e->pos[1] = -g->pos.y;
+            e->pos[2] = g->pos.z;
+            fn_8001D0D0(i + 0x82, lbl_3_data_22678[g->_2B]);
             e->rot[1] = lbl_3_data_22688[i];
             e->draw = fn_3_11897C;
-            if (*(s16*)(g + 0x1C) == 1) {
+            if (g->_1C == 1) {
                 fn_3_1189C8(i, 0, 0, 6, 1);
-                *(s16*)(g + 0x1C) += 1;
+                g->_1C += 1;
             }
         }
     }
@@ -137,14 +135,11 @@ void fn_3_1169D0(void) {
 }
 
 // .text:0x00116B38 size:0x3C mapped:0x80755BCC
-extern u8 g_Minigame[];
-extern u8 g_d_GameSettings[];
-typedef struct { u8 pad[0x34]; void* p; u8 pad2[0x90 - 0x38]; } Ent90;
 extern f32 fn_800B4A94(void* p);
 
 void fn_3_116B38(void) {
     s32 i = 2;
-    if (g_Minigame[0x1A2A] == 3) {
+    if (g_Minigame.GameMode_MiniGame == 3) {
         i = 0x1F;
     }
     ((Rep3310Sprite*)lbl_8036E548.sprites)[i].visible = 0; // the cast is needed to match
@@ -172,7 +167,7 @@ void fn_3_116B74(void) {
     f32* v;
     s32 i;
 
-    switch (g_Minigame[0x1A2A]) {
+    switch (g_Minigame.GameMode_MiniGame) {
     case 1:
         fn_3_116B38();
         break;
@@ -222,15 +217,11 @@ void fn_3_116B74(void) {
 
 // .text:0x0011741C size:0x78 mapped:0x807564B0
 void fn_3_11741C(s32 i) {
-    u8* t = (u8*)lbl_8036E548.objs->objects[i].actor;
-    s32 off;
+    GameActor* t = lbl_8036E548.objs->objects[i].actor;
     s32 k;
-    s32 v = g_Minigame[0xCCE] == 1 ? 0 : 2;
-    for (k = 0, off = 0; k < *(u16*)(t + 6); k++, off += 4) {
-        u8* q = *(u8**)(*(u8**)(t + 0x18) + off);
-        q = *(u8**)(q + 0x14);
-        q = *(u8**)(q + 8);
-        *(s16*)(*(u8**)(q + 0xC) + 0x20) = v;
+    s32 v = g_Minigame._CCE[0] == 1 ? 0 : 2;
+    for (k = 0; k < t->totalBones; k++) {
+        t->boneArray[k]->dispObj->textureData->texturePalette->tex[0].texIndex = v;
     }
 }
 
@@ -240,22 +231,22 @@ extern const f32 lbl_3_rodata_33C4;
 extern const f32 lbl_3_rodata_33C8;
 
 void fn_3_117494(void) {
-    u8* g = g_Minigame;
-    u8* p = (u8*)lbl_8036E548.sprites;
-    p[0x252E] = 0;
-    p[0xFEE] = 0;
-    *(void**)(p + 0x2508) = NULL;
-    if (g[0xCCE] != 0 && (*(s16*)(g + 0xCCC) > 0x3C || *(s16*)(g + 0xCCC) % 2 != 0)) {
-        p[0x252E] = 1;
-        *(void**)(p + 0x2508) = fn_3_11741C;
-        *(f32*)(p + 0x250C) = *(f32*)(g + 0xCB0);
-        *(f32*)(p + 0x2510) = -*(f32*)(g + 0xCB4);
-        *(f32*)(p + 0x2514) = *(f32*)(g + 0xCB8);
+    MiniGameStruct* g = &g_Minigame;
+    Rep3310Sprite* p = lbl_8036E548.sprites;
+    p[237].visible = 0;
+    p[101].visible = 0;
+    p[237].draw = NULL;
+    if (g->_CCE[0] != 0 && (g->_CCC > 0x3C || g->_CCC % 2 != 0)) {
+        p[237].visible = 1;
+        p[237].draw = fn_3_11741C;
+        p[237].pos[0] = g->_CB0;
+        p[237].pos[1] = -g->_CB4;
+        p[237].pos[2] = g->_CB8;
         fn_8001D0D0(0xED, lbl_3_rodata_33C0);
-        p[0xFEE] = 1;
-        *(f32*)(p + 0xFCC) = *(f32*)(g + 0xCB0);
-        *(f32*)(p + 0xFD0) = lbl_3_rodata_33C4;
-        *(f32*)(p + 0xFD4) = *(f32*)(g + 0xCB8);
+        p[101].visible = 1;
+        p[101].pos[0] = g->_CB0;
+        p[101].pos[1] = lbl_3_rodata_33C4;
+        p[101].pos[2] = g->_CB8;
         fn_8001D0D0(0x65, lbl_3_rodata_33C8);
     }
 }
@@ -271,7 +262,7 @@ void fn_3_117588(s32 idx) {
     Vec quad[4];
     GXColor color;
     Rep3310Sprite* e = &lbl_8036E548.sprites[idx];
-    u8* state = g_Minigame + (idx - 0xE9) * 0x40 + 0xBB0;
+    Rep3310Bouncer* state = &MG3310.c.bouncers[idx - 0xE9];
     GameActor* actor;
     f32 size = 2.5f * (1.0f - (-e->pos[1] * 0.5f) / lbl_3_data_21A64[0]);
     f32 hw;
@@ -320,7 +311,7 @@ void fn_3_117588(s32 idx) {
     GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C())->view, GX_PNMTX0);
     GXSetCurrentMtx(GX_PNMTX0);
     GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, GX_PERSPECTIVE);
-    fn_80033B58(*(struct TexArchive**)(lbl_3_common_bss_32724 + 0x6C), 0x13, GX_CLAMP, GX_CLAMP); // TODO type
+    fn_80033B58(lbl_3_common_bss_32724.textures[2], 0x13, GX_CLAMP, GX_CLAMP);
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
     for (k = 0; k < 4; k++) {
         GXPosition3f32(quad[k].x, quad[k].y, quad[k].z);
@@ -329,7 +320,7 @@ void fn_3_117588(s32 idx) {
     }
 
     actor = lbl_8036E548.objs->objects[idx].actor;
-    if (state[0x3D] == 1 || state[0x3D] == 5) {
+    if (state->state == 1 || state->state == 5) {
         tex = 0;
     } else {
         tex = 1;
@@ -345,39 +336,39 @@ void fn_3_117588(s32 idx) {
 extern const f32 lbl_3_rodata_33DC;
 
 void fn_3_1179EC(void) {
-    u8* e;
+    Rep3310Sprite* e;
     f32* v;
     u32 i;
     for (i = 0; i < 4; i++) {
-        e = (u8*)lbl_8036E548.sprites + (i + 0xE9) * 0x28;
-        v = (f32*)(g_Minigame + i * 0x40 + 0xBB0);
-        e[0x26] = 0;
-        *(void**)e = NULL;
-        if (g_Minigame[i * 0x40 + 0xBED] != 0) {
-            e[0x26] = 1;
-            *(f32*)(e + 4) = v[0];
-            *(f32*)(e + 8) = -v[1];
-            *(f32*)(e + 0xC) = v[2];
-            *(f32*)(e + 0x10) = lbl_3_rodata_33DC * v[6];
-            *(f32*)(e + 0x14) = lbl_3_rodata_33DC * v[7];
-            *(f32*)(e + 0x18) = lbl_3_rodata_33DC * v[8];
+        e = &lbl_8036E548.sprites[(i + 0xE9)];
+        v = MG3310.c.bouncers[i].f;
+        e->visible = 0;
+        e->draw = NULL;
+        if (MG3310.c.bouncers[i].state != 0) {
+            e->visible = 1;
+            e->pos[0] = v[0];
+            e->pos[1] = -v[1];
+            e->pos[2] = v[2];
+            e->rot[0] = lbl_3_rodata_33DC * v[6];
+            e->rot[1] = lbl_3_rodata_33DC * v[7];
+            e->rot[2] = lbl_3_rodata_33DC * v[8];
             fn_8001D0D0(i + 0xE9, lbl_3_rodata_33C0);
-            *(void**)e = fn_3_117588;
+            e->draw = fn_3_117588;
         }
     }
 }
 
 // .text:0x00117AE4 size:0x94 mapped:0x80756B78
 void fn_3_117AE4(void) {
-    u8* p = (u8*)lbl_8036E548.sprites;
+    Rep3310Sprite* p = lbl_8036E548.sprites;
     f32 z = 0.0f;
-    p[0x243E] = 1;
-    *(f32*)(p + 0x241C) = lbl_3_data_21A48[0];
-    *(f32*)(p + 0x2424) = lbl_3_data_21A48[2];
-    *(f32*)(p + 0x2420) = z;
-    *(f32*)(p + 0x2428) = z;
-    *(f32*)(p + 0x2430) = z;
-    *(f32*)(p + 0x242C) = shortAngleToRad(0x1000 - *(s16*)(g_Minigame + 0x1D64));
+    p[231].visible = 1;
+    p[231].pos[0] = lbl_3_data_21A48[0];
+    p[231].pos[2] = lbl_3_data_21A48[2];
+    p[231].pos[1] = z;
+    p[231].rot[0] = z;
+    p[231].rot[2] = z;
+    p[231].rot[1] = shortAngleToRad(0x1000 - g_Minigame._1D64);
     fn_8001D0D0(0xE7, 3.0f);
 }
 
@@ -443,7 +434,7 @@ void fn_3_117B78(s32 idx) {
     GXLoadPosMtxImm(fn_80052768_getCamera(fn_8005268C())->view, GX_PNMTX0);
     GXSetCurrentMtx(GX_PNMTX0);
     GXSetProjection(fn_80052768_getCamera(fn_8005268C())->proj, GX_PERSPECTIVE);
-    fn_80033B58(*(struct TexArchive**)(lbl_3_common_bss_32724 + 0x6C), 0x14, GX_CLAMP, GX_CLAMP); // TODO type
+    fn_80033B58(lbl_3_common_bss_32724.textures[2], 0x14, GX_CLAMP, GX_CLAMP);
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
     for (k = 0; k < 4; k++) {
         GXPosition3f32(quad[k].x, quad[k].y, quad[k].z);
@@ -462,21 +453,21 @@ extern f32 RandomF32_Game_Range(f32 a, f32 b);
 extern f32 fn_3_9FEA8(f32 v);
 
 void fn_3_117FC8(void) {
-    u8* p = (u8*)lbl_8036E548.sprites;
-    p[0x2466] = 0;
-    ((u8*)lbl_8036E548.sprites)[0xFEE] = 0;
-    if (g_Minigame[0x72A] != 0) {
-        p[0x2466] = 1;
-        *(f32*)(p + 0x2444) = *(f32*)(g_Minigame + 0x6E8);
-        *(f32*)(p + 0x2448) = -*(f32*)(g_Minigame + 0x6EC);
-        *(f32*)(p + 0x244C) = *(f32*)(g_Minigame + 0x6F0);
+    Rep3310Sprite* p = lbl_8036E548.sprites;
+    p[232].visible = 0;
+    lbl_8036E548.sprites[0x65].visible = 0;
+    if (g_Minigame._72A != 0) {
+        p[232].visible = 1;
+        p[232].pos[0] = g_Minigame._6E8;
+        p[232].pos[1] = -g_Minigame._6EC;
+        p[232].pos[2] = g_Minigame._6F0;
         fn_8001D0D0(0xE8, lbl_3_rodata_33CC);
-        if (*(s16*)(g_Minigame + 0x724) == 0) {
-            *(f32*)(p + 0x2454) = RandomF32_Game_Range(lbl_3_rodata_33D0, lbl_3_rodata_33D4);
+        if (g_Minigame._724 == 0) {
+            p[232].rot[1] = RandomF32_Game_Range(lbl_3_rodata_33D0, lbl_3_rodata_33D4);
         } else {
-            *(f32*)(p + 0x2454) = fn_3_9FEA8(lbl_3_rodata_33D8 + *(f32*)(p + 0x2454));
+            p[232].rot[1] = fn_3_9FEA8(lbl_3_rodata_33D8 + p[232].rot[1]);
         }
-        *(void**)(p + 0x2440) = fn_3_117B78;
+        p[232].draw = fn_3_117B78;
     }
 }
 
@@ -486,22 +477,22 @@ extern const f32 lbl_3_rodata_33C4;
 extern const f32 lbl_3_rodata_33F4;
 
 void fn_3_1180A4(void) {
-    u8* p = (u8*)lbl_8036E548.sprites;
-    p[0xFC6] = 0;
-    p[0x2416] = 0;
-    if (g_Minigame[0xBAC] == 1) {
-        p[0x2416] = 1;
-        *(f32*)(p + 0x23F4) = *(f32*)(g_Minigame + 0xB6C);
-        *(f32*)(p + 0x23F8) = -*(f32*)(g_Minigame + 0xB70);
-        *(f32*)(p + 0x23FC) = *(f32*)(g_Minigame + 0xB74);
-        *(f32*)(p + 0x2400) = lbl_3_rodata_33AC;
-        *(f32*)(p + 0x2404) = lbl_3_rodata_33AC;
-        *(f32*)(p + 0x2408) = lbl_3_rodata_33AC;
-        p[0xFC6] = 1;
-        *(s32*)(p + 0xFA0) = 0;
-        *(f32*)(p + 0xFA4) = *(f32*)(g_Minigame + 0xB6C);
-        *(f32*)(p + 0xFA8) = lbl_3_rodata_33C4;
-        *(f32*)(p + 0xFAC) = *(f32*)(g_Minigame + 0xB74);
+    Rep3310Sprite* p = lbl_8036E548.sprites;
+    p[100].visible = 0;
+    p[230].visible = 0;
+    if (g_Minigame._B6C._40[0] == 1) {
+        p[230].visible = 1;
+        p[230].pos[0] = g_Minigame._B6C._0.x;
+        p[230].pos[1] = -g_Minigame._B6C._0.y;
+        p[230].pos[2] = g_Minigame._B6C._0.z;
+        p[230].rot[0] = lbl_3_rodata_33AC;
+        p[230].rot[1] = lbl_3_rodata_33AC;
+        p[230].rot[2] = lbl_3_rodata_33AC;
+        p[100].visible = 1;
+        p[100].draw = NULL;
+        p[100].pos[0] = g_Minigame._B6C._0.x;
+        p[100].pos[1] = lbl_3_rodata_33C4;
+        p[100].pos[2] = g_Minigame._B6C._0.z;
         fn_8001D0D0(0x64, lbl_3_rodata_33F4);
     }
 }
@@ -512,45 +503,45 @@ extern const f32 lbl_3_rodata_33FC;
 extern const f32 lbl_3_rodata_3400;
 extern s16 lbl_3_data_21A04[];
 void fn_3_118164(void) {
-    u8* e1;
-    u8* e2;
+    Rep3310Sprite* e1;
+    Rep3310Sprite* e2;
     s32 i;
     s32 j;
     for (i = 0; i < 0x64; i++) {
         j = i + 0x82;
-        e1 = (u8*)lbl_8036E548.sprites + j * 0x28;
-        e1[0x26] = 0;
-        e2 = (u8*)lbl_8036E548.sprites + i * 0x28;
-        e2[0x26] = 0;
-        if (g_Minigame[i + 0x193A] == 1 || g_Minigame[i + 0x193A] == 3) {
-            e1[0x26] = 1;
-            *(f32*)(e1 + 4) = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
-            *(f32*)(e1 + 8) = -*(f32*)(g_Minigame + i * 0xC + 0xCD4);
-            *(f32*)(e1 + 0xC) = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
-            *(f32*)(e1 + 0x10) = lbl_3_rodata_33AC;
-            *(f32*)(e1 + 0x18) = lbl_3_rodata_33AC;
+        e1 = &lbl_8036E548.sprites[j];
+        e1->visible = 0;
+        e2 = &lbl_8036E548.sprites[i];
+        e2->visible = 0;
+        if (g_Minigame.wallBall_coinsVisibleInd[i] == 1 || g_Minigame.wallBall_coinsVisibleInd[i] == 3) {
+            e1->visible = 1;
+            e1->pos[0] = g_Minigame.wallBall_coinCoordinates[i].x;
+            e1->pos[1] = -g_Minigame.wallBall_coinCoordinates[i].y;
+            e1->pos[2] = g_Minigame.wallBall_coinCoordinates[i].z;
+            e1->rot[0] = lbl_3_rodata_33AC;
+            e1->rot[2] = lbl_3_rodata_33AC;
             fn_8001D0D0(j, lbl_3_rodata_33F8);
-            if (*(s16*)(g_Minigame + i * 2 + 0x17C8) <= 1) {
-                *(f32*)(e1 + 0x14) = RandomF32_Game_Range(lbl_3_rodata_33D0, lbl_3_rodata_33D4);
-            } else if (g_Minigame[i + 0x193A] == 1) {
-                *(f32*)(e1 + 0x14) = fn_3_9FEA8(lbl_3_rodata_33FC + *(f32*)(e1 + 0x14));
+            if (MG3310.e.coinFrames[i] <= 1) {
+                e1->rot[1] = RandomF32_Game_Range(lbl_3_rodata_33D0, lbl_3_rodata_33D4);
+            } else if (g_Minigame.wallBall_coinsVisibleInd[i] == 1) {
+                e1->rot[1] = fn_3_9FEA8(lbl_3_rodata_33FC + e1->rot[1]);
             } else {
-                *(f32*)(e1 + 0x14) = fn_3_9FEA8(lbl_3_rodata_33F4 + *(f32*)(e1 + 0x14));
+                e1->rot[1] = fn_3_9FEA8(lbl_3_rodata_33F4 + e1->rot[1]);
             }
-            e2[0x26] = 1;
+            e2->visible = 1;
             *(s32*)e2 = 0;
-            *(f32*)(e2 + 4) = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
-            *(f32*)(e2 + 8) = lbl_3_rodata_33C4;
-            *(f32*)(e2 + 0xC) = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+            e2->pos[0] = g_Minigame.wallBall_coinCoordinates[i].x;
+            e2->pos[1] = lbl_3_rodata_33C4;
+            e2->pos[2] = g_Minigame.wallBall_coinCoordinates[i].z;
             fn_8001D0D0(i, lbl_3_rodata_3400);
-            if (*(s16*)(g_Minigame + i * 2 + 0x17C8) > lbl_3_data_21A04[3] - 0xB4 &&
-                g_Minigame[i + 0x193A] == 1 && (*(u16*)(g_d_GameSettings + 4) & 1)) {
-                e1[0x26] = 0;
-                e2[0x26] = 0;
+            if (MG3310.e.coinFrames[i] > lbl_3_data_21A04[3] - 0xB4 &&
+                g_Minigame.wallBall_coinsVisibleInd[i] == 1 && (g_d_GameSettings.FrameCountWhileNotAtMainMenu & 1)) {
+                e1->visible = 0;
+                e2->visible = 0;
             }
-            if (g_Minigame[i + 0x193A] == 3 && (*(u16*)(g_d_GameSettings + 4) & 1)) {
-                e1[0x26] = 0;
-                e2[0x26] = 0;
+            if (g_Minigame.wallBall_coinsVisibleInd[i] == 3 && (g_d_GameSettings.FrameCountWhileNotAtMainMenu & 1)) {
+                e1->visible = 0;
+                e2->visible = 0;
             }
         }
     }
@@ -560,13 +551,14 @@ void fn_3_118164(void) {
 extern void* memset(void* dst, int c, u32 n);
 
 void fn_3_118358(s32 i, f32* v) {
-    u8* o = *(u8**)(*(u8**)(*(u8**)((u8*)lbl_8036E548.objs + (i + 0x82) * 0x90 + 0x34) + 0x18) + 0x44);
+    // objects[i + 0x82].actor, addressed as the original does (base + 0x34 then an indexed load)
+    GameBone* o = (*(GameActor**)((u8*)lbl_8036E548.objs + (i + 0x82) * sizeof(ActorObject) + OFFSET_OF(ActorObjectTable, objects[0].actor)))->boneArray[17];
     if (i < 0 || i > 2) {
         return;
     }
     if (v != NULL) {
         memset(v, 0, 0xC);
-        PSMTXMultVec(*(MtxPtr*)(o + 0xEC), (Vec*)v, (Vec*)v);
+        PSMTXMultVec(o->forwardMtx, (Vec*)v, (Vec*)v);
         v[1] *= -1.0f;
     }
 }
@@ -577,49 +569,49 @@ extern const f32 lbl_3_rodata_33AC;
 extern f32 lbl_3_data_226DC;
 void fn_3_1183FC(void) {
     s32 i;
-    u8* e;
+    Rep3310Sprite* e;
     for (i = 0; i < 4; i++) {
-        e = (u8*)lbl_8036E548.sprites + i * 0x28;
-        *(f32*)(e + 0x2584) = lbl_3_data_21B94[i * 3];
-        *(f32*)(e + 0x2588) = -lbl_3_data_21B94[i * 3 + 1];
-        *(f32*)(e + 0x258C) = lbl_3_data_21B94[i * 3 + 2];
-        *(f32*)(e + 0x2588) = lbl_3_rodata_33AC;
-        *(f32*)(e + 0x258C) = *(f32*)(e + 0x258C) - lbl_3_data_226DC;
-        e[0x25A6] = 1;
+        e = &lbl_8036E548.sprites[i];
+        e[240].pos[0] = lbl_3_data_21B94[i * 3];
+        e[240].pos[1] = -lbl_3_data_21B94[i * 3 + 1];
+        e[240].pos[2] = lbl_3_data_21B94[i * 3 + 2];
+        e[240].pos[1] = lbl_3_rodata_33AC;
+        e[240].pos[2] = e[240].pos[2] - lbl_3_data_226DC;
+        e[240].visible = 1;
     }
 }
 
 // .text:0x00118508 size:0x10C mapped:0x8075759C
 void fn_3_118508(void) {
-    u8* p = lbl_803CC1B8[0];
-    u8* m;
+    SceneTask* p = lbl_803CC1B8;
+    u8* m; // byte cursor over MG3310.a.markers, as the original steps it
     s32 i;
-    if (g_GameLogic[0x11E] == 0xF) {
+    if (g_GameLogic.gameStatus == 0xF) {
         fn_80034CEC(p);
         REMOVE_QUEUE_NOARG();
         return;
     }
-    for (i = 0, m = g_Minigame; i < 0x28; m += 0x28, i++) {
-        if (m[0xCE] == 0) {
-            *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x54) &= ~2;
+    for (i = 0, m = (u8*)&g_Minigame; i < 0x28; m += sizeof(Rep3310Marker), i++) {
+        if (m[OFFSET_OF(Rep3310MinigameView, a.markers[0].active)] == 0) {
+            lbl_80371C30[p->u14.objIdx + i].obj->flags &= ~2;
         } else {
-            *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x54) |= 2;
-            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x48) = *(f32*)(m + 0xA8);
-            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x4C) = -*(f32*)(m + 0xAC);
-            *(f32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x50) = *(f32*)(m + 0xB0);
+            lbl_80371C30[p->u14.objIdx + i].obj->flags |= 2;
+            lbl_80371C30[p->u14.objIdx + i].obj->x = *(f32*)(m + OFFSET_OF(Rep3310MinigameView, a.markers[0].pos[0]));
+            lbl_80371C30[p->u14.objIdx + i].obj->y = -*(f32*)(m + OFFSET_OF(Rep3310MinigameView, a.markers[0].pos[1]));
+            lbl_80371C30[p->u14.objIdx + i].obj->z = *(f32*)(m + OFFSET_OF(Rep3310MinigameView, a.markers[0].pos[2]));
         }
     }
 }
 
 // .text:0x00118614 size:0x138 mapped:0x807576A8
 void fn_3_118614(void) {
-    u8* p;
+    SceneTask* p;
     s32 i;
-    fn_80034E20(p = lbl_803CC1B8[0], lbl_3_data_69D0);
+    fn_80034E20(p = lbl_803CC1B8, lbl_3_data_69D0);
     for (i = 0; i < 0x28; i++) {
-        *(u32*)(*(u8**)(lbl_80371C30 + (*(u16*)(p + 0x14) + i) * 8) + 0x5C) = 0x20000;
+        lbl_80371C30[p->u14.objIdx + i].obj->_5C = 0x20000;
     }
-    *(void**)lbl_803CC1B8[0] = fn_3_118508;
+    lbl_803CC1B8->func = fn_3_118508;
 }
 
 // .text:0x0011874C size:0xD0 mapped:0x807577E0
@@ -630,19 +622,19 @@ extern void fn_8001D110(s32 i, f32 a, f32 b, f32 c);
 
 void fn_3_11874C(void) {
     s32 i;
-    if (g_GameLogic[0x121] == 8) {
+    if (g_GameLogic.secondaryGameMode == 8) {
         return;
     }
     for (i = 0; i < 0x28; i++) {
-        u8* p = (u8*)lbl_8036E548.sprites + i * 0x28;
-        f32* v = (f32*)(g_Minigame + i * 0x28 + 0xA8);
-        p[0x26] = 0;
+        Rep3310Sprite* p = &lbl_8036E548.sprites[i];
+        f32* v = MG3310.a.markers[i].pos;
+        p->visible = 0;
         *(s32*)p = 0;
-        if (g_Minigame[i * 0x28 + 0xCE] != 0) {
-            p[0x26] = 1;
-            *(f32*)(p + 4) = v[0];
-            *(f32*)(p + 0xC) = v[2];
-            *(f32*)(p + 8) = lbl_3_rodata_3408;
+        if (MG3310.a.markers[i].active != 0) {
+            p->visible = 1;
+            p->pos[0] = v[0];
+            p->pos[2] = v[2];
+            p->pos[1] = lbl_3_rodata_3408;
             fn_8001D110(i, lbl_3_data_226D4[1], lbl_3_rodata_33E0, lbl_3_data_226D4[1]);
         }
     }
@@ -670,27 +662,27 @@ extern f32 lbl_3_data_226C4[];
 extern const f32 lbl_3_rodata_33AC;
 
 void fn_3_11887C(void) {
-    u8* e;
+    Rep3310Sprite* e;
     s32 i;
     f32* v;
     for (i = 0; i < 7; i++) {
-        e = (u8*)lbl_8036E548.sprites + (i + 0xE9) * 0x28;
-        e[0x26] = 1;
+        e = &lbl_8036E548.sprites[(i + 0xE9)];
+        e->visible = 1;
         if (i < 4) {
             v = &lbl_3_data_21B94[i * 3];
-            *(f32*)(e + 4) = v[0];
-            *(f32*)(e + 8) = -v[1];
-            *(f32*)(e + 0xC) = v[2];
-            *(f32*)(e + 8) = lbl_3_rodata_33AC;
+            e->pos[0] = v[0];
+            e->pos[1] = -v[1];
+            e->pos[2] = v[2];
+            e->pos[1] = lbl_3_rodata_33AC;
             fn_8001D110(i + 0xE9, lbl_3_data_226C4[2], lbl_3_data_226C4[3], lbl_3_data_226C4[2]);
-            *(void**)e = fn_3_11881C;
+            e->draw = fn_3_11881C;
         } else {
             v = (f32*)(lbl_3_data_21BC4 + i * 0x30 - 0xC0);
-            *(f32*)(e + 4) = v[0];
-            *(f32*)(e + 8) = -v[1];
-            *(f32*)(e + 0xC) = v[2];
+            e->pos[0] = v[0];
+            e->pos[1] = -v[1];
+            e->pos[2] = v[2];
             fn_8001D110(i + 0xE9, lbl_3_data_226C4[0], lbl_3_data_226C4[1], lbl_3_data_226C4[0]);
-            *(void**)e = fn_3_11881C;
+            e->draw = fn_3_11881C;
         }
     }
 }
@@ -701,7 +693,7 @@ void fn_3_11887C(void) {
 // Sets the skin texture of player-ball sprite i (0x82..0x84) from its state byte.
 void fn_3_11897C(s32 i) {
     lbl_8036E548.objs->objects[i].actor->skinObject->textureData->texturePalette->tex[0].texIndex =
-        lbl_3_data_22670[(g_Minigame + (i - 0x82) * 0x38)[0x2C]];
+        lbl_3_data_22670[MG3310.racers[i - 0x82].skin];
 }
 #endif
 
@@ -709,33 +701,33 @@ void fn_3_11897C(s32 i) {
 extern f32 lbl_3_data_22694[];
 extern s16 lbl_3_data_226AC[];
 void fn_3_1189C8(s32 i, s32 a, s32 b, s32 d, u8 flag) {
-    u8* m = g_Minigame + i * 0x38;
-    u8* o = (u8*)lbl_8036E548.objs + (i + 0x82) * 0x90 + 0x34;
+    Rep3310Racer* m = &MG3310.racers[i];
+    ActorObject* o = &lbl_8036E548.objs->objects[(i + 0x82)];
     f32 inv = lbl_3_rodata_33AC;
     u8 t;
-    s32 x;
+    void* x;
     if (d != 0) {
         inv = 1.0f / (f32)d;
     }
-    x = *(s32*)(lbl_3_common_bss_32724 + 0x78);
-    *(s32*)(o + 4) = x;
-    *(s16*)(o + 0xE) = a;
-    *(f32*)(o + 0x5C) = lbl_3_rodata_33AC;
-    o[0x58] = 1;
-    o[0x59] = (x != 0);
-    o[0x5A] = (x != 0);
-    *(f32*)(o + 0x60) = inv;
-    *(f32*)(o + 0x54) = lbl_3_data_22694[a];
-    o[0x5A] = 1;
-    *(f32*)(o + 0x5C) = (f32)(b + lbl_3_data_226AC[a]);
-    o[0x59] = 1;
+    x = lbl_3_common_bss_32724.animBanks[2];
+    o->animBank = x;
+    o->seqNum = a;
+    o->time = lbl_3_rodata_33AC;
+    o->setAnimation = 1;
+    o->setTime = (x != 0);
+    o->setSpeed = (x != 0);
+    o->speed = inv;
+    o->unk54 = lbl_3_data_22694[a];
+    o->setSpeed = 1;
+    o->time = (f32)(b + lbl_3_data_226AC[a]);
+    o->setTime = 1;
     if (flag != 0) {
-        o[0x5B] = 3;
+        o->visFlags = 3;
     } else {
-        o[0x5B] = 2;
+        o->visFlags = 2;
     }
-    m[0x33] = a;
-    *(s16*)(m + 0x28) = b;
+    m->anim = a;
+    m->animFrame = b;
 }
 
 // .text:0x00118B18 size:0x7A0 mapped:0x80757BAC
@@ -746,51 +738,51 @@ extern f32 lbl_3_data_22678[];
 extern f32 lbl_3_data_22688[];
 extern s32 fn_3_143770(u8* p);
 extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
-// Animation state machine of runner i (g_Minigame + i * 0x38), actor 0x82 + i.
+// Animation state machine of runner i (&MG3310.racers[i]), actor 0x82 + i.
 void fn_3_118B18(s32 i) {
-    u8* g = g_Minigame + i * 0x38;
+    Rep3310Racer* g = &MG3310.racers[i];
     s32 frame;
 
-    *(s16*)(g + 0x28) += 1;
-    if (g[0x2A] == 1) {
-        if (*(s16*)(g + 0x1A) <= 1) {
+    g->animFrame += 1;
+    if (g->state == 1) {
+        if (g->_1A <= 1) {
             fn_3_1189C8(i, 2, 0, 0, 0);
             fn_8001D0D0(i + 0x82, 0.01f);
         } else {
-            fn_8001D0D0(i + 0x82, LinearInterpolateToNewRange((f32)*(s16*)(g + 0x1A), 0.0f, (f32)lbl_3_data_21E68[5],
-                                                               lbl_3_data_22678[g[0x2B] + 2], lbl_3_data_22678[g[0x2B]]));
+            fn_8001D0D0(i + 0x82, LinearInterpolateToNewRange((f32)g->_1A, 0.0f, (f32)lbl_3_data_21E68[5],
+                                                               lbl_3_data_22678[g->_2B + 2], lbl_3_data_22678[g->_2B]));
         }
-        if (*(s16*)(g + 0x1C) == 1) {
+        if (g->_1C == 1) {
             fn_3_1189C8(i, 0, 0, 6, 1);
         }
-    } else if (g[0x2A] == 4) {
-        if (*(s16*)(g + 0x1A) <= 1) {
+    } else if (g->state == 4) {
+        if (g->_1A <= 1) {
             fn_3_1189C8(i, 4, 0, 0, 0);
         }
-    } else if (*(s16*)(g + 0x1E) == 2) {
-        if (g[0x2B] == 0) {
+    } else if (g->_1E == 2) {
+        if (g->_2B == 0) {
             fn_3_1189C8(i, 1, 0, 0, 0);
         } else {
             fn_3_1189C8(i, 5, 0, 0, 0);
         }
-    } else if (*(s16*)(g + 0x1E) == lbl_3_data_21E68[7]) {
-        if (g[0x33] != 0) {
+    } else if (g->_1E == lbl_3_data_21E68[7]) {
+        if (g->anim != 0) {
             fn_3_1189C8(i, 0, 0, 6, 1);
         }
     } else {
-        if (g[0x2E] != 0 && (*(s16*)(g + 0x26) == 1 || g[0x2B] != 0)) {
+        if (g->_2E != 0 && (g->_26 == 1 || g->_2B != 0)) {
             // lbl_3_data_226AC is followed by two u8 frame counts at +0xC/+0xD
-            frame = ((u8*)lbl_3_data_226AC)[0xC] - lbl_3_data_21E68[13] - 1;
-            if (g[0x2B] == 0) {
-                fn_3_143770(g);
+            frame = (u8)(lbl_3_data_226AC[6] >> 8) - lbl_3_data_21E68[13] - 1;
+            if (g->_2B == 0) {
+                fn_3_143770((u8*)g);
             }
             fn_3_1189C8(i, 3, frame, 2, 0);
         }
-        if (g[0x33] == 3 && *(s16*)(g + 0x28) == ((u8*)lbl_3_data_226AC)[0xD] - lbl_3_data_226AC[3]) {
+        if (g->anim == 3 && g->animFrame == (u8)lbl_3_data_226AC[6] - lbl_3_data_226AC[3]) {
             fn_3_1189C8(i, 0, 0, 6, 1);
-            *(f32*)(g + 0x14) = 0.0f;
-            *(f32*)(g + 0xC) = 0.0f;
-            *(f32*)(g + 0x10) = lbl_3_data_22688[i];
+            g->_0C.z = 0.0f;
+            g->_0C.x = 0.0f;
+            g->_0C.y = lbl_3_data_22688[i];
         }
     }
 }
@@ -802,37 +794,37 @@ extern f32 lbl_3_data_22678[];
 extern f32 lbl_3_data_22688[];
 extern const f32 lbl_3_rodata_33E0;
 void fn_3_1192B8(void) {
-    u8* g;
-    u8* e;
+    Rep3310Racer* g;
+    Rep3310Sprite* e;
     s32 i;
     for (i = 0; i < 3; i++) {
-        g = g_Minigame + i * 0x38;
-        e = (u8*)lbl_8036E548.sprites + (i + 0x82) * 0x28;
-        e[0x26] = 0;
-        if (g[0x2A] != 0) {
-            e[0x26] = 1;
-            *(f32*)(e + 4) = *(f32*)g;
-            *(f32*)(e + 8) = -*(f32*)(g + 4);
-            *(f32*)(e + 0xC) = *(f32*)(g + 8);
-            if (g[0x2A] != 3) {
-                fn_8001D0D0(i + 0x82, lbl_3_data_22678[g[0x2B]]);
+        g = &MG3310.racers[i];
+        e = &lbl_8036E548.sprites[(i + 0x82)];
+        e->visible = 0;
+        if (g->state != 0) {
+            e->visible = 1;
+            e->pos[0] = g->pos.x;
+            e->pos[1] = -g->pos.y;
+            e->pos[2] = g->pos.z;
+            if (g->state != 3) {
+                fn_8001D0D0(i + 0x82, lbl_3_data_22678[g->_2B]);
             } else {
-                f32 t = (f32)*(s16*)(g + 0x1A) / (f32)lbl_3_data_21E68[6];
-                f32* q = &lbl_3_data_22678[g[0x2B]];
+                f32 t = (f32)g->_1A / (f32)lbl_3_data_21E68[6];
+                f32* q = &lbl_3_data_22678[g->_2B];
                 f32 u = lbl_3_rodata_33E0 - t;
                 fn_8001D0D0(i + 0x82, u * q[0] + q[2] * t);
             }
-            if (g[0x2B] == 0) {
-                *(f32*)(e + 0x14) = *(f32*)(g + 0x10);
-                *(f32*)(e + 0x10) = lbl_3_rodata_33AC;
-                *(f32*)(e + 0x18) = lbl_3_rodata_33AC;
+            if (g->_2B == 0) {
+                e->rot[1] = g->_0C.y;
+                e->rot[0] = lbl_3_rodata_33AC;
+                e->rot[2] = lbl_3_rodata_33AC;
             } else {
-                *(f32*)(e + 0x14) = lbl_3_data_22688[i];
+                e->rot[1] = lbl_3_data_22688[i];
             }
-            if (g[0x2A] == 4 && *(s16*)(g + 0x1C) <= 0 && (*(s16*)(g + 0x1A) & 1)) {
-                e[0x26] = 0;
+            if (g->state == 4 && g->_1C <= 0 && (g->_1A & 1)) {
+                e->visible = 0;
             }
-            *(void**)e = fn_3_11897C;
+            e->draw = fn_3_11897C;
             ((void (*)(s32))fn_3_118B18)(i);
         }
     }
@@ -841,11 +833,9 @@ void fn_3_1192B8(void) {
 // .text:0x00119468 size:0x44 mapped:0x807584FC
 extern void fn_3_14225C(void);
 
-typedef struct { u8 p[0x34]; u8* o; u8 q[0x58]; } E90;
 void fn_3_119468(s32 i) {
-    E90* arr = (E90*)lbl_8036E548.objs;
-    u8* o = arr[i].o;
-    if (o[0x98] & 9) {
+    GameActor* o = lbl_8036E548.objs->objects[i].actor;
+    if (o->flags & 9) {
         fn_3_14225C();
     }
 }
@@ -855,7 +845,7 @@ void fn_3_119468(s32 i) {
 #if NONMATCHING
 void fn_3_1194AC(s32 i) {
     lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData->texturePalette->tex[0].texIndex =
-        lbl_3_data_2265C.tex[g_Minigame[i + 0x1AFF]];
+        lbl_3_data_2265C.tex[g_Minigame._1AFE[i + 1]];
 }
 #endif
 
@@ -886,10 +876,10 @@ void fn_3_1194FC(void) {
         shadow = &lbl_8036E548.sprites[i + 0x28];
         shadow->visible = 0;
         shadow->draw = NULL;
-        if (g_Minigame[0x193A + i] == 0 || g_Minigame[0x193A + i] == 3 || g_Minigame[0x193A + i] == 4) {
+        if (g_Minigame.wallBall_coinsVisibleInd[i] == 0 || g_Minigame.wallBall_coinsVisibleInd[i] == 3 || g_Minigame.wallBall_coinsVisibleInd[i] == 4) {
             continue;
         }
-        if (g_Minigame[0x1B84 + i] == 5) {
+        if (g_Minigame._1B84[i] == 5) {
             alt->draw = NULL;
             e = alt;
             base = 0xB7;
@@ -898,54 +888,54 @@ void fn_3_1194FC(void) {
             e->draw = fn_3_1194AC;
         }
         e->visible = 1;
-        e->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
-        e->pos[1] = -*(f32*)(g_Minigame + i * 0xC + 0xCD4);
-        e->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
-        if (g_Minigame[0x193A + i] == 2) {
+        e->pos[0] = g_Minigame.wallBall_coinCoordinates[i].x;
+        e->pos[1] = -g_Minigame.wallBall_coinCoordinates[i].y;
+        e->pos[2] = g_Minigame.wallBall_coinCoordinates[i].z;
+        if (g_Minigame.wallBall_coinsVisibleInd[i] == 2) {
             s = lbl_3_data_2265C.scale -
-                ((f32)g_Minigame[0x1C4C + i] * (lbl_3_data_2265C.scale - lbl_3_data_2265C.minScale)) /
+                ((f32)g_Minigame._1C4C[i] * (lbl_3_data_2265C.scale - lbl_3_data_2265C.minScale)) /
                     (f32)lbl_3_data_2265C.squashFrames;
-            if (lbl_80366158[0x28] == 0) {
+            if (lbl_80366158._28 == 0) {
                 fn_8001D110(base + i, lbl_3_data_2265C.scale, s, lbl_3_data_2265C.scale);
-                g_Minigame[0x1C4C + i] = g_Minigame[0x1C4C + i] - g_Minigame[0x1C1A + i] * 2 + 1;
-                if (g_Minigame[0x1C4C + i] >= 60) {
-                    g_Minigame[0x1C1A + i] = g_Minigame[0x1C1A + i] == 0;
+                g_Minigame._1C4C[i] = g_Minigame._1C4C[i] - g_Minigame._1C1A[i] * 2 + 1;
+                if (g_Minigame._1C4C[i] >= 60) {
+                    g_Minigame._1C1A[i] = g_Minigame._1C1A[i] == 0;
                 }
-                g_Minigame[0x1C4C + i] = g_Minigame[0x1C4C + i] - g_Minigame[0x1C1A + i] * 2 + 1;
+                g_Minigame._1C4C[i] = g_Minigame._1C4C[i] - g_Minigame._1C1A[i] * 2 + 1;
             }
             e->rot[0] = 0.0f;
             e->rot[1] = 0.0f;
             e->rot[2] = 0.0f;
-            if (g_Minigame[0x1B84 + i] == 5) {
+            if (g_Minigame._1B84[i] == 5) {
                 e->pos[1] -= 0.5f;
             }
             continue;
         }
         fn_8001D0D0(base + i, lbl_3_data_2265C.scale);
-        if (g_Minigame[0x193A + i] != 6) {
-            dir.x = *(f32*)(g_Minigame + 0x1180 + i * 0xC);
+        if (g_Minigame.wallBall_coinsVisibleInd[i] != 6) {
+            dir.x = MG3310.d.coinVel[i].x;
             dir.y = 0.0f;
-            dir.z = *(f32*)(g_Minigame + 0x1188 + i * 0xC);
+            dir.z = MG3310.d.coinVel[i].z;
             PSVECNormalize(&dir, &dir);
             ang = acos(PSVECDotProduct(&fwd, &dir));
             if (dir.x < 0.0f) {
                 ang = 6.2831855f - ang;
             }
-            if (lbl_80366158[0x28] == 0) {
+            if (lbl_80366158._28 == 0) {
                 e->rot[1] = ang;
                 e->rot[0] += -0.17453292f;
             }
         }
-        if (g_Minigame[0x1B84 + i] == 5 && *(s16*)(g_Minigame + 0x17C8 + i * 2) == 1) {
+        if (g_Minigame._1B84[i] == 5 && MG3310.e.coinFrames[i] == 1) {
             fn_3_15521C(i, e->pos, e->rot);
         }
-        if (g_Minigame[0x1B84 + i] == 5) {
+        if (g_Minigame._1B84[i] == 5) {
             e->draw = fn_3_119468;
         }
         shadow->visible = 1;
-        shadow->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
+        shadow->pos[0] = g_Minigame.wallBall_coinCoordinates[i].x;
         shadow->pos[1] = -0.05f;
-        shadow->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+        shadow->pos[2] = g_Minigame.wallBall_coinCoordinates[i].z;
         fn_8001D0D0(i + 0x28, lbl_3_data_2265C.shadowScale);
     }
 }
@@ -964,18 +954,18 @@ f32 fn_3_119854(u8 i) {
 // NONMATCHING 97%: the sprite-array and g_Minigame base registers (r5/r6) come out swapped; declaration/init orders, nested ifs and no-local forms did not help
 #if NONMATCHING
 void fn_3_119878(void) {
-    u8* g = g_Minigame;
+    MiniGameStruct* g = &g_Minigame;
     Rep3310Sprite* p = lbl_8036E548.sprites;
     p[0xA6].visible = 0;
     p[0xA6].draw = NULL;
-    if (g[0xCCE] != 0 &&
-        (*(s16*)(g + 0xCCC) > 0x3C || *(s16*)(g + 0xCCC) % 2 != 0 ||
-         g[0x1B19] == 2 || g[0x1B19] == 3)) {
+    if (g->_CCE[0] != 0 &&
+        (g->_CCC > 0x3C || g->_CCC % 2 != 0 ||
+         g->_1B19 == 2 || g->_1B19 == 3)) {
         p[0xA6].visible = 1;
         p[0xA6].draw = fn_3_11741C;
-        p[0xA6].pos[0] = *(f32*)(g + 0xCB0);
-        p[0xA6].pos[1] = -*(f32*)(g + 0xCB4);
-        p[0xA6].pos[2] = *(f32*)(g + 0xCB8);
+        p[0xA6].pos[0] = g->_CB0;
+        p[0xA6].pos[1] = -g->_CB4;
+        p[0xA6].pos[2] = g->_CB8;
         fn_8001D0D0(0xA6, 3.5f);
     }
 }
@@ -1001,14 +991,14 @@ void fn_3_119934(void) {
     for (i = 0; i < 15; i++) {
         e = &lbl_8036E548.sprites[i + 0x82];
         e->visible = 0;
-        base = g_Minigame[0x193A + i];
-        k = g_Minigame[0x1B19 + base] - 2;
+        base = g_Minigame.wallBall_coinsVisibleInd[i];
+        k = MG3310.f.kindState[base] - 2;
         if (k == 2) {
             if (base >= 1 && base <= 6) {
                 shared->visible = 1;
-                shared->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
-                shared->pos[1] = *(f32*)(g_Minigame + i * 0xC + 0xCD4);
-                shared->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+                shared->pos[0] = g_Minigame.wallBall_coinCoordinates[i].x;
+                shared->pos[1] = g_Minigame.wallBall_coinCoordinates[i].y;
+                shared->pos[2] = g_Minigame.wallBall_coinCoordinates[i].z;
                 fn_8001D0D0(0xA5, lbl_3_data_22650[k]);
                 shared->rot[1] += 0.005f;
                 if (shared->rot[1] > 3.1415927f) {
@@ -1017,9 +1007,9 @@ void fn_3_119934(void) {
             }
         } else if (base >= 1 && base <= 6) {
             e->visible = 1;
-            e->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
-            e->pos[1] = *(f32*)(g_Minigame + i * 0xC + 0xCD4);
-            e->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+            e->pos[0] = g_Minigame.wallBall_coinCoordinates[i].x;
+            e->pos[1] = g_Minigame.wallBall_coinCoordinates[i].y;
+            e->pos[2] = g_Minigame.wallBall_coinCoordinates[i].z;
             fn_8001D0D0(i + 0x82, lbl_3_data_22650[k]);
             e->rot[1] += 0.005f;
             if (e->rot[1] > 3.1415927f) {
@@ -1030,15 +1020,15 @@ void fn_3_119934(void) {
     for (i = 15; i < 35; i++) {
         e = &lbl_8036E548.sprites[i + 0x82];
         e->visible = 0;
-        if (g_Minigame[0x190B] == 0 && g_Minigame[0x193A + i] == 1) {
+        if (g_Minigame.turnOverStatus == 0 && g_Minigame.wallBall_coinsVisibleInd[i] == 1) {
             e->visible = 1;
-            e->pos[0] = *(f32*)(g_Minigame + i * 0xC + 0xCD0);
-            e->pos[1] = -*(f32*)(g_Minigame + i * 0xC + 0xCD4);
-            e->pos[2] = *(f32*)(g_Minigame + i * 0xC + 0xCD8);
+            e->pos[0] = g_Minigame.wallBall_coinCoordinates[i].x;
+            e->pos[1] = -g_Minigame.wallBall_coinCoordinates[i].y;
+            e->pos[2] = g_Minigame.wallBall_coinCoordinates[i].z;
             fn_8001D0D0(i + 0x82, 5.0f);
-            if (*(s16*)(g_Minigame + 0x17C8 + i * 2) == 0) {
+            if (MG3310.e.coinFrames[i] == 0) {
                 e->rot[0] = RandomF32_Game_Range(-3.1415927f, 3.1415927f);
-                memcpy(&dir, g_Minigame + 0x1180 + i * 0xC, sizeof(Vec));
+                memcpy(&dir, &MG3310.d.coinVel[i], sizeof(Vec));
                 dir.y = 0.0f;
                 PSVECNormalize(&dir, &dir);
                 ang = acos(dir.x);
@@ -1046,8 +1036,8 @@ void fn_3_119934(void) {
                     ang = 6.2831855f - ang;
                 }
                 e->rot[1] = ang;
-            } else if (lbl_80366158[0x28] == 0) {
-                memcpy(&dir, g_Minigame + 0x1180 + i * 0xC, sizeof(Vec));
+            } else if (lbl_80366158._28 == 0) {
+                memcpy(&dir, &MG3310.d.coinVel[i], sizeof(Vec));
                 dir.y = 0.0f;
                 e->rot[0] += (0.05f * PSVECMag(&dir)) / lbl_3_data_2188C[3];
             }
@@ -1059,43 +1049,42 @@ void fn_3_119934(void) {
 
 // .text:0x00119C34 size:0x74 mapped:0x80758CC8
 void fn_3_119C34(void) {
-    u8* p = (u8*)lbl_8036E548.objs;
-    s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
+    ActorObject* p = &lbl_8036E548.objs->objects[31];
+    void* v = lbl_3_common_bss_32724.animBanks[1];
     s8 t;
-    *(s32*)(p + 0x11A8) = v;
-    *(s16*)(p + 0x11B2) = 1;
+    p->animBank = v;
+    p->seqNum = 1;
     t = v != 0;
-    *(f32*)(p + 0x1200) = 0.0f;
-    *(u8*)(p + 0x11FC) = 1;
-    *(u8*)(p + 0x11FD) = t;
-    *(u8*)(p + 0x11FE) = t;
-    *(f32*)(p + 0x1204) = 0.0f;
-    *(f32*)(p + 0x11F8) = 1.0f;
-    *(u8*)(p + 0x11FE) = 1;
-    *(f32*)(p + 0x1200) = 0.0f;
-    *(u8*)(p + 0x11FD) = 1;
-    *(u8*)(p + 0x11FF) = 2;
+    p->time = 0.0f;
+    p->setAnimation = 1;
+    p->setTime = t;
+    p->setSpeed = t;
+    p->speed = 0.0f;
+    p->unk54 = 1.0f;
+    p->setSpeed = 1;
+    p->time = 0.0f;
+    p->setTime = 1;
+    p->visFlags = 2;
 }
 
 // .text:0x00119CA8 size:0x80 mapped:0x80758D3C
 void fn_3_119CA8(s32 i) {
-    u8* p = (u8*)lbl_8036E548.objs;
-    u8* e = p + i * 0x90 + 0x34;
-    s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
+    ActorObject* e = &lbl_8036E548.objs->objects[i];
+    void* v = lbl_3_common_bss_32724.animBanks[1];
     s8 t;
-    *(s32*)(e + 4) = v;
-    *(s16*)(e + 0xE) = 0;
+    e->animBank = v;
+    e->seqNum = 0;
     t = v != 0;
-    *(f32*)(e + 0x5C) = 0.0f;
-    *(u8*)(e + 0x58) = 1;
-    *(u8*)(e + 0x59) = t;
-    *(u8*)(e + 0x5A) = t;
-    *(f32*)(e + 0x60) = 0.0f;
-    *(f32*)(e + 0x54) = 1.0f;
-    *(u8*)(e + 0x5A) = 1;
-    *(f32*)(e + 0x5C) = 0.0f;
-    *(u8*)(e + 0x59) = 1;
-    *(u8*)(e + 0x5B) = 2;
+    e->time = 0.0f;
+    e->setAnimation = 1;
+    e->setTime = t;
+    e->setSpeed = t;
+    e->speed = 0.0f;
+    e->unk54 = 1.0f;
+    e->setSpeed = 1;
+    e->time = 0.0f;
+    e->setTime = 1;
+    e->visFlags = 2;
 }
 
 // .text:0x00119D28 size:0xC mapped:0x80758DBC
@@ -1105,28 +1094,28 @@ f32 fn_3_119D28(void) {
 
 // .text:0x00119D34 size:0xFC mapped:0x80758DC8
 void fn_3_119D34(void) {
-    u8* q = (u8*)lbl_8036E548.sprites + 0x4D8;
-    q[0x26] = 1;
+    Rep3310Sprite* q = &lbl_8036E548.sprites[31];
+    q->visible = 1;
     fn_3_11A92C(q, 0x1F);
-    if (lbl_80366158[0x28] == 0 && g_GameLogic[0x11E] == 1 && *(s16*)(g_Pitcher + 0x11E) == lbl_3_data_217A4[7]) {
+    if (lbl_80366158._28 == 0 && g_GameLogic.gameStatus == 1 && g_Pitcher.pitchTotalTimeCounter == lbl_3_data_217A4[7]) {
         {
 
-        u8* p = (u8*)lbl_8036E548.objs;
-        s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
+        ActorObject* p = &lbl_8036E548.objs->objects[31];
+        void* v = lbl_3_common_bss_32724.animBanks[1];
         s8 t;
-        *(s32*)(p + 0x11A8) = v;
-        *(s16*)(p + 0x11B2) = 1;
+        p->animBank = v;
+        p->seqNum = 1;
         t = v != 0;
-        *(f32*)(p + 0x1200) = 0.0f;
-        *(u8*)(p + 0x11FC) = 1;
-        *(u8*)(p + 0x11FD) = t;
-        *(u8*)(p + 0x11FE) = t;
-        *(f32*)(p + 0x1204) = 0.0f;
-        *(f32*)(p + 0x11F8) = 1.0f;
-        *(u8*)(p + 0x11FE) = 1;
-        *(f32*)(p + 0x1200) = 0.0f;
-        *(u8*)(p + 0x11FD) = 1;
-        *(u8*)(p + 0x11FF) = 2;
+        p->time = 0.0f;
+        p->setAnimation = 1;
+        p->setTime = t;
+        p->setSpeed = t;
+        p->speed = 0.0f;
+        p->unk54 = 1.0f;
+        p->setSpeed = 1;
+        p->time = 0.0f;
+        p->setTime = 1;
+        p->visFlags = 2;
 }
         fn_3_90064(0x2E6);
     }
@@ -1140,7 +1129,7 @@ extern u8 lbl_3_data_2263E;
 // Blinks the highlighted runner's texture (swaps texture records 0-2 through lbl_3_data_2263C).
 void fn_3_119E30(s32 i) {
     TextureData* td;
-    if (*(s16*)(g_Minigame + *(s16*)(g_Minigame + 0x18A4) * 0x34 + 0x88C) % lbl_3_data_2263E == 0) {
+    if (g_Minigame.barrels[g_Minigame.bB_bombBarrelID].animationCounter % lbl_3_data_2263E == 0) {
         td = lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData;
         td->texturePalette->tex[0].texIndex = lbl_3_data_2263C[td->texturePalette->tex[0].texIndex] == 0;
         td->texturePalette->tex[1].texIndex = lbl_3_data_2263C[td->texturePalette->tex[1].texIndex] == 0;
@@ -1154,11 +1143,11 @@ void fn_3_119E30(s32 i) {
 #if NONMATCHING
 extern u8 lbl_3_data_22638[];
 void fn_3_119EE0(s32 i) {
-    u8* g = g_Minigame + i * 0x34;
+    BB_barrelStruct* g = &g_Minigame.barrels[i];
     TextureData* td = lbl_8036E548.objs->objects[i].actor->boneArray[0]->dispObj->textureData;
-    td->texturePalette->tex[0].texIndex = lbl_3_data_22638[g[0x891]] * 3;
-    td->texturePalette->tex[1].texIndex = lbl_3_data_22638[g[0x891]] * 3 + 1;
-    td->texturePalette->tex[2].texIndex = lbl_3_data_22638[g[0x891]] * 3 + 2;
+    td->texturePalette->tex[0].texIndex = lbl_3_data_22638[g->barrelColour] * 3;
+    td->texturePalette->tex[1].texIndex = lbl_3_data_22638[g->barrelColour] * 3 + 1;
+    td->texturePalette->tex[2].texIndex = lbl_3_data_22638[g->barrelColour] * 3 + 2;
 }
 #endif
 
@@ -1176,7 +1165,7 @@ void fn_3_119F6C(void) {
     Rep3310Sprite* e;
     Rep3310Sprite* runner;
     GameActor* actor;
-    u8* p;
+    BB_barrelStruct* p;
     u32 frame;
     u32 k;
     s32 i;
@@ -1185,16 +1174,16 @@ void fn_3_119F6C(void) {
     hilite->visible = 0;
     for (i = 0; i < 15; i++) {
         e = &lbl_8036E548.sprites[i];
-        p = g_Minigame + i * 0x34 + 0x860;
+        p = &g_Minigame.barrels[i];
         runner = &lbl_8036E548.sprites[i + 0x10];
         runner->visible = 0;
         e->visible = 0;
-        if (p[0x30] == 0) {
+        if (p->barrelState == 0) {
             continue;
         }
-        if (p[0x30] == 4) {
+        if (p->barrelState == 4) {
             e = runner;
-            if (*(s16*)(p + 0x2C) == 0) {
+            if (p->animationCounter == 0) {
                 fn_3_119CA8(i + 0x10);
                 fn_3_14DC80(i);
                 fn_3_90064(0x2E3);
@@ -1216,14 +1205,14 @@ void fn_3_119F6C(void) {
                     fn_3_14CB28(i);
                 }
             }
-        } else if (p[0x31] == 3 && i == *(s16*)(g_Minigame + 0x18A4)) {
+        } else if (p->barrelColour == 3 && i == g_Minigame.bB_bombBarrelID) {
             flag = 1;
             e = hilite;
         }
         e->visible = 1;
-        e->pos[0] = *(f32*)p;
-        e->pos[1] = -*(f32*)(p + 4);
-        e->pos[2] = *(f32*)(p + 8);
+        e->pos[0] = p->currentPos.x;
+        e->pos[1] = -p->currentPos.y;
+        e->pos[2] = p->currentPos.z;
         e->rot[0] = 0.0f;
         e->rot[1] = 0.0f;
         e->rot[2] = 0.0f;
@@ -1235,7 +1224,7 @@ void fn_3_119F6C(void) {
         if (flag != 0) {
             flag = 0;
             e->draw = fn_3_119E30;
-        } else if (p[0x30] != 4) {
+        } else if (p->barrelState != 4) {
             e->draw = fn_3_119EE0;
         } else {
             e->draw = NULL;
@@ -1254,33 +1243,31 @@ void fn_3_11A20C(void) {
 extern const f32 lbl_3_rodata_342C;
 extern const f32 lbl_3_rodata_3430;
 void fn_3_11A210(void) {
-    u8* e1;
-    u8* e2;
-    u8* g;
+    Rep3310Sprite* e1;
+    Rep3310Sprite* e2;
     s32 i;
     for (i = 0; i < 100; i++) {
-        e1 = (u8*)lbl_8036E548.sprites + (i + 0x82) * 0x28;
-        e1[0x26] = 0;
-        *(void**)e1 = 0;
-        e2 = (u8*)lbl_8036E548.sprites + i * 0x28;
-        e2[0x26] = 0;
-        *(void**)e2 = 0;
-        if (g_Minigame[0x193A + i] != 0) {
-            g = g_Minigame + i * 0xC;
-            e1[0x26] = 1;
-            *(f32*)(e1 + 4) = *(f32*)(g + 0xCD0);
-            *(f32*)(e1 + 8) = -*(f32*)(g + 0xCD4);
-            *(f32*)(e1 + 0xC) = *(f32*)(g + 0xCD8);
+        e1 = &lbl_8036E548.sprites[(i + 0x82)];
+        e1->visible = 0;
+        e1->draw = 0;
+        e2 = &lbl_8036E548.sprites[i];
+        e2->visible = 0;
+        e2->draw = 0;
+        if (g_Minigame.wallBall_coinsVisibleInd[i] != 0) {
+            e1->visible = 1;
+            e1->pos[0] = g_Minigame.wallBall_coinCoordinates[i].x;
+            e1->pos[1] = -g_Minigame.wallBall_coinCoordinates[i].y;
+            e1->pos[2] = g_Minigame.wallBall_coinCoordinates[i].z;
             fn_8001D0D0(i + 0x82, lbl_3_rodata_342C);
-            if (*(s16*)(g_Minigame + 0x17C8 + i * 2) <= 1) {
-                *(f32*)(e1 + 0x14) = RandomF32_Game_Range(lbl_3_rodata_33D0, lbl_3_rodata_33D4);
+            if (MG3310.e.coinFrames[i] <= 1) {
+                e1->rot[1] = RandomF32_Game_Range(lbl_3_rodata_33D0, lbl_3_rodata_33D4);
             } else {
-                *(f32*)(e1 + 0x14) = fn_3_9FEA8(lbl_3_rodata_33FC + *(f32*)(e1 + 0x14));
+                e1->rot[1] = fn_3_9FEA8(lbl_3_rodata_33FC + e1->rot[1]);
             }
-            e2[0x26] = 1;
-            *(f32*)(e2 + 4) = *(f32*)(g + 0xCD0);
-            *(f32*)(e2 + 8) = lbl_3_rodata_33C4;
-            *(f32*)(e2 + 0xC) = *(f32*)(g + 0xCD8);
+            e2->visible = 1;
+            e2->pos[0] = g_Minigame.wallBall_coinCoordinates[i].x;
+            e2->pos[1] = lbl_3_rodata_33C4;
+            e2->pos[2] = g_Minigame.wallBall_coinCoordinates[i].z;
             fn_8001D0D0(i, lbl_3_rodata_3430);
         }
     }
@@ -1288,36 +1275,33 @@ void fn_3_11A210(void) {
 
 // .text:0x0011A350 size:0x3C mapped:0x807593E4
 u32 fn_3_11A350(int i) {
-    Ent90* base = (Ent90*)lbl_8036E548.objs;
-    return fn_800B4A94(base[i].p);
+    return fn_800B4A94(lbl_8036E548.objs->objects[i].actor);
 }
 
 // .text:0x0011A38C size:0x7C mapped:0x80759420
 void fn_3_11A38C(s32 i, s16 h) {
-    u8* p = (u8*)lbl_8036E548.objs;
-    u8* e = p + i * 0x90 + 0x34;
-    s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x70);
+    ActorObject* e = &lbl_8036E548.objs->objects[i];
+    void* v = lbl_3_common_bss_32724.animBanks[0];
     s8 t;
-    *(s32*)(e + 4) = v;
-    *(s16*)(e + 0xE) = h;
+    e->animBank = v;
+    e->seqNum = h;
     t = v != 0;
-    *(f32*)(e + 0x5C) = 0.0f;
-    *(u8*)(e + 0x58) = 1;
-    *(u8*)(e + 0x59) = t;
-    *(u8*)(e + 0x5A) = t;
-    *(f32*)(e + 0x60) = 0.0f;
-    *(f32*)(e + 0x54) = 1.0f;
-    *(u8*)(e + 0x5A) = 1;
-    *(f32*)(e + 0x5C) = 0.0f;
-    *(u8*)(e + 0x59) = 1;
-    *(u8*)(e + 0x5B) = 2;
+    e->time = 0.0f;
+    e->setAnimation = 1;
+    e->setTime = t;
+    e->setSpeed = t;
+    e->speed = 0.0f;
+    e->unk54 = 1.0f;
+    e->setSpeed = 1;
+    e->time = 0.0f;
+    e->setTime = 1;
+    e->visFlags = 2;
 }
 
 // .text:0x0011A408 size:0x524 mapped:0x8075949C
 // NONMATCHING 94%: (measured with the rodata externs) register allocation and the j + kind*7 + 0xFC sum order
 #pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
-extern Rep3310BallView g_Ball;
 extern u8 lbl_3_data_22634[];
 extern s16 lbl_3_data_21654[];
 extern f32 lbl_3_data_21520[];
@@ -1341,7 +1325,7 @@ void fn_3_11A408(void) {
 
     lbl_8036E548.sprites[0xFB].visible = 0;
     for (j = 0; j < 7; j++) {
-        item = (Rep3310Item*)(g_Minigame + 0x72C + j * 0x2C);
+        item = &MG3310.b.items[j];
         lbl_8036E548.sprites[0xE6 + j].visible = 0;
         lbl_8036E548.sprites[0xED + j].visible = 0;
         lbl_8036E548.sprites[0xF4 + j].visible = 0;
@@ -1354,9 +1338,9 @@ void fn_3_11A408(void) {
         if (item->state == 4) {
             n = j + (item->kind == 2) * 7 + 0xFC;
             if (item->kind == 2) {
-                if (g_Minigame[0x1A89] == 1) {
+                if (g_Minigame.wallBall_hitNoteBlock == 1) {
                     pos.x = item->pos[0];
-                    pos.y = g_Ball.contactPos.y;
+                    pos.y = g_Ball.AtBat_Contact_BallPos.y;
                     pos.z = item->pos[2];
                     fn_3_11A38C(n, 3);
                     fn_3_151710(&lbl_8036E548.objs->objects[n], &pos);
@@ -1440,43 +1424,42 @@ extern f32 lbl_3_data_21380[];
 extern const f32 lbl_3_rodata_33E4;
 extern const f32 lbl_3_rodata_3440;
 extern const f64 lbl_3_rodata_3438;
-extern void fn_80062C24(f32*);
 extern void fn_3_14A90C(f32*);
 extern void fn_3_14B9A0(u32 a, Vec* b);
 // .bss (laid out last-defined-first)
 static u8 lbl_3_bss_B6C0[0x40]; // unused
 static f32 lbl_3_bss_B6BC;
 static u8 lbl_3_bss_B6B8[0x4]; // unused
-void fn_3_11A92C(u8* q, s32 n) {
+void fn_3_11A92C(Rep3310Sprite* q, s32 n) {
     f32 v[3];
     u8 t;
     u8 k;
-    *(f32*)(q + 4) = lbl_3_data_22620[0];
-    *(f32*)(q + 8) = lbl_3_data_22620[1];
-    *(f32*)(q + 0xC) = lbl_3_data_22620[2];
-    *(f32*)(q + 0x10) = lbl_3_rodata_33AC;
-    *(f32*)(q + 0x14) = lbl_3_rodata_33AC;
-    *(f32*)(q + 0x18) = lbl_3_rodata_33AC;
+    q->pos[0] = lbl_3_data_22620[0];
+    q->pos[1] = lbl_3_data_22620[1];
+    q->pos[2] = lbl_3_data_22620[2];
+    q->rot[0] = lbl_3_rodata_33AC;
+    q->rot[1] = lbl_3_rodata_33AC;
+    q->rot[2] = lbl_3_rodata_33AC;
     fn_8001D0D0(n, lbl_3_data_2262C);
-    if (g_Minigame[0x1A3B] == 0 && g_d_GameSettings[7] != 2) {
-        t = g_Minigame[0x1A2A];
+    if (g_Minigame.pauseInd == 0 && g_d_GameSettings.GameModeSelected != 2) {
+        t = g_Minigame.GameMode_MiniGame;
         if (t == 1) {
-            if (g_Pitcher[0x13E] >= 3) {
-                if (*(s16*)(g_Pitcher + 0x120) == 1 && g_Pitcher[0x13E] == 3) {
+            if (g_Pitcher.pitcherActionState >= 3) {
+                if (g_Pitcher.currentStateFrameCounter == 1 && g_Pitcher.pitcherActionState == 3) {
                     lbl_3_bss_B6BC = lbl_3_rodata_33CC;
                     v[0] = lbl_3_data_21380[0];
                     v[1] = -lbl_3_data_21380[1];
                     v[2] = lbl_3_data_21380[2] - lbl_3_rodata_33E4;
-                    fn_80062C24(v);
+                    fn_80062C24((Vec*)v);
                     fn_3_90064(0x2D6);
                 }
-                *(f32*)(q + 0xC) = *(f32*)(q + 0xC) + lbl_3_bss_B6BC;
-                lbl_3_bss_B6BC = -((lbl_3_rodata_3438 * (*(f32*)(q + 0xC) - lbl_3_data_22620[2])) - lbl_3_bss_B6BC);
+                q->pos[2] = q->pos[2] + lbl_3_bss_B6BC;
+                lbl_3_bss_B6BC = -((lbl_3_rodata_3438 * (q->pos[2] - lbl_3_data_22620[2])) - lbl_3_bss_B6BC);
                 return;
             }
         } else if (t == 3) {
-            if (*(s16*)(g_Pitcher + 0x120) == 1) {
-                k = g_Pitcher[0x13E];
+            if (g_Pitcher.currentStateFrameCounter == 1) {
+                k = g_Pitcher.pitcherActionState;
                 if (k == 1) {
                     fn_3_14B9A0(lbl_3_data_217A4[6] + lbl_3_data_217A4[7], (Vec*)lbl_3_data_22620);
                     fn_3_90064(0x30E);
@@ -1494,29 +1477,28 @@ void fn_3_11A92C(u8* q, s32 n) {
 #pragma dont_inline reset
 
 // .text:0x0011AB2C size:0x140 mapped:0x80759BC0
-typedef struct { u8 b : 1; u8 r : 7; } BF1;
 void fn_3_11AB2C(void) {
     s32 n = 2;
-    u8* e;
-    u8* t;
-    if (g_d_GameSettings[7] == 2) {
+    Rep3310Sprite* e;
+    ShapeAnimState* t;
+    if (g_d_GameSettings.GameModeSelected == 2) {
         n = 0;
     }
-    e = (u8*)lbl_8036E548.sprites + n * 0x28;
+    e = &lbl_8036E548.sprites[n];
     if (e != NULL) {
-        e[0x26] = 1;
+        e->visible = 1;
         fn_3_11A92C(e, n);
-        if (g_Pitcher[0x13E] >= 2 && lbl_80366158[0x28] == 0) {
-            t = lbl_3_common_bss_32724 + 0x10;
+        if (g_Pitcher.pitcherActionState >= 2 && lbl_80366158._28 == 0) {
+            t = &lbl_3_common_bss_32724.anim.state;
             if (t != NULL) {
-                ((BF1*)(lbl_3_common_bss_32724 + 0x21))->b = 1;
+                lbl_3_common_bss_32724.anim.state.active = 1;
             }
             fn_80024DB0(t);
-            fn_80024FA4((u8*)lbl_8036E548.objs + n * 0x90 + 0x34, *(void**)(lbl_3_common_bss_32724 + 0x30), t, -1);
-        } else if (g_Pitcher[0x13E] < 2 && *(s16*)(lbl_3_common_bss_32724 + 0x1E) == 0) {
-            *(u16*)(lbl_3_common_bss_32724 + 0x1C) = 0;
-            *(f32*)(lbl_3_common_bss_32724 + 0x10) = *(u16*)(lbl_3_common_bss_32724 + 0x1C);
-            *(s16*)(lbl_3_common_bss_32724 + 0x1E) = 1;
+            fn_80024FA4((ShapeModel**)&lbl_8036E548.objs->objects[n].actor, lbl_3_common_bss_32724.anim.model, t, -1);
+        } else if (g_Pitcher.pitcherActionState < 2 && lbl_3_common_bss_32724.anim.state.loops == 0) {
+            lbl_3_common_bss_32724.anim.state.keyIdx = 0;
+            lbl_3_common_bss_32724.anim.state.frame = lbl_3_common_bss_32724.anim.state.keyIdx;
+            lbl_3_common_bss_32724.anim.state.loops = 1;
         }
     }
 }
@@ -1530,7 +1512,7 @@ void fn_3_11AC6C(void) {
     Rep3310Sprite* e;
     s32 i;
 
-    if (g_GameLogic[0x11E] >= 0x1B && g_GameLogic[0x11E] <= 0x29) {
+    if (g_GameLogic.gameStatus >= 0x1B && g_GameLogic.gameStatus <= 0x29) {
         if (lbl_8036E548.count != 0) {
             for (i = 0; i < lbl_8036E548.count; i++) {
                 e = &lbl_8036E548.sprites[i];
@@ -1541,7 +1523,7 @@ void fn_3_11AC6C(void) {
         }
         return;
     }
-    switch (g_Minigame[0x1A2A]) {
+    switch (g_Minigame.GameMode_MiniGame) {
     case 1:
         fn_3_11AB2C();
         break;
@@ -1583,7 +1565,7 @@ void fn_3_11B75C(void) {
     lbl_8036E548.sprites = _OSAllocFromHeap(0x20, lbl_8036E548.count * 0x28);
     lbl_8036E548.objs = ActorObjectInitTable(lbl_8036E548.count);
     fn_3_11D2C8(0, 0, 0x82, 0, 0);
-    fn_3_11D2C8(0x11, 0x82, 3, *(void**)(lbl_3_common_bss_32724 + 0x78), *(struct sHdr**)(lbl_3_common_bss_32724 + 0x60));
+    fn_3_11D2C8(0x11, 0x82, 3, lbl_3_common_bss_32724.animBanks[2], lbl_3_common_bss_32724.skin);
     fn_3_11D2C8(0x12, 0x85, 0x32, 0, 0);
     fn_3_11D2C8(0xD, 0xB7, 0x32, 0, 0);
     fn_3_11D2C8(0x13, 0xE9, 7, 0, 0);
@@ -1617,21 +1599,20 @@ void fn_3_11C02C(void) {
 
 // .text:0x0011C2CC size:0x32C mapped:0x8075B360
 static inline void initObj_11C2CC(s32 i) {
-    s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x74);
-    u8* p = (u8*)lbl_8036E548.objs;
-    u8* e = p + i * 0x90 + 0x34;
-    *(s32*)(e + 4) = v;
-    *(s16*)(e + 0xE) = 0;
-    *(f32*)(e + 0x5C) = 0.0f;
-    *(u8*)(e + 0x58) = 1;
-    *(u8*)(e + 0x59) = v != 0;
-    *(u8*)(e + 0x5A) = v != 0;
-    *(f32*)(e + 0x60) = 0.0f;
-    *(f32*)(e + 0x54) = 1.0f;
-    *(u8*)(e + 0x5A) = 1;
-    *(f32*)(e + 0x5C) = 0.0f;
-    *(u8*)(e + 0x59) = 1;
-    *(u8*)(e + 0x5B) = 2;
+    void* v = lbl_3_common_bss_32724.animBanks[1];
+    ActorObject* e = &lbl_8036E548.objs->objects[i];
+    e->animBank = v;
+    e->seqNum = 0;
+    e->time = 0.0f;
+    e->setAnimation = 1;
+    e->setTime = v != 0;
+    e->setSpeed = v != 0;
+    e->speed = 0.0f;
+    e->unk54 = 1.0f;
+    e->setSpeed = 1;
+    e->time = 0.0f;
+    e->setTime = 1;
+    e->visFlags = 2;
 }
 void fn_3_11C2CC(void) {
     s32 i;
@@ -1649,21 +1630,20 @@ void fn_3_11C2CC(void) {
 
 // .text:0x0011C5F8 size:0x708 mapped:0x8075B68C
 static inline void initObj_11C5F8(s32 i, s16 h) {
-    s32 v = *(s32*)(lbl_3_common_bss_32724 + 0x70);
-    u8* p = (u8*)lbl_8036E548.objs;
-    u8* e = p + i * 0x90 + 0x34;
-    *(s32*)(e + 4) = v;
-    *(s16*)(e + 0xE) = h;
-    *(f32*)(e + 0x5C) = 0.0f;
-    *(u8*)(e + 0x58) = 1;
-    *(u8*)(e + 0x59) = v != 0;
-    *(u8*)(e + 0x5A) = v != 0;
-    *(f32*)(e + 0x60) = 0.0f;
-    *(f32*)(e + 0x54) = 1.0f;
-    *(u8*)(e + 0x5A) = 1;
-    *(f32*)(e + 0x5C) = 0.0f;
-    *(u8*)(e + 0x59) = 1;
-    *(u8*)(e + 0x5B) = 2;
+    void* v = lbl_3_common_bss_32724.animBanks[0];
+    ActorObject* e = &lbl_8036E548.objs->objects[i];
+    e->animBank = v;
+    e->seqNum = h;
+    e->time = 0.0f;
+    e->setAnimation = 1;
+    e->setTime = v != 0;
+    e->setSpeed = v != 0;
+    e->speed = 0.0f;
+    e->unk54 = 1.0f;
+    e->setSpeed = 1;
+    e->time = 0.0f;
+    e->setTime = 1;
+    e->visFlags = 2;
 }
 void fn_3_11C5F8(void) {
     u16 i;
@@ -1687,7 +1667,6 @@ void fn_3_11C5F8(void) {
 
 // .text:0x0011CD00 size:0x204 mapped:0x8075BD94
 extern void* _OSAllocFromHeap(int, int);
-extern void fn_80025C58(void*, void*);
 void fn_3_11CD00(void) {
     lbl_8036E548.count = 3;
     lbl_8036E548.sprites = _OSAllocFromHeap(0x20, lbl_8036E548.count * 0x28);
@@ -1695,13 +1674,13 @@ void fn_3_11CD00(void) {
     fn_3_11D2C8(0xD, 0, 1, 0, 0);
     fn_3_11D2C8(0xE, 1, 1, 0, 0);
     fn_3_11D2C8(0xF, 2, 1, 0, 0);
-    *(f32*)(lbl_3_common_bss_32724 + 0x14) = 0.5f;
-    fn_80025C58(*(void**)lbl_3_common_bss_32724, (u8*)lbl_8036E548.objs + 0x154);
+    lbl_3_common_bss_32724.anim.state.speed = 0.5f;
+    fn_80025C58((ShapeData*)lbl_3_common_bss_32724.model, (ShapeModel**)&lbl_8036E548.objs->objects[2].actor);
 }
 
 // .text:0x0011CF04 size:0x80 mapped:0x8075BF98
 void fn_3_11CF04(void) {
-    if (g_d_GameSettings[7] != 6) {
+    if (g_d_GameSettings.GameModeSelected != 6) {
         lbl_8036E548.count = 0;
     }
     lbl_8036E548._307E = 0;
@@ -1726,27 +1705,27 @@ extern void fn_800B993C(void);
 extern void fn_3_90CB0(void);
 void fn_3_11CF84(void) {
     s32 i;
-    if ((g_Minigame[0x1A3C] == 0 || g_Minigame[0x1E2A] >= 6) && g_Minigame[0x1A38] == 0) {
+    if ((g_Minigame._1A3C == 0 || g_Minigame._1E2A >= 6) && g_Minigame._1A38 == 0) {
         for (i = 0; i < 4; i++) {
             fn_80011B64(i);
         }
     }
     for (i = lbl_8036E548.count - 1; i >= 0; i--) {
-        ((u8*)lbl_8036E548.objs)[i * 0x90 + 0xA0] = 0;
+        lbl_8036E548.objs->objects[i].animateBones = 0;
     }
     for (i = lbl_8036E548.count - 1; i >= 0; i--) {
-        fn_800B4CDC(*(void**)((u8*)lbl_8036E548.objs + i * 0x90 + 0x34));
+        fn_800B4CDC(lbl_8036E548.objs->objects[i].actor);
     }
-    if (g_d_GameSettings[7] == 7) {
+    if (g_d_GameSettings.GameModeSelected == 7) {
         for (i = lbl_8036E548.count - 1; i >= 0; i--) {
-            fn_800B4278(*(void**)((u8*)lbl_8036E548.objs + i * 0x90 + 0x34));
+            fn_800B4278(lbl_8036E548.objs->objects[i].actor);
         }
         fn_800ACFB0(lbl_8036E548.objs);
         fn_800ACFB0(lbl_8036E548.sprites);
     }
     fn_800B993C();
     fn_3_90CB0();
-    if (g_Minigame[0x1A38] == 0 || g_Minigame[0x1A3C] != 0) {
+    if (g_Minigame._1A38 == 0 || g_Minigame._1A3C != 0) {
         fn_3_11CF04();
     }
 }
@@ -1754,7 +1733,7 @@ void fn_3_11CF84(void) {
 // .text:0x0011D1B0 size:0x118 mapped:0x8075C244
 void fn_3_11D1B0(void) {
     s32 i;
-    switch (g_Minigame[0x1A2A]) {
+    switch (g_Minigame.GameMode_MiniGame) {
     case 1:
         ((void (*)(void))fn_3_11CD00)();
         break;
@@ -1775,14 +1754,14 @@ void fn_3_11D1B0(void) {
         break;
     }
     for (i = 0; i < lbl_8036E548.count; i++) {
-        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 4) = lbl_3_rodata_33AC;
-        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 8) = lbl_3_rodata_33AC;
-        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 0xC) = lbl_3_rodata_33AC;
-        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 0x10) = lbl_3_rodata_33AC;
-        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 0x14) = lbl_3_rodata_33AC;
-        *(f32*)((u8*)lbl_8036E548.sprites + i * 0x28 + 0x18) = lbl_3_rodata_33AC;
-        *(u8*)((u8*)lbl_8036E548.sprites + i * 0x28 + 0x26) = 0;
-        *(void**)((u8*)lbl_8036E548.sprites + i * 0x28) = NULL;
+        lbl_8036E548.sprites[i].pos[0] = lbl_3_rodata_33AC;
+        lbl_8036E548.sprites[i].pos[1] = lbl_3_rodata_33AC;
+        lbl_8036E548.sprites[i].pos[2] = lbl_3_rodata_33AC;
+        lbl_8036E548.sprites[i].rot[0] = lbl_3_rodata_33AC;
+        lbl_8036E548.sprites[i].rot[1] = lbl_3_rodata_33AC;
+        lbl_8036E548.sprites[i].rot[2] = lbl_3_rodata_33AC;
+        lbl_8036E548.sprites[i].visible = 0;
+        lbl_8036E548.sprites[i].draw = NULL;
     }
 }
 

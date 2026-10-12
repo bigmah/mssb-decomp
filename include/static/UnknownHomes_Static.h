@@ -34,9 +34,13 @@ extern void fn_800528AC(fn_800528AC_parameter);
 extern camera_803c639c_s* fn_80052768_getCamera(int);
 extern int fn_8001C67C_animation(int, int);
 extern f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
+#ifndef __MAIN_FILE_800263FC_H__ // the typed prototypes are in main/file_800263FC.h and main/file_80034F50.h
 extern void* fn_800339F0(void* after, u8 type); // TODO type: Emitter* (Emitter*, u8)
 extern void fn_80034CEC(void* group); // (SpaniGroup*)
+#endif
+#ifndef __MAIN_FILE_800A6870_H__
 extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr); // instr: AssetLoadInstructions* (main/file_800A6870.h)
+#endif
 extern void sndFXRelated(u16);
 extern void fn_800B0A14_removeQueue(void*);
 
@@ -143,10 +147,14 @@ extern void changeScene(s32 scene, s32 state);
 extern void minigamesSetSomePointers(void);
 
 
+#ifndef __MAIN_FILE_80034F50_H__
 extern void fn_800363D8(void*, s32, s32, s32, s32); // TODO type: menus/rep_0788; (SpaniOwner*, s32, u32, u16, u32)
+#endif
 
 extern void fn_8002955C(Vec* pos, Vec* axis, struct ParticleParamsC* prm);
+#ifndef __MAIN_FILE_800263FC_H__
 extern void fn_80031CA4(Vec*, u32*); // TODO type: menus/rep_08E8; (Vec*, ParticleParams5*)
+#endif
 
 extern void fn_80037AA0(struct RigidBody* body, s32 charIdx, void (*callback)(void), u16 joint, void* anim);
 

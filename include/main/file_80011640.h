@@ -157,7 +157,7 @@ typedef struct CharMgr {
     /*0x0064*/ ActorObjectTable* slots64;
     /*0x0068*/ ActorObjectTable* slots68;
     /*0x006C*/ ActorObjectTable* slots6C;
-    /*0x0070*/ u32 _0070;
+    /*0x0070*/ ActorObjectTable* _0070; // stadium actors (lights at lights[])
     /*0x0074*/ u8 _0074[0xAC - 0x74];
     /*0x00AC*/ void* lights[4];
     /*0x00BC*/ u8 _00BC[0x13C - 0xBC];
@@ -277,8 +277,12 @@ void fn_8001B308(s32 index, s32 enable);
 void fn_8001D074(s32 index, s32 enable);
 void fn_800177B4(void);
 void fn_8001C528(void);
+// game/rep_E08.c was compiled against (int x6, u8, int) / (int x5, u8, int) prototypes
+// and defines CHARANIM_REL_PROTOTYPES to keep them.
+#ifndef CHARANIM_REL_PROTOTYPES
 void QueueCharacterAnimation(s32 index, s32 anim, s32 a, s32 b, s32 c, s32 d, s32 e);
 void AnimateCharacter(s32 index, s32 anim, s32 a, u8 mode, s32 b, s32 c, s32 d, s32 e);
+#endif
 s32 fn_8001758C(u8* state, s32 actor, u8 kind, u8 team, u8 roster, s8 arg5, u8 index, u8 arg7);
 void challengeMapRelated(void);
 
