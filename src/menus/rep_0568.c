@@ -5,12 +5,14 @@
 #include "Dolphin/mtx.h"
 #include "main/file_80011640.h"
 #include "menus/menu_work.h"
+#include "main/menu_globals.h" // SceneFlow lbl_803CBBCC, TutorialSteps lbl_803C66B0
+#include "menus/menu_asset.h"
 
 extern CaptainSelMenu lbl_2_bss_100B8;
 extern MenuCharLoadTask* lbl_803CC1B8;
-extern u8 lbl_800FE930[];
+extern u8 lbl_800FE930[][6]; // per lbl_80361B20._F4
 extern u8 lbl_800FE5D4[];
-extern u8 lbl_80361B20[];
+extern MenuProgress lbl_80361B20;
 // Menu selection state (lbl_2_bss_F410), only the fields used here.
 typedef struct MenuSelect0568 {
     /*0x00*/ u8 _00[0x10];
@@ -20,7 +22,7 @@ typedef struct MenuSelect0568 {
 extern MenuSelect0568 lbl_2_bss_F410;
 extern MenuCharLoadTask* lbl_2_bss_1224;
 extern u8* lbl_2_bss_122C;
-extern u8* lbl_2_data_2780[];
+extern MenuAsset* lbl_2_data_2780[];
 extern void* _OSAllocFromHeap(s32, s32);
 typedef struct {
     u8* p;
@@ -53,9 +55,8 @@ typedef struct MenuCharSelect {
 } MenuCharSelect;
 extern MenuCharSelect lbl_8034E9A0;
 extern MenuRosterChar inMemRoster[2][9];
-extern u8* lbl_803CBBCC[];
-extern u8 lbl_803C6CF8[];
-extern u8 lbl_803C66B0[];
+#include "main/aramloader.h"
+extern ARAMLoader lbl_803C6CF8;
 extern u8 lbl_2_bss_100B4[];
 // ARAM load descriptors of the menu character models (AssetLoadInstructions).
 typedef struct MenuAssetInfo {
@@ -226,7 +227,7 @@ void fn_2_1937C(ActorObjectTable* list, MtxPtr view) {
 void fn_2_17AB8(void) {
     s32 size;
     s32 i;
-    size = ((*(u32*)(lbl_2_data_2780[0] + 4) & 0x0FFFFFFF) + 0x1F) & ~0x1F;
+    size = ((lbl_2_data_2780[0]->sizeFlags & 0x0FFFFFFF) + 0x1F) & ~0x1F;
     lbl_2_bss_122C = _OSAllocFromHeap(0x20, size * lbl_2_bss_100B8.count);
     for (i = 0; i < lbl_2_bss_100B8.count; i++) {
         lbl_2_bss_101AC[i].p = lbl_2_bss_122C + size * i;
@@ -253,15 +254,15 @@ void fn_2_18148(MenuCharLoadTask* task) {
         task->step++;
         break;
     case 2:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)(u8)lbl_803C6CF8.idle == 1) {
             fn_2_16F78(task->index);
             gf = g_d_GameSettings._10;
-            if (gf == 0 && lbl_803C66B0[0x59] == 0 && task->index == 1) {
+            if (gf == 0 && lbl_803C66B0.portOf[0] == 0 && task->index == 1) {
                 lbl_8036E548.actors[task->index].mode[0] = 0;
             } else {
                 lbl_8036E548.actors[task->index].mode[0] = (task->showFlag != 0);
             }
-            if (g_d_GameSettings.GameModeSelected == 5 || gf != 0 || *(u16*)(lbl_803CBBCC[0] + 6) == 5) {
+            if (g_d_GameSettings.GameModeSelected == 5 || gf != 0 || lbl_803CBBCC->prevScene == 5) {
                 fn_2_14BB8(task->index, 1);
             } else if (lbl_2_bss_100B8.picked[0] != 0) {
                 fn_2_14BB8(task->index, task->index != 0);
@@ -284,7 +285,7 @@ void fn_2_18748(void) {
     case 0:
         for (i = 0; i < lbl_2_bss_100B8.count; i++) {
             if (g_d_GameSettings.GameModeSelected == 5) {
-                task->charId[i] = (lbl_800FE930 + lbl_80361B20[0xF4] * 6)[lbl_2_bss_F410.charSel[task->index]];
+                task->charId[i] = lbl_800FE930[lbl_80361B20._F4][lbl_2_bss_F410.charSel[task->index]];
             } else {
                 task->charId[i] = lbl_800FE5D4[lbl_2_bss_F410.charSel[task->index]];
             }
@@ -331,7 +332,7 @@ void fn_2_16DA8(void) {
     do {
         lbl_2_bss_100B8.loading[i] = 0;
     } while (i-- != 0);
-    if (*(u16*)(lbl_803CBBCC[0] + 6) == 5 || g_d_GameSettings.GameModeSelected == 5) {
+    if (lbl_803CBBCC->prevScene == 5 || g_d_GameSettings.GameModeSelected == 5) {
         lbl_2_bss_100B8._46[0] = 1;
         lbl_2_bss_100B8._46[1] = 0;
         return;
@@ -789,9 +790,9 @@ void fn_2_18398(void) {
         sel = lbl_8034E9A0._4755;
         if (sel == 0) {
             if (mode == 5) {
-                task->charId[task->index] = (lbl_800FE930 + lbl_80361B20[0xF4] * 6)[*(s32*)((u8*)lbl_2_bss_F410.charSel + task->index * 4)];
+                task->charId[task->index] = lbl_800FE930[lbl_80361B20._F4][lbl_2_bss_F410.charSel[task->index]];
             } else {
-                task->charId[task->index] = lbl_800FE5D4[*(s32*)((u8*)lbl_2_bss_F410.charSel + task->index * 4)];
+                task->charId[task->index] = lbl_800FE5D4[lbl_2_bss_F410.charSel[task->index]];
             }
             if (task->index == 2) {
                 task->index = 0;
