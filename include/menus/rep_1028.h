@@ -2,11 +2,10 @@
 #define __MENUS_REP_1028_H__
 
 #include "mssbTypes.h"
+#include "menus/menu_work.h"
 
-typedef struct {
-    u8 _00[0x90];
-    s16 state;
-} MenuStateObject;
+// The 0xBC-byte world objects of MenuCtx.objects (menus/menu_work.h).
+typedef MenuObject MenuStateObject;
 
 typedef void (*MenuStateCallback)(MenuStateObject* object);
 
@@ -15,14 +14,14 @@ void fn_2_90428(s32 index);
 void fn_2_8F528(s32 index);
 void fn_2_8F27C(s32 index);
 
-void fn_2_90DE4(u8* object, f32 limit);
+void fn_2_90DE4(MenuObject* object, f32 limit);
 
 void fn_2_8F6D0(s32 index, s32 value);
 void fn_2_90538(void);
-void fn_2_90718(u8* object);
-void fn_2_90888(u8* object);
-void fn_2_90698(u8* object);
-void fn_2_90C4C(u8* object);
+void fn_2_90718(MenuObject* object);
+void fn_2_90888(MenuObject* object);
+void fn_2_90698(MenuObject* object);
+void fn_2_90C4C(MenuObject* object);
 void fn_2_8FD14(void);
 
 void fn_2_903A8(s32 index);
@@ -69,21 +68,21 @@ void fn_2_908FC(MenuStateObject* object);
 void fn_2_907F4(MenuStateObject* object);
 
 
-void fn_2_90E98(u8* object);
+void fn_2_90E98(MenuObject* object);
 
-void fn_2_90CD0(u8* object);
+void fn_2_90CD0(MenuObject* object);
 
-void fn_2_91788(u8* object);
+void fn_2_91788(MenuObject* object);
 
 void fn_2_8FE9C(s32 index);
 
 void fn_2_9007C(void);
 
-void fn_2_91D74(u8* object);
+void fn_2_91D74(MenuObject* object);
 
-void fn_2_90C14(u8* object);
+void fn_2_90C14(MenuObject* object);
 
-void fn_2_90838(u8* object);
+void fn_2_90838(MenuObject* object);
 
 void fn_2_8F758(s32 index, u8 value);
 
@@ -91,7 +90,7 @@ void fn_2_8F73C(s32 index, u8 value);
 
 u8 fn_2_8F720(s32 index);
 
-void fn_2_90628(u8* object);
+void fn_2_90628(MenuObject* object);
 
 void fn_2_8F688(void);
 
@@ -99,13 +98,13 @@ void fn_2_8F640(void);
 
 void fn_2_8F774(s32 index);
 
-void fn_2_916F8(u8* object);
+void fn_2_916F8(MenuObject* object);
 
-void fn_2_91488(u8* object);
+void fn_2_91488(MenuObject* object);
 
-void fn_2_91218(u8* object);
+void fn_2_91218(MenuObject* object);
 
-void fn_2_90A2C(u8* object);
+void fn_2_90A2C(MenuObject* object);
 
 void fn_2_9033C(s32 index, const void* position, const f32* unused, f32 value, f32 unused2, f32 unused3); // rep_0B08 passes the extras
 

@@ -193,9 +193,51 @@ typedef struct MenuEntry {
 // A placed world object / location (0xBC bytes); MenuCtx.objects.
 typedef struct MenuObject {
     /*0x00*/ Vec position;
-    /*0x0C*/ u8 _0C[0x28 - 0x0C];
+    /*0x0C*/ f32 _0C;
+    /*0x10*/ u8 _10[0x14 - 0x10];
+    /*0x14*/ f32 _14;
+    /*0x18*/ f32 _18;
+    /*0x1C*/ f32 _1C;
+    /*0x20*/ f32 _20;
+    /*0x24*/ f32 _24;
     /*0x28*/ f32 _28;
-    /*0x2C*/ u8 _2C[0xBC - 0x2C];
+    /*0x2C*/ f32 _2C;
+    /*0x30*/ f32 _30;
+    /*0x34*/ u8 _34[0x38 - 0x34];
+    /*0x38*/ f32 _38;
+    /*0x3C*/ f32 _3C;
+    /*0x40*/ u8 _40[0x44 - 0x40];
+    /*0x44*/ f32 _44;
+    /*0x48*/ u8 _48[0x78 - 0x48];
+    /*0x78*/ s32 _78;
+    /*0x7C*/ s32 _7C;
+    /*0x80*/ f32 _80;
+    /*0x84*/ f32 _84;
+    /*0x88*/ f32 _88;
+    /*0x8C*/ f32 _8C;
+    /*0x90*/ s16 state; // index into the object's state callback table
+    /*0x92*/ s16 _92;
+    /*0x94*/ s16 _94;
+    /*0x96*/ u8 _96[0x9C - 0x96];
+    /*0x9C*/ s16 _9C;
+    /*0x9E*/ u8 _9E[0xA0 - 0x9E];
+    /*0xA0*/ s16 _A0;
+    /*0xA2*/ u8 _A2[0xA6 - 0xA2];
+    /*0xA6*/ s16 _A6;
+    /*0xA8*/ u8 _A8;
+    /*0xA9*/ u8 _A9;
+    /*0xAA*/ u8 _AA;
+    /*0xAB*/ u8 active;
+    /*0xAC*/ u8 _AC;
+    /*0xAD*/ u8 _AD;
+    /*0xAE*/ s8 _AE;
+    /*0xAF*/ u8 _AF[0xB2 - 0xAF];
+    /*0xB2*/ u8 _B2;
+    /*0xB3*/ u8 _B3;
+    /*0xB4*/ u8 _B4;
+    /*0xB5*/ u8 _B5;
+    /*0xB6*/ u8 _B6[0xB8 - 0xB6];
+    /*0xB8*/ void (*update)(struct MenuObject* object); // lbl_2_data_308B4[active]
 } MenuObject; // size: 0xBC
 
 // 6-byte batting-order slot; MenuCtx.order.
@@ -303,6 +345,14 @@ typedef struct MenuCtx {
     /*0x44F8*/ u8 _44F8[6]; // indexed
     /*0x44FE*/ u8 _44FE[8]; // indexed
 } MenuCtx; // size: 0x4508
+
+// Animation archive the menus load (lbl_2_bss_3401BC); the bank entries are
+// relocated in place.
+typedef struct MenuAnimArchive {
+    /*0x00*/ u8 _00[0xC];
+    /*0x0C*/ void* banks[17]; // ANIMBank*, indexed like MenuCtx.objects
+    /*0x50*/ u8 _50[1];       // indexed
+} MenuAnimArchive;
 
 typedef struct MenuSortEntry {
     /*0x0*/ s32 k;

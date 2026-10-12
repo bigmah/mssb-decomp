@@ -1,32 +1,26 @@
 #include "menus/rep_1028.h"
 
-extern void* lbl_2_bss_3401BC;
+extern MenuAnimArchive* lbl_2_bss_3401BC;
 extern const f32 lbl_2_rodata_1080;
 extern const f32 lbl_2_rodata_1078;
 extern const f32 lbl_2_rodata_107C;
-typedef struct {
-    u32 pad0;
-    u32 resource;
-    u8 pad8[6];
-    s16 type;
-    u8 pad10[0x44];
-    f32 f54;
-    u8 enabled;
-    u8 flag59;
-    u8 flag5A;
-    u8 mode;
-    f32 f5C;
-    f32 f60;
-} MenuEffect;
 
 #include <string.h>
 #include <math.h>
 
 #include "static/UnknownHomes_Static.h"
 #include "main/file_800A7C08.h"
-extern void* lbl_2_bss_340140[];
-extern u8* lbl_803CC1B8;
-extern u8* lbl_2_bss_1A824C[];
+#include "main/file_80011640.h"
+
+// Effects are the ActorObjects of CharMgr.slots68 (main/file_800BD8C4.h).
+typedef ActorObject MenuEffect;
+
+// objects[i].actor of an ActorObjectTable, indexed through a void** the way the original does.
+#define SLOT_ACTOR(table, i) \
+    (((GameActor**)(table))[(i) * (s32)(sizeof(ActorObject) / sizeof(void*)) + (s32)(offsetof(ActorObjectTable, objects) / sizeof(void*))])
+extern CharMgr* lbl_2_bss_340140[];
+extern MenuTask* lbl_803CC1B8;
+extern MenuData* lbl_2_bss_1A824C[];
 extern void fn_2_3FA14(void);
 extern void fn_2_46D34(s32 delta);
 extern s32 lbl_2_data_38BC;
@@ -34,20 +28,7 @@ extern s32 lbl_2_data_38BC;
 extern u8 lbl_800F7478[];
 
 extern void fn_2_8AC84(s32 index, s32 value);
-typedef struct {
-    u8 _00[0x90];
-    s16 state;
-    u8 _92[0x19];
-    u8 active;
-    u8 _AC[0x10];
-} MenuSlot;
-
-typedef struct {
-    u8 _00[0x21E0];
-    MenuSlot slots[32];
-} MenuSlots;
-
-extern MenuSlots* lbl_2_bss_1A8248[];
+extern MenuCtx* lbl_2_bss_1A8248[];
 extern MenuStateCallback lbl_2_data_308A4[4];
 extern MenuStateCallback lbl_2_data_30898[3];
 extern MenuStateCallback lbl_2_data_3088C[3];
@@ -76,68 +57,68 @@ extern u8 lbl_2_data_369C[];
 
 // .text:0x904A8 size:0x90
 void fn_2_904A8(void) {
-    u8* slot;
+    MenuObject* slot;
     s32 i;
     for (i = 0; i < 29; i++) {
-        slot = (u8*)&lbl_2_bss_1A8248[0]->slots[i];
-        *(s32*)(slot + 0x78) = i;
-        *(s32*)(slot + 0x7C) = i;
-        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
-        *(f32*)(slot + 0x38) = lbl_2_rodata_1080;
-        *(f32*)(slot + 0x3C) = lbl_2_rodata_1080;
-        slot[0xAA] = 0;
-        *(s16*)(slot + 0x92) = i;
-        *(s16*)(slot + 0x94) = -1;
-        slot[0xA8] = 0;
-        slot[0xAB] = 0;
-        *(s16*)(slot + 0x90) = 0;
-        *(s8*)(slot + 0xAE) = -1;
-        slot[0xAC] = 0;
-        slot[0xAD] = 0;
-        *(f32*)(slot + 0x80) = lbl_2_rodata_1080;
-        *(s16*)(slot + 0xA6) = 0;
-        slot[0xB2] = 0xFF;
-        slot[0xB4] = 0;
+        slot = &lbl_2_bss_1A8248[0]->objects[i];
+        slot->_78 = i;
+        slot->_7C = i;
+        slot->_84 = lbl_2_rodata_1080;
+        slot->_38 = lbl_2_rodata_1080;
+        slot->_3C = lbl_2_rodata_1080;
+        slot->_AA = 0;
+        slot->_92 = i;
+        slot->_94 = -1;
+        slot->_A8 = 0;
+        slot->active = 0;
+        slot->state = 0;
+        slot->_AE = -1;
+        slot->_AC = 0;
+        slot->_AD = 0;
+        slot->_80 = lbl_2_rodata_1080;
+        slot->_A6 = 0;
+        slot->_B2 = 0xFF;
+        slot->_B4 = 0;
     }
 }
 
 // .text:0x8FC88 size:0x8C
 void fn_2_8FC88(s32 index) {
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0xC);
-        MenuEffect* effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+        void* resource = lbl_2_bss_3401BC->banks[0];
+        MenuEffect* effect = &lbl_2_bss_340140[0]->slots68->objects[index];
         u8 valid;
-        effect->resource = resource;
-        effect->type = 0;
+        effect->animBank = resource;
+        effect->seqNum = 0;
         valid = resource != 0;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
-        effect->flag5A = effect->flag59 = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
+        effect->setSpeed = effect->setTime = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
 // .text:0x903A8 size:0x80
 void fn_2_903A8(s32 index) {
     s32 offset = index * 0x14;
-    MenuSlot* slot = &lbl_2_bss_1A8248[0]->slots[index];
+    MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
     memcpy(slot, lbl_2_data_369C + offset, 12);
-    *(f32*)((u8*)slot + 0x30) = lbl_2_rodata_1080;
-    *(f32*)((u8*)slot + 0x28) = ((f32*)lbl_2_data_369C)[index * 5 + 3];
+    slot->_30 = lbl_2_rodata_1080;
+    slot->_28 = ((f32*)lbl_2_data_369C)[index * 5 + 3];
 }
 
 // .text:0x90428 size:0x80
 void fn_2_90428(s32 index) {
     s32 offset = index * 0x14;
-    MenuSlot* slot = &lbl_2_bss_1A8248[0]->slots[index];
+    MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
     memcpy(slot, lbl_2_data_3198 + offset, 12);
-    *(f32*)((u8*)slot + 0x30) = lbl_2_rodata_1080;
-    *(f32*)((u8*)slot + 0x28) = ((f32*)lbl_2_data_3198)[index * 5 + 3];
+    slot->_30 = lbl_2_rodata_1080;
+    slot->_28 = ((f32*)lbl_2_data_3198)[index * 5 + 3];
 }
 
 // .text:0x00091B7C size:0x4
@@ -147,38 +128,38 @@ void fn_2_91B7C(void) {}
 void fn_2_91B28(void) {}
 
 // .text:0x00091C40 size:0xC
-void fn_2_91C40(u8* object) {
-    *(s16*)(object + 0x90) = 2;
+void fn_2_91C40(MenuObject* object) {
+    object->state = 2;
 }
 
 // .text:0x00091B70 size:0xC
-void fn_2_91B70(u8* object) {
-    *(s16*)(object + 0x90) = 2;
+void fn_2_91B70(MenuObject* object) {
+    object->state = 2;
 }
 
 // .text:0x00091B2C size:0xC
-void fn_2_91B2C(u8* object) {
-    *(s16*)(object + 0x90) = 1;
+void fn_2_91B2C(MenuObject* object) {
+    object->state = 1;
 }
 
 // .text:0x00091B1C size:0xC
-void fn_2_91B1C(u8* object) {
-    *(s16*)(object + 0x90) = 2;
+void fn_2_91B1C(MenuObject* object) {
+    object->state = 2;
 }
 
 // .text:0x000919C0 size:0xC
-void fn_2_919C0(u8* object) {
-    *(s16*)(object + 0x90) = 2;
+void fn_2_919C0(MenuObject* object) {
+    object->state = 2;
 }
 
 // .text:0x000919B4 size:0xC
-void fn_2_919B4(u8* object) {
-    *(s16*)(object + 0x90) = 2;
+void fn_2_919B4(MenuObject* object) {
+    object->state = 2;
 }
 
 // .text:0x000918E8 size:0xC
-void fn_2_918E8(u8* object) {
-    *(s16*)(object + 0x90) = 2;
+void fn_2_918E8(MenuObject* object) {
+    object->state = 2;
 }
 
 // .text:0x00091C08 size:0x38
@@ -283,26 +264,26 @@ void fn_2_907F4(MenuStateObject* object) {
     lbl_2_data_308A4[object->state](object);
 }
 
-void fn_2_90E98(u8* object) {
-    MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+void fn_2_90E98(MenuObject* object) {
+    MenuObject* entry = &lbl_2_bss_1A8248[0]->objects[object->_78];
     entry->active = 0;
     entry->state = 0;
 }
 
-void fn_2_90C14(u8* object) {
-    if (*(s16*)(object + 0xA0) == 1) {
-        MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+void fn_2_90C14(MenuObject* object) {
+    if (object->_A0 == 1) {
+        MenuObject* entry = &lbl_2_bss_1A8248[0]->objects[object->_78];
         entry->active = 0;
         entry->state = 0;
     }
 }
 
-void fn_2_90838(u8* object) {
-    if (*(s16*)(object + 0xA0) == 1) {
-        fn_2_8AC84(*(s32*)(object + 0x78), 0);
-        *(s16*)(object + 0xA0) = 2;
+void fn_2_90838(MenuObject* object) {
+    if (object->_A0 == 1) {
+        fn_2_8AC84(object->_78, 0);
+        object->_A0 = 2;
     }
-    *(s16*)(object + 0x90) = 2;
+    object->state = 2;
 }
 
 // fn_2_8F758, size:0x1C
@@ -321,12 +302,12 @@ u8 fn_2_8F720(s32 index) {
 }
 
 // fn_2_90628, size:0x70
-void fn_2_90628(u8* object) {
-    if (*(s16*)(object + 0xA0) == 1) {
-        fn_2_8AC84(*(s32*)(object + 0x78), 0);
-        *(s16*)(object + 0xA0) = 2;
+void fn_2_90628(MenuObject* object) {
+    if (object->_A0 == 1) {
+        fn_2_8AC84(object->_78, 0);
+        object->_A0 = 2;
         {
-            MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+            MenuObject* entry = &lbl_2_bss_1A8248[0]->objects[object->_78];
             entry->active = 0;
             entry->state = 0;
         }
@@ -349,45 +330,45 @@ void fn_2_8F640(void) {
 
 // fn_2_8F774, size:0x3C
 void fn_2_8F774(s32 index) {
-    u8* data = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x68);
-    fn_800B4A94(((void**)data)[index * 0x24 + 13]);
+    ActorObjectTable* data = lbl_2_bss_340140[0]->slots68;
+    fn_800B4A94(SLOT_ACTOR(data, index));
 }
 
 // fn_2_916F8, size:0x84
-void fn_2_916F8(u8* object) {
-    u8* data = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x68);
-    if (fn_800B4A94(((void**)data)[*(s32*)(object + 0x78) * 0x24 + 13]) == 0.0f) {
-        MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+void fn_2_916F8(MenuObject* object) {
+    ActorObjectTable* data = lbl_2_bss_340140[0]->slots68;
+    if (fn_800B4A94(SLOT_ACTOR(data, object->_78)) == 0.0f) {
+        MenuObject* entry = &lbl_2_bss_1A8248[0]->objects[object->_78];
         entry->active = 2;
         entry->state = 0;
     }
 }
 
 // fn_2_91488, size:0x84
-void fn_2_91488(u8* object) {
-    u8* data = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x68);
-    if (fn_800B4A94(((void**)data)[*(s32*)(object + 0x78) * 0x24 + 13]) == 0.0f) {
-        MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+void fn_2_91488(MenuObject* object) {
+    ActorObjectTable* data = lbl_2_bss_340140[0]->slots68;
+    if (fn_800B4A94(SLOT_ACTOR(data, object->_78)) == 0.0f) {
+        MenuObject* entry = &lbl_2_bss_1A8248[0]->objects[object->_78];
         entry->active = 2;
         entry->state = 0;
     }
 }
 
 // fn_2_91218, size:0x84
-void fn_2_91218(u8* object) {
-    u8* data = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x68);
-    if (fn_800B4A94(((void**)data)[*(s32*)(object + 0x78) * 0x24 + 13]) == 0.0f) {
-        MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+void fn_2_91218(MenuObject* object) {
+    ActorObjectTable* data = lbl_2_bss_340140[0]->slots68;
+    if (fn_800B4A94(SLOT_ACTOR(data, object->_78)) == 0.0f) {
+        MenuObject* entry = &lbl_2_bss_1A8248[0]->objects[object->_78];
         entry->active = 2;
         entry->state = 0;
     }
 }
 
 // fn_2_90A2C, size:0x84
-void fn_2_90A2C(u8* object) {
-    u8* data = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x68);
-    if (fn_800B4A94(((void**)data)[*(s32*)(object + 0x78) * 0x24 + 13]) == 0.0f) {
-        MenuSlot* entry = &lbl_2_bss_1A8248[0]->slots[*(s32*)(object + 0x78)];
+void fn_2_90A2C(MenuObject* object) {
+    ActorObjectTable* data = lbl_2_bss_340140[0]->slots68;
+    if (fn_800B4A94(SLOT_ACTOR(data, object->_78)) == 0.0f) {
+        MenuObject* entry = &lbl_2_bss_1A8248[0]->objects[object->_78];
         entry->active = 2;
         entry->state = 0;
     }
@@ -395,178 +376,178 @@ void fn_2_90A2C(u8* object) {
 
 // fn_2_9033C, size:0x6C
 void fn_2_9033C(s32 index, const void* position, const f32* unused, f32 value, f32 unused2, f32 unused3) {
-    MenuSlot* slot = &lbl_2_bss_1A8248[0]->slots[index];
+    MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
     memcpy(slot, position, 0xC);
-    *(f32*)((u8*)slot + 0x28) = value;
-    *(f32*)((u8*)slot + 0x30) = 0.0f;
-    *(f32*)((u8*)slot + 0x28) = value;
+    slot->_28 = value;
+    slot->_30 = 0.0f;
+    slot->_28 = value;
 }
 
 // fn_2_8F7B0, size:0x88
 void fn_2_8F7B0(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x4C);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = type;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[16];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = type;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
 // fn_2_8F838, size:0x88
 void fn_2_8F838(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x48);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = type;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[15];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = type;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
 // fn_2_8F8C0, size:0x88
 void fn_2_8F8C0(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x44);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = type;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[14];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = type;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
 // fn_2_8F948, size:0x88
 void fn_2_8F948(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x40);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = type;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[13];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = type;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
 // fn_2_8F9D0, size:0x88
 void fn_2_8F9D0(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x3C);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = type;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[12];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = type;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
 // fn_2_8FA58, size:0x88
 void fn_2_8FA58(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x38);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = type;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[11];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = type;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
 // fn_2_8FAE0, size:0x88
 void fn_2_8FAE0(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x34);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = type;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[10];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = type;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
@@ -574,199 +555,199 @@ void fn_2_8FAE0(s32 index, s16 type) {
 // fn_2_8FB68, size:0x90
 void fn_2_8FB68(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
-        u8* base = (u8*)lbl_2_bss_3401BC;
-        s32 resource;
+        MenuAnimArchive* base = lbl_2_bss_3401BC;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        resource = ((s32*)(base + 0xC))[index];
-        effect->resource = resource;
-        effect->type = type;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        resource = base->banks[index];
+        effect->animBank = resource;
+        effect->seqNum = type;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
 // fn_2_8FBF8, size:0x90
 void fn_2_8FBF8(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
-        u8* base = (u8*)lbl_2_bss_3401BC;
-        s32 resource;
+        MenuAnimArchive* base = lbl_2_bss_3401BC;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        resource = ((s32*)(base + 0xC))[index];
-        effect->resource = resource;
-        effect->type = type;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        resource = base->banks[index];
+        effect->animBank = resource;
+        effect->seqNum = type;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
 // .text:0x8F6D0 size:0x50
 void fn_2_8F6D0(s32 index, s32 value) {
-    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    u8* anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
+    CharTrail* anim = lbl_2_bss_340140[0]->trail2;
     if (anim != NULL) {
-        *(s16*)(slot + 0xA6) = 0;
-        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[value];
+        slot->_A6 = 0;
+        anim[index].draw = (void (*)(void))lbl_2_data_30900[value];
     }
 }
 
 // .text:0x90888 size:0x74
-void fn_2_90888(u8* object) {
-    *(f32*)(object + 0x8C) = lbl_2_rodata_10AC[0];
-    fn_2_8F6D0(*(s32*)(object + 0x78), 5);
-    *(s16*)(object + 0xA0) = 0;
-    *(s16*)(object + 0x90) = 1;
+void fn_2_90888(MenuObject* object) {
+    object->_8C = lbl_2_rodata_10AC[0];
+    fn_2_8F6D0(object->_78, 5);
+    object->_A0 = 0;
+    object->state = 1;
 }
 
 // .text:0x90698 size:0x80
-void fn_2_90698(u8* object) {
-    s16 timer = *(s16*)(object + 0x9C);
-    *(s16*)(object + 0x9C) = timer - 1;
+void fn_2_90698(MenuObject* object) {
+    s16 timer = object->_9C;
+    object->_9C = timer - 1;
     if (timer == 0) {
-        *(f32*)(object + 0x8C) = lbl_2_rodata_10A8[0];
-        fn_2_8F6D0(*(s32*)(object + 0x78), 5);
-        *(s16*)(object + 0x90) = 2;
+        object->_8C = lbl_2_rodata_10A8[0];
+        fn_2_8F6D0(object->_78, 5);
+        object->state = 2;
     }
 }
 
 // .text:0x90C4C size:0x84
-void fn_2_90C4C(u8* object) {
-    s16 timer = *(s16*)(object + 0x9C);
-    *(s16*)(object + 0x9C) = timer - 1;
+void fn_2_90C4C(MenuObject* object) {
+    s16 timer = object->_9C;
+    object->_9C = timer - 1;
     if (timer == 0) {
-        *(f32*)(object + 0x8C) = lbl_2_rodata_10B4[0];
-        *(s16*)(object + 0xA0) = 0;
-        fn_2_8F6D0(*(s32*)(object + 0x78), 3);
-        *(s16*)(object + 0x90) = 2;
+        object->_8C = lbl_2_rodata_10B4[0];
+        object->_A0 = 0;
+        fn_2_8F6D0(object->_78, 3);
+        object->state = 2;
     }
 }
 
 // .text:0x8FD14 size:0x9C
 void fn_2_8FD14(void) {
-    u8* anim;
-    u8* dst;
-    u8* src;
+    CharTrail* anim;
+    CharTrail* dst;
+    MenuObject* src;
     s32 i;
-    for (i = 0; i < *(u16*)((u8*)lbl_2_bss_340140[0] + 0x3078); i++) {
-        anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    for (i = 0; i < lbl_2_bss_340140[0]->_3078; i++) {
+        anim = lbl_2_bss_340140[0]->trail2;
         if (anim != NULL) {
-            dst = anim + i * 0x28;
-            src = (u8*)lbl_2_bss_1A8248[0] + i * 0xBC + 0x21E0;
-            memcpy(dst + 4, src, 0xC);
-            *(f32*)(dst + 0x14) = *(f32*)(src + 0x28);
-            dst[0x26] = src[0xAA];
+            dst = &anim[i];
+            src = &lbl_2_bss_1A8248[0]->objects[i];
+            memcpy(dst->_04, src, sizeof(Vec));
+            dst->_04[4] = src->_28;
+            dst->_26 = src->_AA;
         }
     }
 }
 
 // .text:0x90538 size:0xE4
 void fn_2_90538(void) {
-    u8* slot;
+    MenuObject* slot;
     s32 i;
     for (i = 0; i < 29; i++) {
-        slot = (u8*)lbl_2_bss_1A8248[0] + i * 0xBC + 0x21E0;
+        slot = &lbl_2_bss_1A8248[0]->objects[i];
         memset(slot, 0, 0xBC);
-        *(s32*)(slot + 0x78) = i;
-        *(s32*)(slot + 0x7C) = i;
-        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
-        *(f32*)(slot + 0x38) = lbl_2_rodata_1080;
-        *(f32*)(slot + 0x3C) = lbl_2_rodata_1080;
-        slot[0xAA] = 0;
-        *(s16*)(slot + 0x92) = i;
-        *(s16*)(slot + 0x94) = -1;
-        slot[0xA8] = 0;
-        slot[0xAB] = 0;
-        *(s16*)(slot + 0x90) = 0;
-        *(s8*)(slot + 0xAE) = -1;
-        slot[0xAC] = 0;
-        slot[0xAD] = 0;
-        *(f32*)(slot + 0x80) = lbl_2_rodata_1080;
-        *(s16*)(slot + 0xA6) = 0;
-        slot[0xB2] = 0xFF;
-        slot[0xB4] = 0;
+        slot->_78 = i;
+        slot->_7C = i;
+        slot->_84 = lbl_2_rodata_1080;
+        slot->_38 = lbl_2_rodata_1080;
+        slot->_3C = lbl_2_rodata_1080;
+        slot->_AA = 0;
+        slot->_92 = i;
+        slot->_94 = -1;
+        slot->_A8 = 0;
+        slot->active = 0;
+        slot->state = 0;
+        slot->_AE = -1;
+        slot->_AC = 0;
+        slot->_AD = 0;
+        slot->_80 = lbl_2_rodata_1080;
+        slot->_A6 = 0;
+        slot->_B2 = 0xFF;
+        slot->_B4 = 0;
     }
 }
 
 // .text:0x90718 size:0xDC
-void fn_2_90718(u8* object) {
+void fn_2_90718(MenuObject* object) {
     s32 index;
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    index = *(s32*)(object + 0x78);
+    fn_2_8AC84(object->_78, 1);
+    index = object->_78;
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x3C);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = 2;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[12];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = 2;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
-    *(s16*)(object + 0x9C) = 0x50;
-    *(s16*)(object + 0xA0) = 0;
-    *(s16*)(object + 0x90) = 1;
+    object->_9C = 0x50;
+    object->_A0 = 0;
+    object->state = 1;
 }
 
 // .text:0x90DE4 size:0xB4
-void fn_2_90DE4(u8* object, f32 limit) {
-    if (object[0xB5] != 0) {
-        f32 s = (f32)sin(*(f32*)(object + 0x88));
+void fn_2_90DE4(MenuObject* object, f32 limit) {
+    if (object->_B5 != 0) {
+        f32 s = (f32)sin(object->_88);
         f32 v = lbl_2_rodata_10B8[0] * -s;
-        *(f32*)(object + 0x88) = *(f32*)(object + 0x88) + lbl_2_rodata_10BC;
+        object->_88 = object->_88 + lbl_2_rodata_10BC;
         if (v >= limit) {
-            *(f32*)(object + 0x88) = lbl_2_rodata_1080;
+            object->_88 = lbl_2_rodata_1080;
             v = lbl_2_rodata_1080;
-            object[0xB5] = 0;
+            object->_B5 = 0;
         }
-        *(f32*)(object + 4) = v;
+        object->position.y = v;
     } else {
-        *(f32*)(object + 4) = lbl_2_rodata_1080;
+        object->position.y = lbl_2_rodata_1080;
     }
 }
 
 // .text:0x8F528 size:0x118
 void fn_2_8F528(s32 index) {
-    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
     GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
     s32 alpha;
-    switch (*(s16*)(slot + 0xA6)) {
+    switch (slot->_A6) {
     case 0:
-        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
-        *(s16*)(slot + 0xA6) = 1;
+        slot->_84 = lbl_2_rodata_1080;
+        slot->_A6 = 1;
     case 1:
-        *(f32*)(slot + 0x84) = (f32)(*(f32*)(slot + 0x84) + lbl_2_rodata_1088);
-        alpha = (s32)(lbl_2_rodata_1084 * *(f32*)(slot + 0x84));
+        slot->_84 = (f32)(slot->_84 + lbl_2_rodata_1088);
+        alpha = (s32)(lbl_2_rodata_1084 * slot->_84);
         if (alpha < 0xFF) {
             color.a = 1;
             color.a = alpha;
@@ -774,31 +755,31 @@ void fn_2_8F528(s32 index) {
         } else {
             color.a = 0xFF;
             fn_800BD2CC(0, color);
-            *(s16*)(slot + 0xA6) = 2;
+            slot->_A6 = 2;
         }
         break;
     case 2:
-        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
+        slot->_84 = lbl_2_rodata_1080;
         break;
     }
 }
 
 // .text:0x8F27C size:0x158
 void fn_2_8F27C(s32 index) {
-    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
     GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
     s32 alpha;
-    switch (*(s16*)(slot + 0xA6)) {
+    switch (slot->_A6) {
     case 0:
-        fn_2_8AC84(*(s32*)(slot + 0x78), 1);
-        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
-        color.a = (s32)(lbl_2_rodata_1084 * *(f32*)(slot + 0x84));
+        fn_2_8AC84(slot->_78, 1);
+        slot->_84 = lbl_2_rodata_1080;
+        color.a = (s32)(lbl_2_rodata_1084 * slot->_84);
         fn_800BD2CC(1, color);
-        *(s16*)(slot + 0xA6) = 1;
+        slot->_A6 = 1;
         break;
     case 1:
-        *(f32*)(slot + 0x84) = *(f32*)(slot + 0x84) + *(f32*)(slot + 0x8C);
-        alpha = (s32)(lbl_2_rodata_1084 * *(f32*)(slot + 0x84));
+        slot->_84 = slot->_84 + slot->_8C;
+        alpha = (s32)(lbl_2_rodata_1084 * slot->_84);
         if (alpha < 0xFF) {
             color.a = 1;
             color.a = alpha;
@@ -806,550 +787,550 @@ void fn_2_8F27C(s32 index) {
         } else {
             color.a = 0xFF;
             fn_800BD2CC(0, color);
-            *(s16*)(slot + 0xA6) = 2;
+            slot->_A6 = 2;
         }
         break;
     case 2:
-        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
+        slot->_84 = lbl_2_rodata_1080;
         break;
     }
 }
 
 // .text:0x91B80 size:0x88
-void fn_2_91B80(u8* object) {
+void fn_2_91B80(MenuObject* object) {
     s32 index;
-    u8* slot;
-    u8* anim;
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    index = *(s32*)(object + 0x78);
-    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    MenuObject* slot;
+    CharTrail* anim;
+    fn_2_8AC84(object->_78, 1);
+    index = object->_78;
+    slot = &lbl_2_bss_1A8248[0]->objects[index];
+    anim = lbl_2_bss_340140[0]->trail2;
     if (anim != NULL) {
-        *(s16*)(slot + 0xA6) = 0;
-        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+        slot->_A6 = 0;
+        anim[index].draw = (void (*)(void))lbl_2_data_30900[0];
     }
-    *(s16*)(object + 0x90) = 1;
+    object->state = 1;
 }
 
 // .text:0x918F4 size:0x88
-void fn_2_918F4(u8* object) {
+void fn_2_918F4(MenuObject* object) {
     s32 index;
-    u8* slot;
-    u8* anim;
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    index = *(s32*)(object + 0x78);
-    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    MenuObject* slot;
+    CharTrail* anim;
+    fn_2_8AC84(object->_78, 1);
+    index = object->_78;
+    slot = &lbl_2_bss_1A8248[0]->objects[index];
+    anim = lbl_2_bss_340140[0]->trail2;
     if (anim != NULL) {
-        *(s16*)(slot + 0xA6) = 0;
-        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[2];
+        slot->_A6 = 0;
+        anim[index].draw = (void (*)(void))lbl_2_data_30900[2];
     }
-    *(s16*)(object + 0x90) = 1;
+    object->state = 1;
 }
 
 // .text:0x9094C size:0xA8
-void fn_2_9094C(u8* object) {
+void fn_2_9094C(MenuObject* object) {
     s32 index;
-    u8* slot;
-    u8* anim;
-    fn_2_8AC84(*(s32*)(object + 0x78), 0);
-    *(f32*)(object + 0x8C) = lbl_2_rodata_10B0;
-    *(s16*)(object + 0xA0) = 0;
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    index = *(s32*)(object + 0x78);
-    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    MenuObject* slot;
+    CharTrail* anim;
+    fn_2_8AC84(object->_78, 0);
+    object->_8C = lbl_2_rodata_10B0;
+    object->_A0 = 0;
+    fn_2_8AC84(object->_78, 1);
+    index = object->_78;
+    slot = &lbl_2_bss_1A8248[0]->objects[index];
+    anim = lbl_2_bss_340140[0]->trail2;
     if (anim != NULL) {
-        *(s16*)(slot + 0xA6) = 0;
-        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[4];
+        slot->_A6 = 0;
+        anim[index].draw = (void (*)(void))lbl_2_data_30900[4];
     }
-    *(s16*)(object + 0x90) = 1;
+    object->state = 1;
 }
 
 // .text:0x8FDB0 size:0xEC
 void fn_2_8FDB0(s32 index) {
-    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
     Mtx m;
     Vec v;
-    if (!(*(f32*)(slot + 0x30) <= lbl_2_rodata_1080)) {
-        PSMTXRotRad(m, 'Y', *(f32*)(slot + 0x44));
+    if (!(slot->_30 <= lbl_2_rodata_1080)) {
+        PSMTXRotRad(m, 'Y', slot->_44);
         v.x = lbl_2_rodata_1080;
         v.y = lbl_2_rodata_1080;
-        v.z = -*(f32*)(slot + 0x30);
+        v.z = -slot->_30;
         PSMTXMultVec(m, &v, &v);
-        *(f32*)(slot + 0x18) = v.x;
-        *(f32*)(slot + 0x1C) = v.z;
-        *(f32*)(slot + 0x0) = *(f32*)(slot + 0x0) + *(f32*)(slot + 0x18);
-        *(f32*)(slot + 0x8) = *(f32*)(slot + 0x8) + *(f32*)(slot + 0x1C);
+        slot->_18 = v.x;
+        slot->_1C = v.z;
+        slot->position.x = slot->position.x + slot->_18;
+        slot->position.z = slot->position.z + slot->_1C;
     }
-    *(f32*)(slot + 0xC) = *(f32*)(slot + 0x0);
-    *(f32*)(slot + 0x14) = *(f32*)(slot + 0x8);
-    if (lbl_2_rodata_1080 == *(f32*)(slot + 0x30)) {
-        *(f32*)(slot + 0x20) = lbl_2_rodata_1080;
-        *(f32*)(slot + 0x24) = lbl_2_rodata_1080;
+    slot->_0C = slot->position.x;
+    slot->_14 = slot->position.z;
+    if (lbl_2_rodata_1080 == slot->_30) {
+        slot->_20 = lbl_2_rodata_1080;
+        slot->_24 = lbl_2_rodata_1080;
     }
 }
 
 // .text:0x90ABC size:0x114
-void fn_2_90ABC(u8* object) {
+void fn_2_90ABC(MenuObject* object) {
     s32 index;
-    u8* slot;
-    u8* anim;
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    index = *(s32*)(object + 0x78);
+    MenuObject* slot;
+    CharTrail* anim;
+    fn_2_8AC84(object->_78, 1);
+    index = object->_78;
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x34);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[10];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
-    index = *(s32*)(object + 0x78);
-    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    index = object->_78;
+    slot = &lbl_2_bss_1A8248[0]->objects[index];
+    anim = lbl_2_bss_340140[0]->trail2;
     if (anim != NULL) {
-        *(s16*)(slot + 0xA6) = 0;
-        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+        slot->_A6 = 0;
+        anim[index].draw = (void (*)(void))lbl_2_data_30900[0];
     }
-    *(s16*)(object + 0x90) = 1;
+    object->state = 1;
 }
 
 // .text:0x919CC size:0x118
-void fn_2_919CC(u8* object) {
+void fn_2_919CC(MenuObject* object) {
     s32 index;
-    u8* slot;
-    u8* anim;
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    index = *(s32*)(object + 0x78);
+    MenuObject* slot;
+    CharTrail* anim;
+    fn_2_8AC84(object->_78, 1);
+    index = object->_78;
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0xC);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = 0;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[0];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = 0;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
-    index = *(s32*)(object + 0x78);
-    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    index = object->_78;
+    slot = &lbl_2_bss_1A8248[0]->objects[index];
+    anim = lbl_2_bss_340140[0]->trail2;
     if (anim != NULL) {
-        *(s16*)(slot + 0xA6) = 0;
-        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+        slot->_A6 = 0;
+        anim[index].draw = (void (*)(void))lbl_2_data_30900[0];
     }
-    *(s16*)(object + 0x90) = 1;
+    object->state = 1;
 }
 
 // .text:0x91518 size:0x1A8
-void fn_2_91518(u8* object) {
+void fn_2_91518(MenuObject* object) {
     s32 index;
-    u8* slot;
-    u8* anim;
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    index = *(s32*)(object + 0x78);
+    MenuObject* slot;
+    CharTrail* anim;
+    fn_2_8AC84(object->_78, 1);
+    index = object->_78;
     if (index == 0x19) {
         if (lbl_2_bss_3401BC != NULL) {
-            s32 resource;
+            void* resource;
             MenuEffect* effect;
             u8 valid;
-            resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x44);
-            effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-            effect->resource = resource;
-            effect->type = 1;
-            effect->f5C = lbl_2_rodata_1080;
-            effect->enabled = 1;
+            resource = lbl_2_bss_3401BC->banks[14];
+            effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+            effect->animBank = resource;
+            effect->seqNum = 1;
+            effect->time = lbl_2_rodata_1080;
+            effect->setAnimation = 1;
             valid = resource != 0;
-            effect->flag59 = valid;
-            effect->flag5A = valid;
-            effect->f60 = lbl_2_rodata_1080;
-            effect->f54 = lbl_2_rodata_1078;
-            effect->flag5A = 1;
-            effect->f5C = lbl_2_rodata_1080;
-            effect->flag59 = 1;
-            effect->mode = 3;
+            effect->setTime = valid;
+            effect->setSpeed = valid;
+            effect->speed = lbl_2_rodata_1080;
+            effect->unk54 = lbl_2_rodata_1078;
+            effect->setSpeed = 1;
+            effect->time = lbl_2_rodata_1080;
+            effect->setTime = 1;
+            effect->visFlags = 3;
         }
     } else {
         if (lbl_2_bss_3401BC != NULL) {
-            s32 resource;
+            void* resource;
             MenuEffect* effect;
             u8 valid;
-            resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x48);
-            effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-            effect->resource = resource;
-            effect->type = 1;
-            effect->f5C = lbl_2_rodata_1080;
-            effect->enabled = 1;
+            resource = lbl_2_bss_3401BC->banks[15];
+            effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+            effect->animBank = resource;
+            effect->seqNum = 1;
+            effect->time = lbl_2_rodata_1080;
+            effect->setAnimation = 1;
             valid = resource != 0;
-            effect->flag59 = valid;
-            effect->flag5A = valid;
-            effect->f60 = lbl_2_rodata_1080;
-            effect->f54 = lbl_2_rodata_1078;
-            effect->flag5A = 1;
-            effect->f5C = lbl_2_rodata_1080;
-            effect->flag59 = 1;
-            effect->mode = 3;
+            effect->setTime = valid;
+            effect->setSpeed = valid;
+            effect->speed = lbl_2_rodata_1080;
+            effect->unk54 = lbl_2_rodata_1078;
+            effect->setSpeed = 1;
+            effect->time = lbl_2_rodata_1080;
+            effect->setTime = 1;
+            effect->visFlags = 3;
         }
     }
-    index = *(s32*)(object + 0x78);
-    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    index = object->_78;
+    slot = &lbl_2_bss_1A8248[0]->objects[index];
+    anim = lbl_2_bss_340140[0]->trail2;
     if (anim != NULL) {
-        *(s16*)(slot + 0xA6) = 0;
-        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+        slot->_A6 = 0;
+        anim[index].draw = (void (*)(void))lbl_2_data_30900[0];
     }
-    *(s16*)(object + 0x90) = 1;
+    object->state = 1;
 }
 
 // .text:0x912A8 size:0x1A8
-void fn_2_912A8(u8* object) {
+void fn_2_912A8(MenuObject* object) {
     s32 index;
-    u8* slot;
-    u8* anim;
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    index = *(s32*)(object + 0x78);
+    MenuObject* slot;
+    CharTrail* anim;
+    fn_2_8AC84(object->_78, 1);
+    index = object->_78;
     if (index == 0x19) {
         if (lbl_2_bss_3401BC != NULL) {
-            s32 resource;
+            void* resource;
             MenuEffect* effect;
             u8 valid;
-            resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x44);
-            effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-            effect->resource = resource;
-            effect->type = 3;
-            effect->f5C = lbl_2_rodata_1080;
-            effect->enabled = 1;
+            resource = lbl_2_bss_3401BC->banks[14];
+            effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+            effect->animBank = resource;
+            effect->seqNum = 3;
+            effect->time = lbl_2_rodata_1080;
+            effect->setAnimation = 1;
             valid = resource != 0;
-            effect->flag59 = valid;
-            effect->flag5A = valid;
-            effect->f60 = lbl_2_rodata_1080;
-            effect->f54 = lbl_2_rodata_1078;
-            effect->flag5A = 1;
-            effect->f5C = lbl_2_rodata_1080;
-            effect->flag59 = 1;
-            effect->mode = 3;
+            effect->setTime = valid;
+            effect->setSpeed = valid;
+            effect->speed = lbl_2_rodata_1080;
+            effect->unk54 = lbl_2_rodata_1078;
+            effect->setSpeed = 1;
+            effect->time = lbl_2_rodata_1080;
+            effect->setTime = 1;
+            effect->visFlags = 3;
         }
     } else {
         if (lbl_2_bss_3401BC != NULL) {
-            s32 resource;
+            void* resource;
             MenuEffect* effect;
             u8 valid;
-            resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x48);
-            effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-            effect->resource = resource;
-            effect->type = 3;
-            effect->f5C = lbl_2_rodata_1080;
-            effect->enabled = 1;
+            resource = lbl_2_bss_3401BC->banks[15];
+            effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+            effect->animBank = resource;
+            effect->seqNum = 3;
+            effect->time = lbl_2_rodata_1080;
+            effect->setAnimation = 1;
             valid = resource != 0;
-            effect->flag59 = valid;
-            effect->flag5A = valid;
-            effect->f60 = lbl_2_rodata_1080;
-            effect->f54 = lbl_2_rodata_1078;
-            effect->flag5A = 1;
-            effect->f5C = lbl_2_rodata_1080;
-            effect->flag59 = 1;
-            effect->mode = 3;
+            effect->setTime = valid;
+            effect->setSpeed = valid;
+            effect->speed = lbl_2_rodata_1080;
+            effect->unk54 = lbl_2_rodata_1078;
+            effect->setSpeed = 1;
+            effect->time = lbl_2_rodata_1080;
+            effect->setTime = 1;
+            effect->visFlags = 3;
         }
     }
-    index = *(s32*)(object + 0x78);
-    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    index = object->_78;
+    slot = &lbl_2_bss_1A8248[0]->objects[index];
+    anim = lbl_2_bss_340140[0]->trail2;
     if (anim != NULL) {
-        *(s16*)(slot + 0xA6) = 0;
-        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+        slot->_A6 = 0;
+        anim[index].draw = (void (*)(void))lbl_2_data_30900[0];
     }
-    *(s16*)(object + 0x90) = 1;
+    object->state = 1;
 }
 
 // .text:0x8F3D4 size:0x154
 void fn_2_8F3D4(s32 index) {
-    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
     GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
     s32 alpha;
-    switch (*(s16*)(slot + 0xA6)) {
+    switch (slot->_A6) {
     case 0:
         color.a = 0xFF;
-        *(f32*)(slot + 0x84) = lbl_2_rodata_1078;
-        *(s16*)(slot + 0xA6) = 1;
+        slot->_84 = lbl_2_rodata_1078;
+        slot->_A6 = 1;
         fn_800BD2CC(1, color);
     case 1:
-        *(s16*)(slot + 0xA6) = 2;
+        slot->_A6 = 2;
     case 2:
-        *(f32*)(slot + 0x84) = *(f32*)(slot + 0x84) - *(f32*)(slot + 0x8C);
-        alpha = (s32)(lbl_2_rodata_107C * *(f32*)(slot + 0x84));
+        slot->_84 = slot->_84 - slot->_8C;
+        alpha = (s32)(lbl_2_rodata_107C * slot->_84);
         if (alpha > 1) {
             color.a = alpha;
             fn_800BD2CC(1, color);
         } else {
             color.a = 0;
             fn_800BD2CC(1, color);
-            *(s16*)(slot + 0xA6) = 3;
+            slot->_A6 = 3;
         }
         break;
     case 3:
         color.a = 0;
         fn_800BD2CC(1, color);
-        *(s16*)(slot + 0xA0) = 1;
-        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
+        slot->_A0 = 1;
+        slot->_84 = lbl_2_rodata_1080;
         break;
     }
 }
 
 // .text:0x8F0F4 size:0x188
 void fn_2_8F0F4(s32 index) {
-    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
     GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
     s32 alpha;
-    switch (*(s16*)(slot + 0xA6)) {
+    switch (slot->_A6) {
     case 0:
         color.a = 0xFF;
-        *(f32*)(slot + 0x84) = lbl_2_rodata_1078;
-        *(s16*)(slot + 0xA6) = 1;
+        slot->_84 = lbl_2_rodata_1078;
+        slot->_A6 = 1;
         fn_800BD2CC(1, color);
     case 1:
-        *(f32*)(slot + 0x84) = *(f32*)(slot + 0x84) - *(f32*)(slot + 0x8C);
-        alpha = (s32)(lbl_2_rodata_107C * *(f32*)(slot + 0x84));
+        slot->_84 = slot->_84 - slot->_8C;
+        alpha = (s32)(lbl_2_rodata_107C * slot->_84);
         if (alpha > 1) {
             color.a = alpha;
             fn_800BD2CC(1, color);
         } else {
             color.a = 0;
             fn_800BD2CC(1, color);
-            *(s16*)(slot + 0xA6) = 2;
+            slot->_A6 = 2;
         }
         break;
     case 2:
         color.a = 0;
         fn_800BD2CC(1, color);
-        *(s16*)(slot + 0xA0) = 1;
-        *(f32*)(slot + 0x84) = lbl_2_rodata_1080;
-        *(s16*)(slot + 0xA6) = 3;
+        slot->_A0 = 1;
+        slot->_84 = lbl_2_rodata_1080;
+        slot->_A6 = 3;
         break;
     case 3:
-        if (*(s16*)(slot + 0xA0) == 2) {
+        if (slot->_A0 == 2) {
             color.a = 0xFF;
             fn_800BD2CC(0, color);
-            *(s16*)(slot + 0xA6) = 4;
+            slot->_A6 = 4;
         }
         break;
     }
 }
 
 // .text:0x91058 size:0x188
-void fn_2_91058(u8* object) {
+void fn_2_91058(MenuObject* object) {
     s32 index;
-    u8* slot;
-    u8* anim;
-    u8* g = (u8*)lbl_2_bss_1A8248[0];
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    index = *(s32*)(object + 0x78);
+    MenuObject* slot;
+    CharTrail* anim;
+    MenuCtx* g = lbl_2_bss_1A8248[0];
+    fn_2_8AC84(object->_78, 1);
+    index = object->_78;
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
+        void* resource;
         MenuEffect* effect;
         u8 valid;
-        resource = *(s32*)((u8*)lbl_2_bss_3401BC + 0x4C);
-        effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-        effect->resource = resource;
-        effect->type = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
+        resource = lbl_2_bss_3401BC->banks[16];
+        effect = &lbl_2_bss_340140[0]->slots68->objects[index];
+        effect->animBank = resource;
+        effect->seqNum = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
         valid = resource != 0;
-        effect->flag59 = valid;
-        effect->flag5A = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->setTime = valid;
+        effect->setSpeed = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
-    index = *(s32*)(object + 0x78);
-    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    index = object->_78;
+    slot = &lbl_2_bss_1A8248[0]->objects[index];
+    anim = lbl_2_bss_340140[0]->trail2;
     if (anim != NULL) {
-        *(s16*)(slot + 0xA6) = 0;
-        *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+        slot->_A6 = 0;
+        anim[index].draw = (void (*)(void))lbl_2_data_30900[0];
     }
-    object[0xB5] = 1;
-    *(f32*)(object + 0x88) = lbl_2_rodata_10BC;
-    *(f32*)(object + 4) = lbl_2_rodata_1080;
-    *(f32*)(object + 0x28) = lbl_2_rodata_1080;
-    *(f32*)(object + 0x28) = lbl_2_rodata_1080;
+    object->_B5 = 1;
+    object->_88 = lbl_2_rodata_10BC;
+    object->position.y = lbl_2_rodata_1080;
+    object->_28 = lbl_2_rodata_1080;
+    object->_28 = lbl_2_rodata_1080;
     fn_80062890(0x40);
-    *(f32*)(object + 0x2C) = (f32)atan2(-(*(f32*)(g + 0x1610) - *(f32*)(g + 0x16E8)), -(*(f32*)(g + 0x1618) - *(f32*)(g + 0x16F0)));
-    *(s16*)(object + 0x90) = 1;
+    object->_2C = (f32)atan2(-(g->entries[0].position.x - g->entries[1].position.x), -(g->entries[0].position.z - g->entries[1].position.z));
+    object->state = 1;
 }
 
 // .text:0x90EC4 size:0x194
-void fn_2_90EC4(u8* object) {
+void fn_2_90EC4(MenuObject* object) {
     Mtx m;
     Vec v;
-    u8* queue = lbl_803CC1B8;
-    if (object[0xB5] != 0) {
-        f32 s = (f32)sin(*(f32*)(object + 0x88));
+    MenuTask* queue = lbl_803CC1B8;
+    if (object->_B5 != 0) {
+        f32 s = (f32)sin(object->_88);
         f32 v = lbl_2_rodata_10B8[0] * -s;
-        *(f32*)(object + 0x88) = *(f32*)(object + 0x88) + lbl_2_rodata_10BC;
+        object->_88 = object->_88 + lbl_2_rodata_10BC;
         if (v >= 0.0f) {
-            *(f32*)(object + 0x88) = 0.0f;
+            object->_88 = 0.0f;
             v = 0.0f;
-            object[0xB5] = 0;
+            object->_B5 = 0;
         }
-        *(f32*)(object + 4) = v;
+        object->position.y = v;
     } else {
-        *(f32*)(object + 4) = 0.0f;
+        object->position.y = 0.0f;
     }
-    PSMTXRotRad(m, 'Y', *(f32*)(object + 0x2C));
+    PSMTXRotRad(m, 'Y', object->_2C);
     v.x = lbl_2_rodata_1080;
     v.y = lbl_2_rodata_1080;
     v.z = lbl_2_rodata_10A8[0];
     PSMTXMultVec(m, &v, &v);
-    *(f32*)(object + 0x0) = *(f32*)(object + 0x0) - v.x;
-    *(f32*)(object + 0x8) = *(f32*)(object + 0x8) - v.z;
-    if (*(f32*)(object + 0x4) >= lbl_2_rodata_1080) {
+    object->position.x = object->position.x - v.x;
+    object->position.z = object->position.z - v.z;
+    if (object->position.y >= lbl_2_rodata_1080) {
         fn_2_46D34(lbl_2_data_38BC);
-        if (*(s16*)((u8*)lbl_2_bss_1A8248[0] + 0x43BE) < 0x3E7) {
-            u8* q = fn_800B0A5C_insertQueue((void*)fn_2_3FA14, 2);
-            q[0x28] = 0;
-            *(s16*)(queue + 0x10) = 0;
+        if (lbl_2_bss_1A8248[0]->_43BE < 0x3E7) {
+            MenuTask* q = fn_800B0A5C_insertQueue((void*)fn_2_3FA14, 2);
+            q->step = 0;
+            queue->_10 = 0;
         } else {
-            *(s16*)((u8*)lbl_2_bss_1A824C[0] + 0x197740) = 1;
+            lbl_2_bss_1A824C[0]->_197740 = 1;
         }
-        *(s16*)(object + 0x90) = 2;
+        object->state = 2;
     }
 }
 
 // fn_2_91C4C, size:0x128
-void fn_2_91C4C(u8* object) {
-    s32 index = *(s32*)(object + 0x78);
-    u8 st = object[0xA8];
+void fn_2_91C4C(MenuObject* object) {
+    s32 index = object->_78;
+    u8 st = object->_A8;
     if (st == 1) {
         if (lbl_2_bss_3401BC != NULL) {
-            MenuEffect* effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-            effect->f54 = lbl_2_rodata_1080;
-            effect->flag5A = 1;
-            effect->f5C = lbl_2_rodata_1080;
-            effect->flag59 = 1;
-            effect->mode = 2;
-            effect->enabled = 0;
-            *(s16*)(object + 0x90) = 2;
+            MenuEffect* effect = (MenuEffect*)((u8*)lbl_2_bss_340140[0]->slots68 + index * sizeof(ActorObject) + offsetof(ActorObjectTable, objects));
+            effect->unk54 = lbl_2_rodata_1080;
+            effect->setSpeed = 1;
+            effect->time = lbl_2_rodata_1080;
+            effect->setTime = 1;
+            effect->visFlags = 2;
+            effect->setAnimation = 0;
+            object->state = 2;
         }
     } else if (st == 2) {
-        if (fn_800B4A94(*(void**)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34)) == lbl_2_rodata_1080
+        if (fn_800B4A94(((ActorObject*)((u8*)lbl_2_bss_340140[0]->slots68 + index * sizeof(ActorObject) + offsetof(ActorObjectTable, objects)))->actor) == lbl_2_rodata_1080
             && lbl_2_bss_3401BC != NULL) {
-            MenuEffect* effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
-            effect->f54 = lbl_2_rodata_1080;
-            effect->flag5A = 1;
-            effect->f5C = lbl_2_rodata_1080;
-            effect->flag59 = 1;
-            effect->mode = 2;
-            effect->enabled = 0;
-            *(s16*)(object + 0x90) = 2;
+            MenuEffect* effect = (MenuEffect*)((u8*)lbl_2_bss_340140[0]->slots68 + index * sizeof(ActorObject) + offsetof(ActorObjectTable, objects));
+            effect->unk54 = lbl_2_rodata_1080;
+            effect->setSpeed = 1;
+            effect->time = lbl_2_rodata_1080;
+            effect->setTime = 1;
+            effect->visFlags = 2;
+            effect->setAnimation = 0;
+            object->state = 2;
         }
     }
 }
 
 static inline void setupEffect(s32 index, s16 type) {
     if (lbl_2_bss_3401BC != NULL) {
-        s32 resource;
-        MenuEffect* effect = (MenuEffect*)(*(u8**)((u8*)lbl_2_bss_340140[0] + 0x68) + index * 0x90 + 0x34);
+        void* resource;
+        MenuEffect* effect = &lbl_2_bss_340140[0]->slots68->objects[index];
         u8 valid;
-        resource = ((s32*)((u8*)lbl_2_bss_3401BC + 0xC))[index];
-        effect->resource = resource;
-        effect->type = type;
+        resource = lbl_2_bss_3401BC->banks[index];
+        effect->animBank = resource;
+        effect->seqNum = type;
         valid = resource != 0;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->enabled = 1;
-        effect->flag5A = effect->flag59 = valid;
-        effect->f60 = lbl_2_rodata_1080;
-        effect->f54 = lbl_2_rodata_1078;
-        effect->flag5A = 1;
-        effect->f5C = lbl_2_rodata_1080;
-        effect->flag59 = 1;
-        effect->mode = 3;
+        effect->time = lbl_2_rodata_1080;
+        effect->setAnimation = 1;
+        effect->setSpeed = effect->setTime = valid;
+        effect->speed = lbl_2_rodata_1080;
+        effect->unk54 = lbl_2_rodata_1078;
+        effect->setSpeed = 1;
+        effect->time = lbl_2_rodata_1080;
+        effect->setTime = 1;
+        effect->visFlags = 3;
     }
 }
 
 // .text:0x90CD0 size:0xDC
-void fn_2_90CD0(u8* object) {
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    setupEffect(*(s32*)(object + 0x78), 0);
-    *(s16*)(object + 0x9C) = 0x1C;
-    *(s16*)(object + 0x90) = 1;
+void fn_2_90CD0(MenuObject* object) {
+    fn_2_8AC84(object->_78, 1);
+    setupEffect(object->_78, 0);
+    object->_9C = 0x1C;
+    object->state = 1;
 }
 
 // .text:0x91D74 size:0x620
-void fn_2_91D74(u8* object) {
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    if (*(s32*)(object + 0x78) >= 1 && *(s32*)(object + 0x78) <= 7) {
-        setupEffect(*(s32*)(object + 0x78), 0);
-    } else if (*(s32*)(object + 0x78) == 8) {
-        setupEffect(*(s32*)(object + 0x78), 0);
-    } else if (*(s32*)(object + 0x78) >= 10 && *(s32*)(object + 0x78) <= 15) {
-        fn_2_8FAE0(*(s32*)(object + 0x78), 0);
-    } else if (*(s32*)(object + 0x78) == 22) {
-        fn_2_8FA58(*(s32*)(object + 0x78), 0);
-    } else if (*(s32*)(object + 0x78) == 24) {
-        fn_2_8F9D0(*(s32*)(object + 0x78), 0);
-    } else if (*(s32*)(object + 0x78) == 27) {
-        fn_2_8F948(*(s32*)(object + 0x78), 0);
-    } else if (*(s32*)(object + 0x78) == 25) {
-        fn_2_8F8C0(*(s32*)(object + 0x78), 0);
-    } else if (*(s32*)(object + 0x78) == 26) {
-        fn_2_8F838(*(s32*)(object + 0x78), 0);
-    } else if (*(s32*)(object + 0x78) == 28) {
-        fn_2_8F7B0(*(s32*)(object + 0x78), 0);
+void fn_2_91D74(MenuObject* object) {
+    fn_2_8AC84(object->_78, 1);
+    if (object->_78 >= 1 && object->_78 <= 7) {
+        setupEffect(object->_78, 0);
+    } else if (object->_78 == 8) {
+        setupEffect(object->_78, 0);
+    } else if (object->_78 >= 10 && object->_78 <= 15) {
+        fn_2_8FAE0(object->_78, 0);
+    } else if (object->_78 == 22) {
+        fn_2_8FA58(object->_78, 0);
+    } else if (object->_78 == 24) {
+        fn_2_8F9D0(object->_78, 0);
+    } else if (object->_78 == 27) {
+        fn_2_8F948(object->_78, 0);
+    } else if (object->_78 == 25) {
+        fn_2_8F8C0(object->_78, 0);
+    } else if (object->_78 == 26) {
+        fn_2_8F838(object->_78, 0);
+    } else if (object->_78 == 28) {
+        fn_2_8F7B0(object->_78, 0);
     }
     {
         // inlined fn_2_8F6D0(index, 0)
-        s32 index = *(s32*)(object + 0x78);
-        u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-        u8* anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+        s32 index = object->_78;
+        MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
+        CharTrail* anim = lbl_2_bss_340140[0]->trail2;
         if (anim != NULL) {
-            *(s16*)(slot + 0xA6) = 0;
-            *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+            slot->_A6 = 0;
+            anim[index].draw = (void (*)(void))lbl_2_data_30900[0];
         }
     }
-    *(s16*)(object + 0x90) = 1;
+    object->state = 1;
 }
 
 // .text:0x91788 size:0x11C
-void fn_2_91788(u8* object) {
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    setupEffect(*(s32*)(object + 0x78), 1);
+void fn_2_91788(MenuObject* object) {
+    fn_2_8AC84(object->_78, 1);
+    setupEffect(object->_78, 1);
     {
         // inlined fn_2_8F6D0(index, 0)
-        s32 index = *(s32*)(object + 0x78);
-        u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-        u8* anim = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+        s32 index = object->_78;
+        MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
+        CharTrail* anim = lbl_2_bss_340140[0]->trail2;
         if (anim != NULL) {
-            *(s16*)(slot + 0xA6) = 0;
-            *(u32*)(anim + index * 0x28) = ((u32*)lbl_2_data_30900)[0];
+            slot->_A6 = 0;
+            anim[index].draw = (void (*)(void))lbl_2_data_30900[0];
         }
     }
-    *(s16*)(object + 0x90) = 1;
+    object->state = 1;
 }
 
 extern f32 fn_2_4A1E8(f32 x, f32 y);
@@ -1369,29 +1350,29 @@ static inline void moveSlotWithPad(s32 index) {
     Vec position;
     Vec direction;
     PadState* pad;
-    u8* slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
+    MenuObject* slot = &lbl_2_bss_1A8248[0]->objects[index];
     memcpy(&position, slot, sizeof(Vec));
     PSVECSubtract(&position, &lbl_2_data_308F4, &direction);
     x = direction.x * lbl_2_rodata_1090;
     z = direction.z * lbl_2_rodata_1090;
     direction.x = x;
     direction.z = z;
-    pad = &((PadState*)&lbl_803C77B8)[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)];
+    pad = &((PadState*)&lbl_803C77B8)[lbl_2_bss_1A824C[0]->port];
     position.x += pad->sticks.stickX / lbl_2_rodata_1094;
     position.z += pad->sticks.stickY / lbl_2_rodata_1094;
     if (lbl_2_rodata_1080 != x || lbl_2_rodata_1080 != z) {
         lbl_2_bss_B640 = fn_2_4A1E8(direction.z, x);
     }
-    if (((PadState*)&lbl_803C77B8)[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)].repeat & 0x40) {
+    if (((PadState*)&lbl_803C77B8)[lbl_2_bss_1A824C[0]->port].repeat & 0x40) {
         position.y -= lbl_2_rodata_1098;
-    } else if (((PadState*)&lbl_803C77B8)[*(s8*)(lbl_2_bss_1A824C[0] + 0x197863)].repeat & 0x20) {
+    } else if (((PadState*)&lbl_803C77B8)[lbl_2_bss_1A824C[0]->port].repeat & 0x20) {
         position.y += lbl_2_rodata_1098;
     }
     memcpy(&lbl_2_data_308F4, slot, sizeof(Vec));
-    *(f32*)(slot + 0x0) = position.x;
-    *(f32*)(slot + 0x4) = position.y;
-    *(f32*)(slot + 0x8) = position.z;
-    *(f32*)(slot + 0x44) = lbl_2_bss_B640;
+    slot->position.x = position.x;
+    slot->position.y = position.y;
+    slot->position.z = position.z;
+    slot->_44 = lbl_2_bss_B640;
 }
 
 // NONMATCHING 89%: scheduling only (lbl_803C77B8 address hoisted to the top, f-reg numbering)
@@ -1405,26 +1386,26 @@ void fn_2_8FE9C(s32 index) {
 void fn_2_9007C(void) {
     Mtx m;
     Vec v;
-    s32 index = *(s16*)(lbl_2_bss_1A824C[0] + 0x1972BE);
-    u8* slot;
+    s32 index = lbl_2_bss_1A824C[0]->_1972BE;
+    MenuObject* slot;
     moveSlotWithPad(index);
-    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    if (!(*(f32*)(slot + 0x30) <= lbl_2_rodata_1080)) {
-        PSMTXRotRad(m, 'Y', *(f32*)(slot + 0x44));
+    slot = &lbl_2_bss_1A8248[0]->objects[index];
+    if (!(slot->_30 <= lbl_2_rodata_1080)) {
+        PSMTXRotRad(m, 'Y', slot->_44);
         v.x = lbl_2_rodata_1080;
         v.y = lbl_2_rodata_1080;
-        v.z = -*(f32*)(slot + 0x30);
+        v.z = -slot->_30;
         PSMTXMultVec(m, &v, &v);
-        *(f32*)(slot + 0x18) = v.x;
-        *(f32*)(slot + 0x1C) = v.z;
-        *(f32*)(slot + 0x0) = *(f32*)(slot + 0x0) + *(f32*)(slot + 0x18);
-        *(f32*)(slot + 0x8) = *(f32*)(slot + 0x8) + *(f32*)(slot + 0x1C);
+        slot->_18 = v.x;
+        slot->_1C = v.z;
+        slot->position.x = slot->position.x + slot->_18;
+        slot->position.z = slot->position.z + slot->_1C;
     }
-    *(f32*)(slot + 0xC) = *(f32*)(slot + 0x0);
-    *(f32*)(slot + 0x14) = *(f32*)(slot + 0x8);
-    if (lbl_2_rodata_1080 == *(f32*)(slot + 0x30)) {
-        *(f32*)(slot + 0x20) = lbl_2_rodata_1080;
-        *(f32*)(slot + 0x24) = lbl_2_rodata_1080;
+    slot->_0C = slot->position.x;
+    slot->_14 = slot->position.z;
+    if (lbl_2_rodata_1080 == slot->_30) {
+        slot->_20 = lbl_2_rodata_1080;
+        slot->_24 = lbl_2_rodata_1080;
     }
 }
 #endif
@@ -1434,75 +1415,68 @@ void fn_2_9007C(void) {
 // statics and the lbl_2_data_308B4 handler table).
 #include "menus/auto_00_00092394_text.h"
 
-typedef struct MenuObject {
-    u8 pad0[0x90];
-    s16 phase;
-    u8 pad92[0x19];
-    u8 state;
-    u8 padAC[0x10];
-} MenuObject;
 
-extern void (*lbl_2_data_308B4[])(u8* object);
-extern void (*lbl_2_data_307F0[])(u8* object);
-extern void (*lbl_2_data_307F8[])(u8* object);
-extern void (*lbl_2_data_30804[])(u8* object);
+extern void (*lbl_2_data_308B4[])(MenuObject* object);
+extern void (*lbl_2_data_307F0[])(MenuObject* object);
+extern void (*lbl_2_data_307F8[])(MenuObject* object);
+extern void (*lbl_2_data_30804[])(MenuObject* object);
 
 // fn_2_923CC, size:0xC
-void fn_2_923CC(u8* object) {
-    *(s16*)(object + 0x90) = 2;
+void fn_2_923CC(MenuObject* object) {
+    object->state = 2;
 }
 
 // fn_2_923D8, size:0xC
-void fn_2_923D8(u8* object) {
-    *(s16*)(object + 0x90) = 2;
+void fn_2_923D8(MenuObject* object) {
+    object->state = 2;
 }
 
 // fn_2_923E4, size:0x88
-void fn_2_923E4(u8* object) {
+void fn_2_923E4(MenuObject* object) {
     s32 index;
-    u8* slot;
-    u8* p;
-    fn_2_8AC84(*(s32*)(object + 0x78), 1);
-    index = *(s32*)(object + 0x78);
-    slot = (u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0;
-    p = *(u8**)((u8*)lbl_2_bss_340140[0] + 0x2D94);
+    MenuObject* slot;
+    CharTrail* p;
+    fn_2_8AC84(object->_78, 1);
+    index = object->_78;
+    slot = &lbl_2_bss_1A8248[0]->objects[index];
+    p = lbl_2_bss_340140[0]->trail2;
     if (p != NULL) {
-        *(s16*)(slot + 0xA6) = 0;
-        *(u32*)(p + index * 0x28) = *(u32*)lbl_2_data_30900;
+        slot->_A6 = 0;
+        p[index].draw = (void (*)(void))lbl_2_data_30900[0];
     }
-    *(s16*)(object + 0x90) = 1;
+    object->state = 1;
 }
 
 // fn_2_924A4, size:0xC
-void fn_2_924A4(u8* object) {
-    *(s16*)(object + 0x90) = 1;
+void fn_2_924A4(MenuObject* object) {
+    object->state = 1;
 }
 
 // fn_2_92394, size:0x38
-void fn_2_92394(u8* object) {
-    lbl_2_data_30804[*(s16*)(object + 0x90)](object);
+void fn_2_92394(MenuObject* object) {
+    lbl_2_data_30804[object->state](object);
 }
 
 // fn_2_9246C, size:0x38
-void fn_2_9246C(u8* object) {
-    lbl_2_data_307F8[*(s16*)(object + 0x90)](object);
+void fn_2_9246C(MenuObject* object) {
+    lbl_2_data_307F8[object->state](object);
 }
 
 // fn_2_92504, size:0x38
-void fn_2_92504(u8* object) {
-    lbl_2_data_307F0[*(s16*)(object + 0x90)](object);
+void fn_2_92504(MenuObject* object) {
+    lbl_2_data_307F0[object->state](object);
 }
 
 // fn_2_9253C, size:0x40
-void fn_2_9253C(u8* object) {
-    *(void (**)(u8*))(object + 0xB8) = lbl_2_data_308B4[object[0xAB]];
-    (*(void (**)(u8*))(object + 0xB8))(object);
+void fn_2_9253C(MenuObject* object) {
+    object->update = lbl_2_data_308B4[object->active];
+    object->update(object);
 }
 
 // fn_2_9257C, size:0xD8
 void fn_2_9257C(void) {
     s32 i;
-    u8* work;
+    MenuData* work;
 
     // TODO type: lbl_2_bss_1A8248[0] state byte 0x44F2
     if (((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 1 || ((u8*)lbl_2_bss_1A8248[0])[0x44F2] == 2 ||
@@ -1510,11 +1484,11 @@ void fn_2_9257C(void) {
         return;
     }
     for (i = 0; i < 29; i++) {
-        fn_2_9253C((u8*)lbl_2_bss_1A8248[0] + i * 0xBC + 0x21E0);
+        fn_2_9253C(&lbl_2_bss_1A8248[0]->objects[i]);
     }
     work = lbl_2_bss_1A824C[0];
-    if (work[0x1972C0] != 0) {
-        work[0x1972C0] = 0;
+    if (work->_1972C0 != 0) {
+        work->_1972C0 = 0;
 #if NONMATCHING
         fn_800B0A14_removeQueue(NULL); // the argument is unused
 #else
@@ -1525,15 +1499,15 @@ void fn_2_9257C(void) {
 
 // fn_2_92654, size:0x28
 void fn_2_92654(s32 index, u8 state) {
-    MenuObject* object = (MenuObject*)((u8*)lbl_2_bss_1A8248[0] + index * 0xBC + 0x21E0);
-    object->state = state;
-    object->phase = 0;
+    MenuObject* object = &lbl_2_bss_1A8248[0]->objects[index];
+    object->active = state;
+    object->state = 0;
 }
 
 // fn_2_924B0, size:0x54
-void fn_2_924B0(u8* object) {
+void fn_2_924B0(MenuObject* object) {
     GXColor color = *(GXColor*)(lbl_800F7478 + 0x28);
-    fn_2_8AC84(*(s32*)(object + 0x78), 0);
+    fn_2_8AC84(object->_78, 0);
     color.a = 0xFF;
     fn_800BD2CC(0, color);
 }
@@ -1561,21 +1535,21 @@ void fn_2_9267C(Vec* result, Vec* position, Vec* anchor, Vec* target,
 
 // ---- .data 0x307F0..0x30918 (the .data before it, 0x2FFF8..0x307EC, is rep_0FD8's)
 
-void (*lbl_2_data_307F0[2])(u8* object) = {
-    (void (*)(u8*))fn_2_924B0,
-    (void (*)(u8*))fn_2_924A4,
+void (*lbl_2_data_307F0[2])(MenuObject* object) = {
+    (void (*)(MenuObject*))fn_2_924B0,
+    (void (*)(MenuObject*))fn_2_924A4,
 };
 
-void (*lbl_2_data_307F8[3])(u8* object) = {
-    (void (*)(u8*))fn_2_923E4,
-    (void (*)(u8*))fn_2_923D8,
-    (void (*)(u8*))fn_2_923CC,
+void (*lbl_2_data_307F8[3])(MenuObject* object) = {
+    (void (*)(MenuObject*))fn_2_923E4,
+    (void (*)(MenuObject*))fn_2_923D8,
+    (void (*)(MenuObject*))fn_2_923CC,
 };
 
-void (*lbl_2_data_30804[3])(u8* object) = {
-    (void (*)(u8*))fn_2_91D74,
-    (void (*)(u8*))fn_2_91C4C,
-    (void (*)(u8*))fn_2_91C40,
+void (*lbl_2_data_30804[3])(MenuObject* object) = {
+    (void (*)(MenuObject*))fn_2_91D74,
+    (void (*)(MenuObject*))fn_2_91C4C,
+    (void (*)(MenuObject*))fn_2_91C40,
 };
 
 MenuStateCallback lbl_2_data_30810[3] = {
@@ -1658,23 +1632,23 @@ MenuStateCallback lbl_2_data_308A4[4] = {
     (MenuStateCallback)fn_2_9061C,
 };
 
-void (*lbl_2_data_308B4[16])(u8* object) = {
-    (void (*)(u8*))fn_2_92504,
-    (void (*)(u8*))fn_2_9246C,
-    (void (*)(u8*))fn_2_92394,
-    (void (*)(u8*))fn_2_91C08,
-    (void (*)(u8*))fn_2_91B38,
-    (void (*)(u8*))fn_2_91AE4,
-    (void (*)(u8*))fn_2_9197C,
-    (void (*)(u8*))fn_2_918A4,
-    (void (*)(u8*))fn_2_916C0,
-    (void (*)(u8*))fn_2_91450,
-    (void (*)(u8*))fn_2_911E0,
-    (void (*)(u8*))fn_2_90DAC,
-    (void (*)(u8*))fn_2_90BD0,
-    (void (*)(u8*))fn_2_909F4,
-    (void (*)(u8*))fn_2_908FC,
-    (void (*)(u8*))fn_2_907F4,
+void (*lbl_2_data_308B4[16])(MenuObject* object) = {
+    (void (*)(MenuObject*))fn_2_92504,
+    (void (*)(MenuObject*))fn_2_9246C,
+    (void (*)(MenuObject*))fn_2_92394,
+    (void (*)(MenuObject*))fn_2_91C08,
+    (void (*)(MenuObject*))fn_2_91B38,
+    (void (*)(MenuObject*))fn_2_91AE4,
+    (void (*)(MenuObject*))fn_2_9197C,
+    (void (*)(MenuObject*))fn_2_918A4,
+    (void (*)(MenuObject*))fn_2_916C0,
+    (void (*)(MenuObject*))fn_2_91450,
+    (void (*)(MenuObject*))fn_2_911E0,
+    (void (*)(MenuObject*))fn_2_90DAC,
+    (void (*)(MenuObject*))fn_2_90BD0,
+    (void (*)(MenuObject*))fn_2_909F4,
+    (void (*)(MenuObject*))fn_2_908FC,
+    (void (*)(MenuObject*))fn_2_907F4,
 };
 
 Vec lbl_2_data_308F4 = {0.0f, 0.0f, 0.0f};
