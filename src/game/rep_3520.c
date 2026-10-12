@@ -98,7 +98,11 @@ static u8 lbl_3_bss_B781; // difficulty row for the obstacle drop timings
 static u8 lbl_3_bss_B780; // number of active obstacles
 static u8 s_buf[0x40];
 static u8 s_pad[0x18];
+#ifdef TARGET_PC
+static GXTexObj s_tex[1]; // GXTexObj is 0x40 bytes in aurora
+#else
 static u8 s_tex[0x20];
+#endif
 static s32 s_cnt;
 static s16 lbl_3_bss_B702;
 static u8 s_B700;

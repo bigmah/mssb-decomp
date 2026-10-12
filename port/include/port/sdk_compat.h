@@ -6,6 +6,7 @@
 #include <dolphin/gx.h>
 #include <dolphin/mtx.h>
 #include <dolphin/card.h>
+#include <dolphin/mtx/mtx44ext.h>
 
 // --- MTX ---
 typedef f32 Mtx23[2][3];
@@ -26,6 +27,34 @@ typedef f32 Mtx43[4][3];
 typedef struct CARDMemoryCard {
     u8 data[CARD_WORKAREA_SIZE];
 } CARDMemoryCard;
+
+// 4x4 matrices: aurora declares the C versions but doesn't implement them
+// (port/src/mtx44.c does, as in strikers); the game calls the PS names.
+void C_MTX44Scale(Mtx44 m, f32 xS, f32 yS, f32 zS);
+void C_MTX44Trans(Mtx44 m, f32 xT, f32 yT, f32 zT);
+void C_MTX44RotRad(Mtx44 m, char axis, f32 rad);
+#define PSMTX44Identity C_MTX44Identity
+#define PSMTX44Copy C_MTX44Copy
+#define PSMTX44Concat C_MTX44Concat
+#define PSMTX44Transpose C_MTX44Transpose
+#define PSMTX44Inverse C_MTX44Inverse
+#define PSMTX44Scale C_MTX44Scale
+#define PSMTX44Trans C_MTX44Trans
+#define PSMTX44RotRad C_MTX44RotRad
+
+// --- GX functions aurora doesn't declare (stubbed in Phase 2) ---
+void GXSetDrawSync(u16 token);
+u16 GXReadDrawSync(void);
+void GXSetGPMetric(GXPerf0 perf0, GXPerf1 perf1);
+void GXClearGPMetric(void);
+void GXReadGPMetric(u32* count0, u32* count1);
+u32 GXReadGP0Metric(void);
+u32 GXReadGP1Metric(void);
+void GXReadPixMetric(u32* topIn, u32* topOut, u32* bottomIn, u32* bottomOut, u32* clearIn, u32* copyClocks);
+void GXClearPixMetric(void);
+void GXSetVCacheMetric(GXVCachePerf attr);
+void GXReadVCacheMetric(u32* check, u32* miss, u32* stall);
+void GXClearVCacheMetric(void);
 
 // --- GX enums under their decomp names ---
 typedef enum _GXTevClampMode {

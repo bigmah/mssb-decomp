@@ -83,19 +83,25 @@ set(MSSB_COMMON_FLAGS
     -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
 )
 
-# 64-bit problems: pointers must not be stored in 32-bit integers.
+# 64-bit problems: pointers must not be stored in 32-bit integers, and calls
+# need prototypes (an implicit int return truncates pointers). Everything
+# else stays quiet: the decomp is full of harmless MWCC-isms.
 option(MSSB_WERROR_64 "Make the 64-bit pointer/int warnings errors" ON)
-set(MSSB_PORT_WARNINGS
-    -Wno-everything
-    $<$<BOOL:${MSSB_WERROR_64}>:-Werror=shorten-64-to-32>
-    $<$<BOOL:${MSSB_WERROR_64}>:-Werror=int-to-pointer-cast>
-    $<$<BOOL:${MSSB_WERROR_64}>:-Werror=pointer-to-int-cast>
-    $<$<BOOL:${MSSB_WERROR_64}>:-Werror=incompatible-function-pointer-types>
-    -Wshorten-64-to-32
-    -Wint-to-pointer-cast
-    -Wpointer-to-int-cast
-    -Wincompatible-function-pointer-types
+set(MSSB_64_WARNINGS
+    shorten-64-to-32
+    int-to-pointer-cast
+    pointer-to-int-cast
+    incompatible-function-pointer-types
+    implicit-function-declaration
+    int-conversion
 )
+set(MSSB_PORT_WARNINGS -Wno-everything)
+foreach (w ${MSSB_64_WARNINGS})
+    list(APPEND MSSB_PORT_WARNINGS -W${w})
+    if (MSSB_WERROR_64)
+        list(APPEND MSSB_PORT_WARNINGS -Werror=${w})
+    endif ()
+endforeach ()
 
 # Game code from main.dol, game.rel, menus.rel and challenge.rel.
 add_library(mssb_game OBJECT ${MSSB_GAME_SOURCES})

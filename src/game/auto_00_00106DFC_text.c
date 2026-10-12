@@ -988,6 +988,10 @@ u32 fn_3_109CE8(RankEnt* p) {
         } while (i < 5);
         return i;
     }
+#ifdef TARGET_PC
+    // The original returns r3 unchanged (the pointer p): a value >= 5, "not ranked".
+    return 5;
+#endif
 }
 #pragma opt_unroll_loops reset
 

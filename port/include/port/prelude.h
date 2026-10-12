@@ -6,6 +6,36 @@
 #define TARGET_PC 1
 #endif
 
+#include <stdint.h>
+
+// Metrowerks / PowerPC intrinsics. Defined before any system header: the
+// decomp's math.h (port/include/math.h) uses them.
+// (functions, not macros: game sources also declare some of them, and the
+// SDK headers declare __frsqrte.)
+static inline double port_fabs(double x) { return __builtin_fabs(x); }
+static inline float port_fabsf(float x) { return __builtin_fabsf(x); }
+static inline double port_fnabs(double x) { return -__builtin_fabs(x); }
+static inline double port_frsqrte(double x) { return 1.0 / __builtin_sqrt(x); }
+static inline float port_fres(float x) { return 1.0f / x; }
+static inline double port_fsel(double a, double b, double c) { return a >= 0 ? b : c; }
+#define __fabs port_fabs
+#define __fabsf port_fabsf
+#define __fnabs port_fnabs
+#define __frsqrte port_frsqrte
+#define __fres port_fres
+#define __fsel port_fsel
+static inline int port_abs(int x) { return x < 0 ? -x : x; }
+#define __abs port_abs
+// rlwinm: rotate left by sh, keep bits mb..me (big-endian bit numbering).
+static inline uint32_t port_rlwinm(uint32_t x, int sh, int mb, int me)
+{
+    uint32_t rot = (x << (sh & 31)) | (x >> ((32 - sh) & 31));
+    uint32_t mask = (mb <= me) ? ((0xFFFFFFFFu >> mb) & (0xFFFFFFFFu << (31 - me)))
+                               : ((0xFFFFFFFFu >> mb) | (0xFFFFFFFFu << (31 - me)));
+    return rot & mask;
+}
+#define __rlwinm port_rlwinm
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -22,21 +52,9 @@ typedef va_list __va_list;
 #include <float.h>
 #include <strings.h>
 
-// Metrowerks / PowerPC intrinsics
-// (functions, not macros: game sources also declare some of them, and the
-// SDK headers declare __frsqrte.)
-static inline double port_fabs(double x) { return fabs(x); }
-static inline float port_fabsf(float x) { return fabsf(x); }
-static inline double port_fnabs(double x) { return -fabs(x); }
-static inline double port_frsqrte(double x) { return 1.0 / sqrt(x); }
-static inline float port_fres(float x) { return 1.0f / x; }
-static inline double port_fsel(double a, double b, double c) { return a >= 0 ? b : c; }
-#define __fabs port_fabs
-#define __fabsf port_fabsf
-#define __fnabs port_fnabs
-#define __frsqrte port_frsqrte
-#define __fres port_fres
-#define __fsel port_fsel
+#define __float_max (FLT_MAX)
+#define __float_epsilon (FLT_EPSILON)
+
 #define __cntlzw(x) ((x) == 0 ? 32 : __builtin_clz((unsigned int)(x)))
 #define __rlwimi(a, b, sh, mb, me) port_rlwimi((a), (b), (sh), (mb), (me))
 #define __sync()

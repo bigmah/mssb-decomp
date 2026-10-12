@@ -9,6 +9,7 @@
 #include "main/file_800A7C08.h"
 #include "main/file_800BDEA0.h"
 #include "static/Camera.h"
+void fn_8003A540(u32 value); // main/file_8003A688.h (whole header clashes)
 
 // Particle / emitter system.
 
