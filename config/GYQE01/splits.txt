@@ -1318,8 +1318,10 @@ Musyx/snd_midictrl.c:
 
 Musyx/snd_service.c:
 	.text       start:0x800DC44C end:0x800DC720
+	.rodata     start:0x800E81A8 end:0x800E81D8
 	.data       start:0x801150F0 end:0x80115900
 	.sdata      start:0x803CBB70 end:0x803CBB78
+	.sdata2     start:0x803CD268 end:0x803CD270
 
 Musyx/hardware.c:
 	.text       start:0x800DC720 end:0x800DD7A0
@@ -1328,6 +1330,10 @@ Musyx/hardware.c:
 	.sdata      start:0x803CBB78 end:0x803CBB88
 	.sbss       start:0x803CC3A0 end:0x803CC3A8
 	.sdata2     start:0x803CD270 end:0x803CD298
+
+Musyx/dsp_import.c:
+	.data       start:0x80115900 end:0x801177C0
+	.sdata      start:0x803CBB88 end:0x803CBB8A
 
 Musyx/hw_aramdma.c:
 	.text       start:0x800DD7A0 end:0x800DE2A0

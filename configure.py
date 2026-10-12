@@ -797,6 +797,7 @@ config.libs = [
             Object(Matching, "Musyx/hardware.c"),
             Object(Matching, "Musyx/hw_aramdma.c"),
             Object(Matching, "Musyx/hw_dolphin.c"),
+            Object(Matching, "Musyx/dsp_import.c"),
             Object(Matching, "Musyx/hw_memory.c"),
             Object(Matching, "Musyx/reverb_fx.c"),
             Object(Matching, "Musyx/reverb.c"),
