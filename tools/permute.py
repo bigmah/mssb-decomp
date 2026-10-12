@@ -399,7 +399,9 @@ OBJDUMP = ROOT / "build" / "binutils" / "powerpc-eabi-objdump"
 PERMUTER_WEIGHTS = {"perm_randomize_internal_type": 0, "perm_randomize_external_type": 0,
                     "perm_randomize_function_type": 0, "perm_cast_simple": 0, "perm_add_mask": 0,
                     "perm_alias_array": 0, "perm_xor_zero": 0, "perm_mult_zero": 0,
-                    "perm_float_literal": 0, "perm_pad_var_decl": 0}
+                    "perm_float_literal": 0, "perm_pad_var_decl": 0,
+                    # reads an uninitialised variable (`if (x) {}`): undefined behaviour in the port
+                    "perm_var_cond_block": 0}
 
 
 def ensure_permuter():
@@ -469,7 +471,7 @@ ASM_CALL = "__permute_asm"
 def hide_asm(text: str):
     """Replace MWCC inline `asm { ... }` blocks with `__permute_asm(N);` (and whole
     `asm` function definitions with a placeholder declaration) so pycparser can parse
-    the file; restore_asm puts them back before compiling."""
+    the file (only the parse needs this: compile.sh compiles the real source)."""
     blocks, out, i = [], [], 0
     pat = re.compile(r"^(?:[^\n;{}]*\basm\b[^\n;{}]*\([^;{}]*\)\s*\{)|\basm\s*\{", re.M)
     while True:
@@ -494,32 +496,99 @@ def hide_asm(text: str):
     return "".join(out), blocks
 
 
-def restore_asm(text: str, blocks: list) -> str:
-    text = text.replace(f"void {ASM_CALL}(int);", "", 1)
-    text = re.sub(rf"\b{ASM_CALL}\(\s*(\d+)\s*\);", lambda m: blocks[int(m.group(1))], text)
-    return re.sub(rf"extern int {ASM_CALL}_def(\d+);", lambda m: blocks[int(m.group(1))], text)
+MARKER = "int __permute_fn_marker;"
+
+
+def strip_comments(text: str) -> str:
+    text = re.sub(r"/\*.*?\*/", " ", text, flags=re.S)
+    return re.sub(r"//[^\n]*", "", text)
 
 
 def cc_main(src: str, fn: str, d: str, c_in: str, o_out: str) -> int:
-    """compile.sh body: preprocessed C -> one-function object."""
-    import subprocess as sp
-    cmd = nmp.compile_cmd(src)
+    """compile.sh body: take fn from the candidate (pycparser output, macros unexpanded),
+    put it into the real source (orig.c) and compile that like the build does, then
+    reassemble fn's asm alone."""
+    cand = Path(c_in).read_text()
+    span = find_fn(cand, fn)
+    if not span:
+        return 1
+    text = (Path(d) / "orig.c").read_text().replace(MARKER, cand[span[0]:span[1]], 1)
     with tempfile.TemporaryDirectory() as wd:
-        blocks = json.loads((Path(d) / "asm_blocks.json").read_text())
-        if blocks:
-            restored = Path(wd) / "in.c"
-            restored.write_text(restore_asm(Path(c_in).read_text(), blocks))
-            c_in = str(restored)
-        c = re.sub(r" -o \S+", f" -o {wd}", cmd).replace(f" -c {src}", f" -c {c_in}")
-        if sp.run(c, shell=True, cwd=ROOT, capture_output=True).returncode != 0:
-            return 1
-        objs = list(Path(wd).glob("*.o"))
-        if not objs:
+        obj = nmp.compile_text(src, text, wd)
+        if obj is None:
             return 1
         s = Path(wd) / "ours.s"
-        nmp.fndiff.disasm(objs[0], s)
+        nmp.fndiff.disasm(obj, s)
         lits = set((Path(d) / "literals.txt").read_text().split())
         return 0 if fn_object(s, fn, lits, Path(o_out)) else 1
+
+
+C_WORDS = {"auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum",
+           "extern", "float", "for", "goto", "if", "int", "long", "register", "return", "short", "signed",
+           "sizeof", "static", "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
+           "inline"}
+
+
+def macro_decls(src: str, orig: str, pp_full: str, fn: str, fn_text: str):
+    """Declarations that let pycparser and permuter's type inference treat the macros
+    fn uses as variables / functions of the type of their expansion. None if a macro
+    cannot be handled (the caller then falls back to the expanded function)."""
+    if str(PERMUTER) not in sys.path:
+        sys.path.insert(0, str(PERMUTER))
+    from src.ast_util import parse_c  # noqa: E402  (decomp-permuter)
+    from src.ast_types import build_typemap, expr_type, set_decl_name
+    from perm_pycparser import c_ast as ca, c_generator
+    import copy
+
+    body = strip_comments(fn_text)
+    probes = []  # (name, invocation, is_function_like)
+    for name in sorted(set(re.findall(r"\b[A-Za-z_]\w*\b", body)) - C_WORDS):
+        m = re.search(rf"\b{name}\s*\(", body)
+        if m:
+            close = nmp.brace_end(body.replace("(", "{").replace(")", "}"), m.end() - 1)
+            probes.append((name, body[m.start():close + 1] if close > 0 else name, True))
+        probes.append((name, name, False))
+    text = orig + "\n" + "\n".join(f"__permute_probe_{k} {inv} __permute_end" for k, (_, inv, _) in enumerate(probes)) + "\n"
+    pp = preprocess(src, text)
+    if pp is None:
+        return None
+    exp = {int(m.group(1)): m.group(2).strip()
+           for m in re.finditer(r"^__permute_probe_(\d+) ?(.*?) ?__permute_end$", pp[0], re.M)}
+    macros = {}
+    for k, (name, inv, fnlike) in enumerate(probes):
+        e = exp.get(k)
+        if e is None or e == inv or name in macros:
+            continue
+        macros[name] = (fnlike, e)
+    if not macros:
+        return ""
+    # type each expansion inside (a copy of) the expanded function, so locals resolve
+    span = find_fn(pp_full, fn)
+    if not span:
+        return None
+    fn_exp = pp_full[span[0]:span[1]]
+    names = list(macros)
+    probe_fn = fn_exp[:fn_exp.rfind("}")] + "".join(f"({macros[n][1]});\n" for n in names) + "}\n"
+    try:
+        ast = parse_c(pp_full[:span[0]] + probe_fn + pp_full[span[1]:])
+    except Exception:
+        return None
+    fdef = next(x for x in ast.ext if isinstance(x, ca.FuncDef) and x.decl.name == fn)
+    typemap = build_typemap(ast, fdef)
+    stmts = fdef.body.block_items[-len(names):]
+    decls = []
+    gen = c_generator.CGenerator()
+    for n, st in zip(names, stmts):
+        try:
+            t = copy.deepcopy(expr_type(st, typemap))
+        except Exception:
+            t = ca.TypeDecl(None, [], None, ca.IdentifierType(["int"]))
+        if macros[n][0]:
+            t = ca.FuncDecl(None, t)
+        d = ca.Decl(n, [], [], ["extern"], [], [], t, None, None, None)
+        set_decl_name(d)
+        decls.append(gen.visit(d) + ";")
+    return "\n".join(decls) + "\n"
 
 
 def setup_permuter_dir(src: str, fn: str):
@@ -530,17 +599,33 @@ def setup_permuter_dir(src: str, fn: str):
     if not unit or not text:
         print(f"{fn}: not found")
         return None
-    pp = preprocess(src, text)
-    if pp is not None:
-        pp, blocks = pp
-    if pp is None:
+    # The function itself stays as written (macros unexpanded, so a match keeps EA_TASK,
+    # NULL, OSRoundUp32B... instead of their expansions): the rest of the unit is
+    # preprocessed around a marker, and compile.sh splices the candidate back into orig.c.
+    fn_text = text[span[0]:span[1]]
+    if re.search(r"^\s*#", fn_text, re.M):
+        print(f"{fn}: preprocessor lines inside the function")
+        return None
+    orig = text[:span[0]] + MARKER + text[span[1]:]
+    pp = preprocess(src, orig)
+    if pp is None or pp[0].count(MARKER) != 1:
         print(f"{fn}: preprocessing failed")
         return None
+    full = preprocess(src, text)
+    decls = macro_decls(src, orig, full[0], fn, fn_text) if full else None
+    if decls is None:
+        # fall back to the expanded function (a match then needs its macros put back by hand)
+        print(f"{fn}: macros kept expanded", flush=True)
+        if not full:
+            return None
+        pp = full[0]
+    else:
+        pp = pp[0].replace(MARKER, decls + strip_comments(fn_text))
     d = OUT / fn
     shutil.rmtree(d, ignore_errors=True)
     d.mkdir(parents=True)
     (d / "base.c").write_text(pp)
-    (d / "asm_blocks.json").write_text(json.dumps(blocks))
+    (d / "orig.c").write_text(orig)
     with tempfile.TemporaryDirectory() as wd:
         ts, lits = nmp.target_asm(unit, wd)
         (d / "literals.txt").write_text("\n".join(sorted(lits)) + "\n")
@@ -606,6 +691,8 @@ def tidy(fn_text: str) -> str:
             lines[-1] += " {"
         elif lines and lines[-1] == "}" and (l.startswith("else") or l.startswith("while")):
             lines[-1] += " " + l
+        elif lines and lines[-1].endswith("} else") and l.startswith("if "):
+            lines[-1] += " " + l
         else:
             lines.append(l)
     out, depth = [], 0
@@ -625,6 +712,7 @@ def tidy(fn_text: str) -> str:
         out.insert(k, "")
     text = "\n".join(out)
     text = re.sub(r"\((\+\+|--)(\w+)\)", r"\1\2", text)          # (++i) -> ++i
+    text = re.sub(r"\(\(void \*\) 0\)|\(void \*\) 0\b", "NULL", text)
     text = re.sub(r"^(\s+[A-Za-z_][\w ]*?) (\*+)(\w+)", r"\1\2 \3", text, flags=re.M)  # T *x -> T* x
     return text
 
@@ -674,6 +762,8 @@ def main():
     ap.add_argument("--budget", type=float, default=120, help="seconds per function (default 120)")
     ap.add_argument("-j", type=int, default=max(1, (os.cpu_count() or 2) - 2))
     ap.add_argument("--promote", action="store_true", help="apply, verify and commit matches")
+    ap.add_argument("--start", type=int, default=0, help="with --all: skip the first N targets")
+    ap.add_argument("--limit", type=int, default=0, help="with --all: at most N targets")
     ap.add_argument("--skip", default="", help="file with function names to skip (one per line)")
     ap.add_argument("--backend", choices=("text", "permuter", "both"), default="both",
                     help="text: the built-in rewrites; permuter: decomp-permuter; both (default): "
@@ -681,7 +771,18 @@ def main():
     args = ap.parse_args()
 
     if args.all:
-        targets = [(s, f) for s, f, _ in sorted(high_pct_targets(args.min_pct), key=lambda t: -t[2])]
+        # closest first: order by fndiff-style line count of the unwrapped function
+        from concurrent.futures import ProcessPoolExecutor
+        hp = high_pct_targets(args.min_pct)
+        srcs = sorted({s for s, _, _ in hp})
+        score = {}
+        with ProcessPoolExecutor(args.j) as ex:
+            for s, res in zip(srcs, ex.map(nmp.scan_source, srcs)):
+                score.update({(s, fn): sc for fn, whole, _, sc in res if not whole})
+        targets = sorted(((s, f) for s, f, _ in hp if score.get((s, f), -1) > 0),
+                         key=lambda t: score[t])
+        targets = targets[args.start:args.start + args.limit] if args.limit else targets[args.start:]
+        print(f"{len(targets)} target(s): " + " ".join(f"{f}({score[(s, f)]})" for s, f in targets), flush=True)
     else:
         targets = []
         for fn in args.functions:
