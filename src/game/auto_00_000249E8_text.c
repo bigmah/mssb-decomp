@@ -17,7 +17,7 @@ void AnimateCharacter(s32 index, s32 anim, s32 a, u8 mode, s32 b, s32 c, s32 d, 
 extern SceneActorSetup lbl_3_data_1D28[];
 extern SceneActorSetup lbl_3_data_1E434[];
 extern SceneActorSetup lbl_3_data_1F090[];
-extern u8* lbl_3_data_1F40[13]; // per mode: actor-setup script
+extern u8* lbl_3_data_1F40[4]; // per mode: actor-setup script
 
 extern Unk2398Entry lbl_3_data_2398[];
 
