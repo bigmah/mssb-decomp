@@ -104,7 +104,7 @@ static void copyCharacterStats(CharacterStats* dst, CharacterStats* src) {
 
 // Index of id in the team's chemistry order; keeps rank if it is not there
 // (the original leaves the register unchanged).
-static s32 chemRank(u8 team, s32 id, s32 rank) {
+static inline s32 chemRank(u8 team, s32 id, s32 rank) {
     s32 k;
 
     for (k = 0; k < 0x36; k++) {
@@ -421,13 +421,14 @@ void fn_800649BC(void) {
 }
 
 // .text:0x80064A04 size:0x13E8
-// NONMATCHING 39%: the original inlines placeSlotByClass and chemRank at every call site
-// (the logic was checked against the asm block by block)
+// NONMATCHING 77%: placeSlotByClass and chemRank are inlined as in the original; the pick/captain
+// scan loops are unrolled differently (the original reloads picks[team][i] in the inner loop)
+// and more registers are saved (logic checked against the asm block by block)
 #if NONMATCHING
 // Gives character c's slot (in picks[team]) the first free field position its
 // class prefers, or a random free one. checkFree: in the random case, only take
 // a slot that has no position yet.
-static void placeSlotByClass(u8 team, s8* slotPos, s8 c, BOOL checkFree) {
+static inline void placeSlotByClass(u8 team, s8* slotPos, s8 c, BOOL checkFree) {
     u8* pref = lbl_80109054[1][lbl_8034E9A0.roster[c / 9][c % 9].stats.CharacterClass];
     s32 p;
     s32 k;
@@ -470,11 +471,10 @@ static void placeSlotByClass(u8 team, s8* slotPos, s8 c, BOOL checkFree) {
 // Assigns a field position to each of a team's picks (lbl_803C6724.pos): the
 // captain pitches (0), then the captain-type characters and the others in
 // chemistry order take the first free position preferred by their class.
-// nmverify: placeSlotByClass inlined on one side (calls match once expanded)
 void unsure_FillRosterPositions(u8 team) {
-    s8 others[9];
-    s8 captains[9];
     s8 slotPos[9];
+    s8 captains[9];
+    s8 others[9];
     u8 nc;
     u8 no;
     u8 isCaptain;
