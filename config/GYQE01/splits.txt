@@ -40,18 +40,18 @@ main/file_8000BA3C.c:
 	.sdata2     start:0x803CC458 end:0x803CC490
 
 main/file_8000F150.c:
-	extab       start:0x800056D8 end:0x80005748
-	extabindex  start:0x80006DA4 end:0x80006E4C
-	.text       start:0x8000F150 end:0x80011640
+	extab       start:0x800056D8 end:0x80005740
+	extabindex  start:0x80006DA4 end:0x80006E40
+	.text       start:0x8000F150 end:0x80011468
 	.data       start:0x800E8F60 end:0x800EE800
 	.sdata      start:0x803CB760 end:0x803CB790
 	.sbss       start:0x803CBBE8 end:0x803CBBF0
 	.sdata2     start:0x803CC490 end:0x803CC4B8
 
 main/file_80011640.c:
-	extab       start:0x80005748 end:0x800059D0
-	extabindex  start:0x80006E4C end:0x80007218
-	.text       start:0x80011640 end:0x8001FE00
+	extab       start:0x80005740 end:0x800059D0
+	extabindex  start:0x80006E40 end:0x80007218
+	.text       start:0x80011468 end:0x8001FE00
 	.rodata     start:0x800E6600 end:0x800E6698
 	.bss        start:0x80118220 end:0x80118740
 	.sdata      start:0x803CB790 end:0x803CB7C8
