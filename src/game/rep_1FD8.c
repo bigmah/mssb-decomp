@@ -1,5 +1,6 @@
 #include "game/rep_1FD8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1FD8
+#include "header_rep_inline.h"
 
 #include "static/UnknownHomes_Static.h"
 #include "Dolphin/vec.h"
@@ -110,7 +111,8 @@ extern void fn_8003A8A0(void* model, Mtx viewMtx, s32 unused);
 extern u32 lbl_3_bss_9D88;
 extern u16 lbl_3_data_177F0;
 typedef struct Rep1FD8Ent {
-    u8 pad0[8];
+    void* next;                           // draw-list link
+    void (*draw)(struct Rep1FD8Ent* ent); // fn_3_C1C18
     Mtx m;
     void* w38;
 } Rep1FD8Ent;
@@ -173,8 +175,49 @@ void fn_3_C1974(u8* a) {
 // .text:0x000C19C8 size:0x250 mapped:0x80700A5C
 extern s32 fn_3_B7FC8(s32 id, s32 kind);
 extern s16 lbl_3_data_17880[];
-// NONMATCHING 99%: mullw operands swapped (rand() * a; both operand orders give r27,r3)
-#if NONMATCHING
+typedef struct { f32 x, y, z; u8 pad[4]; u8 f10; u8 pad11; u8 f12; u8 pad13[5]; } C71CCEnt;
+// .data 0x00017508..0x00017898
+f32 lbl_3_data_17508[3] = {1.0f, 3.0f, 5.0f};
+f32 lbl_3_data_17514[55] = {
+    -51.592f, -18.0f, 68.051f, 306.0f, 9.477712e-38f, -43.569f, -18.0f, 76.869f,
+    314.0f, 9.477712e-38f, -33.845f, -18.0f, 84.008f, 330.0f, 9.477712e-38f, 51.592f,
+    -18.0f, 68.051f, 52.0f, 9.477999e-38f, 43.569f, -18.0f, 76.869f, 44.0f,
+    9.477999e-38f, 33.845f, -18.0f, 84.008f, 28.0f, 9.477999e-38f, 0.0f, 0.0f,
+    0.0f, 0.0f, 9.704596e-35f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+};
+f32 lbl_3_data_175F0[3] = {0.06f, 0.07f, 0.08f};
+C71CCEnt lbl_3_data_175FC[11] = {
+    {-48.0f, 5.5f, 25.0f, {0, 0, 0, 0}, 3, 1, 1, {3, 1, 39, 0, 1}},
+    {-43.0f, 5.5f, 56.0f, {0, 0, 0, 0}, 3, 1, 1, {3, 1, 59, 0, 90}},
+    {-10.0f, 5.5f, 77.0f, {0, 0, 0, 0}, 3, 1, 2, {3, 0, 180, 0, 90}},
+    {10.0f, 5.5f, 77.0f, {0, 0, 0, 0}, 3, 1, 2, {3, 1, 14, 0, 90}},
+    {45.0f, 5.5f, 23.0f, {0, 0, 0, 0}, 3, 1, 3, {3, 0, 245, 0, 1}},
+    {43.0f, 5.5f, 56.0f, {0, 0, 0, 0}, 3, 1, 3, {3, 0, 135, 0, 90}},
+    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 7, 0, 255, {7, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
+    {0.0f, 0.0f, 0.0f, {0, 0, 0, 0}, 0, 0, 0, {0, 0, 0, 0, 0}},
+};
+f32 lbl_3_data_17704[59] = {
+    -12.891f, -5.93f, 87.961f, 348.0f, 1.5164347e-36f, 12.891f, -5.93f, 87.961f,
+    12.0f, 1.5164347e-36f, -23.0f, -0.02f, 72.0f, 0.0f, 6.0659225e-36f, -22.0f,
+    -0.02f, 45.0f, 0.0f, 6.0659225e-36f, -50.0f, -0.02f, 38.0f, 0.0f,
+    6.0659225e-36f, 23.0f, -0.02f, 72.0f, 0.0f, 6.066106e-36f, 22.0f, -0.02f,
+    45.0f, 0.0f, 6.066106e-36f, 50.0f, -0.02f, 38.0f, 0.0f, 6.066106e-36f,
+    0.0f, 0.0f, 0.0f, 0.0f, 9.704596e-35f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.387867e-38f,
+    9.551472e-38f, 2.5208502e-35f, 4.122694e-34f,
+};
+u16 lbl_3_data_177F0 = 4;
+s32 lbl_3_data_177F4 = 2;
+u8 lbl_3_data_177F8[12] = {0, 200, 5, 146, 8, 104, 255, 255, 255, 0, 0, 0};
+Rep1FD8Ent lbl_3_data_17804[2] = {{NULL, fn_3_C1C18}, {NULL, fn_3_C1C18}};
+f32 lbl_3_data_1787C = 0.7f;
+s16 lbl_3_data_17880[12] = {106, -98, 220, 94, -87, 230, 120, -80, 212, 0, 0, 0};
+
 void fn_3_C19C8(void) {
     s32 i;
     s32 a;
@@ -197,7 +240,8 @@ void fn_3_C19C8(void) {
     i = 2;
     while (i-- != 0) {
         a = ((0x1FFF - rand() * 0x3FFF / 0x7FFF) >> (1 - i)) + 0x1FFF;
-        t = rand() * a / 0x7FFF;
+        t = rand();
+        t = t * a / 0x7FFF;
         o = lbl_3_bss_9D90;
         o->f20[i] = t;
         o = lbl_3_bss_9D90;
@@ -207,7 +251,6 @@ void fn_3_C19C8(void) {
         o->f27[i] = t;
     }
 }
-#endif
 
 // .text:0x000C1C18 size:0x62C mapped:0x80700CAC
 typedef struct { Mtx m; } C1C18Mtx;
@@ -924,7 +967,7 @@ typedef struct {
 } C42A4Bss;
 typedef struct { u8 pad[0x10]; u8 f10; u8 f11; u8 f12; u8 f13; } C42A4Ent;
 extern u8 lbl_3_bss_9DE0[];
-extern u8 lbl_3_data_17704[];
+extern f32 lbl_3_data_17704[59];
 extern f32 lbl_3_rodata_2154;
 extern void fn_3_B8414(void*, void*);
 extern void fn_3_B8464(void*, void*);
@@ -944,7 +987,7 @@ void fn_3_C42A4(s32* a, s32* b) {
         v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
         g->p40[*a] = v;
         ((void (*)(void))fn_3_B8574)();
-        e = (C42A4Ent*)lbl_3_data_17704;
+        e = (C42A4Ent*)((u8*)lbl_3_data_17704);
         off = v * 4;
         for (j = 0; j < 10; e++, j++) {
             if (k == e->f12 && e->f10 != 7) {
@@ -1010,7 +1053,7 @@ extern void fn_80033CC8(void*, void*);
 extern const f32 lbl_3_rodata_2168[];
 extern const f32 lbl_3_rodata_21A4;
 extern const f32 lbl_3_rodata_21AC;
-extern u8 lbl_3_data_17514[];
+extern f32 lbl_3_data_17514[55];
 extern const f32 lbl_3_rodata_21A8;
 extern f64 pow(f64, f64);
 // .text:0x000C4724 size:0x1AC mapped:0x807037B8
@@ -1502,7 +1545,6 @@ u8 fn_3_C625C(u8* a) {
     return 0;
 }
 
-typedef struct { f32 x, y, z; u8 pad[4]; u8 f10; u8 pad11; u8 f12; u8 pad13[5]; } C71CCEnt;
 extern C71CCEnt lbl_3_data_175FC[];
 // One stadium object slot of lbl_3_common_bss_350E4 (0xE8 bytes), as set up by fn_3_C8650.
 typedef struct StadObj1FD8 {
@@ -1874,7 +1916,7 @@ void fn_3_C77AC(void* hv, u8* b) {
     while (p != NULL) {
         p->f38 = p->f3C = lbl_3_rodata_213C;
         p->f1C = lbl_3_rodata_21AC - (f32)(rand() % 3);
-        fa = (f32)ang + *(f32*)(lbl_3_data_17514 + b[0xA8] * 0x14 + 0xC);
+        fa = (f32)ang + *(f32*)((u8*)lbl_3_data_17514 + b[0xA8] * 0x14 + 0xC);
         a = (fa * lbl_3_rodata_2158) / lbl_3_rodata_215C;
         p->vx = 0.3499999940395355 * cos(a);
         p->vy = (f32)-(rand() % 3);
@@ -1921,7 +1963,7 @@ typedef struct {
     f32 ang;
     u8 pad10[4];
 } C7A0CTbl; // lbl_3_data_17514
-#define C7A0C_TBL ((C7A0CTbl*)lbl_3_data_17514)
+#define C7A0C_TBL ((C7A0CTbl*)((u8*)lbl_3_data_17514))
 extern f32 lbl_3_data_17508[];
 extern s16 fn_3_B7F70(s16 range);
 extern s32 fn_3_8BBC4(s32 id, f32* pos, f32* dir, s32 type);
@@ -1936,7 +1978,49 @@ extern const f64 lbl_3_rodata_21D0; // 0.25
 extern const f64 lbl_3_rodata_21D8; // -5.0
 extern const f64 lbl_3_rodata_21E8; // 0.2
 extern f32 lbl_3_rodata_21E0;        // -5.0f
-// NONMATCHING ~65%: the original inlines fn_3_C77AC in case 2 (CW won't auto-inline it here: 271 of 404 insns, the rest is register numbering)
+// The original expands fn_3_C77AC into fn_3_C7A0C. CW only does that with a larger inline size
+// limit (with -inline deferred, the value in effect at the end of the file counts) and only from a
+// copy that is always visible (fn_3_C77AC itself is NONMATCHING).
+#pragma inline_max_size(100000)
+// Inline copy of fn_3_C77AC.
+static inline void fn_3_C77AC_inline(void* hv, u8* b) {
+    u32 ang;
+    C4724P* p;
+    C4724Hdr* h = hv;
+    f32 a, fa;
+    u32 i;
+    p = h->head;
+    h->f18 = (Vec*)(b + 0x9C);
+    h->f20 = b;
+    h->tex = lbl_3_bss_9F0C;
+    h->f24 = 30;
+    i = 0;
+    ang = 0;
+    while (p != NULL) {
+        p->f38 = p->f3C = lbl_3_rodata_213C;
+        p->f1C = lbl_3_rodata_21AC - (f32)(rand() % 3);
+        fa = (f32)ang + *(f32*)(lbl_3_data_17514 + b[0xA8] * 0x14 + 0xC);
+        a = (fa * lbl_3_rodata_2158) / lbl_3_rodata_215C;
+        p->vx = 0.3499999940395355 * cos(a);
+        p->vy = (f32)-(rand() % 3);
+        p->vz = 0.3499999940395355 * sin(a);
+        ang += 30;
+        p->x = h->f18->x;
+        p->z = h->f18->z;
+        p->s48 = i >> 2;
+        i++;
+        p->f4D = 0x1C;
+        p->f4E = 0;
+        p->a42 = 0x7F;
+        p->a41 = 0x7F;
+        p->a40 = 0x7F;
+        p->a43 = 0x99;
+        p->s4A = 1;
+        p = p->next;
+    }
+}
+
+// NONMATCHING 98%: register numbering; the inlined fn_3_C77AC copy carries its fmuls operand-order difference
 #if NONMATCHING
 void fn_3_C7A0C(C7A0CEnt* e) {
     Vec pos;
@@ -2006,7 +2090,7 @@ void fn_3_C7A0C(C7A0CEnt* e) {
         if (lbl_3_rodata_2148 * e->speed + e->pos.y >= lbl_3_rodata_21D8) {
             h = fn_80033A24(fn_3_C75B8, 0x80, 0, 0xC, 1, (u8)(e->idx + 0x3E));
             if (h != NULL) {
-                fn_3_C77AC(h, (u8*)e);
+                fn_3_C77AC_inline(h, (u8*)e);
             }
         }
         break;
@@ -2031,7 +2115,7 @@ void fn_3_C7A0C(C7A0CEnt* e) {
 
 typedef struct { u32 w[17]; } C42A4Cpy;
 extern u8 lbl_3_bss_9DE4[];
-extern u8 lbl_3_data_17514[];
+extern f32 lbl_3_data_17514[55];
 extern f32 lbl_3_rodata_21E0;
 // .text:0x000C805C size:0x1E0 mapped:0x807070F0
 void fn_3_C805C(s32* a, s32* b) {
@@ -2050,7 +2134,7 @@ void fn_3_C805C(s32* a, s32* b) {
         v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
         g->p40[*a] = v;
         ((void (*)(void))fn_3_B8574)();
-        e = (C42A4Ent*)lbl_3_data_17514;
+        e = (C42A4Ent*)((u8*)lbl_3_data_17514);
         off = v * 4;
         for (j = 0; j < 10; e++, j++) {
             if (k == e->f12 && e->f10 != 7) {
@@ -2099,11 +2183,95 @@ void* fn_3_C823C(s32 idx, Mtx out) {
     return (*(C823CEnt**)&lbl_3_common_bss_350E4 + idx)->f78;
 }
 
+// Inline copies of fn_3_C42A4 and fn_3_C805C (the original expands both in fn_3_C82B4).
+static inline void fn_3_C42A4_inline(s32* a, s32* b) {
+    Mtx m;
+    C42A4Bss* g;
+    C42A4Ent* e;
+    s32 off;
+    s32 k;
+    s32 j;
+    u32 v;
+    C42A4Ctl* c;
+    s32 idx;
+    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    for (k = 0; k < 5; k++) {
+        v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
+        g->p40[*a] = v;
+        ((void (*)(void))fn_3_B8574)();
+        e = (C42A4Ent*)lbl_3_data_17704;
+        off = v * 4;
+        for (j = 0; j < 10; e++, j++) {
+            if (k == e->f12 && e->f10 != 7) {
+                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(j + lbl_3_bss_9DE0[0]) * 0xE8 + 0x90] >> 6) & 1) {
+                    idx = j + lbl_3_bss_9DE0[0];
+                    *(s32*)((u8*)g->p44 + off) = idx;
+                    off += 4;
+                    g->p3C[*a] += 1;
+                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE0[0]];
+                    CTRLBuildMatrix(&c->u.ctrl, m);
+                    fn_3_B8464(m, c->f78);
+                    m[1][3] = m[1][3] * lbl_3_rodata_2154;
+                    fn_3_B8464(m, c->f78);
+                    *b += 1;
+                }
+            }
+        }
+        if (g->p3C[*a] != 0) {
+            fn_3_B8414(g->p48 + *a * 0x18, g->p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
+}
+
+static inline void fn_3_C805C_inline(s32* a, s32* b) {
+    Mtx m;
+    C42A4Cpy cpy;
+    C42A4Bss* g;
+    C42A4Ent* e;
+    s32 off;
+    s32 k;
+    s32 j;
+    u32 v;
+    C42A4Ctl* c;
+    s32 idx;
+    g = (C42A4Bss*)lbl_3_common_bss_350E4;
+    for (k = 0; k < 5; k++) {
+        v = (u16)(g->p40[*a - 1] + g->p3C[*a - 1]);
+        g->p40[*a] = v;
+        ((void (*)(void))fn_3_B8574)();
+        e = (C42A4Ent*)lbl_3_data_17514;
+        off = v * 4;
+        for (j = 0; j < 10; e++, j++) {
+            if (k == e->f12 && e->f10 != 7) {
+                if ((((u8*)((C42A4Bss*)lbl_3_common_bss_350E4)->arr)[(j + lbl_3_bss_9DE4[0]) * 0xE8 + 0x90] >> 6) & 1) {
+                    idx = j + lbl_3_bss_9DE4[0];
+                    *(s32*)((u8*)g->p44 + off) = idx;
+                    g->p3C[*a] += 1;
+                    c = &((C42A4Bss*)lbl_3_common_bss_350E4)->arr[j + lbl_3_bss_9DE4[0]];
+                    off += 4;
+                    cpy = *(C42A4Cpy*)c;
+                    CTRLBuildMatrix(&c->u.ctrl, m);
+                    fn_3_B8464(m, c->f78);
+                    CTRLSetTranslation((Control*)&cpy, ((f32*)e)[0], lbl_3_rodata_21E0, ((f32*)e)[2]);
+                    CTRLBuildMatrix((Control*)&cpy, m);
+                    fn_3_B8464(m, c->f78);
+                    *b += 1;
+                }
+            }
+        }
+        if (g->p3C[*a] != 0) {
+            fn_3_B8414(g->p48 + *a * 0x18, g->p48 + (*a * 2 + 1) * 0xC);
+            *a += 1;
+        }
+    }
+}
+
 // .text:0x000C82B4 size:0x39C mapped:0x80707348
 extern void* _OSAllocFromHeap(s32 heap, s32 size);
 // Builds the object groups: allocates the batch buffers once, then lets
 // fn_3_C805C and fn_3_C42A4 fill one group per pass.
-// NONMATCHING ~85%: the original inlines fn_3_C805C and fn_3_C42A4 (CW won't auto-inline them here; with both marked inline the body is 233 vs 231 insns, rest regalloc)
+// NONMATCHING 95%: register allocation and a 0x10 smaller frame (the inlined copies' locals share slots)
 #if NONMATCHING
 void fn_3_C82B4(void) {
     C42A4Bss* g = (C42A4Bss*)lbl_3_common_bss_350E4;
@@ -2122,8 +2290,8 @@ void fn_3_C82B4(void) {
     memset(g->p48, 0, size);
     groups = 0;
     objs = 0;
-    fn_3_C805C(&groups, &objs);
-    fn_3_C42A4(&groups, &objs);
+    fn_3_C805C_inline(&groups, &objs);
+    fn_3_C42A4_inline(&groups, &objs);
     ((C42A4Bss*)lbl_3_common_bss_350E4)->groups = groups;
 }
 #endif
@@ -2149,9 +2317,9 @@ extern u8 lbl_3_data_10C1C[];
 void fn_3_C8650(void** files) {
     C42A4Bss* g = (C42A4Bss*)lbl_3_common_bss_350E4;
     C3C2CBss* bss = &lbl_3_bss_9D80;
-    StadPlace14* pa = (StadPlace14*)lbl_3_data_17514;
+    StadPlace14* pa = (StadPlace14*)((u8*)lbl_3_data_17514);
     StadPlace18* pb = (StadPlace18*)lbl_3_data_175FC;
-    StadPlace14* pc = (StadPlace14*)lbl_3_data_17704;
+    StadPlace14* pc = (StadPlace14*)((u8*)lbl_3_data_17704);
     StadObj1FD8* o;
     s32* idx;
     u32 nB;
@@ -2167,7 +2335,7 @@ void fn_3_C8650(void** files) {
     g->f18 = fn_3_B939C;
     idx = _OSAllocFromHeap(4, 0x40);
     g->fileIdx = idx;
-    fn_3_B9D68(lbl_3_data_17704 + 0xDC, 16, files, idx);
+    fn_3_B9D68((u8*)lbl_3_data_17704 + 0xDC, 16, files, idx);
     bss->tex = files[0];
 
     for (nB = 0; nB < 10; nB++) {
@@ -2416,4 +2584,5 @@ void fn_3_C8650(void** files) {
     fn_3_B97C8(fn_3_C2974);
 }
 #endif
+
 

@@ -55,15 +55,8 @@ typedef struct EffectAnims {
 } EffectAnims;
 
 // View of lbl_3_data_285A8 (one block of the original's data, 0x285A8..0x28928).
-typedef struct EffectData {
-    /*0x000*/ s32 kindYOfs[0x36]; // per character kind, fixed point (/100000)
-    /*0x0D8*/ s32 params[0x12];   // lbl_3_data_28680
-    /*0x120*/ EffectNode nodes[9][2];
-    /*0x360*/ u8 shown[0xC];      // set while an actor's effect node is queued this frame
-    /*0x36C*/ u8 flags[0xA];      // lbl_3_data_28914
-    /*0x376*/ u16 joint2891E;
-    /*0x378*/ u16 joints[4];      // lbl_3_data_28920
-} EffectData;
+// rep_3F60's .data (lbl_3_data_285A8 kind y offsets, 28680 params, 286C8 nodes, 28908 shown,
+// 28914 flags, 2891E/28920 joints) is defined in rep_3F60.c as separate objects.
 
 void fn_3_168414(EffectNode* node);
 void fn_3_168704(void);

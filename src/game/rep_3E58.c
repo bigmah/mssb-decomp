@@ -1,6 +1,7 @@
 #include "game/rep_3E58.h"
 #include "game/UnknownHomes_Game.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3E58
+#include "header_rep_inline.h"
 #include "game/auto_00_001690C0_text.h" // Bss35154View
 #include "game/auto_00_00167CC4_text.h" // SparkleTask
 #include "static/GameSettings.h"
@@ -422,4 +423,26 @@ void fn_3_1666B0(Vec* pos) {
         fn_80026998(&prm);
     }
 }
+
+
+// .data 0x00028508..0x00028570
+ParticleParamsF lbl_3_data_28508 = {
+    NULL,
+    32,
+    1,
+    36,
+    {0.0f, 0.0f, 0.0f},
+    0.0f,
+    {0.0f, 0.0f, 0.0f},
+    0.0f,
+    1.0f,
+    0.25f,
+    255,
+    0,
+    {0.0f, 0.0f, 0.0f},
+    255,
+    255,
+    255,
+};
+u8 lbl_3_data_28558[23] = {4, 5, 6, 7, 8, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 28, 29, 30, 31, 32, 33, 34, 35};
 

@@ -8,7 +8,8 @@ typedef struct { f32 x, y; } V2f;
 
 // Ring-burst effect instance (one per frame buffer, filled by fn_3_BDCA4, drawn by fn_3_BD8FC).
 typedef struct BDCA4E {
-    u8 pad[8];
+    /* 0x00 */ void* next; // draw-list link
+    /* 0x04 */ void (*draw)(struct BDCA4E* e); // fn_3_BD8FC
     /* 0x08 */ Mtx m;
     /* 0x38 */ f32 x, y, z;
     /* 0x44 */ s32 n;

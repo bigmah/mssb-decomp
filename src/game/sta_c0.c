@@ -1,5 +1,6 @@
 #include "game/sta_c0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_sta_c0
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/GameSettings.h"
 #include "static/Camera.h"
@@ -47,7 +48,7 @@ extern u8* lbl_3_bss_9F48;    // water indirect texture (I8, 128 x 64)
 extern GXTexObj lbl_3_bss_9F4C;
 
 extern StaC0ObjList lbl_3_common_bss_350E4;
-extern StaC0Part lbl_3_data_17B98[10];
+extern StaC0Part lbl_3_data_17B98[11];
 extern u8 lbl_3_data_17CF8[]; // TODO type: file name table for fn_3_B9D68
 extern u16 lbl_3_data_81DC[]; // per stadium: crowd sound id base
 extern u8 lbl_3_data_10F7C[];
@@ -59,6 +60,21 @@ extern u8 lbl_3_data_11108[16][3];
 extern Vec lbl_3_rodata_22D8;
 extern char lbl_3_rodata_22EC[]; // "sta_c0.c"
 extern char lbl_3_rodata_22F8[]; // "error\n"
+
+// .data 0x00017B98..0x00017D08
+StaC0Part lbl_3_data_17B98[11] = {
+    {{24.4f, 0.0f, 117.2f}, {1.0f, 1.0f, 1.0f}, -16.0f, 2, {1, 0, 0}},
+    {{5.549f, 0.0f, 111.0f}, {1.0f, 1.0f, 1.0f}, 0.0f, 2, {1, 0, 0}},
+    {{-22.0f, 0.0f, 109.8f}, {0.9f, 0.9f, 0.9f}, 32.0f, 2, {1, 0, 0}},
+    {{98.0f, 0.0f, 73.0f}, {1.0f, 1.0f, 1.0f}, 75.0f, 2, {1, 0, 0}},
+    {{-112.0f, 0.0f, 66.0f}, {1.0f, 1.0f, 1.0f}, -25.0f, 2, {1, 0, 0}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 4, {0, 0, 0}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 0, {0, 0, 0}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 0, {0, 0, 0}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 0, {0, 0, 0}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 0, {0, 0, 0}},
+}; // NOTE: type size 0x140 != symbol size 0x160
+u8 lbl_3_data_17CF8[16] = {1, 2, 4, 4, 4, 4, 2, 8, 9, 0, 0, 0, 0, 0, 0, 0};
 
 // .text:0x000C9744 size:0x134
 // Crowd sound.
@@ -237,8 +253,9 @@ void fn_3_C9C94(void) {
 
 // Sets up the stadium objects. files: the stadium's file table.
 // .text:0x000C9DB4 size:0xE00 mapped:0x80708E48
-// NONMATCHING 89%: register allocation and the inlined fn_3_C9C94 reaching lbl_3_bss_9F48/9F4C through
+// NONMATCHING 92%: register allocation and the inlined fn_3_C9C94 reaching lbl_3_bss_9F48/9F4C through
 // the pooled lbl_3_bss_9F38 base (expected nmverify difference); same calls, stores and control flow
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 void fn_3_C9DB4(void** files) {
     StaC0ObjList* list = &lbl_3_common_bss_350E4;
@@ -554,3 +571,4 @@ void fn_3_C9DB4(void** files) {
     fn_3_C9C94();
 }
 #endif
+#pragma pool_data reset

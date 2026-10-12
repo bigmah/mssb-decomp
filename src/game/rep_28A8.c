@@ -1,5 +1,6 @@
 #include "game/rep_28A8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_28A8
+#include "header_rep_inline.h"
 #include "musyx/musyx.h"
 #include "math.h"
 
@@ -164,8 +165,9 @@ static inline f32 coinDistToFielder(WallBallMG* mg, s32 i, s32 slot) {
     return dolsqrtf2(sx + sz);
 }
 
-// NONMATCHING 82%: original reaches 18AC8/18BB0/18C48 via the pooled base lbl_3_data_188E8 and re-materialises g_Minigame bases (lbz/extsb/add vs our lbzx)
+// NONMATCHING 83%: original reaches 18AC8/18BB0/18C48 via the pooled base lbl_3_data_188E8 and re-materialises g_Minigame bases (lbz/extsb/add vs our lbzx)
 // .text:0x000D9EA0 size:0x7A0 mapped:0x80718F34
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 void fn_3_D9EA0(void) {
     WallBallMG* mg = (WallBallMG*)g_Minigame;
@@ -251,6 +253,7 @@ void fn_3_D9EA0(void) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // NONMATCHING 99%: only GPR order of loop invariants differs (orig range=r29, t=r27; ours swapped); decl orders tried
 // .text:0x000DA640 size:0x1F4 mapped:0x807196D4

@@ -1,5 +1,6 @@
 #include "game/rep_10E8.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_10E8
+#include "header_rep_inline.h"
 #include "static/Pad.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/rep_1838.h"
@@ -7,14 +8,14 @@
 extern PadState lbl_803C77B8[4];
 
 #pragma dont_inline on
+#pragma pool_data off
 
 // .text:0x0006CD88 size:0x57C mapped:0x806ABE1C
 // Converts the raw stick of controller i into angle + magnitude (with a dead
 // zone of 16 and full tilt at 72), falling back to the D-pad when the stick is
 // inside the dead zone. Diagonals are stretched slightly toward the corners.
-// NONMATCHING 79%: the original addresses each float constant as its own .rodata symbol
-// (lbl_3_rodata_1138..1170, not yet split; 79% measured with externs, 75% with literals) and
-// re-derives &g_Controls[i] for the stores (sthx) instead of reusing c
+// NONMATCHING 79%: the original re-derives &g_Controls[i] for the angle stores (sthx) instead of reusing c,
+// and allocates registers differently (each float constant is its own .rodata symbol: pool_data off)
 #if NONMATCHING
 void fn_3_6CD88(int i) {
     InputStruct* c = &g_Controls[i];

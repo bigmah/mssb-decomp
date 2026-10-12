@@ -1,5 +1,6 @@
 #include "game/rep_1330.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1330
+#include "header_rep_inline.h"
 #include "Dolphin/stl.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
@@ -13,7 +14,7 @@ extern void fn_8001B224(void);
 extern void fn_3_B908C(void);
 extern void fn_3_21C7C(s32, s32);
 // .bss (laid out last-defined-first)
-u32 lbl_3_bss_1748[0x6];
+static u32 lbl_3_bss_1748[0x6];
 extern void fn_3_FBD70(void);
 extern void fn_3_FBD58(void);
 extern void fn_3_1CBCC(void);
@@ -82,9 +83,10 @@ void fn_3_7C1FC(s32 flag) {
     }
 }
 
+#pragma dont_inline off // the original inlines dolsqrtf2 here (deferred inlining reads the EOF state)
+#pragma pool_data off
 // .text:0x0007C4E4 size:0x2C8 mapped:0x806BB578
-// NONMATCHING 89%: the original addresses its float constants as separate .rodata symbols
-// (lbl_3_rodata_1380..13B0, not yet split) and keeps the replay-frame offset in its own register
+// NONMATCHING 91%: the original keeps the replay-frame offset in its own register (frame + i * 8)
 #if NONMATCHING
 void fn_3_7C4E4(void) {
     g_Stats_s* st = &g_Stats;
@@ -118,6 +120,7 @@ void fn_3_7C4E4(void) {
     st->playFrameCounter++;
 }
 #endif
+#pragma pool_data reset
 
 
 // .text:0x0007C7AC size:0x22C
@@ -188,7 +191,7 @@ void fn_3_7C9D8(s32 flag) {
     memcpy(lbl_3_common_bss_321A0, g_Stats.bss_321A0, 0x80);
     g_Stats.replayInd = 1;
     g_Stats.playFrameCounter = 0;
-    fn_3_7C4E4();
+    ((void (*)(void))fn_3_7C4E4)(); // a call in the original (not inlined)
     fn_3_1CBCC();
     fn_3_8FC0C();
     lbl_3_common_bss_32724[0xC8] = 0;

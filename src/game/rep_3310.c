@@ -1,7 +1,9 @@
 #include "game/rep_3310.h"
+#include "Unknown/File_0x800a64e0.h"
 #include "game/rep_1D58.h"
 #include "game/rep_1C0.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3310
+#include "header_rep_inline.h"
 #include "C3/geoPalette.h"
 #include "C3/anim.h"
 #include "Dolphin/GX.h"
@@ -15,13 +17,39 @@ extern u8 lbl_3_data_22670[];
 extern u8 g_Minigame[];
 extern const f32 lbl_3_rodata_33AC;
 extern const f32 lbl_3_rodata_33B0;
-extern f32 lbl_3_data_225F0[];
 extern f32 lbl_3_data_21A64[];
 struct TexArchive;
 extern void fn_80033B58(struct TexArchive* arc, s32 idx, GXTexWrapMode wrapS, GXTexWrapMode wrapT);
 extern s32 fn_8005268C(void);
 extern camera_803c639c_s* fn_80052768_getCamera(int index);
-extern Rep3310BallCfg lbl_3_data_2265C;
+
+// The unit's .data (0x225F0-0x226E0). Defined here: the original reaches these through one pooled
+// base. Address order (initialized data keeps declaration order).
+AssetLoadInstructions lbl_3_data_225F0[3] = { // ARAM load records (auto_00_0011D3AC reads [1])
+    {1035, {0x40001640}, {0x8EB4800}, 3128},
+    {1035, {0x400B2D00}, {0x8EB5800}, 436552},
+    {0, {1670}, {0x8F20800}, 1672},
+};
+f32 lbl_3_data_22620[3] = { 0.0f, -0.15f, 18.5f };
+f32 lbl_3_data_2262C = 0.45f;
+u8 lbl_3_data_22630[4] = { 0, 1, 3, 2 };
+u8 lbl_3_data_22634[4] = { 0x0F, 0x0F, 0x0F, 0x0F };
+u8 lbl_3_data_22638[4] = { 2, 0, 3, 1 };
+u8 lbl_3_data_2263C[2] = { 0, 1 };
+u8 lbl_3_data_2263E = 2;
+u8 lbl_3_data_2263F = 6;
+f32 lbl_3_data_22640[4] = { 0.75f, 0.05f, 3.0f, 0.02f };
+f32 lbl_3_data_22650[3] = { 5.0f, 5.0f, 10.0f };
+Rep3310BallCfg lbl_3_data_2265C = { { 1, 0, 2, 3 }, 2.0f, 8.0f, 1.0f, 60 };
+u8 lbl_3_data_22670[8] = { 2, 0, 3, 4, 1, 0, 0, 0 };
+f32 lbl_3_data_22678[4] = { 2.0f, 2.5f, 1.0f, 1.0f };
+f32 lbl_3_data_22688[3] = { 0.5f, 0.0f, -0.5f };
+f32 lbl_3_data_22694[6] = { 0.5f, 1.0f, 1.0f, 0.5f, 0.5f, 0.5f };
+s16 lbl_3_data_226AC[8] = { 0, 0, 0x14, 0xA, 0, 0, 0xF50, 0 };
+u8 lbl_3_data_226BC[8] = { 3, 1, 4, 2, 0, 0, 0, 0 };
+f32 lbl_3_data_226C4[4] = { 1.5f, 0.7f, 1.0f, 0.5f };
+f32 lbl_3_data_226D4[2] = { 1.0f, 30.0f };
+f32 lbl_3_data_226DC = 4.0f;
 extern f64 acos(f64);
 extern f64 sin(f64);
 extern f64 cos(f64);
@@ -66,11 +94,8 @@ extern void fn_80024FA4(void* model, void* data, void* state, s32 frame);
 extern void* _OSAllocFromHeap(int, int);
 extern void fn_80025C58(void*, void*);
 
+
 // .text:0x00116840 size:0x190 mapped:0x807558D4
-// NONMATCHING 84%: the original reaches lbl_3_data_22678/22688/22694/226AC through the lbl_3_data_225F0 pooled base (a u8* d = lbl_3_data_225F0 + offsets version reached 97%, but indexes past that object's end); the 0x88 table lookup is addi+lfsx there
-#if NONMATCHING
-extern f32 lbl_3_data_22678[];
-extern f32 lbl_3_data_22688[];
 // Places the 3 runners (sprites 0x82..0x84); a runner that just started (state 0x1C == 1)
 // gets its idle animation.
 void fn_3_116840(void) {
@@ -96,53 +121,19 @@ void fn_3_116840(void) {
         }
     }
 }
-#endif
 
 // .text:0x001169D0 size:0x168 mapped:0x80755A64
 void fn_3_1169D0(void) {
-    ((u8*)lbl_8036E548.sprites)[0x275E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2416] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x252E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2646] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2786] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x289E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x29B6] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x243E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2556] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x266E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x27AE] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x28C6] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x29DE] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2466] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x257E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2696] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x27D6] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x28EE] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2A06] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x248E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x25A6] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x26BE] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x27FE] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2916] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2A2E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x24B6] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x25CE] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x26E6] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2826] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x293E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2A56] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x24DE] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x25F6] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x270E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x284E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2966] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2A7E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2506] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x261E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2736] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2876] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x298E] = 0;
-    ((u8*)lbl_8036E548.sprites)[0x2AA6] = 0;
+    s32 i;
+    lbl_8036E548.sprites[0xFB].visible = 0;
+    for (i = 0; i < 7; i++) {
+        lbl_8036E548.sprites[0xE6 + i].visible = 0;
+        lbl_8036E548.sprites[0xED + i].visible = 0;
+        lbl_8036E548.sprites[0xF4 + i].visible = 0;
+        lbl_8036E548.sprites[0xFC + i].visible = 0;
+        lbl_8036E548.sprites[0x103 + i].visible = 0;
+        lbl_8036E548.sprites[0x10A + i].visible = 0;
+    }
 }
 
 // .text:0x00116B38 size:0x3C mapped:0x80755BCC
@@ -160,16 +151,19 @@ void fn_3_116B38(void) {
 }
 
 // .text:0x00116B74 size:0x8A8 mapped:0x80755C08
-// NONMATCHING 56%: the original inlines every per-mode helper (fn_3_1169D0 is a bl here) and unrolls the 40-sprite clear loop by 8; it also reaches lbl_3_data_226C4 through the lbl_3_data_225F0 pooled base
+// NONMATCHING 98%: register allocation (measured with the NONMATCHING per-mode helpers enabled, which the
+// original inlines)
 #if NONMATCHING
 extern void fn_8001D110(s32 i, f32 a, f32 b, f32 c);
 extern u8 lbl_3_data_21BC4[];
 extern f32 lbl_3_data_226C4[];
 static inline void hideSprites_116B74(void) {
-    s32 i;
+    u32 i;
+    Rep3310Sprite* e;
     for (i = 0; i < 40; i++) {
-        lbl_8036E548.sprites[i].visible = 0;
-        lbl_8036E548.sprites[i].draw = NULL;
+        e = &lbl_8036E548.sprites[i];
+        e->visible = 0;
+        e->draw = NULL;
     }
 }
 // Per-frame sprite placement for the current minigame (g_Minigame[0x1A2A]).
@@ -267,7 +261,8 @@ void fn_3_117494(void) {
 }
 
 // .text:0x00117588 size:0x464 mapped:0x8075661C
-// NONMATCHING 93%: (measured with the rodata externs) scheduling/register order of the quad corner math
+// NONMATCHING 92%: (measured with the rodata externs) scheduling/register order of the quad corner math
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 // Draws the ground shadow quad under sprite idx (0xE9..0xEC), shrinking it with height,
 // then picks the actor's texture from its state byte.
@@ -344,6 +339,7 @@ void fn_3_117588(s32 idx) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x001179EC size:0xF8 mapped:0x80756A80
 extern const f32 lbl_3_rodata_33DC;
@@ -864,7 +860,8 @@ void fn_3_1194AC(s32 i) {
 #endif
 
 // .text:0x001194FC size:0x358 mapped:0x80758590
-// NONMATCHING 89%: register allocation, the state 0/3/4 test is folded to a range compare, and the bounce counter update order differs; the original reaches lbl_3_data_2265C through the lbl_3_data_225F0 pooled base
+// NONMATCHING 90%: register allocation, the state 0/3/4 test is folded to a range compare, and the bounce counter update order differs; the original reaches lbl_3_data_2265C through the lbl_3_data_225F0 pooled base
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 extern void fn_3_15521C(s16 idx, f32* pos, f32* rot); // rep_3880.h
 // Places the 50 balls (sprites 0x85.., or 0xB7.. while state 5) and their shadows (0x28..).
@@ -953,6 +950,7 @@ void fn_3_1194FC(void) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x00119854 size:0x24 mapped:0x807588E8
 f32 fn_3_119854(u8 i) {
@@ -984,7 +982,8 @@ void fn_3_119878(void) {
 #endif
 
 // .text:0x00119934 size:0x300 mapped:0x807589C8
-// NONMATCHING 98%: (measured with the rodata externs) frsp of the acos result is scheduled after the v.z load, f1/f2 swapped
+// NONMATCHING 97%: (measured with the rodata externs) frsp of the acos result is scheduled after the v.z load, f1/f2 swapped
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 extern f32 lbl_3_data_2188C[];
 // Places the base markers (sprites 0x82..0x90, or the shared 0xA5 one) and the
@@ -1056,6 +1055,7 @@ void fn_3_119934(void) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x00119C34 size:0x74 mapped:0x80758CC8
 void fn_3_119C34(void) {
@@ -1163,7 +1163,8 @@ void fn_3_119EE0(s32 i) {
 #endif
 
 // .text:0x00119F6C size:0x2A0 mapped:0x80759000
-// NONMATCHING 85%: typed rewrite of a 95% raw-offset version; saved-reg assignment and loop induction pointers differ (the original strength-reduces the 0x28/0x90/0x34 strides into separate counters)
+// NONMATCHING 92%: typed rewrite of a 95% raw-offset version; saved-reg assignment and loop induction pointers differ (the original strength-reduces the 0x28/0x90/0x34 strides into separate counters)
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 extern u8 lbl_3_data_2263F;
 extern void fn_3_14DC80(s8 a);
@@ -1242,6 +1243,7 @@ void fn_3_119F6C(void) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x0011A20C size:0x4 mapped:0x807592A0
 void fn_3_11A20C(void) {
@@ -1313,6 +1315,7 @@ void fn_3_11A38C(s32 i, s16 h) {
 
 // .text:0x0011A408 size:0x524 mapped:0x8075949C
 // NONMATCHING 94%: (measured with the rodata externs) register allocation and the j + kind*7 + 0xFC sum order
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 extern Rep3310BallView g_Ball;
 extern u8 lbl_3_data_22634[];
@@ -1428,6 +1431,7 @@ void fn_3_11A408(void) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x0011A92C size:0x200 mapped:0x807599C0
 #pragma dont_inline on
@@ -1792,4 +1796,5 @@ void fn_3_11D2C8(s32 idx, s32 start, s32 count, void* animBank, struct sHdr* skH
         CTRLSetRotation(&lbl_8036E548.objs->objects[k].worldControl.base, 0.0f, 0.0f, 0.0f);
     }
 }
+
 

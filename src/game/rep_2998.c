@@ -13,7 +13,8 @@
 #include "main/file_8004207C.h"
 #include "C3/control.h"
 #include "musyx/musyx.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_2998
+#include "header_rep_inline.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -463,6 +464,32 @@ void fn_3_E3044(PiranhaPlant* p) {
         playCrowdSound(1);
     }
 }
+
+// .data 0x00018D98..0x00019018
+f32 lbl_3_data_18D98[14] = {1.0f, 1.2f, 18.8f, 0.15f, 19.5f, 0.7f, 0.0f, 0.15f, 38.8f, 0.0f, -18.8f, 0.15f, 19.5f, -0.7f};
+f32 lbl_3_data_18DD0 = 0.2f;
+f32 lbl_3_data_18DD4[12] = {-225.0f, -30.0f, 0.0f, -75.0f, -30.0f, 0.0f, 75.0f, -30.0f, 0.0f, 225.0f, -30.0f, 0.0f};
+VecXYZ lbl_3_data_18E04[4][4] = {
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
+    {{-1.2f, 0.0f, 0.0f}, {1.2f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
+    {{-2.4f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {2.4f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
+    {{-3.6f, 0.0f, 0.0f}, {-1.2f, 0.0f, 0.0f}, {1.2f, 0.0f, 0.0f}, {3.6f, 0.0f, 0.0f}},
+};
+f32 lbl_3_data_18EC4[3] = {-1.5f, 0.0f, 1.5f};
+PiranhaSpot lbl_3_data_18ED0[11] = {
+    {{-18.0f, 0.0f, 52.0f}, 0.0f, 0, 1, 1, 0, 0.0f, 360.0f},
+    {{-35.0f, 0.0f, 35.0f}, 0.0f, 0, 1, 2, 0, 315.0f, 180.0f},
+    {{35.0f, 0.0f, 35.0f}, 0.0f, 0, 1, 3, 0, 225.0f, 180.0f},
+    {{18.0f, 0.0f, 52.0f}, 0.0f, 0, 1, 4, 0, 0.0f, 360.0f},
+    {{34.0f, 0.0f, 78.0f}, 0.0f, 0, 1, 5, 0, 0.0f, 360.0f},
+    {{-34.0f, 0.0f, 78.0f}, 0.0f, 0, 1, 6, 0, 0.0f, 360.0f},
+    {{0.0f, 0.0f, 0.0f}, 0.0f, 2, 0, 255, 0, 0.0f, 0.0f},
+    {{0.0f, 0.0f, 0.0f}, 0.0f, 0, 0, 0, 0, 0.0f, 0.0f},
+    {{0.0f, 0.0f, 0.0f}, 0.0f, 0, 0, 0, 0, 0.0f, 0.0f},
+    {{0.0f, 0.0f, 0.0f}, 0.0f, 0, 0, 0, 0, 0.0f, 0.0f},
+    {{0.0f, 0.0f, 0.0f}, 0.0f, 0, 0, 0, 0, 0.0f, 0.0f},
+};
+u8 lbl_3_data_19004[20] = {1, 3, 4, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0};
 
 // .text:0x000E3284 size:0x3E4 mapped:0x80722318
 // Catch the ball if it passes through the plant's mouth.
@@ -1022,3 +1049,4 @@ void fn_3_E4FC4(void** files) {
     }
 }
 #endif
+

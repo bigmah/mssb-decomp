@@ -1,4 +1,5 @@
 #include "game/auto_00_0011D3AC_text.h"
+#include "main/SpaniDesc.h"
 #include "game/UnknownHomes_Game.h"
 #include "static/UnknownHomes_Static.h"
 #include "static/GameSettings.h"
@@ -13,10 +14,10 @@ extern u8 lbl_803C6CF8[];  // ARAMLoader; [0x715]: transfer done
 extern u8 lbl_3_common_bss_34C90[];
 extern u8 lbl_800EFBA4[];
 extern u8 lbl_3_data_225F0[];        // ARAM load instructions at +0x10
-extern u8 lbl_3_data_25464[];        // sprite descriptors (fn_80034E20)
-extern u8 lbl_3_data_25A24[];
-extern u8 lbl_3_data_25EE4[];
-extern u8 lbl_3_data_26254[];
+extern SpaniDesc lbl_3_data_25464[46];        // sprite descriptors (fn_80034E20)
+extern SpaniDesc lbl_3_data_25A24[38];
+extern SpaniDesc lbl_3_data_25EE4[23];
+extern SpaniDesc lbl_3_data_26254[19];
 extern u8 lbl_3_data_261C4[9][16];   // password digit substitution tables
 extern u16 lbl_3_data_81FC[];        // sound ids
 

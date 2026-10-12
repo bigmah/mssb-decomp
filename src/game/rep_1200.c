@@ -1,5 +1,6 @@
 #include "game/rep_1200.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_1200
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/rep_1838.h"
 #include "static/GameSettings.h"
@@ -673,6 +674,147 @@ extern const f32 lbl_3_rodata_12BC;
 extern const f32 lbl_3_rodata_12C0;
 extern const f32 lbl_3_rodata_12C4;
 // Normal pitch flight for one frame: air resistance, curve input, parabolic offsets, move.
+// Inline copies of the helpers the original expands in fn_3_71248 (they have no other callers). CW only
+// inlines this much with a larger inline size limit (the value at the end of the file counts).
+#pragma inline_max_size(100000)
+static inline void fn_3_70B94_inline(void) {
+    f32 t;
+    if (g_Pitcher.starPitchType == 9 || g_Pitcher.starPitchType == 0xA) {
+        if (g_Pitcher.eggBallBounceNumber == 0) {
+            t = g_Ball.pitchHangtimeCounter - g_Pitcher.frameWhenUnhittable * lbl_3_rodata_1250;
+            g_Pitcher.pitchY_parabolicAdjustment =
+                g_Pitcher.verticalOffsetParabolaMidpoint - (t * (g_Pitcher.verticalGlobalParabolicVelo * t)) / lbl_3_rodata_12A8;
+        } else if (g_Pitcher.eggBallBounceNumber == 1 || g_Pitcher.eggBallBounceNumber == 2) {
+            if (g_Pitcher.framesSinceFirstEggBounce == 1) {
+                if (g_Pitcher.eggBallBounceNumber == 1) {
+                    f32 frames = fn_3_70768(&t, 0, g_Pitcher.eggBallBounceZLoc);
+                    g_Pitcher.ballBouncePeakZ = frames * lbl_3_rodata_1250;
+                    g_Pitcher.verticalGlobalParabolicVelo = LERPToNewRange_Float(
+                        g_Pitcher.pitchSpeed, lbl_3_data_5F7C.eggMin, lbl_3_data_5F7C.eggMax, lbl_3_data_5F7C.eggVeloMin, lbl_3_data_5F7C.eggVeloMax);
+                    t = g_Pitcher.ballBouncePeakZ;
+                    g_Pitcher.verticalOffsetParabolaMidpoint = (t * (g_Pitcher.verticalGlobalParabolicVelo * t)) / lbl_3_rodata_12A8;
+                } else {
+                    g_Pitcher.ballBouncePeakZ = g_Pitcher.framesUntilBallReachesBatterZ;
+                    g_Pitcher.verticalOffsetParabolaMidpoint = lbl_3_rodata_12AC + lbl_3_data_5E98[4];
+                    t = g_Pitcher.framesUntilBallReachesBatterZ;
+                    g_Pitcher.verticalGlobalParabolicVelo = (lbl_3_rodata_12A8 * g_Pitcher.verticalOffsetParabolaMidpoint) / (t * t);
+                }
+            }
+            t = (f32)g_Pitcher.framesSinceFirstEggBounce - (f32)g_Pitcher.ballBouncePeakZ;
+            g_Pitcher.pitchY_parabolicAdjustment =
+                g_Pitcher.verticalOffsetParabolaMidpoint - (t * (g_Pitcher.verticalGlobalParabolicVelo * t)) / lbl_3_rodata_12A8;
+        } else {
+            g_Pitcher.pitchY_parabolicAdjustment = lbl_3_rodata_1258;
+        }
+    } else if (g_Pitcher.cancelParabolicAdjustmentInd != 0) {
+        g_Pitcher.pitchY_parabolicAdjustment = lbl_3_rodata_1258;
+    } else {
+        t = g_Ball.pitchHangtimeCounter - g_Pitcher.frameWhenUnhittable * lbl_3_rodata_1250;
+        g_Pitcher.pitchY_parabolicAdjustment =
+            g_Pitcher.verticalOffsetParabolaMidpoint - (t * (g_Pitcher.verticalGlobalParabolicVelo * t)) / lbl_3_rodata_12A8;
+    }
+}
+
+static inline void fn_3_6FFC4_inline(void) {
+    s16 ang;
+    f32 b;
+    f32 a;
+    f32 mag;
+    f32 k;
+    f32 t;
+    s32 off = g_Ball.StaticRandomInt1 % 257 - 0x80;
+    ang = fn_3_9FB8C(g_Pitcher.ballVelocity.x, -g_Pitcher.ballVelocity.z);
+    getComponentsFromSAng(ang + off, &a, &b);
+    t = lbl_3_rodata_1254 * (f32)(g_Ball.StaticRandomInt2 % 10);
+    mag = sqrt_ext(g_Pitcher.ballVelocity.x * g_Pitcher.ballVelocity.x + g_Pitcher.ballVelocity.z * g_Pitcher.ballVelocity.z);
+    k = lbl_3_rodata_1278 + t;
+    g_Ball.physicsSubstruct.velocity.x = k * (a * mag);
+    g_Ball.physicsSubstruct.velocity.z = k * (b * mag);
+    g_Ball.physicsSubstruct.velocity.y = lbl_3_rodata_1258;
+    g_Pitcher.strikeOutOrWalk = 3;
+    g_Pitcher.miniGameRelated = 1;
+    g_Pitcher.framesSinceAtBatEnded = 0;
+    playSoundEffect(0x170);
+    if (g_Batter.aiControlledInd == 0) {
+        if (g_d_GameSettings.minigamesEnabled != 0) {
+            fn_3_6C854(g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame.rosterID], 2);
+        } else {
+            fn_3_6C854(g_GameLogic.teamBatting, 2);
+        }
+    }
+    fn_3_7A154(0);
+}
+
+static inline void fn_3_70838_inline(void) {
+    f32 d;
+    f32 dx;
+    f32 dy;
+    u8 v;
+    if (g_Pitcher.eggBallBounceNumber == 0) {
+        g_Pitcher.pitchStartingPosition_AIMaxCurve = RandomF32_Game_Range(-lbl_3_data_5F5C[6], lbl_3_data_5F5C[6]);
+        g_Pitcher.eggBallBounceYHeight = lbl_3_data_5F5C[0];
+        g_Pitcher.eggBallBounceZLoc = RandomF32_Game_Range(lbl_3_data_5F5C[4], lbl_3_data_5F5C[5]);
+        g_Pitcher.frontOfPlateZ = lbl_3_rodata_1250 * (g_Pitcher.eggBallBounceZLoc + g_Pitcher.frontOfPlateZ);
+    } else {
+        g_Pitcher.pitchStartingPosition_AIMaxCurve = RandomF32_Game_Range(-lbl_3_data_5F5C[7], lbl_3_data_5F5C[7]);
+        g_Pitcher.eggBallBounceYHeight = lbl_3_data_5F5C[0];
+        g_Pitcher.frontOfPlateZ = g_Pitcher.centerOfStrikeZone.z;
+    }
+    v = RandomInt_Game_Range(lbl_3_data_5F7C.eggMin, lbl_3_data_5F7C.eggMax);
+    dx = g_Pitcher.pitchStartingPosition_AIMaxCurve - g_Pitcher.ballCurrentPosition.x;
+    dy = g_Pitcher.eggBallBounceYHeight - g_Pitcher.ballCurrentPosition.y;
+    d = g_Pitcher.ballCurrentPosition.z - g_Pitcher.frontOfPlateZ;
+    g_Pitcher.pitchSpeed = v;
+    g_Pitcher.eggBallBounceNumber = g_Pitcher.eggBallBounceNumber + 1;
+    g_Pitcher.ballVelocity.z = -((f32)v / g_Pitcher.pitchSpeedScaler);
+    g_Pitcher.framesSinceFirstEggBounce = 0;
+    g_Pitcher.ballVelocity.x = -((dx * g_Pitcher.ballVelocity.z) / d);
+    g_Pitcher.ballVelocity.y = -((dy * g_Pitcher.ballVelocity.z) / d);
+}
+
+static inline void fn_3_70280_inline(void) {
+    s32 k;
+    s32 x;
+    s32 y;
+    s32 hit = 0;
+    if ((g_GameLogic.secondaryGameMode != 0xB || g_Practice._1DB != 0) && g_Minigame.GameMode_MiniGame != 2 &&
+        g_Batter.framesSinceStartOfSwing <= 0 && g_Pitcher.calledStrikeInd == 0) {
+        x = (s32)(lbl_3_rodata_1288 * (g_Pitcher.ballCurrentPosition.x - g_Batter.batterPos.x));
+        y = (s32)(lbl_3_rodata_1288 * (g_Pitcher.ballCurrentPosition.z - g_Batter.batterPos.z));
+        if (g_Batter.batterHand != 0) {
+            x = -x;
+        }
+        k = lbl_800E8558[g_Batter.charID].group * 3;
+        if (y <= lbl_3_data_76FC[k]) {
+            if ((f32)y >= lbl_3_rodata_1258) {
+                if (x <= lbl_3_data_76FC[k + 1] && x >= -lbl_3_data_76FC[k + 2]) {
+                    hit = 1;
+                }
+            }
+        }
+        if (hit != 0) {
+            g_Batter.hitByPitch = 1;
+        }
+    }
+}
+
+static inline void fn_3_706B8_inline(int idx) {
+    f32 t;
+    f32 x;
+    f32 y;
+    if (g_Minigame.GameMode_MiniGame != 2) {
+        t = ((&g_Pitcher.beginningOfStrikeCheckZ)[idx] - g_Pitcher.ballCurrentPosition.z) / (g_Pitcher.ballLastPosition.z - g_Pitcher.ballCurrentPosition.z);
+        x = t * (g_Pitcher.ballLastPosition.x - g_Pitcher.ballCurrentPosition.x) + g_Pitcher.ballCurrentPosition.x;
+        y = t * (g_Pitcher.ballLastPosition.y - g_Pitcher.ballCurrentPosition.y) + g_Pitcher.ballCurrentPosition.y;
+        g_Pitcher.estimatedEndingPos.x = x;
+        g_Pitcher.estimatedEndingPos.z = y;
+        if (fn_3_70680(x)) {
+            g_Pitcher.calledStrikeInd = 1;
+            g_Pitcher.strikeInd = 1;
+        }
+    }
+}
+
 static inline void pitchFlightStep(void) {
     if (g_Pitcher.ballCurrentPosition.z <= g_Pitcher.pitchZ_whenAirResistanceStarts) {
         f32 nvz = g_Pitcher.ballVelocity.z - g_Pitcher.ballVelocity.z * g_Pitcher.airResistance_veloAdj;
@@ -686,16 +828,14 @@ static inline void pitchFlightStep(void) {
     g_Pitcher.ballVelocity.x *= g_Pitcher.decelerationFactor;
     g_Pitcher.ballVelocity.y *= g_Pitcher.decelerationFactor;
     g_Pitcher.ballVelocity.z *= g_Pitcher.decelerationFactor;
-    fn_3_70B94();
+    fn_3_70B94_inline();
     fn_3_70AEC();
     g_Pitcher.ballVelocity.x += g_Pitcher.pitchCurveVeloV1;
     g_Pitcher.ballCurrentPosition.x += g_Pitcher.ballVelocity.x;
     g_Pitcher.ballCurrentPosition.y += g_Pitcher.ballVelocity.y;
     g_Pitcher.ballCurrentPosition.z += g_Pitcher.ballVelocity.z;
 }
-// NONMATCHING 70%: the original has fn_3_70B94, fn_3_6FFC4, fn_3_70838, fn_3_70280, fn_3_706B8 and the flight step
-// inlined (CW won't auto-inline them here). With those expanded by hand it scores 97.6%; what's left is f-reg
-// allocation.
+// NONMATCHING 97%: f-reg allocation and one bounce test's branch shape; the helpers are inlined (copies above).
 #if NONMATCHING
 // Pitcher state 3: the pitch is in the air.
 void fn_3_71248(void) {
@@ -803,7 +943,7 @@ void fn_3_71248(void) {
         if (g_Ball.AtBat_Contact_BallPos.y < floorY) {
             if ((g_Pitcher.starPitchType == 9 || g_Pitcher.starPitchType == 0xA) &&
                 (g_Pitcher.eggBallBounceNumber == 0 || g_Pitcher.eggBallBounceNumber == 1)) {
-                fn_3_70838();
+                fn_3_70838_inline();
             } else {
                 f32 mag = g_Pitcher.ballVelocity.x * g_Pitcher.ballVelocity.x + g_Pitcher.ballVelocity.z * g_Pitcher.ballVelocity.z;
                 g_Pitcher.ballVelocity.y = -(floorY - g_Ball.pastCoordinates[0].y);
@@ -828,14 +968,14 @@ void fn_3_71248(void) {
         if (g_Pitcher.framesUntilPitchGetsToBatter < 0) {
             g_Pitcher.framesUntilPitchGetsToBatter = g_Pitcher.framesUntilBallReachesBatterZ + g_Ball.pitchHangtimeCounter;
         }
-        fn_3_70280();
+        fn_3_70280_inline();
         if (g_Pitcher.strikeZoneProcessNumber == 0 && g_Ball.AtBat_Contact_BallPos.z < g_Pitcher.beginningOfStrikeCheckZ) {
-            fn_3_706B8(0);
+            fn_3_706B8_inline(0);
             g_Pitcher.strikeZoneProcessNumber = 1;
         }
         if (g_Pitcher.strikeZoneProcessNumber <= 1 && g_Ball.AtBat_Contact_BallPos.z < g_Pitcher.endingOfStrikeCheckZ) {
             if (g_Pitcher.calledStrikeInd == 0) {
-                fn_3_706B8(1);
+                fn_3_706B8_inline(1);
             }
             g_Pitcher.strikeZoneProcessNumber = 2;
         }
@@ -863,7 +1003,7 @@ void fn_3_71248(void) {
                 g_Pitcher.pitchRelease.x + ((g_Pitcher.ballCurrentPosition.y - g_Pitcher.pitchRelease.y) * dzPlate) / dz;
         }
         if (g_Batter.hitByPitch != 0) {
-            fn_3_6FFC4();
+            fn_3_6FFC4_inline();
             g_Pitcher.pitcherActionState = 7;
             g_Pitcher.currentStateFrameCounter = 0;
             g_Pitcher.pitchDidntResultInLiveBallInd = 1;

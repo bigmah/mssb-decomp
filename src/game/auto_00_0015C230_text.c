@@ -8,15 +8,6 @@ extern struct {
     u8 _00[4];
     TexArchive* textures;
 } lbl_3_common_bss_35154;
-extern struct {
-    u8 _00[4];
-    u32 color;
-} lbl_3_data_273CC;
-extern struct {
-    u8 _00[4];
-    u32 color;
-    u8 _08[4];
-} lbl_3_data_273D4;
 
 // .text:0x0015C230 size:0x1C8 mapped:0x8079B2C4
 void fn_3_15C230(BallQuad* q) {

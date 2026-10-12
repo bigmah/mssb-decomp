@@ -12,6 +12,8 @@ unit = sys.argv[1]
 skip = set(sys.argv[sys.argv.index('--skip') + 1].split(',')) if '--skip' in sys.argv else set()
 sects = sys.argv[sys.argv.index('--sects') + 1].split(',') if '--sects' in sys.argv else ['.data', '.sdata', '.bss', '.sbss']
 module = sys.argv[sys.argv.index('--module') + 1] if '--module' in sys.argv else 'main'
+# auto units (e.g. auto_00_0015C5F4_text) keep their source in src/<module>/<unit>.c
+srcpath = 'src/' + unit if os.path.exists('src/' + unit) else 'src/%s/%s.c' % (module, unit)
 cfg = 'config/GYQE01/' if module == 'main' else 'config/GYQE01/%s/' % module
 splits = open(cfg + 'splits.txt').read()
 m = re.search(r'^' + re.escape(unit) + r':\n((?:\t.*\n)*)', splits, re.M)
@@ -26,7 +28,7 @@ for l in open(cfg + 'symbols.txt'):
     if mm:
         z = re.search(r'size:0x([0-9A-Fa-f]+)', mm.group(4))
         syms.append((mm.group(2), int(mm.group(3), 16), int(z.group(1), 16) if z else 0, mm.group(1)))
-pp = subprocess.run(['/usr/bin/clang', '-E', '-P', '-Iinclude', '-Iinclude/stl', '-DNONMATCHING=0', '-w', 'src/' + unit],
+pp = subprocess.run(['/usr/bin/clang', '-E', '-P', '-Iinclude', '-Iinclude/stl', '-DNONMATCHING=0', '-w', srcpath],
                     capture_output=True, text=True).stdout
 d = open('orig/GYQE01/sys/main.dol', 'rb').read()
 offs = struct.unpack('>18I', d[0:72]); addrs = struct.unpack('>18I', d[72:144]); sizes = struct.unpack('>18I', d[144:216])
@@ -36,7 +38,7 @@ def read(a, n):
         if addrs[i] <= a and a + n <= addrs[i] + sizes[i]:
             return d[offs[i] + a - addrs[i]: offs[i] + a - addrs[i] + n]
 symaddrs = {a for _, a, _, _ in syms}
-srctext = open('src/' + unit).read()
+srctext = open(srcpath).read()
 for sect, a, b in ranges:
     objs = [(addr, size, name) for s, addr, size, name in syms if s == sect and a <= addr < b
             and not name.startswith(('jumptable_', 'gap_', 'pad_', '@')) and name not in skip]
@@ -70,7 +72,7 @@ for sect, a, b in ranges:
             if g:
                 om = re.match(r'\s*extern\s+([^;]*?)\s*\b' + name + r'\b\s*((?:\[[^\]]*\]\s*)*);', g[0])
                 if om:
-                    r0 = subprocess.run([sys.executable, os.path.join(HERE, 'gendata.py'), 'src/' + unit, name, '--module', module, '--type', om.group(1), '--dims', om.group(2).replace(' ', '')],
+                    r0 = subprocess.run([sys.executable, os.path.join(HERE, 'gendata.py'), srcpath, name, '--module', module, '--type', om.group(1), '--dims', om.group(2).replace(' ', '')],
                                         capture_output=True, text=True)
                     if r0.stdout.strip(): other = r0
         if other is not None:
@@ -87,7 +89,7 @@ for sect, a, b in ranges:
             else:
                 extra = ['--type', 'u8', '--dims', '[%d]' % size]
         if other is None:
-            r = subprocess.run([sys.executable, os.path.join(HERE, 'gendata.py'), 'src/' + unit, name, '--module', module] + extra,
+            r = subprocess.run([sys.executable, os.path.join(HERE, 'gendata.py'), srcpath, name, '--module', module] + extra,
                                capture_output=True, text=True)
         out = r.stdout.strip()
         zm = re.search(r'// SIZE 0x([0-9A-F]+)', r.stderr)

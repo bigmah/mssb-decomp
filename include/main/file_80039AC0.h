@@ -35,35 +35,6 @@ typedef struct ScreenFxNode {
 
 
 
-typedef struct TrailEntry {
-    /*0x00*/ Vec pos;
-    /*0x0C*/ Vec dir;
-    /*0x18*/ Vec vel;
-    /*0x24*/ u8 alpha;
-    /*0x25*/ u8 type;
-    /*0x26*/ u8 flag;
-    /*0x27*/ u8 _27;
-} TrailEntry; // size 0x28
-
-typedef struct TrailParams {
-    /*0x0*/ f32 speed;
-    /*0x4*/ f32 spread;
-} TrailParams;
-
-// lbl_802D3D80
-typedef struct TrailSystem {
-    /*0x000*/ TrailEntry entries[64];
-    /*0xA00*/ u16 head;
-    /*0xA02*/ u16 tail;
-    /*0xA04*/ u8 _A04[0xA84 - 0xA04];
-    /*0xA84*/ GXTexObj texObj[13];
-    /*0xC24*/ GXTlutObj tlutObj[13];
-    /*0xCC0*/ u8 texMode[13]; // 0 none, 1 direct, 2 color-indexed
-    /*0xCCD*/ u8 _CCD[3];
-    /*0xCD0*/ TrailParams params[13];
-    /*0xD38*/ u8 enabled;
-    /*0xD39*/ u8 _D39[7];
-} TrailSystem; // size 0xD40
 
 void fn_80039AC0(void);
 void fn_80039FF8(ScreenFxNode* node);
@@ -72,15 +43,5 @@ void fn_8003A144(void);
 void fn_8003A1D0(void);
 void fn_8003A2C0(void);
 void fn_8003A2EC(void);
-void fn_8003A37C(Mtx mtx, s32* stage, s32* coord, s32* map, u8* count, u8* texMtx);
-void fn_8003A4C8(void);
-
-u32 fn_8003A538(void);
-
-void fn_8003A540(u32 value);
-
-void fn_8003A548(void (*callback)(void));
-
-void fn_8003A550(s32 type, Vec* pos, Vec* dir, u8 flag);
 
 #endif

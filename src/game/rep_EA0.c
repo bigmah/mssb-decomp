@@ -22,17 +22,62 @@ extern void fn_800A7D4C(s32 layer, void* node);
 // The original keeps these as separate statics that the compiler addresses through one
 // pooled base, so they are modelled as one struct here. The ones that are also
 // accessed through their own symbol are kept separate.
-extern RepTrailWork lbl_3_bss_200;
-extern TexImage* lbl_3_bss_204; // trail texture (NULL: untextured)
-extern s32 lbl_3_bss_169C;      // never read in this file
-extern u8 lbl_3_data_6820[16]; // lbl_8036E548.trail index per lbl_3_common_bss_32724.trailType
-extern f32 lbl_3_data_6830[2];
-extern f32 lbl_3_data_6838[2];
-extern f32 lbl_3_data_6840[2];
-extern TrailShadowData lbl_3_data_6848;
-extern BallTrailParams lbl_3_data_6880[12];
-extern TrailCharData lbl_3_data_6940;
-extern TrailNode lbl_3_data_69A0[2];
+// The unit's .bss (0x200-0x16AC): ball trail state. The original addresses these through one pooled
+// base, so they are file statics (CW lays .bss statics out in reverse declaration order).
+static f32 sTrailAlpha;           // lbl_3_bss_16A8
+static f32 sTrailAlphaStep;       // lbl_3_bss_16A4
+static s32 sTrailType;            // lbl_3_bss_16A0
+static s32 lbl_3_bss_169C;        // never read in this file
+static TrailMesh sTrailMeshes[2]; // lbl_3_bss_164C
+static VecQueue sTrailQueue;      // lbl_3_bss_1630
+static Vec sTrailHistory[60];     // lbl_3_bss_1360
+static u8 sTrailDisplayList[0x180];         // lbl_3_bss_11E0
+static u8 sTrailDisplayListReversed[0x180]; // lbl_3_bss_1060
+static Vec sTrailPositions[2][120];         // lbl_3_bss_520
+static u32 sTrailColors[2][64];             // lbl_3_bss_320
+static Vec sTrailCapPositions[2][8];        // lbl_3_bss_260
+static u32 sTrailCapColors[2][8];           // lbl_3_bss_220
+static u8 lbl_3_bss_210[0x10];
+static s32 sTrailDelay;           // lbl_3_bss_20C: frames before the fade starts (-1: never)
+static s32 sTrailFadeFrames;      // lbl_3_bss_208
+static TexImage* lbl_3_bss_204;   // trail texture (NULL: untextured)
+static s32 lbl_3_bss_200;
+// The unit's .data (0x6820-0x69C0). The original addresses these through one pooled base, so they
+// are file statics with their real contents, in address order (initialized statics keep declaration order).
+static u8 lbl_3_data_6820[16] = { 0, 0, 0, 12, 13, 7, 7, 10, 11, 8, 9, 0, 0, 0, 0, 0 }; // lbl_8036E548.trail index per trailType
+static f32 lbl_3_data_6830[2] = { 2.5f, 5.0f };
+static f32 lbl_3_data_6838[2] = { 0.6f, 0.6f };
+static f32 lbl_3_data_6840[2] = { 0.3f, 1.0f };
+static TrailShadowData lbl_3_data_6848 = {
+    { -0.1f, 1.0f },
+    { 0.0f, 0.0f, 0.0f, 0.0f },
+};
+// Trail texture coordinates (GX_U16, 14 fractional bits).
+static u16 lbl_3_data_6860[8][2] = {
+    { 0, 0x4000 }, { 0x4000, 0x4000 }, { 0, 0x2000 }, { 0x4000, 0x2000 },
+    { 0, 0x1000 }, { 0x4000, 0x1000 }, { 0, 0x800 },  { 0x4000, 0x800 },
+};
+static BallTrailParams lbl_3_data_6880[12] = {
+    { 0, 0.1f, 0.1f, 60 },   { 10, 0.2f, 0.2f, 30 },  { 11, 0.4f, 0.4f, 60 },  { 10, 0.3f, 0.3f, 50 },
+    { 11, 0.5f, 0.5f, 100 }, { 11, 1.0f, 1.0f, 100 }, { 23, 0.4f, 0.4f, 100 }, { 23, 1.0f, 1.0f, 100 },
+    { 30, 0.3f, 0.3f, 50 },  { 31, 0.3f, 0.3f, 50 },  { 33, 0.4f, 0.4f, 60 },  { 33, 0.4f, 0.4f, 60 },
+};
+// Per character id: trail texture (+0x21 in the archive).
+static u8 lbl_3_data_6940[0x40] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x03, 0x03, 0x03, 0x03, 0x00, 0x05, 0x00,
+    0x00, 0x03, 0x06, 0x03, 0x00, 0x01, 0x00, 0x02, 0x01, 0x00, 0x03, 0x03, 0x06, 0x01, 0x02, 0x03,
+    0x04, 0x01, 0x00, 0x03, 0x02, 0x05, 0x00, 0x06, 0x06, 0x06, 0x00, 0x03, 0x01, 0x02, 0x03, 0x06,
+    0x05, 0x03, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+// Display list of the trail's head cap (fn_3_67C34).
+static u8 lbl_3_data_6980[0x20] = {
+    0x80, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x03, 0x00, 0x03, 0x02, 0x00, 0x02, 0x02,
+    0x01, 0x02, 0x03, 0x01, 0x03, 0x05, 0x02, 0x01, 0x04, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+static TrailNode lbl_3_data_69A0[2] = {
+    { 0, fn_3_67C34, { NULL, NULL } },
+    { 0, fn_3_67C34, { NULL, NULL } },
+};
 extern f32 lbl_803CB740[];
 extern TrailHudView lbl_3_common_bss_32724;
 extern TrailPauseView lbl_3_common_bss_34C90;
@@ -66,21 +111,19 @@ void fn_3_6750C(TexArchive* archive) {
 
 // .text:0x000675B8 size:0x68 mapped:0x806A664C
 void fn_3_675B8(u16 frames) {
-    RepTrailWork* w = &lbl_3_bss_200;
     if (frames == 0) {
         lbl_3_common_bss_32724.trailActive = 0;
-        w->alpha = 0.0f;
+        sTrailAlpha = 0.0f;
         return;
     }
-    w->delay = frames;
-    w->alphaStep = w->alpha / (f32)frames;
+    sTrailDelay = frames;
+    sTrailAlphaStep = sTrailAlpha / (f32)frames;
 }
 
 // .text:0x00067620 size:0x298 mapped:0x806A66B4
-// NONMATCHING 91%: the display list header bytes do not reuse the loop induction registers (posA/i/posB)
+// NONMATCHING 94%: the display list header bytes do not reuse the loop induction registers (posA/i/posB)
 #if NONMATCHING
 void fn_3_67620(s32 type, u16 frames) {
-    RepTrailWork* w = &lbl_3_bss_200;
     u8* start;
     u8* dl;
     u8* src;
@@ -89,32 +132,32 @@ void fn_3_67620(s32 type, u16 frames) {
     s32 posA;
     s32 posB;
 
-    w->type = type;
+    sTrailType = type;
     if (type == 10) {
         lbl_3_data_6880[type].tex.image =
-            &lbl_3_common_bss_35154.archive->entries[lbl_3_data_6940.charTex[g_Pitcher.charID] + 0x21];
+            &lbl_3_common_bss_35154.archive->entries[lbl_3_data_6940[g_Pitcher.charID] + 0x21];
     } else if (type == 11) {
         lbl_3_data_6880[type].tex.image =
-            &lbl_3_common_bss_35154.archive->entries[lbl_3_data_6940.charTex[g_Batter.charID] + 0x21];
+            &lbl_3_common_bss_35154.archive->entries[lbl_3_data_6940[g_Batter.charID] + 0x21];
     }
-    w->alpha = 255.0f;
+    sTrailAlpha = 255.0f;
     if (frames == 0) {
-        w->delay = -1;
-        w->alphaStep = 0.0f;
+        sTrailDelay = -1;
+        sTrailAlphaStep = 0.0f;
     } else if (lbl_3_data_6880[type].tex.image != NULL) {
-        w->delay = frames - 8;
-        w->fadeFrames = 8;
-        w->alphaStep = 31.875f;
+        sTrailDelay = frames - 8;
+        sTrailFadeFrames = 8;
+        sTrailAlphaStep = 31.875f;
     } else {
-        w->delay = 0;
-        w->fadeFrames = frames;
-        w->alphaStep = 255.0f / (f32)(s32)frames;
+        sTrailDelay = 0;
+        sTrailFadeFrames = frames;
+        sTrailAlphaStep = 255.0f / (f32)(s32)frames;
     }
     lbl_3_bss_204 = lbl_3_data_6880[type].tex.image;
-    fn_80023EEC(&w->queue, w->history, lbl_3_data_6880[type].length);
+    fn_80023EEC(&sTrailQueue, sTrailHistory, lbl_3_data_6880[type].length);
 
     // Triangle strip over the 60 point pairs: (pos, color, texcoord) index8 triples.
-    start = dl = w->displayList;
+    start = dl = sTrailDisplayList;
     i = 1;
     posA = 2;
     posB = 3;
@@ -143,53 +186,54 @@ void fn_3_67620(s32 type, u16 frames) {
     DCStoreRangeNoSync(start, dl - start);
 
     // Same strip with the vertices in reverse order.
-    memcpy(w->displayListReversed, w->displayList, 3);
-    src = w->displayList + 3;
-    dst = w->displayListReversed + 3 + 120 * 3;
+    memcpy(sTrailDisplayListReversed, sTrailDisplayList, 3);
+    src = sTrailDisplayList + 3;
+    dst = sTrailDisplayListReversed + 3 + 120 * 3;
     i = 119;
     do {
         dst -= 3;
         memcpy(dst, src, 3);
         src += 3;
     } while (i-- != 0);
-    DCStoreRangeNoSync(w->displayListReversed, 3 + 120 * 3);
+    DCStoreRangeNoSync(sTrailDisplayListReversed, 3 + 120 * 3);
     lbl_3_common_bss_32724.trailActive = 1;
 }
 #endif
 
 // .text:0x000678B8 size:0x190 mapped:0x806A694C
-// NONMATCHING 23%: the original reaches lbl_3_data_6848/6880/6940/69A0 through one pooled lbl_3_data_6820
-// base (file statics there); ours uses each symbol (expected nmverify flag)
+// NONMATCHING 83%: scheduling of the argument setup before fn_3_67EF0 (the original loads lbl_803CC1B8
+// with addi + lwz 0 and the trail type after it) and register numbering after the call
 #if NONMATCHING
 void fn_3_678B8(void) {
-    RepTrailWork* w = &lbl_3_bss_200;
-    u8 buf = lbl_803CBBC0;
+    s32 buf = lbl_803CBBC0;
     s32 side;
     TrailMesh* mesh;
     TrailNode* node;
 
-    side = fn_3_67EF0(&w->queue, 60, w->positions[buf], w->colors[buf], (u32)w->alpha | 0xFFFFFF00,
-                      w->capPositions[buf], w->capColors[buf], TRAIL_TASK->dir, lbl_3_data_6880[w->type].width);
+    side = fn_3_67EF0(&sTrailQueue, 60, sTrailPositions[buf], sTrailColors[buf], (u32)sTrailAlpha | 0xFFFFFF00,
+                      sTrailCapPositions[buf], sTrailCapColors[buf], TRAIL_TASK->dir, lbl_3_data_6880[sTrailType].width);
+    side = (side + 1) >> 1;
     buf = lbl_803CBBC0;
-    mesh = &w->meshes[buf];
-    mesh->body.positions = w->positions[buf];
-    mesh->body.texCoords = lbl_3_data_6848.texCoords;
-    mesh->body.colors = w->colors[buf];
-    mesh->cap.positions = w->capPositions[buf];
-    mesh->cap.texCoords = lbl_3_data_6848.texCoords;
-    mesh->cap.colors = w->capColors[buf];
-    mesh->cap.displayListSize = sizeof(lbl_3_data_6940.capDisplayList);
-    mesh->cap.displayList = lbl_3_data_6940.capDisplayList;
-    node = &lbl_3_data_69A0[buf];
-    if ((side + 1) >> 1) {
-        mesh->body.displayListSize = sizeof(w->displayListReversed);
+    sTrailMeshes[buf].body.positions = sTrailPositions[buf];
+    sTrailMeshes[buf].body.texCoords = lbl_3_data_6860;
+    sTrailMeshes[buf].body.colors = sTrailColors[buf];
+    sTrailMeshes[buf].cap.positions = sTrailCapPositions[buf];
+    sTrailMeshes[buf].cap.texCoords = lbl_3_data_6860;
+    sTrailMeshes[buf].cap.colors = sTrailCapColors[buf];
+    sTrailMeshes[buf].cap.displayListSize = sizeof(lbl_3_data_6980);
+    sTrailMeshes[buf].cap.displayList = lbl_3_data_6980;
+    mesh = &sTrailMeshes[buf];
+    if (side) {
+        mesh->body.displayListSize = sizeof(sTrailDisplayListReversed);
+        node = &lbl_3_data_69A0[buf];
         node->strips[0] = &mesh->cap;
-        mesh->body.displayList = w->displayListReversed;
+        mesh->body.displayList = sTrailDisplayListReversed;
         node->strips[1] = &mesh->body;
     } else {
-        mesh->body.displayListSize = sizeof(w->displayList);
+        mesh->body.displayListSize = sizeof(sTrailDisplayList);
+        node = &lbl_3_data_69A0[buf];
         node->strips[0] = &mesh->body;
-        mesh->body.displayList = w->displayList;
+        mesh->body.displayList = sTrailDisplayList;
         node->strips[1] = &mesh->cap;
     }
     fn_800B0A14_removeQueue(node);
@@ -197,17 +241,13 @@ void fn_3_678B8(void) {
 #endif
 
 // .text:0x00067A48 size:0x1EC mapped:0x806A6ADC
-// NONMATCHING 97%: the original addresses the queue as its own pooled static (addi base+0x1430, then +8);
-// ours folds the field offset
-#if NONMATCHING
 void fn_3_67A48(void) {
-    RepTrailWork* w = &lbl_3_bss_200;
     Vec pos;
     Vec last;
     s32 push;
     TrailTask* task;
 
-    if (w->alpha > 0.0f) {
+    if (sTrailAlpha > 0.0f) {
         if (lbl_80366158._28 == 0) {
             push = 1;
             if (g_Ball.fielderActionOccuring) {
@@ -219,19 +259,19 @@ void fn_3_67A48(void) {
                 pos.y = -g_Ball.AtBat_Contact_BallPos.y;
                 pos.z = g_Ball.AtBat_Contact_BallPos.z;
             }
-            if (w->queue.count != 0) {
-                fn_80023D4C(&w->queue, &last);
+            if (sTrailQueue.count != 0) {
+                fn_80023D4C(&sTrailQueue, &last);
                 if (memcmp(&pos, &last, sizeof(Vec)) == 0) {
                     push = 0;
                 }
             }
             if (push) {
-                fn_80023E48(&w->queue, &pos);
+                fn_80023E48(&sTrailQueue, &pos);
             }
         }
-        if (w->queue.count >= 2) {
+        if (sTrailQueue.count >= 2) {
             task = fn_800B0A5C_insertQueue(fn_3_678B8, 1000);
-            if (w->type == 6 || w->type == 7) {
+            if (sTrailType == 6 || sTrailType == 7) {
                 task->dir = &task->dirBuf;
                 task->dirBuf.x = 1.0f;
                 task->dirBuf.y = 0.0f;
@@ -241,18 +281,17 @@ void fn_3_67A48(void) {
             }
             fn_800A7D4C(0, &lbl_3_data_69A0[lbl_803CBBC0]);
             if (lbl_80366158._28 == 0) {
-                if (w->delay != 0) {
-                    w->delay -= (w->delay > 0);
-                } else if (--w->fadeFrames != 0) {
-                    w->alpha -= w->alphaStep;
+                if (sTrailDelay != 0) {
+                    sTrailDelay -= (sTrailDelay > 0);
+                } else if (--sTrailFadeFrames != 0) {
+                    sTrailAlpha -= sTrailAlphaStep;
                 } else {
-                    w->alpha = 0.0f;
+                    sTrailAlpha = 0.0f;
                 }
             }
         }
     }
 }
-#endif
 
 // .text:0x00067C34 size:0x2BC mapped:0x806A6CC8
 // NONMATCHING 98%: the original moves node through r0 and schedules li r3,0 before saving r31
@@ -461,10 +500,6 @@ s32 fn_3_67EF0(VecQueue* queue, s32 maxPoints, Vec* positions, u32* colors, u32 
 
 // Picks the trail type for the current pitch / hit.
 // .text:0x000685F0 size:0x5C4 mapped:0x806A7684
-// NONMATCHING 82%: the inlined fn_3_675B8 stores alpha through lbl_3_bss_16A8 itself in the original
-// (separate static); ours goes through lbl_3_bss_200
-// nmverify: lbl_3_bss_200 is the pooled-base model of the separate static lbl_3_bss_16A8 (alpha)
-#if NONMATCHING
 void fn_3_685F0(void) {
     if (g_Minigame.GameMode_MiniGame == 4 || g_Minigame.GameMode_MiniGame == 5 ||
         g_Minigame.GameMode_MiniGame == 6) {
@@ -568,7 +603,6 @@ void fn_3_685F0(void) {
         }
     }
 }
-#endif
 
 // Spins the ball model.
 // .text:0x00068BB4 size:0x548 mapped:0x806A7C48
@@ -869,8 +903,7 @@ void fn_3_695F8(s32 flag) {
 // Updates the ball model, its trail and the shadows each frame.
 // .text:0x000697CC size:0x994 mapped:0x806A8860
 // NONMATCHING 97%: register allocation; the original reads the scale table through a
-// charSizeMultipliers+0x1B0 symbol (lfsx), and the inlined fn_3_675B8 stores lbl_3_bss_16A8 directly
-// nmverify: lbl_3_bss_200 is the pooled-base model of the separate static lbl_3_bss_16A8 (alpha)
+// charSizeMultipliers+0x1B0 symbol (lfsx)
 #if NONMATCHING
 void fn_3_697CC(void) {
     CharTrail* trail;

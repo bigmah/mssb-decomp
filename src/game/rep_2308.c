@@ -1,5 +1,6 @@
 #include "game/rep_2308.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_2308
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "game/rep_1F58.h"
 #include "game/rep_3AE8.h"
@@ -7,8 +8,8 @@
 
 extern u8 lbl_8036E548[];
 extern u8 lbl_3_common_bss_35154[];
-extern s32 lbl_3_data_17D08;
-extern u8 lbl_3_data_17D10[];
+extern s32 lbl_3_data_17D08[2];
+extern u8* lbl_3_data_17D10[2];
 #include "Dolphin/mtx.h"
 #include "stl/fdlibm.h"
 extern void* memcpy(void*, const void*, u32);
@@ -26,14 +27,14 @@ extern void fn_800BDA94(void* obj, MtxPtr camera);
 extern u8* lbl_803CC1B8;
 extern u8 lbl_803CBBC0;
 extern u8 lbl_80366158[];
-extern u8 lbl_3_data_17D10[];
 extern void fn_800A7D4C(int, void*);
 
 typedef struct {
     u32 a, b, c, d;
 } Q2308;
 typedef struct {
-    u8 pad0[8];
+    void* next;           // draw-list link
+    void (*draw)(u8* p);  // fn_3_CABF0
     f32 f8, fC, f10;
     Q2308 q14;
     u32 w24;
@@ -97,7 +98,7 @@ void fn_3_CAF9C(void) {
     memcpy(&a, &g_Pitcher, 0xC);
     memcpy(&b, &g_Pitcher.ballVelocity, 0xC);
     memcpy(&c, &g_Pitcher.pitchCurveVeloV1, 0xC);
-    n = ((s32*)&lbl_3_data_17D08)[1];
+    n = lbl_3_data_17D08[1];
     while (n-- != 0) {
         ((void (*)(Vec*, Vec*, Vec*, int))fn_3_15C024)(&a, &b, &c, 0);
     }
@@ -118,10 +119,10 @@ void fn_3_CAF9C(void) {
     }
     *(f32*)(q + 0x2C) = cos(*(f32*)(q + 0x2C));
     q[0x34] = i = 0;
-    slot = (u8**)lbl_3_data_17D10;
+    slot = lbl_3_data_17D10;
     for (; i < 2; slot++, i++) {
         if (*slot == 0) {
-            ((u8**)lbl_3_data_17D10)[i] = q;
+            lbl_3_data_17D10[i] = q;
             q[0x32] = i;
             break;
         }
@@ -146,11 +147,11 @@ void fn_3_CAE00(void) {
             *(u16*)(p + 0x30) += 1;
         }
     } else {
-        *(u32*)(lbl_3_data_17D10 + p[0x32] * 4) = 0;
+        lbl_3_data_17D10[p[0x32]] = NULL;
         fn_800B0A14_removeQueue(lbl_3_data_17D10);
     }
     if (*(u16*)(p + 0x30) >= *(u16*)(lbl_3_common_bss_35154 + 0xF0)) {
-        *(u32*)(lbl_3_data_17D10 + p[0x32] * 4) = 0;
+        lbl_3_data_17D10[p[0x32]] = NULL;
         fn_800B0A14_removeQueue(lbl_3_data_17D10);
     }
 }
@@ -164,7 +165,7 @@ void fn_3_CABF0(u8* p) {
     u8* r31;
     u8* o;
     s32 i;
-    sc = (f32)lbl_3_data_17D08 / 100000.0f;
+    sc = (f32)lbl_3_data_17D08[0] / 100000.0f;
     r31 = *(u8**)(lbl_3_common_bss_35154 + 0x10) + 0xC4;
     b[0] = *(void**)(lbl_3_common_bss_35154 + 0xF8);
     a[0] = lbl_3_common_bss_35154 + 0xD8;
@@ -195,3 +196,11 @@ void fn_3_CABF0(u8* p) {
     fn_800BDA94(r31, m);
 }
 
+// .data 0x17D08..0x17DC0
+s32 lbl_3_data_17D08[2] = {23000, 8}; // scale (/100000), number of fn_3_15C024 steps
+u8* lbl_3_data_17D10[2] = {NULL, NULL}; // running tasks (two slots)
+R2308 lbl_3_data_17D18[2] = {
+    {{{NULL, fn_3_CABF0}, {NULL, fn_3_CABF0}}},
+    {{{NULL, fn_3_CABF0}, {NULL, fn_3_CABF0}}},
+};
+s32 lbl_3_data_17DB8[2] = {3, 0}; // unreferenced

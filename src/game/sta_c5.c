@@ -1888,21 +1888,63 @@ void fn_3_F2FFC(StadCtlA* p, f32 x, f32 z) {
 }
 #endif
 
+#pragma dont_inline off
 // .text:0x000F31E0 size:0x5DC mapped:0x80732274
 extern const f32 lbl_3_rodata_2E8C;
 extern const f32 lbl_3_rodata_2EB8;
-// NONMATCHING 68%: the original inlines fn_3_F2FFC (itself NONMATCHING, CW won't auto-inline it here), fn_3_F42A0 and fn_3_F3A5C; the inlined code reaches lbl_3_bss_B260/B560 via the lbl_3_bss_AEE0 pooled base (nmverify flag expected)
+// NONMATCHING 87%: fn_3_F2FFC (an inline copy, as it is NONMATCHING), fn_3_F42A0 and fn_3_F3A5C are inlined as
+// in the original; the inlined code reaches lbl_3_bss_B260/B560 via the lbl_3_bss_AEE0 pooled base there
+// (nmverify flag expected), and registers differ
 #if NONMATCHING
+static inline void fn_3_F2FFC_inline(StadCtlA* p, f32 x, f32 z) {
+    Vec dir;
+    s8 side;
+    s32 end;
+    f32 d = x - p->xac;
+    side = d / __fabs(d);
+    if (side == 0) {
+        d = p->xac;
+        side = -(d / __fabs(d));
+    }
+    dir.x = x - p->xac;
+    dir.y = lbl_3_rodata_2D5C;
+    dir.z = z - p->zb0;
+    PSVECNormalize(&dir, &dir);
+    end = side * 80;
+    lbl_3_bss_B260[0].x = lbl_3_rodata_2E30 * dir.x + p->xac;
+    lbl_3_bss_B260[0].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[0].z = lbl_3_rodata_2E30 * dir.z + p->zb0;
+    lbl_3_bss_B260[1].x = lbl_3_rodata_2E80 * (x - p->xac) + p->xac;
+    lbl_3_bss_B260[1].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[1].z = lbl_3_rodata_2E80 * (z - p->zb0) + p->zb0;
+    lbl_3_bss_B260[2].x = lbl_3_rodata_2E84 * (x - p->xac) + p->xac;
+    lbl_3_bss_B260[2].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[2].z = lbl_3_rodata_2E84 * (z - p->zb0) + p->zb0;
+    lbl_3_bss_B260[3].x = x;
+    lbl_3_bss_B260[3].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[3].z = z;
+    lbl_3_bss_B260[4].x = x + (end - x) / lbl_3_rodata_2E88;
+    lbl_3_bss_B260[4].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[4].z = z;
+    lbl_3_bss_B260[5].x = x + lbl_3_rodata_2D74 * (end - x) / lbl_3_rodata_2E88;
+    lbl_3_bss_B260[5].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[5].z = z;
+    lbl_3_bss_B260[6].x = end;
+    lbl_3_bss_B260[6].y = lbl_3_rodata_2D5C;
+    lbl_3_bss_B260[6].z = z;
+}
+
 void fn_3_F31E0(StadCtlA* p, f32 x, f32 z) {
     StaC5Work* w = (StaC5Work*)lbl_3_bss_AEE0;
     w->pathSpeed = lbl_3_rodata_2D68;
     p->fb8 = lbl_3_rodata_2E8C;
-    fn_3_F2FFC(p, x, z);
+    fn_3_F2FFC_inline(p, x, z);
     fn_3_F42A0();
     fn_3_F3A5C((u8*)p, lbl_3_bss_B260[0].x, lbl_3_rodata_2EB8, lbl_3_bss_B260[0].z, *p->yawSrc);
     w->pathStep = 0;
 }
 #endif
+#pragma dont_inline on
 
 // .text:0x000F37BC size:0x118 mapped:0x80732850
 u32 fn_3_F37BC(u32 n, u32 k) {

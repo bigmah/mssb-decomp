@@ -1,5 +1,6 @@
 #include "game/rep_3880.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3880
+#include "header_rep_inline.h"
 
 extern u8 lbl_3_data_26C94[];
 extern const f32 lbl_3_rodata_39F8;
@@ -679,7 +680,6 @@ void fn_3_14A164(void) {
 
 // NONMATCHING 99%: only the flag base addr is addi r3 (orig: lis/addi r4 before stmw); computing delta after df in the else branch fixed the float regs
 // .text:0x0014A188 size:0x1F4 mapped:0x8078921C
-#if NONMATCHING
 u32 fn_3_14A188(u8* o) {
     u8* p;
     u8* d;
@@ -731,7 +731,6 @@ u32 fn_3_14A188(u8* o) {
     } while (p != NULL);
     return alive == 0;
 }
-#endif
 
 // .text:0x0014A37C size:0x2B0 mapped:0x80789410
 void fn_3_14A37C(u8* o, f32* v) {
@@ -1487,7 +1486,6 @@ void fn_3_14CD40(u8* a, u8* o) {
 // NONMATCHING 99%: only the lbl_80366158 flag address (orig lis/addi r4 scheduled before the reg saves, ours addi r3 after mr), same as fn_3_14A188; 14CD40/14CBB4/14D2C0 are inlined via dont_inline off
 // .text:0x0014CECC size:0x3F4 mapped:0x8078BF60
 #pragma dont_inline off
-#if NONMATCHING
 u32 fn_3_14CECC(u8* o) {
     u8* p;
     if (lbl_80366158[0x28] != 0) {
@@ -1521,7 +1519,6 @@ u32 fn_3_14CECC(u8* o) {
     } while (p != NULL);
     return 0;
 }
-#endif
 #pragma dont_inline on
 
 // .text:0x0014D2C0 size:0x58 mapped:0x8078C354

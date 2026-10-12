@@ -1,0 +1,5 @@
+// game.rel common .bss (0x13748, size 0x114BC): defined uninitialised and compiled with -common on,
+// one global per unit as in the original link (the linker puts all commons after the other .bss).
+#include "types.h"
+
+u32 g_ReplayCopies[0x452F]; // TODO type

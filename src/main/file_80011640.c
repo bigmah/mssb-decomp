@@ -341,6 +341,94 @@ static inline void drawSlot(ActorObject* slot, s32 pass, MtxPtr view) {
     }
 }
 
+// .text:0x80011468 size:0x108
+void fn_80011468(void) {
+    s32 i;
+    for (i = 0; i < 13; i++) {
+        CharActor* actor = lbl_8036E548.active[i];
+        if (actor != NULL) {
+            ActorObject* obj = &lbl_8036E548.slots->objects[actor->modelIndex];
+            switch (actor->kind) {
+            case 19:
+                fn_8004B6EC(actor, obj);
+                break;
+            case 40:
+            case 41:
+                fn_8004B7F4(actor, obj);
+                break;
+            case 38:
+                obj->actor->tickFlag = 1;
+            case 18:
+                fn_8004BAEC(actor, obj);
+                break;
+            case 14:
+            case 37:
+                fn_8005240C(actor, obj);
+                break;
+            case 6:
+            case 10:
+            case 12:
+            case 24:
+            case 25:
+            case 26:
+            case 42:
+                obj->actor->tickFlag = 1;
+                break;
+            case 20:
+            case 43:
+                if (actor->anim[0] == 0x40) {
+                    obj->actor->tickFlag = 0;
+                } else {
+                    obj->actor->tickFlag = 1;
+                }
+                break;
+            }
+        }
+    }
+}
+
+// .text:0x80011570 size:0x8
+CharActor* fn_80011570(void) {
+    return lbl_803CBC18;
+}
+
+// .text:0x80011578 size:0x50
+void fn_80011578(void) {
+    s8 i = 0;
+    s32 n;
+    for (n = 13; n != 0; n--) {
+        if (i >= 0 && i < 13) {
+            CharActor* actor = lbl_8036E548.active[(u32)i];
+            if (actor != NULL) {
+                actor->tevHook = NULL;
+            }
+        }
+        i++;
+    }
+}
+
+// .text:0x800115C8 size:0x3C
+void fn_800115C8(s8 index) {
+    if (index >= 0 && index < 13) {
+        CharActor* actor = lbl_8036E548.active[index];
+        if (actor != NULL) {
+            actor->tevHook = NULL;
+        }
+    }
+}
+
+// .text:0x80011604 size:0x3C
+void fn_80011604(s8 index, DOTevHook value) {
+    CharActor* actor;
+    if (index < 0 || index >= 13) {
+        return;
+    }
+    actor = lbl_8036E548.active[index];
+    if (actor != NULL) {
+        actor->tevHook = value;
+    }
+}
+
 // .text:0x80011640 size:0x9C
 void fn_80011640(Mtx a, Mtx out) {
     Mtx scale = {

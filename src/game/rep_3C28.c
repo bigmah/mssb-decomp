@@ -1,5 +1,6 @@
 #include "game/rep_3C28.h"
-#include "header_rep_data.h"
+#define REP_HEADER_FN repHeader_3C28
+#include "header_rep_inline.h"
 #include "game/UnknownHomes_Game.h"
 #include "Dolphin/vec.h"
 
@@ -11,10 +12,7 @@ extern struct {
     Vec _44C;
     u8 _458[0x28];
 } lbl_3_common_bss_35154;
-extern struct {
-    u32 _00;
-    u8 _04[0x3C];
-} lbl_3_data_27C98[];
+extern BurstParams lbl_3_data_27C98[3];
 extern struct {
     u8 _00[0x28];
     u8 _28;
@@ -43,4 +41,12 @@ void fn_3_15F574(void) {
         }
     }
 }
+
+
+// .data 0x27C98..0x27D58
+BurstParams lbl_3_data_27C98[3] = {
+    {0, {4, 6, 110000, 1000, 90000, 40, 1, 102000, 101000, 100, 10000000, 0xFFFFFF00, 0, 50000, 20000}},
+    {0, {4, 6, 110000, 1000, 90000, 40, 1, 102000, 101000, 100, 10000000, 0xFFFFFF00, 0, 50000, 20000}},
+    {0, {4, 6, 150000, 1000, 90000, 40, 1, 102000, 101000, 100, 2000000, 0xFFFFFF00, 0, 50000, 20000}},
+};
 
