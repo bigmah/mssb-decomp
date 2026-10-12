@@ -302,6 +302,20 @@ void RunDrawScripts_with_stack_variables(void) {
     lbl_803CC1B8 = &lbl_80111300;
     ((DrawScriptFunc)lbl_80111300.func)(rootScratch);
     task = &lbl_803C7A24[lbl_803CC1B0 * 2];
+#ifdef TARGET_PC
+    {
+        extern void port_trace_tasks(void** funcs, int count);
+        void* funcs[64];
+        int n = 0;
+        SceneTask* t = task;
+        funcs[n++] = (void*)lbl_80111300.func;
+        while (t != NULL && n < 64) {
+            funcs[n++] = (void*)t->func;
+            t = t->next;
+        }
+        port_trace_tasks(funcs, n);
+    }
+#endif
     do {
         lbl_803CC1B8 = task;
         ((DrawScriptFunc)task->func)(listScratch);

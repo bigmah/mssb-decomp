@@ -215,7 +215,7 @@ void fn_8001FE00(LayoutGroup* group) {
     quad[0].t = 0;
     quad[2].t = 0x400;
     quad[1].t = 0x400;
-    DrawSprite_TexObj(quad, lbl_8037169C.texObj);
+    DrawSprite_TexObj(quad, PTR32_GET(TexImage, lbl_8037169C.texObj));
 }
 
 // .text:0x80020048 size:0x1D0
@@ -271,15 +271,15 @@ s32 fn_80020218(void) {
 
 // .text:0x8002024C size:0x2C
 void fn_8002024C(void) {
-    fn_800ACF14(lbl_8037169C.tex);
+    fn_800ACF14(PTR32_GET(TexArchive, lbl_8037169C.tex));
 }
 
 // .text:0x80020278 size:0x110
 s32 fn_80020278(s32 index) {
     if (lbl_8037169C.loadState == 0) {
         DiskFileEntry* file = &lbl_800EEFD0[index + 0x2D];
-        lbl_8037169C.tex = fn_800ACF34(0x20, file->sizeFlags & 0x0FFFFFFF);
-        ARAMTransfer(file, lbl_8037169C.tex, 1, 0);
+        PTR32_SET(lbl_8037169C.tex, fn_800ACF34(0x20, file->sizeFlags & 0x0FFFFFFF));
+        ARAMTransfer(file, PTR32_GET(TexArchive, lbl_8037169C.tex), 1, 0);
         lbl_8037169C.loadIndex = index;
         lbl_8037169C.fadeAlpha = 0;
         lbl_8037169C.loadState++;
@@ -287,8 +287,8 @@ s32 fn_80020278(s32 index) {
         if ((s32)(u8)lbl_803C6CF8.idle != 1) {
             return 0;
         }
-        convertTextureHeader(lbl_8037169C.tex);
-        lbl_8037169C.texObj = TEX_ARCHIVE_IMG(lbl_8037169C.tex, 0);
+        convertTextureHeader(PTR32_GET(TexArchive, lbl_8037169C.tex));
+        PTR32_SET(lbl_8037169C.texObj, TEX_ARCHIVE_IMG(PTR32_GET(TexArchive, lbl_8037169C.tex), 0));
         lbl_8037169C.loadState = 2;
         return 1;
     }
@@ -646,7 +646,7 @@ void fn_80021064(void) {
     lbl_8037169C.done = 0;
     lbl_8037169C._16 = 0;
     lbl_8037169C._17 = 0;
-    lbl_8037169C.tex = NULL;
+    PTR32_SET(lbl_8037169C.tex, NULL);
     lbl_8037169C.loadState = 0;
     lbl_8037169C.fadeAlpha = 0;
     lbl_8037169C.lastPick = 0xFF;

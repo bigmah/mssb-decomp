@@ -6,8 +6,10 @@
 
 // Screen transition (fade) state.
 typedef struct SceneFade {
-    /*0x00*/ TexArchive* tex;      // loading-screen texture (ARAM)
-    /*0x04*/ TexImage* texObj;
+    // PTR32 so the struct keeps its GameCube layout on PC: many units reach
+    // the later fields through their own views of this object.
+    /*0x00*/ PTR32(TexArchive) tex;      // loading-screen texture (ARAM)
+    /*0x04*/ PTR32(TexImage) texObj;
     /*0x08*/ u16 duration;
     /*0x0A*/ u16 _0A;
     /*0x0C*/ u16 requestDuration;
