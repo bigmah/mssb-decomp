@@ -3282,9 +3282,53 @@ void fn_3_1549F0(u8* a, s16 b, f32* pos, f32* rot) {
     } while (o != NULL);
 }
 
-// NONMATCHING 17%: the original inlines fn_3_1549F0 twice; CW here won't inline it (its Control/Mtx locals?), so this calls it (nmverify call diff expected)
-// .text:0x00154C7C size:0x5A0 mapped:0x80793D10
-#if NONMATCHING
+// fn_3_1549F0's body for fn_3_154C7C, which inlines it twice (CW won't auto-inline the real one; dir/v are declared
+// in the other order here, which the inlined copies' stack layout needs)
+static inline void Inl1549F0(u8* a, s16 b, f32* pos, f32* rot) {
+    struct { Control c; u32 pad[2]; } cc;
+    Mtx m;
+    Vec v;
+    f64 t;
+    Vec dir;
+    u8* o;
+    u8 i = 0;
+    o = *(u8**)(a + 0xC);
+    *(s32*)(a + 0x10) = *(s32*)(lbl_3_common_bss_32724 + 0x6C);
+    do {
+        *(s16*)(o + 0x18) = b;
+        *(f32**)(o + 0x10) = pos;
+        *(f32**)(o + 0x14) = rot;
+        *(s16*)(o + 0x48) = i++;
+        o[0x4D] = *(s32*)lbl_3_data_26BC0;
+        o[0x4E] = 0;
+        if (*(s16*)(o + 0x48) == 0) {
+            *(s16*)(o + 0x4A) = *(s32*)(lbl_3_data_26BC0 + 0x18);
+            cc.c.type = 0;
+            CTRLSetRotation(&cc.c, rot[0], rot[1], rot[2]);
+            CTRLBuildMatrix(&cc.c, m);
+            if (g_Minigame[0x1A2A] == 1) {
+                dir = lbl_3_data_26BB4;
+            } else {
+                PSVECScale(&lbl_3_data_26BB4, lbl_3_rodata_3950, &dir);
+            }
+            v.x = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.x);
+            v.y = dir.y;
+            v.z = (f32)(lbl_3_rodata_3A08 * ((f64)(rand() % 40 - 20) / lbl_3_rodata_39E8) + (f64)dir.z);
+            PSMTXMultVec(m, &v, &v);
+            v.x = v.x + pos[0];
+            t = __fabs(pos[1]);
+            v.y = v.y - t;
+            v.z = v.z + pos[2];
+            *(f32*)(o + 4) = v.x;
+            *(f32*)(o + 8) = v.y;
+            *(f32*)(o + 0xC) = v.z;
+            *(f32*)(o + 0x3C) = *(f32*)(o + 0x38) = (f32)*(s32*)(lbl_3_data_26BC0 + 8);
+            o[0x43] = *(s32*)(lbl_3_data_26BC0 + 0x10);
+        }
+        o = *(u8**)o;
+    } while (o != NULL);
+}
+
 void fn_3_154C7C(s16 id, f32* pos, f32* rot) {
     u8 buf[0x5C];
     u8* h;
@@ -3294,7 +3338,7 @@ void fn_3_154C7C(s16 id, f32* pos, f32* rot) {
     if (h != NULL) {
         n = fn_800337CC(buf, *(s32*)(lbl_3_data_26BC0 + 4), 1);
         if (n != NULL) {
-            fn_3_1549F0(n, id, pos, rot);
+            Inl1549F0(n, id, pos, rot);
             p = *(u8**)(h + 0xC);
             if (p != NULL) {
                 while (*(u8**)p != NULL) {
@@ -3309,11 +3353,10 @@ void fn_3_154C7C(s16 id, f32* pos, f32* rot) {
     } else {
         n = fn_80033A24(fn_3_1542F4, 0x80, 0, *(s32*)(lbl_3_data_26BC0 + 4), 1, 0x27);
         if (n != NULL) {
-            fn_3_1549F0(n, id, pos, rot);
+            Inl1549F0(n, id, pos, rot);
         }
     }
 }
-#endif
 
 // .text:0x0015521C size:0x48 mapped:0x807942B0
 void fn_3_15521C(s16 a, f32* b, f32* c) {
