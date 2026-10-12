@@ -261,6 +261,9 @@ void fn_800A6E24(AssetLoadInstructions* instr, u8* ringBuf, s32 ringSize) {
     lbl_803C6CF8.ringSize = ringSize;
     lbl_803C6CF8.bufEnd = ringBuf + ringSize;
     while (lbl_803C6CF8.idle != 1) {
+#ifdef TARGET_PC
+        OSYieldThread(); // let the loader threads finish (they preempt on GameCube)
+#endif
     }
     DVDFastOpen(lbl_803C6CF8.entryNum, lbl_803C6CF8.fileInfo);
     SET_STATE_IDLE(DVDSYS_STATE_RING, 0);
@@ -310,6 +313,9 @@ void* ARAMTransfer(AssetLoadInstructions* instr, void* dest, u8 mode, u32 aramAd
     lbl_803C6CF8.instr = instr;
     lbl_803C6CF8.mode = mode;
     while (lbl_803C6CF8.idle != 1) {
+#ifdef TARGET_PC
+        OSYieldThread(); // let the loader threads finish (they preempt on GameCube)
+#endif
     }
     DVDFastOpen(lbl_803C6CF8.entryNum, lbl_803C6CF8.fileInfo);
     size = ALIGN32(instr->compressedSize);
