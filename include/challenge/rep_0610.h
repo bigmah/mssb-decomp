@@ -2,6 +2,97 @@
 #define __CHALLENGE_REP_0610_H__
 
 #include "mssbTypes.h"
+#include "Dolphin/mtx.h"
+#include "Dolphin/gx.h"
+#include "C3/control.h"
+#include "C3/light.h"
+#include "main/file_80011640.h" // CharPart
+#include "main/file_80037054.h" // RigidBody
+#include "challenge/rep_0010.h"   // ChTaskHeader
+
+// Main challenge-viewer task (fn_1_16978 loader, fn_1_168C8, fn_1_1496C menu).
+typedef struct ChMainTask {
+    /*0x00*/ ChTaskHeader h; // h.result: loader state
+    /*0x14*/ u8 _14[8];
+    /*0x1C*/ u32 ticks; // fn_1_135C0 timing (OSGetTick)
+    /*0x20*/ u8 page;   // fn_1_1496C menu page
+} ChMainTask;
+
+// Script-step task (fn_1_DE1C / fn_1_DF14 / fn_1_E098 / fn_1_D9B8).
+typedef struct ChScriptTask {
+    /*0x00*/ ChTaskHeader h;
+    /*0x14*/ u8 index; // script step being edited / played
+    /*0x15*/ u8 step;  // read as s8 for indexing
+} ChScriptTask;
+
+// Particle burst task (fn_1_F1D8, queued by fn_1_F0D0).
+typedef struct ChBurstTask {
+    /*0x00*/ ChTaskHeader h;
+    /*0x14*/ u8 _14[0xC];
+    /*0x20*/ s32 timer; // frames left
+    /*0x24*/ s32 joint; // getAnimRelatedCoordinates joint
+} ChBurstTask;
+
+// Fireball task (fn_1_F50C, queued by fn_1_F37C).
+typedef struct ChFireballTask {
+    /*0x00*/ ChTaskHeader h;
+    /*0x14*/ Vec pos;
+    /*0x20*/ Vec vel;
+    /*0x2C*/ Vec accel;
+    /*0x38*/ s32 id;     // fn_8002F258 / fn_8002F1AC emitter id
+    /*0x3C*/ u16 timer;  // frames left
+    /*0x3E*/ u8 spawn;   // create the emitter on the next frame
+    /*0x3F*/ u8 onFeet;  // emit at both feet instead of pos
+} ChFireballTask;
+
+// Rigid-body launch task (fn_1_CCC8).
+typedef struct ChBodyTask {
+    /*0x00*/ ChTaskHeader h;
+    /*0x14*/ f32* anim;  // [0] current frame, [1] launch frame
+    /*0x18*/ u16 id;
+} ChBodyTask;
+
+// Challenge viewer player record (lbl_1_bss_6940.player).
+typedef struct ChPlayer {
+    /*0x00*/ u8 _00[0x44];
+    /*0x44*/ u8 group;   // animation bank (CharActor.banks.b index)
+    /*0x45*/ u8 seq;     // sequence in that bank
+    /*0x46*/ u8 variant; // model variant
+    /*0x47*/ u8 _47;
+} ChPlayer; // size: 0x48
+
+// lbl_1_bss_6940: the player record and the parts data its CharActor.part points at.
+typedef struct ChPlayerBss {
+    /*0x00*/ ChPlayer player[1];
+    /*0x48*/ CharPart part[1]; // main/file_80011640.h
+    /*0xAC*/ u8 _AC[4];
+} ChPlayerBss; // size: 0xB0
+
+// lbl_1_bss_68FC: the scene view matrix and the character shown for each player.
+typedef struct ChScene {
+    /*0x00*/ u8 _00[0x10];
+    /*0x10*/ Mtx view;
+    /*0x40*/ u8 character[4];
+} ChScene; // size: 0x44
+
+// Free/orbit debug camera of the challenge viewer (lbl_1_bss_67E0), driven by fn_1_121D4.
+typedef struct ChViewCam {
+    /*0x000*/ Mtx view;
+    /*0x030*/ Light light; // toggled by the debug menu
+    /*0x0F0*/ u16 pitch;
+    /*0x0F2*/ u16 yaw;
+    /*0x0F4*/ f32 strafe;
+    /*0x0F8*/ f32 dist;  // forward speed (mode 0) or orbit distance (mode 1)
+    /*0x0FC*/ Vec target;
+    /*0x108*/ Vec eye;
+    /*0x114*/ s32 mode;  // 0: free fly (fn_1_11F08), 1: orbit (fn_1_11D00)
+} ChViewCam; // size: 0x118
+
+typedef struct ChViewer {
+    /*0x000*/ ChViewCam cam;
+    /*0x118*/ u8 lightOn; // cam.light enabled
+    /*0x119*/ u8 _119[3];
+} ChViewer;
 
 void fn_1_163FC(void);
 
@@ -39,11 +130,11 @@ void fn_1_148CC(void);
 
 void fn_1_15170(void);
 
-void fn_1_14888(u8* object);
+void fn_1_14888(ActorObject* object);
 
-void fn_1_E9F8(u8* object, s32 index, s32 count);
+void fn_1_E9F8(GameActor* object, s32 index, s32 count);
 
-void fn_1_10AA4(u8* object, f32 value);
+void fn_1_10AA4(ActorObject* object, f32 value);
 
 void fn_1_161D0(void);
 
@@ -51,7 +142,7 @@ void* fn_1_16558(s32 group, s32 index);
 
 void fn_1_17954(void);
 
-void fn_1_1073C(u8* object);
+void fn_1_1073C(CharActor* object);
 
 void fn_1_12F18(u8* object);
 
@@ -98,15 +189,15 @@ void fn_1_1347C(void);
 
 void fn_1_17D90(void);
 
-void fn_1_14710(u8* object);
+void fn_1_14710(CharActor* object);
 
 void fn_1_14FB8(void);
 
-void fn_1_11D00(u8* camera);
+void fn_1_11D00(ChViewCam* camera);
 
 void fn_1_131E4(void);
 
-void fn_1_11F08(u8* camera);
+void fn_1_11F08(ChViewCam* camera);
 
 void fn_1_165E0(void);
 
@@ -114,7 +205,7 @@ void fn_1_1540C(void);
 
 void fn_1_F798(void* paramsArg, void* typesArg, s32 count);
 
-void fn_1_121D4(u8* camera);
+void fn_1_121D4(ChViewCam* camera);
 
 void fn_1_15CE0(void);
 
@@ -126,7 +217,7 @@ void fn_1_12820(void* table, void* matrix);
 
 void fn_1_D13C(void);
 
-void fn_1_D300(u8* row);
+void fn_1_D300(CharActor* row);
 
 void fn_1_17B5C(void);
 

@@ -35,8 +35,9 @@ void DecompressDiskData();
 
 typedef struct
 {
-    OSThread t ATTRIBUTE_ALIGN(16);       // 0x000
-    OSSemaphore s[2] ATTRIBUTE_ALIGN(16); // 0x320
+    OSThread t;               // 0x000
+    u8 _318[8];               // 0x318
+    OSSemaphore s[2];         // 0x320
 
     int BytesToRead;          // 0x338
     size_t CachedBytesToRead; // 0x33C
@@ -56,7 +57,7 @@ typedef struct
     s8 error;                 // 0x364
     s8 compressedFlag;        // 0x365
     u8 ShouldWriteDataFlag;   // 0x366
-} DataVars;
+} DataVars; // size: 0x368 (8-aligned: the next common follows at +0x368)
 
 extern DataVars gDataDecompressorValues;
 

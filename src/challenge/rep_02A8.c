@@ -10,7 +10,8 @@
 
 // View of the sound manager (SoundManager, main/file_80021308.h): [0] unk0, [1 + g] groups[g].
 // TODO type: use SoundManager; the byte offsets (0x390, 0x396) are 32-bit layout.
-extern struct SoundGroupData* lbl_800EF808[];
+#include "main/file_80021308.h" // SoundManager
+extern SoundManager lbl_800EF808;
 
 
 extern void fn_1_A250(void);
@@ -315,40 +316,40 @@ extern u32 sndUpdateListener(SND_LISTENER* li, SND_FVECTOR* pos, SND_FVECTOR* di
 
 
 static inline struct SoundGroupData* SoundOptionValue(s32 index) {
-    return lbl_800EF808[index + 1];
+    return lbl_800EF808.groups[(u32)index]; // (u32): index is added before the shift, as the original does
 }
 
 
 // .text:0x0000C188 size:0x11C
 void fn_1_C188(void) {
-    u8* queue = ((u8*)lbl_803CC1B8);
+    ChTaskHeader* queue = lbl_803CC1B8;
     switch ((s32)lbl_1_bss_2FDD) {
     case 0: {
         s32 option;
-        u8* child;
-        *(s16*)(queue + 0x10) = 0;
+        ChSoundGroupTask* child;
+        queue->result = 0;
         option = lbl_1_bss_2FD9 + 5;
         child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
-        child[0x18] = 0;
-        child[0x19] = option;
-        *(s32 (**)(void))(child + 0x14) = fn_1_A908;
-        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
+        child->step = 0;
+        child->group = option;
+        child->callback = fn_1_A908;
+        ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
         lbl_1_bss_2FDD++;
         break;
     }
     case 1:
-        if (*(s16*)(queue + 0x10) != 0) {
+        if (queue->result != 0) {
             if (lbl_1_bss_2FD9 != 17) {
                 lbl_1_bss_2FD9++;
                 lbl_1_bss_2FDD = 0;
             } else {
-                *(s16*)(queue + 0x10) = 0;
+                queue->result = 0;
                 lbl_1_bss_2FDD++;
             }
         }
         break;
     case 2:
-        *(void (**)(void))queue = fn_1_BFB0;
+        queue->func = fn_1_BFB0;
         lbl_1_bss_2FDD = 0;
         break;
     }
@@ -356,14 +357,14 @@ void fn_1_C188(void) {
 
 // .text:0x0000BFB0 size:0x1D8
 void fn_1_BFB0(void) {
-    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
-    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 pressed = lbl_803C77B8._02;
+    u16 held = lbl_803C77B8._04;
     if (pressed & 0x100) {
         u16 effect = lbl_1_bss_3056 % 13 + lbl_1_data_17C4[lbl_1_bss_3056 / 13];
         fn_1_BF34(effect);
     } else if (pressed & 0x1200) {
         fn_1_A718();
-        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A348;
     } else if (held & 1) {
         if (held & 0x800) {
             lbl_1_bss_3056 -= 10;
@@ -405,34 +406,34 @@ void fn_1_BEF4(s16 voice) {
 
 // .text:0x0000BDD8 size:0x11C
 void fn_1_BDD8(void) {
-    u8* queue = ((u8*)lbl_803CC1B8);
+    ChTaskHeader* queue = lbl_803CC1B8;
     switch ((s32)lbl_1_bss_2FDE) {
     case 0: {
         s32 option;
-        u8* child;
-        *(s16*)(queue + 0x10) = 0;
+        ChSoundGroupTask* child;
+        queue->result = 0;
         option = lbl_1_data_1CA0[0] + 5;
         child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
-        child[0x18] = 0;
-        child[0x19] = option;
-        *(s32 (**)(void))(child + 0x14) = fn_1_A8B4;
-        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
+        child->step = 0;
+        child->group = option;
+        child->callback = fn_1_A8B4;
+        ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
         lbl_1_bss_2FDE++;
         break;
     }
     case 1:
-        if (*(s16*)(queue + 0x10) != 0) {
+        if (queue->result != 0) {
             if (lbl_1_data_1CA0[0] != 31) {
                 lbl_1_data_1CA0[0]++;
                 lbl_1_bss_2FDE = 0;
             } else {
-                *(s16*)(queue + 0x10) = 0;
+                queue->result = 0;
                 lbl_1_bss_2FDE++;
             }
         }
         break;
     case 2:
-        *(void (**)(void))queue = fn_1_BC00;
+        queue->func = fn_1_BC00;
         lbl_1_bss_2FDE = 0;
         break;
     }
@@ -440,14 +441,14 @@ void fn_1_BDD8(void) {
 
 // .text:0x0000BC00 size:0x1D8
 void fn_1_BC00(void) {
-    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
-    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 pressed = lbl_803C77B8._02;
+    u16 held = lbl_803C77B8._04;
     if (pressed & 0x100) {
         u16 effect = lbl_1_bss_3054 % 13 + lbl_1_data_17E8[lbl_1_bss_3054 / 13];
         fn_1_BF34(effect);
     } else if (pressed & 0x1200) {
         fn_1_A718();
-        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A348;
     } else if (held & 1) {
         if (held & 0x800) {
             lbl_1_bss_3054 -= 10;
@@ -556,8 +557,8 @@ void fn_1_B5B8(void) {
             }
         } else if (down & 0x1200) {
             fn_1_A718();
-            fn_800ACFB0(lbl_800EF808[0x2A]);
-            fn_800ACFB0(lbl_800EF808[2]);
+            fn_800ACFB0(lbl_800EF808.groups[0x29]);
+            fn_800ACFB0(lbl_800EF808.groups[0x1]);
             ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A348;
         } else if (repeat & 1) {
             if (lbl_1_bss_2FE1 == 0) {
@@ -617,29 +618,29 @@ void fn_1_B5B8(void) {
 
 // .text:0x0000B4A4 size:0x114
 void fn_1_B4A4(void) {
-    u8* queue = ((u8*)lbl_803CC1B8);
+    ChTaskHeader* queue = lbl_803CC1B8;
     switch ((s32)lbl_1_bss_2FE8) {
     case 0: {
-        u8* child;
-        *(s16*)(queue + 0x10) = 0;
+        ChSoundGroupTask* child;
+        queue->result = 0;
         child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
-        child[0x18] = 0;
-        child[0x19] = 0x2A;
-        *(s32 (**)(void))(child + 0x14) = fn_1_A7E4;
-        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
+        child->step = 0;
+        child->group = 0x2A;
+        child->callback = fn_1_A7E4;
+        ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
         lbl_1_bss_2FE8++;
         break;
     }
     case 1:
-        if (*(s16*)(queue + 0x10) != 0) {
-            ((u8*)lbl_800EF808)[0x396] = 2;
+        if (queue->result != 0) {
+            lbl_800EF808.soundMode = 2;
             sndOutputMode(SND_OUTPUTMODE_SURROUND);
-            *(s16*)(queue + 0x10) = 0;
+            queue->result = 0;
             lbl_1_bss_2FE8++;
         }
         break;
     case 2:
-        *(void (**)(void))queue = fn_1_A95C;
+        queue->func = fn_1_A95C;
         lbl_1_common_bss_49994.active = 0;
         lbl_1_bss_2FE8 = 0;
         break;
@@ -829,14 +830,14 @@ s32 fn_1_A8B4(void) {
 
 // .text:0x0000A880 size:0x34
 s32 fn_1_A880(void) {
-    fn_80021518(0x1C, lbl_800EF808[0x2]);
+    fn_80021518(0x1C, lbl_800EF808.groups[0x1]);
     return 0;
 }
 
 // .text:0x0000A838 size:0x48
 s32 fn_1_A838(void) {
-    fn_80021518(0x1C, lbl_800EF808[4]);
-    fn_80021518(0x36, lbl_800EF808[4]);
+    fn_80021518(0x1C, lbl_800EF808.groups[0x3]);
+    fn_80021518(0x36, lbl_800EF808.groups[0x3]);
     return 0;
 }
 
@@ -849,19 +850,19 @@ s32 fn_1_A7E4(void) {
 
 // .text:0x0000A7B0 size:0x34
 s32 fn_1_A7B0(void) {
-    fn_80021518(0x33, lbl_800EF808[0x32]);
+    fn_80021518(0x33, lbl_800EF808.groups[0x31]);
     return 0;
 }
 
 // .text:0x0000A77C size:0x34
 s32 fn_1_A77C(void) {
-    fn_80021518(0x31, lbl_800EF808[0x2A]);
+    fn_80021518(0x31, lbl_800EF808.groups[0x29]);
     return 0;
 }
 
 // .text:0x0000A718 size:0x64
 s32 fn_1_A718(void) {
-    s16 count = *(s8*)((u8*)lbl_800EF808 + 0x390);
+    s16 count = (s8)lbl_800EF808.groupStackCount;
     s8 remaining = count - 1;
     while (remaining > 0) {
         if (fn_800214D0() == 0) {
@@ -878,27 +879,27 @@ void fn_1_A714(void) {
 
 // .text:0x0000A634 size:0xE0
 void fn_1_A634(void) {
-    u8* queue = ((u8*)lbl_803CC1B8);
+    ChTaskHeader* queue = lbl_803CC1B8;
     switch ((s32)lbl_1_bss_2FEE) {
     case 0: {
-        u8* child;
-        *(s16*)(queue + 0x10) = 0;
+        ChSoundGroupTask* child;
+        queue->result = 0;
         child = fn_800B0A5C_insertQueue((void*)fn_1_9F04, 1);
-        child[0x18] = 0;
-        child[0x19] = 3;
-        *(s32 (**)(void))(child + 0x14) = fn_1_A838;
-        *(s16*)(((u8*)lbl_803CC1B8) + 0x10) = 0;
+        child->step = 0;
+        child->group = 3;
+        child->callback = fn_1_A838;
+        ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
         lbl_1_bss_2FEE++;
         break;
     }
     case 1:
-        if (*(s16*)(queue + 0x10) != 0) {
-            *(s16*)(queue + 0x10) = 0;
+        if (queue->result != 0) {
+            queue->result = 0;
             lbl_1_bss_2FEE++;
         }
         break;
     case 2:
-        *(void (**)(void))queue = fn_1_A464;
+        queue->func = fn_1_A464;
         lbl_1_bss_2FEE = 0;
         break;
     }
@@ -906,15 +907,15 @@ void fn_1_A634(void) {
 
 // .text:0x0000A464 size:0x1D0
 void fn_1_A464(void) {
-    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
-    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    u16 pressed = lbl_803C77B8._02;
+    u16 held = lbl_803C77B8._04;
     if (pressed & 0x100) {
         fn_1_BEF4((s16)lbl_1_data_1CA8);
         lbl_1_data_1CA8 = fn_1_BF34(lbl_1_data_1CA4);
     } else if (pressed & 0x1200) {
         fn_1_A718();
-        fn_800ACFB0(lbl_800EF808[4]);
-        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A348;
+        fn_800ACFB0(lbl_800EF808.groups[0x3]);
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A348;
     } else if (held & 1) {
         if (held & 0x800) {
             lbl_1_data_1CA4 -= 10;
@@ -938,8 +939,8 @@ void fn_1_A464(void) {
 
 // .text:0x0000A348 size:0x11C
 void fn_1_A348(void) {
-    u16 held = *(u16*)((u8*)&lbl_803C77B8 + 4);
-    u16 pressed = *(u16*)((u8*)&lbl_803C77B8 + 2);
+    u16 held = lbl_803C77B8._04;
+    u16 pressed = lbl_803C77B8._02;
     if (held & 8) {
         lbl_1_common_bss_49A78[0] = (lbl_1_common_bss_49A78[0] + 4) % 5;
         return;
@@ -949,14 +950,14 @@ void fn_1_A348(void) {
         return;
     }
     if (pressed & 0x100) {
-        *(void (**)(void))((u8*)lbl_803CC1B8) = lbl_1_data_1C8C[lbl_1_common_bss_49A78[0]];
+        ((ChTaskHeader*)lbl_803CC1B8)->func = lbl_1_data_1C8C[lbl_1_common_bss_49A78[0]];
         lbl_1_common_bss_49A78[1] = 0;
         return;
     }
     if (pressed & 0x1200) {
         lbl_1_bss_2FDA = 0;
         lbl_1_bss_2FD9 = 0;
-        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_C2A4;
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_C2A4;
     }
 }
 
@@ -970,7 +971,7 @@ void fn_1_A2E4(void) {
         lbl_1_bss_2FDA++;
         break;
     case 2:
-        *(void (**)(void))((u8*)lbl_803CC1B8) = fn_1_A250;
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_A250;
         break;
     }
 }

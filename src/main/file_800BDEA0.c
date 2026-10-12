@@ -70,6 +70,10 @@ static u8 sSKNPosNrmShift; // GQR6 scale used by the portable s16 skinning kerne
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #endif
 
+// Shadow state (.bss 0x803009F8). A non-static global also used by file_800BD8C4.c, so it is
+// not a common: this unit is built with -common off.
+ShadowState lbl_803009F8;
+
 void fn_800BE158(ShadowCamera* shadow, ShadowCamera* cam);
 void fn_800BE498(Mtx view, f32 width, f32 height, f32 near, f32 far, f32 depth);
 

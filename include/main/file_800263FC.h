@@ -435,7 +435,8 @@ typedef struct ParticleParamsE {
     /* 0x50 */ s32 phase1;
     /* 0x54 */ f32 size[3];
     /* 0x60 */ s32 alpha[3];
-} ParticleParamsE;
+    /* 0x6C */ s32 unk6C;
+} ParticleParamsE; // size: 0x70 (template: lbl_80108D48)
 
 // Streak particle (type 10): flies from start towards end in three eased
 // phases. A different view of a Particle pool entry.
@@ -657,12 +658,7 @@ void minigamesSetSomePointers(void);
 void minigamesSetSomePointers2(void);
 void fn_8003414C(Mtx view);
 
-// Owner of a run of sprites in lbl_80371C30.
-typedef struct SpaniGroup {
-    /* 0x00 */ u8 unk0[0x14];
-    /* 0x14 */ u16 baseIdx;
-    /* 0x16 */ u16 count;
-} SpaniGroup;
+#include "main/scene_task.h" // SpaniGroup
 
 // lbl_80371C30 entries.
 typedef struct SpaniSlot {
@@ -670,15 +666,10 @@ typedef struct SpaniSlot {
     /* 0x4 */ SpaniGroup* owner;
 } SpaniSlot;
 
-// Something that drives attached sprites (fn_80034BCC).
-typedef struct SpaniAttach {
-    /* 0x00 */ u8 unk0[0x64];
-    /* 0x64 */ MtxPtr mtx;
-    /* 0x68 */ u8 color[4];
-    /* 0x6C */ s16* key; // [0]: anim id, [1]: tag
-} SpaniAttach;
-
-s32 fn_80034BCC(SpaniAttach* a, Mtx unused); // a QuadCallback
+struct QuadState;
+// QuadCallback (main/file_8000BA3C.h): copies the quad's matrix and colour to the attached sprites
+// whose parent anim id and tag match q->path[0] and q->path[1].
+s32 fn_80034BCC(struct QuadState* q, Mtx unused);
 void fn_80034CEC(SpaniGroup* g);
 void fn_80034E20(SpaniGroup* g, SpaniDesc* descs);
 

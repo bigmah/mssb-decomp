@@ -1,5 +1,6 @@
 #include "main/file_80021308.h"
 #include "main/file_800B0724.h"
+#include "main/aramloader.h" // lbl_803C6CF8
 
 // Sound heap, disc/ARAM loader queue and sound group management.
 
@@ -12,15 +13,16 @@ extern DiskFileEntry lbl_800F1D68;
 extern DiskFileEntry lbl_800F1D78[];
 extern DiskFileEntry lbl_800F5D98[];
 extern SoundConfig lbl_800EFBB4;
-extern u8 lbl_80118740[];
-extern u8 lbl_80158740[];
-extern u8 lbl_8015C740[];
-extern u32 lbl_8017E320[];
+// .bss 0x80118740..0x8017EB40 (MWCC lays these out in reverse definition order).
+// static: main.dol's game code is built with -common on, which would make globals commons.
+static u32 lbl_8017E320[0x820 / 4];
+static u8 lbl_8015C740[0x21BE0];
+static u8 lbl_80158740[0x4000];
+static u8 lbl_80118740[0x40000];
 extern u16 lbl_803CB7E0[4];
 extern SND_HOOKS lbl_803CB7D8;
 extern u8* lbl_803CBC40;
 extern SoundLoadTask* lbl_803CC1B8;
-extern u8 lbl_803C6CF8[];           // TODO type: DVD/ARAM transfer state
 
 // TODO: these belong in their own units' headers.
 void* ARAMTransfer(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr);
@@ -42,7 +44,7 @@ u32 OSGetSoundMode(void);
 void OSSetSoundMode(u32 mode);
 void* memset(void* dst, int c, u32 n);
 
-#define DVD_STATE_IDLE (*(s8*)(lbl_803C6CF8 + 0x715)) // TODO type
+#define DVD_STATE_IDLE (lbl_803C6CF8.idle) // dvdsys loader idle flag
 
 // .data is defined before the code so mwcc can address it through one pooled base.
 DiskFileEntry lbl_800EFBE8[21] = {
@@ -2570,12 +2572,6 @@ void fn_80022D58(void) {
 }
 
 // ---- Data (initialisers generated from the original DOL) ----
-
-// .bss 0x80118740..0x8017EB40 (MWCC lays these out in reverse definition order)
-u32 lbl_8017E320[0x820 / 4];
-u8 lbl_8015C740[0x21BE0];
-u8 lbl_80158740[0x4000];
-u8 lbl_80118740[0x40000];
 
 // .sdata 0x803CB7D8..0x803CB7E8
 SND_HOOKS lbl_803CB7D8 = {fn_800213F8, fn_800213F4};

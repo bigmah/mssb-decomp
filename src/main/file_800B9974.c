@@ -4,6 +4,7 @@
 #include "Dolphin/os.h"
 #include "string.h"
 #include "stl/math.h"
+#include "main/file_800BDEA0.h" // fn_800BF068 (ShadowState)
 
 #pragma dont_inline on
 
@@ -25,14 +26,13 @@ extern char lbl_800E7EE4[]; // "Warning: DODefaultUserTevMode: Unknown user tev 
 extern char lbl_800E7F58[]; // "DOVARender: Invalid component count for normals %d\n"
 extern char lbl_800E7F8C[]; // "Display object id %d is greater than number of objects %d"
 
-extern void* lbl_803CBB58;      // must be non-NULL for the environment-map passes
+extern s32 lbl_803CBB58;        // nonzero: the environment-map passes are enabled
 extern f32 lbl_803CC1F8;         // environment map scroll (s)
 extern f32 lbl_803CC1FC;         // environment map scroll (t)
 extern const Vec lbl_800E7E78;
 extern GXColor lbl_803CCFF8;     // GXColor {0, 0, 0, 0x80} (bump-map TEVREG0)
 extern u8 fn_800BEBA0(void);
 extern MtxPtr fn_800BEB80(u8 index);
-extern void* fn_800BF068(void);
 extern void fn_800BF008(void);   // {0, 0, 1}
 extern char lbl_800E7F20[];      // "Warning: DisplayObject.c: User TevMode %d not handled.\n"
 extern DOShadowTevCallback lbl_803CC20C; // replaces the default shadow TEV stage
@@ -44,7 +44,6 @@ extern f32 lbl_80111750[][3];    // built-in normal table
 
 extern void* _OSAllocFromHeap(s32 align, s32 size);
 extern void fn_800ACFB0(void* ptr); // heap free
-extern void SKNLoadFile(void* sknHeader, void* skinPositions);
 
 // Geometry palette files store pointers as offsets from a base; turn one into a pointer (32-bit file format).
 #define GEO_RELOC(a, b) ((void*)((u32)(a) + (u32)(b)))
@@ -125,7 +124,7 @@ s32 fn_800B9AB0(u32 type, struct DODisplayObj* dispObj, DisplayStateList* state,
     f32 negHalf;
 
     src = GX_TG_NRM;
-    if (lbl_803CBB58 == NULL) {
+    if (lbl_803CBB58 == 0) {
         return -1;
     }
     if (dispObj == NULL || dispObj->lightingData == NULL || state == NULL) {
@@ -220,7 +219,7 @@ s32 fn_800B9EA8(u32 type, struct DODisplayObj* dispObj, DisplayStateList* state,
 
     up = lbl_800E7E78;
     src = GX_TG_NRM;
-    if (lbl_803CBB58 == NULL) {
+    if (lbl_803CBB58 == 0) {
         return -1;
     }
     if (dispObj == NULL || dispObj->lightingData == NULL || lbl_803CC1F0 == NULL || state == NULL) {
@@ -735,7 +734,7 @@ void Custom_SetState(struct DODisplayObj* dispObj, DisplayStateList* state, MtxP
 
     // Projected shadow texture.
     if (dispObj->shaderData != NULL && fn_800BEBA0() != 0 &&
-        (((u8*)fn_800BF068())[0x4C] & state->pad16)) { // TODO type
+        (fn_800BF068()->flags & state->pad16)) {
         PSMTXConcat(fn_800BEB80(fn_800BEBA0() - 1), dispObj->worldMatrix, shadowMtx);
         if (lbl_803CC20C != NULL) {
             lbl_803CC20C(shadowMtx, &stage, &coord, &map, &numTevStages, &numTexGens);
@@ -1803,7 +1802,7 @@ f32 lbl_80111750[254][3] = {
 };
 
 // .sdata 0x803CBB58..0x803CBB68
-void* lbl_803CBB58 = (void*)1; // TODO type: only ever tested against NULL (an enable flag)
+s32 lbl_803CBB58 = 1; // environment-map passes enabled
 u8 lbl_803CBB60 = 64; // NOTE: type size 0x1 != symbol size 0x8
 
 // .sbss 0x803CC1F0..0x803CC228 (MWCC lays these out in reverse definition order)

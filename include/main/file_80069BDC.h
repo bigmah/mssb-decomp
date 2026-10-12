@@ -4,6 +4,7 @@
 #include "mssbTypes.h"
 #include "game/UnknownHomes_Game.h"
 #include "main/file_80024184.h" // TexImage, TexArchive
+#include "main/scene_task.h"
 
 // Texture set used by the logo/warning screens is a TexArchive.
 typedef TexArchive TexSet;
@@ -20,40 +21,7 @@ typedef struct DrawNode {
     /*0x1C*/ f32 alpha2;
 } DrawNode; // size: 0x20
 
-// Loaded resource handle (freed with fn_800ACF14); data is the loaded file.
-typedef struct ResHandle {
-    /*0x0*/ void* data;
-} ResHandle;
-
-// Scene/task object pointed to by lbl_803CC1B8.
-typedef struct SceneTask {
-    /*0x00*/ void (*func)(void);
-    /*0x04*/ struct SceneTask* prev; // draw-queue links (fn_800B0A5C_insertQueue)
-    /*0x08*/ struct SceneTask* next;
-    /*0x0C*/ struct SceneTask* parent;
-    /*0x10*/ s16 _10;
-    /*0x12*/ u16 priority;
-    /*0x14*/ union {
-        ResHandle* res;
-        u16 objIdx;  // index into lbl_80371C30 (child tasks)
-        f32 rate;    // per-frame step (menus fn_2_A70 volume fade)
-    } u14;
-    /*0x18*/ DrawNode* nodes;
-    /*0x1C*/ void* player;
-    /*0x20*/ void* work;
-    /*0x24*/ void* buffer;
-    /*0x28*/ void* res28;
-    /*0x2C*/ u8 _2C[0x30 - 0x2C];
-    /*0x30*/ u32 voice;
-    /*0x34*/ s16 state;
-    /*0x36*/ u16 _36;
-    /*0x38*/ u8 _38;
-    /*0x39*/ u8 _39;
-    /*0x3A*/ u8 _3A;
-    /*0x3B*/ u8 _3B;
-    /*0x3C*/ s8 volStep;
-} SceneTask;
-
+// ResHandle, SceneTask: main/scene_task.h.
 extern SceneTask* lbl_803CC1B8;
 
 // Raw input for the stat-total calculation (cleared with memset size 0x16).
@@ -92,7 +60,7 @@ typedef struct ChallengeState {
     /*0x43BC*/ s16 _43BC; // 0..1000
     /*0x43BE*/ u8 _43BE[0x43C0 - 0x43BE];
     /*0x43C0*/ s16 _43C0; // scout-flag character of the current star chance
-    /*0x43C2*/ u8 _43C2[0x43D6 - 0x43C2];
+    /*0x43C2*/ s8 _43C2[0x43D6 - 0x43C2];
     /*0x43D6*/ u8 _43D6[0x36]; // per character id (fn_3_12A910: star icon shown)
     /*0x440C*/ u8 _440C[0x4415 - 0x440C];
     /*0x4415*/ u8 _4415;
@@ -111,7 +79,9 @@ typedef struct ChallengeState {
     /*0x444B*/ s8 _444B; // -1: none
     /*0x444C*/ u8 _444C;
     /*0x444D*/ u8 _444D[54];
-    /*0x4483*/ u8 _4483[0x44F1 - 0x4483];
+    /*0x4483*/ u8 _4483[0x44EF - 0x4483];
+    /*0x44EF*/ s8 _44EF;
+    /*0x44F0*/ s8 _44F0;
     /*0x44F1*/ u8 _44F1;
 } ChallengeState;
 

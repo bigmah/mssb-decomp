@@ -9,6 +9,8 @@
 #include "main/file_8000F150.h"
 #include "C3/control.h"
 #include "stl/math.h"
+#include "challenge/rep_0010.h" // ChTaskHeader, lbl_803CC1B8
+#include "challenge/rep_7978.h" // ChallengeDebugCamera
 
 // POOL BEGIN (high-to-low; memory order is the reverse)
 static Mtx44 lbl_1_bss_47010;
@@ -28,7 +30,7 @@ static void* lbl_1_bss_6FA4[1];
 static GXTexObj lbl_1_bss_6EA4[8];
 static GXTlutObj lbl_1_bss_6E44[8];
 static u32 lbl_1_bss_6E24[8];
-static u8 lbl_1_bss_6D48[0xDC];
+static ChallengeDebugCamera lbl_1_bss_6D48;
 static ChallengeProjectionState lbl_1_bss_6BF4;
 static f32 lbl_1_bss_6BE4[4];
 static ActorObjectTable* lbl_1_bss_6BE0[1];
@@ -39,7 +41,6 @@ extern void fn_1_20BD8(void);
 
 extern void fn_1_246AC(void);
 
-extern u8* lbl_803CC1B8[];
 
 
 
@@ -48,11 +49,9 @@ extern void fn_80037B18(void* rb, Vec* force, f32 unused);
 extern void fn_1_1DA54(void);
 
 extern const f32 lbl_1_rodata_77E4;
-extern void fn_1_272DC(void*, s32);
-extern void fn_1_AF4(s32, s32, f32);
 
 
-extern u8 lbl_803C6CF8[];
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 extern const f32 lbl_1_rodata_77D8;
 extern const f32 lbl_1_rodata_7804;
 extern const f32 lbl_1_rodata_7858;
@@ -78,28 +77,16 @@ extern void fn_1_2004C(void);
 extern s32 fn_80035DD4(s32);
 extern void fn_80034E20(void* group, void* desc);
 extern void fn_1_267BC(void);
-extern u8 lbl_803C4BE0[];
+extern ChallengeTexSlot lbl_803C4BE0[]; // SpaniTexSlot[] in main (main/file_80034F50.h)
 extern char lbl_1_rodata_78F0[];
 extern char lbl_1_rodata_78F8[];
 
-typedef struct {
-    void* link;            // draw-list link (set by fn_800A7D4C)
-    void (*draw)(u8* obj);
-    u32 flags;
-    void* data;
-    void* table;
-    u16 width;
-    u16 height;
-    u8 active;
-    u8 pad19[3];
-} ChallengeAnimEntry;
 
 extern u8 lbl_803CBBC0[];
 extern void fn_800A7D4C(s32, void*);
 
 extern void fn_80038B48(void*, void*, u8, Vec*);
 
-extern void fn_1_273D8(void*);
 extern void fn_1_1F05C(void);
 
 extern const f64 lbl_1_rodata_7878;
@@ -115,8 +102,6 @@ extern const f32 lbl_1_rodata_7808[];
 extern const f32 lbl_1_rodata_78C4[];
 extern const f32 lbl_1_rodata_78C8[];
 
-extern void fn_1_26D28(void*, u16, u16, u16, void*);
-extern void fn_1_27330(void*);
 extern s32 fn_80037BAC(void*);
 
 typedef struct {
@@ -291,8 +276,8 @@ static Vec lbl_1_data_104D0 = {0.125f, 0.125f, 0.125f};
 static u32 lbl_1_data_104DC[6] = {0xFF8080FF, 0x80FF80FF, 0x8080FFFF, 0xFFFF80FF, 0xFF80FFFF, 0x80FFFFFF};
 static ChAramAsset lbl_1_data_104F4 = {0x0000040B, 0x40000528, 0x09438800, 0x00000424};
 static f32 s10504 = 0.125f;
-static void (*lbl_1_data_10508[2])(u8*) = {(void (*)(u8*))fn_1_1FD78, fn_1_1F418};
-static void (*lbl_1_data_10510[2])(u8*) = {(void (*)(u8*))fn_1_1F900, (void (*)(u8*))fn_1_1F618};
+static void (*lbl_1_data_10508[2])(ChallengeTextureStages*) = {fn_1_1FD78, fn_1_1F418};
+static void (*lbl_1_data_10510[2])(ChallengeTextureStages*) = {fn_1_1F900, fn_1_1F618};
 static ChAramAsset lbl_1_data_10518[21] = {
     {0x0000040B, 0x40168A6C, 0x06CFD000, 0x000C69A8},
     {0x0000040B, 0x401331E0, 0x06DC4000, 0x000B67C4},
@@ -395,11 +380,10 @@ static inline void updateRopeObjects(ChallengeCurvePoint* points, s32 count, Mtx
 extern const f32 lbl_1_rodata_7894;
 extern const f32 lbl_1_rodata_7898;
 
-#define CHALLENGE_PAD_TRIGGER (*(u16*)((u8*)&lbl_803C77B8 + 4)) // TODO type: lbl_803C77B8_s lacks the 0x04 field
+#define CHALLENGE_PAD_TRIGGER (lbl_803C77B8._04)
 
 extern const f32 lbl_1_rodata_77FC;
 
-extern void fn_1_F2C(s32, s32, s32);
 
 extern const f32 lbl_1_rodata_78A4;
 extern const f32 lbl_1_rodata_78D4;
@@ -488,7 +472,7 @@ extern const f32 lbl_1_rodata_78D0;
 extern const f32 lbl_1_rodata_786C;
 extern const f64 lbl_1_rodata_7870;
 
-#define CHALLENGE_PAD_STICK_Y (((u8*)&lbl_803C77B8)[0x15]) // TODO type: lbl_803C77B8_s lacks the 0x15 field
+#define CHALLENGE_PAD_STICK_Y (lbl_803C77B8.triggerR)
 
 #include "Dolphin/mtxext.h"
 
@@ -555,7 +539,7 @@ extern const f32 lbl_1_rodata_78E4;
 extern const f32 lbl_1_rodata_78E8;
 extern const f32 lbl_1_rodata_78EC;
 
-#define CHALLENGE_TEX_SLOTS ((ChallengeTexSlot*)lbl_803C4BE0) // TODO type: lbl_803C4BE0 is SpaniTexSlot[] in main
+#define CHALLENGE_TEX_SLOTS lbl_803C4BE0
 #define CHALLENGE_SPRITE_OBJ(q) (lbl_80371C30[(q)->sprite->slot].obj)
 
 // .text:0x00026A34 size:0xC4
@@ -576,31 +560,31 @@ void fn_1_26A34(void) {
 
 // .text:0x00026928 size:0x10C
 void fn_1_26928(void) {
-    u8* queue = lbl_803CC1B8[0];
-    u16 repeated = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    ChallengeSpriteViewer* queue = (ChallengeSpriteViewer*)lbl_803CC1B8;
+    u16 repeated = lbl_803C77B8._04;
     if (repeated & 2) {
-        queue[0x20]++;
-        if (queue[0x20] == queue[0x1F]) {
-            queue[0x20] = 0;
+        queue->screen++;
+        if (queue->screen == queue->screenCount) {
+            queue->screen = 0;
         }
     } else if (repeated & 1) {
-        if (queue[0x20] == 0) {
-            queue[0x20] = queue[0x1F];
+        if (queue->screen == 0) {
+            queue->screen = queue->screenCount;
         }
-        queue[0x20]--;
+        queue->screen--;
     } else {
         u16 pressed = lbl_803C77B8._02;
         if (pressed & 0x100) {
-            queue[0x1E] = 0;
-            *(void (**)(void))lbl_803CC1B8[0] = fn_1_267F4;
+            queue->step = 0;
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_267F4;
         } else if (pressed & 0x200) {
             ChallengeTransfer* transfer;
             fn_800AD038(lbl_80366158[2]);
-            transfer = *(ChallengeTransfer**)(lbl_803CC1B8[0] + 0x0C);
+            transfer = (ChallengeTransfer*)((ChTaskHeader*)lbl_803CC1B8)->parent;
             transfer->complete = 1;
             fn_800B0A14_removeQueue(transfer);
         } else if (pressed & 0x1000) {
-            *(void (**)(void))queue = fn_1_25C68;
+            queue->func = fn_1_25C68;
         }
     }
     fn_800B24D4(4);
@@ -609,32 +593,32 @@ void fn_1_26928(void) {
 
 // .text:0x000267F4 size:0x134
 void fn_1_267F4(void) {
-    u8* queue = lbl_803CC1B8[0];
-    switch (queue[0x1E]) {
+    ChallengeSpriteViewer* queue = (ChallengeSpriteViewer*)lbl_803CC1B8;
+    switch (queue->step) {
     case 0:
-        if (fn_80035838(&lbl_1_data_FB98[queue[0x20]], 0) != 0) {
-            queue[0x1E] = queue[0x1E] + 1;
+        if (fn_80035838(&lbl_1_data_FB98[queue->screen], 0) != 0) {
+            queue->step = queue->step + 1;
         }
         break;
     case 1: {
         s32 index;
-        u8* entry;
-        *(u8**)(queue + 0x14) = fn_800B0A5C_insertQueue((void*)fn_1_267BC, 1);
-        *(s16*)(*(u8**)(queue + 0x14) + 0x10) = 0;
+        ChallengeTexSlot* entry;
+        queue->sprite = fn_800B0A5C_insertQueue((void*)fn_1_267BC, 1);
+        queue->sprite->done = 0;
         index = fn_80035DD4(0);
         if (index == -1) {
             OSPanic(lbl_1_rodata_78F0, 0xF5, lbl_1_rodata_78F8);
         }
-        entry = lbl_803C4BE0;
-        entry += index * 0x3C;
-        *(s16*)(queue + 0x18) = **(s32**)(*(u8**)(entry + 0x38) + 8);
-        fn_80034E20(*(u8**)(queue + 0x14), &lbl_1_data_10344);
-        queue[0x21] = 0;
-        queue[0x22] = 0;
-        queue[0x24] = 0;
-        *(s16*)(queue + 0x1A) = 0;
-        *(s16*)(queue + 0x1C) = 0;
-        *(void (**)(void))lbl_803CC1B8[0] = fn_1_25F98;
+        entry = CHALLENGE_TEX_SLOTS;
+        entry += index;
+        queue->trackCount = entry->anim->table->count;
+        fn_80034E20(queue->sprite, &lbl_1_data_10344);
+        queue->track = 0;
+        queue->cursor = 0;
+        queue->frame = 0;
+        queue->x = 0;
+        queue->y = 0;
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_25F98;
         break;
     }
     }
@@ -642,8 +626,8 @@ void fn_1_267F4(void) {
 
 // .text:0x000267BC size:0x38
 void fn_1_267BC(void) {
-    if (*(s16*)(lbl_803CC1B8[0] + 0x10) != 0) {
-        fn_800B0A14_removeQueue(lbl_803CC1B8[0]);
+    if (((ChTaskHeader*)lbl_803CC1B8)->result != 0) {
+        fn_800B0A14_removeQueue((u8*)lbl_803CC1B8);
     }
 }
 
@@ -651,7 +635,7 @@ void fn_1_267BC(void) {
 // .text:0x25F98 size:0x824
 #if NONMATCHING
 void fn_1_25F98(void) {
-    ChallengeSpriteViewer* q = (ChallengeSpriteViewer*)lbl_803CC1B8[0];
+    ChallengeSpriteViewer* q = (ChallengeSpriteViewer*)lbl_803CC1B8;
     AnimFrame frame;
     ChallengeMtxBox mtx;
     ChallengeTexSlot* bank;
@@ -775,7 +759,7 @@ void fn_1_25F98(void) {
     if (lbl_803C77B8._02 & 0x1000) {
         fn_80034CEC(q->sprite);
         q->sprite->done = 1;
-        *(void (**)(void))lbl_803CC1B8[0] = fn_1_26928;
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_26928;
         fn_80035A00();
     }
 
@@ -826,7 +810,7 @@ void fn_1_25F98(void) {
 // .text:0x25C68 size:0x330
 #if NONMATCHING
 void fn_1_25C68(void) {
-    u8* q = lbl_803CC1B8[0];
+    ChallengePathTest* q = (ChallengePathTest*)lbl_803CC1B8;
     GXColor clear;
 
     *(u32*)&clear = 0;
@@ -835,21 +819,21 @@ void fn_1_25C68(void) {
         (&lbl_1_rodata_77E4)[0], lbl_1_rodata_7868);
     C_MTXLookAt(lbl_1_bss_43F38, &sCamPos, &sCamUp,
         &sCamTarget);
-    *(u16*)(q + 0x18) = lbl_1_rodata_78A4 * sCamWidth;
-    *(u16*)(q + 0x1C) = lbl_1_rodata_78A4 * sCamHeight;
-    *(u16*)(q + 0x1A) = sCam8D8;
-    *(u16*)(q + 0x1E) = 0x20;
-    q[0x2A] = sCam8DC;
-    *(u16*)(q + 0x22) = 10;
-    q[0x2B] = 20;
-    *(u16*)(q + 0x20) = lbl_1_rodata_78A4 * sCam8E4;
-    *(u16*)(q + 0x24) = lbl_1_rodata_78A4 * sCam8E0;
-    *(f32*)(q + 0x14) = lbl_1_rodata_7814[0];
-    *(u16*)(q + 0x26) = 100;
-    *(u16*)(q + 0x28) = 10;
+    q->param2 = lbl_1_rodata_78A4 * sCamWidth;
+    q->param3 = lbl_1_rodata_78A4 * sCamHeight;
+    q->param0 = sCam8D8;
+    q->param4 = 0x20;
+    q->steps = sCam8DC;
+    q->force = 10;
+    q->count = 20;
+    q->param5 = lbl_1_rodata_78A4 * sCam8E4;
+    q->mass = lbl_1_rodata_78A4 * sCam8E0;
+    q->param1 = lbl_1_rodata_7814[0];
+    q->unk26 = 100;
+    q->unk28 = 10;
     fn_1_24A8C();
-    *(void (**)(void))lbl_803CC1B8[0] = fn_1_25064;
-    q[0x2C] = 0;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_25064;
+    q->cursor = 0;
 }
 #endif
 
@@ -858,7 +842,7 @@ void fn_1_25C68(void) {
 // nmverify: fn_1_248BC inlined on one side (calls match once expanded)
 #if NONMATCHING
 void fn_1_25064(void) {
-    ChallengePathTest* q = (ChallengePathTest*)lbl_803CC1B8[0];
+    ChallengePathTest* q = (ChallengePathTest*)lbl_803CC1B8;
     s32 big;
     s32 small;
     s32 i;
@@ -996,7 +980,7 @@ void fn_1_25064(void) {
 
         *(u32*)&clearColor = 0x11775500;
         GXSetCopyClear(clearColor, 0xFFFFFF);
-        transfer = ((ChallengePathTest*)lbl_803CC1B8[0])->transfer;
+        transfer = ((ChallengePathTest*)lbl_803CC1B8)->transfer;
         transfer->complete = 1;
         fn_800B0A14_removeQueue(transfer);
     }
@@ -1022,7 +1006,7 @@ void fn_1_25064(void) {
 
 // .text:0x24C4C size:0x418
 void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f32 damping, f32 restLen, f32 dtScale) {
-    u8* q = lbl_803CC1B8[0];
+    ChallengePathTest* q = (ChallengePathTest*)lbl_803CC1B8;
     f32 drag;
     s32 k;
     ChallengeRopeNode* node;
@@ -1056,7 +1040,7 @@ void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f3
         if (speed != lbl_1_rodata_77D8) {
             PSVECScale(&node->vel, drag, &d);
             PSVECNormalize(&d, &d);
-            PSVECScale(&d, (*(u16*)(q + 0x20) / lbl_1_rodata_78C8[0]) * (speed * speed), &d);
+            PSVECScale(&d, (q->param5 / lbl_1_rodata_78C8[0]) * (speed * speed), &d);
             PSVECAdd(&node->force, &d, &node->force);
         }
         if (first != lbl_1_rodata_77D8) {
@@ -1089,9 +1073,9 @@ void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f3
     k = count;
     while (k-- != 0) {
         node = &nodes[k];
-        if (node->fixed == 0 && node->pos.y <= *(u16*)(q + 0x28) / lbl_1_rodata_78D0
+        if (node->fixed == 0 && node->pos.y <= q->unk28 / lbl_1_rodata_78D0
             && lbl_1_rodata_77D8 != PSVECMag(&node->vel)) {
-            coef = *(u16*)(q + 0x1E) * lbl_1_rodata_78C4[0];
+            coef = q->param4 * lbl_1_rodata_78C4[0];
             friction = coef * node->force.y;
             if (friction < lbl_1_rodata_77D8) {
                 friction = -friction;
@@ -1116,18 +1100,18 @@ void fn_1_24C4C(ChallengeRopeNode* nodes, s32 count, Vec* force, f32 springK, f3
 // .text:0x24A8C size:0x1C0
 #if NONMATCHING
 void fn_1_24A8C(void) {
-    u8* q = lbl_803CC1B8[0];
+    ChallengePathTest* q = (ChallengePathTest*)lbl_803CC1B8;
     s32 n;
     f32 t;
 
     fn_80038E2C(&lbl_1_bss_45868);
-    lbl_1_bss_45868.params[0] = *(u16*)(q + 0x1A);
-    lbl_1_bss_45868.params[1] = *(f32*)(q + 0x14);
-    lbl_1_bss_45868.params[2] = *(u16*)(q + 0x18) * lbl_1_rodata_78C4[0];
-    lbl_1_bss_45868.params[3] = *(u16*)(q + 0x1C) * lbl_1_rodata_78C4[0];
-    lbl_1_bss_45868.params[4] = *(u16*)(q + 0x1E) * lbl_1_rodata_78C4[0];
-    lbl_1_bss_45868.params[5] = *(u16*)(q + 0x20) / lbl_1_rodata_78C8[0];
-    n = q[0x2A];
+    lbl_1_bss_45868.params[0] = q->param0;
+    lbl_1_bss_45868.params[1] = q->param1;
+    lbl_1_bss_45868.params[2] = q->param2 * lbl_1_rodata_78C4[0];
+    lbl_1_bss_45868.params[3] = q->param3 * lbl_1_rodata_78C4[0];
+    lbl_1_bss_45868.params[4] = q->param4 * lbl_1_rodata_78C4[0];
+    lbl_1_bss_45868.params[5] = q->param5 / lbl_1_rodata_78C8[0];
+    n = q->steps;
     lbl_1_bss_45868.steps = n;
     t = (&lbl_1_rodata_77E4)[0] / (f32)n;
     lbl_1_bss_45868.step = t;
@@ -1136,7 +1120,7 @@ void fn_1_24A8C(void) {
     if (lbl_803C77B8._00 & 0x40) {
         lbl_1_bss_45868.steps = 1;
     }
-    fn_80038CD0(q[0x2B], &lbl_1_bss_45868, lbl_1_bss_43F68, lbl_1_rodata_7808[0], *(u16*)(q + 0x24) * lbl_1_rodata_78C4[0]);
+    fn_80038CD0(q->count, &lbl_1_bss_45868, lbl_1_bss_43F68, lbl_1_rodata_7808[0], q->mass * lbl_1_rodata_78C4[0]);
 }
 #endif
 
@@ -1184,42 +1168,42 @@ void fn_1_248BC(s32 count) {
 
 // .text:0x247A0 size:0x11C
 void fn_1_247A0(void) {
-    u8* q = lbl_803CC1B8[0];
-    u16 speed = *(u16*)(q + 0x22);
+    ChallengePathTest* q = (ChallengePathTest*)lbl_803CC1B8;
+    u16 speed = q->force;
     Vec v;
 
-    v.x = speed * ((s8)((u8*)&lbl_803C77B8)[0x10] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
-    v.y = speed * ((s8)((u8*)&lbl_803C77B8)[0x13] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
-    v.z = speed * ((s8)((u8*)&lbl_803C77B8)[0x11] * lbl_1_bss_43F68[q[0x2B] - 1].scale);
-    fn_80038B48(&lbl_1_bss_45868, lbl_1_bss_43F68, q[0x2B], &v);
+    v.x = speed * (lbl_803C77B8.stickX * lbl_1_bss_43F68[q->count - 1].scale);
+    v.y = speed * (lbl_803C77B8.substickY * lbl_1_bss_43F68[q->count - 1].scale);
+    v.z = speed * (lbl_803C77B8.stickY * lbl_1_bss_43F68[q->count - 1].scale);
+    fn_80038B48(&lbl_1_bss_45868, lbl_1_bss_43F68, q->count, &v);
 }
 
 // .text:0x00024778 size:0x28
 void fn_1_24778(void) {
-    lbl_803CC1B8[0][0x14] = 0;
-    *(void (**)(void))lbl_803CC1B8[0] = fn_1_246AC;
+    ((ChallengeTestMenu*)lbl_803CC1B8)->cursor = 0;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_246AC;
 }
 
 // .text:0x000246AC size:0xCC
 void fn_1_246AC(void) {
-    u8* queue = lbl_803CC1B8[0];
-    u16 repeated = *(u16*)((u8*)&lbl_803C77B8 + 4);
+    ChallengeTestMenu* queue = (ChallengeTestMenu*)lbl_803CC1B8;
+    u16 repeated = lbl_803C77B8._04;
     if (repeated & 8) {
-        if (queue[0x14] == 0) {
-            queue[0x14] = 4;
+        if (queue->cursor == 0) {
+            queue->cursor = 4;
         }
-        queue[0x14]--;
+        queue->cursor--;
     } else if (repeated & 4) {
-        queue[0x14]++;
-        if (queue[0x14] == 4) {
-            queue[0x14] = 0;
+        queue->cursor++;
+        if (queue->cursor == 4) {
+            queue->cursor = 0;
         }
     } else {
         u16 pressed = lbl_803C77B8._02;
         if (pressed & 0x100) {
-            *(void (**)(void))queue = lbl_1_data_104A8[queue[0x14]];
+            queue->h.func = lbl_1_data_104A8[queue->cursor];
         } else if (pressed & 0x200) {
-            ChallengeTransfer* transfer = *(ChallengeTransfer**)(queue + 0x0C);
+            ChallengeTransfer* transfer = (ChallengeTransfer*)queue->h.parent;
             transfer->complete = 1;
             fn_800B0A14_removeQueue(transfer);
         }
@@ -1228,7 +1212,7 @@ void fn_1_246AC(void) {
 
 // .text:0x24410 size:0x29C
 void fn_1_24410(void) {
-    u8* q = lbl_803CC1B8[0];
+    ChallengeWaveState* q = (ChallengeWaveState*)lbl_803CC1B8;
     s32 i;
     s32 j;
 
@@ -1236,34 +1220,34 @@ void fn_1_24410(void) {
     lbl_1_bss_43EE0.unk30 = 0;
     lbl_1_bss_43EE0.unk38 = (&lbl_1_rodata_77D8)[0];
     lbl_1_bss_43EE0.unk32 = 0;
-    q[0x27] = 0x40;
-    q[0x29] = 0x40;
-    q[0x28] = 0x40;
-    q[0x2A] = 0;
-    *(f32*)(q + 0x14) = lbl_1_rodata_78AC;
-    *(f32*)(q + 0x18) = lbl_1_rodata_78B0;
-    *(u16*)(q + 0x24) = 0;
-    *(f32*)(q + 0x1C) = lbl_1_rodata_78B4;
-    *(f32*)(q + 0x20) = lbl_1_rodata_78B8;
-    q[0x2B] = 1;
+    q->lines = 0x40;
+    q->rows = 0x40;
+    q->cols = 0x40;
+    q->freeze = 0;
+    q->farZ = lbl_1_rodata_78AC;
+    q->nearZ = lbl_1_rodata_78B0;
+    q->frame = 0;
+    q->impulse = lbl_1_rodata_78B4;
+    q->unk20 = lbl_1_rodata_78B8;
+    q->waveOn = 1;
     for (i = 0; i < 0x80; i++) {
         lbl_1_bss_74E0[i] = cos(lbl_1_rodata_78BC * (lbl_1_rodata_780C * ((f32)i * lbl_1_rodata_78C0)));
     }
-    q[0x2C] = 0;
+    q->buffer = 0;
     memset(lbl_1_bss_76E0, 0, sizeof(lbl_1_bss_76E0));
     for (j = 0; j < 0x20; j++) {
         i = rand() % 32 * 128;
         i += rand() % 128;
         lbl_1_bss_76E0[0][i] = lbl_1_rodata_77E4;
     }
-    *(void (**)(void))lbl_803CC1B8[0] = fn_1_23B54;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_23B54;
 }
 
 // NONMATCHING 90%: inherits fn_1_22F4C's indexing mismatch (inlined), and the height lookup uses lfs/add instead of lfsx
 // .text:0x23B54 size:0x8BC
 #if NONMATCHING
 void fn_1_23B54(void) {
-    ChallengeWaveState* q = (ChallengeWaveState*)lbl_803CC1B8[0];
+    ChallengeWaveState* q = (ChallengeWaveState*)lbl_803CC1B8;
     s32 i;
     s32 c;
     s32 r;
@@ -1385,7 +1369,7 @@ void fn_1_23B54(void) {
             q->cursor = 0;
         }
     } else if (lbl_803C77B8._02 & 0x200) {
-        ((ChallengeWaveState*)lbl_803CC1B8[0])->func = fn_1_24778;
+        ((ChallengeWaveState*)lbl_803CC1B8)->func = fn_1_24778;
     } else if (CHALLENGE_PAD_TRIGGER & 0x100) {
         for (i = 0; i < 16; i++) {
             row = rand() % 32;
@@ -1756,7 +1740,7 @@ void fn_1_22DF4(ChallengeCurveDrawing* arg) {
 // .text:0x22874 size:0x580
 #if NONMATCHING
 s32 fn_1_22874(ChallengeCurveDrawing* unused) {
-    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
+    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8;
     s32 speed;
     f32 fine;
     f32 step;
@@ -1920,26 +1904,26 @@ s32 fn_1_22874(ChallengeCurveDrawing* unused) {
 
 // .text:0x22644 size:0x230
 void fn_1_22644(void) {
-    u8* q = lbl_803CC1B8[0];
+    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8;
 
     fn_800AD038(lbl_80366158[2]);
-    q[0x25] = 0;
-    fn_1_22DF4((ChallengeCurveDrawing*)lbl_803CC1B8[0]);
+    q->unk25 = 0;
+    fn_1_22DF4((ChallengeCurveDrawing*)lbl_803CC1B8);
     fn_1_23AD8(lbl_1_bss_47010, &lbl_1_bss_43EE0.camera, &lbl_1_bss_43EE0.target);
-    *(void (**)(void))lbl_803CC1B8[0] = fn_1_225B8;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_225B8;
 }
 
 // .text:0x225B8 size:0x8C
 void fn_1_225B8(void) {
-    u8* queue = lbl_803CC1B8[0];
-    switch ((s32)queue[0x25]) {
+    ChallengeCurveDrawing* queue = (ChallengeCurveDrawing*)lbl_803CC1B8;
+    switch ((s32)queue->unk25) {
     case 0:
         fn_1_20DC8();
-        queue[0x25]++;
+        queue->unk25++;
         break;
     case 1:
-        if (*(s16*)(queue + 0x10) != 0) {
-            *(void (**)(void))queue = fn_1_21408;
+        if (queue->result != 0) {
+            queue->func = fn_1_21408;
         }
         break;
     }
@@ -1947,12 +1931,12 @@ void fn_1_225B8(void) {
 
 // .text:0x21CE8 size:0x8D0
 void fn_1_21CE8(void) {
-    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
+    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8;
 
     if (fn_1_22874(q) != 0 || (lbl_803C77B8._02 & 0x100)) {
         fn_1_21180(q);
     } else if (lbl_803C77B8._02 & 0x200) {
-        *(void (**)(void))lbl_803CC1B8[0] = fn_1_21408;
+        ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_21408;
     }
     fn_1_21CE8_moveRope(q);
     fn_1_21CE8_setupDraw();
@@ -1965,15 +1949,15 @@ void fn_1_21CE8(void) {
 // .text:0x21408 size:0x8E0
 #if NONMATCHING
 void fn_1_21408(void) {
-    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8[0];
+    ChallengeCurveDrawing* q = (ChallengeCurveDrawing*)lbl_803CC1B8;
 
     if (lbl_803C77B8._02 & 0x1000) {
-        *(void (**)(void))q = fn_1_21CE8;
+        q->func = fn_1_21CE8;
     } else if (lbl_803C77B8._02 & 0x100) {
         fn_1_21180(q);
     } else if (lbl_803C77B8._02 & 0x200) {
         lbl_1_bss_6BE0[0] = NULL;
-        *(void (**)(void))q = fn_1_24778;
+        q->func = fn_1_24778;
     }
     fn_1_121D4((u8*)&lbl_1_bss_43EE0);
     fn_1_21CE8_moveRope(q);
@@ -2088,17 +2072,17 @@ void fn_1_21040(void) {
 
 // .text:0x00020F8C size:0xB4
 void fn_1_20F8C(void) {
-    s16 phase = *(s16*)(lbl_803CC1B8[0] + 0x10);
-    ChallengeTransfer* transfer = *(ChallengeTransfer**)(lbl_803CC1B8[0] + 0x0C);
+    s16 phase = ((ChTaskHeader*)lbl_803CC1B8)->result;
+    ChallengeTransfer* transfer = (ChallengeTransfer*)((ChTaskHeader*)lbl_803CC1B8)->parent;
     switch (phase) {
     case 0:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             transfer->data = (void*)ARAMTransfer(&lbl_1_data_104F4, 0, 0, 0);
-            (*(s16*)(lbl_803CC1B8[0] + 0x10))++;
+            (((ChTaskHeader*)lbl_803CC1B8)->result)++;
         }
         break;
     case 1:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             transfer->complete = 1;
         }
         break;
@@ -2108,7 +2092,7 @@ void fn_1_20F8C(void) {
 // NONMATCHING 99.8%: LITInitPos: orig `lis r3,7840; lis r4,6FA4; addi r3,r4` (float const lis first), ours swaps r3/r4
 // .text:0x20E00 size:0x18C
 #if NONMATCHING
-void fn_1_20E00(u8* obj) {
+void fn_1_20E00(ChallengeModelLoadTask* obj) {
     ChallengeLightColor color = lbl_1_rodata_77B0;
     u8* data;
     u16 i;
@@ -2120,7 +2104,7 @@ void fn_1_20E00(u8* obj) {
     LITInitPos(lbl_1_bss_6FA4[0], lbl_1_rodata_7840, lbl_1_rodata_7840, lbl_1_rodata_7840);
     LITInitDir(lbl_1_bss_6FA4[0], 0.0f, 0.0f, 0.0f);
     LITInitColor(lbl_1_bss_6FA4[0], LIT_COLOR(color));
-    data = *(u8**)(obj + 0x14);
+    data = obj->data;
     layout = data + ((s32*)data)[0];
     geo = data + ((s32*)data)[1];
     lbl_1_bss_6BE0[0] = ActorObjectInitTable(20);
@@ -2137,29 +2121,29 @@ void fn_1_20E00(u8* obj) {
 
 // .text:0x00020DC8 size:0x38
 void fn_1_20DC8(void) {
-    u8* object = fn_800B0A5C_insertQueue((void*)fn_1_20BD8, 1);
-    object[0x25] = 0;
-    *(s16*)(object + 0x10) = 0;
+    ChallengeModelLoadTask* object = fn_800B0A5C_insertQueue((void*)fn_1_20BD8, 1);
+    object->step = 0;
+    object->h.result = 0;
 }
 
 // NONMATCHING 99.8%: same LITInitPos r3/r4 swap as fn_1_20E00 (inlined here)
 // .text:0x20BD8 size:0x1F0
 #if NONMATCHING
 void fn_1_20BD8(void) {
-    u8* q = lbl_803CC1B8[0];
-    u8* object;
+    ChallengeModelLoadTask* q = (ChallengeModelLoadTask*)lbl_803CC1B8;
+    ChTaskHeader* object;
 
-    switch (q[0x25]) {
+    switch (q->step) {
     case 0:
         object = fn_800B0A5C_insertQueue((void*)fn_1_20F8C, 1);
-        *(s16*)(object + 0x10) = 0;
-        q[0x25]++;
+        object->result = 0;
+        q->step++;
         break;
     case 1:
-        if (*(s16*)(q + 0x10) != 0) {
+        if (q->h.result != 0) {
             fn_1_20E00(q);
-            object = *(u8**)(q + 0xC);
-            *(s16*)(object + 0x10) = 1;
+            object = q->h.parent;
+            object->result = 1;
             fn_800B0A14_removeQueue(object);
         }
         break;
@@ -2295,13 +2279,13 @@ s32 fn_1_2051C(ChallengeTextureHeader* texture, GXTexObj* object, GXTlutObj* pal
 // .text:0x0002040C size:0x110
 void fn_1_2040C(void) {
     Mtx identity;
-    u8* queue = lbl_803CC1B8[0];
-    *(s32*)(queue + 0x1C) = 0;
-    queue[0x23] = 0;
-    queue[0x24] = 0;
-    queue[0x20] = 0;
-    queue[0x21] = 0;
-    queue[0x22] = 1;
+    ChallengeTextureStages* queue = (ChallengeTextureStages*)lbl_803CC1B8;
+    queue->value = 0;
+    queue->unk23 = 0;
+    queue->unk24 = 0;
+    queue->toggle = 0;
+    queue->cursor = 0;
+    queue->stageCount = 1;
     C_MTXOrtho(lbl_1_bss_47010, lbl_1_rodata_77D8, lbl_1_rodata_77DC[0],
         lbl_1_rodata_77D8, lbl_1_rodata_77E0[0], lbl_1_rodata_7814[0], lbl_1_rodata_7820[0]);
     GXSetProjection(lbl_1_bss_47010, GX_ORTHOGRAPHIC);
@@ -2313,26 +2297,26 @@ void fn_1_2040C(void) {
     fn_80048E00(0, 32);
     fn_80048E00(1, 0);
     fn_800AD038(lbl_80366158[2]);
-    *(void (**)(void))lbl_803CC1B8[0] = fn_1_2004C;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_2004C;
 }
 
 // .text:0x000202A4 size:0x168
 void fn_1_202A4(void) {
-    u8* queue = lbl_803CC1B8[0];
+    ChallengeTextureStages* queue = (ChallengeTextureStages*)lbl_803CC1B8;
     fn_80048C1C();
-    lbl_1_data_10508[queue[0x20]](queue);
+    lbl_1_data_10508[queue->toggle](queue);
     if (lbl_803C77B8._02 & 0x200) {
         GXColor clearColor;
         ChallengeTransfer* transfer;
         *(u32*)&clearColor = 0x11775500;
         GXSetCopyClear(clearColor, 0xFFFFFF);
-        transfer = *(ChallengeTransfer**)(lbl_803CC1B8[0] + 0x0C);
+        transfer = (ChallengeTransfer*)((ChTaskHeader*)lbl_803CC1B8)->parent;
         transfer->complete = 1;
         fn_800B0A14_removeQueue(transfer);
     }
     fn_80048D4C();
     fn_1_207D4();
-    lbl_1_data_10510[queue[0x20]](queue);
+    lbl_1_data_10510[queue->toggle](queue);
     fn_80048C28();
 }
 
@@ -2340,30 +2324,30 @@ void fn_1_202A4(void) {
 // .text:0x2004C size:0x258
 #if NONMATCHING
 void fn_1_2004C(void) {
-    u8* q = lbl_803CC1B8[0];
+    ChallengeTextureStages* q = (ChallengeTextureStages*)lbl_803CC1B8;
     s32 ids[9] = { 5, 6, 7, 8, 9, 13, 0x60, 0x61, 0x55 };
     u8* data;
     u32 i;
 
-    switch (q[0x21]) {
+    switch (q->cursor) {
     case 0:
-        *(void**)(q + 0x18) = (void*)ARAMTransfer(lbl_1_data_10518, 0, 0, 0);
-        q[0x21]++;
+        q->file = (void*)ARAMTransfer(lbl_1_data_10518, 0, 0, 0);
+        q->cursor++;
         break;
     case 1:
-        if ((s32)lbl_803C6CF8[0x715] == 1) {
-            data = *(u8**)(q + 0x18);
-            *(u8**)(q + 0x14) = data + *(s32*)(data + 0x14);
-            convertTextureHeader(*(void**)(q + 0x14));
+        if ((s32)lbl_803C6CF8.idle == 1) {
+            data = q->file;
+            q->tex = data + *(s32*)(data + 0x14); // file-relative offset in the header
+            convertTextureHeader(q->tex);
             for (i = 0; i < 8; i++) {
                 lbl_1_bss_6E24[i] = i;
-                if (fn_1_2051C((ChallengeTextureHeader*)(*(u8**)(q + 0x14) + ids[i] * 32 + 4),
+                if (fn_1_2051C((ChallengeTextureHeader*)(q->tex + ids[i] * 32 + 4),
                         &lbl_1_bss_6EA4[i], &lbl_1_bss_6E44[i], i)) {
                     lbl_1_bss_6E24[i] |= 0x80000000;
                 }
             }
-            q[0x21] = 0;
-            *(void (**)(void))lbl_803CC1B8[0] = fn_1_202A4;
+            q->cursor = 0;
+            ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_202A4;
         }
         break;
     }
@@ -2565,35 +2549,35 @@ void fn_1_1F618(ChallengeTextureStages* stages) {
 #endif
 
 // .text:0x1F418 size:0x200
-void fn_1_1F418(u8* menu) {
+void fn_1_1F418(ChallengeTextureStages* menu) {
     s32 i;
     s32 v;
     u8 cur;
 
     for (i = 0; i < 4; i++) {
-        cur = menu[0x21];
+        cur = menu->cursor;
         switch (i) {
         case 0:
             if (i == cur) {
-                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
-                    if (menu[0x20] == 0) {
-                        menu[0x20] = 2;
+                if (lbl_803C77B8._04 & 1) {
+                    if (menu->toggle == 0) {
+                        menu->toggle = 2;
                     }
-                    menu[0x20]--;
-                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
-                    menu[0x20]++;
-                    if (menu[0x20] == 2) {
-                        menu[0x20] = 0;
+                    menu->toggle--;
+                } else if (lbl_803C77B8._04 & 2) {
+                    menu->toggle++;
+                    if (menu->toggle == 2) {
+                        menu->toggle = 0;
                     }
                 }
             }
             break;
         case 1:
             v = (s32)fn_80048EA8(0);
-            if (i == menu[0x21]) {
-                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+            if (i == menu->cursor) {
+                if (lbl_803C77B8._04 & 1) {
                     v--;
-                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+                } else if (lbl_803C77B8._04 & 2) {
                     v++;
                 }
                 fn_80048E00(0, v);
@@ -2601,10 +2585,10 @@ void fn_1_1F418(u8* menu) {
             break;
         case 2:
             v = (s32)fn_80048EA8(1);
-            if (i == menu[0x21]) {
-                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
+            if (i == menu->cursor) {
+                if (lbl_803C77B8._04 & 1) {
                     v--;
-                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
+                } else if (lbl_803C77B8._04 & 2) {
                     v++;
                 }
                 fn_80048E00(1, v);
@@ -2612,43 +2596,45 @@ void fn_1_1F418(u8* menu) {
             break;
         case 3:
             if (i == cur) {
-                if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 1) {
-                    if (*(u32*)(menu + 0x1C) != 0) {
-                        (*(u32*)(menu + 0x1C))--;
+                if (lbl_803C77B8._04 & 1) {
+                    if (menu->value != 0) {
+                        menu->value--;
                     }
-                } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 2) {
-                    (*(u32*)(menu + 0x1C))++;
+                } else if (lbl_803C77B8._04 & 2) {
+                    menu->value++;
                 }
             }
             break;
         }
     }
-    if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 8) {
-        if (menu[0x21] == 0) {
-            menu[0x21] = 4;
+    if (lbl_803C77B8._04 & 8) {
+        if (menu->cursor == 0) {
+            menu->cursor = 4;
         }
-        menu[0x21]--;
-    } else if (*(u16*)((u8*)&lbl_803C77B8 + 4) & 4) {
-        menu[0x21]++;
-        if (menu[0x21] == 4) {
-            menu[0x21] = 0;
+        menu->cursor--;
+    } else if (lbl_803C77B8._04 & 4) {
+        menu->cursor++;
+        if (menu->cursor == 4) {
+            menu->cursor = 0;
         }
     }
 }
 
+#define BODY_TEST ((ChallengeBodyTest*)lbl_803CC1B8)
+
 // .text:0x1F2D8 size:0x140
 void fn_1_1F2D8(void) {
-    fn_1_273D8(lbl_1_bss_6D48);
-    *(void (**)(void))lbl_803CC1B8[0] = fn_1_1F05C;
-    *(u32*)(lbl_803CC1B8[0] + 0x2C) = 0;
-    *(u32*)(lbl_803CC1B8[0] + 0x28) = 0;
-    *(f32*)(lbl_803CC1B8[0] + 0x14) = (&lbl_1_rodata_780C)[0];
-    *(f32*)(lbl_803CC1B8[0] + 0x18) = (&lbl_1_rodata_7810)[0];
-    *(f32*)(lbl_803CC1B8[0] + 0x1C) = (&lbl_1_rodata_7810)[0];
-    *(f32*)(lbl_803CC1B8[0] + 0x20) = (&lbl_1_rodata_77E4)[0];
-    *(f32*)(lbl_803CC1B8[0] + 0x24) = (&lbl_1_rodata_77E4)[0];
+    fn_1_273D8(&lbl_1_bss_6D48);
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1F05C;
+    BODY_TEST->flags = 0;
+    BODY_TEST->shape = 0;
+    BODY_TEST->length = (&lbl_1_rodata_780C)[0];
+    BODY_TEST->frac = (&lbl_1_rodata_7810)[0];
+    BODY_TEST->radius = (&lbl_1_rodata_7810)[0];
+    BODY_TEST->mass = (&lbl_1_rodata_77E4)[0];
+    BODY_TEST->height = (&lbl_1_rodata_77E4)[0];
     fn_1_1F23C(&lbl_1_bss_6BF4);
-    *(s16*)(lbl_803CC1B8[0] + 0x10) = 0;
+    ((ChTaskHeader*)lbl_803CC1B8)->result = 0;
     lbl_1_bss_6BE4[0] = 0.0f;
     lbl_1_bss_6BE4[1] = 0.0f;
     lbl_1_bss_6BE4[2] = 0.0f;
@@ -2658,58 +2644,58 @@ void fn_1_1F2D8(void) {
 // .text:0x0001F23C size:0x9C
 void fn_1_1F23C(ChallengeProjectionState* state) {
     fn_800385F0((struct RigidBody *)&lbl_1_bss_6BF4, // TODO type
-        *(f32*)(lbl_803CC1B8[0] + 0x14), *(f32*)(lbl_803CC1B8[0] + 0x18),
-        *(f32*)(lbl_803CC1B8[0] + 0x1C), *(f32*)(lbl_803CC1B8[0] + 0x20));
-    state->depth = -*(f32*)(lbl_803CC1B8[0] + 0x24);
+        BODY_TEST->length, BODY_TEST->frac,
+        BODY_TEST->radius, BODY_TEST->mass);
+    state->depth = -BODY_TEST->height;
     state->pos.y += lbl_1_rodata_780C;
-    *(u32*)(lbl_803CC1B8[0] + 0x2C) &= ~2U;
-    *(u32*)(lbl_803CC1B8[0] + 0x2C) |= 2;
+    BODY_TEST->flags &= ~2U;
+    BODY_TEST->flags |= 2;
 }
 
 // .text:0x1F05C size:0x1E0
 void fn_1_1F05C(void) {
-    u8* q;
+    ChallengeBodyTest* q;
 
-    if (*(u32*)(lbl_803CC1B8[0] + 0x2C) & 1) {
-        *(s16*)(lbl_803CC1B8[0] + 0x10) = fn_1_1E90C(*(s16*)(lbl_803CC1B8[0] + 0x10), lbl_803C77B8._00,
-            lbl_803C77B8._02, *(u16*)((u8*)&lbl_803C77B8 + 4));
+    if (BODY_TEST->flags & 1) {
+        ((ChTaskHeader*)lbl_803CC1B8)->result = fn_1_1E90C(((ChTaskHeader*)lbl_803CC1B8)->result, lbl_803C77B8._00,
+            lbl_803C77B8._02, lbl_803C77B8._04);
     } else {
-        fn_1_26D28(lbl_1_bss_6D48, lbl_803C77B8._00, lbl_803C77B8._02, *(u16*)((u8*)&lbl_803C77B8 + 4),
-            (u8*)&lbl_803C77B8 + 0x10);
+        fn_1_26D28(&lbl_1_bss_6D48, lbl_803C77B8._00, lbl_803C77B8._02, lbl_803C77B8._04,
+            (ChallengeDebugPad*)&lbl_803C77B8.stickX);
     }
     if (lbl_803C77B8._02 & 0x200) {
-        q = lbl_803CC1B8[0];
-        if (*(u32*)(q + 0x2C) & 1) {
-            *(void (**)(void))q = fn_1_24778;
+        q = BODY_TEST;
+        if (q->flags & 1) {
+            q->h.func = fn_1_24778;
         } else {
-            *(u32*)(q + 0x2C) ^= 1;
+            q->flags ^= 1;
         }
     } else if (lbl_803C77B8._02 & 0x1000) {
-        *(u32*)(lbl_803CC1B8[0] + 0x2C) ^= 1;
+        BODY_TEST->flags ^= 1;
     }
-    fn_1_27330(lbl_1_bss_6D48);
-    q = lbl_803CC1B8[0];
-    switch (*(s32*)(q + 0x28)) {
+    fn_1_27330(&lbl_1_bss_6D48);
+    q = BODY_TEST;
+    switch (q->shape) {
     case 0:
-        if (*(u32*)(q + 0x2C) & 4) {
-            *(u32*)(q + 0x2C) ^= 4;
+        if (q->flags & 4) {
+            q->flags ^= 4;
             fn_1_1DD94();
         }
         fn_80037BAC(&lbl_1_bss_6BF4);
         break;
     }
-    q = lbl_803CC1B8[0];
-    if (*(u32*)(q + 0x2C) & 1) {
-        fn_1_1E8C0(*(s16*)(q + 0x10));
+    q = BODY_TEST;
+    if (q->flags & 1) {
+        fn_1_1E8C0(q->h.result);
     }
     fn_1_1EFF4();
 }
 
 // .text:0x1EFF4 size:0x68
 void fn_1_1EFF4(void) {
-    fn_1_272DC(lbl_1_bss_6D48, 0);
+    fn_1_272DC(&lbl_1_bss_6D48, 0);
     fn_1_AF4(20, 20, (&lbl_1_rodata_77E4)[0]);
-    if (*(u32*)(lbl_803CC1B8[0] + 0x2C) & 2) {
+    if (BODY_TEST->flags & 2) {
         fn_1_1E5D0(&lbl_1_bss_6BF4);
     }
 }
@@ -2718,16 +2704,16 @@ void fn_1_1EFF4(void) {
 // .text:0x1E90C size:0x6E8
 #if NONMATCHING
 s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat) {
-    f32 length = *(f32*)(lbl_803CC1B8[0] + 0x14);
-    f32 frac = *(f32*)(lbl_803CC1B8[0] + 0x18);
-    f32 radius = *(f32*)(lbl_803CC1B8[0] + 0x1C);
-    f32 mass = *(f32*)(lbl_803CC1B8[0] + 0x20);
-    f32 height = *(f32*)(lbl_803CC1B8[0] + 0x24);
+    f32 length = BODY_TEST->length;
+    f32 frac = BODY_TEST->frac;
+    f32 radius = BODY_TEST->radius;
+    f32 mass = BODY_TEST->mass;
+    f32 height = BODY_TEST->height;
     s16 sub;
 
-    sub = lbl_1_data_10668[*(s32*)(lbl_803CC1B8[0] + 0x28)]((s16)(sel - 8), held, pressed, repeat) + 8;
+    sub = lbl_1_data_10668[BODY_TEST->shape]((s16)(sel - 8), held, pressed, repeat) + 8;
     if (sel != sub) {
-        s32 n = lbl_1_data_10670[*(s32*)(lbl_803CC1B8[0] + 0x28)] + 8;
+        s32 n = lbl_1_data_10670[BODY_TEST->shape] + 8;
         sel = (sub + n) % n;
     } else if (pressed & 0x100) {
         switch (sel) {
@@ -2737,7 +2723,7 @@ s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat) {
             fn_1_1F23C(&lbl_1_bss_6BF4);
             break;
         case 2:
-            *(u32*)(lbl_803CC1B8[0] + 0x2C) ^= 4;
+            BODY_TEST->flags ^= 4;
             break;
         case 3:
             break;
@@ -2745,7 +2731,7 @@ s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat) {
     } else if (repeat & 1) {
         switch (sel) {
         case 0:
-            *(s32*)(lbl_803CC1B8[0] + 0x28) = (*(s32*)(lbl_803CC1B8[0] + 0x28) + 7) % 8;
+            BODY_TEST->shape = (BODY_TEST->shape + 7) % 8;
             break;
         case 3:
             length = fn_1_1E90C_adjust(length, held, 1, lbl_1_rodata_77E4, lbl_1_rodata_7808[0]);
@@ -2763,7 +2749,7 @@ s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat) {
     } else if (repeat & 2) {
         switch (sel) {
         case 0:
-            *(s32*)(lbl_803CC1B8[0] + 0x28) = (*(s32*)(lbl_803CC1B8[0] + 0x28) + 1) % 8;
+            BODY_TEST->shape = (BODY_TEST->shape + 1) % 8;
             break;
         case 3:
             length = fn_1_1E90C_adjust(length, held, 0, lbl_1_rodata_77E4, lbl_1_rodata_7808[0]);
@@ -2783,26 +2769,26 @@ s16 fn_1_1E90C(s16 sel, u16 held, u16 pressed, u16 repeat) {
         }
     } else if (repeat & 8) {
         if (sel < 8) {
-            s32 n = lbl_1_data_10670[*(s32*)(lbl_803CC1B8[0] + 0x28)];
+            s32 n = lbl_1_data_10670[BODY_TEST->shape];
             sel = (n + sel + 7) % (n + 8);
         }
     } else if (repeat & 4) {
         if (sel < 8) {
-            sel = (sel + 1) % (lbl_1_data_10670[*(s32*)(lbl_803CC1B8[0] + 0x28)] + 8);
+            sel = (sel + 1) % (lbl_1_data_10670[BODY_TEST->shape] + 8);
         }
     }
-    *(f32*)(lbl_803CC1B8[0] + 0x14) = length;
-    *(f32*)(lbl_803CC1B8[0] + 0x18) = frac;
-    *(f32*)(lbl_803CC1B8[0] + 0x1C) = radius;
-    *(f32*)(lbl_803CC1B8[0] + 0x20) = mass;
-    *(f32*)(lbl_803CC1B8[0] + 0x24) = height;
+    BODY_TEST->length = length;
+    BODY_TEST->frac = frac;
+    BODY_TEST->radius = radius;
+    BODY_TEST->mass = mass;
+    BODY_TEST->height = height;
     return sel;
 }
 #endif
 
 // .text:0x1E8C0 size:0x4C
 void fn_1_1E8C0(s32 index) {
-    lbl_1_data_1066C[*(s32*)(lbl_803CC1B8[0] + 0x28)]((s16)(index - 8));
+    lbl_1_data_1066C[BODY_TEST->shape]((s16)(index - 8));
 }
 
 // .text:0x1E5D0 size:0x2F0
@@ -2863,7 +2849,7 @@ void fn_1_1E5D0(ChallengeProjectionState* body) {
     GXWGFifo.u8 = 0;
     GXWGFifo.u8 = 0xFF;
     GXWGFifo.u8 = 0xFF;
-    if (*(s32*)(lbl_803CC1B8[0] + 0x28) == 0) {
+    if (BODY_TEST->shape == 0) {
         PSVECSubtract(&body->p0, &body->p1, &a);
         PSVECScale(&a, lbl_1_bss_6BE4[0], &a);
         PSVECAdd(&body->p1, &a, &a);
@@ -3032,45 +3018,45 @@ f32 fn_1_1DD48(u16 buttons, s32 reverse, f32 value, f32 positive, f32 delta, f32
 
 // .text:0x1DCE4 size:0x64
 void fn_1_1DCE4(void) {
-    u8* queue = lbl_803CC1B8[0];
-    *(void**)(queue + 0x14) = (void*)ARAMTransfer(lbl_1_data_10674, 0, 0, 0);
-    *(void (**)(void))lbl_803CC1B8[0] = fn_1_1DA54;
+    ChallengeAnimTest* queue = (ChallengeAnimTest*)lbl_803CC1B8;
+    queue->file = ARAMTransfer(lbl_1_data_10674, 0, 0, 0);
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1DA54;
 }
 
 // .text:0x1DA54 size:0x290
 void fn_1_1DA54(void) {
-    u8* q = lbl_803CC1B8[0];
+    ChallengeAnimTest* q = (ChallengeAnimTest*)lbl_803CC1B8;
     ChallengeTextureHeader* tex;
-    u8* object;
+    ChTaskHeader* object;
     s32 size;
 
-    if ((s32)lbl_803C6CF8[0x715] != 1) {
+    if ((s32)lbl_803C6CF8.idle != 1) {
         return;
     }
-    *(u8**)(q + 0x18) = *(u8**)(q + 0x14) + *(s32*)(*(u8**)(q + 0x14) + 0x14);
-    convertTextureHeader(*(void**)(q + 0x18));
-    *(u16*)(q + 0x28) = 2;
-    *(u16*)(q + 0x1C) = 3;
-    *(u16*)(q + 0x1E) = 0;
-    *(u16*)(q + 0x22) = 3;
-    *(u16*)(q + 0x20) = 3;
-    *(u16*)(q + 0x24) = 0;
-    *(u16*)(q + 0x26) = 0;
-    *(ChallengeTextureHeader**)(q + 0x2C) = _OSAllocFromHeap(0x20, 0x20);
-    memcpy(*(void**)(q + 0x2C), *(u8**)(q + 0x18) + 0x44, 0x20);
-    tex = *(ChallengeTextureHeader**)(q + 0x2C);
+    q->tex = q->file + *(s32*)(q->file + 0x14); // file-relative offset in the header
+    convertTextureHeader(q->tex);
+    q->firstImage = 2;
+    q->frameCount = 3;
+    q->frame = 0;
+    q->delay = 3;
+    q->timer = 3;
+    q->width = 0;
+    q->height = 0;
+    q->header = _OSAllocFromHeap(0x20, 0x20);
+    memcpy(q->header, q->tex + 0x44, 0x20);
+    tex = q->header;
     if (tex->palette != NULL) {
         switch (tex->paletteFormat) {
         case 0:
         case 1:
         case 2:
             size = tex->paletteEntries * 2;
-            (*(ChallengeTextureHeader**)(q + 0x2C))->palette = _OSAllocFromHeap(0x20, size);
-            memcpy((*(ChallengeTextureHeader**)(q + 0x2C))->palette, *(void**)(*(u8**)(q + 0x18) + 0x48), size);
+            q->header->palette = _OSAllocFromHeap(0x20, size);
+            memcpy(q->header->palette, *(void**)(q->tex + 0x48), size);
             break;
         }
-        DCStoreRangeNoSync((*(ChallengeTextureHeader**)(q + 0x2C))->palette, size);
-        tex = *(ChallengeTextureHeader**)(q + 0x2C);
+        DCStoreRangeNoSync(q->header->palette, size);
+        tex = q->header;
         switch (tex->format) {
         case 8:
             size = (tex->width + 7) / 8 * 8 * ((tex->height + 7) / 8 * 8);
@@ -3080,8 +3066,8 @@ void fn_1_1DA54(void) {
             break;
         default:
             fn_800AD038(lbl_80366158[2]);
-            object = *(u8**)(lbl_803CC1B8[0] + 0xC);
-            *(s16*)(object + 0x10) = 1;
+            object = ((ChTaskHeader*)lbl_803CC1B8)->parent;
+            object->result = 1;
             fn_800B0A14_removeQueue(object);
             return;
         }
@@ -3092,52 +3078,52 @@ void fn_1_1DA54(void) {
             break;
         default:
             fn_800AD038(lbl_80366158[2]);
-            object = *(u8**)(lbl_803CC1B8[0] + 0xC);
-            *(s16*)(object + 0x10) = 1;
+            object = ((ChTaskHeader*)lbl_803CC1B8)->parent;
+            object->result = 1;
             fn_800B0A14_removeQueue(object);
             return;
         }
     }
-    (*(ChallengeTextureHeader**)(q + 0x2C))->image = _OSAllocFromHeap(0x20, size);
-    memcpy((*(ChallengeTextureHeader**)(q + 0x2C))->image, *(void**)(*(u8**)(q + 0x18) + 0x44), size);
-    DCStoreRangeNoSync((*(ChallengeTextureHeader**)(q + 0x2C))->image, size);
+    q->header->image = _OSAllocFromHeap(0x20, size);
+    memcpy(q->header->image, *(void**)(q->tex + 0x44), size);
+    DCStoreRangeNoSync(q->header->image, size);
     PPCSync();
-    *(void (**)(void))lbl_803CC1B8[0] = fn_1_1D944;
+    ((ChTaskHeader*)lbl_803CC1B8)->func = fn_1_1D944;
 }
 
 // .text:0x1D944 size:0x110
 void fn_1_1D944(void) {
-    u8* q = lbl_803CC1B8[0];
+    ChallengeAnimTest* q = (ChallengeAnimTest*)lbl_803CC1B8;
     ChallengeAnimEntry* e;
-    u8* obj;
+    ChTaskHeader* obj;
     u8* d;
     u16 a, b;
 
     if (lbl_803C77B8._02 & 0x200) {
         fn_800AD038(lbl_80366158[2]);
-        obj = *(u8**)(lbl_803CC1B8[0] + 0xC);
-        *(s16*)(obj + 0x10) = 1;
+        obj = ((ChTaskHeader*)lbl_803CC1B8)->parent;
+        obj->result = 1;
         fn_800B0A14_removeQueue(obj);
         return;
     }
-    if (--*(u16*)(q + 0x20) == 0) {
-        *(u16*)(q + 0x20) = *(u16*)(q + 0x22);
-        *(u16*)(q + 0x1E) = (*(u16*)(q + 0x1E) + 1) % *(u16*)(q + 0x1C);
+    if (--q->timer == 0) {
+        q->timer = q->delay;
+        q->frame = (q->frame + 1) % q->frameCount;
     }
-    lbl_1_data_107E4[lbl_803CBBC0[0]].data = *(u8**)(q + 0x18) + (*(u16*)(q + 0x28) + *(u16*)(q + 0x1E)) * 32 + 4;
+    lbl_1_data_107E4[lbl_803CBBC0[0]].data = q->tex + (q->firstImage + q->frame) * 32 + 4;
     e = &lbl_1_data_107E4[lbl_803CBBC0[0]];
-    e->width = *(u16*)(q + 0x24);
-    e->height = *(u16*)(q + 0x26);
+    e->width = q->width;
+    e->height = q->height;
     e->active = 1;
     e->table = lbl_1_data_107C4;
-    e->flags = *(u32*)(q + 0x2C);
+    e->tex = q->header;
     fn_800A7D4C(0, e);
 }
 
 // NONMATCHING 91%: orig divides height/64, width/32 with srawi/addze (signed); ours srwi (CW knows u16 >= 0); loop regs rotate
 // .text:0x1D694 size:0x2B0
 #if NONMATCHING
-void fn_1_1D694(u8* obj) {
+void fn_1_1D694(ChallengeAnimEntry* obj) {
     ChallengeTextureHeader* tex;
     u8* src;
     void* dst;
@@ -3147,10 +3133,10 @@ void fn_1_1D694(u8* obj) {
     s32 x;
     s32 v;
 
-    if (obj[0x18] != 0) {
-        tex = *(ChallengeTextureHeader**)(obj + 8);
-        src = *(u8**)(obj + 0x10);
-        dst = *(void**)(obj + 0xC);
+    if (obj->active != 0) {
+        tex = obj->tex;
+        src = obj->table;
+        dst = obj->data;
         memset(tex->image, 0, tex->width * tex->height);
         rows = tex->height / 64;
         cols = tex->width / 32;
@@ -3175,7 +3161,7 @@ void fn_1_1D694(u8* obj) {
         GXSetCurrentMtx(0);
     }
     gOz_GXSetTexture(0, 0, 0);
-    SetDisplayStateTexture(*(void**)(obj + 8), 0, 0);
+    SetDisplayStateTexture((struct TexImage*)obj->tex, 0, 0); // ChallengeTextureHeader has the TexImage layout
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
     GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
     GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
@@ -3184,7 +3170,7 @@ void fn_1_1D694(u8* obj) {
     GXWGFifo.u16 = 0;
     GXWGFifo.u16 = 0;
     {
-        f32 y = (*(ChallengeTextureHeader**)(obj + 8))->height;
+        f32 y = obj->tex->height;
         GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
         GXWGFifo.f32 = y;
     }
@@ -3193,8 +3179,8 @@ void fn_1_1D694(u8* obj) {
     GXWGFifo.u16 = 0;
     GXWGFifo.u16 = 1;
     {
-        f32 x = (*(ChallengeTextureHeader**)(obj + 8))->width;
-        f32 y = (*(ChallengeTextureHeader**)(obj + 8))->height;
+        f32 x = obj->tex->width;
+        f32 y = obj->tex->height;
         GXWGFifo.f32 = x;
         GXWGFifo.f32 = y;
     }
@@ -3202,7 +3188,7 @@ void fn_1_1D694(u8* obj) {
     GXWGFifo.u32 = 0xFFFFFFFF;
     GXWGFifo.u16 = 1;
     GXWGFifo.u16 = 1;
-    GXWGFifo.f32 = (*(ChallengeTextureHeader**)(obj + 8))->width;
+    GXWGFifo.f32 = obj->tex->width;
     GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77D8;
     GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_77E8;
     GXWGFifo.u32 = 0xFFFFFFFF;
