@@ -1704,15 +1704,14 @@ void fn_2_1800(void) {
 }
 #endif
 
-// NONMATCHING 97%: same code as fn_2_1800; register choice for the three button words
-#if NONMATCHING
 // fn_2_1578, size:0x288
 void fn_2_1578(void) {
     MenuButtons b;
+    u16 repeat;
     memset(&b, 0, sizeof(b));
     b.held = *(u16*)(lbl_8034E9A0 + 0x472C);
     b.down = *(u16*)(lbl_8034E9A0 + 0x472E);
-    b.repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
+    b.repeat = repeat = *(u16*)(lbl_8034E9A0 + 0x4730);
     if (lbl_803C66B0[0x55] != 0) {
         return;
     }
@@ -1727,11 +1726,11 @@ void fn_2_1578(void) {
         sndFXStartEx(0x1B9, lbl_800EFBA4[2], 0x3F, 0);
     } else if ((b.repeat & 8) || (b.repeat & 4)) {
         ((s32*)lbl_2_bss_F410)[1] = ((s32*)lbl_2_bss_F410)[0];
-        if (b.repeat & 8) {
+        if (repeat & 8) {
             if (--((s32*)lbl_2_bss_F410)[0] < 0) {
                 ((s32*)lbl_2_bss_F410)[0] = 6;
             }
-        } else if (b.repeat & 4) {
+        } else if (repeat & 4) {
             if (++((s32*)lbl_2_bss_F410)[0] == 7) {
                 ((s32*)lbl_2_bss_F410)[0] = 0;
             }
@@ -1740,7 +1739,6 @@ void fn_2_1578(void) {
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
 }
-#endif
 
 // NONMATCHING 93%: same instructions, scheduling/register rotation in the unrolled pick loop
 #if NONMATCHING
