@@ -7396,8 +7396,6 @@ void fn_2_2BF20(MenuTableContext* menu, MenuItemState* item) {
 }
 
 // fn_2_2B884, size:0x2B0
-// NONMATCHING 99%: (row*0x34+9)+index*2 summed in a different order before the lbzx
-#if NONMATCHING
 void fn_2_2B884(MenuTableContext* menu, MenuItemState* item) {
     s16 state = fn_2_53BC8(item);
     if (state != -1) {
@@ -7457,7 +7455,6 @@ void fn_2_2B884(MenuTableContext* menu, MenuItemState* item) {
         break;
     }
 }
-#endif
 
 extern s16 fn_2_53AA4(void* item);
 
