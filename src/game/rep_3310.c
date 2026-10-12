@@ -257,7 +257,8 @@ void fn_3_117494(void) {
 }
 
 // .text:0x00117588 size:0x464 mapped:0x8075661C
-// NONMATCHING 93%: (measured with the rodata externs) scheduling/register order of the quad corner math
+// NONMATCHING 92%: (measured with the rodata externs) scheduling/register order of the quad corner math
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 // Draws the ground shadow quad under sprite idx (0xE9..0xEC), shrinking it with height,
 // then picks the actor's texture from its state byte.
@@ -334,6 +335,7 @@ void fn_3_117588(s32 idx) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x001179EC size:0xF8 mapped:0x80756A80
 extern const f32 lbl_3_rodata_33DC;
@@ -854,7 +856,8 @@ void fn_3_1194AC(s32 i) {
 #endif
 
 // .text:0x001194FC size:0x358 mapped:0x80758590
-// NONMATCHING 89%: register allocation, the state 0/3/4 test is folded to a range compare, and the bounce counter update order differs; the original reaches lbl_3_data_2265C through the lbl_3_data_225F0 pooled base
+// NONMATCHING 90%: register allocation, the state 0/3/4 test is folded to a range compare, and the bounce counter update order differs; the original reaches lbl_3_data_2265C through the lbl_3_data_225F0 pooled base
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 extern void fn_3_15521C(s16 idx, f32* pos, f32* rot); // rep_3880.h
 // Places the 50 balls (sprites 0x85.., or 0xB7.. while state 5) and their shadows (0x28..).
@@ -943,6 +946,7 @@ void fn_3_1194FC(void) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x00119854 size:0x24 mapped:0x807588E8
 f32 fn_3_119854(u8 i) {
@@ -974,7 +978,8 @@ void fn_3_119878(void) {
 #endif
 
 // .text:0x00119934 size:0x300 mapped:0x807589C8
-// NONMATCHING 98%: (measured with the rodata externs) frsp of the acos result is scheduled after the v.z load, f1/f2 swapped
+// NONMATCHING 97%: (measured with the rodata externs) frsp of the acos result is scheduled after the v.z load, f1/f2 swapped
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 extern f32 lbl_3_data_2188C[];
 // Places the base markers (sprites 0x82..0x90, or the shared 0xA5 one) and the
@@ -1046,6 +1051,7 @@ void fn_3_119934(void) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x00119C34 size:0x74 mapped:0x80758CC8
 void fn_3_119C34(void) {
@@ -1153,7 +1159,8 @@ void fn_3_119EE0(s32 i) {
 #endif
 
 // .text:0x00119F6C size:0x2A0 mapped:0x80759000
-// NONMATCHING 85%: typed rewrite of a 95% raw-offset version; saved-reg assignment and loop induction pointers differ (the original strength-reduces the 0x28/0x90/0x34 strides into separate counters)
+// NONMATCHING 92%: typed rewrite of a 95% raw-offset version; saved-reg assignment and loop induction pointers differ (the original strength-reduces the 0x28/0x90/0x34 strides into separate counters)
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 extern u8 lbl_3_data_2263F;
 extern void fn_3_14DC80(s8 a);
@@ -1232,6 +1239,7 @@ void fn_3_119F6C(void) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x0011A20C size:0x4 mapped:0x807592A0
 void fn_3_11A20C(void) {
@@ -1303,6 +1311,7 @@ void fn_3_11A38C(s32 i, s16 h) {
 
 // .text:0x0011A408 size:0x524 mapped:0x8075949C
 // NONMATCHING 94%: (measured with the rodata externs) register allocation and the j + kind*7 + 0xFC sum order
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 extern Rep3310BallView g_Ball;
 extern u8 lbl_3_data_22634[];
@@ -1418,6 +1427,7 @@ void fn_3_11A408(void) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x0011A92C size:0x200 mapped:0x807599C0
 #pragma dont_inline on

@@ -413,7 +413,8 @@ void fn_3_3904(s16 x, s16 y, s32 msg, GXColor color0, GXColor color1, u8 flags) 
 // Draws the texel rect (u, v, uw, vh) of `img` as a screen quad (x0, y0)-(x1, y1).
 // Tex coords are s16 with 9 fractional bits.
 // .text:0x00003BE8 size:0x300 mapped:0x80642C7C
-// NONMATCHING 94%: float constant pooling (-0.5f reloaded per vertex in the original) and r28/r31 swap
+// NONMATCHING 96%: float constant pooling (-0.5f reloaded per vertex in the original) and r28/r31 swap
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 void fn_3_3BE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 uw, s16 vh) {
     GXTexObj tex;
@@ -464,6 +465,7 @@ void fn_3_3BE8(TexImage* img, s16 x0, s16 y0, s16 x1, s16 y1, s16 u, s16 v, s16 
     GXWGFifo.s16 = v + vh;
 }
 #endif
+#pragma pool_data reset
 
 // Like fn_3_3BE8 with point sampling and normalized float tex coords.
 // .text:0x00003EE8 size:0x3E4 mapped:0x80642F7C
@@ -827,7 +829,8 @@ void fn_3_53E0(u16* in, s16* x, s16* y, s16* w, s16* h, s16* page) {
 }
 
 // .text:0x00005518 size:0x164 mapped:0x806445AC
-// NONMATCHING 99.8%: r29/r31 swapped between the texture list and the image offset
+// NONMATCHING 91%: r29/r31 swapped between the texture list and the image offset
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 // Copies the rendered scoreboard into the stadium's scoreboard texture.
 void fn_3_5518(void) {
@@ -855,6 +858,7 @@ void fn_3_5518(void) {
     GXPixModeSync();
 }
 #endif
+#pragma pool_data reset
 
 
 // Per-frame stadium update: queues the sky objects and draw nodes of every

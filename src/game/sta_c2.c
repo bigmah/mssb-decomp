@@ -3014,6 +3014,7 @@ void fn_3_D3F54(u8* p) {
 
 // .text:0x000D4780 size:0x524 mapped:0x80713814
 // NONMATCHING 93%: the folded i/7 constants come from a pooled base register in our build; saved-register numbering
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 // Lays the 8-node chain from its anchor (lbl_3_rodata_24D0/24DC by the spot's side flag)
 // to p's hook, sagging by 7.125 - len/2 along a half sine, and clears its motion.
@@ -3072,6 +3073,7 @@ void fn_3_D4780(u8* p) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // .text:0x000D4CA4 size:0x15C mapped:0x80713D38
 void fn_3_D4CA4(u8* p) {

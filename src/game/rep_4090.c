@@ -22,7 +22,8 @@ extern StadiumSfxMix lbl_3_data_84B8[15];   // minigames (GameModeSelected 6) at
 
 #define FIXED(x) ((f32)(x) / 100000.0f)
 
-// NONMATCHING 90%: our float literals are pooled into one ...rodata.0 base (the original loads each with lis/@l); register allocation differs
+// NONMATCHING 93%: our float literals are pooled into one ...rodata.0 base (the original loads each with lis/@l); register allocation differs
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 // .text:0x0016C548 size:0x330 mapped:0x807AB5DC
 // Emitter update: moves, spins and fades the dust particles, frees the dead ones.
@@ -98,8 +99,10 @@ s32 fn_3_16C548(Emitter* e) {
     return alive == 0;
 }
 #endif
+#pragma pool_data reset
 
-// NONMATCHING 89%: float literal pooling (...rodata.0) and lbl_803CBD0C addressing differ
+// NONMATCHING 99%: float literal pooling (...rodata.0) and lbl_803CBD0C addressing differ
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 // .text:0x0016C878 size:0x3B4 mapped:0x807AB90C
 // Sets up n dust particles of e at pos (y negated), spread evenly around a circle.
@@ -138,6 +141,7 @@ void fn_3_16C878(Vec* pos, Emitter* e, s32 n) {
     }
 }
 #endif
+#pragma pool_data reset
 
 // NONMATCHING 83%: inlines fn_3_16C878 twice and the playDustSound copy of fn_3_16C410 like the original; float literal pooling and register allocation differ
 #if NONMATCHING

@@ -670,7 +670,8 @@ extern V2_3290 lbl_3_data_21500[];
 // g_Minigame +0x1A50: walk-to targets of the 4 fielders (x, z)
 typedef struct { u8 pad[0x1A50]; V2_3290 target[4]; } MgTargets_3290;
 
-// NONMATCHING 88%: float constants (incl. the inlined dolsqrtf2's) get pooled behind one base register
+// NONMATCHING 94%: float constants (incl. the inlined dolsqrtf2's) get pooled behind one base register
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 // Moves the fielders to their next positions over lbl_3_data_2167C[1] frames; init snaps them.
 void fn_3_114A88(s32 init) {
@@ -739,6 +740,7 @@ void fn_3_114A88(s32 init) {
     }
 }
 #endif
+#pragma pool_data reset
 
 
 #pragma dont_inline off
