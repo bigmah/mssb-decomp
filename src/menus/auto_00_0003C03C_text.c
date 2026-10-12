@@ -100,7 +100,7 @@ u32* lbl_2_data_12C0C[55] = {
 extern void* lbl_2_data_12CE8[];
 extern MenuScreenTask* lbl_803CC1B8;
 extern ARAMLoader lbl_803C6CF8;
-extern u8 lbl_2_data_12298[];
+extern AssetLoadInstructions lbl_2_data_12298;
 extern void fn_2_94854(u8);
 extern void fn_2_9461C(s32);
 extern void fn_2_94604(u8);
@@ -332,7 +332,7 @@ void fn_2_409CC(void) {
     MenuScreenTask* q;
     switch ((s8)o->step) {
     case 0:
-        lbl_80366B18.tables[4] = ARAMTransfer(lbl_2_data_12298, 0, 1, 0);
+        lbl_80366B18.tables[4] = ARAMTransfer(&lbl_2_data_12298, 0, 1, 0);
         o->step = 1;
         break;
     case 1:

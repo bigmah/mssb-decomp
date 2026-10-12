@@ -7,6 +7,7 @@
 #include "main/file_8000F150.h"
 #include "main/file_8001FE00.h"
 #include "main/menu_globals.h"
+#include "Unknown/File_0x800a64e0.h" // AssetLoadInstructions
 #include "main/file_800527C4.h"
 extern s32 fn_8000FF04(s32 table, s32 msg, s16 x, s16 y, u8 layer, u32 color, u8 fontSize);
 
@@ -1538,8 +1539,8 @@ typedef struct Fn37460Data {
 } Fn37460Data;
 
 static Fn37460Data lbl_2_bss_15A0;
-extern u8 lbl_2_data_12180[];
-extern u8 lbl_2_data_12170[];
+extern AssetLoadInstructions lbl_2_data_12180; // THP movie file
+extern AssetLoadInstructions lbl_2_data_12170; // THP movie file
 extern void* _OSAllocFromHeap(s32, s32);
 extern void* memset(void*, int, u32);
 extern void* fn_80009018(void* heap);
@@ -1573,7 +1574,7 @@ void fn_2_37460(void) {
         o->step++;
         return;
     case 1:
-        if (fn_800ADB04(lbl_2_data_12180, d->heap, 1, 0) != 0) {
+        if (fn_800ADB04(&lbl_2_data_12180, d->heap, 1, 0) != 0) {
             fn_80009018(d->heap);
             o->step++;
         }
@@ -2303,7 +2304,7 @@ void fn_2_37630(void) {
         o->step++;
         return;
     case 1:
-        if (fn_800ADB04(lbl_2_data_12170, d->heap, 1, 0) != 0) {
+        if (fn_800ADB04(&lbl_2_data_12170, d->heap, 1, 0) != 0) {
             fn_80009018(d->heap);
             o->step++;
         }
@@ -2723,9 +2724,9 @@ extern s16 lbl_2_data_373C[20];
 extern s16 lbl_2_data_296B8[36];
 extern u8 lbl_800E869C[];
 typedef struct Unk8010B42C {
-    u8 _00[0xC];
-    s16 gridLayout[1]; // TODO type: indexed by fn_2_44F14
-} Unk8010B42C;
+    /*0x00*/ s16 _00[6];
+    /*0x0C*/ s16 gridLayout[6]; // indexed by fn_2_44F14
+} Unk8010B42C; // size: 0x18
 extern Unk8010B42C lbl_8010B42C;
 extern MenuDef lbl_800FEF70[];
 extern void fn_80053FE8(void);
@@ -3343,22 +3344,44 @@ void fn_2_399C0(void) {
 
 // .data 0x11F10-0x12350 (this TU's tables follow rep_0788's jump tables).
 // .data 0x00011F10..0x00012350
-u8 lbl_2_data_12170[16] = {0, 0, 0, 0, 0, 51, 69, 44, 5, 36, 88, 0, 0, 51, 69, 44};
-u8 lbl_2_data_12180[16] = {0, 0, 0, 0, 1, 112, 8, 4, 5, 87, 160, 0, 1, 112, 8, 4};
-s32 lbl_2_data_12190[11] = {1, 0, 0x12, 0, 0, 0x6E, 0x16, 0, 0, -128, 0x7FFFFFFF}; // TODO type (referenced from lbl_2_data_121BC)
-// TODO type: a self-referencing menu node with four callback entries (no code reference).
+AssetLoadInstructions lbl_2_data_12170 = {0x00000000, {0x0033452C}, {0x05245800}, 0x0033452C};
+AssetLoadInstructions lbl_2_data_12180 = {0x00000000, {0x01700804}, {0x0557A000}, 0x01700804};
+s32 lbl_2_data_12190[11] = {1, 0, 0x12, 0, 0, 0x6E, 0x16, 0, 0, -128, 0x7FFFFFFF}; // referenced from lbl_2_data_121BC
+// A self-referencing menu node with four callback entries (no code reference).
 extern u8 lbl_803CB850[];
-void* lbl_2_data_121BC[45] = {
-    lbl_2_data_12190, (void*)0xFFFFFFFF, lbl_803CB850 + 8, lbl_803CB850 + 8,
-    lbl_803CB850 + 8, lbl_803CB850 + 8, lbl_2_data_121BC, lbl_803CB850 + 8,
-    lbl_803CB850 + 8, lbl_803CB850 + 8,
-    (void*)fn_2_37D94, (void*)0, (void*)0x00010064, (void*)0x00800000, (void*)0, (void*)0, (void*)9, (void*)0,
-    (void*)fn_2_37D8C, (void*)1, (void*)0x00010010, (void*)0, (void*)0, (void*)0, (void*)0x80000005, (void*)0,
-    (void*)fn_2_37D90, (void*)0, (void*)0x00010064, (void*)0x00800000, (void*)0, (void*)0, (void*)9, (void*)0,
-    (void*)fn_2_37D88, (void*)1, (void*)0x00010010, (void*)0, (void*)0, (void*)0, (void*)0x20000005, (void*)0,
-    (void*)0x000A0019, (void*)0x002D0000, (void*)0x11775500,
+typedef struct MenuNodeEntry {
+    /*0x00*/ void (*func)(void);
+    /*0x04*/ s32 _04;
+    /*0x08*/ u32 _08;
+    /*0x0C*/ u32 _0C;
+    /*0x10*/ u32 _10;
+    /*0x14*/ u32 _14;
+    /*0x18*/ u32 _18;
+    /*0x1C*/ u32 _1C;
+} MenuNodeEntry; // size: 0x20
+typedef struct MenuNode {
+    /*0x00*/ s32* params; // lbl_2_data_12190
+    /*0x04*/ s32 _04;
+    /*0x08*/ void* _08[4];
+    /*0x18*/ struct MenuNode* self;
+    /*0x1C*/ void* _1C[3];
+    /*0x28*/ MenuNodeEntry entries[4];
+    /*0xA8*/ u32 _A8[3];
+} MenuNode; // size: 0xB4
+MenuNode lbl_2_data_121BC = {
+    lbl_2_data_12190, -1,
+    {lbl_803CB850 + 8, lbl_803CB850 + 8, lbl_803CB850 + 8, lbl_803CB850 + 8},
+    &lbl_2_data_121BC,
+    {lbl_803CB850 + 8, lbl_803CB850 + 8, lbl_803CB850 + 8},
+    {
+        {fn_2_37D94, 0, 0x00010064, 0x00800000, 0, 0, 9, 0},
+        {fn_2_37D8C, 1, 0x00010010, 0, 0, 0, 0x80000005, 0},
+        {fn_2_37D90, 0, 0x00010064, 0x00800000, 0, 0, 9, 0},
+        {fn_2_37D88, 1, 0x00010010, 0, 0, 0, 0x20000005, 0},
+    },
+    {0x000A0019, 0x002D0000, 0x11775500},
 };
 GXColor lbl_2_data_12270 = {0, 0, 0, 0};
-u8 lbl_2_data_12298[16] = {0, 0, 0, 0, 0, 1, 80, 206, 8, 233, 136, 0, 0, 1, 80, 208};
+AssetLoadInstructions lbl_2_data_12298 = {0x00000000, {0x000150CE}, {0x08E98800}, 0x000150D0};
 GridSize lbl_2_data_122A8[4] = {{3, 0}, {2, 1}, {3, 1}, {4, 1}};
 
