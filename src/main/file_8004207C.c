@@ -229,7 +229,7 @@ static inline s8 findOrderSlot(u8 team, s32 slot) {
 #pragma dont_inline on
 
 // .text:0x800426DC size:0x514
-// NONMATCHING ~80%: source stats indexed as [id/9][id%9] with u8 casts in the original; field copies use lhz/lha differently
+// NONMATCHING 74%: source stats indexed as [id/9][id%9] with u8 casts in the original; register allocation
 #if NONMATCHING
 void transferStatsToInMemRoster(u8 team) {
     s32 slot;
