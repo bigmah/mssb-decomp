@@ -19,6 +19,14 @@ void port_swap_msg_table(void* table);
 // (relocated), 1 if the caller should relocate it now.
 int port_swap_tex_archive(void* archive);
 
+// TPL (charPipeline TEXPalette): u32 version (2142000), u32 numDescriptors,
+// u32 descriptorArray; descriptors {u32 textureHeader, u32 CLUTHeader};
+// TEXHeader {u16 height, width; u32 format, data, wrapS, wrapT, minFilter,
+// magFilter; f32 LODBias; u8 edgeLOD, minLOD, maxLOD, unpacked};
+// CLUTHeader {u16 numEntries; u8 unpacked, pad; u32 format, data}. No-op if
+// the version already reads native.
+void port_swap_tex_palette(void* pal);
+
 // A table of count u32 file offsets at the start of a container file (font
 // archive, ...). Call it exactly once per load (values can't tell native
 // from big-endian reliably).

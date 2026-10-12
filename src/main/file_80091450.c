@@ -2,7 +2,7 @@
 
 // .text:0x80091450 size:0x10
 TEXDescriptorPtr TEXGet(TEXPalettePtr pal, u32 id) {
-    return &pal->descriptorArray[id];
+    return &PTR32_GET(TEXDescriptor, pal->descriptorArray)[id];
 }
 
 // .text:0x80091460 size:0x18
