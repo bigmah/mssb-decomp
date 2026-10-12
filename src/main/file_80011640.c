@@ -3265,7 +3265,8 @@ void fn_8001A25C(void) {
 #endif
 
 // .text:0x8001A3FC size:0x2B4
-// NONMATCHING 62%: unrolled init loops and the 13-actor reset loop are laid out differently
+// NONMATCHING 73%: the original keeps count in a register (not folded) and unrolls the 13-actor reset
+// loop 3x with four peeled iterations; as a for loop it unrolls 6x, as a do-while not at all
 #if NONMATCHING
 void fn_8001A3FC(s32 arg) {
     s32 count;
@@ -3300,19 +3301,19 @@ void fn_8001A3FC(s32 arg) {
         p = _OSAllocFromHeap(0x20, (max + 0x1F) & ~0x1F);
         lbl_80118220[0].files = p;
         lbl_803CBC30 = p;
-        lbl_80118220[0]._61 = -1;
-        lbl_80118220[0].slot = 0xFF;
+        lbl_80118220[0].slot = lbl_80118220[0]._61 = -1;
     }
     fn_800145F8(arg);
     lbl_8036E548.partSlots = fn_80023AA4();
     fn_80018DEC(arg);
     fn_80023B04(0xD);
-    for (i = 0; i < 13; i++) {
+    i = 0;
+    do {
         lbl_8036E548.actors[i].modelIndex = i;
         lbl_8036E548.active[i] = NULL;
-        lbl_8036E548._2D6A[i] = -1;
-        lbl_8036E548.actors[i].roster = -1;
-    }
+        lbl_8036E548.actors[i].roster = lbl_8036E548._2D6A[i] = -1;
+        i++;
+    } while (i < 13);
     for (i = 0; i < 9; i++) {
         lbl_8036E548._2D7F[i] = -1;
     }
