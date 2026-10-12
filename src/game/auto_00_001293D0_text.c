@@ -22,11 +22,12 @@ extern u8 lbl_3_data_9408[];
 extern u16 lbl_3_data_93D4[][2]; // [stadium]: anim frames
 extern u16 lbl_3_data_93F4[][2]; // [practice type]: anim frames
 extern u16 lbl_3_data_9D84[];
+#include "main/unlock_flags.h"
+extern UnlockFlags lbl_80361B20; // save flags: unlocked[] per character
 extern u16 lbl_3_data_9D48;
 extern u16 lbl_3_data_9D4C;
 extern u8 lbl_3_data_9D50[][5];
 extern u8 lbl_3_data_A594[];
-extern u8 lbl_80361B20[];    // save flags: unlocked[] per character (UnlockFlags in menus/auto_00_00013BA4_text.h)
 extern u16 lbl_3_data_A8B8[]; // anim frames for the stadium cursor slots
 extern u16 lbl_3_data_A9E8[]; // [stadium]: name anim
 extern MenuDef lbl_800FEF70[];
@@ -1535,7 +1536,7 @@ void fn_3_12A910(void) {
             }
         }
         if (show != 0 &&
-            ((g_d_GameSettings.exhibitionMatchInd != 0 && lbl_80361B20[g_Minigame._19E8[i]._0] != 0) ||
+            ((g_d_GameSettings.exhibitionMatchInd != 0 && lbl_80361B20.unlocked[g_Minigame._19E8[i]._0] != 0) ||
              (g_d_GameSettings.exhibitionMatchInd == 0 &&
               gChallengeState._43D6[g_Minigame._19E8[i]._0] != 0)) &&
             g_Minigame._19E8[i]._7 != 0) {
