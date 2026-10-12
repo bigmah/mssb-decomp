@@ -341,7 +341,7 @@ config.libs = [
     ),
     Rel(
         "challenge",
-        [Object(NonMatching, "challenge/rep_0000.c")]
+        [Object(Matching, "challenge/rep_0000.c")]
     ),
     Rel(
         "challenge",
