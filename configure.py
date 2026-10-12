@@ -301,6 +301,10 @@ def TRKLib(lib_name:str, objects:List[object], flags :list[str]= cflags_base, ex
 
 # Helper function for REL script objects
 def Rel(lib_name: str, objects: List[Object], extra_cflags: List[str] = []) -> Dict[str, Any]:
+    if lib_name == "challenge":
+        # challenge.rel was also built with -common on (its .bss ends with common blocks,
+        # see docs/common_bss.md).
+        extra_cflags = ["-common on", *extra_cflags]
     return {
         "lib": lib_name,
         # "progress_category": lib_name,

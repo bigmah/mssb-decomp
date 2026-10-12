@@ -14,7 +14,7 @@ typedef struct ChMovieWork {
     /*0xC*/ ThpPlayer* player;
 } ChMovieWork;
 
-ChMovieWork lbl_1_bss_47058;
+static ChMovieWork lbl_1_bss_47058;
 // The two test movies (DVD offset/size pairs, see ThpMovie).
 ThpMovie lbl_1_data_112D8[2] = {
     { { 0x00, 0x00, 0x00, 0x00, 0x05, 0x23, 0x34, 0x58, 0x00, 0x01, 0x20, 0x00 }, 0x05233458 },
