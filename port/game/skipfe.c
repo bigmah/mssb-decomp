@@ -3,10 +3,8 @@
 // exhibition game the way the menus would: the character stats file, both
 // teams' rosters and batting orders, the captains and the stadium.
 //
-// The teams are the stats file's rows of nine characters (row = id / 9, the
-// same rows game.rel's debug team picker uses, rep_0.c maybeProcessTeamData);
-// each captain picks the row it is in. Batting orders come from the stats
-// file's presets for those rows.
+// The other eight players of each team are picked the way the team menu's
+// random-team option does it (fn_2_2FC0).
 #include "mssbTypes.h"
 #include "static/GameSettings.h"
 #include "game/character_stats.h"
@@ -19,6 +17,7 @@ extern CharSelectState lbl_8034E9A0;
 extern CharacterStats inMemRoster[2][9];
 extern u8 lbl_80354720[2][9][4]; // batting order entries
 extern u32 lbl_3_data_0[4];      // stats file record (game.rel's copy)
+extern void fn_2_2FC0(u8 mode, s32 b, s32 c); // menus: build both teams
 
 const char* port_user_ini_get(const char* key);
 int port_user_ini_bool(const char* key);
@@ -66,11 +65,9 @@ BOOL port_skipfe_pending(void) {
 // Runs one step; returns TRUE once the game can be loaded.
 BOOL port_skipfe_step(void) {
     s32 captain[2];
-    s32 row[2];
     s32 stadium;
     s32 t;
     s32 i;
-    s32 j;
 
     switch (sState) {
     case 0:
@@ -93,35 +90,18 @@ BOOL port_skipfe_step(void) {
 
     port_swap_char_stats(sStats, 6 * 9);
     memcpy(&lbl_8034E9A0, sStats, 0x46E0); // stats and team presets, as the menus load them
+    // As the "random teams" path of the team menu (fn_2_2FC0 mode 10): CPU
+    // picks the other eight players around each captain, field positions
+    // and batting orders are filled in, stats copied to inMemRoster.
+    lbl_8034E9A0.captain[0] = captain[0];
+    lbl_8034E9A0.captain[1] = captain[1];
+    fn_2_2FC0(10, 0, 1);
     for (t = 0; t < 2; t++) {
-        const u8* preset;
-        row[t] = captain[t] / 9;
-        memcpy(inMemRoster[t], sStats + row[t] * 9 * sizeof(CharacterStats), 9 * sizeof(CharacterStats));
-        // Batting order from the preset of that row (see maybeProcessTeamData).
-        preset = sStats + 0x4380 + row[t] * 0x48;
+        fprintf(stderr, "[skipfe] team %d:", t);
         for (i = 0; i < 9; i++) {
-            u8* e = lbl_80354720[t][i];
-            e[0] = i;
-            e[1] = 10;
-            e[2] = 10;
-            e[3] = 0;
-            for (j = 0; j < 9; j++) {
-                if (preset[j] == i) {
-                    break;
-                }
-            }
-            if (j < 9) {
-                e[1] = j;
-                e[2] = preset[j + 9];
-                e[3] = 1;
-            }
-            lbl_803C6724.picks[t][i] = row[t] * 9 + i;
-            lbl_803C6724.pos[t][i] = e[2];
+            fprintf(stderr, " %d", inMemRoster[t][i].stats.CharID);
         }
-        lbl_8034E9A0.captain[t] = captain[t];
-        lbl_8034E9A0.captainSlot[t] = captain[t] % 9;
-        lbl_8034E9A0.captainVariant[t] = 0;
-        lbl_8034E9A0.teamRating[t] = 3;
+        fprintf(stderr, "\n");
     }
     lbl_8034E9A0.ports[0] = 0;
     lbl_8034E9A0.ports[1] = 0xFF;
@@ -131,8 +111,6 @@ BOOL port_skipfe_step(void) {
     g_d_GameSettings.GameModeSelected = GAME_TYPE_EXHIBITION_GAME;
     g_d_GameSettings.exhibitionMatchInd = 1;
     g_d_GameSettings.StadiumID = stadium;
-    g_d_GameSettings.maybeHomeAway = row[0];
-    g_d_GameSettings.maybeHomeAway2 = row[1];
     g_d_GameSettings.humanTeamNumber = 1;
     g_d_GameSettings.PlayerPorts[0] = 0;
     g_d_GameSettings.PlayerPorts[1] = 4; // CPU
