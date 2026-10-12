@@ -42,9 +42,10 @@ typedef struct OptionsDefaults {
     /*0x24*/ u8 outputMode;
 } OptionsDefaults;
 
-typedef struct UnkSettings_800EFBC0 {
-    /*0x00*/ u8 _00[0x18];
+typedef struct UnkSettings_800EFBC0 { // s32 lbl_800EFBC0[10] in file_80021308
+    /*0x00*/ s32 _00[6];
     /*0x18*/ u32 _18;
+    /*0x1C*/ s32 _1C[3];
 } UnkSettings_800EFBC0;
 
 

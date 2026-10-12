@@ -747,8 +747,8 @@ u8 lbl_801181A0[2][0x40];
 // .sbss 0x803CBBA0..0x803CBBD8 (MWCC lays these out in reverse definition order)
 s32 lbl_803CBBD4;
 s32 lbl_803CBBD0;
-u8 lbl_803CBBCC[0x4]; // TODO type
-u8 lbl_803CBBC4[0x8]; // TODO type
+struct SceneFlow* lbl_803CBBCC; // current menu scene flow (main/menu_globals.h)
+u8 lbl_803CBBC4[8]; // menu flags (menus/rep_04B0)
 u8 lbl_803CBBC2;
 u8 lbl_803CBBC1;
 u8 lbl_803CBBC0;

@@ -70,7 +70,15 @@ extern u8 lbl_802E4B00[2][9];
 extern BatFxTables lbl_800FC0FC;
 extern EffectParams lbl_800FBEA4;
 extern EffectParams* lbl_803CB84C; // &lbl_800FBEA4
-extern void* lbl_800FBE90[5]; // ParticleParams template ([0] = tex)
+// Trail spawn template: the leading fields of ParticleParams that fn_8002F258 reads.
+typedef struct TrailParams {
+    /*0x00*/ void* tex; // TexArchive*
+    /*0x04*/ s32 texIndex;
+    /*0x08*/ s32 size;  // x100000
+    /*0x0C*/ s32 unkC;
+    /*0x10*/ s32 unk10;
+} TrailParams;
+extern TrailParams lbl_800FBE90;
 extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 extern char lbl_800E6920[]; // "orderchange.c"
 extern char lbl_800E6930[]; // "//OZ" + SJIS "no return value"
@@ -3000,18 +3008,18 @@ void fn_8004AFA8(s32 idx) {
     Vec pos;
 
     lbl_803CB84C->stamp = lbl_803CBD0C;
-    lbl_800FBE90[0] = lbl_803CBD0C;
+    lbl_800FBE90.tex = lbl_803CBD0C;
     if (model->kind == 0xE || model->kind == 0x25) {
         return;
     }
     fn_8004AE18_inline(idx);
     if (model->_276 & 2) {
         getAnimRelatedCoordinates(idx, 0x1E, (VecXYZ*)&pos);
-        fn_8002F258(&pos, idx * 2, (ParticleParams *)lbl_800FBE90); // TODO type
+        fn_8002F258(&pos, idx * 2, (ParticleParams *)&lbl_800FBE90); // only reads the TrailParams prefix
     }
     if (model->_276 & 4) {
         getAnimRelatedCoordinates(idx, 0x22, (VecXYZ*)&pos);
-        fn_8002F258(&pos, idx * 2 + 1, (ParticleParams *)lbl_800FBE90); // TODO type
+        fn_8002F258(&pos, idx * 2 + 1, (ParticleParams *)&lbl_800FBE90); // only reads the TrailParams prefix
     }
 }
 #pragma dont_inline on
@@ -3293,27 +3301,36 @@ s8 lbl_800FBDEC[120] = {
 void fn_8004BEB0(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
 void fn_8006C444(void* obj, f32 frame, s32 a, s32 b);
 void fn_8006C3F8(void* obj, f32 frame, s32 a, s32 b);
-// The handlers do not all share SwingFxFunc's signature (TODO port).
+#if NONMATCHING
+// Port build: three handlers have other C signatures (same PPC registers), and wasm checks
+// the type of indirect calls, so they go through SwingFxFunc-shaped adapters.
+static void SwingFx_8004C5F8(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
+    fn_8004C5F8(model, animID, colorIdx);
+}
+static void SwingFx_8006C444(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
+    fn_8006C444(model, frame, animID, colorIdx);
+}
+static void SwingFx_8006C3F8(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
+    fn_8006C3F8(model, frame, animID, colorIdx);
+}
+#define SWINGFX_ADAPT(fn) SwingFx_##fn
+#else
+#define SWINGFX_ADAPT(fn) (SwingFxFunc)fn_##fn
+#endif
 SwingFxFunc lbl_800FBE64[11] = {
-    (SwingFxFunc)fn_8004B284,
-    (SwingFxFunc)fn_8004BEB0,
-    (SwingFxFunc)fn_8004C510,
-    (SwingFxFunc)fn_8004C5F8,
-    (SwingFxFunc)fn_80062C60,
-    (SwingFxFunc)fn_80062E6C,
-    (SwingFxFunc)fn_8004C19C,
-    (SwingFxFunc)fn_8006C444,
-    (SwingFxFunc)fn_8006C3F8,
-    (SwingFxFunc)fn_8004ACF4,
-    (SwingFxFunc)fn_8004AC00,
+    fn_8004B284,
+    fn_8004BEB0,
+    fn_8004C510,
+    SWINGFX_ADAPT(8004C5F8),
+    fn_80062C60,
+    fn_80062E6C,
+    fn_8004C19C,
+    SWINGFX_ADAPT(8006C444),
+    SWINGFX_ADAPT(8006C3F8),
+    fn_8004ACF4,
+    fn_8004AC00,
 };
-void *lbl_800FBE90[5] = {
-    NULL,
-    (void*)0x00000005 /* TODO */,
-    (void*)0x00009C40 /* TODO */,
-    (void*)0x00000080 /* TODO */,
-    (void*)0x00000040 /* TODO */,
-};
+TrailParams lbl_800FBE90 = {NULL, 5, 40000, 128, 64};
 EffectParams lbl_800FBEA4 = {
     NULL,
     4,
@@ -3345,8 +3362,8 @@ s32 lbl_803CBCFC;
 s32 lbl_803CBCF8;
 s32 lbl_803CBCF0;
 u32 lbl_803CBCE8;
-u8 lbl_803CBCE0[0x8]; // TODO type
-u8 lbl_803CBCD8[0x8]; // TODO type
+u8 lbl_803CBCE0[8]; // menu flags (menus)
+u8 lbl_803CBCD8[8]; // menu flags (menus)
 OrderEntry lbl_803CBCD0[2];
 u8 lbl_803CBCCC[2];
 u8 lbl_803CBCC9;
