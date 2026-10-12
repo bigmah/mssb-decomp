@@ -275,6 +275,7 @@ game/rep_13B8.c:
 game/m_sound.c:
 	.text       start:0x0008B258 end:0x00090754
 	.rodata     start:0x00001508 end:0x00001610
+	.data       start:0x00008148 end:0x00008D88
 	.bss        start:0x00001760 end:0x000017F8
 
 game/rep_1610.c:
