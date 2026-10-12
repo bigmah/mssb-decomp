@@ -127,7 +127,7 @@ extern s16 lbl_80108EDC[][5]; // character variant groups
 // Process-queue task used by the memory-card save/load state machines.
 typedef struct SaveTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x10 - 0x04];
+    /*0x04*/ void* _04[3]; // prev, next, parent (SceneTask header)
     /*0x10*/ s16 result; // set by child tasks
     /*0x12*/ u16 priority;
     /*0x14*/ u8 state;
