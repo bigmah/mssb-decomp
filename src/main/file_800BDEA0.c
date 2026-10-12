@@ -1649,3 +1649,9 @@ void fn_800C07BC(void* base, void* tmp, u32 count, u32 size, s32 (*compare)(cons
     }
 }
 #endif
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .sdata 0x803CBB68..0x803CBB70
+const f32 lbl_803CBB68 = 20.0f; // NOTE: type size 0x4 != symbol size 0x8
+

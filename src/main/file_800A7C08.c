@@ -2820,3 +2820,50 @@ void fn_800ADBFC(void) {
         OSSendMessage(&lbl_802FB870, (OSMessage)4, OS_MESSAGE_NOBLOCK);
     }
 }
+
+// ---- Data (initialisers generated from the original DOL) ----
+
+// .data 0x80110080..0x801101B0
+PadConfig lbl_80110080 = {0, 12, 2, 0, 32, -50, 50}; // NOTE: type size 0xC != symbol size 0x10
+
+// .bss 0x802ED140..0x802F93A0 (MWCC lays these out in reverse definition order)
+CARDMemoryCard lbl_802EF3A0;
+CARDStat lbl_802EF330;
+CardSaveHeader lbl_802EF2F0;
+char lbl_802EF2D0[(32)];
+u64 lbl_802EF2C0[2];
+DVDCommandBlock lbl_802EF290;
+DVDCommandBlock lbl_802EF260;
+DVDCommandBlock lbl_802EF230;
+DVDCommandBlock lbl_802EF200;
+DVDCommandBlock lbl_802EF1D0;
+DVDCommandBlock lbl_802EF1A0;
+DVDCommandBlock lbl_802EF170;
+DVDCommandBlock lbl_802EF140;
+u8 lbl_802ED140[0x2000];
+
+// .sdata 0x803CBAD0..0x803CBAE0
+GXColor lbl_803CBAD0 = {0, 0, 0, 255}; // NOTE: type size 0x4 != symbol size 0x8
+GXTexFmt lbl_803CBAD8[2] = {4, 6};
+
+// .sbss 0x803CC128..0x803CC170 (MWCC lays these out in reverse definition order)
+u8* lbl_803CC16C;
+s32 lbl_803CC168;
+u8* lbl_803CC164;
+u32 lbl_803CC160;
+u8 (*lbl_803CC15C)(void* buffer, s32 length, u32 arg);
+u32 lbl_803CC158;
+StreamTrack* lbl_803CC154;
+StreamTrack* lbl_803CC150;
+StreamTrack* lbl_803CC14C;
+volatile u32 lbl_803CC148;
+volatile u32 lbl_803CC144;
+volatile u32 lbl_803CC140;
+volatile u32 lbl_803CC13C;
+volatile u32 lbl_803CC138;
+volatile u8 lbl_803CC135;
+volatile u8 lbl_803CC134;
+volatile u32 lbl_803CC130;
+volatile u32 lbl_803CC12C;
+void (*lbl_803CC128)(void);
+
