@@ -6,6 +6,132 @@ Sections:
 	.data       type:data align:32
 	.bss        type:bss align:32
 
+game/common/g_UNK_StadiumDetails.c: order:1
+	.bss        start:0x0000D714 end:0x0000DE94 align:4 common
+
+game/common/lbl_3_common_bss_DE94.c: order:2
+	.bss        start:0x0000DE94 end:0x00010988 align:4 common
+
+game/common/g_pCamera.c: order:3
+	.bss        start:0x00010988 end:0x0001098C align:4 common
+
+game/common/g_Camera.c: order:4
+	.bss        start:0x0001098C end:0x0001323C align:4 common
+
+game/common/lbl_3_common_bss_1323C.c: order:5
+	.bss        start:0x0001323C end:0x000134C4 align:4 common
+
+game/common/lbl_3_common_bss_134C4.c: order:6
+	.bss        start:0x000134C4 end:0x00013748 align:4 common
+
+game/common/g_ReplayCopies.c: order:7
+	.bss        start:0x00013748 end:0x00024C04 align:4 common
+
+game/common/g_ReplayLogic.c: order:8
+	.bss        start:0x00024C04 end:0x00029704 align:4 common
+
+game/common/g_Stats.c: order:9
+	.bss        start:0x00029704 end:0x0002DD38 align:4 common
+
+game/common/g_Runners.c: order:10
+	.bss        start:0x0002DD38 end:0x0002E288 align:4 common
+
+game/common/g_Fielders.c: order:11
+	.bss        start:0x0002E288 end:0x0002F830 align:4 common
+
+game/common/g_Batter.c: order:12
+	.bss        start:0x0002F830 end:0x0002F8E0 align:4 common
+
+game/common/g_Pitcher.c: order:13
+	.bss        start:0x0002F8E0 end:0x0002FA58 align:4 common
+
+game/common/g_Ball.c: order:14
+	.bss        start:0x0002FA58 end:0x00031650 align:4 common
+
+game/common/g_RunningLogic.c: order:15
+	.bss        start:0x00031650 end:0x00031670 align:4 common
+
+game/common/g_FieldingLogic.c: order:16
+	.bss        start:0x00031670 end:0x000317C0 align:4 common
+
+game/common/g_Scores.c: order:17
+	.bss        start:0x000317C0 end:0x00031888 align:4 common
+
+game/common/g_Strikes.c: order:18
+	.bss        start:0x00031888 end:0x000318AC align:4 common
+
+game/common/g_GameLogic.c: order:19
+	.bss        start:0x000318AC end:0x00031A04 align:4 common
+
+game/common/g_AiLogic.c: order:20
+	.bss        start:0x00031A04 end:0x00031AC0 align:4 common
+
+game/common/unkSimulationRelatedStruct.c: order:21
+	.bss        start:0x00031AC0 end:0x00031ACC align:4 common
+
+game/common/g_UnkThrowing_31ACC.c: order:22
+	.bss        start:0x00031ACC end:0x00031EAC align:4 common
+
+game/common/g_UnkAnimation_31EAC.c: order:23
+	.bss        start:0x00031EAC end:0x000321A0 align:4 common
+
+game/common/lbl_3_common_bss_321A0.c: order:24
+	.bss        start:0x000321A0 end:0x00032220 align:4 common
+
+game/common/lbl_3_common_bss_32220.c: order:25
+	.bss        start:0x00032220 end:0x00032230 align:4 common
+
+game/common/lbl_3_common_bss_32230.c: order:26
+	.bss        start:0x00032230 end:0x00032234 align:4 common
+
+game/common/lbl_3_common_bss_32234.c: order:27
+	.bss        start:0x00032234 end:0x0003223C align:4 common
+
+game/common/lbl_3_common_bss_3223C.c: order:28
+	.bss        start:0x0003223C end:0x00032718 align:4 common
+
+game/common/g_UnkSound_32718.c: order:29
+	.bss        start:0x00032718 end:0x00032724 align:4 common
+
+game/common/lbl_3_common_bss_32724.c: order:30
+	.bss        start:0x00032724 end:0x00032848 align:4 common
+
+game/common/g_Controls.c: order:31
+	.bss        start:0x00032848 end:0x00032888 align:4 common
+
+game/common/lbl_3_common_bss_32888.c: order:32
+	.bss        start:0x00032888 end:0x00032A38 align:4 common
+
+game/common/lbl_3_common_bss_32A38.c: order:33
+	.bss        start:0x00032A38 end:0x00032A94 align:4 common
+
+game/common/lbl_3_common_bss_32A94.c: order:34
+	.bss        start:0x00032A94 end:0x00032B20 align:4 common
+
+game/common/lbl_3_common_bss_32B20.c: order:35
+	.bss        start:0x00032B20 end:0x00034C58 align:4 common
+
+game/common/lbl_3_common_bss_34C58.c: order:36
+	.bss        start:0x00034C58 end:0x00034C90 align:4 common
+
+game/common/lbl_3_common_bss_34C90.c: order:37
+	.bss        start:0x00034C90 end:0x00034EF4 align:4 common
+
+game/common/g_Practice.c: order:38
+	.bss        start:0x00034EF4 end:0x000350E4 align:4 common
+
+game/common/lbl_3_common_bss_350E4.c: order:39
+	.bss        start:0x000350E4 end:0x00035154 align:4 common
+
+game/common/lbl_3_common_bss_35154.c: order:40
+	.bss        start:0x00035154 end:0x000355D4 align:4 common
+
+game/common/g_Minigame.c: order:41
+	.bss        start:0x000355D4 end:0x00037400 align:4 common
+
+game/common/lbl_3_common_bss_37400.c: order:42
+	.bss        start:0x00037400 end:0x0003744E align:4 common
+
 game/rep_0.c:
 	.text       start:0x00000000 end:0x000004F4
 	.rodata     start:0x00000000 end:0x00000060
