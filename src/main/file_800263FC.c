@@ -8,6 +8,7 @@
 #include "main/file_80011640.h"
 #include "main/file_800A7C08.h"
 #include "main/file_800BDEA0.h"
+#include "static/Camera.h"
 
 // Particle / emitter system.
 
@@ -45,7 +46,7 @@ void* fn_800B0A5C_insertQueue(void* draw, u16 priority);
 extern const Vec lbl_800E6820;
 void SetFogNone(void);
 u32 fn_8005268C(void);       // file_8004C5F8
-void* fn_80052734(s32 index); // file_8004C5F8: projection matrix
+camera_803c639c_s* fn_80052734(s32 index); // main/file_8004C5F8.h
 extern u8 lbl_800F7840[]; // 4x4 RGB565 texture
 
 extern f32 lbl_8017ED68[]; // cosine table, 0x800 steps per turn
@@ -3665,7 +3666,7 @@ void minigamesGXStuff(void) {
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
     GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetProjection(fn_80052734(fn_8005268C()), GX_PERSPECTIVE);
+    GXSetProjection(fn_80052734(fn_8005268C())->proj, GX_PERSPECTIVE);
     GXLoadPosMtxImm(lbl_8017FFE0, GX_PNMTX0);
     GXSetCurrentMtx(GX_PNMTX0);
     SetFogNone();
@@ -3716,19 +3717,20 @@ void minigamesSetSomePointers2(void) {
 #endif
 
 // .text:0x80034BCC size:0x120
-s32 fn_80034BCC(SpaniAttach* a, Mtx unused) {
+s32 fn_80034BCC(QuadState* q, Mtx unused) {
     SpaniObj* o;
     u8* col;
+    u8* qcol = (u8*)&q->color;
 
     for (o = lbl_803CBC9C->unk8; o != NULL; o = o->unk4) {
-        if (((SpaniObj*)o->parent)->animId == a->key[0] && o->unk72 == a->key[1]) {
-            PSMTXCopy(a->mtx, o->mtx2);
+        if (((SpaniObj*)o->parent)->animId == q->path[0] && o->unk72 == q->path[1]) {
+            PSMTXCopy(q->mtx, o->mtx2);
             // TODO type: unk58/unk74 are RGBA colors in SpaniObj
             col = (u8*)&o->unk74;
-            col[0] = (a->color[0] * ((u8*)&o->unk58)[0]) / 255;
-            col[1] = (a->color[1] * ((u8*)&o->unk58)[1]) / 255;
-            col[2] = (a->color[2] * ((u8*)&o->unk58)[2]) / 255;
-            col[3] = (a->color[3] * ((u8*)&o->unk58)[3]) / 255;
+            col[0] = (qcol[0] * ((u8*)&o->unk58)[0]) / 255;
+            col[1] = (qcol[1] * ((u8*)&o->unk58)[1]) / 255;
+            col[2] = (qcol[2] * ((u8*)&o->unk58)[2]) / 255;
+            col[3] = (qcol[3] * ((u8*)&o->unk58)[3]) / 255;
             o->unkA8 = 1;
         }
     }
@@ -3737,11 +3739,11 @@ s32 fn_80034BCC(SpaniAttach* a, Mtx unused) {
 
 // .text:0x80034CEC size:0x134
 void fn_80034CEC(SpaniGroup* g) {
-    s32 base = g->baseIdx;
+    s32 base = g->u14.objIdx;
     s32 i;
     s32 dst;
 
-    for (i = 0; i < g->count; i++) {
+    for (i = 0; i < g->u14.objCount; i++) {
         if (lbl_80371C30[base + i].obj != NULL) {
             lbl_80371C30[base + i].obj->flags = 0;
         }
@@ -3751,7 +3753,7 @@ void fn_80034CEC(SpaniGroup* g) {
         lbl_80371C30[dst].obj = lbl_80371C30[i].obj;
         lbl_80371C30[dst].owner = lbl_80371C30[i].owner;
         if (lbl_80371C30[dst].owner != NULL) {
-            lbl_80371C30[dst].owner->baseIdx = dst;
+            lbl_80371C30[dst].owner->u14.objIdx = dst;
         }
     }
     for (i = dst; i < 0x360; i++) {
@@ -3772,7 +3774,7 @@ void fn_80034E20(SpaniGroup* g, SpaniDesc* descs) {
 
     for (i = 0; i < 0x360; i++) {
         if (lbl_80371C30[i].obj == NULL) {
-            g->baseIdx = i;
+            g->u14.objIdx = i;
             base = &lbl_80371C30[i];
             base->owner = g;
             break;
@@ -3786,11 +3788,10 @@ void fn_80034E20(SpaniGroup* g, SpaniDesc* descs) {
         }
         lbl_80371C30[idx].obj = fn_80034F50(d);
         obj = lbl_80371C30[idx].obj;
-        // TODO type: SpaniDesc.unk12 is the parent's index within the group (0xFF: none)
-        if (*(s16*)d->unk12 == 0xFF || n == 0) {
+        if (d->parent == 0xFF || n == 0) {
             obj->parent = NULL;
         } else {
-            obj->parent = base[*(s16*)d->unk12].obj;
+            obj->parent = base[d->parent].obj;
             obj->unk4 = ((SpaniObj*)obj->parent)->unk8;
             ((SpaniObj*)obj->parent)->unk8 = obj;
         }
@@ -3800,5 +3801,5 @@ void fn_80034E20(SpaniGroup* g, SpaniDesc* descs) {
         d++;
         n++;
     }
-    g->count = n;
+    g->u14.objCount = n;
 }

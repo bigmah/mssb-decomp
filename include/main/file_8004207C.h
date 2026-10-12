@@ -11,11 +11,7 @@ struct ActorObject;
 #include "main/file_8001FE00.h"
 #include "main/menu_globals.h"
 
-// Anything that owns a run of layout objects in lbl_80371C30 starting at baseIdx.
-typedef struct LayoutOwner {
-    /*0x00*/ u8 _00[0x14];
-    /*0x14*/ u16 baseIdx;
-} LayoutOwner;
+#include "main/scene_task.h" // LayoutOwner
 
 // Per-character swing effect callback (table lbl_800FBE64).
 typedef void (*SwingFxFunc)(struct CharActor* model, s32 animID, u32 colorIdx, f32 frame);
@@ -103,28 +99,7 @@ typedef struct Unk803C5EF8 {
 
 extern Unk803C5EF8 lbl_803C5EF8;
 
-// Saved per-controller match settings (part of lbl_800E8754).
-typedef struct PortSettings {
-    /*0x0*/ u8 _0;
-    /*0x1*/ u8 _1;
-    /*0x2*/ u8 _2;
-    /*0x3*/ u8 _3;
-    /*0x4*/ u8 _4;
-    /*0x5*/ u8 _5;
-    /*0x6*/ u8 _6;
-} PortSettings; // size: 0x7
-
-// Saved match settings (lbl_800E8754).
-typedef struct SavedSettings {
-    /*0x00*/ u8 innings; // stored doubled
-    /*0x01*/ u8 _01[3];
-    /*0x04*/ u8 _04;
-    /*0x05*/ u8 _05;
-    /*0x06*/ u8 _06;
-    /*0x07*/ PortSettings port[4];
-    /*0x23*/ u8 _23[5];
-} SavedSettings; // size: 0x28
-
+// PortSettings / SavedSettings: main/menu_globals.h.
 extern SavedSettings lbl_800E8754;
 
 // View of the challenge save block (starMissionCompletionTracker, size 0x4508).

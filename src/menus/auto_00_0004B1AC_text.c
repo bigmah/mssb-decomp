@@ -4077,6 +4077,27 @@ extern u16* fn_2_4917C(u16* buffer, s32 number, s32 flags, s32 digits, s32 style
         MS_LOAD_SCRIPT(MS_S16(0x1977A0));                                         \
     }
 
+#if !NONMATCHING
+// Switch jump tables of fn_2_4EB9C; mwcc emits them itself once the function matches.
+void* jumptable_2_data_1F3F0[58] = {
+    (u8*)fn_2_4EB9C + 0x90, (u8*)fn_2_4EB9C + 0xE8, (u8*)fn_2_4EB9C + 0xA28, (u8*)fn_2_4EB9C + 0xB8C,
+    (u8*)fn_2_4EB9C + 0xC74, (u8*)fn_2_4EB9C + 0xD30, (u8*)fn_2_4EB9C + 0xD58, (u8*)fn_2_4EB9C + 0xE2C,
+    (u8*)fn_2_4EB9C + 0x248, (u8*)fn_2_4EB9C + 0xEF0, (u8*)fn_2_4EB9C + 0x1CE4, (u8*)fn_2_4EB9C + 0xF8,
+    (u8*)fn_2_4EB9C + 0x5CC, (u8*)fn_2_4EB9C + 0x330, (u8*)fn_2_4EB9C + 0xEFC, (u8*)fn_2_4EB9C + 0xF88,
+    (u8*)fn_2_4EB9C + 0x10FC, (u8*)fn_2_4EB9C + 0x11B4, (u8*)fn_2_4EB9C + 0x11E8, (u8*)fn_2_4EB9C + 0x1220,
+    (u8*)fn_2_4EB9C + 0x6D0, (u8*)fn_2_4EB9C + 0xA50, (u8*)fn_2_4EB9C + 0xA84, (u8*)fn_2_4EB9C + 0x12C8,
+    (u8*)fn_2_4EB9C + 0x1304, (u8*)fn_2_4EB9C + 0x86C, (u8*)fn_2_4EB9C + 0x1000, (u8*)fn_2_4EB9C + 0x10C8,
+    (u8*)fn_2_4EB9C + 0x298, (u8*)fn_2_4EB9C + 0x4E4, (u8*)fn_2_4EB9C + 0x1354, (u8*)fn_2_4EB9C + 0x17A4,
+    (u8*)fn_2_4EB9C + 0xA9C, (u8*)fn_2_4EB9C + 0x13BC, (u8*)fn_2_4EB9C + 0x15A0, (u8*)fn_2_4EB9C + 0x161C,
+    (u8*)fn_2_4EB9C + 0x1634, (u8*)fn_2_4EB9C + 0x1A0, (u8*)fn_2_4EB9C + 0x3FC, (u8*)fn_2_4EB9C + 0x16F8,
+    (u8*)fn_2_4EB9C + 0x18A8, (u8*)fn_2_4EB9C + 0x1930, (u8*)fn_2_4EB9C + 0x1A20, (u8*)fn_2_4EB9C + 0x1AA4,
+    (u8*)fn_2_4EB9C + 0x1AD8, (u8*)fn_2_4EB9C + 0x1B64, (u8*)fn_2_4EB9C + 0x1B98, (u8*)fn_2_4EB9C + 0x1258,
+    (u8*)fn_2_4EB9C + 0x1290, (u8*)fn_2_4EB9C + 0x1CE4, (u8*)fn_2_4EB9C + 0x1964, (u8*)fn_2_4EB9C + 0x19EC,
+    (u8*)fn_2_4EB9C + 0x1BC0, (u8*)fn_2_4EB9C + 0x1C10, (u8*)fn_2_4EB9C + 0x1C38, (u8*)fn_2_4EB9C + 0x1C60,
+    (u8*)fn_2_4EB9C + 0x1C88, (u8*)fn_2_4EB9C + 0x1CB0,
+};
+#endif
+
 // fn_2_4EB9C, size:0x1CFC
 // NONMATCHING 86%: same case layout and calls; the original addresses the text buffers (lbl_2_bss_5600/9600/9604/9608/9A08) through one lbl_2_bss_55E8 base register and keeps lbl_2_bss_1A824C's address live in r29, ours reloads with lis/addi
 // nmverify: lbl_2_bss_5600 lbl_2_bss_9600 lbl_2_bss_9604 lbl_2_bss_9608 lbl_2_bss_9A08 reached through a pooled base in original

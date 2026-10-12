@@ -2,6 +2,14 @@
 #define __CHALLENGE_REP_0000_H__
 
 #include "mssbTypes.h"
+#include "challenge/rep_0010.h"
+
+// Model/animation loader task (fn_1_1E0): streams each file of lbl_800F1D78 from ARAM.
+typedef struct ChLoaderTask {
+    /*0x00*/ ChTaskHeader h;
+    /*0x14*/ void* data;  // file being loaded (ARAMTransfer result)
+    /*0x18*/ u8 index;    // file index into lbl_800F1D78
+} ChLoaderTask;
 
 void fn_1_0(void* bank, char* name);
 

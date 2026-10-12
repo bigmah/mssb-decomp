@@ -8,7 +8,8 @@ struct ActorObject;
 
 
 // Effect spawn parameters (templates in .data, copied and tweaked before use).
-// Same layout as ParticleParams5 (file_800263FC.h).
+// The template form of ParticleParams5 (file_800263FC.h): same member types in the same order,
+// so a pointer to one is passed as the other on any ABI.
 typedef struct EffectParams {
     /*0x00*/ void* stamp; // TexArchive*
     /*0x04*/ s32 texIndex;
@@ -20,7 +21,7 @@ typedef struct EffectParams {
     /*0x44*/ s32 unk44[3];
 } EffectParams; // size 0x50
 
-// Same layout as ParticleParamsC (file_800263FC.h).
+// The template form of ParticleParamsC (file_800263FC.h): same member types in the same order.
 typedef struct EffectParamsB {
     /*0x00*/ void* stamp; // TexArchive*
     /*0x04*/ s32 texIndex;

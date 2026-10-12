@@ -15,8 +15,8 @@ void LITInitPos(Light* light, f32 x, f32 y, f32 z);
 void LITInitAttn(Light* light, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1, f32 k2);
 #include <math.h>
 
-// .data of this file (0xF888-0xFB3C); the order matters, the functions address it from one base.
-// The two switch jump tables of fn_1_1B7DC (0xFB3C-0xFB98) are left in an auto unit while it is NONMATCHING.
+// .data of this file (0xF888-0xFB94); the order matters, the functions address it from one base.
+// The two switch jump tables of fn_1_1B7DC (0xFB3C-0xFB94) are defined next to it while it is NONMATCHING.
 // Asset table entries (lbl_1_data_F968): load instructions passed to ARAMTransfer. A debug build
 // stored a file path in the first word instead (fn_1_1B7DC still compares it against test paths).
 typedef struct ChallengeAssetEntry {
@@ -74,7 +74,7 @@ static ChallengeConfettiConfig lbl_1_data_FB24 = {50, 2000, 1200000, 100000, 100
 static ChallengeCamera lbl_1_bss_6B7C;            // debug viewer camera
 static ChallengeTexBank* lbl_1_bss_6AAC[0x34];
 static u8 lbl_1_bss_6A94[0x18];                   // 1 = actor uses a test model
-static u8 lbl_1_bss_69FC[0x98];                   // TODO type: draw node (+0x10 Mtx), [0x40 + actor] flags
+static ChViewerView lbl_1_bss_69FC;               // viewer camera matrix and per-actor flags
 static u8 sFill69FB;
 static u8 sFill69FA;
 static u8 sMatRed;                                // material colour for fn_1_19D60
@@ -87,12 +87,12 @@ static u8 sConfetti;
 static u8 sSelectedActor;
 static u16 lbl_1_bss_69F0;                        // selected bone
 
-extern u8 lbl_80366158[];
+extern void* lbl_80366158[];
 extern ChallengeRosterQueue* lbl_803CC1B8;
 extern const f32 lbl_1_rodata_7578;
 extern const f32 lbl_1_rodata_757C;
 extern const f32 lbl_1_rodata_7520;
-extern u8 lbl_8036E548[];
+extern ChallengeActorMgr lbl_8036E548;
 
 extern const f32 lbl_1_rodata_75F0;
 extern const f32 lbl_1_rodata_75F4;
@@ -124,11 +124,11 @@ static inline void initViewerLights(MtxPtr view) {
     GXColor white = lbl_1_rodata_7508;
 
     for (i = 0; i < 3; i++) {
-        LITInitAttn(((ChallengeActorMgr*)lbl_8036E548)->lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
-        LITInitPos(((ChallengeActorMgr*)lbl_8036E548)->lights[i], lbl_80367318[i].pos.x, lbl_80367318[i].pos.y, lbl_80367318[i].pos.z);
+        LITInitAttn(lbl_8036E548.lights[i], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+        LITInitPos(lbl_8036E548.lights[i], lbl_80367318[i].pos.x, lbl_80367318[i].pos.y, lbl_80367318[i].pos.z);
         color = white;
-        LITInitColor(((ChallengeActorMgr*)lbl_8036E548)->lights[i], &color);
-        LITXForm(((ChallengeActorMgr*)lbl_8036E548)->lights[i], view);
+        LITInitColor(lbl_8036E548.lights[i], &color);
+        LITXForm(lbl_8036E548.lights[i], view);
     }
 }
 
@@ -139,7 +139,7 @@ extern const f32 lbl_1_rodata_75D0;
 // Debug viewer: move the selected actor with the sticks/triggers.
 static inline void moveSelectedActor(void) {
     ChallengePad* pad = (ChallengePad*)&lbl_803C77B8;
-    ChallengeViewerActor* actor = (ChallengeViewerActor*)(lbl_8036E548 + lbl_803CC1B8->actorIndex * 0x27C + 0xC04);
+    ChallengeViewerActor* actor = &lbl_8036E548.actors[lbl_803CC1B8->actorIndex];
     f32 rx;
     f32 ry;
 
@@ -175,26 +175,26 @@ static inline void allocViewerLights(void) {
     GXColor color1;
     GXColor color2;
 
-    LITAlloc(&((ChallengeActorMgr*)lbl_8036E548)->lights[0]);
-    LITAlloc(&((ChallengeActorMgr*)lbl_8036E548)->lights[1]);
-    LITAlloc(&((ChallengeActorMgr*)lbl_8036E548)->lights[2]);
+    LITAlloc(&lbl_8036E548.lights[0]);
+    LITAlloc(&lbl_8036E548.lights[1]);
+    LITAlloc(&lbl_8036E548.lights[2]);
 
-    LITInitAttn(((ChallengeActorMgr*)lbl_8036E548)->lights[0], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
-    LITInitPos(((ChallengeActorMgr*)lbl_8036E548)->lights[0], lbl_1_rodata_75B8, lbl_1_rodata_75B8, lbl_1_rodata_75BC);
+    LITInitAttn(lbl_8036E548.lights[0], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(lbl_8036E548.lights[0], lbl_1_rodata_75B8, lbl_1_rodata_75B8, lbl_1_rodata_75BC);
     color0 = white;
-    LITInitColor(((ChallengeActorMgr*)lbl_8036E548)->lights[0], &color0);
+    LITInitColor(lbl_8036E548.lights[0], &color0);
 
-    LITInitAttn(((ChallengeActorMgr*)lbl_8036E548)->lights[1], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
-    LITInitPos(((ChallengeActorMgr*)lbl_8036E548)->lights[1], lbl_1_rodata_75C0, lbl_1_rodata_75C4, lbl_1_rodata_75C8);
+    LITInitAttn(lbl_8036E548.lights[1], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(lbl_8036E548.lights[1], lbl_1_rodata_75C0, lbl_1_rodata_75C4, lbl_1_rodata_75C8);
     color1 = cyan;
-    LITInitColor(((ChallengeActorMgr*)lbl_8036E548)->lights[1], &color1);
+    LITInitColor(lbl_8036E548.lights[1], &color1);
 
-    LITInitAttn(((ChallengeActorMgr*)lbl_8036E548)->lights[2], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
-    LITInitPos(((ChallengeActorMgr*)lbl_8036E548)->lights[2], lbl_1_rodata_7520, lbl_1_rodata_75C4, lbl_1_rodata_75C8);
+    LITInitAttn(lbl_8036E548.lights[2], 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    LITInitPos(lbl_8036E548.lights[2], lbl_1_rodata_7520, lbl_1_rodata_75C4, lbl_1_rodata_75C8);
     color2 = cyan;
-    LITInitColor(((ChallengeActorMgr*)lbl_8036E548)->lights[2], &color2);
+    LITInitColor(lbl_8036E548.lights[2], &color2);
 
-    LITInitDir(((ChallengeActorMgr*)lbl_8036E548)->lights[0], lbl_1_rodata_75BC, lbl_1_rodata_75BC, lbl_1_rodata_75B8);
+    LITInitDir(lbl_8036E548.lights[0], lbl_1_rodata_75BC, lbl_1_rodata_75BC, lbl_1_rodata_75B8);
 }
 
 #include "dolphin/GX/GXFifo.h"
@@ -313,12 +313,7 @@ extern const char lbl_1_rodata_769C[];
 extern const char lbl_1_rodata_76C0[];
 extern const char lbl_1_rodata_76E4[];
 extern const char lbl_1_rodata_7708[];
-// view of the ARAM loader (lbl_803C6CF8, ARAMLoader in main/file_800A6870.h)
-typedef struct ChallengeAramLoader {
-    u8 pad000[0x715];
-    u8 transferDone;
-} ChallengeAramLoader;
-extern ChallengeAramLoader lbl_803C6CF8;
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 
 ChallengeDrawCollection* ActorObjectInitTable(u16 count);
 void LoadActorLayout(void* layout);
@@ -329,14 +324,14 @@ void fn_800BD548(ChallengeDrawNode* entry, u8 numArgs, ...);
 void fn_800B2C08(ChallengeDrawActor* actor, u16 bone);
 
 extern const GXColor lbl_1_rodata_74F0; // black
-extern u8 lbl_80366158[];
+extern void* lbl_80366158[];
 
 extern u8 lbl_803CBBC0; // current frame buffer (0/1)
 extern void fn_800A7D4C(s32 layer, void* node);
 
 // .text:0x0001D514 size:0x7C
 void fn_1_1D514(void) {
-    fn_800AD038(*(void**)(lbl_80366158 + 8));
+    fn_800AD038(lbl_80366158[2]);
     lbl_803CC1B8->state = 0;
     lbl_803CC1B8->update = (void (*)(u8*))fn_1_1D470;
     sMatAlpha = 0xFF;
@@ -352,7 +347,7 @@ void fn_1_1D470(void) {
     ChallengeRosterQueue* queue = lbl_803CC1B8;
     s32 index;
     for (index = 0; index < 24; index++) {
-        lbl_1_bss_69FC[0x40 + index] = 0;
+        lbl_1_bss_69FC.actorFlags[index] = 0;
     }
     queue->menu = 0;
     lbl_803CC1B8->update = fn_1_1D450;
@@ -369,34 +364,34 @@ void fn_1_1D450(u8* object) {
 #if NONMATCHING
 void fn_1_1D110(void) {
     ChallengeRosterQueue* task = lbl_803CC1B8;
-    MtxPtr camera = (MtxPtr)(lbl_1_bss_69FC + 0x10); // TODO type
+    MtxPtr camera = lbl_1_bss_69FC.camera;
     ChallengeViewerActor* actor;
     ChallengeDrawNode* node;
     s32 i;
 
     initViewerLights(camera);
     for (i = 0; i < 24; i++) {
-        actor = &((ChallengeActorMgr*)lbl_8036E548)->actors[i];
-        node = &(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[i];
+        actor = &lbl_8036E548.actors[i];
+        node = &lbl_8036E548.collection->nodes[i];
         node->visible = (task->viewMode != 1) & (i == task->actorIndex);
-        CTRLSetTranslation(&node->worldControl, ((ChallengeActorMgr*)lbl_8036E548)->actors[i].pos.x,
-                           ((ChallengeActorMgr*)lbl_8036E548)->actors[i].pos.y,
-                           ((ChallengeActorMgr*)lbl_8036E548)->actors[i].pos.z);
+        CTRLSetTranslation(&node->worldControl, lbl_8036E548.actors[i].pos.x,
+                           lbl_8036E548.actors[i].pos.y,
+                           lbl_8036E548.actors[i].pos.z);
         CTRLSetRotation(&node->worldControl, lbl_1_rodata_772C * actor->rot.x, lbl_1_rodata_772C * actor->rot.y,
                         lbl_1_rodata_772C * actor->rot.z);
         node->scale = actor->scale;
         node->setSpeed = 1;
     }
     if (lbl_1_bss_69F5 == 0) {
-        fn_800BD670(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60), (MtxPtr)camera);
+        fn_800BD670(lbl_8036E548.collection, (MtxPtr)camera);
     } else {
-        fn_1_1A290(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60), camera);
+        fn_1_1A290(lbl_8036E548.collection, camera);
     }
     for (i = 0; i < 24; i++) {
-        node = &(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[i];
+        node = &lbl_8036E548.collection->nodes[i];
         node->visible = 1;
     }
-    fn_800BD8C4(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60), camera);
+    fn_800BD8C4(lbl_8036E548.collection, camera);
 }
 #endif
 
@@ -405,8 +400,8 @@ void fn_1_1D10C(void) {
 }
 
 // .text:0x0001D0E8 size:0x24
-void fn_1_1D0E8(u8* object) {
-    fn_800B9AA8(*(void**)(object + 0x70));
+void fn_1_1D0E8(ChallengeDrawNode* object) {
+    fn_800B9AA8(object->lights[0]);
 }
 
 // .text:0x0001CBE4 size:0x504
@@ -468,12 +463,12 @@ void fn_1_1CBE4(u8* object) {
             path == lbl_1_rodata_76E4 || path == lbl_1_rodata_7708) {
             lbl_1_bss_6A94[idx] = 1;
         }
-        ((ChallengeActorMgr*)lbl_8036E548)->actors[task->actorIndex].model =
+        lbl_8036E548.actors[task->actorIndex].model =
             (ChallengeFileRef*)ARAMTransfer(&lbl_1_data_F968[task->actorIndex], 0, 0, 0);
         lbl_803CC1B8->state++;
         break;
     case 3:
-        if ((s32)lbl_803C6CF8.transferDone == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             task->state = 1;
         }
         break;
@@ -502,8 +497,8 @@ void fn_1_1C8C0(u8* object) {
     u32 i;
     u32 j;
 
-    ((ChallengeActorMgr*)lbl_8036E548)->collection = ActorObjectInitTable(24);
-    mgr = (ChallengeActorMgr*)lbl_8036E548;
+    lbl_8036E548.collection = ActorObjectInitTable(24);
+    mgr = &lbl_8036E548;
     isTest = lbl_1_bss_6A94;
     banks = lbl_1_bss_6AAC;
     for (i = 0; i < 24; i++) {
@@ -585,7 +580,7 @@ void fn_1_1C3CC(u8* object) {
     } else {
         updateViewerCamera();
     }
-    PSMTXCopy(lbl_1_bss_6B7C.view, (MtxPtr)(lbl_1_bss_69FC + 0x10)); // TODO type
+    PSMTXCopy(lbl_1_bss_6B7C.view, lbl_1_bss_69FC.camera);
     sSelectedActor = task->actorIndex;
     fn_800A7D4C(0, &lbl_1_data_FAE8[lbl_803CBBC0]);
     if (task->viewMode != 2) {
@@ -596,6 +591,20 @@ void fn_1_1C3CC(u8* object) {
         fn_1_1A3B4();
     }
 }
+#endif
+
+#if !NONMATCHING
+// Switch jump tables of fn_1_1B7DC; mwcc emits them itself once the function matches.
+void* jumptable_1_data_FB3C[11] = {
+    (u8*)fn_1_1B7DC + 0x6B8, (u8*)fn_1_1B7DC + 0x6DC, (u8*)fn_1_1B7DC + 0x700, (u8*)fn_1_1B7DC + 0x724,
+    (u8*)fn_1_1B7DC + 0x748, (u8*)fn_1_1B7DC + 0x854, (u8*)fn_1_1B7DC + 0x7D0, (u8*)fn_1_1B7DC + 0x7E4,
+    (u8*)fn_1_1B7DC + 0x800, (u8*)fn_1_1B7DC + 0x81C, (u8*)fn_1_1B7DC + 0x838,
+};
+void* jumptable_1_data_FB68[11] = {
+    (u8*)fn_1_1B7DC + 0x1A4, (u8*)fn_1_1B7DC + 0x1C8, (u8*)fn_1_1B7DC + 0x1EC, (u8*)fn_1_1B7DC + 0x210,
+    (u8*)fn_1_1B7DC + 0x234, (u8*)fn_1_1B7DC + 0x340, (u8*)fn_1_1B7DC + 0x2BC, (u8*)fn_1_1B7DC + 0x2D0,
+    (u8*)fn_1_1B7DC + 0x2EC, (u8*)fn_1_1B7DC + 0x308, (u8*)fn_1_1B7DC + 0x324,
+};
 #endif
 
 // .text:0x0001B7DC size:0xBF0
@@ -615,9 +624,9 @@ void fn_1_1B7DC(void) {
     ChallengeRosterQueue* task = lbl_803CC1B8;
 
     if (pad->down & 0x200) {
-        fn_800AD038(*(void**)(lbl_80366158 + 8)); // TODO type
+        fn_800AD038(lbl_80366158[2]);
         exitFog = black;
-        SetFog(0, (GXColor *)(s32*)&exitFog, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520); // TODO type
+        SetFog(0, &exitFog, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
         ((ChallengeRosterQueue*)lbl_803CC1B8->_0C)->state = 1;
         minigamesSetSomePointers();
     } else if (pad->repeat & 8) { // up
@@ -669,10 +678,10 @@ void fn_1_1B7DC(void) {
         case 4:
             if ((sFog = !sFog)) {
                 leftFogOn = lbl_1_data_FB08;
-                SetFog(4, (GXColor *)(s32*)&leftFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540); // TODO type
+                SetFog(4, &leftFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540);
             } else {
                 leftFogOff = black;
-                SetFog(0, (GXColor *)(s32*)&leftFogOff, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520); // TODO type
+                SetFog(0, &leftFogOff, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
             }
             break;
         case 5:
@@ -738,10 +747,10 @@ void fn_1_1B7DC(void) {
         case 4:
             if ((sFog = !sFog)) {
                 rightFogOn = lbl_1_data_FB08;
-                SetFog(4, (GXColor *)(s32*)&rightFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540); // TODO type
+                SetFog(4, &rightFogOn, lbl_1_rodata_7520, lbl_1_rodata_75C0, lbl_1_rodata_753C, lbl_1_rodata_7540);
             } else {
                 rightFogOff = black;
-                SetFog(0, (GXColor *)(s32*)&rightFogOff, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520); // TODO type
+                SetFog(0, &rightFogOff, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520, lbl_1_rodata_7520);
             }
             break;
         case 5:
@@ -823,7 +832,7 @@ void fn_1_1B0FC(void) {
 // white load scheduled before the base pointers (decomp-permuter found nothing in 40 min)
 #if NONMATCHING
 void fn_1_1B038(void) {
-    initViewerLights((MtxPtr)(lbl_1_bss_69FC + 0x10)); // TODO type
+    initViewerLights(lbl_1_bss_69FC.camera);
 }
 #endif
 
@@ -1006,8 +1015,8 @@ void fn_1_1A774(void) {
     u8 blue;
     u8 alpha;
 
-    if (lbl_1_bss_69F0 < (*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[sSelectedActor].drawing.actor->boneCount) {
-        for (index = 0; index < (*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[sSelectedActor].drawing.actor->boneCount; index++) {
+    if (lbl_1_bss_69F0 < lbl_8036E548.collection->nodes[sSelectedActor].drawing.actor->boneCount) {
+        for (index = 0; index < lbl_8036E548.collection->nodes[sSelectedActor].drawing.actor->boneCount; index++) {
             if (index == lbl_1_bss_69F0) {
                 red = 0;
                 green = 0xFF;
@@ -1019,7 +1028,7 @@ void fn_1_1A774(void) {
                 blue = 0x80;
                 alpha = 0x40;
             }
-            fn_800B2C88((struct GameActor *)(*(ChallengeDrawCollection**)(lbl_8036E548 + 0x60))->nodes[sSelectedActor].drawing.actor, index, matrix); // TODO type
+            fn_800B2C88((struct GameActor *)lbl_8036E548.collection->nodes[sSelectedActor].drawing.actor, index, matrix); // TODO type
             fn_1_1A850(matrix, lbl_1_bss_6B7C.view, red, green, blue, alpha);
         }
     }

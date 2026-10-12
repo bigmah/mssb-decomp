@@ -4,6 +4,13 @@
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
 #include "Dolphin/gx.h"
+#include "challenge/rep_0010.h"
+
+// Test-mode menu task (fn_1_246AC): picks one of the four lbl_1_data_104A8 tests.
+typedef struct ChallengeTestMenu {
+    /* 0x00 */ ChTaskHeader h; // h.parent: the task that started the tests (ChallengeTransfer)
+    /* 0x14 */ u8 cursor;
+} ChallengeTestMenu;
 
 typedef struct {
     void* image;
@@ -23,6 +30,35 @@ typedef struct {
     u8 paletteFormat;
     u8 padding1B;
 } ChallengeTextureHeader;
+
+// Texture-animation draw node (lbl_1_data_107E4, drawn by fn_1_1D694).
+typedef struct ChallengeAnimEntry {
+    /* 0x00 */ void* link; // draw-list link (set by fn_800A7D4C)
+    /* 0x04 */ void (*draw)(struct ChallengeAnimEntry* obj);
+    /* 0x08 */ ChallengeTextureHeader* tex; // tiles are copied into tex->image
+    /* 0x0C */ void* data;   // source image
+    /* 0x10 */ u8* table;    // tile index per cell
+    /* 0x14 */ u16 width;
+    /* 0x16 */ u16 height;
+    /* 0x18 */ u8 active;
+    /* 0x19 */ u8 pad19[3];
+} ChallengeAnimEntry;
+
+// Texture-animation test task (fn_1_1DCE4 / fn_1_1DA54 / fn_1_1D944).
+typedef struct ChallengeAnimTest {
+    /* 0x00 */ ChTaskHeader h;
+    /* 0x14 */ u8* file;
+    /* 0x18 */ u8* tex; // texture archive inside `file`
+    /* 0x1C */ u16 frameCount;
+    /* 0x1E */ u16 frame;
+    /* 0x20 */ u16 timer;
+    /* 0x22 */ u16 delay;
+    /* 0x24 */ u16 width;
+    /* 0x26 */ u16 height;
+    /* 0x28 */ u16 firstImage;
+    /* 0x2A */ u8 pad2A[2];
+    /* 0x2C */ ChallengeTextureHeader* header; // copy of the archive's first header
+} ChallengeAnimTest;
 
 typedef struct {
     u8 padding[0x10];
@@ -50,8 +86,11 @@ typedef struct {
 } ChallengeProjectionState; // size 0x154
 
 typedef struct {
-    u8 padding[0x18];
-    f32 scale;
+    /* 0x00 */ void (*func)(void);
+    /* 0x04 */ u8 pad4[0xC];
+    /* 0x10 */ s16 result; // set by the child task (fn_1_20DC8)
+    /* 0x12 */ u8 pad12[6];
+    /* 0x18 */ f32 scale;
     f32 unk1C;
     u8 steps;
     u8 pointCount;
@@ -92,12 +131,16 @@ typedef struct {
 // Queue object of the sprite-animation viewer (fn_1_25F98).
 typedef struct {
     /* 0x00 */ void (*func)(void);
-    /* 0x04 */ u8 pad4[0x10];
+    /* 0x04 */ u8 pad4[0x8];
+    /* 0x0C */ ChallengeTransfer* transfer; // parent task
+    /* 0x10 */ u8 pad10[4];
     /* 0x14 */ struct ChallengeSpriteTask* sprite;
     /* 0x18 */ u16 trackCount;
     /* 0x1A */ s16 x;
     /* 0x1C */ s16 y;
-    /* 0x1E */ u8 pad1E[3];
+    /* 0x1E */ u8 step;        // fn_1_267F4 load step
+    /* 0x1F */ u8 screenCount; // entries of lbl_1_data_FB98
+    /* 0x20 */ u8 screen;
     /* 0x21 */ u8 track;
     /* 0x22 */ u8 cursor;
     /* 0x23 */ u8 hold;
@@ -191,13 +234,29 @@ typedef struct {
 
 // Debug/texture test state (queue object): value/toggle/cursor/stageCount are edited by fn_1_1FD78.
 typedef struct {
-    /* 0x00 */ u8 pad0[0x1C];
+    /* 0x00 */ void (*func)(void);
+    /* 0x04 */ u8 pad4[0x10];
+    /* 0x14 */ u8* tex;  // texture archive inside `file` (convertTextureHeader'd)
+    /* 0x18 */ u8* file; // loaded by fn_1_2004C
     /* 0x1C */ u32 value;
-    /* 0x20 */ u8 toggle;
-    /* 0x21 */ u8 cursor;
+    /* 0x20 */ u8 toggle; // also the page: index into lbl_1_data_10508 / lbl_1_data_10510
+    /* 0x21 */ u8 cursor; // also fn_1_2004C's load step
     /* 0x22 */ u8 stageCount;
     /* 0x23 */ u8 unk23;
+    /* 0x24 */ u8 unk24;
 } ChallengeTextureStages;
+
+// Rigid-body test task (fn_1_1F2D8 / fn_1_1F05C); h.result is the selected menu row.
+typedef struct ChallengeBodyTest {
+    /* 0x00 */ ChTaskHeader h;
+    /* 0x14 */ f32 length;
+    /* 0x18 */ f32 frac;
+    /* 0x1C */ f32 radius;
+    /* 0x20 */ f32 mass;
+    /* 0x24 */ f32 height;
+    /* 0x28 */ s32 shape; // index into lbl_1_data_10668 / lbl_1_data_1066C
+    /* 0x2C */ u32 flags; // 1: menu open, 2: draw body, 4: reset requested
+} ChallengeBodyTest;
 
 typedef struct {
     /* 0x00 */ Mtx view;
@@ -287,7 +346,7 @@ void fn_1_22DF4(ChallengeCurveDrawing* arg);
 
 void fn_1_1F05C(void);
 
-void fn_1_1F418(u8* menu);
+void fn_1_1F418(ChallengeTextureStages* menu);
 
 void fn_1_1F2D8(void);
 
@@ -295,7 +354,15 @@ void fn_1_22F4C(s32 h, s32 w, f32* out, f32* cur, f32* prev);
 
 void fn_1_24A8C(void);
 
-void fn_1_20E00(u8* obj);
+// Rope-model loader task (fn_1_20BD8); its child fn_1_20F8C stores the loaded file in `data`.
+typedef struct ChallengeModelLoadTask {
+    /* 0x00 */ ChTaskHeader h;
+    /* 0x14 */ void* data;
+    /* 0x18 */ u8 pad18[0xD];
+    /* 0x25 */ u8 step;
+} ChallengeModelLoadTask;
+
+void fn_1_20E00(ChallengeModelLoadTask* obj);
 
 void fn_1_20BD8(void);
 
@@ -307,7 +374,7 @@ void fn_1_1DA54(void);
 
 void fn_1_24410(void);
 
-void fn_1_1D694(u8* obj);
+void fn_1_1D694(struct ChallengeAnimEntry* obj);
 void fn_1_21040(void);
 void fn_1_20950(ChallengeCurvePoint* points, s32 count, MtxPtr camera);
 void fn_1_23804(s32 arg0, s32 arg1, s32 rows, s32 cols, f32 arg4, f32 arg5);

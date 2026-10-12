@@ -2,6 +2,8 @@
 #include "main/file_80021308.h"
 #include "main/file_800A6870.h"
 #include "main/file_800B0724.h"
+#include "main/file_80008E00.h" // lbl_80366158
+#include "main/SpaniDesc.h"
 #include "Dolphin/vi.h"
 #include "Dolphin/gx.h"
 #include "Dolphin/mtx.h"
@@ -14,7 +16,6 @@ extern AnimEventCallback lbl_803CBD3C;
 extern GXRenderModeObj* lbl_803CBD34;
 extern GXRenderModeObj lbl_80109250;
 extern GXRenderModeObj lbl_8010928C;
-extern u8 lbl_80366158[0x30]; // TODO type
 extern s16 lbl_80109400[8];
 extern s16 lbl_80109410[8];
 extern f32 lbl_801093E8[6];
@@ -53,7 +54,7 @@ typedef struct Unk80366B18 {
 } Unk80366B18; // size: 0x38
 
 extern Unk80366B18 lbl_80366B18[36];
-extern u8 lbl_801075A8[0xE0]; // TODO type
+extern SpaniDesc lbl_801075A8[7];
 
 extern void fn_80034E20(void* task, void* desc);
 extern void fn_80034CEC(void* task);
@@ -69,14 +70,14 @@ typedef struct Unk803716B8 {
 } Unk803716B8;
 
 extern Unk803716B8 lbl_803716B8;
-extern u8 lbl_801092F8[0x80]; // TODO type
+extern SpaniDesc lbl_801092F8[4];
 
 extern DiskFileEntry lbl_801092C8[2]; // [0]: intro movie, [1]: logo textures
 extern DiskFileEntry lbl_801092E8;    // logo sound data
 
 
 typedef struct Unk80109378 {
-    /*0x00*/ u8 _00[0x40];
+    /*0x00*/ SpaniDesc descs[2]; // logo screen sprites (file_800639BC fn_80069B68)
     /*0x40*/ SoundGroupRequest _40;
 } Unk80109378;
 
@@ -571,7 +572,7 @@ void fn_8006B230(void) {
             s32 i;
             for (i = 0; i < 4; pad++, i++) {
                 if (pad->trig & 0x1100) {
-                    lbl_80366158[0x27] = i;
+                    lbl_80366158._27 = i;
                     break;
                 }
             }
@@ -681,7 +682,7 @@ void fn_8006B78C(void) {
     switch (state) {
     case 0:
         fn_8000900C();
-        lbl_80366158[0x20] = 1;
+        lbl_80366158._20 = 1;
     case 3:
     case 6:
         if (++task->_38 == 30) {
@@ -775,7 +776,7 @@ void fn_8006BB60(void) {
     case 1:
         if (task->_36-- == 0) {
             fn_8000900C();
-            lbl_80366158[0x20] = 1;
+            lbl_80366158._20 = 1;
             task->_36 = 3480;
             task->state++;
         }
@@ -844,17 +845,17 @@ void fn_8006BE00(void) {
             break;
         }
         if ((task->_3A == 0 || lbl_8037169C._12 != 0) && lbl_803C6CF8.idle == 1) {
-            if (lbl_80366158[0x29] == 0 || lbl_80366158[0x29] == 1) {
+            if (lbl_80366158._29 == 0 || lbl_80366158._29 == 1) {
                 fn_80008E00(fn_8006C088);
             }
-            lbl_80109378._40.task = (SoundLoadTask*)lbl_803CC1B8; // TODO type: the scene task
+            lbl_80109378._40.task = (SoundLoadTask*)lbl_803CC1B8; // the scene task (same task header)
             fn_800215F8(&lbl_80109378._40);
             RELOCATE(task->u14.res, task->u14.res->data);
             convertTextureHeader(task->u14.res->data);
             task->state = 0;
             task->_38 = 0;
             task->_39 = 0;
-            switch (lbl_80366158[0x29]) {
+            switch (lbl_80366158._29) {
             case 0:
                 lbl_803CC1B8->func = fn_8006BB60;
                 break;
@@ -985,7 +986,7 @@ void fn_8006C3F0(AnimEventCallback cb) {
 
 // .text:0x8006C3F8 size:0x44
 void fn_8006C3F8(void* obj, f32 frame, s32 a, s32 b) {
-    if (lbl_80366158[0x28] != 1 && lbl_803CBD38 != NULL) {
+    if (lbl_80366158._28 != 1 && lbl_803CBD38 != NULL) {
         lbl_803CBD38(obj, frame, a, b);
     }
 }
@@ -997,7 +998,7 @@ void fn_8006C43C(AnimEventCallback cb) {
 
 // .text:0x8006C444 size:0x44
 void fn_8006C444(void* obj, f32 frame, s32 a, s32 b) {
-    if (lbl_80366158[0x28] != 1 && lbl_803CBD3C != NULL) {
+    if (lbl_80366158._28 != 1 && lbl_803CBD3C != NULL) {
         lbl_803CBD3C(obj, frame, a, b);
     }
 }
@@ -1290,7 +1291,7 @@ void fn_80069A68(SoundGroupRequest* req, SoundGroupData* data); // file_800639BC
 
 // ---- Data (initialisers generated from the original DOL) ----
 
-// .data 0x80109250..0x8010B600
+// .data 0x80109250..0x8010B610
 GXRenderModeObj lbl_80109250 = {
     0,
     608,
@@ -1323,22 +1324,16 @@ GXRenderModeObj lbl_8010928C = {
 };
 DiskFileEntry lbl_801092C8[2] = {{0, {0x5233458}, {0x12000}, 0x5233458}, {1035, {0x40078660}, {0x6C7B000}, 0x1AF54}};
 DiskFileEntry lbl_801092E8 = {1035, {0x4006C850}, {0x6C96000}, 0x2C884};
-u8 lbl_801092F8[0x80] = {
-    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
-    2, 20, 0, 255, 22, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
-    3, 20, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-    0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
-    3, 2, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-    0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+SpaniDesc lbl_801092F8[4] = {
+    {0, 1, 0.0f, 0.0f, -1, 2, 20, 255, 22, {0, 0, 0}, 0.0f, 0, 1, 0},
+    {0, 0, 0.0f, 0.0f, -1, 3, 20, 0, 22, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {0, 2, 0.0f, 0.0f, -1, 3, 2, 0, 22, {0, 0, 0}, 0.0f, 0, 1, 1},
+    {3, 0, 0.0f, 0.0f, 0, 0, 0, 0, 0, {0, 0, 0}, 0.0f, 0, 0, 0},
 };
 Unk80109378 lbl_80109378 = {
     {
-        0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
-        3, 1, 0, 255, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        {0, 3, 0.0f, 0.0f, -1, 3, 1, 255, 22, {0, 0, 0}, 0.0f, 0, 0, 0},
+        {3, 0, 0.0f, 0.0f, 0, 0, 0, 0, 0, {0, 0, 0}, 0.0f, 0, 0, 0},
     },
     {47, fn_80069A68, NULL}, // fn_80069A68: file_800639BC
 };
@@ -2260,6 +2255,10 @@ f32 lbl_8010B590[4][7] = {
     {0.0f, 0.0f, 5.0f, 5.0f, 15.0f, 15.0f, 0.0f},
     {5.0f, 5.0f, 10.0f, 10.0f, 20.0f, 20.0f, 0.0f},
     {10.0f, 10.0f, 15.0f, 15.0f, 25.0f, 25.0f, 0.0f},
+};
+// Per challenge difficulty: final inning, final inning (alternative), mercy-rule run margin.
+u8 lbl_8010B600[5][3] = {
+    {3, 5, 10}, {3, 5, 10}, {3, 5, 10}, {3, 5, 10}, {5, 7, 10},
 };
 
 // .sdata 0x803CB8D8..0x803CB8F8

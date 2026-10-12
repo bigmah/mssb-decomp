@@ -11,7 +11,7 @@ extern u16 lbl_3_data_D22C[4];
 extern u16 lbl_3_data_D234[14];
 extern u8 lbl_3_data_C34C[];
 extern u8 lbl_3_data_F430[12][2];
-extern u8 lbl_3_data_F4D0[16];
+u8 lbl_3_data_F4D0[16] = {0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0}; // per inning
 extern s16 lbl_3_data_5F3C[4];
 extern u8 lbl_3_data_C22C[];
 extern u8 lbl_3_data_D378[];

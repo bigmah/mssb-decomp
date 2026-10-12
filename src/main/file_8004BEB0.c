@@ -56,9 +56,9 @@ void fn_8004BEB0(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     lbl_800FC488[2]->stamp = stamp;
     lbl_800FC488[1]->stamp = stamp;
     lbl_800FC488[0]->stamp = stamp;
-    fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[0], 5); // TODO type
-    fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[1], 5); // TODO type
-    fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[2], 5); // TODO type
+    fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[0], 5);
+    fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[1], 5);
+    fn_80030D88(&pos, &dir, (ParticleParams5 *)lbl_800FC488[2], 5);
 }
 
 extern EffectParams lbl_800FC720;
@@ -76,7 +76,7 @@ void fn_8004C094(Vec* pos) {
         p->stamp = lbl_803CBD0C;
         p->unk0C = 120000;
         p->unk10 = 60000;
-        fn_80031CA4(pos, (ParticleParams5 *)(u32*)p); // TODO type
+        fn_80031CA4(pos, (ParticleParams5 *)p);
     }
 }
 
@@ -90,6 +90,6 @@ void fn_8004C108(Vec* pos, u8 colorIdx) {
         p->stamp = lbl_803CBD0C;
         p->rgb = (lbl_803CB864[colorIdx].r << 24) | ((lbl_803CB864[colorIdx].g & 0xFF) << 16) |
                  (lbl_803CB864[colorIdx].b << 8);
-        fn_80031CA4(pos, (ParticleParams5 *)(u32*)p); // TODO type
+        fn_80031CA4(pos, (ParticleParams5 *)p);
     }
 }

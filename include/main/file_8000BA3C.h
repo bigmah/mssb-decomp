@@ -139,7 +139,8 @@ typedef struct AnimFrame {
 } AnimFrame; // size 0x50
 
 typedef struct AnimTrackTable {
-    /* 0x00 */ u8 pad0[8];
+    /* 0x00 */ s32 count; // tracks
+    /* 0x04 */ u8 pad4[4];
     /* 0x08 */ AnimTrack* tracks[1];
 } AnimTrackTable;
 

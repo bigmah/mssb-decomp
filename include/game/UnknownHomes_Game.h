@@ -2153,7 +2153,10 @@ typedef struct _MiniGameStruct {
     /*0x19CD*/ u8 _19CD;
     /*0x19CE*/ u8 _19CE;
     /*0x19CF*/ u8 _19CF;
-    /*0x19D0*/ s16 _19D0;
+    union {
+        /*0x19D0*/ s16 _19D0;
+        /*0x19D0*/ u8 _19D0b[2]; // rep_AC8 uses the high byte as a flag
+    };
     /*0x19D2*/ s16 _19D2[4];
     /*0x19DA*/ s8 _19DA[4];
     /*0x19DE*/ u8 _19DE;
@@ -2301,8 +2304,7 @@ typedef struct _MiniGameStruct {
     /*0x1B31*/ u8 _1B31;
     /*0x1B32*/ u8 _1B32;
     /*0x1B33*/ u8 _1B33;
-    /*0x1B34*/ s16 _1B34;
-    /*0x1B36*/ u8 _1B36[6];
+    /*0x1B34*/ s16 _1B34[4]; // indexed by MiniGameControlStruct._24
     /*0x1B3C*/ s16 _1B3C;
     /*0x1B3E*/ u8 _1B3E[6];
     /*0x1B44*/ s16 _1B44;
@@ -2368,9 +2370,7 @@ typedef struct _MiniGameStruct {
     /*0x1C8A*/ u8 _1C8A[4];
     /*0x1C8E*/ u8 _1C8E[4];
     /*0x1C92*/ u8 _1C92[8];
-    /*0x1C9A*/ u8 _1C9A;
-    /*0x1C9B*/ u8 _1C9B;
-    /*0x1C9C*/ s16 _1C9C;
+    /*0x1C9A*/ u8 _1C9A[4]; // per fielder (mode 5)
     /*0x1C9E*/ u8 _1C9E;
     /*0x1C9F*/ u8 _1C9F;
     /*0x1CA0*/ u8 _1CA0[2];
@@ -2384,10 +2384,7 @@ typedef struct _MiniGameStruct {
     /*0x1CAC*/ u8 _1CAC;
     /*0x1CAD*/ u8 _1CAD[4];
     /*0x1CB1*/ u8 _1CB1[7];
-    /*0x1CB8*/ f32 _1CB8;
-    /*0x1CBC*/ f32 _1CBC;
-    /*0x1CC0*/ f32 _1CC0;
-    /*0x1CC4*/ u8 _1CC4[36];
+    /*0x1CB8*/ VecXYZ _1CB8[4]; // per fielder: separation from the other fielder
     /*0x1CE8*/ VecXYZ _1CE8;
     /*0x1CF4*/ VecXYZ _1CF4;
     /*0x1D00*/ u8 _1D00[4];
@@ -2510,7 +2507,7 @@ typedef struct {
 
 extern lbl_3_common_bss_32718_struct g_UnkSound_32718;
 
-extern struct {
+extern struct StarPowerCosts {
     /* 0x0 */ u8 moonShotCost;
     /* 0x1 */ u8 captainStarCost;
     /* 0x2 */ u8 nonCaptain_CaptainStarCost;
@@ -2587,19 +2584,13 @@ typedef struct {
     /* 0x77 */ u8 _77;
     /* 0x78 */ u8 _78;
     /* 0x79 */ u8 _79[3];
-    /* 0x7C */ u8 _7C[4];
-    /* 0x80 */ u8 _80[28];
-    /* 0x9C */ u8 _9C[8];
-    /* 0xA4 */ u8 _A4[8];
-    /* 0xAC */ u8 _AC[8];
-    /* 0xB4 */ u8 _B4;
-    /* 0xB5 */ u8 _B5;
-    /* 0xB6 */ u8 _B6;
-    /* 0xB7 */ u8 _B7;
-    /* 0xB8 */ u8 _B8;
-    /* 0xB9 */ u8 _B9;
-    /* 0xBA */ u8 _BA;
-    /* 0xBB */ u8 _BB;
+    // Per minigame player (fn_3_2DDB4 wandering AI):
+    /* 0x7C */ VecXZ _7C[4]; // target position
+    /* 0x9C */ s16 _9C[4];   // frames in the current state
+    /* 0xA4 */ s16 _A4[4];
+    /* 0xAC */ s16 _AC[4];   // heading
+    /* 0xB4 */ u8 _B4[4];    // state
+    /* 0xB8 */ u8 _B8[4];    // sub-state
 } AIStruct; // size 0xBC
 
 extern AIStruct g_AiLogic;
@@ -2830,19 +2821,34 @@ typedef struct {
 // 0x8088a7e4
 extern g_Stats_s g_Stats;
 
+#include "game/fielding_types.h" // FieldingBoost, FieldingPadRec
+
 typedef struct {
-    u8 pad[0x77];
-    /* 0x077 */ struct {
-        u8 _0;
-        u8 _1; // set when RandomInt_Game(100) rolls under the fielder's chance (fn_3_1DEB8)
-        u8 _2[4];
-    } _077[4]; // per minigame fielder
-    u8 _08F[0x90 - 0x8F];
+    /* 0x000 */ FieldingBoost boost[4];
+    /* 0x070 */ FieldingBoost* curBoost; // one of boost[]
+    union {
+        struct {
+            /* 0x074 */ FieldingPadRec padRec[4];
+            /* 0x08C */ FieldingPadRec* curPadRec; // one of padRec[]
+        };
+        struct {
+            u8 _074[3];
+            /* 0x077 */ struct {
+                u8 _0;  // padRec[i]._3
+                u8 _1;  // padRec[i]._4; set when RandomInt_Game(100) rolls under the fielder's chance (fn_3_1DEB8)
+                u8 _2[4];
+            } _077[4]; // per minigame fielder (older byte view of padRec)
+        };
+    };
     /* 0x090 */ VecXYZ _090; // target position
     u8 _09C[0xAE - 0x9C];
     /* 0x0AE */ s16 _0AE;
     /* 0x0B0 */ s16 _0B0; // fielder index (g_Fielders), < 0 if none
-    u8 _0B2[0xBC - 0xB2];
+    /* 0x0B2 */ s16 _0B2;
+    /* 0x0B4 */ s16 _0B4;
+    /* 0x0B6 */ s16 _0B6;
+    /* 0x0B8 */ s16 _0B8;
+    /* 0x0BA */ s16 _0BA;
     /* 0x0BC */ s16 _0BC;
     /* 0x0BE */ s16 _0BE; // fielder index
     /* 0x0C0 */ s16 _0C0;
@@ -2939,12 +2945,17 @@ typedef struct {
     /* 0x145 */ u8 _145;
     /* 0x146 */ u8 _146;
     /* 0x147 */ u8 _147;
-    /* 0x148 */ u8 _148;
-    /* 0x149 */ u8 _149;
-    /* 0x14A */ u8 _14A;
-    /* 0x14B */ u8 _14B;
-    /* 0x14C */ u8 _14C;
-    /* 0x14D */ u8 _14D;
+    union {
+        struct {
+            /* 0x148 */ u8 _148;
+            /* 0x149 */ u8 _149;
+            /* 0x14A */ u8 _14A;
+            /* 0x14B */ u8 _14B;
+            /* 0x14C */ u8 _14C;
+            /* 0x14D */ u8 _14D;
+        };
+        /* 0x148 */ u16 padButtons[3]; // controller held/pressed/repeat copied in fn_3_4B7E8
+    };
     /* 0x14E */ u8 _14E;
     /* 0x14F */ u8 _14F;
 } g_FieldingLogic_s; // size 0x150

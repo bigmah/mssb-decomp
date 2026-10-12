@@ -1377,6 +1377,14 @@ void fn_3_B43E8(void) {
 }
 #endif
 
+#if !NONMATCHING
+// Switch jump tables of fn_3_B4C40; mwcc emits them itself once the function matches.
+void* jumptable_3_data_10A30[7] = {
+    (u8*)fn_3_B4C40 + 0x8C, (u8*)fn_3_B4C40 + 0x21C, (u8*)fn_3_B4C40 + 0x2E0, (u8*)fn_3_B4C40 + 0x330,
+    (u8*)fn_3_B4C40 + 0x380, (u8*)fn_3_B4C40 + 0x3D8, (u8*)fn_3_B4C40 + 0x3F4,
+};
+#endif
+
 // .text:0x000B4C40 size:0x450
 // NONMATCHING 99.9%: case 1 base/index registers swapped (r5/r6) around the charId store.
 #if NONMATCHING
@@ -1478,6 +1486,15 @@ void fn_3_B4C40(void) {
         fn_3_10C81C();
     }
 }
+#endif
+
+#if !NONMATCHING
+// Switch jump tables of fn_3_B5818; mwcc emits them itself once the function matches.
+void* jumptable_3_data_10A6C[9] = {
+    (u8*)fn_3_B5818 + 0x3C, (u8*)fn_3_B5818 + 0x80, (u8*)fn_3_B5818 + 0xA0, (u8*)fn_3_B5818 + 0xB8,
+    (u8*)fn_3_B5818 + 0xD0, (u8*)fn_3_B5818 + 0x23C, (u8*)fn_3_B5818 + 0x254, (u8*)fn_3_B5818 + 0x360,
+    (u8*)fn_3_B5818 + 0x3E0,
+};
 #endif
 
 // .text:0x000B5818 size:0x49C
@@ -1674,3 +1691,5 @@ void fn_3_B51E4(void) {
         }
     }
 }
+
+u8 lbl_3_data_10A2C[4] = {0}; // alignment padding between jump tables (unused)

@@ -2735,6 +2735,17 @@ extern s32 fn_8006C79C(u8);
 #define PICK_COL (*(s16*)(lbl_2_bss_1A824C[0] + 0x197708))
 #define PICK_ROW (*(s16*)(lbl_2_bss_1A824C[0] + 0x19770A))
 
+#if !NONMATCHING
+// Switch jump tables of fn_2_3AF08; mwcc emits them itself once the function matches.
+void* jumptable_2_data_12304[19] = {
+    (u8*)fn_2_3AF08 + 0x44, (u8*)fn_2_3AF08 + 0x188, (u8*)fn_2_3AF08 + 0x1A8, (u8*)fn_2_3AF08 + 0x288,
+    (u8*)fn_2_3AF08 + 0x2B4, (u8*)fn_2_3AF08 + 0x2E0, (u8*)fn_2_3AF08 + 0x300, (u8*)fn_2_3AF08 + 0x76C,
+    (u8*)fn_2_3AF08 + 0x78C, (u8*)fn_2_3AF08 + 0x7B4, (u8*)fn_2_3AF08 + 0x7CC, (u8*)fn_2_3AF08 + 0x820,
+    (u8*)fn_2_3AF08 + 0x840, (u8*)fn_2_3AF08 + 0x9CC, (u8*)fn_2_3AF08 + 0x9EC, (u8*)fn_2_3AF08 + 0xA18,
+    (u8*)fn_2_3AF08 + 0xA38, (u8*)fn_2_3AF08 + 0xA9C, (u8*)fn_2_3AF08 + 0xAC8,
+};
+#endif
+
 // fn_2_3AF08, size:0xB38
 // NONMATCHING 98%: r30/r31 swapped (task vs pad pointer), dead `cmpwi 0x14` before the loop, lbl_8010B42C+0xC lhax folded
 #if NONMATCHING
@@ -2997,6 +3008,17 @@ extern void fn_2_72054(s32 index, s8 value);
         lbl_8034E978[9] = lbl_8034E978[8];                         \
         lbl_8034E978[8] = *(u16*)(lbl_800FEF70 + (m) * 0x10 + 8); \
     } while (0)
+
+#if !NONMATCHING
+// Switch jump tables of fn_2_399C0; mwcc emits them itself once the function matches.
+void* jumptable_2_data_122B8[19] = {
+    (u8*)fn_2_399C0 + 0x4C, (u8*)fn_2_399C0 + 0x170, (u8*)fn_2_399C0 + 0x190, (u8*)fn_2_399C0 + 0x280,
+    (u8*)fn_2_399C0 + 0x2AC, (u8*)fn_2_399C0 + 0x5BC, (u8*)fn_2_399C0 + 0x604, (u8*)fn_2_399C0 + 0x668,
+    (u8*)fn_2_399C0 + 0x78C, (u8*)fn_2_399C0 + 0xCFC, (u8*)fn_2_399C0 + 0xD08, (u8*)fn_2_399C0 + 0xD30,
+    (u8*)fn_2_399C0 + 0xD48, (u8*)fn_2_399C0 + 0xDAC, (u8*)fn_2_399C0 + 0xDD8, (u8*)fn_2_399C0 + 0xDF8,
+    (u8*)fn_2_399C0 + 0xE80, (u8*)fn_2_399C0 + 0xEAC, (u8*)fn_2_399C0 + 0xEC8,
+};
+#endif
 
 // fn_2_399C0, size:0xF3C
 // NONMATCHING 98%: r30/r31 swapped, &g_d_GameSettings hoisted to r31 in the original, lbl_8010B42C+0xC lhax folded
@@ -3318,3 +3340,25 @@ void fn_2_399C0(void) {
     }
 }
 #endif
+
+// .data 0x11F10-0x12350 (this TU's tables follow rep_0788's jump tables).
+// .data 0x00011F10..0x00012350
+u8 lbl_2_data_12170[16] = {0, 0, 0, 0, 0, 51, 69, 44, 5, 36, 88, 0, 0, 51, 69, 44};
+u8 lbl_2_data_12180[16] = {0, 0, 0, 0, 1, 112, 8, 4, 5, 87, 160, 0, 1, 112, 8, 4};
+s32 lbl_2_data_12190[11] = {1, 0, 0x12, 0, 0, 0x6E, 0x16, 0, 0, -128, 0x7FFFFFFF}; // TODO type (referenced from lbl_2_data_121BC)
+// TODO type: a self-referencing menu node with four callback entries (no code reference).
+extern u8 lbl_803CB850[];
+void* lbl_2_data_121BC[45] = {
+    lbl_2_data_12190, (void*)0xFFFFFFFF, lbl_803CB850 + 8, lbl_803CB850 + 8,
+    lbl_803CB850 + 8, lbl_803CB850 + 8, lbl_2_data_121BC, lbl_803CB850 + 8,
+    lbl_803CB850 + 8, lbl_803CB850 + 8,
+    (void*)fn_2_37D94, (void*)0, (void*)0x00010064, (void*)0x00800000, (void*)0, (void*)0, (void*)9, (void*)0,
+    (void*)fn_2_37D8C, (void*)1, (void*)0x00010010, (void*)0, (void*)0, (void*)0, (void*)0x80000005, (void*)0,
+    (void*)fn_2_37D90, (void*)0, (void*)0x00010064, (void*)0x00800000, (void*)0, (void*)0, (void*)9, (void*)0,
+    (void*)fn_2_37D88, (void*)1, (void*)0x00010010, (void*)0, (void*)0, (void*)0, (void*)0x20000005, (void*)0,
+    (void*)0x000A0019, (void*)0x002D0000, (void*)0x11775500,
+};
+GXColor lbl_2_data_12270 = {0, 0, 0, 0};
+u8 lbl_2_data_12298[16] = {0, 0, 0, 0, 0, 1, 80, 206, 8, 233, 136, 0, 0, 1, 80, 208};
+GridSize lbl_2_data_122A8[4] = {{3, 0}, {2, 1}, {3, 1}, {4, 1}};
+

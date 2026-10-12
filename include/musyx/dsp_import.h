@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-extern char dspSlave[];
+extern u8 dspSlave[];
 extern u16 dspSlaveLength;
 
 #ifdef __cplusplus

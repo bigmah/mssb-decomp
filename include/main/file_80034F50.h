@@ -101,11 +101,7 @@ typedef struct SpaniRef {
 
 #include "main/SpaniDesc.h"
 
-// Anything that owns a run of sprites in lbl_80371C30 starting at baseIdx.
-typedef struct SpaniOwner {
-    /*0x00*/ u8 unk0[0x14];
-    /*0x14*/ u16 baseIdx;
-} SpaniOwner;
+#include "main/scene_task.h" // SpaniOwner
 
 SpaniObj* fn_80034F50(SpaniDesc* desc);
 void fn_80035168(void);
