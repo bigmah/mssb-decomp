@@ -242,7 +242,8 @@ s32 fn_3_16D4D8(s32 id_, f32 x) {
     return ((x >= neg) | (x >= -v.y)) != 0;
 }
 
-// NONMATCHING 78%: float literal pooling; the original keeps the inlined fn_3_16D4D8 result as a u8 flag (li 1/li 0, clrlwi.)
+// NONMATCHING 94%: the original keeps the inlined fn_3_16D4D8 result as a u8 flag (li 1/li 0, clrlwi.)
+#pragma pool_data off // each float constant is its own .rodata symbol in the original
 #if NONMATCHING
 // .text:0x0016D5E4 size:0x22C mapped:0x807AC678
 // Kicks up dust under a running fielder (who = fielder + 1) or where the ball touches down
@@ -285,4 +286,5 @@ void fn_3_16D5E4(u8 who) {
     }
 }
 #endif
+#pragma pool_data reset
 
