@@ -165,8 +165,6 @@ void fn_800B2DD0(GameActor* actor, GameBone* bone) {
 
 // .text:0x800B313C size:0x378
 // Builds every bone's forward (and skinning) matrix.
-// NONMATCHING 99%: blend switch is missing a dead `b` after case 0 (see docs/patterns/control-flow.md)
-#if NONMATCHING
 void fn_800B313C(GameActor* actor) {
     Mtx world;
     Mtx m;
@@ -192,6 +190,7 @@ void fn_800B313C(GameActor* actor) {
             blend = 1.0f;
             break;
         case 1:
+            blend = blend;
             break;
         case 2:
             blend = blend * blend;
@@ -268,7 +267,6 @@ void fn_800B313C(GameActor* actor) {
         }
     }
 }
-#endif
 
 // .text:0x800B34B4 size:0x2F0
 // Builds the forward matrix of one bone after (recursively) building its parents.
