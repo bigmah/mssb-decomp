@@ -110,10 +110,23 @@ target_compile_definitions(mssb_game PRIVATE ${MSSB_DEFS})
 target_compile_options(mssb_game PRIVATE ${MSSB_COMMON_FLAGS} ${MSSB_PORT_WARNINGS}
     -include ${CMAKE_SOURCE_DIR}/include/port/prelude.h)
 
+# ---- Generated data (port/gen, from port/tools/gen_data.py) ----
+# Definitions of the data objects no game source defines yet, generated from
+# orig/ with the C types the game sources declare. Same flags as the game,
+# minus the 64-bit errors: initializers take addresses of functions declared
+# without prototypes.
+include(${CMAKE_SOURCE_DIR}/gen/sources.cmake)
+add_library(mssb_gen OBJECT ${MSSB_GEN_SOURCES})
+target_include_directories(mssb_gen PRIVATE ${MSSB_INCLUDES})
+target_compile_definitions(mssb_gen PRIVATE ${MSSB_DEFS})
+target_compile_options(mssb_gen PRIVATE ${MSSB_COMMON_FLAGS} -Wno-everything
+    -include ${CMAKE_SOURCE_DIR}/include/port/prelude.h)
+# ---- end generated data ----
+
 # PC-only code. The executable does not link yet (Phase 2): exclude it from
 # the default target so `ninja` builds and checks the game objects.
 file(GLOB_RECURSE PORT_SOURCES CONFIGURE_DEPENDS src/*.c src/*.cpp)
-add_executable(mssb EXCLUDE_FROM_ALL ${PORT_SOURCES} $<TARGET_OBJECTS:mssb_game>)
+add_executable(mssb EXCLUDE_FROM_ALL ${PORT_SOURCES} $<TARGET_OBJECTS:mssb_game> $<TARGET_OBJECTS:mssb_gen>)
 target_include_directories(mssb PRIVATE ${MSSB_INCLUDES})
 target_compile_definitions(mssb PRIVATE ${MSSB_DEFS})
 target_compile_options(mssb PRIVATE ${MSSB_COMMON_FLAGS} -Wno-everything)

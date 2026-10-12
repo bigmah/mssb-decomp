@@ -1,0 +1,78 @@
+# Generated data: objects to review
+
+Byte arrays (no C type found) are `TODO(port)`; `POINTERS` ones hold addresses and must get a real type before they are used.
+
+- `lbl_1_common_bss_472B4` (challenge .bss 0x472B4): NOTE: type size 0x3C0 != symbol size 0x240
+- `lbl_1_common_bss_47698` (challenge .bss 0x47698): NOTE: type size 0xE != symbol size 0x15C
+- `lbl_1_common_bss_49A78` (challenge .bss 0x49A78): NOTE: type size 0x50 != symbol size 0x21B8
+- `lbl_1_data_F10C` (challenge .data 0xF10C): NOTE: type size 0x68 != symbol size 0x48
+- `lbl_1_rodata_72F0` (challenge .rodata 0x72F0): NOTE: declared as one ChallengeLightColor, symbol holds 3
+- `lbl_1_rodata_730C` (challenge .rodata 0x730C): NOTE: type size 0xC != symbol size 0x10
+- `lbl_1_rodata_730C` (challenge .rodata 0x730C): WARNING: 0x4 bytes past the type are not zero: ffffffff
+- `lbl_2_bss_1010C` (menus .bss 0x1010C): NOTE: type size 0x30 != symbol size 0x10
+- `lbl_2_bss_122C` (menus .bss 0x122C): NOTE: type size 0x4 != symbol size 0x36C
+- `lbl_2_bss_1598` (menus .bss 0x1598): NOTE: type size 0x4 != symbol size 0x8
+- `lbl_2_bss_33FBCC` (menus .bss 0x33FBCC): NOTE: type size 0x24 != symbol size 0x1C
+- `lbl_2_bss_33FBF0` (menus .bss 0x33FBF0): NOTE: type size 0x4 != symbol size 0x5
+- `lbl_2_bss_33FBF5` (menus .bss 0x33FBF5): NOTE: type size 0x1 != symbol size 0x3
+- `lbl_2_bss_340234` (menus .bss 0x340234): NOTE: type size 0x1A != symbol size 0xBA8
+- `lbl_2_bss_758` (menus .bss 0x758): NOTE: type size 0x1 != symbol size 0x388
+- `lbl_2_bss_9E10` (menus .bss 0x9E10): NOTE: type size 0x1 != symbol size 0x358
+- `lbl_2_bss_A169` (menus .bss 0xA169): NOTE: type size 0x1 != symbol size 0x7
+- `lbl_2_bss_AE0` (menus .bss 0xAE0): NOTE: type size 0x2 != symbol size 0x744
+- `lbl_2_data_19E8` (menus .data 0x19E8): NOTE: type size 0x43C != symbol size 0x3EC
+- `lbl_2_data_1DD4` (menus .data 0x1DD4): NOTE: type size 0x28 != symbol size 0x318
+- `lbl_2_data_1DD4` (menus .data 0x1DD4): WARNING: 0x2F0 bytes past the type are not zero: 64726cff0000000000000000c1840000000000000000000000000000000000003f80...
+- `lbl_2_data_20F8` (menus .data 0x20F8): NOTE: type size 0x8 != symbol size 0x324
+- `lbl_2_data_20F8` (menus .data 0x20F8): WARNING: 0x31C bytes past the type are not zero: 0000000042be0000c20c00000000000000160010001700110018001200190013001a...
+- `lbl_2_data_2780` (menus .data 0x2780): pointer field holds a non-address value (see `/* TODO */`)
+- `lbl_3_bss_170` (game .bss 0x170): NOTE: type size 0x2 != symbol size 0x90
+- `lbl_3_bss_176C` (game .bss 0x176C): NOTE: type size 0x4 != symbol size 0x8
+- `lbl_3_bss_1774` (game .bss 0x1774): NOTE: type size 0x4 != symbol size 0xC
+- `lbl_3_bss_9950` (game .bss 0x9950): NOTE: type size 0x3B0 != symbol size 0x1
+- `lbl_3_bss_9952` (game .bss 0x9952): NOTE: type size 0x2 != symbol size 0xA
+- `lbl_3_bss_9D80` (game .bss 0x9D80): NOTE: type size 0x190 != symbol size 0x1
+- `lbl_3_bss_9D9C` (game .bss 0x9D9C): NOTE: type size 0x4 != symbol size 0x44
+- `lbl_3_bss_9F0C` (game .bss 0x9F0C): NOTE: type size 0x4 != symbol size 0x14
+- `lbl_3_bss_9FDC` (game .bss 0x9FDC): NOTE: type size 0x4 != symbol size 0x3C
+- `lbl_3_bss_AEE0` (game .bss 0xAEE0): NOTE: type size 0x684 != symbol size 0x8
+- `lbl_3_bss_AEE8` (game .bss 0xAEE8): NOTE: type size 0x1 != symbol size 0x1C
+- `lbl_3_bss_B260` (game .bss 0xB260): NOTE: type size 0x2F4 != symbol size 0x2FC
+- `lbl_3_bss_BAE0` (game .bss 0xBAE0): NOTE: type size 0x1BF0 != symbol size 0x1C00
+- `lbl_3_bss_C8` (game .bss 0xC8): NOTE: type size 0xD0 != symbol size 0xA4
+- `lbl_3_data_1B820` (game .data 0x1B820): NOTE: type size 0x268 != symbol size 0x4
+- `lbl_3_data_1B884` (game .data 0x1B884): NOTE: type size 0x118 != symbol size 0x120
+- `lbl_3_data_1B884` (game .data 0x1B884): WARNING: 0x8 bytes past the type are not zero: 4040000040400000
+- `lbl_3_data_1B9A4` (game .data 0x1B9A4): NOTE: type size 0xA8 != symbol size 0xB8
+- `lbl_3_data_1B9A4` (game .data 0x1B9A4): WARNING: 0x10 bytes past the type are not zero: 4040000000000000c040000000000000
+- `lbl_3_data_1D980` (game .data 0x1D980): no symbols.txt entry (inside another object); defined as a separate copy
+- `lbl_3_data_1F18C` (game .data 0x1F18C): NOTE: type size 0x21C != symbol size 0x22C
+- `lbl_3_data_1F18C` (game .data 0x1F18C): WARNING: 0x10 bytes past the type are not zero: 43750000430700004353000043250000
+- `lbl_3_data_1F18C` (game .data 0x1F18C): no symbols.txt entry (inside another object); defined as a separate copy
+- `lbl_3_data_1F1F0` (game .data 0x1F1F0): no symbols.txt entry (inside another object); defined as a separate copy
+- `lbl_3_data_1F2C8` (game .data 0x1F2C8): no symbols.txt entry (inside another object); defined as a separate copy
+- `lbl_3_data_1F3A0` (game .data 0x1F3A0): no symbols.txt entry (inside another object); defined as a separate copy
+- `lbl_3_data_5B34` (game .data 0x5B34): no symbols.txt entry (inside another object); defined as a separate copy
+- `lbl_3_data_7F7C` (game .data 0x7F7C): NOTE: type size 0x100 != symbol size 0x104
+- `lbl_3_rodata_208C` (game .rodata 0x208C): NOTE: type size 0x30 != symbol size 0x34
+- `lbl_3_rodata_252C` (game .rodata 0x252C): NOTE: declared as one const Vec, symbol holds 2
+- `lbl_3_rodata_2544` (game .rodata 0x2544): NOTE: type size 0x9 != symbol size 0xC
+- `lbl_3_rodata_2550` (game .rodata 0x2550): NOTE: type size 0x9 != symbol size 0xC
+- `lbl_3_rodata_255C` (game .rodata 0x255C): NOTE: type size 0x9 != symbol size 0xC
+- `lbl_3_rodata_2568` (game .rodata 0x2568): NOTE: type size 0x9 != symbol size 0x18
+- `lbl_3_rodata_2568` (game .rodata 0x2568): WARNING: 0xF bytes past the type are not zero: 0000003f8000000000000000000000
+- `lbl_3_rodata_258C` (game .rodata 0x258C): NOTE: type size 0xC != symbol size 0x24
+- `lbl_3_rodata_25E0` (game .rodata 0x25E0): NOTE: declared as one const Vec, symbol holds 2
+- `lbl_3_rodata_2604` (game .rodata 0x2604): NOTE: declared as one const Vec, symbol holds 5
+- `lbl_800E9920` (main .data 0x800E9920): NOTE: type size 0x24 != symbol size 0x3620
+- `lbl_800E9920` (main .data 0x800E9920): WARNING: 0x35FC bytes past the type are not zero: 0000000000000000000000000000000000000000000000000000000000ff24ff49f...
+- `lbl_800E9920` (main .data 0x800E9920): pointer field holds a non-address value (see `/* TODO */`)
+- `lbl_800EEA58` (main .data 0x800EEA58): NOTE: type size 0x19 != symbol size 0x54
+- `lbl_800EEA58` (main .data 0x800EEA58): WARNING: 0x3B bytes past the type are not zero: 000000000000000000000000000000000001000000000001000000010101010000000...
+- `lbl_802E4BC0` (main .bss 0x802E4BC0): NOTE: type size 0x120 != symbol size 0x128
+- `lbl_802FE918` (main .bss 0x802FE918): NOTE: type size 0x2A0 != symbol size 0x2E0
+- `lbl_802FEBF8` (main .bss 0x802FEBF8): NOTE: type size 0x1B00 != symbol size 0xD80
+- `lbl_803CBC50` (main .sbss 0x803CBC50): NOTE: type size 0x4 != symbol size 0x8
+- `lbl_803CC798` (main .sdata2 0x803CC798): NOTE: type size 0x4 != symbol size 0x8
+- `lbl_803CCF10` (main .sdata2 0x803CCF10): NOTE: type size 0x4 != symbol size 0x8
+- `lbl_803CD300` (main .sbss2 0x803CD300): NOTE: declared as one const GXColor, symbol holds 2
