@@ -23,24 +23,60 @@
 #include "port/formats.h"
 #include "port/endian.h"
 
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define MAX_SWAPPED 16384
 
+// Offsets (from the file) already swapped: an open-addressing hash set, since
+// one animation bank has tens of thousands of key frames.
 typedef struct
 {
-    uint32_t offs[MAX_SWAPPED]; // array offsets (from the palette) already swapped
+    uint32_t* slots; // UINT32_MAX: empty
+    uint32_t cap;    // power of two
     uint32_t count;
 } SwapSet;
 
+static void swap_set_clear(SwapSet* set)
+{
+    set->count = 0;
+    if (set->slots != NULL)
+        memset(set->slots, 0xFF, set->cap * sizeof(uint32_t));
+}
+
+static int swap_set_insert(SwapSet* set, uint32_t off)
+{
+    uint32_t mask = set->cap - 1;
+    for (uint32_t i = (off * 2654435761u) & mask;; i = (i + 1) & mask)
+    {
+        if (set->slots[i] == off)
+            return 0;
+        if (set->slots[i] == UINT32_MAX)
+        {
+            set->slots[i] = off;
+            set->count++;
+            return 1;
+        }
+    }
+}
+
 static int swap_set_add(SwapSet* set, uint32_t off)
 {
-    for (uint32_t i = 0; i < set->count; i++)
-        if (set->offs[i] == off)
-            return 0;
-    if (set->count < MAX_SWAPPED)
-        set->offs[set->count++] = off;
-    return 1;
+    if ((set->count + 1) * 2 > set->cap)
+    {
+        uint32_t* old = set->slots;
+        uint32_t oldCap = set->cap;
+        set->cap = oldCap != 0 ? oldCap * 2 : 1024;
+        set->slots = (uint32_t*)malloc(set->cap * sizeof(uint32_t));
+        swap_set_clear(set);
+        for (uint32_t i = 0; i < oldCap; i++)
+            if (old[i] != UINT32_MAX)
+                swap_set_insert(set, old[i]);
+        free(old);
+    }
+    return swap_set_insert(set, off);
 }
 
 static uint32_t comp_size(uint8_t quant)
@@ -137,7 +173,7 @@ void port_swap_geo_palette(void* palette)
     uint8_t* pal = (uint8_t*)palette;
     static SwapSet set;
     static RangeSet ranges;
-    set.count = 0;
+    swap_set_clear(&set);
     ranges.count = 0;
 
     swap32_array(pal, 5);
@@ -223,7 +259,7 @@ void port_swap_geo_palette(void* palette)
             }
         }
     }
-    if (set.count == MAX_SWAPPED)
+    if (ranges.count == MAX_SWAPPED)
         fprintf(stderr, "[port] geo palette %p: too many arrays to track\n", palette);
 }
 
@@ -239,7 +275,7 @@ void port_swap_actor_layout(void* layoutFile)
 {
     uint8_t* lay = (uint8_t*)layoutFile;
     static SwapSet set;
-    set.count = 0;
+    swap_set_clear(&set);
 
     swap32_inplace(lay);
     swap16_array(lay + 4, 2);
@@ -310,7 +346,7 @@ void port_swap_anim_bank(void* bankFile)
 {
     uint8_t* bank = (uint8_t*)bankFile;
     static SwapSet set;
-    set.count = 0;
+    swap_set_clear(&set);
 
     swap32_array(bank, 2);
     swap16_array(bank + 8, 4);
@@ -387,8 +423,6 @@ void port_swap_anim_bank(void* bankFile)
             }
         }
     }
-    if (set.count == MAX_SWAPPED)
-        fprintf(stderr, "[port] anim bank %p: too many key frames to track\n", bankFile);
 }
 
 // Skin file (SKNHeader / sHdr, include/main/file_800BDEA0.h):
@@ -408,7 +442,7 @@ void port_swap_skin(void* skinFile, uint32_t compSize)
 {
     uint8_t* hdr = (uint8_t*)skinFile;
     static SwapSet set;
-    set.count = 0;
+    swap_set_clear(&set);
 
     swap16_array(hdr, 3);
     swap32_array(hdr + 8, 7);
@@ -464,7 +498,7 @@ void port_swap_shape(void* shapeFile)
 {
     uint8_t* h = (uint8_t*)shapeFile;
     static SwapSet set;
-    set.count = 0;
+    swap_set_clear(&set);
 
     swap16_array(h, 4);
     swap32_array(h + 8, 3);
@@ -525,7 +559,7 @@ void port_swap_shape_anim_set(void* setFile)
 {
     uint8_t* s = (uint8_t*)setFile;
     static SwapSet set;
-    set.count = 0;
+    swap_set_clear(&set);
     swap32_array(s, 4);
     uint32_t seqCount = ((uint32_t*)s)[0];
     uint32_t seqs = ((uint32_t*)s)[1];
