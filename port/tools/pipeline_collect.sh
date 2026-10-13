@@ -33,15 +33,15 @@ query() {
     yoshi) echo "skipfe&captain1=yoshi&captain2=birdo&stadium=yoshi&env=MSSB_INPUT=$GAME" ;;
     peach) echo "skipfe&captain1=peach&captain2=daisy&stadium=peach&env=MSSB_INPUT=$GAME" ;;
     dk) echo "skipfe&captain1=dk&captain2=diddy&stadium=dk&env=MSSB_INPUT=$GAME" ;;
-    challenge) echo "env=MSSB_INPUT=$(mode 1)" ;;
-    toyfield) echo "env=MSSB_INPUT=$(mode 2)" ;;
-    minigames) echo "env=MSSB_INPUT=$(mode 3)" ;;
+    challenge) echo "env=MSSB_ALLMODES=1;MSSB_INPUT=$(mode 1)" ;;
+    toyfield) echo "env=MSSB_ALLMODES=1;MSSB_INPUT=$(mode 2)" ;;
+    minigames) echo "env=MSSB_ALLMODES=1;MSSB_INPUT=$(mode 3)" ;;
     practice) echo "env=MSSB_INPUT=$(mode 4)" ;;
   esac
 }
 
 names=("$@")
-[ ${#names[@]} -eq 0 ] && names=(frontend mario bowser wario yoshi peach dk challenge toyfield minigames practice)
+[ ${#names[@]} -eq 0 ] && names=(frontend mario practice) # what the PC menus offer (port/game/menu_scope.c); the others by name
 run() {
   local name="$1"
   rm -f "$OUT/$name.bin"

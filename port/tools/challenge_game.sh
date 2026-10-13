@@ -8,6 +8,7 @@
 # is up by ~8500). Usage: port/tools/challenge_game.sh [secs] [shot-every]
 # A fresh memory card per run unless MSSB_USER_DIR is set.
 # Log: build/port/run-challenge.log, shots in build/port/shots-challenge/.
+export MSSB_ALLMODES=1 # the modes the PC menus hide (port/game/menu_scope.c)
 IN="3200:DOWN,3300:A,3440-8400/90:A"
 MAP="8600:UP,8900:LEFT,9200:LEFT,9500:LEFT,9800-24000/90:A,24000-25000/120:B,25300:A"
 MSSB_RUN_TAG=challenge MSSB_INPUT_EXTRA="$IN,${MSSB_CHALLENGE_INPUT:-$MAP}" \

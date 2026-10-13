@@ -2440,6 +2440,34 @@ void fn_2_78AC0(MenuTask* o, s32 index) {
 }
 #endif
 
+#ifdef TARGET_PC
+s32 port_menu_row(s32 entry);
+s32 port_stadium_select_enabled(void);
+// Main menu without the modes the port doesn't offer (port/game/menu_scope.c):
+// their buttons are hidden and the ones below move up. The rows are placed by
+// the sprites' animations (base position 0), so moving one is a base offset.
+static void port_main_menu_layout(MenuTask* o) {
+    static const u8 kSlots[] = {3, 0xA, 0x11, 0x18}; // highlight, button, panel, item
+    const f32 kRowStep = 46.0f; // distance between two rows
+    s32 i;
+    s32 k;
+    for (i = 0; i < 7; i++) {
+        s32 row = port_menu_row(i);
+        for (k = 0; k < (s32)sizeof(kSlots); k++) {
+            LayoutObj* q = MN_SLOT(kSlots[k] + BASE(o) + i);
+            if (q == NULL) {
+                continue;
+            }
+            if (row < 0) {
+                q->flags &= ~2;
+            } else if (kSlots[k] != 0x11) {
+                q->y = (f32)(row - i) * kRowStep;
+            }
+        }
+    }
+}
+#endif
+
 // fn_2_747FC, size:0x4DC
 // NONMATCHING 80%: slot base+0x20 not hoisted as in the original; frame size and register allocation differ
 #if NONMATCHING
@@ -2449,6 +2477,9 @@ void fn_2_747FC(void) {
     s32 i;
     s32 n;
     s32 k;
+#ifdef TARGET_PC
+    port_main_menu_layout(o);
+#endif
     if (lbl_8034E9A0._472A == 0) {
         fn_80034CEC(o);
         REMOVE_QUEUE_NOARG();
@@ -3898,6 +3929,17 @@ void fn_2_845A8(void) {
     s32 i;
     s32 n;
     s32 k;
+#ifdef TARGET_PC
+    if (!port_stadium_select_enabled()) {
+        // Mario Stadium only (port/game/menu_scope.c): hide the other parks' icons.
+        for (i = 1; i < 6; i++) {
+            LayoutObj* q = MN_SLOT(6 + BASE(o) + i);
+            if (q != NULL) {
+                q->flags &= ~2;
+            }
+        }
+    }
+#endif
     if (lbl_803CBCD8[4] != 0) {
         lbl_803CBCD8[4] = 0;
         SEL_CUR = -1;

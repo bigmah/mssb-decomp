@@ -1659,6 +1659,11 @@ void fn_2_A288(void) {
 }
 #endif
 
+#ifdef TARGET_PC
+s32 port_menu_mode_enabled(s32 entry);
+s32 port_stadium_select_enabled(void);
+#endif
+
 // fn_2_1800, size:0x288
 void fn_2_1800(void) {
     MenuButtons b;
@@ -1671,6 +1676,11 @@ void fn_2_1800(void) {
         return;
     }
     if (b.down & 0x100) {
+#ifdef TARGET_PC
+        if (!port_menu_mode_enabled(lbl_2_bss_F410._00)) {
+            return; // not offered on PC (port/game/menu_scope.c)
+        }
+#endif
         fn_2_1DC8();
         lbl_80366158._27 = 0;
         sndFXStartEx(0x1B8, lbl_800EFBA4[1], 0x3F, 0);
@@ -1690,6 +1700,18 @@ void fn_2_1800(void) {
                 lbl_2_bss_F410._00 = 0;
             }
         }
+#ifdef TARGET_PC
+        // Skip the modes the port doesn't offer (port/game/menu_scope.c).
+        while (!port_menu_mode_enabled(lbl_2_bss_F410._00)) {
+            if (repeat & 8) {
+                if (--lbl_2_bss_F410._00 < 0) {
+                    lbl_2_bss_F410._00 = 6;
+                }
+            } else if (++lbl_2_bss_F410._00 == 7) {
+                lbl_2_bss_F410._00 = 0;
+            }
+        }
+#endif
         fn_800625A4(0, 0x56);
         sndFXStartEx(0x1B7, lbl_800EFBA4[0], 0x3F, 0);
     }
@@ -1956,6 +1978,14 @@ void fn_2_11340(u8 team) {
     }
     repeat = lbl_8034E9A0.input[team].repeat;
     down = lbl_8034E9A0.input[team].pressed;
+#ifdef TARGET_PC
+    if (!port_stadium_select_enabled()) {
+        // Mario Stadium only (port/game/menu_scope.c): no moving, no roulette.
+        *stadium = 0;
+        repeat &= ~3;
+        down &= ~0x20;
+    }
+#endif
     if (repeat & 1) {
         if (lbl_803C66B0.step[0] != 0x24) {
             if (--*stadium < 0) {
