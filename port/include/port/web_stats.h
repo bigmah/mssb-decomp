@@ -11,6 +11,9 @@ struct WebFrameStats
     double workMs;        // total game time
     unsigned discWaits;   // disc reads that had to wait for the page
     double discWaitMs;
+    double audioMs;    // audio mixed while presenting
+    double endFrameMs; // aurora_end_frame
+    double eventsMs;   // aurora_update (window events)
 };
 
 extern WebFrameStats g_webStats;

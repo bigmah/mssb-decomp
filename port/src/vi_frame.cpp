@@ -78,9 +78,13 @@ void pace_frame()
     double t;
     for (;;)
     {
+        double a0 = emscripten_get_now();
         port_audio_pump();
+        g_webStats.audioMs += emscripten_get_now() - a0;
         t = web_wait_animation_frame();
+        a0 = emscripten_get_now();
         port_audio_pump();
+        g_webStats.audioMs += emscripten_get_now() - a0;
         if (s_lastVsync != 0)
             s_deltas[s_deltaIdx++ % 32] = t - s_lastVsync;
         s_lastVsync = t;
@@ -182,12 +186,24 @@ void port_present_frame(void)
 {
     if (s_inFrame)
     {
+#ifdef __EMSCRIPTEN__
+        double t0 = emscripten_get_now();
         aurora_end_frame();
+        g_webStats.endFrameMs += emscripten_get_now() - t0;
+#else
+        aurora_end_frame();
+#endif
         s_inFrame = false;
     }
     pace_frame();
 
+#ifdef __EMSCRIPTEN__
+    double e0 = emscripten_get_now();
     handle_events();
+    g_webStats.eventsMs += emscripten_get_now() - e0;
+#else
+    handle_events();
+#endif
     if (s_quitRequested)
         quit_now();
     port_pad_assign();

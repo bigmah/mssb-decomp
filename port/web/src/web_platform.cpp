@@ -180,12 +180,14 @@ void port_web_frame_tick(void)
                 const ctx = Module.SDL3 && Module.SDL3.audioContext;
                 console.log(`[stats] ${(300000 / (now - Module.lastStatsTime)).toFixed(1)} fps, ` +
                             `late ${$1}, worst gap ${$2.toFixed(1)} ms, game ${$3.toFixed(1)} ms avg / ${$4.toFixed(1)} max, ` +
-                            `disc waits ${$5} (${$6.toFixed(0)} ms), audio queued ${$0} ms` +
+                            `disc waits ${$5} (${$6.toFixed(0)} ms), per frame: audio ${$7.toFixed(2)} ms, ` +
+                            `end frame ${$8.toFixed(2)} ms, events ${$9.toFixed(2)} ms, audio queued ${$0} ms` +
                             (ctx ? `, audio ${ctx.state}` : ''));
             }
             Module.lastStatsTime = now;
         }, port_audio_queued_ms(), g_webStats.late, g_webStats.maxIntervalMs, g_webStats.workMs / g_webStats.frames,
-           g_webStats.maxWorkMs, g_webStats.discWaits, g_webStats.discWaitMs);
+           g_webStats.maxWorkMs, g_webStats.discWaits, g_webStats.discWaitMs, g_webStats.audioMs / g_webStats.frames,
+           g_webStats.endFrameMs / g_webStats.frames, g_webStats.eventsMs / g_webStats.frames);
         g_webStats = WebFrameStats{};
     }
 }
