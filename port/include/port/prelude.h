@@ -118,6 +118,11 @@ BOOL port_DVDGetStreamPlayAddrAsync(DVDCommandBlock* block, DVDCBCallback callba
 #define DVDStopStreamAtEndAsync port_DVDStopStreamAtEndAsync
 #define DVDGetStreamErrorStatusAsync port_DVDGetStreamErrorStatusAsync
 #define DVDGetStreamPlayAddrAsync port_DVDGetStreamPlayAddrAsync
+// aurora's GCI-folder cards have serial number 0 (port/src/sdk_stubs.c).
+s32 port_CARDGetSerialNo(s32 chan, u64* serialNo);
+#define CARDGetSerialNo port_CARDGetSerialNo
+s32 port_CARDUnmount(s32 chan);
+#define CARDUnmount port_CARDUnmount
 
 #include "port/endian.h"
 #include "port/ptr32.h"
