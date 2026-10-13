@@ -14,7 +14,7 @@ extern StarChanceOdds lbl_80109420[];
 
 void fn_3_163E94(void);
 
-#define SCOUT_FLAGS(t) ((ScoutFlagTable*)(t)->scoutFlagPointer)
+#define SCOUT_FLAGS(t) ((ScoutFlagTable*)PTR32_GET(void, (t)->scoutFlagPointer))
 
 // .text:0x001658F0 size:0x88 mapped:0x807A4984
 void fn_3_1658F0(void) {

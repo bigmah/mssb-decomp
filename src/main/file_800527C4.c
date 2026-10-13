@@ -1475,7 +1475,7 @@ void fn_80058050(void) {
     fn_80034E20(task, lbl_80107688);
     for (i = 0, base = 0, player = inMemRoster[1]; i < 9; i++, player++, base += 5) {
         tracker = &gChallengeState.trackers[player->stats.CharID];
-        lbl_803297E0.scoutTotal[i] = ((ScoutFlagTable*)tracker->scoutFlagPointer)->flags[gChallengeState._4415][gChallengeState._441C];
+        lbl_803297E0.scoutTotal[i] = ((ScoutFlagTable*)PTR32_GET(void, tracker->scoutFlagPointer))->flags[gChallengeState._4415][gChallengeState._441C];
         lbl_803297E0.scoutGot[i] = gChallengeState.trackers[player->stats.CharID].scoutFlagsAchieved;
         for (j = 0; j < 5; j++) {
             if (j < lbl_803297E0.scoutTotal[i] && lbl_803297E0.scoutTotal[i] - lbl_803297E0.scoutGot[i] > j) {
@@ -2326,7 +2326,7 @@ void fn_8005B298(SceneTask* task) {
 
             fn_800363D8(task, i + 0x63, 1, 0x83, inMemRoster[1][i].stats.CharID);
             tracker = &gChallengeState.trackers[inMemRoster[1][i].stats.CharID];
-            total = ((ScoutFlagTable*)tracker->scoutFlagPointer)->flags[gChallengeState._4415][gChallengeState._441C];
+            total = ((ScoutFlagTable*)PTR32_GET(void, tracker->scoutFlagPointer))->flags[gChallengeState._4415][gChallengeState._441C];
             left = total - (s8)tracker->scoutFlagsAchieved;
             for (j = 0; j < 5; j++) {
                 if (j < total && left > j) {
@@ -2458,7 +2458,7 @@ void fn_8005BB5C(SceneTask* task) {
                 TASK_OBJ(task, i + base + 0x64)->flags &= ~2;
                 for (j = 0; j < 5; j++) {
                     tracker = &gChallengeState.trackers[inMemRoster[1][i].stats.CharID];
-                    if (j < ((ScoutFlagTable*)tracker->scoutFlagPointer)->flags[gChallengeState._4415][gChallengeState._441C]) {
+                    if (j < ((ScoutFlagTable*)PTR32_GET(void, tracker->scoutFlagPointer))->flags[gChallengeState._4415][gChallengeState._441C]) {
                         TASK_OBJ(task, j + i * 5 + 0x16D)->_5C = 0;
                         TASK_OBJ(task, j + i * 5 + 0x16D)->_68 = 0;
                     } else {

@@ -1506,7 +1506,7 @@ typedef struct _starMissionTrackingPair {
 
 // This is pack disabled in ghidra.
 typedef struct _ChallengeTrackingStruct {
-    /*0x000*/ void* scoutFlagPointer;
+    /*0x000*/ PTR32(void) scoutFlagPointer; // ScoutFlagTable; PTR32: saved (MenuCtx.chars[].limits)
     /*0x004*/ E(u8, CHALLENGE_CAPTAIN) challengeCaptain; // Created by retype action
     /*0x005*/ E(s8, CHARACTER_VARIANT_CLASSIFICATION) variantClassification;
     /*0x006*/ u8 scoutFlagsAchieved;

@@ -9,18 +9,18 @@
 extern StarChanceState lbl_3_common_bss_37400;
 
 // Scout flags character `e` can earn at difficulty b, level a (as an unsigned byte):
-// ((ScoutFlagTable*)e->scoutFlagPointer)->flags[b][a]. The matching build spells it
+// ((ScoutFlagTable*)PTR32_GET(void, e->scoutFlagPointer))->flags[b][a]. The matching build spells it
 // as pointer + 4 + index, the only form that keeps the original's addi/lbzx.
 #if NONMATCHING
-#define SCOUT_FLAGS(e, b, a) (*(u8*)&((ScoutFlagTable*)(e)->scoutFlagPointer)->flags[b][a])
+#define SCOUT_FLAGS(e, b, a) (*(u8*)&((ScoutFlagTable*)PTR32_GET(void, (e)->scoutFlagPointer))->flags[b][a])
 #else
-#define SCOUT_FLAGS(e, b, a) (*((u8*)(e)->scoutFlagPointer + 4 + (b) * 6 + (a)))
+#define SCOUT_FLAGS(e, b, a) (*((u8*)PTR32_GET(void, (e)->scoutFlagPointer) + 4 + (b) * 6 + (a)))
 #endif
 // Same with a precomputed flat index k = b * 6 + a.
 #if NONMATCHING
-#define SCOUT_FLAGS_K(e, k) (*(u8*)&(&((ScoutFlagTable*)(e)->scoutFlagPointer)->flags[0][0])[k])
+#define SCOUT_FLAGS_K(e, k) (*(u8*)&(&((ScoutFlagTable*)PTR32_GET(void, (e)->scoutFlagPointer))->flags[0][0])[k])
 #else
-#define SCOUT_FLAGS_K(e, k) (*((u8*)(e)->scoutFlagPointer + 4 + (k)))
+#define SCOUT_FLAGS_K(e, k) (*((u8*)PTR32_GET(void, (e)->scoutFlagPointer) + 4 + (k)))
 #endif
 typedef struct {
     u8 pad[9];
@@ -1037,7 +1037,7 @@ void fn_3_164554(void) {
     for (i = 0; i < 9; i++) {
         if (ids[i] != -1 && (s8)p->slots[i].active == 1) {
             e = &t[ids[i]];
-            if ((&((ScoutFlagTable*)e->scoutFlagPointer)->flags[0][0])[k] != 0) {
+            if ((&((ScoutFlagTable*)PTR32_GET(void, e->scoutFlagPointer))->flags[0][0])[k] != 0) {
                 e->scoutFlagsAchieved += p->slots[i].bonus;
                 if ((s8)e->scoutFlagsAchieved > (s8)(m = SCOUT_FLAGS_K(e, k))) {
                     e->scoutFlagsAchieved = m;

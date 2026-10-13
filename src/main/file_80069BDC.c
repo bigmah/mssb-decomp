@@ -1165,7 +1165,7 @@ void fn_8006C9D8(void) {
     for (i = 0; i < 54; i++, t++) {
         s8 status = t->_31;
         if (status != 1) {
-            s8 flag = ((ScoutFlagTable*)t->scoutFlagPointer)->flags[row][col];
+            s8 flag = ((ScoutFlagTable*)PTR32_GET(void, t->scoutFlagPointer))->flags[row][col];
             if ((s8)t->scoutFlagsAchieved == flag && flag != 0) {
                 s32 mode = gChallengeState._441F;
                 if (mode == 19) {
