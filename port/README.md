@@ -91,6 +91,40 @@ A whole exhibition through the front-end menus (3 innings, ~14 minutes):
 `port/tools/web_full_game.sh 8080` (`build/web-game/console.log`, with
 `MSSB_TRACE_GAME` output).
 
+### Side by side with Dolphin
+
+`port/tools/dolphin_compare.py` runs one input script on Dolphin (ground
+truth) and on the web build and writes `build/compare/<scenario>/index.html`:
+Dolphin, web and a diff image per frame, with the % of pixels that differ.
+
+```sh
+python3 port/tools/dolphin_compare.py menu   # boot -> title -> card prompts -> main menu -> captain select (~5 min)
+python3 port/tools/dolphin_compare.py game   # -> exhibition, first innings (~25 min)
+python3 port/tools/dolphin_compare.py x --input "500:A,800:A" --shots 300,900   # ad hoc
+```
+
+- Web (`port/tools/compare/web_capture.mjs`): headless Chrome with a fresh
+  profile (no save), `?movies`, `MSSB_INPUT` plus `MSSB_FREEZE_FRAMES=600,900`:
+  at each listed frame (PADRead count, the `MSSB_INPUT` clock) the game holds
+  that frame (`port/src/freeze_frames.cpp`, `Module.mssbFrozen`) until the
+  driver has saved the canvas and sets `Module.mssbRelease`.
+- Dolphin (`port/tools/compare/dolphin.py`, `/Applications/Dolphin.app`):
+  a private user folder `build/compare/dolphin-user` (fresh config and empty
+  memory card each run), the script as a TAS movie (`compare/dtm.py`: MSSB
+  polls the pad twice per field; the movie's tick count must be non-zero or
+  playback stops at the first poll), frame dumping as PNGs (`-C
+  Dolphin.Movie.DumpFrames=True`; ~20 frames/s at 2x, ~1 MB per frame, so
+  only windows around the wanted frames are kept).
+- Alignment: Dolphin shows the health screen 84 fields after the port's
+  first PADRead and loads slower (save creation +170 fields, stadium +280), so
+  each scenario has an offset schedule; each shot is then matched to the most
+  similar Dolphin frame nearby and the report shows the drift. Menus line up
+  to within a few frames; in-game the RNG differs (random teams, pitches:
+  `OSGetTick`), so in-game shots are the same kind of scene, not the same
+  frame. Movies run on wall-clock time, so captures inside a movie drift.
+  `--skip-web`/`--skip-dolphin` reuse a previous capture; `--keep-dumps` keeps
+  every Dolphin frame for re-alignment.
+
 How it differs from the native build:
 - The game's OS threads are Emscripten fibers (Asyncify), scheduled
   cooperatively like the native run token (`port/web/src/os_threads_web.inc`,
