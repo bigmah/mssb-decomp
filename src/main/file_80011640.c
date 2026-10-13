@@ -3978,6 +3978,12 @@ void AnimateCharacter(s32 index, s32 anim, s32 a, u8 mode, s32 b, s32 c, s32 d, 
 // .text:0x8001BA44 size:0x40C
 // Splits a global animation id into an actor anim bank and an index in it.
 static inline BOOL splitAnimId(s32 anim, s32* bank, s32* idx) {
+#ifdef TARGET_PC
+    // The callers use bank/idx even when this doesn't set them (stack garbage
+    // on GameCube): make that an out-of-range index of bank 0.
+    *bank = 0;
+    *idx = -1;
+#endif
     if (anim < 0) {
         return FALSE;
     }

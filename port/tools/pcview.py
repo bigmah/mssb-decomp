@@ -75,12 +75,22 @@ def main():
     canon_t = args[args.index('--canon') + 1] if '--canon' in args else None
     src = sources()
     views = {}
+    if obj == '--type':
+        # pcview.py --type Canon@file.c View@file.c ...: views of a struct type
+        # (e.g. an array element) rather than of a global.
+        canon_t, cfile = args[1].split('@')
+        views[canon_t] = cfile
+        for a in args[2:]:
+            if '@' in a:
+                v, vf = a.split('@')
+                views[v] = vf
+        obj = canon_t
     users = {}  # header -> a .c file that includes it (to lay the view out)
-    for f, t in src.items():
+    for f, t in (src.items() if not views else []):
         if f.endswith('.c'):
             for m in re.finditer(r'#include "([^"]+\.h)"', t):
                 users.setdefault('include/' + m.group(1), f)
-    for f, t in src.items():
+    for f, t in (src.items() if len(views) == 0 else []):
         if f.endswith('.h'):
             if f not in users:
                 continue
