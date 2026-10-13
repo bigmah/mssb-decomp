@@ -301,7 +301,7 @@ void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data) {
 }
 
 // .text:0x00028AE0 size:0x154
-s32 fn_1_28AE0(ChallengeSimulationMenu* menu) {
+s32 fn_1_28AE0(ChallengeSimulationMenu* menu, u16 buttons) {
     ChallengeQueueEntry* entry = lbl_803CC1B8;
     entry->selection = menu->items[menu->selected].selection;
     if (entry->selection < 0) {

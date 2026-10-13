@@ -305,7 +305,7 @@ typedef struct {
 } ChallengeCameraState; // size 0x58
 
 
-void fn_1_1DE5C(void);
+void fn_1_1DE5C(s16 index);
 
 void fn_1_1E8C0(s32 index);
 

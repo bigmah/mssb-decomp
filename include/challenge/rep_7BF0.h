@@ -80,7 +80,7 @@ void fn_1_2948C(ChallengeQueueEntry* task);
 
 void fn_1_28C34(ChallengeSimulationMenu* menu, s32 which, void* data);
 
-s32 fn_1_28AE0(ChallengeSimulationMenu* menu);
+s32 fn_1_28AE0(ChallengeSimulationMenu* menu, u16 buttons);
 
 void fn_1_2858C(ChallengeDebugCamera* camera, u16 held, u16 pressed, u16 repeated, ChallengeDebugPad* pad);
 

@@ -124,7 +124,7 @@ void fn_3_F92FC(void);
 void fn_3_F934C(void);
 void fn_3_F963C(s32 idx, CollisionStruct* v);
 void fn_3_F976C(s32 idx, s32 b, CollisionStruct* c);
-void fn_3_F99F0(s32 idx);
+void fn_3_F99F0(s32 idx, s32 b, CollisionStruct* c);
 void fn_3_F9B9C(s32 idx, s32 b, CollisionStruct* c);
 void fn_3_F9D94(StaObj* o);
 void fn_3_F9E78(s32 idx, s32 b, CollisionStruct* c);

@@ -93,7 +93,15 @@ static u8 s_BF070e[0x8] = {
     1, 0, 0, 1, 2, 1, 0, 0,
 }; // file kinds for fn_3_B9D68 (6 used)
 static AssetLoadInstructions lbl_3_data_11380 = {1035, {0x40046100}, {0xE641000}, 150344};
-static void* (*lbl_3_data_11390[55])(void*) = {(void* (*)(void*))fn_3_CB6B4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+#ifdef TARGET_PC
+// Loaders are called as void*(void*) and the result is ignored (wasm checks
+// call signatures; fn_3_CB6B4 returns void).
+static void* fn_3_CB6B4_loader(void* file) { fn_3_CB6B4(file); return NULL; }
+#define FN_3_CB6B4_LOADER fn_3_CB6B4_loader
+#else
+#define FN_3_CB6B4_LOADER (void* (*)(void*))fn_3_CB6B4
+#endif
+static void* (*lbl_3_data_11390[55])(void*) = {FN_3_CB6B4_LOADER, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 static SpaniDesc lbl_3_data_1146C[12] = {
     {0, 0x14, 0.0f, 0.0f, -1, 3, 10, 0xff, 4, {0, 0, 0}, 0.015f, 1, 1, 0},
     {0, 0x14, 0.0f, 0.0f, -1, 3, 10, 0xff, 4, {0, 0, 0}, 0.015f, 1, 1, 0},
@@ -1004,8 +1012,21 @@ void fn_3_C07A0(void) {
 }
 
 
+// Emitter updates are called as s32(Emitter*). On PC (wasm checks call
+// signatures) the ones defined otherwise go through thunks; the original
+// returns whatever r3 held for the void ones: report "not finished".
+#ifdef TARGET_PC
+static s32 fn_3_C0134_update(Emitter* e) { return fn_3_C0134(); }
+static s32 fn_3_BA7F4_update(Emitter* e) { fn_3_BA7F4(e); return 0; }
+#define FN_3_C0134_UPDATE fn_3_C0134_update
+#define FN_3_BA7F4_UPDATE fn_3_BA7F4_update
+#else
+#define FN_3_C0134_UPDATE (EmitterUpdateFn)fn_3_C0134
+#define FN_3_BA7F4_UPDATE (EmitterUpdateFn)fn_3_BA7F4
+#endif
+
 void fn_3_C07B0(void) {
-    if (fn_80033928(0x10) != 0 || fn_80033A24((EmitterUpdateFn)fn_3_C0134, 0x80, 0, 0, 0, 0x10) != NULL) {
+    if (fn_80033928(0x10) != 0 || fn_80033A24(FN_3_C0134_UPDATE, 0x80, 0, 0, 0, 0x10) != NULL) {
         lbl_3_bss_995C = 0;
     }
 }
@@ -1286,7 +1307,7 @@ void fn_3_BB454(Emitter* a) {
 
 // .text:0x000BB7F4 size:0x3D0 mapped:0x806FA888
 void fn_3_BB7F4(void) {
-    Emitter* t = fn_80033A24((EmitterUpdateFn)fn_3_BA7F4, 0x80, 0, lbl_3_data_170D8[0], 1, 0x19);
+    Emitter* t = fn_80033A24(FN_3_BA7F4_UPDATE, 0x80, 0, lbl_3_data_170D8[0], 1, 0x19);
     if (t != NULL) {
         fn_3_BB454(t);
     }
@@ -1294,7 +1315,7 @@ void fn_3_BB7F4(void) {
 
 // .text:0x000BBBC4 size:0x3D0 mapped:0x806FAC58
 void fn_3_BBBC4(void) {
-    Emitter* t = fn_80033A24((EmitterUpdateFn)fn_3_BA7F4, 0x80, 0, lbl_3_data_170D8[0], 1, 0x19);
+    Emitter* t = fn_80033A24(FN_3_BA7F4_UPDATE, 0x80, 0, lbl_3_data_170D8[0], 1, 0x19);
     if (t != NULL) {
         fn_3_BB454(t);
     }

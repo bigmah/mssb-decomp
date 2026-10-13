@@ -130,9 +130,8 @@ endforeach ()
 # (Homebrew LLVM: -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang).
 option(MSSB_SANITIZE_FUNCTION "Build game code with -fsanitize=function" OFF)
 if (MSSB_SANITIZE_FUNCTION)
-    list(APPEND MSSB_PORT_WARNINGS -fsanitize=function)
-    # The C++ side may use another compiler: link the UBSan runtime directly.
-    set(MSSB_UBSAN_RUNTIME "" CACHE FILEPATH "libclang_rt.ubsan_osx_dynamic.dylib of that clang")
+    list(APPEND MSSB_PORT_WARNINGS -fsanitize=function -fsanitize-recover=function)
+    # Our own handler (port/tools/fncheck) logs every (site, callee) pair.
 endif ()
 
 # Game code from main.dol, game.rel, menus.rel and challenge.rel.
@@ -259,8 +258,8 @@ target_include_directories(mssb PRIVATE $<$<BOOL:${EMSCRIPTEN}>:${CMAKE_SOURCE_D
 target_compile_definitions(mssb PRIVATE ${MSSB_DEFS} MSSB_REPO_DIR="${MSSB_ROOT}")
 target_compile_options(mssb PRIVATE ${MSSB_COMMON_FLAGS} -Wno-everything)
 if (MSSB_AURORA)
-    if (MSSB_SANITIZE_FUNCTION AND MSSB_UBSAN_RUNTIME)
-        target_link_libraries(mssb PRIVATE ${MSSB_UBSAN_RUNTIME})
+    if (MSSB_SANITIZE_FUNCTION)
+        target_sources(mssb PRIVATE ${CMAKE_SOURCE_DIR}/tools/fncheck/ubsan_fn.c)
     endif ()
     target_link_libraries(mssb PRIVATE musyx mssb_audio aurora::core aurora::gx aurora::vi aurora::pad
         aurora::si aurora::dvd aurora::card aurora::mtx aurora::os aurora::main)

@@ -344,7 +344,7 @@ void fn_1_1E5D0(ChallengeProjectionState* body);
 s16 fn_1_1E290(s16 sel, u16 held, u16 pressed, u16 repeat);
 void fn_1_1E28C(void);
 s16 fn_1_1DE60(s16 sel, u16 held, u16 pressed, u16 repeat);
-void fn_1_1DE5C(void);
+void fn_1_1DE5C(s16 index);
 f32 fn_1_1DE50(void);
 f32 fn_1_1DE40(void);
 f32 fn_1_1DE30(void);

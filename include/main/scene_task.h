@@ -76,8 +76,10 @@ typedef SceneTask LayoutOwner;
 // they're called and defined as void(void).
 #ifdef TARGET_PC
 #define TASK_PARAM(decl) void
+#define TASK_ARG(x) NULL
 #else
 #define TASK_PARAM(decl) decl
+#define TASK_ARG(x) x
 #endif
 
 #endif

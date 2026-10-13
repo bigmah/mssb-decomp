@@ -4012,8 +4012,15 @@ void fn_3_157570(void) {
 }
 
 // .text:0x00157588 size:0x68 mapped:0x8079661C
+#ifdef TARGET_PC
+// Called as an emitter update (s32(Emitter*)); see rep_1E08.c.
+static s32 fn_3_15767C_update(Emitter* e) { fn_3_15767C(); return 0; }
+#define FN_3_15767C_UPDATE fn_3_15767C_update
+#else
+#define FN_3_15767C_UPDATE (EmitterUpdateFn)fn_3_15767C
+#endif
 void fn_3_157588(int n) {
-    Emitter* p = fn_80033A24((EmitterUpdateFn)fn_3_15767C, 0x80, 0, (n + 6) / 7, 1, 0x28);
+    Emitter* p = fn_80033A24(FN_3_15767C_UPDATE, 0x80, 0, (n + 6) / 7, 1, 0x28);
     lbl_3_bss_B850 = p;
     p->u.t5.unk18 = 0;
 }

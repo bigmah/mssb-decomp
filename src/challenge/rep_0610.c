@@ -183,7 +183,7 @@ extern f32 lbl_1_rodata_73A4[];
 
 #include "Dolphin/OS/OSUtil.h"
 extern void fn_1_135C0(void);
-extern void fn_1_1770C(u8* object);
+extern void fn_1_1770C(TASK_PARAM(u8* object));
 
 #include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
 
@@ -4740,7 +4740,7 @@ void fn_1_17954(void) {
 // NONMATCHING ~97%: with the .data statics the pooled bases now match; only the .bss and .data pool base registers are swapped (r29/r30)
 // nmverify: lbl_1_bss_3215 lbl_1_data_1F1A lbl_1_data_A9E4 lbl_1_data_AA54 lbl_1_data_AAC4 lbl_1_data_AB34 lbl_1_data_ABB4 lbl_1_data_AC7C reached through a pooled base in original
 #if NONMATCHING
-void fn_1_1770C(u8* object) {
+void fn_1_1770C(TASK_PARAM(u8* object)) {
     u8 active;
 
     lbl_1_data_ABB4[lbl_1_bss_5F71]();
@@ -4779,8 +4779,8 @@ void fn_1_1770C(u8* object) {
 }
 #endif
 
-void fn_1_176EC(u8* object) {
-    fn_1_1496C(object);
+void fn_1_176EC(TASK_PARAM(u8* object)) {
+    fn_1_1496C(TASK_ARG(object));
 }
 
 #if NONMATCHING

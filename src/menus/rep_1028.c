@@ -120,10 +120,10 @@ void fn_2_90428(s32 index) {
 }
 
 // .text:0x00091B7C size:0x4
-void fn_2_91B7C(void) {}
+void fn_2_91B7C(void* arg) {}
 
 // .text:0x00091B28 size:0x4
-void fn_2_91B28(void) {}
+void fn_2_91B28(void* arg) {}
 
 // .text:0x00091C40 size:0xC
 void fn_2_91C40(MenuObject* object) {

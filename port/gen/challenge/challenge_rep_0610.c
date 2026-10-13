@@ -94,7 +94,7 @@ extern f32 lbl_1_rodata_73A4[];
 
 #include "Dolphin/OS/OSUtil.h"
 extern void fn_1_135C0(void);
-extern void fn_1_1770C(u8* object);
+extern void fn_1_1770C(TASK_PARAM(u8* object));
 
 
 #include "main/aramloader.h" // ARAMLoader lbl_803C6CF8
@@ -1573,10 +1573,10 @@ void fn_1_17954(void);
 
 
 #if NONMATCHING
-void fn_1_1770C(u8* object);
+void fn_1_1770C(TASK_PARAM(u8* object));
 
 #endif
-void fn_1_176EC(u8* object);
+void fn_1_176EC(TASK_PARAM(u8* object));
 
 
 #if NONMATCHING

@@ -691,7 +691,7 @@ void fn_3_F976C(s32 idx, s32 b, CollisionStruct* c) {
 
 // .text:0x000F99F0 size:0x1AC mapped:0x80738A84
 #pragma dont_inline off
-void fn_3_F99F0(s32 idx) {
+void fn_3_F99F0(s32 idx, s32 b, CollisionStruct* c) {
     s32 snd;
     s32 slot;
     s32 stad;

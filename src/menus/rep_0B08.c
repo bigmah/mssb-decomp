@@ -501,7 +501,7 @@ void fn_2_6AAB8(void) {
 }
 
 // fn_2_6C2C4, size:0x24
-void fn_2_6C2C4(void) {
+void fn_2_6C2C4(void* entry) {
     MenuCtx* menu;
     lbl_2_bss_1A8248[0]->_442F = 0;
     menu = lbl_2_bss_1A8248[0];

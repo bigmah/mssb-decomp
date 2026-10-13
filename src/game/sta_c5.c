@@ -772,7 +772,7 @@ void fn_3_EEF24(void) {
 }
 
 // .text:0x000EEFA4 size:0x2C mapped:0x8072E038
-void fn_3_EEFA4(void) {
+void fn_3_EEFA4(void* arg) {
     GXSetZMode(1, 3, 0);
 }
 
@@ -1474,7 +1474,7 @@ void fn_3_F1518(StadCtlA* p) {
 
 #pragma dont_inline on
 // .text:0x000F1674 size:0xDC mapped:0x80730708
-void fn_3_F1674(void) {
+void fn_3_F1674(s32 arg) {
     u32 stad = g_d_GameSettings.StadiumID;
     u8 v;
     u32 h;
@@ -2255,13 +2255,13 @@ void fn_3_F42A0(void) {
 // .text:0x000F466C size:0x30 mapped:0x80733700
 extern void fn_3_27648(void);
 
-void fn_3_F466C(void) {
+void fn_3_F466C(s32 arg) {
     fn_3_27648();
     g_FieldingLogic._13B = 1;
 }
 
 // .text:0x000F469C size:0x4 mapped:0x80733730
-void fn_3_F469C(void) {
+void fn_3_F469C(void* arg) {
     return;
 }
 

@@ -225,7 +225,11 @@ void fn_1_27E50(void) {
 void fn_1_27D6C(void) {
     u8 buf[6];
     if (CUR_TASK->flags & 1) {
+#ifdef TARGET_PC
+        ((void (*)(void))lbl_1_data_108E8[CUR_TASK->mode])(); // handlers take no argument
+#else
         lbl_1_data_108E8[CUR_TASK->mode](lbl_1_data_108E8);
+#endif
     } else {
         memcpy(buf, &lbl_803C77B8.stickX, 6);
         buf[0] = -buf[0];

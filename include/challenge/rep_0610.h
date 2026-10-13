@@ -134,7 +134,7 @@ void* fn_1_106A4(void);
 
 void fn_1_10670(void);
 
-void fn_1_176EC(u8* object);
+void fn_1_176EC(TASK_PARAM(u8* object));
 
 u8 fn_1_D638(void);
 
@@ -247,7 +247,7 @@ void fn_1_D300(CharActor* row);
 
 void fn_1_17B5C(void);
 
-void fn_1_1770C(u8* object);
+void fn_1_1770C(TASK_PARAM(u8* object));
 
 void fn_1_12F8C(void* table, void* matrix);
 

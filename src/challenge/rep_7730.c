@@ -2997,7 +2997,7 @@ s16 fn_1_1DE60(s16 sel, u16 held, u16 pressed, u16 repeat) {
 }
 
 // .text:0x1DE5C size:0x4
-void fn_1_1DE5C(void) {
+void fn_1_1DE5C(s16 index) {
 }
 
 f32 fn_1_1DE50(void) {
