@@ -177,6 +177,7 @@ void quit_now()
 } // namespace
 
 extern "C" void port_pad_sample(void);
+extern "C" void port_freeze_frames_check(void);
 extern "C" void port_pad_assign(void);
 
 extern "C" {
@@ -209,6 +210,7 @@ void port_present_frame(void)
         s_inFrame = false;
     }
     pace_frame();
+    port_freeze_frames_check(); // MSSB_FREEZE_FRAMES (freeze_frames.cpp)
 
 #ifdef __EMSCRIPTEN__
     double e0 = emscripten_get_now();

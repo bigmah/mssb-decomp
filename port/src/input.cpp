@@ -120,10 +120,16 @@ std::vector<ScriptedPress>& script()
 }
 } // namespace
 
+static u32 s_scriptFrame = 0; // PADRead calls so far: the frame MSSB_INPUT is keyed to
+
+extern "C" u32 port_pad_script_frame(void)
+{
+    return s_scriptFrame;
+}
+
 extern "C" void port_pad_apply_script(PADStatus* status)
 {
-    static u32 frame = 0;
-    frame++;
+    u32 frame = ++s_scriptFrame;
     // MSSB_DEBUG_INPUT: port 1 as the game reads it, whenever it changes.
     static const bool s_debugPad = getenv("MSSB_DEBUG_INPUT") != nullptr;
     static PADStatus s_last;
