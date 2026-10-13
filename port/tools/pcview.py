@@ -104,8 +104,8 @@ def main():
                     break
         if P.get(tag) and G.get(tag) and len(P[tag]) == len(G[tag]):
             lay[T] = (f, tag, [(g[0], p[0], p[1], p[2]) for g, p in zip(G[tag], P[tag])], Ps.get(tag))
-        elif G.get(tag) and re.search(r'PC: each field where \w+ has it[^\n]*\n(?:(?!typedef).)*?\} %s;' % re.escape(T),
-                                      ''.join(src.values()), re.S):
+        elif G.get(tag) and re.search(r'PC: each field where \w+ has it[^\n]*\n(?:(?!#endif|typedef)[^\n]*\n)*?\} %s;' % re.escape(T),
+                                      ''.join(src.values())):
             # already converted: the GameCube branch gives the fields
             lay[T] = (f, tag, [(g[0], -1, g[1], g[2]) for g in G[tag]], None)
     if canon_t is None:
@@ -158,8 +158,8 @@ def main():
                 break
         old_pc = None
         if where is not None:
-            g = re.search(r'#ifdef TARGET_PC\ntypedef union \{\n    // PC: each field where .*?\} %s;\n#else\n' % re.escape(T),
-                          src[where[0]], re.S)
+            g = re.search(r'#ifdef TARGET_PC\ntypedef union \{\n    // PC: each field where [^\n]*\n(?:(?!#endif|typedef)[^\n]*\n)*?\} %s;\n#else\n' % re.escape(T),
+                          src[where[0]])
             if g:
                 old_pc = g.group(0)
         if where is None:
@@ -187,8 +187,6 @@ def main():
             continue
         members = []
         for ty, stars, name, arr, raw in fields:
-            if arr and re.match(r'^(pad|_*unk|_[0-9A-Fa-f]+$)', name):
-                continue  # padding
             if name not in exp:
                 if arr and re.match(r'^(pad|_*unk|_[0-9A-Fa-f]+)', name):
                     continue
