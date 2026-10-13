@@ -38,10 +38,10 @@ typedef struct MenuBootTask {
 // Layer entry passed to fn_800A7D4C: a draw callback for layer 0.
 typedef struct {
     s32 unk0;
-    void (*callback)(void);
+    void (*callback)(void* node); // draw-list callbacks get their node
 } MenuLayerCallback;
 
-void fn_2_0(void);
+void fn_2_0(void* node);
 void fn_2_3C(void);
 void fn_2_110(void);
 void fn_2_160(void);

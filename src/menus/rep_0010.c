@@ -351,7 +351,7 @@ void fn_2_3C(void) {
 }
 
 // fn_2_0, size:0x3C
-void fn_2_0(void) {
+void fn_2_0(void* node) {
     GXSetZCompLoc(0);
     GXSetAlphaCompare(4, 0, 0, 7, 0);
 }
