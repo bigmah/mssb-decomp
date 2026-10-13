@@ -135,7 +135,7 @@ BALL_COLLISION_TYPE checkStatiumHazardCollisions(VecSrcDst* inVec, CollisionStru
                 t = fn_3_B91C8(g_d_GameSettings.StadiumID, list[c], tc.mtx1);
                 if (t != 0) {
                     PSMTXConcat(m1, tc.mtx1, tc.mtx1);
-                    if (checkTriangleCollisions(&tc, *(TriangleGroup**)(t + 8))) {
+                    if (checkTriangleCollisions(&tc, PTR32_GET(TriangleGroup, *(u32*)(t + 8))) /* collision table: 32-bit group pointer (fn_3_B9D68 kind 6); TODO type */) {
                         *(u32*)v = list[c];
                     }
                 }
