@@ -6,6 +6,8 @@
 #include "main/file_80063028.h"
 #include "main/file_800BD8C4.h"
 
+struct _CollisionStruct; // CollisionStruct (game/rep_D0.h): stadium objects' onHit argument
+
 // Stadium Piranha Plants. They rise out of the ground when a batted ball comes
 // near, snap it out of the air, hold it in the mouth and spit it out again, and
 // knock back fielders that run into them.
@@ -29,7 +31,7 @@ typedef struct PiranhaPlant {
     /*0x74*/ ActorObject* actorObj;
     /*0x78*/ void* shadow;          // passed to fn_3_B8464
     /*0x7C*/ void (*update)(struct PiranhaPlant* p);
-    /*0x80*/ void (*onHit)(s32 idx);
+    /*0x80*/ void (*onHit)(s32 idx, s32 hitType, struct _CollisionStruct* hit); // called by processStadiumObjectFunction
     /*0x84*/ void (*preDraw)(struct PiranhaPlant* p);
     /*0x88*/ u8 _88[4];
     /*0x8C*/ s32 _8C;
@@ -135,7 +137,7 @@ typedef struct PiranhaFielder {
 void fn_3_E1DB8(void);
 void fn_3_E1FA8(PiranhaPlant* p);
 void fn_3_E2034(PiranhaPlant* p);
-void fn_3_E2118(s32 idx);
+void fn_3_E2118(s32 idx, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_E22A4(PiranhaPlant* p);
 void fn_3_E2324(PiranhaPlant* p);
 void fn_3_E25D0(PiranhaPlant* p, u32 anim);

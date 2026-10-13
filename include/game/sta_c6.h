@@ -5,6 +5,8 @@
 #include "Dolphin/mtx.h"
 #include "main/file_800BD8C4.h" // ActorObject, GameActor, GameControl
 
+struct _CollisionStruct; // CollisionStruct (game/rep_D0.h): stadium objects' onHit argument
+
 // Toy Field stadium objects.
 // Object kinds (StaC6Obj.kind):
 //   0-7   field panels (StaC6Spot, coloured by StaC6Data.kindColors[kind])
@@ -46,7 +48,7 @@ typedef struct StaC6Obj {
     /*0x74*/ ActorObject* actorObj;
     /*0x78*/ void* shadow;          // passed to fn_3_B8464
     /*0x7C*/ void (*update)(struct StaC6Obj* o);
-    /*0x80*/ void (*onHit)(s32 idx);
+    /*0x80*/ void (*onHit)(s32 idx, s32 hitType, struct _CollisionStruct* hit); // called by processStadiumObjectFunction
     /*0x84*/ void (*preDraw)(struct StaC6Obj* o);
     /*0x88*/ void (*postDraw)(struct StaC6Obj* o);
     /*0x8C*/ void* _8C; // StadiumObj.shapeAnim
@@ -156,7 +158,7 @@ void fn_3_E698C(StaC6Obj* o);
 void fn_3_E6A48(StaC6Obj* o);
 void fn_3_E6D90(StaC6Obj* o);
 void fn_3_E7350(void);
-void fn_3_E7364(s32 i);
+void fn_3_E7364(s32 i, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_E7388(MtxPtr unused, E7388Pair* out);
 void fn_3_E7424(void);
 void* fn_3_E751C(s32 idx, Mtx m);

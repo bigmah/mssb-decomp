@@ -2,6 +2,7 @@
 #define __GAME_sta_c5_H_
 
 #include "mssbTypes.h"
+struct _CollisionStruct; // CollisionStruct (game/rep_D0.h): stadium objects' onHit argument
 
 struct StaC5Obj;
 struct StadCtlA;
@@ -20,12 +21,13 @@ void fn_3_EEE3C(void);
 void fn_3_EEF24(void);
 void fn_3_EEFA4(void* arg);
 void fn_3_EEFD0(void);
-void fn_3_EEFD4(s32 idx);
+void fn_3_EEFD4(s32 idx, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_EF218(void);
 void fn_3_EF21C(struct StaC5Obj* p);
 void fn_3_EF3D4(struct StaC5Obj* p, u8 idx);
 void fn_3_EF408(struct StaC5Obj* p);
 #include "Dolphin/vec.h"
+
 u32 fn_3_EF55C(Vec p, u8 idx);
 typedef struct { s32 a, b, c; } V3i;
 u32 fn_3_EF7B4(V3i v, s32 x);
@@ -43,7 +45,7 @@ void fn_3_F13F8(struct StaC5Obj* p);
 void fn_3_F1448(struct StaC5Obj* p);
 struct StadCtlA;
 void fn_3_F1518(struct StadCtlA* p);
-void fn_3_F1674(s32 arg);
+void fn_3_F1674(s32 arg, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_F1750(struct StadCtlA* p);
 void fn_3_F18A4(struct StaC5Obj* p);
 void fn_3_F193C(struct StadCtlA* p);
@@ -64,7 +66,7 @@ struct Emitter;
 s32 fn_3_F3CD0(struct Emitter* em);
 void fn_3_F3EFC(struct Emitter* em);
 void fn_3_F42A0(void);
-void fn_3_F466C(s32 arg);
+void fn_3_F466C(s32 arg, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_F469C(void* arg);
 struct StadObjB;
 void fn_3_F46A0(struct StadObjB* p);

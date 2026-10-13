@@ -1416,7 +1416,7 @@ void fn_3_CF278(C2ObjHit* p, Vec* pos) {
 #endif
 
 // .text:0x000CF72C size:0x200 mapped:0x8070E7C0
-void fn_3_CF72C(s32 idx) {
+void fn_3_CF72C(s32 idx, s32 hitType, struct _CollisionStruct* hit) {
     C2ObjHit* p = (C2ObjHit*)((C2Obj*)lbl_3_common_bss_350E4.objs + idx);
     Vec t;
     Vec a;
@@ -2181,7 +2181,7 @@ void fn_3_D1848(C2ObjComp* s) {
 }
 
 // .text:0x000D196C size:0x158 mapped:0x80710A00
-void fn_3_D196C(s32 idx) {
+void fn_3_D196C(s32 idx, s32 hitType, struct _CollisionStruct* hit) {
     C2ObjMain* e = (C2ObjMain*)((C2Obj*)lbl_3_common_bss_350E4.objs + idx);
     Vec v;
     s32 k;

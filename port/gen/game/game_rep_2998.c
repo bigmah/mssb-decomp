@@ -71,7 +71,7 @@ static inline void setBallPos(f32 x, f32 y, f32 z);
 void fn_3_E1DB8(void);
 void fn_3_E1FA8(PiranhaPlant* p);
 void fn_3_E2034(PiranhaPlant* p);
-void fn_3_E2118(s32 idx);
+void fn_3_E2118(s32 idx, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_E22A4(PiranhaPlant* p);
 void fn_3_E2324(PiranhaPlant* p);
 void fn_3_E25D0(PiranhaPlant* p, u32 anim);

@@ -177,7 +177,7 @@ void fn_3_E2034(PiranhaPlant* p) {
 
 // .text:0x000E2118 size:0x18C mapped:0x807211AC
 // The ball hit plant idx.
-void fn_3_E2118(s32 idx) {
+void fn_3_E2118(s32 idx, s32 hitType, struct _CollisionStruct* hit) {
     PiranhaPlant* p = PLANT(idx);
     u8 state = p->state;
     if (state == 0 || state == 5) {

@@ -315,7 +315,7 @@ s32 fn_3_CEFA8(Emitter* h);
 void fn_3_CF278(C2ObjHit* p, Vec* pos);
 
 #endif
-void fn_3_CF72C(s32 idx);
+void fn_3_CF72C(s32 idx, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_CF92C(C2Obj* p);
 void fn_3_CF930(C2ObjHit* p);
 void fn_3_CFA88(C2Obj* p);
@@ -381,7 +381,7 @@ void fn_3_D141C(C2ObjLink* p);
 #endif
 void fn_3_D173C(C2ObjComp* p);
 void fn_3_D1848(C2ObjComp* s);
-void fn_3_D196C(s32 idx);
+void fn_3_D196C(s32 idx, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_D1AC4(C2ObjMain* p);
 
 

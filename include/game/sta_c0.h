@@ -7,6 +7,8 @@
 #include "main/file_800BD8C4.h" // ActorObject
 #include "main/file_80024D2C.h" // ShapeAnimPlayer
 
+struct _CollisionStruct; // CollisionStruct (game/rep_D0.h): stadium objects' onHit argument
+
 // Stadium 0 (Mario Stadium) objects: the stadium model, the animated parts, the
 // light panels that turn towards the camera and the indirect-texture water.
 
@@ -18,7 +20,7 @@ typedef struct StaC0Obj {
     /*0x74*/ ActorObject* actorObj;
     /*0x78*/ void* shadow;
     /*0x7C*/ void (*update)(struct StaC0Obj* o);
-    /*0x80*/ void (*onHit)(s32 idx);
+    /*0x80*/ void (*onHit)(s32 idx, s32 hitType, struct _CollisionStruct* hit); // called by processStadiumObjectFunction
     /*0x84*/ void (*preDraw)(struct StaC0Obj* o);
     /*0x88*/ u8 _88[4];
     /*0x8C*/ ShapeAnimPlayer* shapeAnim;

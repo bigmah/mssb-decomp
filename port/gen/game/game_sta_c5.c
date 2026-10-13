@@ -408,7 +408,7 @@ void fn_3_EEF24(void);
 void fn_3_EEFA4(void* arg);
 void fn_3_EEFD0(void);
 void fn_3_F13F8(StaC5Obj* p);
-void fn_3_EEFD4(s32 idx);
+void fn_3_EEFD4(s32 idx, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_EF218(void);
 void fn_3_EF21C(StaC5Obj* p);
 void fn_3_EF3D4(StaC5Obj* p, u8 idx);
@@ -470,7 +470,7 @@ void fn_3_F0FA4(StadCtlA* p);
 #endif
 void fn_3_F1448(StaC5Obj* p);
 void fn_3_F1518(StadCtlA* p);
-void fn_3_F1674(s32 arg);
+void fn_3_F1674(s32 arg, s32 hitType, struct _CollisionStruct* hit);
 extern f32 fn_800B4A94(void*);
 extern const f32 lbl_3_rodata_2E30;
 void fn_3_F1750(StadCtlA* p);
@@ -582,7 +582,7 @@ void fn_3_F3EFC(struct Emitter* em);
 struct Emitter* fn_80033A24(s32 (*update)(struct Emitter* e), u8 priority, s32 unk14, s32 n, s32 strict, u8 type);
 void fn_3_F42A0(void);
 extern void fn_3_27648(void);
-void fn_3_F466C(s32 arg);
+void fn_3_F466C(s32 arg, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_F469C(void* arg);
 extern char lbl_3_rodata_2CC8[];
 

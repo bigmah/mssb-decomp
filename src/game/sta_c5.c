@@ -161,7 +161,7 @@ typedef struct StadObjHdr {
     ActorObject* actorObj;     /* 0x74 */
     void* shadow;              /* 0x78: passed to fn_3_B8464 */
     void (*update)(void* p);   /* 0x7C */
-    void (*onHit)(s32 idx);    /* 0x80 */
+    void (*onHit)(s32 idx, s32 hitType, struct _CollisionStruct* hit); /* 0x80, called by processStadiumObjectFunction */
     void (*preDraw)(void* p);  /* 0x84 */
     void* f88;                 /* 0x88 */
     void* drawArg;             /* 0x8C */
@@ -209,7 +209,7 @@ typedef struct StaC5Obj {
     /*0x74*/ ActorObject* actorObj;
     /*0x78*/ void* shadow;
     /*0x7C*/ void (*update)(void* p);
-    /*0x80*/ void (*onHit)(s32 idx);
+    /*0x80*/ void (*onHit)(s32 idx, s32 hitType, struct _CollisionStruct* hit); // called by processStadiumObjectFunction
     /*0x84*/ void (*preDraw)(void* p);
     /*0x88*/ void* f88;
     /*0x8C*/ void* drawArg;
@@ -796,7 +796,7 @@ void fn_3_F13F8(StaC5Obj* p) {
 #pragma dont_inline on
 
 // .text:0x000EEFD4 size:0x244 mapped:0x8072E068
-void fn_3_EEFD4(s32 idx) {
+void fn_3_EEFD4(s32 idx, s32 hitType, struct _CollisionStruct* hit) {
     Vec d;
     Vec ref;
     StaC5Obj* e = (StaC5Obj*)lbl_3_common_bss_350E4.objs + idx;
@@ -998,7 +998,15 @@ u32 fn_3_EF55C(Vec p, u8 idx) {
 
 // .text:0x000EF7B4 size:0x4C mapped:0x8072E848
 u32 fn_3_EF7B4(V3i v, s32 x) {
+#ifdef TARGET_PC
+    // The original passes the V3i's bits as the Vec (wasm traps on a call
+    // through a mismatched prototype) and tests the low byte of the result.
+    Vec p;
+    memcpy(&p, &v, sizeof(p));
+    return (u8)fn_3_EF55C(p, (u8)x) != 0;
+#else
     return ((u8 (*)(V3i, s32))fn_3_EF55C)(v, x) != 0;
+#endif
 }
 
 #pragma dont_inline off
@@ -1474,7 +1482,7 @@ void fn_3_F1518(StadCtlA* p) {
 
 #pragma dont_inline on
 // .text:0x000F1674 size:0xDC mapped:0x80730708
-void fn_3_F1674(s32 arg) {
+void fn_3_F1674(s32 arg, s32 hitType, struct _CollisionStruct* hit) {
     u32 stad = g_d_GameSettings.StadiumID;
     u8 v;
     u32 h;
@@ -2255,7 +2263,7 @@ void fn_3_F42A0(void) {
 // .text:0x000F466C size:0x30 mapped:0x80733700
 extern void fn_3_27648(void);
 
-void fn_3_F466C(s32 arg) {
+void fn_3_F466C(s32 arg, s32 hitType, struct _CollisionStruct* hit) {
     fn_3_27648();
     g_FieldingLogic._13B = 1;
 }
@@ -3111,7 +3119,7 @@ void fn_3_F6FDC(void** files) {
             p->fc3 = kA;
             o->shadow = STADIUM_FILE(files, idx[9]);
             o->update = NULL;
-            o->onHit = (void (*)(s32))fn_3_F1674;
+            o->onHit = fn_3_F1674;
             o->hasShadow = (o->visible && o->shadow != NULL) ? 1 : 0;
             p->idx = j;
             p->fc5 = n;
@@ -3157,7 +3165,7 @@ void fn_3_F6FDC(void** files) {
         o->actorObj = &STA_ACTORS->objects[kBall];
         o->shadow = STADIUM_FILE(files, idx[10]);
         o->update = (void (*)(void*))fn_3_F56CC;
-        o->onHit = (void (*)(s32))fn_3_F466C;
+        o->onHit = fn_3_F466C;
         o->visible = 1;
         o->hasShadow = (o->visible && o->shadow != NULL) ? 1 : 0;
         fn_3_F5C30((StaC5Obj*)b);

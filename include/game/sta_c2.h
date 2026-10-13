@@ -8,6 +8,8 @@
 #include "main/file_800BD8C4.h" // ActorObject
 #include "main/file_800263FC.h" // Emitter, Particle
 
+struct _CollisionStruct; // CollisionStruct (game/rep_D0.h): stadium objects' onHit argument
+
 // One node of the verlet chain simulated by fn_3_D1F2C (4 or 8 nodes per object, 0x40 bytes each).
 typedef struct RopeNode {
     /*0x00*/ f32 mass;
@@ -48,7 +50,7 @@ typedef void (*C2ObjFn)(struct C2Obj* p);
     /*0x74*/ ActorObject* actorObj; \
     /*0x78*/ void* shadow; \
     /*0x7C*/ C2ObjFn update; \
-    /*0x80*/ void (*onHit)(s32 idx); \
+    /*0x80*/ void (*onHit)(s32 idx, s32 hitType, struct _CollisionStruct* hit); \
     /*0x84*/ C2ObjFn preDraw; \
     /*0x88*/ u8 _88[4]; \
     /*0x8C*/ void* _8C; \
@@ -215,7 +217,7 @@ void fn_3_CED40(Particle* p, void* a);
 void fn_3_CEE5C(Particle* p, void* a);
 s32 fn_3_CEFA8(Emitter* h);
 void fn_3_CF278(C2ObjHit* p, Vec* pos);
-void fn_3_CF72C(s32 idx);
+void fn_3_CF72C(s32 idx, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_CF92C(C2Obj* p);
 void fn_3_CF930(C2ObjHit* p);
 void fn_3_CFA88(C2Obj* p);
@@ -240,7 +242,7 @@ void fn_3_D1280(C2ObjLink* p);
 void fn_3_D141C(C2ObjLink* p);
 void fn_3_D173C(C2ObjComp* p);
 void fn_3_D1848(C2ObjComp* s);
-void fn_3_D196C(s32 idx);
+void fn_3_D196C(s32 idx, s32 hitType, struct _CollisionStruct* hit);
 void fn_3_D1AC4(C2ObjMain* p);
 void fn_3_D1B24(CC438Cfg* cfg, RopeNode* nodes, s32 n, Vec* grav);
 void fn_3_D1F2C(CC438Cfg* cfg, RopeNode* nodes, s32 n, Vec* dir, C2ObjMain* p);
