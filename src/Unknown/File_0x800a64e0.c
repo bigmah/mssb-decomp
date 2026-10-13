@@ -200,7 +200,11 @@ u32 ReadBits(u32 bits)
             }
             // signal a thread to update the cache of data to read
             interrupts = OSDisableInterrupts();
+#ifdef TARGET_PC
+            __atomic_fetch_sub(&gDataDecompressorValues.segmentCount, 1, __ATOMIC_SEQ_CST); // see fn_800A77A0
+#else
             gDataDecompressorValues.segmentCount--;
+#endif
             OSSignalSemaphore(gDataDecompressorValues.s);
             OSRestoreInterrupts(interrupts);
         }
