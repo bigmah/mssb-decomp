@@ -113,6 +113,9 @@ BOOL port_DVDReadAsyncPrio(DVDFileInfo* fileInfo, void* addr, s32 length, s32 of
 #include "port/blob.h"
 #include "port/formats.h"
 
+// MSSB_TRACE_GAME: print a tagged state value when it changes (port/src/trace.c).
+void port_trace_value(const char* tag, int value);
+
 // Pointers kept in 32-bit integers (fields of disc formats relocated in place,
 // handles, callback arguments): stored as offsets into the game heap, the same
 // encoding as PTR32 (port/ptr32.h). Encoding a pointer outside the game heap

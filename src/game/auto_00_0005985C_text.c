@@ -1540,6 +1540,9 @@ void fn_3_5BA2C(void) {
 // fn_3_59C2C, size:0x314
 void fn_3_59C2C(void) {
     SceneTask* task = lbl_803CC1B8;
+#ifdef TARGET_PC
+    port_trace_value("fn_3_59C2C", unkSimulationRelatedStruct._04);
+#endif
     switch (unkSimulationRelatedStruct._04) {
     case 0:
         task->_10 = 0;
@@ -1778,6 +1781,9 @@ void* jumptable_3_data_4240[19] = {
 #if NONMATCHING
 void fn_3_5A28C(void) {
     SceneTask* task = lbl_803CC1B8;
+#ifdef TARGET_PC
+    port_trace_value("fn_3_5A28C", unkSimulationRelatedStruct._04);
+#endif
     switch (unkSimulationRelatedStruct._04) {
     case 0:
         lbl_8037169C.lastPick = calledWhenStartingMatch();

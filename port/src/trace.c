@@ -57,3 +57,35 @@ void port_trace_draw(void** funcs, int count)
         fprintf(stderr, " %s", sym_name(funcs[i]));
     fprintf(stderr, "\n");
 }
+
+// MSSB_TRACE_GAME=1: print a tagged state value whenever it changes
+// (loader state machines). Up to 16 tags.
+void port_trace_value(const char* tag, int value)
+{
+    static int enabled = -1;
+    static const char* tags[16];
+    static int values[16];
+    if (enabled < 0)
+        enabled = getenv("MSSB_TRACE_GAME") != NULL;
+    if (!enabled)
+        return;
+    for (int i = 0; i < 16; i++)
+    {
+        if (tags[i] == NULL)
+        {
+            tags[i] = tag;
+            values[i] = value;
+            fprintf(stderr, "[state] %s %d\n", tag, value);
+            return;
+        }
+        if (tags[i] == tag)
+        {
+            if (values[i] != value)
+            {
+                values[i] = value;
+                fprintf(stderr, "[state] %s %d\n", tag, value);
+            }
+            return;
+        }
+    }
+}
