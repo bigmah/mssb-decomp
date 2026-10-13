@@ -85,9 +85,6 @@ s32 fn_3_90F48(u8* state) {
     }
     c = fn_800698F8(c);
     n = c + 5;
-#ifdef TARGET_PC
-    fprintf(stderr, "DBG90F48 c=%d n=%d status=%d 2D=%d 2C=%d unk39A=%d group=%p\n", c, n, g_GameLogic.gameStatus, lbl_3_common_bss_34C58._2D, lbl_3_common_bss_34C58._2C, lbl_800EF808.unk39A[0], (void*)lbl_800EF808.groups[n]);
-#endif
     fn_80021518(lbl_3_data_8148[c], lbl_800EF808.groups[n]);
     return 0;
 }

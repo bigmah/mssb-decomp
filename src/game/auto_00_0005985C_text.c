@@ -1859,9 +1859,6 @@ void fn_3_5A28C(void) {
     case 4:
         {
             s16 id = fn_800698F8(inMemRoster[lbl_800EF808.loadIndex / 9][lbl_800EF808.loadIndex % 9].stats.CharID);
-#ifdef TARGET_PC
-            fprintf(stderr, "DBG load group %d (loadIndex %d)\n", id + 5, lbl_800EF808.loadIndex);
-#endif
             fn_800216F8(id + 5, fn_3_90F48);
         }
         unkSimulationRelatedStruct._04++;
