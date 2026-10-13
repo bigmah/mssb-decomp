@@ -20,6 +20,13 @@ if [ -n "$MSSB_RUN_TAG" ]; then
   rm -f "$ROOT/build/port/tag-$MSSB_RUN_TAG/bb"
   cp "$BIN" "$ROOT/build/port/tag-$MSSB_RUN_TAG/bb" || exit 1
   BIN="$ROOT/build/port/tag-$MSSB_RUN_TAG/bb"
+  # Its own user folder (memory card, crash log) unless MSSB_USER_DIR is set:
+  # a fresh card each run, so the boot's card prompts are always the same.
+  if [ -z "$MSSB_USER_DIR" ]; then
+    rm -rf "$ROOT/build/port/tag-$MSSB_RUN_TAG/user"
+    mkdir -p "$ROOT/build/port/tag-$MSSB_RUN_TAG/user"
+    export MSSB_USER_DIR="$ROOT/build/port/tag-$MSSB_RUN_TAG/user"
+  fi
   LOG="$ROOT/build/port/run-$MSSB_RUN_TAG.log"
   SHOTS="$ROOT/build/port/shots-$MSSB_RUN_TAG"
 fi

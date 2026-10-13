@@ -704,7 +704,7 @@ void fn_2_8C910(void) {
     lbl_2_bss_340140->objectCount = 0;
     file = lbl_2_bss_340140->resFile;
 #ifdef TARGET_PC
-    port_swap_offset_table(file, 19 * 3 + 12); // 19 model sets, 12 animation banks
+    port_swap_offset_table(file, 19 * 3 + 16); // 19 model sets, 16 animation banks
 #endif
     for (i = 0; i < 19; i++) {
         lbl_2_bss_340140->res[i].layout = (u8*)file + file[i * 3];
