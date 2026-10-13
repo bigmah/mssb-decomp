@@ -74,15 +74,15 @@ typedef struct ChallengeWork {
 
 void fn_1_5540(void);
 
-void fn_1_7848(void);
+void fn_1_7848(void* node);
 
 void fn_1_77EC(ChallengeModel* model);
 
 void fn_1_54E0(MtxPtr view);
 
-void fn_1_786C(void);
+void fn_1_786C(void* node);
 
-void fn_1_78E4(void);
+void fn_1_78E4(void* node);
 
 void fn_1_7EF8(void);
 

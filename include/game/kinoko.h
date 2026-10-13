@@ -9,7 +9,7 @@ void fn_3_1695A0(void);
 void fn_3_1695A4(s32 a, u8 flag);
 void fn_3_169600(void);
 void fn_3_169804(void);
-void fn_3_169984(void);
+void fn_3_169984(void* node);
 struct KinokoSeg;
 void fn_3_169D00(struct KinokoSeg* base, u32* cnt);
 void fn_3_169E70(struct KinokoSeg* base);

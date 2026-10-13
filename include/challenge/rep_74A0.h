@@ -212,7 +212,7 @@ void fn_1_1A290(ChallengeDrawCollection* collection, MtxPtr camera);
 
 void fn_1_19D60(struct DODisplayObj* dispObj, MtxPtr camera);
 
-void fn_1_1A774(void);
+void fn_1_1A774(void* node);
 
 void fn_1_1D514(void);
 
@@ -230,7 +230,7 @@ void fn_1_1957C(void);
 
 void fn_1_1994C(void);
 
-void fn_1_1ADA4(void);
+void fn_1_1ADA4(void* node);
 
 void fn_1_1B424(void);
 

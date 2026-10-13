@@ -1680,7 +1680,7 @@ typedef struct ChDrawMtxNode {
 // Draw-list node without matrix.
 typedef struct ChDrawNode8 {
     u32 link;
-    void (*draw)(void);
+    void (*draw)(void* node);
 } ChDrawNode8;
 ChPair lbl_1_data_1DC0[22] = { // 0xFFFF-terminated lists
     {0x0016, 0x0010}, {0x0017, 0x0011}, {0x0018, 0x0012}, {0x0019, 0x0013}, {0x001A, 0x0014}, {0x001B, 0x0015}, {0x0020, 0x001C}, {0x0021, 0x001D},
@@ -4728,7 +4728,7 @@ void fn_1_179CC(void) {
 #endif
 
 // .text:0x00017954 size:0x78
-void fn_1_17954(void) {
+void fn_1_17954(void* node) {
     Mtx44 projection;
     C_MTXFrustum(projection, lbl_1_rodata_73CC[0], lbl_1_rodata_73D0[0],
                  lbl_1_rodata_73D4[0], lbl_1_rodata_73D8[0],

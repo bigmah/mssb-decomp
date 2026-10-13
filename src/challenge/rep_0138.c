@@ -59,7 +59,7 @@ typedef struct ChalStageParams {
 // Display-list node handed to fn_800A7D4C (one per frame buffer).
 typedef struct ChalDrawCmd {
     /*0x0*/ void* link;
-    /*0x4*/ void (*draw)(void);
+    /*0x4*/ void (*draw)(void* node);
 } ChalDrawCmd;
 
 // DVD/ARAM load instructions of a stage model (see ARAMTransfer).
@@ -500,7 +500,7 @@ void fn_1_7960(void) {
 #endif
 
 // .text:0x000078E4 size:0x7C
-void fn_1_78E4(void) {
+void fn_1_78E4(void* node) {
     GXColor clear = lbl_1_data_858[0].color;
     GXSetCopyClear(clear, 0xFFFFFF);
     if (lbl_1_bss_C4 != 0) {
@@ -513,7 +513,7 @@ void fn_1_78E4(void) {
 }
 
 // .text:0x0000786C size:0x78
-void fn_1_786C(void) {
+void fn_1_786C(void* node) {
     GXColor clear;
     GXColor color;
     ChallengeFog* fog;
@@ -532,7 +532,7 @@ void fn_1_786C(void) {
 }
 
 // .text:0x00007848 size:0x24
-void fn_1_7848(void) {
+void fn_1_7848(void* node) {
     fn_80048C28();
     fn_80048C1C();
 }

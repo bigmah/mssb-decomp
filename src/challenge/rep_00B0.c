@@ -389,7 +389,7 @@ void fn_1_1BF8(ChalColBox* boxes, s32 index) {
 }
 
 // .text:0x000019AC size:0x24C
-void fn_1_19AC(void) {
+void fn_1_19AC(void* node) {
     Vec hit[2];
     u32 size;
     u32 i;

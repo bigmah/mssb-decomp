@@ -108,7 +108,7 @@ typedef struct RibSortEnt {
 
 
 #if NONMATCHING
-void fn_3_169984(void);
+void fn_3_169984(void* node);
 
 #endif
 void fn_3_169D00(KinokoSeg* base, u32* cnt);

@@ -1566,7 +1566,7 @@ void fn_1_17B5C(void);
 void fn_1_179CC(void);
 
 #endif
-void fn_1_17954(void);
+void fn_1_17954(void* node);
 
 
 

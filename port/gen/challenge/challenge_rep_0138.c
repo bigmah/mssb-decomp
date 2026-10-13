@@ -169,9 +169,9 @@ void fn_1_7E04(f32 scale);
 void fn_1_7960(void);
 
 #endif
-void fn_1_78E4(void);
-void fn_1_786C(void);
-void fn_1_7848(void);
+void fn_1_78E4(void* node);
+void fn_1_786C(void* node);
+void fn_1_7848(void* node);
 void fn_1_77EC(ChallengeModel* model);
 
 

@@ -27,7 +27,7 @@ typedef union DrawLink {
 
 typedef struct DrawCallbackNode {
     /*0x0*/ DrawLink next;
-    /*0x4*/ void (*func)(void);
+    /*0x4*/ void (*func)(void* node);
 } DrawCallbackNode;
 
 // Video / GX system state.

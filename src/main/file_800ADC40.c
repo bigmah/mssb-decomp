@@ -194,7 +194,7 @@ void fn_800ADC40(u8* streamBuf, u32 streamBufSize) {
 #endif
 
 // .text:0x800ADD70 size:0x1F0
-void fn_800ADD70(void) {
+void fn_800ADD70(void* node) {
     MovPlayer* mov = lbl_803CC170;
     f32 proj[7];
     Mtx mtx;
@@ -1761,7 +1761,7 @@ u8* lbl_803CC174;
 // (DrawCallbackNode in main/file_800A7C08.h: a link word, then the function).
 typedef struct MovDrawNode {
     /*0x0*/ uintptr_t link; // pointer-sized on PC, like DrawLink
-    /*0x4*/ void (*func)(void);
+    /*0x4*/ void (*func)(void* node);
 } MovDrawNode;
 MovDrawNode lbl_801112E0[2] = {
     {0, fn_800ADD70},

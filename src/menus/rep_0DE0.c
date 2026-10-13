@@ -135,7 +135,7 @@ void fn_2_86FEC(void) {
 }
 
 // fn_2_86F40, size:0xAC
-void fn_2_86F40(void) {
+void fn_2_86F40(void* node) {
     ActorObject* object;
     s32 index;
     for (index = 0; index < (s32)lbl_8036E548.table->count; index++) {

@@ -30,7 +30,7 @@ extern void* lbl_803CC1B8;
 // Plain draw-list node for fn_800A7D4C (see DrawCallbackNode in main/file_800A7C08.h).
 typedef struct ChDrawNode {
     /*0x0*/ void* next; // draw-list link, set by fn_800A7D4C
-    /*0x4*/ void (*func)(void);
+    /*0x4*/ void (*func)(void* node);
 } ChDrawNode;
 
 // ChTexArchive: challenge/ch_data.h

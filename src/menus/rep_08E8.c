@@ -174,7 +174,7 @@ s32 fn_2_46D00(void) {
     return 0;
 }
 
-void fn_2_481B8(void) {
+void fn_2_481B8(void* node) {
     u8* camera = (u8*)fn_80052768_getCamera(0);
     fn_800BD670((void*)lbl_8036E548.slots, (MtxPtr)(camera + 0x40));
 }
@@ -793,7 +793,7 @@ extern f32 lbl_2_rodata_98C;
 extern f32 lbl_2_rodata_990;
 
 // .text:0x487A0 size:0x23C
-void fn_2_487A0(void) {
+void fn_2_487A0(void* node) {
     s32 i;
     s32 j;
     f32 z;

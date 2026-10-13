@@ -221,9 +221,9 @@ void fn_1_1B0FC(void);
 void fn_1_1B038(void);
 
 #endif
-void fn_1_1ADA4(void);
+void fn_1_1ADA4(void* node);
 void fn_1_1A850(MtxPtr bone, MtxPtr camera, u8 r, u8 g, u8 b, u8 a);
-void fn_1_1A774(void);
+void fn_1_1A774(void* node);
 
 
 

@@ -169,7 +169,7 @@ u8 lbl_3_data_2A308[6][4] = {
 };
 typedef struct KinokoNode {
     /*0x0*/ uintptr_t link; // (pointer-sized on PC, like DrawLink) set by fn_800A7D4C
-    /*0x4*/ void (*draw)(void);
+    /*0x4*/ void (*draw)(void* node);
 } KinokoNode;
 KinokoNode lbl_3_data_2A320[2] = {
     { 0, fn_3_169984 },
@@ -326,7 +326,7 @@ typedef struct RibSortEnt {
 // Draws the ribbon quads sorted by view-space depth.
 // NONMATCHING 97%: loop counters/pointers get different saved registers (r27/r28/r30 rotated)
 #if NONMATCHING
-void fn_3_169984(void) {
+void fn_3_169984(void* node) {
     RibSortEnt swap;
     Vec viewPos;
     f32 view[3][4];

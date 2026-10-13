@@ -111,7 +111,7 @@ void fn_2_869B4(void);
 
 void fn_2_86A0C(void);
 
-void fn_2_86F40(void);
+void fn_2_86F40(void* node);
 
 void fn_2_86FEC(void);
 

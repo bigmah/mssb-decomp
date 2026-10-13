@@ -69,7 +69,7 @@ void fn_2_8A824(void);
 void fn_2_8ABFC(void);
 void fn_2_8AC84(s32 index, s32 value);
 void fn_2_8ACB0(s32 index, s32 value);
-void fn_2_8ACDC(void);
+void fn_2_8ACDC(void* node);
 
 // ---- generated data ----
 

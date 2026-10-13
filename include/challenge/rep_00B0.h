@@ -50,7 +50,7 @@ typedef struct ChalRayCast {
     /* 0x74 */ u16 hitId;
 } ChalRayCast;
 
-void fn_1_19AC(void);
+void fn_1_19AC(void* node);
 void fn_1_1BF8(ChalColBox* boxes, s32 index);
 void fn_1_1DBC(s32 a, s32 b, s32 c, s32 d, s8 color);
 void fn_1_25BC(ChalColBlock* block);

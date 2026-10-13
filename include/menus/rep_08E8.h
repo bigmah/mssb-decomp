@@ -163,7 +163,7 @@ s32 fn_2_4A068(const u16* string);
 
 s32 fn_2_46D00(void);
 
-void fn_2_481B8(void);
+void fn_2_481B8(void* node);
 
 void fn_2_474FC(void);
 
@@ -207,7 +207,7 @@ void fn_2_4AEE4(void);
 
 void fn_2_47CFC(void);
 
-void fn_2_487A0(void);
+void fn_2_487A0(void* node);
 
 void fn_2_47FF8(void);
 

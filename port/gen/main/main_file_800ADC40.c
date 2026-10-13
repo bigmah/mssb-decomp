@@ -149,7 +149,7 @@ static inline void MOV_SWAP_RECORD(MovPlayer* mov);
 void fn_800ADC40(u8* streamBuf, u32 streamBufSize);
 
 #endif
-void fn_800ADD70(void);
+void fn_800ADD70(void* node);
 
 
 

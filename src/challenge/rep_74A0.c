@@ -31,7 +31,7 @@ typedef struct ChallengeAssetEntry {
 // Minimal draw-list links (cf. DrawNode in main/file_80069BDC.h), one per frame buffer.
 typedef struct ChallengeDrawLink {
     uintptr_t link; // (pointer-sized on PC, like DrawLink) set by fn_800A7D4C
-    void (*draw)(void);
+    void (*draw)(void* node);
 } ChallengeDrawLink;
 static char lbl_1_data_F888[7][0x20] = { // debug view-mode labels (unreferenced)
     "CAMERA", "MODEL", "OFF", "ON", "MIX", "BONE_ONLY", "MODEL_ONLY",
@@ -838,7 +838,7 @@ void fn_1_1B038(void) {
 
 // .text:0x0001ADA4 size:0x294
 // Debug viewer: draw the ground grid.
-void fn_1_1ADA4(void) {
+void fn_1_1ADA4(void* node) {
     Mtx44 proj;
     s32 i;
 
@@ -1007,7 +1007,7 @@ void fn_1_1A850(MtxPtr bone, MtxPtr camera, u8 r, u8 g, u8 b, u8 a) {
 
 // .text:0x0001A774 size:0xDC
 #pragma opt_loop_invariants off
-void fn_1_1A774(void) {
+void fn_1_1A774(void* node) {
     Mtx matrix;
     s32 index;
     u8 red;

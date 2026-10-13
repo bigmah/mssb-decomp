@@ -210,7 +210,7 @@ typedef struct MovMramRing {
 } MovMramRing;
 
 void fn_800ADC40(u8* streamBuf, u32 streamBufSize);
-void fn_800ADD70(void);
+void fn_800ADD70(void* node);
 void YUV2RGB(u8* src, u8* dst, s32 width, s32 height);
 void YUV2RGB_(u8* src, u8* dst, s32 width, s32 height);
 void fn_800AE5B8(void);

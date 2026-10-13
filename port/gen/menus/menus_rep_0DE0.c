@@ -29,7 +29,7 @@ extern f32 fn_2_4A1E8(f32, f32);
 extern const f32 lbl_2_rodata_EAC;
 void fn_2_868C8(void);
 void fn_2_86FEC(void);
-void fn_2_86F40(void);
+void fn_2_86F40(void* node);
 void fn_2_86A0C(void);
 void fn_2_869B4(void);
 void fn_2_87114(void);
