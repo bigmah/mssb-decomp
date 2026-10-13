@@ -89,3 +89,9 @@ void port_trace_value(const char* tag, int value)
         }
     }
 }
+
+// Symbol name of a code address (debug traces).
+const char* port_symbol_name(void* p)
+{
+    return sym_name(p);
+}

@@ -115,9 +115,9 @@ int aurora_main(int argc, char** argv)
     config.mem1Size = MEM1_DEFAULT_SIZE;
     config.mem2Size = ARAM_DEFAULT_SIZE;
     config.allowTextureDumps = getenv("MSSB_DUMP_TEXTURES") != nullptr;
-    // MSSB_USER_DIR: user data folder (memory cards, user.ini, crash log)
-    // instead of the platform default, e.g. a scratch folder for test runs.
-    if (const char* dir = getenv("MSSB_USER_DIR"); dir && *dir)
+    // MSSB_USER_DIR: a separate user data folder (memory card, user.ini,
+    // bindings), e.g. for tests that must not touch the real saves.
+    if (const char* dir = getenv("MSSB_USER_DIR"); dir && dir[0])
         config.userPath = dir;
     AuroraInfo info = aurora_initialize(argc, argv, &config);
     port_crash_init(info.userPath);
