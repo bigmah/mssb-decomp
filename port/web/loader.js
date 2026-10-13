@@ -281,6 +281,17 @@ window.Module = {
       // the file in when Play is pressed.
       ENV.MSSB_USER_INI = '/tmp/user.ini';
       ENV.MSSB_SKIP_MOVIES = params.has('movies') ? '0' : '1';
+      // GPU pipelines the game is known to use, compiled in the background at
+      // boot so new effects don't stall a frame (aurora's pipeline_cache.cpp;
+      // port/tools/pipeline_seed.py builds the file). ?noseed skips it.
+      if (!params.has('noseed')) {
+        addRunDependency('mssb-pipelines');
+        fetch('initial_pipeline_cache.bin.gz')
+          .then((r) => (r.ok ? new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer() : null))
+          .then((b) => b && FS.writeFile('/initial_pipeline_cache.bin', new Uint8Array(b)))
+          .catch(() => {})
+          .finally(() => removeRunDependency('mssb-pipelines'));
+      }
       FS.mkdir('/mssb');
       FS.mount(IDBFS, {}, '/mssb');
       addRunDependency('mssb-userdata');

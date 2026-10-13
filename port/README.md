@@ -126,6 +126,18 @@ python3 port/tools/dolphin_compare.py x --input "500:A,800:A" --shots 300,900   
   every Dolphin frame for re-alignment.
 
 How it differs from the native build:
+- GPU pipelines (aurora `lib/gfx/pipeline_cache.cpp`): `createRenderPipeline`
+  stalls the browser's GPU queue for a few frames, so the first time an effect
+  appeared the game dropped frames (and, with aurora's 5-per-frame cap, drew
+  the scene with pieces missing). On the web a draw never waits for its
+  pipeline: it's built on the spot. Every config the game uses is appended to
+  `/mssb/pipeline_cache.bin` (IndexedDB), and at boot the known ones, plus the
+  bundled `port/web/initial_pipeline_cache.bin.gz`, compile in the background
+  with `createRenderPipelineAsync`. Refresh the bundled list with
+  `port/tools/pipeline_collect.sh 8080` (scripted scenarios in headless
+  Chrome, merged by `port/tools/pipeline_seed.py`), e.g. after aurora bumps
+  its pipeline config version. `?noseed` skips it; `?stats` logs each late
+  frame with the pipelines built just before it.
 - The game's OS threads are Emscripten fibers (Asyncify), scheduled
   cooperatively like the native run token (`port/web/src/os_threads_web.inc`,
   included by `port/src/os.cpp`); DVD completions and DSP/AI work are queued

@@ -7,6 +7,7 @@
 
 #include <aurora/aurora.h>
 #include <aurora/event.h>
+#include <aurora/gfx.h>
 #include <dolphin/vi.h>
 
 #include "port/os.h"
@@ -124,6 +125,22 @@ void pace_frame()
     g_webStats.frames++;
     if (interval > kPeriodMs * 1.5)
         g_webStats.late++;
+    {
+        // ?stats: each late frame, with what might explain it (a long game
+        // frame, or GPU pipelines compiled just before: aurora's pipeline cache).
+        static unsigned s_frameNo = 0;
+        static u32 s_created[3];
+        const AuroraStats* st = aurora_get_stats();
+        ++s_frameNo;
+        s_created[s_frameNo % 3] = st->createdPipelines;
+        u32 recent = st->createdPipelines - s_created[(s_frameNo + 1) % 3];
+        if (interval > kPeriodMs * 1.5)
+            EM_ASM({
+                if (Module.mssbStats)
+                    console.log(`[late] frame ${$0}: ${$1.toFixed(1)} ms since the last one (game ${$2.toFixed(1)} ms, ` +
+                                `${$3} pipelines built in the last 3 frames, ${$4} queued)`);
+            }, s_frameNo, interval, work, recent, st->queuedPipelines);
+    }
     if (interval > g_webStats.maxIntervalMs)
         g_webStats.maxIntervalMs = interval;
     if (work > g_webStats.maxWorkMs)
