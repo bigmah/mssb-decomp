@@ -81,6 +81,12 @@ extern void fn_3_B3A4C(void);
 extern void fn_3_B1DD0(void);
 extern void fn_3_6EBB4(s32);
 extern u8 lbl_80366158[];
+#ifdef TARGET_PC // the struct holds pointers: reach the byte through it (port/game/views.c)
+u8* port_80366158_byte(u32 gcOffset);
+#define LBL_80366158_U8(off) (*port_80366158_byte(off))
+#else
+#define LBL_80366158_U8(off) lbl_80366158[off]
+#endif
 extern u8 lbl_80354768[];
 extern u8 lbl_800EFBA4[];
 extern u8 sndFXStartEx(s32, u8, u8, u8);
@@ -365,7 +371,7 @@ void fn_3_B03F0(void) {
 // fn_3_B254C, size:0xE4
 s32 fn_3_B254C(void) {
     if (g_Practice.transitioningIndicator == 0) {
-        lbl_80366158[0x28] = 1;
+        LBL_80366158_U8(0x28) = 1;
         switch (g_Practice.practiceState) {
         case 0:
             g_Practice.framesInCurrTransitionState = 0;
@@ -764,7 +770,7 @@ s32 fn_3_B32B8(void) {
         return 0;
     }
     if (g_Practice.pauseMenuLoading != 0) {
-        lbl_80366158[0x28] = 1;
+        LBL_80366158_U8(0x28) = 1;
         g_Practice.frames_sinceTimeCalled += 1;
         if (g_Practice.frames_sinceTimeCalled >= 0x3C) {
             g_Practice.pauseMenuLoading = 0;
@@ -779,7 +785,7 @@ s32 fn_3_B32B8(void) {
         return 0;
     }
     if (c->newButtonInput & 0x1000) {
-        lbl_80366158[0x28] = 1;
+        LBL_80366158_U8(0x28) = 1;
         fn_3_59918(0xE, 0);
         g_Practice.pauseMenuLoading = 1;
         g_Practice.frames_sinceTimeCalled = 0;
@@ -1891,7 +1897,7 @@ void fn_3_AEC50(void) {
 
 // fn_3_B3620, size:0x408
 void fn_3_B3620(void) {
-    lbl_80366158[0x28] = 1;
+    LBL_80366158_U8(0x28) = 1;
     if (g_Practice.frames_onPauseScreen < 0x7FFE) {
         g_Practice.frames_onPauseScreen += 1;
     } else {
@@ -2337,7 +2343,7 @@ void fn_3_ADEDC(void) {
 // fn_3_B2E20, size:0x464
 void fn_3_B2E20(void) {
     s32 i;
-    lbl_80366158[0x28] = 1;
+    LBL_80366158_U8(0x28) = 1;
     if (g_Practice.frames_onPauseScreen < 0x7FFE) {
         g_Practice.frames_onPauseScreen += 1;
     } else {
@@ -2812,14 +2818,14 @@ void fn_3_B1DD0(void) {
             g_Practice.instructionNumber++;
         }
         if (g_Practice.instructionComplete_readyToAdvance == 1) {
-            lbl_80366158[0x28] = 1;
+            LBL_80366158_U8(0x28) = 1;
         }
         g_Practice.readyToMoveToNextInstruction = 1;
         return;
     }
     if (g_Practice.maybeInputResetCountdown != 0 && --g_Practice.maybeInputResetCountdown != 0) {
         g_Practice.readyToMoveToNextInstruction = 1;
-        lbl_80366158[0x28] = 1;
+        LBL_80366158_U8(0x28) = 1;
         return;
     }
     fn_3_B274C();
@@ -3000,7 +3006,7 @@ void fn_3_B1DD0(void) {
             break;
         case 0x7F00:
             g_Practice.allInstructionsComplete = 1;
-            lbl_80366158[0x28] = 1;
+            LBL_80366158_U8(0x28) = 1;
             return;
         }
         g_Practice.commandIndex++;

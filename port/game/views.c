@@ -79,3 +79,14 @@ u8* port_charmgr_byte(u32 gcOffset) {
     fprintf(stderr, "port_charmgr_byte: unmapped offset 0x%X\n", gcOffset);
     abort();
 }
+
+// lbl_80366158._28 (the pause flag) for units that declare the object as
+// u8[] and index it by its GameCube offset (LBL_80366158_U8).
+#include "main/file_80008E00.h" // lbl_80366158_s
+u8* port_80366158_byte(u32 gcOffset) {
+    if (gcOffset == 0x28) {
+        return &lbl_80366158._28;
+    }
+    fprintf(stderr, "port_80366158_byte: unmapped offset 0x%X\n", gcOffset);
+    abort();
+}

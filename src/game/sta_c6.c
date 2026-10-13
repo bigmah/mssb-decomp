@@ -204,6 +204,12 @@ static f32 lbl_3_data_19710[7] = {-60.0f, -40.0f, -20.0f, 0.0f, 20.0f, 40.0f, 60
 static u32 lbl_3_data_1972C[16] = {10, 9, 11, 2, 3, 4, 5, 6, 10, 9, 11, 2, 3, 4, 5, 6}; // toy field result that lights panel kind n
 static u8 lbl_3_data_1976C = 1; // nonzero: show the lit overlay (bone 2)
 extern u8 lbl_80366158[];
+#ifdef TARGET_PC // the struct holds pointers: reach the byte through it (port/game/views.c)
+u8* port_80366158_byte(u32 gcOffset);
+#define LBL_80366158_U8(off) (*port_80366158_byte(off))
+#else
+#define LBL_80366158_U8(off) lbl_80366158[off]
+#endif
 extern u16 lbl_3_data_81DC[];       // per stadium: crowd sound id base
 extern MinigameSoundParams lbl_3_data_8404[];
 extern MinigameSoundParams lbl_3_data_84B8[];
@@ -823,7 +829,7 @@ void fn_3_E7424(void) {
     }
     lbl_3_bss_AE7C = lbl_3_bss_AE7B;
     lbl_3_bss_AE7B = g_Minigame.toyFieldBallStateResult;
-    lbl_3_bss_AE84 += lbl_80366158[0x28] == 0;
+    lbl_3_bss_AE84 += LBL_80366158_U8(0x28) == 0;
     if (lbl_3_bss_AE7C != lbl_3_bss_AE7B) {
         lbl_3_bss_AE84 = 0;
     }

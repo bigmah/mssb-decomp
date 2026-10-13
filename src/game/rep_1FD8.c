@@ -1047,6 +1047,12 @@ void fn_3_C444C(void* hv, StadObj1FD8* b) {
 }
 
 extern u8 lbl_80366158[];
+#ifdef TARGET_PC // the struct holds pointers: reach the byte through it (port/game/views.c)
+u8* port_80366158_byte(u32 gcOffset);
+#define LBL_80366158_U8(off) (*port_80366158_byte(off))
+#else
+#define LBL_80366158_U8(off) lbl_80366158[off]
+#endif
 extern void fn_8003403C(f32, f32);
 extern void fn_80033CC8(void*, void*);
 extern const f32 lbl_3_rodata_2168[];
@@ -1069,11 +1075,11 @@ u32 fn_3_C4724(void* hv) {
     GXSetBlendMode(1, 4, 5, 0);
     do {
         if (p->s48 != 0) {
-            p->s48 -= (lbl_80366158[0x28] == 0);
+            p->s48 -= (LBL_80366158_U8(0x28) == 0);
         } else if (p->s4A != 0) {
             fn_8003403C(p->f38, p->f3C);
             fn_80033CC8(p, h->tex);
-            if (lbl_80366158[0x28] == 0) {
+            if (LBL_80366158_U8(0x28) == 0) {
                 k = lbl_3_rodata_2168[0];
                 c = lbl_3_rodata_213C;
                 p->x += p->vx;
@@ -1090,7 +1096,7 @@ u32 fn_3_C4724(void* hv) {
         }
         p = p->next;
     } while (p != NULL && n < (h->f14 & 0xFFF));
-    h->f24 -= (lbl_80366158[0x28] == 0);
+    h->f24 -= (LBL_80366158_U8(0x28) == 0);
     if (h->f24 == 0) {
         return 1;
     }
@@ -1235,11 +1241,11 @@ s32 fn_3_C4F00(void* hv) {
     p = h->head;
     do {
         if (p->s48 != 0) {
-            p->s48 -= (lbl_80366158[0x28] == 0);
+            p->s48 -= (LBL_80366158_U8(0x28) == 0);
             if (p->s48 == 0) {
                 C4F00_SPAWN();
             }
-        } else if (p->s4A != 0 && lbl_80366158[0x28] == 0) {
+        } else if (p->s4A != 0 && LBL_80366158_U8(0x28) == 0) {
             if (p->f4F == 0) {
                 p->a43 += 0xF;
                 k = lbl_3_rodata_2170[0];
@@ -1796,11 +1802,11 @@ u32 fn_3_C75B8(void* hv) {
     p = h->head;
     do {
         if (p->s48 != 0) {
-            p->s48 -= (lbl_80366158[0x28] == 0);
+            p->s48 -= (LBL_80366158_U8(0x28) == 0);
         } else if (p->s4A != 0) {
             fn_8003403C(p->f38, p->f3C);
             fn_80033CC8(p, h->tex);
-            if (lbl_80366158[0x28] == 0) {
+            if (LBL_80366158_U8(0x28) == 0) {
                 if (p->f38 < p->f1C) {
                     p->f38 += p->f1C / lbl_3_rodata_21A4;
                     p->f3C += p->f1C / lbl_3_rodata_21A4;
@@ -1815,7 +1821,7 @@ u32 fn_3_C75B8(void* hv) {
         }
         p = p->next;
     } while (p != NULL);
-    h->f24 -= (lbl_80366158[0x28] == 0);
+    h->f24 -= (LBL_80366158_U8(0x28) == 0);
     return !h->f24;
 }
 

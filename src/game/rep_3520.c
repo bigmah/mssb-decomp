@@ -80,6 +80,12 @@ extern u8 lbl_800EFBA4[];
 extern s32 sndFXStartEx(s32, u8, u8, u8);
 
 extern u8 lbl_80366158[];
+#ifdef TARGET_PC // the struct holds pointers: reach the byte through it (port/game/views.c)
+u8* port_80366158_byte(u32 gcOffset);
+#define LBL_80366158_U8(off) (*port_80366158_byte(off))
+#else
+#define LBL_80366158_U8(off) lbl_80366158[off]
+#endif
 extern s8 lbl_3_data_26580;
 extern s32 fn_800247E4(s32, s32, s32, s32);
 extern void DCFlushRange(void*, u32);
@@ -111,7 +117,7 @@ static u8 s_B700;
 void fn_3_132EDC(struct DODisplayObj* dispObj, s32* stage, s32* coord, s32* map, u8* c1, u8* c2, MtxPtr camera) {
     s32 v;
     s32 i;
-    s_cnt += (lbl_80366158[0x28] == 0);
+    s_cnt += (LBL_80366158_U8(0x28) == 0);
     if ((s_cnt & 1) == 0) {
         {
             u8* r = s_buf;
@@ -149,7 +155,7 @@ void fn_3_132EDC(struct DODisplayObj* dispObj, s32* stage, s32* coord, s32* map,
 void fn_3_1330E4(void) {
     s32 v;
     s32 i;
-    s_cnt += (lbl_80366158[0x28] == 0);
+    s_cnt += (LBL_80366158_U8(0x28) == 0);
     if ((s_cnt & 1) == 0) {
         v = s_buf[fn_800247E4(0, 0, 4, 4)];
         v += lbl_3_data_26580 * 2;
