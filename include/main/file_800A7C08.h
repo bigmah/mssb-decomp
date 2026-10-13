@@ -65,6 +65,9 @@ typedef struct Task {
     /*0x0C*/ struct Task* parent; // task that was running when this one was queued
     /*0x10*/ s16 result;          // set by child tasks: 1 = done, 2 = failed
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /*0x14*/ u8 data[0x2C];
 } Task;
 
@@ -75,6 +78,9 @@ typedef struct CardMountTask {
     /*0x0C*/ struct Task* parent;
     /*0x10*/ s16 result;
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /*0x14*/ s32 step;
     /*0x18*/ u8 chan;
     /*0x19*/ u8 mode; // 1 = use the async CARD calls
@@ -88,6 +94,9 @@ typedef struct CardNameTask {
     /*0x0C*/ struct Task* parent;
     /*0x10*/ s16 result;
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /*0x14*/ s32 step;
     /*0x18*/ u8 chan;
     /*0x19*/ u8 mode;
@@ -104,6 +113,9 @@ typedef struct CardFileTask {
     /*0x0C*/ struct Task* parent;
     /*0x10*/ s16 result;
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /*0x14*/ CARDFileInfo fileInfo;
     /*0x28*/ s32 step;
     /*0x2C*/ void* buffer;
@@ -122,6 +134,9 @@ typedef struct CardWriteTask {
     /*0x0C*/ struct Task* parent;
     /*0x10*/ s16 result;
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /*0x14*/ CARDFileInfo fileInfo;
     /*0x28*/ s32 step;
     /*0x2C*/ void* buffer;

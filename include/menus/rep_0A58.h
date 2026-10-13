@@ -21,7 +21,11 @@ typedef struct MenuSceneTask0A58 {
     /*0x08*/ void* next;
     /*0x0C*/ void* parent;
     /*0x10*/ s16 _10; // set to 1 by the child task when it is done
-    /*0x12*/ u8 _12[0x1C - 0x12];
+    /*0x12*/ u8 _12[2];
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
+    /*0x14*/ u8 _14[0x1C - 0x14];
     /*0x1C*/ s16 _1C;
     /*0x1E*/ s16 _1E;
     /*0x20*/ u8 _20[0x28 - 0x20];

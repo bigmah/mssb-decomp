@@ -88,6 +88,9 @@ typedef struct MenuScreenTask {
     /*0x0C*/ struct MenuScreenTask* parent;
     /*0x10*/ s16 signal; // set to 1 by a child task when it is done
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /*0x14*/ s16 counter;
     /*0x16*/ s16 arg;
     /*0x18*/ s16 timer;

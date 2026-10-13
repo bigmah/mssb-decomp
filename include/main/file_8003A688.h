@@ -131,6 +131,9 @@ typedef struct SaveTask {
     /*0x04*/ void* _04[3]; // prev, next, parent (SceneTask header)
     /*0x10*/ s16 result; // set by child tasks
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /*0x14*/ u8 state;
     /*0x15*/ u8 port; // controller that owns the dialog
     /*0x16*/ u8 _16;

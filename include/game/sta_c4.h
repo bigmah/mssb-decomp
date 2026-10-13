@@ -94,6 +94,9 @@ typedef struct StaBounceTask {
     /* 0x0C */ void* parent;
     /* 0x10 */ s16 result;
     /* 0x12 */ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /* 0x14 */ Vec normal;
     /* 0x20 */ Vec vel;
     /* 0x2C */ s32 idx;
