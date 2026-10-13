@@ -5284,7 +5284,7 @@ void fn_8001F8A4(void) {
         if (*kind < 0x10) {
             fn_800BDC88(lbl_8036E548.slots64, i, i, layout, 0, 0);
         } else {
-            fn_800BDC88(lbl_8036E548.slots64, i, i, PTR32_GET(void, lbl_8036E548.stadiumFiles->bank), 0, 0);
+            fn_800BDC88(lbl_8036E548.slots64, i, i, layout, PTR32_GET(void, lbl_8036E548.stadiumFiles->bank), 0);
             slot = &lbl_8036E548.slots64->objects[i];
             slot->seqNum = 0;
             slot->time = 0.0f;
