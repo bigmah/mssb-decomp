@@ -132,7 +132,52 @@ extern SoundManagerView lbl_800EF808;
 
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h, which can't be
 // included here next to main/file_8004207C.h: their fn_80024D2C prototypes clash).
-typedef struct {
+#ifdef TARGET_PC
+// PC: the fields where CharMgr/CharActor have them (offsets from clang's
+// arm64 layout of main/file_80011640.h; rerun port/tools/pcview.py's checks
+// if CharMgr changes).
+typedef struct CharActorView {
+    u8 _000[0x18];
+    void** _0C;
+    u8 _020[0x28A - 0x20];
+    s8 kind;
+    u8 _28B[0x2B8 - 0x28B];
+} CharActorView; // size: 0x2B8
+
+typedef struct CharMgrView {
+    u8 _0000[0x88];
+    void* slots6C;
+    u8 _0090[0x1428 - 0x90];
+    CharActorView actors[13];
+    u8 _3780[0x3940 - 0x3780];
+    struct {
+        void* buffer;
+        u32 size;
+        s16 id;
+        u8 state;
+    } preload[3];
+    u8 _3970[0x3987 - 0x3970];
+    u8 state;
+    u8 _3988[0x398B - 0x3988];
+    u8 _2D7B; // CharMgr._2D7A[1]
+    u8 _2D7C;
+    u8 _2D7D;
+    u8 _398E[0x3CB2 - 0x398E];
+    u8 _307A;
+    u8 _307B;
+    u8 _307C;
+    u8 _307D;
+    u8 _307E;
+    u8 _3CB7[0x3CB9 - 0x3CB7];
+    u8 _3081;
+    u8 _3082;
+    u8 _3CBB[0x3CBF - 0x3CBB];
+    u8 _3087;
+    u8 _3088;
+    u8 _3CC1[0x3E20 - 0x3CC1];
+} CharMgrView; // size: 0x3E20 (CharMgr on PC)
+#else
+typedef struct CharActorView {
     /*0x000*/ u8 _000[0xC];
     /*0x00C*/ void** _0C;
     /*0x010*/ u8 _010[0x252 - 0x10];
@@ -140,7 +185,7 @@ typedef struct {
     /*0x253*/ u8 _253[0x27C - 0x253];
 } CharActorView; // size: 0x27C
 
-typedef struct {
+typedef struct CharMgrView {
     /*0x0000*/ u8 _0000[0x6C];
     /*0x006C*/ void* slots6C;
     /*0x0070*/ u8 _0070[0xC04 - 0x70];
@@ -172,6 +217,7 @@ typedef struct {
     /*0x3088*/ u8 _3088;
     /*0x3089*/ u8 _3089[0x3154 - 0x3089];
 } CharMgrView; // size: 0x3154
+#endif
 extern CharMgrView lbl_8036E548;
 extern void fn_3_1E178(void);
 extern void fn_3_7AFE4(void);

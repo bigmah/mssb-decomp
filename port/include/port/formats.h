@@ -71,3 +71,12 @@ void port_swap_song_table(void* base, uint32_t count);
 #ifdef __cplusplus
 }
 #endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+// Leading big-endian offset table of a file, up to max entries (formats_misc.c).
+void port_swap_offset_header(void* file, unsigned max);
+#ifdef __cplusplus
+}
+#endif

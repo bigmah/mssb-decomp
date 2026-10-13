@@ -5217,6 +5217,9 @@ void fn_8001F5E8(void) {
     lbl_8036E548._3078 = count;
     // TODO type: file header of offsets, relocated here.
     file = lbl_8036E548.trailFile;
+#ifdef TARGET_PC
+    port_swap_offset_header(file, 5);
+#endif
     lbl_8036E548.trailLayout = (u8*)file + file[0];
     lbl_8036E548.trailGeo = (u8*)file + file[1];
     lbl_8036E548.trailTex = (u8*)file + file[2];

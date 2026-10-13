@@ -37,7 +37,11 @@ void fn_3_166448(void) {
     void* c;
     u8* hdr = (u8*)lbl_8036E548.trailFile; // file of 32-bit offsets from its own start
     int idx = 3;
-    u32* p = (u32*)hdr + idx;
+    u32* p;
+#ifdef TARGET_PC
+    port_swap_offset_header(hdr, 5);
+#endif
+    p = (u32*)hdr + idx;
     VMGR->trailLayout = hdr + ((u32*)hdr)[0];
     VMGR->trailGeo = hdr + ((u32*)hdr)[1];
     VMGR->trailTex = hdr + ((u32*)hdr)[2];
