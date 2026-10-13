@@ -7,6 +7,9 @@
 #include "main/file_800A7C08.h"
 #include "game/auto_00_000759BC_text.h"
 #include "main/unlock_flags.h"
+#ifdef TARGET_PC
+#include "main/charsel_state_type.h"
+#endif
 
 u8 starMissionCompletionTracker[0x4508];
 u8 lbl_80361C18[0x38];
@@ -21,7 +24,12 @@ BattingRecord lbl_803537E4[2][9];
 PitchingRecord lbl_803535C8[2][9];
 PlayLogEntry lbl_803532A8[2][100];
 RosterLogEntry lbl_80353260[2][9];
+#ifdef TARGET_PC
+// CharSelectState holds pointers: bigger than the GameCube's 0x48C0 bytes.
+CharSelectState lbl_8034E9A0;
+#else
 u8 lbl_8034E9A0[0x48C0]; // character select work (CharSelectState in main/file_800639BC.h views it together with the next two)
+#endif
 MenuState lbl_8034E978;
 StreamTrack lbl_8034E478[16];
 MenuWork lbl_803297E0;
