@@ -56,13 +56,21 @@ void port_swap_stadium_collision(void* table)
 }
 
 // Camera animation list (g_Camera views[0].animList): u32 offsets ending with
-// 0. Swapped once per file (remembered by address).
+// 0. Swapped once per file (remembered by address); each new load of the file
+// calls port_forget_camera_anim_list (the next game's copy can land at the
+// same address).
+static void* s_lastCameraAnimList;
+
+void port_forget_camera_anim_list(void)
+{
+    s_lastCameraAnimList = NULL;
+}
+
 void port_swap_camera_anim_list(void* list)
 {
-    static void* s_last;
-    if (list == s_last)
+    if (list == s_lastCameraAnimList)
         return;
-    s_last = list;
+    s_lastCameraAnimList = list;
     for (uint32_t* l = (uint32_t*)list;; l++)
     {
         *l = __builtin_bswap32(*l);

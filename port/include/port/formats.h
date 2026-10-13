@@ -61,6 +61,7 @@ void port_swap_char_stats(void* data, uint32_t count);
 void port_swap_stadium_collision(void* table);
 // Replay/scene camera animations, port/src/formats_game.c.
 void port_swap_camera_anim_list(void* list);
+void port_forget_camera_anim_list(void);
 void port_swap_camera_anim(void* anim);
 // SpaniDesc lists declared as bytes, port/src/formats_game.c.
 void port_swap_spani_descs(void* descs);
