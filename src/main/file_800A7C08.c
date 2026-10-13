@@ -205,6 +205,17 @@ void initRenderMode(GXRenderModeObj* rmode, u32 fifoSize, u32 overscan) {
     fifoBase = (u8*)OSRoundUp32B((u8*)lbl_803C7420.xfb + xfbSize * 2);
     lbl_803C7420.fifoBase = fifoBase;
     lbl_803C7420.fifo = GXInit(fifoBase, fifoSize);
+#ifdef TARGET_PC
+    {
+        // GXInit on the GameCube leaves every texcoord generator at
+        // (MTX2x4, TEXn, IDENTITY); aurora leaves them unset, and some
+        // draws rely on the defaults.
+        s32 i;
+        for (i = 0; i < 8; i++) {
+            GXSetTexCoordGen2((GXTexCoordID)i, GX_TG_MTX2x4, (GXTexGenSrc)(GX_TG_TEX0 + i), GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+        }
+    }
+#endif
     heapLo = fifoBase + fifoSize;
     fn_800AD054(heapLo, arenaHi);
     lbl_803C7420.heapLo = heapLo;
