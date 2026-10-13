@@ -524,7 +524,12 @@ s32 fn_80036214(SpaniOwner* owner, s32 idx, u32 track, u32 frame) {
     SpaniObj* obj = lbl_80371C30[owner->u14.objIdx + idx].obj;
 
     fn_8000CEF0(lbl_803C4BE0[obj->texSlot].anim, obj->animId, track, frame, &key);
+#ifdef TARGET_PC
+    // The key's colour word is RGBA bytes, left big-endian by the spani swap.
+    return read_be32(&key.unk1C);
+#else
     return key.unk1C;
+#endif
 }
 
 // .text:0x80036270 size:0x80
