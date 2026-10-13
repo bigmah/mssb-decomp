@@ -192,8 +192,14 @@ void* fn_800A6900(void* arg) {
                         lbl_803C6CF8.tempBuf = NULL;
                     }
                     SET_STATE_IDLE(DVDSYS_STATE_NONE, 1);
+#ifdef TARGET_PC
+                // No drive to stall on PC: the retrace-count timeout would only
+                // restart decoders that are slow to get scheduled.
+                } else if (gDataDecompressorValues.error) {
+#else
                 } else if (gDataDecompressorValues.error ||
                            (lbl_803C6CF8.retryEnabled && lbl_803C6CF8.retryCount == 0)) {
+#endif
                     // decode error or stalled drive: restart the decoder and the read thread
                     DVDCancel(&lbl_803C6CF8.fileInfo->cBlock);
                     OSCancelThread(&gDataDecompressorValues.t);

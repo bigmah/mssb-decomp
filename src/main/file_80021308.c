@@ -2450,7 +2450,11 @@ void fn_8002254C(s32 unused, s32* hdr, s32 index) {
     s32 aramAddr;
     s8 next;
     s32 h;
+#ifdef TARGET_PC
+    hdr = (s32*)((u8*)hdr + (s32)__builtin_bswap32(*hdr)); // the file's offsets are big-endian
+#else
     hdr = (s32*)((u8*)hdr + *hdr);
+#endif
     aramAddr = lbl_803716B8.aramAddrs[0][index];
     h = lbl_803716B8.head;
     next = (h + 1) % ARAM_QUEUE_LEN;
