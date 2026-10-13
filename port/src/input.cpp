@@ -3,8 +3,15 @@
 
 #include <SDL3/SDL_scancode.h>
 
+#include <cstdio>
+#include <cstdlib>
+
 extern "C" void port_pad_init_defaults(void)
 {
+    // Initialise aurora's PAD (and load saved bindings) first: its PADInit
+    // resets the key mappings, and the game's own PADInit call later is then
+    // a no-op that keeps these defaults.
+    PADInit();
     u32 count = 0;
     if (PADGetKeyButtonBindings(0, &count) != nullptr)
         return; // user bindings were loaded
@@ -27,6 +34,8 @@ extern "C" void port_pad_init_defaults(void)
     PADSetKeyButtonBindings(0, buttons);
     PADSetKeyAxisBindings(0, axes);
     PADSetKeyboardActive(0, TRUE);
+    if (getenv("MSSB_DEBUG_INPUT") != nullptr)
+        fprintf(stderr, "[input] default keyboard bindings for port 1\n");
 }
 
 // Scripted input for testing without a person at the keyboard:
