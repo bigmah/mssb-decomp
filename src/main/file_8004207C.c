@@ -2601,6 +2601,15 @@ s32 fn_8004A328(MsgBox* box) {
 // .text:0x8004A34C size:0x26C
 s32 fn_8004A34C(MsgBox* box, s8 a, u8 msgId, s8 b, u8 arg) {
     MsgTask* task = NULL;
+#ifdef TARGET_PC
+    {
+        // The boot card check's notices (see port_boot_card_quiet).
+        extern s32 port_boot_card_quiet;
+        if (port_boot_card_quiet && (msgId == 0 || msgId == 0xC || msgId == 0x10 || msgId == 0x22)) {
+            return 1;
+        }
+    }
+#endif
 
     box->msgId = msgId;
     box->_40 = a;

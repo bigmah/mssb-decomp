@@ -57,6 +57,9 @@ MSSB_USER_INI=$PWD/build/port/skipfe.ini MSSB_SKIP_MOVIES=1 port/tools/run.sh 90
 - Memory card: a GCI folder in the user data folder
   (`<user>/USA/Card A/01-GYQE-MarioBaseball.gci`). `MSSB_USER_DIR=path` uses
   another user folder (tests that must not touch the real save).
+  The boot card check asks nothing: it uses the card (creating the save the
+  first time) without the "Checking the Memory Card" notices.
+  `MSSB_CARD_PROMPTS=1` restores the GameCube prompts (dolphin_compare.py).
 - Music is DVD audio streaming (`/snd/my_snd_h/*.adp`), emulated in
   `port/src/audio/dtk.cpp`; sound effects and menu music are MusyX.
 - Debug: `MSSB_AI_DUMP=file.raw` (s16 stereo of the final output, 32 kHz),

@@ -18,7 +18,8 @@ const port = args.port || '8090';
 const frames = (args.frames || '').split(',').filter(Boolean).map(Number).sort((a, b) => a - b);
 const out = args.out || 'build/compare/web';
 const timeout = Number(args.timeout || 900) * 1000;
-const env = [`MSSB_FREEZE_FRAMES=${frames.join(',')}`];
+// MSSB_CARD_PROMPTS: the boot card prompts as on the GameCube (Dolphin answers them).
+const env = [`MSSB_FREEZE_FRAMES=${frames.join(',')}`, 'MSSB_CARD_PROMPTS=1'];
 if (args.input) env.push(`MSSB_INPUT=${args.input}`);
 if (args.env) env.push(...args.env.split(';').filter(Boolean));
 const url = `http://localhost:${port}/?iso=disc.iso&autostart${args.query ? '&' + args.query : ''}&env=${encodeURIComponent(env.join(';'))}`;

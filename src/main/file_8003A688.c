@@ -16,6 +16,7 @@
 #ifdef TARGET_PC
 #include "musyx/musyx.h" // SND_AUX_* (SoundManager views)
 void port_unlock_all(void); // port/game/unlockall.c
+char* getenv(const char* name);
 #endif
 
 extern TrailSystem lbl_802D3D80;
@@ -3043,9 +3044,29 @@ void fn_8003E8D8(void) {
     }
 }
 
+#ifdef TARGET_PC
+// PC: the boot card check runs without its "Checking / creating / loading the
+// Memory Card" notices and their pauses (fn_8004A34C, fn_800415A0). Questions
+// and errors still show; "use the memory card?" is answered Yes (fn_8003F2B8).
+// MSSB_CARD_PROMPTS=1 keeps the original prompts (dolphin_compare.py).
+s32 port_boot_card_quiet;
+
+static s32 port_card_prompts(void) {
+    static s32 s_on = -1;
+    if (s_on < 0) {
+        const char* env = getenv("MSSB_CARD_PROMPTS");
+        s_on = env != NULL && env[0] == '1';
+    }
+    return s_on;
+}
+#endif
+
 // .text:0x8003F23C size:0x7C
 void fn_8003F23C(void) {
     SaveTask* task = fn_800B0A5C_insertQueue(fn_8003F2B8, 0x8000);
+#ifdef TARGET_PC
+    port_boot_card_quiet = !port_card_prompts();
+#endif
     task->state = 0;
     task->port = 0;
     task->_16 = 0;
@@ -3285,6 +3306,13 @@ void fn_8003F2B8(void) {
             break;
         }
         task->state++;
+#ifdef TARGET_PC
+        // PC: don't ask whether to use the memory card, answer Yes.
+        if (port_boot_card_quiet) {
+            lbl_803C50E8.choice = 2;
+            break;
+        }
+#endif
         fn_8004A34C(&lbl_803C50E8, task->port, 0xB, 0, 0);
         break;
     case 12:
@@ -3612,6 +3640,9 @@ void fn_8003F2B8(void) {
             lbl_803C50E8._48 = 1;
             fn_8004A34C(&lbl_803C50E8, task->port, 0x4D, 0, 0);
         }
+#ifdef TARGET_PC
+        port_boot_card_quiet = 0;
+#endif
         SaveTask_Finish(task->outcome);
         break;
     }
@@ -4117,6 +4148,12 @@ u16 fn_8004157C(void) {
 
 // fn_800415A0, size:0x8
 void fn_800415A0(u16 value) {
+#ifdef TARGET_PC
+    extern s32 port_boot_card_quiet;
+    if (port_boot_card_quiet) {
+        value = 0;
+    }
+#endif
     lbl_803CBCC0 = value;
 }
 
