@@ -49,6 +49,9 @@ void fn_3_11D3AC(void) {
     s32 skip;
 
     file = lbl_8036E548.file;
+#ifdef TARGET_PC
+    port_swap_offset_table(file, 81 + 9); // 27 actor sets, then 9 result-screen files
+#endif
     lbl_8036E548._3078 = 0;
     for (i = 0; i < 81; i++) {
         lbl_8036E548.data.ptr[i] = (u8*)file + file[i];

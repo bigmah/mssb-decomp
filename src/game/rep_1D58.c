@@ -984,7 +984,9 @@ void fn_3_B8464(void* mtx, void* obj) {
     f32 out[3];
     u16 cnt;
     s32 n;
-    u8* p = *(u8**)((u8*)obj + 8);
+    // obj: a relocated collision table (fn_3_B9D68 kind 6); its first group
+    // pointer is stored as 32 bits.
+    u8* p = PTR32_GET(u8, *(u32*)((u8*)obj + 8)); // TODO type
     while (1) {
         cnt = *(u16*)(p + 2);
         if (cnt == 0) {
