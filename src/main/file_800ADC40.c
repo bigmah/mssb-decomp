@@ -130,7 +130,13 @@ static int port_skip_movies(void) {
     static int s_skip = -1;
     if (s_skip < 0) {
         const char* env = getenv("MSSB_SKIP_MOVIES");
+#ifdef __EMSCRIPTEN__
+        // The web build always skips them (decoding is too slow there);
+        // MSSB_SKIP_MOVIES=0 (?movies) plays them.
+        s_skip = env == NULL || env[0] != '0';
+#else
         s_skip = env != NULL && env[0] != '\0' && env[0] != '0';
+#endif
     }
     return s_skip;
 }

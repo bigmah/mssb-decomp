@@ -77,7 +77,7 @@ in the browser's private storage (OPFS); the memory card and user data live in
 IndexedDB (`/mssb`). `web_serve.mjs` also serves `../mario_baseball.iso` (or
 `$MSSB_ISO`) as `disc.iso` for tests. Test URL parameters:
 `?iso=disc.iso&autostart` (skip the picker), `&skipfe&captain1=mario&captain2=bowser`
-(user.ini skip-front-end), `&nomovies` (`MSSB_SKIP_MOVIES`), `&stats` (fps and
+(user.ini skip-front-end), `&movies` (play the movies; skipped by default on the web), `&stats` (fps and
 audio queue in the console), `&env=KEY=VALUE;KEY=VALUE` (environment, e.g.
 `MSSB_INPUT=500:A,800:A`).
 

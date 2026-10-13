@@ -222,7 +222,7 @@ async function chooseFile(file) {
 
 // user.ini, read by the game at boot (see port/README.md). Test hooks:
 // ?skipfe starts straight in an exhibition game; ?captain1=, ?captain2=,
-// ?stadium= pick it; ?nomovies skips the movies.
+// ?stadium= pick it. Movies are always skipped; ?movies plays them.
 function writeUserIni() {
   const ini = [];
   if (params.has('skipfe')) ini.push('skipfe = true');
@@ -280,7 +280,7 @@ window.Module = {
       // The environment is fixed once the runtime starts; writeUserIni() fills
       // the file in when Play is pressed.
       ENV.MSSB_USER_INI = '/tmp/user.ini';
-      if (params.has('nomovies')) ENV.MSSB_SKIP_MOVIES = '1';
+      ENV.MSSB_SKIP_MOVIES = params.has('movies') ? '0' : '1';
       FS.mkdir('/mssb');
       FS.mount(IDBFS, {}, '/mssb');
       addRunDependency('mssb-userdata');
