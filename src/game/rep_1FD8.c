@@ -390,6 +390,28 @@ void fn_3_C2244(void) {
     }
 }
 
+#ifdef TARGET_PC
+// The actor and its bones (main/file_80063028.h); DspObj's offsets are the
+// GameCube ones.
+static void port_draw_actor_dlists(void* pp, Mtx m2) {
+    GameActor* a = *(GameActor**)pp;
+    GameBone* b = (GameBone*)a->drawPriorityList.Head;
+    if (a->skinObject != NULL) {
+        if (a->skHeader != NULL) {
+            fn_8003A8A0((void*)a->skinObject, m2, 1);
+        } else {
+            DOVARenderSkin((void*)a->skinObject, m2, (void*)a->skinMtxArray, (void*)a->skinInvTransposeMtxArray, 0, NULL);
+        }
+    }
+    for (; b != NULL; b = (GameBone*)b->drawPriorityLink.Next) {
+        if (b->dispObj != NULL) {
+            DOSetWorldMatrix((void*)b->dispObj, b->forwardMtx);
+            fn_8003A8A0((void*)b->dispObj, m2, 0);
+        }
+    }
+}
+#endif
+
 // .text:0x000C2310 size:0xD0 mapped:0x807013A4
 void fn_3_C2310(void* pp, void* cam) {
     Mtx m2;
@@ -398,6 +420,9 @@ void fn_3_C2310(void* pp, void* cam) {
     DspObj2* n;
     CTRLBuildMatrix(lbl_3_bss_9D94, m);
     PSMTXConcat((f32 (*)[4])cam, m, m2);
+#ifdef TARGET_PC
+    port_draw_actor_dlists(pp, m2);
+#else
     o = *(DspObj2**)pp;
     n = o->child;
     if (o->w14 != 0) {
@@ -414,6 +439,7 @@ void fn_3_C2310(void* pp, void* cam) {
         }
         n = n->next;
     }
+#endif
 }
 
 // .text:0x000C23E0 size:0xC0 mapped:0x80701474

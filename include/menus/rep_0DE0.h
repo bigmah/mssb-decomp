@@ -19,9 +19,28 @@ typedef struct {
 // One loaded model: layout passed to fn_800BDC88.
 typedef struct {
     /* 0x00 */ void* layout;
-    /* 0x04 */ u8 padding04[8];
+    /* 0x04 */ void* geo;
+    /* 0x08 */ void* tex;
 } MenuModel; // size 0xC
 
+#ifdef PORT_LP64 // offsets for 64-bit pointers (wasm32 uses the GameCube layout)
+// PC: the fields where CharMgr has them (clang's arm64 layout of
+// main/file_80011640.h: slots 0x80, lights 0xD0, the sprite list 0x39A8, the
+// relocated model entries 0x39C0, _3078 0x3CB0).
+typedef struct {
+    u8 padding[0x80];
+    ActorObjectTable* table;
+    u8 padding6C[0xD0 - 0x88];
+    struct Light* lights[4];
+    u8 paddingBC[0x39A8 - 0xF0];
+    MenuDrawState* states;
+    u8 padding2D98[0x39C0 - 0x39B0];
+    MenuModel models[6];
+    u8 padding2DE8[0x3CB0 - 0x39C0 - 6 * 0x18];
+    u16 count;
+    u8 unk307A;
+} MenuDrawWorld;
+#else
 typedef struct {
     /* 0x0000 */ u8 padding[0x68];
     /* 0x0068 */ ActorObjectTable* table;
@@ -35,6 +54,7 @@ typedef struct {
     /* 0x3078 */ u16 count;
     /* 0x307A */ u8 unk307A;
 } MenuDrawWorld;
+#endif
 
 
 // Stadium background object (sStageObjects in rep_0DE0.c, at lbl_2_data_2E608).

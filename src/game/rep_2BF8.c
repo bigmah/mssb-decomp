@@ -356,7 +356,7 @@ static inline s32 fadeAlpha(s32 v, s32 from, s32 to) {
 
 typedef struct {
     void* fn;
-    u8 pad[0x10];
+    SCENE_TASK_VIEW_LINKS
     u16 u14;
     u16 u16_;
     u16 u18;
