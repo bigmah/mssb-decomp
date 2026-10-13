@@ -68,6 +68,53 @@ static void swap_comps(uint8_t* p, uint32_t n, uint32_t size)
         swap32_array(p, n);
 }
 
+// Byte ranges (from the palette) of vertex arrays already swapped. Arrays
+// overlap: a skin's normals are interleaved with its positions (position
+// compCount 6, normal array = positions + one vector), so each array swaps
+// only the parts no earlier array covered.
+typedef struct
+{
+    uint32_t start[MAX_SWAPPED];
+    uint32_t end[MAX_SWAPPED];
+    uint32_t count;
+} RangeSet;
+
+static void swap_array_range(RangeSet* set, uint8_t* pal, uint8_t* data, uint32_t n, uint32_t size)
+{
+    if (size < 2 || n == 0)
+        return;
+    uint32_t lo = (uint32_t)(data - pal);
+    uint32_t hi = lo + n * size;
+    // Walk [lo, hi), swapping the gaps between covered ranges.
+    uint32_t cur = lo;
+    while (cur < hi)
+    {
+        uint32_t next = hi; // end of the uncovered gap starting at cur
+        int covered = 0;
+        for (uint32_t i = 0; i < set->count; i++)
+        {
+            if (set->start[i] <= cur && cur < set->end[i])
+            {
+                cur = set->end[i];
+                covered = 1;
+                break;
+            }
+            if (set->start[i] > cur && set->start[i] < next)
+                next = set->start[i];
+        }
+        if (covered)
+            continue;
+        swap_comps(pal + cur, (next - cur) / size, size);
+        cur = next;
+    }
+    if (set->count < MAX_SWAPPED)
+    {
+        set->start[set->count] = lo;
+        set->end[set->count] = hi;
+        set->count++;
+    }
+}
+
 // An attribute array {u32 array, u16 count, u8 quant, u8 compCount}: swap the
 // header and, if numeric, the array itself (count * comps elements).
 static void swap_attr(uint8_t* pal, uint8_t* layout, uint8_t* hdr, uint32_t compsPer, int swapArray, SwapSet* set)
@@ -89,7 +136,9 @@ void port_swap_geo_palette(void* palette)
 {
     uint8_t* pal = (uint8_t*)palette;
     static SwapSet set;
+    static RangeSet ranges;
     set.count = 0;
+    ranges.count = 0;
 
     swap32_array(pal, 5);
     uint32_t numDesc = ((uint32_t*)pal)[3];
@@ -115,8 +164,8 @@ void port_swap_geo_palette(void* palette)
             // compCount is 3 (xyz) or 6 (position + normal, skinned).
             swap_attr(pal, layout, h, 0, 0, &set);
             uint32_t arr = *(uint32_t*)h;
-            if (arr != 0 && swap_set_add(&set, (uint32_t)(layout + arr - pal)))
-                swap_comps(layout + arr, (uint32_t)*(uint16_t*)(h + 4) * h[7], comp_size(h[6]));
+            if (arr != 0)
+                swap_array_range(&ranges, pal, layout + arr, (uint32_t)*(uint16_t*)(h + 4) * h[7], comp_size(h[6]));
         }
         if (lp[1] != 0)
         {
@@ -126,8 +175,8 @@ void port_swap_geo_palette(void* palette)
             swap_attr(pal, layout, h, 0, 0, &set);
             uint32_t arr = *(uint32_t*)h;
             uint8_t fmt = h[6] >> 4;
-            if (arr != 0 && (fmt == 0 || fmt == 3) && swap_set_add(&set, (uint32_t)(layout + arr - pal)))
-                swap16_array(layout + arr, *(uint16_t*)(h + 4));
+            if (arr != 0 && (fmt == 0 || fmt == 3))
+                swap_array_range(&ranges, pal, layout + arr, *(uint16_t*)(h + 4), 2);
         }
         if (lp[2] != 0)
         {
@@ -138,8 +187,8 @@ void port_swap_geo_palette(void* palette)
                 swap16_inplace(h + 4);
                 swap32_array(h + 8, 2);
                 uint32_t arr = *(uint32_t*)h;
-                if (arr != 0 && swap_set_add(&set, (uint32_t)(layout + arr - pal)))
-                    swap_comps(layout + arr, (uint32_t) * (uint16_t*)(h + 4) * h[7], comp_size(h[6]));
+                if (arr != 0)
+                    swap_array_range(&ranges, pal, layout + arr, (uint32_t) * (uint16_t*)(h + 4) * h[7], comp_size(h[6]));
             }
         }
         if (lp[3] != 0)
@@ -149,11 +198,11 @@ void port_swap_geo_palette(void* palette)
             swap16_inplace(h + 4);
             swap32_inplace(h + 8);
             uint32_t arr = *(uint32_t*)h;
-            if (arr != 0 && swap_set_add(&set, (uint32_t)(layout + arr - pal)))
+            if (arr != 0)
             {
                 // compCount 2 (NBT) is read as 3-component vectors.
                 uint32_t comps = h[7] == 2 ? 3 : h[7];
-                swap_comps(layout + arr, (uint32_t) * (uint16_t*)(h + 4) * comps, comp_size(h[6]));
+                swap_array_range(&ranges, pal, layout + arr, (uint32_t) * (uint16_t*)(h + 4) * comps, comp_size(h[6]));
             }
         }
         if (lp[4] != 0)
@@ -184,7 +233,7 @@ void port_swap_geo_palette(void* palette)
 //                u16 pad16, u32 userDataSize, u32 userData
 //   bones[totalBones] 0x1C at +0x20: u32 orientationCtrl, u32 branch[4],
 //                u16 geoFileID, u16 boneID, u8 inheritance, u8 priority, u16 flags
-//   orientation controls (Control, 0x3C): u8 type, u8 pad, u16 pad16, f32[14]
+//   orientation controls 0x34: u8 type, u8 pad, u16 pad16, f32[12] (Srt or Mtx)
 // All pointers are offsets from the layout.
 void port_swap_actor_layout(void* layoutFile)
 {
@@ -207,8 +256,11 @@ void port_swap_actor_layout(void* layoutFile)
         uint32_t ctrl = *(uint32_t*)bone;
         if (ctrl != 0 && swap_set_add(&set, ctrl))
         {
+            // 0x34 bytes in the file (Srt or a 3x4 matrix), packed back to
+            // back: swapping the C3 Control's full 0x3C would reach into the
+            // next one.
             swap16_inplace(lay + ctrl + 2);
-            swap32_array(lay + ctrl + 4, 14);
+            swap32_array(lay + ctrl + 4, 12);
         }
     }
 }
