@@ -1,4 +1,5 @@
 #include "main/file_80024184.h"
+#include "main/file_80011640.h" // CharActor
 #include "Dolphin/os.h"
 #include "Dolphin/mtxext.h"
 #include "game/UnknownHomes_Game.h"
@@ -327,15 +328,17 @@ s32 fn_80024C04(s32 index) {
 }
 
 // .text:0x80024C6C size:0xC0
-s32 fn_80024C6C(FielderSortInfo* info, s32 team) {
-    if (!info->active) {
+// Morph target the hand part `side` (0/1) is forced to by keys with the override
+// flag (fn_80024FA4), or -1 for none.
+s32 fn_80024C6C(CharActor* actor, s32 side) {
+    if (!actor->_274) {
         return -1;
     }
-    if (info->unk254 >= 9) {
+    if (actor->index >= 9) {
         return -1;
     }
-    if (info->team != team) {
-        switch (info->kind) {
+    if (actor->_25A != side) {
+        switch (actor->kind) {
         case 0x26:
         case 0x28:
         case 0x29:
@@ -352,7 +355,7 @@ s32 fn_80024C6C(FielderSortInfo* info, s32 team) {
             return 2;
         }
     } else {
-        switch (info->kind) {
+        switch (actor->kind) {
         case 0x12:
         case 0x26:
         case 0x28:
