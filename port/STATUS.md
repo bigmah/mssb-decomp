@@ -1,6 +1,32 @@
 # PC port status
 
-Plan: `docs/PORT_PLAN.md`. Build: `port/README.md`.
+Plan: `docs/PORT_PLAN.md`. Build and run: `port/README.md`.
+
+## Summary (what works)
+
+- **macOS (arm64):** boots through the logos and intro movie to the title and
+  main menu; Exhibition via the menus or `skipfe` (user.ini) into a game;
+  a scripted 3-inning exhibition (`port/tools/full_game.sh 3`) plays to "That's
+  the game!" and back to the menus without crashing; Challenge, Toy Field,
+  Minigames (Bob-omb Derby) and Practice load and run for 2-4 minutes each
+  (`port/tools/mode.sh`). Character models, stadium, HUD and text render
+  correctly at screenshot scale (`port/screenshots/`). Audio: MusyX SFX/crowd
+  and disc-streamed music (`port/src/audio/dtk.cpp`). Keyboard (strikers'
+  mapping) and SDL gamepads; memory card saves create/load.
+- **Web (Emscripten, Asyncify, WebGPU):** `port/tools/build_web.sh`,
+  `node port/tools/web_serve.mjs [port]`; boots to the menus and into a
+  skipfe game at 60 fps with audio running in headless Chrome
+  (`port/tools/web_drive.mjs`; `port/screenshots/web-*.png`).
+- **Matching build:** unchanged (4 OK, 5413 matched, nmcheck clean).
+
+Known issues: web build links at -O1 with function-pointer-cast emulation
+(22 MB wasm; the decomp calls callbacks with mismatched signatures); modules
+aren't reset between loads on the web build; no Dolphin side-by-side
+comparison yet (pipe input never reached the game); a Challenge game itself
+isn't scripted yet; there's no separate post-game stats screen in the
+scripted run (A goes straight back to team select); gamepads untested with
+real hardware. Hand-written struct views that hard-code 64-bit pointer sizes
+must use `PORT_LP64` (wasm32 keeps the GameCube layout).
 
 ## Phase 1: skeleton and compile (done)
 
@@ -166,7 +192,7 @@ SIGSEGV in `fn_800111B4` (inlined in `fn_80010FA0`, called from
 `fn_800097A0` <- `game_main`): the in-place relocation of `MsgTable.msgs`
 reads 4-byte disc offsets as 8-byte pointers (deferred item 1).
 
-## Phase 3: boot (in progress)
+## Phase 3: boot (done)
 
 How far it gets: **the main menu**. Health & safety screen, Nintendo and
 Namco logos, the intro movie (HVQM4, video in sync), the title screen (spani
