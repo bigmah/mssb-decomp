@@ -316,7 +316,9 @@ void RunDrawScripts_with_stack_variables(void) {
         port_trace_tasks(funcs, n);
         {
             extern void port_trace_game(void);
+            extern void port_trace_scene(void);
             port_trace_game();
+            port_trace_scene();
         }
     }
 #endif

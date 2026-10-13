@@ -35,3 +35,23 @@ void port_trace_game(void) {
                 g_GameLogic.FrameCountOfCurrentPitch);
     }
 }
+
+// MSSB_TRACE_TASKS=1 also prints the scene flow (lbl_803CBBCC) when it changes.
+#include "main/menu_globals.h"
+void port_trace_scene(void) {
+    static int enabled = -1;
+    static int last = -1;
+    int now;
+    if (enabled < 0) {
+        enabled = getenv("MSSB_TRACE_TASKS") != NULL;
+    }
+    if (!enabled || lbl_803CBBCC == NULL) {
+        return;
+    }
+    now = lbl_803CBBCC->scene * 0x10000 + lbl_803CBBCC->step;
+    if (now != last) {
+        last = now;
+        fprintf(stderr, "[scene] scene %d step %d (prev %d/%d)\n", lbl_803CBBCC->scene, lbl_803CBBCC->step,
+                lbl_803CBBCC->prevScene, lbl_803CBBCC->prevStep);
+    }
+}

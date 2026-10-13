@@ -1565,7 +1565,7 @@ void pauseMenuSelection(void) {
             lbl_803297E0._CF5F = 0;
             SET_SCENE(4);
         } else {
-            if (lbl_8034E978._24 == 0) {
+            if (lbl_8034E978._24 != 0) { // header animation still running
                 break;
             }
             if (g_d_GameSettings.GameModeSelected == 5) {
