@@ -59,3 +59,15 @@ extern void GXGetCullMode(GXCullMode* mode);
 
 #endif
 #endif // TARGET_PC
+
+// GXSetArray for an array the game builds or initialises itself (not loaded
+// from disc). On PC it holds native byte order and aurora copies `size`
+// bytes of it to the GPU, so pass both. GX_RGBA8 colours are fetched byte by
+// byte (R, G, B, A in memory), so u32 colours must be stored big-endian.
+#ifndef GX_SET_ARRAY_NATIVE
+#ifdef TARGET_PC
+#define GX_SET_ARRAY_NATIVE(attr, data, size, stride) (GXSetArray)((attr), (data), (size), (stride), true)
+#else
+#define GX_SET_ARRAY_NATIVE(attr, data, size, stride) GXSetArray((attr), (data), (stride))
+#endif
+#endif

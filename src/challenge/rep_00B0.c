@@ -403,7 +403,7 @@ void fn_1_19AC(void* node) {
     GXSetVtxDesc(GX_VA_CLR0, GX_INDEX8);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
-    GXSetArray(GX_VA_CLR0, lbl_1_data_240, 4);
+    GX_SET_ARRAY_NATIVE(GX_VA_CLR0, lbl_1_data_240, sizeof(lbl_1_data_240), 4);
     GXSetLineWidth(0x12, GX_TO_ONE);
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
     GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);

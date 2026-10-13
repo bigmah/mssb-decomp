@@ -79,6 +79,9 @@ typedef enum _GXTevClampMode {
 // TODO(port): pass real sizes (GXSETARRAY) at each call site; until then the
 // size is unknown (0).
 #define GXSetArray(attr, data, stride) GXSetArray((attr), (data), 0, (stride), false)
+// Arrays the game builds or initialises itself: native byte order, real size
+// (include/Dolphin/GX/GXGeometry.h has the MWCC side).
+#define GX_SET_ARRAY_NATIVE(attr, data, size, stride) (GXSetArray)((attr), (data), (size), (stride), true)
 
 // Writes to the GX write-gather pipe (include/Dolphin/GX/GXFifo.h has the
 // MWCC side): aurora's FIFO writers append the same raw values.

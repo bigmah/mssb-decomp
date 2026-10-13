@@ -81,7 +81,7 @@ void fn_3_15FF28(PlayerMarkerNode* node) {
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
     GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA4, 0);
-    GXSetArray(GX_VA_POS, lbl_3_data_28180, 0xC);
+    GX_SET_ARRAY_NATIVE(GX_VA_POS, lbl_3_data_28180, sizeof(lbl_3_data_28180), 0xC);
     GXCallDisplayList(lbl_3_data_28160, 0x20);
     GXSetColorUpdate(GX_TRUE);
     GXSetAlphaUpdate(GX_TRUE);
@@ -177,7 +177,7 @@ void fn_3_15FF28(PlayerMarkerNode* node) {
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
     GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA4, 0);
-    GXSetArray(GX_VA_POS, lbl_3_data_28180, 0xC);
+    GX_SET_ARRAY_NATIVE(GX_VA_POS, lbl_3_data_28180, sizeof(lbl_3_data_28180), 0xC);
     GXCallDisplayList(lbl_3_data_28160, 0x20);
     GXSetColorUpdate(GX_TRUE);
     GXSetAlphaUpdate(GX_TRUE);
@@ -318,9 +318,9 @@ void fn_3_15F874(s32 useB) {
     GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA4, 0);
     if (useB) {
-        GXSetArray(GX_VA_POS, lbl_3_data_281C0, 0xC);
+        GX_SET_ARRAY_NATIVE(GX_VA_POS, lbl_3_data_281C0, sizeof(lbl_3_data_281C0), 0xC);
     } else {
-        GXSetArray(GX_VA_POS, lbl_3_data_28180, 0xC);
+        GX_SET_ARRAY_NATIVE(GX_VA_POS, lbl_3_data_28180, sizeof(lbl_3_data_28180), 0xC);
     }
     GXCallDisplayList(lbl_3_data_28160, 0x20);
     GXSetColorUpdate(GX_TRUE);

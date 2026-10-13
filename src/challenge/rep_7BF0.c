@@ -259,8 +259,8 @@ void fn_1_28CE8(ChallengeQueueEntry* task) {
     GXSetVtxDesc(GX_VA_CLR0, GX_INDEX8);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
-    GXSetArray(GX_VA_POS, sBoxVerts, sizeof(sBoxVerts[0]));
-    GXSetArray(GX_VA_CLR0, sBoxColors, sizeof(sBoxColors[0]));
+    GX_SET_ARRAY_NATIVE(GX_VA_POS, sBoxVerts, sizeof(sBoxVerts), sizeof(sBoxVerts[0]));
+    GX_SET_ARRAY_NATIVE(GX_VA_CLR0, sBoxColors, sizeof(sBoxColors), sizeof(sBoxColors[0]));
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
     GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
     GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2X4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);

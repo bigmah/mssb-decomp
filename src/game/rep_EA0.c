@@ -333,9 +333,20 @@ void fn_3_67C34(TrailNode* node) {
     GXSetZCompLoc(GX_FALSE);
     GXInvalidateVtxCache();
     for (i = 0; i < 2; i++) {
+#ifdef TARGET_PC
+        {
+            BOOL cap = node->strips[i]->displayList == lbl_3_data_6980;
+            GX_SET_ARRAY_NATIVE(GX_VA_POS, node->strips[i]->positions,
+                                cap ? sizeof(sTrailCapPositions[0]) : sizeof(sTrailPositions[0]), sizeof(Vec));
+            GX_SET_ARRAY_NATIVE(GX_VA_CLR0, node->strips[i]->colors,
+                                cap ? sizeof(sTrailCapColors[0]) : sizeof(sTrailColors[0]), sizeof(u32));
+            GX_SET_ARRAY_NATIVE(GX_VA_TEX0, node->strips[i]->texCoords, sizeof(lbl_3_data_6860), 2 * sizeof(u16));
+        }
+#else
         GXSetArray(GX_VA_POS, node->strips[i]->positions, sizeof(Vec));
         GXSetArray(GX_VA_CLR0, node->strips[i]->colors, sizeof(u32));
         GXSetArray(GX_VA_TEX0, node->strips[i]->texCoords, 2 * sizeof(u16));
+#endif
         GXCallDisplayList(node->strips[i]->displayList, node->strips[i]->displayListSize);
     }
 }
@@ -488,6 +499,15 @@ s32 fn_3_67EF0(VecQueue* queue, s32 maxPoints, Vec* positions, u32* colors, u32 
 
     memset(&positions[segs * 2], 0, (maxPoints - segs) * 2 * sizeof(Vec));
     memset(&colors[segs], 0, (maxPoints - segs) * sizeof(u32));
+#ifdef TARGET_PC
+    // GX_RGBA8 vertex colours are read as bytes R, G, B, A (big-endian u32).
+    for (i = 0; i < maxPoints; i++) {
+        colors[i] = __builtin_bswap32(colors[i]);
+    }
+    for (i = 0; i < 6; i++) {
+        capColors[i] = __builtin_bswap32(capColors[i]);
+    }
+#endif
     DCStoreRangeNoSync(positions, maxPoints * 2 * sizeof(Vec));
     DCStoreRangeNoSync(colors, maxPoints * sizeof(u32));
     DCStoreRangeNoSync(capPositions, 6 * sizeof(Vec));
