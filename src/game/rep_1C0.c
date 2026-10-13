@@ -27,7 +27,7 @@ typedef struct StadiumAnimNode {
 
 typedef struct StadiumFogNode {
     /*0x0*/ u32 link;
-    /*0x4*/ void (*func)(void); // fn_3_5BF0
+    /*0x4*/ void (*func)(void* node); // fn_3_5BF0 (draw-list callbacks get their node)
 } StadiumFogNode;
 
 typedef struct StadiumCameraNode {
@@ -254,7 +254,7 @@ void fn_3_3638(StadiumSkyObj* obj) {
 }
 
 // .text:0x00003818 size:0xD0
-void fn_3_3818(void) {
+void fn_3_3818(void* node) {
     s32 i;
     if (lbl_3_data_A10[lbl_803CBBC0 == 0] != NULL) {
         i = fn_800527BC() - 1;
@@ -941,7 +941,7 @@ void fn_3_5BCC(StadiumCameraNode* p) {
 }
 
 // .text:0x00005BF0 size:0x78 mapped:0x80644C84
-void fn_3_5BF0(void) {
+void fn_3_5BF0(void* node) {
     GXColor col;
     UNK_StadiumCollision* d = &g_UNK_StadiumDetails;
     if (lbl_3_bss_18[0] != NULL) {

@@ -19,7 +19,7 @@ extern void fn_80033B58(void*, s32, s32, s32);
 // Draw-list node queued with fn_800A7D4C (one per frame buffer, indexed by lbl_803CBBC0).
 typedef struct ScoreDrawNode {
     /* 0x0 */ void* next; // draw-list link, set by fn_800A7D4C
-    /* 0x4 */ void (*draw)(void);
+    /* 0x4 */ void (*draw)(void* node); // draw-list callbacks get their node
 } ScoreDrawNode;
 
 // Digit quad: x, y, z of the four corners.
@@ -113,7 +113,7 @@ void fn_3_16E1A0(void) {
 }
 
 // .text:0x0016DFC4 size:0x1DC
-void fn_3_16DFC4(void) {
+void fn_3_16DFC4(void* node) {
     u32 i;
     GXSetZMode(1, 3, 0);
     GXSetCullMode(0);

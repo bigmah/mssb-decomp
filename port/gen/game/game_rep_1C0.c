@@ -90,7 +90,7 @@ void (*setFanObjPtr(void))(void);
 void fn_3_35E4(void (*val)(void));
 void fn_3_35F0(Mtx view, s32 arg);
 void fn_3_3638(StadiumSkyObj* obj);
-void fn_3_3818(void);
+void fn_3_3818(void* node);
 void fn_3_38E8(StadiumDrawFn a);
 static inline void DecodeWideGlyph(u16 v, s16* x, s16* y, s16* w, s16* h, s16* page);
 static inline void DecodeNarrowGlyph(u16 v, s16* x, s16* y, s16* w, s16* h, s16* page);
@@ -184,7 +184,7 @@ void fn_3_567C(void);
 #endif
 void fn_3_5BAC(void);
 void fn_3_5BCC(StadiumCameraNode* p);
-void fn_3_5BF0(void);
+void fn_3_5BF0(void* node);
 void fn_3_5C68(StadiumAnimNode* obj);
 extern void fn_80035CA4(int);
 extern void fn_800BCDBC(void*);
