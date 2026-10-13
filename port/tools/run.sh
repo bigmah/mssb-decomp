@@ -6,7 +6,8 @@
 # The crash handler prints a backtrace into the log; MSSB_WATCHDOG_SECS
 # arms the hang watchdog. MSSB_RUN_TAG=name runs a copy of the binary with
 # its own log/shots (build/port/run-name.log, shots-name/), so several runs
-# can go at once.
+# can go at once (the copy is build/port/tag-name/bb: no "mssb" in its name,
+# so other scripts' pkill mssb leave it alone).
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SECS="${1:-20}"; SHOT="${2:-0}"
 BIN="$ROOT/build/port/mssb"
@@ -14,8 +15,11 @@ LOG="$ROOT/build/port/run.log"
 SHOTS="$ROOT/build/port/shots"
 WINID="$ROOT/build/port/winid"
 if [ -n "$MSSB_RUN_TAG" ]; then
-  cp -f "$BIN" "$BIN-$MSSB_RUN_TAG" || exit 1
-  BIN="$BIN-$MSSB_RUN_TAG"
+  # A name without "mssb" in it: other runs' `pkill mssb` must not hit it.
+  mkdir -p "$ROOT/build/port/tag-$MSSB_RUN_TAG"
+  rm -f "$ROOT/build/port/tag-$MSSB_RUN_TAG/bb"
+  cp "$BIN" "$ROOT/build/port/tag-$MSSB_RUN_TAG/bb" || exit 1
+  BIN="$ROOT/build/port/tag-$MSSB_RUN_TAG/bb"
   LOG="$ROOT/build/port/run-$MSSB_RUN_TAG.log"
   SHOTS="$ROOT/build/port/shots-$MSSB_RUN_TAG"
 fi
