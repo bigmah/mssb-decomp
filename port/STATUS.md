@@ -7,9 +7,11 @@ Plan: `docs/PORT_PLAN.md`. Build and run: `port/README.md`.
 - **macOS (arm64):** boots through the logos and intro movie to the title and
   main menu; Exhibition via the menus or `skipfe` (user.ini) into a game;
   a scripted 3-inning exhibition (`port/tools/full_game.sh 3`) plays to "That's
-  the game!" and back to the menus without crashing; Challenge, Toy Field,
-  Minigames (Bob-omb Derby) and Practice load and run for 2-4 minutes each
-  (`port/tools/mode.sh`). Character models, stadium, HUD and text render
+  the game!" and back to the menus without crashing; a scripted Challenge
+  match (`port/tools/challenge_game.sh`: new save, walk the map into Bowser
+  Jr., play his match, post-game talk and status screen, back on the map)
+  runs without a crash; Toy Field, Minigames (Bob-omb Derby) and Practice
+  load and run for 2-4 minutes each (`port/tools/mode.sh`). Character models, stadium, HUD and text render
   correctly at screenshot scale (`port/screenshots/`). Audio: MusyX SFX/crowd
   and disc-streamed music (`port/src/audio/dtk.cpp`). Keyboard (strikers'
   mapping) and SDL gamepads; memory card saves create/load.
@@ -23,8 +25,9 @@ Plan: `docs/PORT_PLAN.md`. Build and run: `port/README.md`.
 Web build: links at -O3 without function-pointer-cast emulation (10.3 MB
 wasm, was 22 MB at -O1 with emulation); callbacks have matching signatures.
 Known issues: no Dolphin side-by-side
-comparison yet (pipe input never reached the game); a Challenge game itself
-isn't scripted yet; there's no separate post-game stats screen in the
+comparison yet (pipe input never reached the game); the scripted Challenge
+match is Bowser Jr.'s (he walks into Mario), not yet a rival team's full
+game; there's no separate post-game stats screen in the
 scripted run (A goes straight back to team select); gamepads untested with
 real hardware. Hand-written struct views that hard-code 64-bit pointer sizes
 must use `PORT_LP64` (wasm32 keeps the GameCube layout).
@@ -264,7 +267,7 @@ through GameCube-offset views can also keep their layout with PTR32 fields
 | file load records in .data (u8[] objects) | port/src/data_fixups.c | swapped at startup |
 | HVQM4 movies (headers swapped, YUV->BE texels) | file_800ADC40, file_800DFDD4 | intro plays; `MSSB_SKIP_MOVIES=1` skips |
 | stadium archives / sta_c* file tables, rep_1E08 assets, rep_3E00, auto_00_0011D3AC | game | not done |
-| challenge models (rep_0000, rep_0610, rep_74A0) | challenge | not done |
+| challenge models (rep_0000, rep_0610, rep_74A0) | challenge | map, walkers and Bowser Jr. match render; not audited |
 
 ### Fixes outside the formats (classes to watch for)
 
@@ -308,9 +311,31 @@ Scripts (each run gets its own binary copy, log and fresh user folder with
   Toy Field plays turns, Minigames (Bob-omb Derby) plays, Practice runs its
   lessons and returns to the practice menu (`screenshots/mode-*.png`).
 - `MSSB_TRACE_GAME=1` also traces loader steps (`port_trace_value`).
+- `port/tools/challenge_game.sh [secs] [shot]`: fresh card, main menu ->
+  Challenge -> Mario -> intro talk -> map; d-pad up/left/left/left walks
+  into Bowser Jr., who challenges Mario; A through his match and the
+  post-game talk, B/A out of the status screen back to the roaming map
+  (~430 s, no crash; `screenshots/challenge-game.png`).
+  `MSSB_TRACE_MAP=1` prints the map walkers' nodes (`MenuCtx.entries`);
+  the d-pad picks the direction column of the node table
+  (`lbl_2_data_3D30`: up, down, left, right). `MSSB_HANG_SAMPLE=<file>`
+  writes every thread's stack (macOS `sample`) on a watchdog hang.
 
 Fixes (classes to watch for):
 
+- The challenge save (`MenuCtx`, 0x4508 bytes) is copied to and from the
+  card image as is: its pointers are PTR32 (`MenuRosterEntry.limits` =
+  `ChallengeTrackingStruct.scoutFlagPointer`, the MenuEntry/MenuObject
+  `update` callbacks). An 8-byte `scoutFlagPointer` moved
+  `gChallengeState.teams` and the match loaded garbage characters.
+  PTR32 values for static data/functions are image-relative, so they stay
+  valid across runs (`port/src/port_runtime.c`).
+- Thread deadlock (watchdog hang at boot or entering Challenge, ~1 in 3
+  runs, more with parallel runs): a thread holding the interrupt lock waited
+  for the run token in `maybe_preempt`/`OSSuspendThread` while the main
+  thread, presenting a frame, waited for the interrupt lock. No preemption
+  with interrupts disabled; the token is taken before the interrupt lock
+  (`port/src/os.cpp`).
 - REL modules get fresh .data/.bss at every load (`port/src/modules.c`,
   `port/include/port/module_sections.h`). The web build has no section
   bounds: wasm-ld keeps input order, so CMake brackets each module's sources
@@ -338,8 +363,8 @@ Fixes (classes to watch for):
   `PC_MIN_SIZE`.
 
 Known issues: the exhibition script exercises the CPU-vs-human flow only
-with A; a Challenge game (walking into a team and playing) is not scripted
-yet.
+with A; the Challenge script plays Bowser Jr.'s match, not a full game
+against a rival team.
 
 ## Next
 
