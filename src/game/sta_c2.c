@@ -533,6 +533,12 @@ T16 lbl_3_data_18730[27] = {
     {0.0f, 2.3878675e-38f, 9.551468e-38f, 4, {2, 2, 2}},
     {9.846496e-38f, 4.1236383e-34f, 4.0935457e-34f, 0, {0, 0, 0}},
 };
+#ifdef TARGET_PC
+// The stadium file kinds (bytes, fn_3_B9D68) at lbl_3_data_182C0 + 0x604, the
+// tail of lbl_3_data_18730 spelled as floats above: the same bytes only on
+// big-endian, and the two arrays aren't contiguous on PC.
+static u8 sStaC2FileKinds[26] = {1, 2, 2, 4, 2, 2, 2, 2, 4, 2, 2, 2, 2, 6, 6, 8, 8, 9, 8, 9, 8, 8, 8, 9, 0, 0};
+#endif
 f32 lbl_3_data_188E0 = 0.1f; // NOTE: type size 0x4 != symbol size 0x8
 
 // .text:0x000CC354 size:0xE4 mapped:0x8070B3E8
@@ -3778,7 +3784,11 @@ void fn_3_D67CC(void** files) {
     count = 0;
     idx = _OSAllocFromHeap(4, 0x68);
     g->fileIdx = idx;
+#ifdef TARGET_PC
+    fn_3_B9D68(sStaC2FileKinds, 26, (u8*)files, (s32*)idx);
+#else
     fn_3_B9D68((u8*)&lbl_3_data_182C0 + 0x604, 26, (u8*)files, (s32*)idx);
+#endif
     lbl_3_bss_ADD0[0] = STADIUM_FILE(files, 0);
     lbl_3_data_182C0 = -1;
     lbl_3_data_182C4 = -1;

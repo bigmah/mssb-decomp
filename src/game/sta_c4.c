@@ -526,6 +526,11 @@ StaObjDef lbl_3_data_1BA98[51] = {
     {{0.0f, 0.0f, 0.0f}, 0.0f, 0, 0, 0, 0},
     {{2.3880104e-38f, 9.551468e-38f, 9.846494e-38f}, 2.558537e-35f, 0, 0, 0, 0},
 };
+#ifdef TARGET_PC
+// lbl_3_data_1BA98[50] holds the stadium file kinds (bytes, fn_3_B9D68) that
+// the initializer above spells as floats: the same bytes only on big-endian.
+static u8 sStaC4FileKinds[0x11] = {1, 2, 4, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 8, 9, 0, 0};
+#endif
 StaHazeNode lbl_3_data_1BE94[2] = {{2, fn_3_FB3D8}, {2, fn_3_FB3D8}};
 Vec lbl_3_data_1BF6C[21] = {
     {1.2209f, -0.1f, 67.7082f},
@@ -954,7 +959,11 @@ void fn_3_FA58C(void** files) {
     lbl_3_bss_B664[0] = 1;
     idx = _OSAllocFromHeap(4, 0x44);
     lbl_3_common_bss_350E4.fileIdx = idx;
+#ifdef TARGET_PC
+    fn_3_B9D68(sStaC4FileKinds, 0x11, files, idx);
+#else
     fn_3_B9D68(&lbl_3_data_1BA98[50], 0x11, files, idx); // the file kinds follow the 50 object spots
+#endif
     lbl_3_bss_B660 = STADIUM_FILE(files, 0);
     fn_80035750(STADIUM_FILE(files, idx[16]), STADIUM_FILE(files, idx[15]), 5);
     lbl_3_bss_B628[0] = fn_800B0A5C_insertQueue(fn_3_F8E20, 2);
