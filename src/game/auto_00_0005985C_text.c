@@ -132,7 +132,7 @@ extern SoundManagerView lbl_800EF808;
 
 // View of lbl_8036E548 (CharMgr in main/file_80011640.h, which can't be
 // included here next to main/file_8004207C.h: their fn_80024D2C prototypes clash).
-#ifdef TARGET_PC
+#ifdef PORT_LP64 // offsets for 64-bit pointers (wasm32 uses the GameCube layout)
 // PC: the fields where CharMgr/CharActor have them (offsets from clang's
 // arm64 layout of main/file_80011640.h; rerun port/tools/pcview.py's checks
 // if CharMgr changes).
