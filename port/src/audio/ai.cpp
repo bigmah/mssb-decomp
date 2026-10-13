@@ -18,9 +18,13 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <thread>
 #include <vector>
+
+extern "C" void port_dtk_mix(s16* out, int frames, int rate);
 
 namespace {
 AIDCallback s_dmaCallback = nullptr;
@@ -51,10 +55,22 @@ void run_period()
     s_period.resize(len);
     port_interrupt_enter();
     memcpy(s_period.data(), (const void*)start, len);
+    // The AI mixes the DVD audio stream (music) into the DSP output.
+    port_dtk_mix((s16*)s_period.data(), (int)(len / 4), sample_rate_hz());
     if (s_dmaCallback)
         s_dmaCallback();
     port_interrupt_leave();
     SDL_PutAudioStreamData(s_stream, s_period.data(), (int)len);
+    // MSSB_AI_DUMP=path: raw s16 stereo of everything sent to the device.
+    static FILE* s_dump = [] {
+        const char* path = getenv("MSSB_AI_DUMP");
+        return path != nullptr ? fopen(path, "wb") : nullptr;
+    }();
+    if (s_dump != nullptr)
+    {
+        fwrite(s_period.data(), 1, len, s_dump);
+        fflush(s_dump);
+    }
 }
 
 #ifdef __EMSCRIPTEN__

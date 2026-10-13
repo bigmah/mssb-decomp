@@ -79,18 +79,7 @@ WEAK u32 AIGetDMAStartAddr(void) { return 0; }
 WEAK u32 AIGetDSPSampleRate(void) { return 1; } // AI_SAMPLERATE_48KHZ
 WEAK void port_audio_shutdown(void) { }
 
-static AISCallback s_streamCb = NULL;
-AISCallback AIRegisterStreamCallback(AISCallback callback)
-{
-    AISCallback old = s_streamCb;
-    s_streamCb = callback;
-    return old;
-}
-void AIResetStreamSampleCount(void) { }
-void AISetStreamTrigger(u32 trigger) { (void)trigger; }
-void AISetStreamPlayState(u32 state) { (void)state; }
-void AISetStreamVolLeft(u8 vol) { (void)vol; }
-void AISetStreamVolRight(u8 vol) { (void)vol; }
+// AI streaming (the game's music): port/src/audio/dtk.cpp.
 
 // ARQ ---------------------------------------------------------------------------
 // aurora's ARQ copies synchronously: nothing is ever queued.

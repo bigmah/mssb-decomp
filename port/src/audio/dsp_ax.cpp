@@ -89,10 +89,10 @@ enum Bus
 s32 s_bus[kNumBuses][kFrameSamples];
 u32 s_pbAddr = 0;
 
-// Debugging aids: STRIKERS_DSP_STATS=1 prints a line per second of audio;
-// STRIKERS_DSP_VOICES=<n> lists the active voices every n frames (default 200,
+// Debugging aids: MSSB_DSP_STATS=1 prints a line per second of audio;
+// MSSB_DSP_VOICES=<n> lists the active voices every n frames (default 200,
 // one second);
-// STRIKERS_DSP_DUMP=<file> appends every output frame as raw s16 stereo PCM
+// MSSB_DSP_DUMP=<file> appends every output frame as raw s16 stereo PCM
 // (32 kHz, native-endian).
 struct Debug
 {
@@ -111,9 +111,9 @@ void debug_init()
     if (s_debug.init)
         return;
     s_debug.init = true;
-    const char* stats = getenv("STRIKERS_DSP_STATS");
+    const char* stats = getenv("MSSB_DSP_STATS");
     s_debug.stats = stats != nullptr && stats[0] != '\0' && stats[0] != '0';
-    if (const char* path = getenv("STRIKERS_DSP_DUMP"))
+    if (const char* path = getenv("MSSB_DSP_DUMP"))
         s_debug.dump = fopen(path, "wb");
 }
 
@@ -644,8 +644,8 @@ void process_pb(_PB& pb)
 
 void debug_list_voices(u32 addr)
 {
-    static const bool s_on = getenv("STRIKERS_DSP_VOICES") != nullptr;
-    static const int s_every = getenv("STRIKERS_DSP_VOICES") ? std::max(1, atoi(getenv("STRIKERS_DSP_VOICES"))) : 200;
+    static const bool s_on = getenv("MSSB_DSP_VOICES") != nullptr;
+    static const int s_every = getenv("MSSB_DSP_VOICES") ? std::max(1, atoi(getenv("MSSB_DSP_VOICES"))) : 200;
     if (!s_on || s_debug.frames % s_every != 0)
         return;
     for (int n = 0; addr != 0 && n < 256; n++)
