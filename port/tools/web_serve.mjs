@@ -10,7 +10,7 @@ import { extname, join, normalize, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const webDir = join(root, 'build/web');
+const webDir = process.env.MSSB_WEB_DIR ? resolve(process.env.MSSB_WEB_DIR) : join(root, 'build/web'); // MSSB_WEB_DIR: another build (e.g. a debug one)
 const iso = process.env.MSSB_ISO || [join(root, 'mario_baseball.iso'), join(root, '../mario_baseball.iso'), join(root, '../../mario_baseball.iso'), join(root, '../../../mario_baseball.iso')].find((p) => existsSync(p)) || join(root, 'mario_baseball.iso');
 const port = Number(process.argv[2] || 8080);
 const types = {
