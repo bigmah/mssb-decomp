@@ -20,8 +20,13 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include "port/web_stats.h"
 extern "C" void port_web_frame_tick(void);
 extern "C" int port_is_main_os_thread(void);
+#endif
+
+#ifdef __EMSCRIPTEN__
+WebFrameStats g_webStats; // ?stats (port_web_frame_tick prints and resets it)
 #endif
 
 namespace {
@@ -47,31 +52,68 @@ void handle_events()
 }
 
 #ifdef __EMSCRIPTEN__
-EM_ASYNC_JS(void, web_wait_animation_frame, (), {
-    await new Promise((resolve) => requestAnimationFrame(resolve));
+// Resolves with the rAF timestamp: the start of the display refresh this
+// callback belongs to, free of the jitter of when the callback actually runs.
+EM_ASYNC_JS(double, web_wait_animation_frame, (), {
+    return await new Promise((resolve) => requestAnimationFrame(resolve));
 });
 
+
 // The browser presents the canvas when control returns to its event loop, so
-// each frame ends by yielding (Asyncify) until the display refresh where this
-// frame's 59.94 Hz slot comes up. Audio is topped up while waiting.
+// each frame ends by yielding (Asyncify) until a display refresh. On a ~60 Hz
+// display every refresh is one game frame; on faster ones (120 Hz ProMotion,
+// 144 Hz) the frame goes out on the first refresh within half a refresh of
+// its 59.94 Hz slot. Audio is topped up while waiting.
 void pace_frame()
 {
     constexpr double kPeriodMs = 1001.0 / 60.0;
-    static double s_next = 0;
-    double now = emscripten_get_now();
-    if (s_next == 0)
-        s_next = now;
-    s_next += kPeriodMs;
-    do
+    static double s_next = 0;     // this frame's slot (rAF time base)
+    static double s_lastVsync = 0;
+    static double s_lastPresent = 0;
+    static double s_deltas[32];   // recent refresh-to-refresh times
+    static unsigned s_deltaIdx = 0;
+    static double s_workStart = 0;
+
+    double work = s_workStart != 0 ? emscripten_get_now() - s_workStart : 0;
+    double t;
+    for (;;)
     {
         port_audio_pump();
-        web_wait_animation_frame();
+        t = web_wait_animation_frame();
         port_audio_pump();
-        now = emscripten_get_now();
-    } while (now < s_next - 2.0);
-    if (now - s_next > 100.0)
-        s_next = now; // fell behind (slow frame, tab hidden): don't try to catch up
+        if (s_lastVsync != 0)
+            s_deltas[s_deltaIdx++ % 32] = t - s_lastVsync;
+        s_lastVsync = t;
+        double refresh = 1000.0;
+        for (double d : s_deltas)
+            if (d > 3.0 && d < refresh)
+                refresh = d;
+        if (refresh > 50.0)
+            refresh = kPeriodMs;
+        if (s_next == 0 || t - s_next > 100.0)
+            s_next = t; // first frame, or fell behind (slow frame, tab hidden): don't catch up
+        if (refresh > kPeriodMs * 0.97) // ~60 Hz (or slower): lock to the display
+        {
+            s_next = t;
+            break;
+        }
+        if (t >= s_next - refresh * 0.5)
+            break;
+    }
+    s_next += kPeriodMs;
+
+    double interval = s_lastPresent != 0 ? t - s_lastPresent : kPeriodMs;
+    s_lastPresent = t;
+    g_webStats.frames++;
+    if (interval > kPeriodMs * 1.5)
+        g_webStats.late++;
+    if (interval > g_webStats.maxIntervalMs)
+        g_webStats.maxIntervalMs = interval;
+    if (work > g_webStats.maxWorkMs)
+        g_webStats.maxWorkMs = work;
+    g_webStats.workMs += work;
     port_web_frame_tick();
+    s_workStart = emscripten_get_now();
 }
 
 void port_sleep_ms(int ms)
@@ -118,6 +160,7 @@ void quit_now()
 } // namespace
 
 extern "C" void port_pad_sample(void);
+extern "C" void port_pad_assign(void);
 
 extern "C" {
 
@@ -147,6 +190,7 @@ void port_present_frame(void)
     handle_events();
     if (s_quitRequested)
         quit_now();
+    port_pad_assign();
 
     // Retrace "interrupt".
     u32 count = ++s_retraceCount;

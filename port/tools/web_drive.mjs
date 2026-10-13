@@ -40,11 +40,55 @@ const stamp = () => ((Date.now() - t0) / 1000).toFixed(1).padStart(6);
 page.on('console', (m) => log(`${stamp()} [${m.type()}] ${m.text()}`));
 page.on('pageerror', (e) => log(`${stamp()} [pageerror] ${e.stack || e.message}`));
 page.on('crash', () => log(`${stamp()} [crash]`));
+// --fakepad: a scripted "standard" gamepad in place of a real one (Chrome
+// can't connect one headless). --pad 12:a,14:start presses its buttons.
+const PAD_BUTTONS = { a: 0, b: 1, x: 2, y: 3, l: 4, r: 5, z: 5, start: 9, up: 12, down: 13, left: 14, right: 15 };
+const pads = (args.pad || '').split(',').filter(Boolean).map((k) => {
+  const [t, button, hold] = k.split(':');
+  return { t: Number(t), button, hold: Number(hold || 120) };
+});
+if (args.fakepad || pads.length) {
+  // --padconnect SECS: the pad appears only then (Chrome reports a pad after
+  // its first button press), as a hot-plug.
+  // --padid/--padmapping imitate a particular controller and browser;
+  // --padslot N lists N idle devices before it.
+  await page.evaluateOnNewDocument((connectAt, id, mapping, slot) => {
+    const idle = (index) => ({
+      id: `Idle Device ${index} (Vendor: 1234 Product: 000${index})`, index, connected: true, mapping: '', timestamp: 0,
+      axes: [0, 0], buttons: Array.from({ length: 4 }, () => ({ pressed: false, touched: false, value: 0 })),
+    });
+    const others = Array.from({ length: slot }, (_, i) => idle(i));
+    const pad = {
+      id, index: slot, connected: true, mapping, timestamp: 0,
+      axes: [0, 0, 0, 0],
+      buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })),
+    };
+    window.__fakePad = pad;
+    let present = !connectAt;
+    navigator.getGamepads = () => [...others, present ? pad : null, null, null, null].slice(0, 4);
+    window.__fakePadPress = (i, down) => {
+      pad.buttons[i] = { pressed: down, touched: down, value: down ? 1 : 0 };
+      pad.timestamp = performance.now();
+    };
+    const connect = () => {
+      present = true;
+      for (const p of [...others, pad]) {
+        const ev = new Event('gamepadconnected');
+        ev.gamepad = p;
+        dispatchEvent(ev);
+      }
+    };
+    if (connectAt) setTimeout(connect, connectAt * 1000);
+    else addEventListener('load', connect);
+  }, Number(args.padconnect || 0), args.padid || 'Fake Controller (STANDARD GAMEPAD Vendor: 045e Product: 028e)',
+  args.padmapping ?? 'standard', Number(args.padslot || 0));
+}
 await page.goto(url);
 
 const events = [
   ...shots.map((t) => ({ t, shot: true })),
   ...keys.map((k) => ({ t: k.t, key: k.key, hold: k.hold })),
+  ...pads.map((k) => ({ t: k.t, button: k.button, hold: k.hold })),
 ].sort((a, b) => a.t - b.t);
 for (const ev of events) {
   const wait = ev.t * 1000 - (Date.now() - t0);
@@ -53,6 +97,12 @@ for (const ev of events) {
     const file = join(out, `shot-${String(ev.t).padStart(4, '0')}.png`);
     await page.screenshot({ path: file });
     log(`${stamp()} [shot] ${file}`);
+  } else if (ev.button) {
+    const i = PAD_BUTTONS[ev.button.toLowerCase()];
+    await page.evaluate((i) => window.__fakePadPress(i, true), i);
+    await new Promise((r) => setTimeout(r, ev.hold));
+    await page.evaluate((i) => window.__fakePadPress(i, false), i);
+    log(`${stamp()} [pad] ${ev.button}`);
   } else {
     await page.focus('#canvas').catch(() => {});
     await page.keyboard.down(ev.key);

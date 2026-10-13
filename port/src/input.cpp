@@ -1,6 +1,7 @@
 // Default keyboard controls for port 1 when no bindings have been saved.
 #include <dolphin/pad.h>
 
+#include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_scancode.h>
 
 #include <cstdio>
@@ -138,4 +139,51 @@ extern "C" void port_pad_apply_script(PADStatus* status)
                 fprintf(stderr, "[input] frame %u press 0x%x\n", frame, p.button);
         }
     }
+}
+
+// The first controller a button is pressed on drives port 1, unless the one
+// holding port 1 has been used already. SDL hands out player slots in
+// connection order, so otherwise a pad that shows up second (a device that
+// isn't a real pad took slot 0, or it reconnected while another was listed)
+// would only drive port 2.
+#include <set>
+
+extern "C" void port_pad_assign(void)
+{
+    static std::set<SDL_JoystickID> s_used;
+    int count = 0;
+    SDL_JoystickID* ids = SDL_GetGamepads(&count);
+    if (ids == nullptr)
+        return;
+    SDL_Gamepad* port1 = nullptr;
+    SDL_Gamepad* pressed = nullptr;
+    for (int i = 0; i < count; i++)
+    {
+        SDL_Gamepad* pad = SDL_GetGamepadFromID(ids[i]);
+        if (pad == nullptr)
+            continue;
+        if (SDL_GetGamepadPlayerIndex(pad) == 0)
+            port1 = pad;
+        if (s_used.count(ids[i]) != 0)
+            continue;
+        for (int b = 0; b < SDL_GAMEPAD_BUTTON_COUNT; b++)
+        {
+            if (SDL_GetGamepadButton(pad, (SDL_GamepadButton)b))
+            {
+                s_used.insert(ids[i]);
+                if (pressed == nullptr)
+                    pressed = pad;
+                break;
+            }
+        }
+    }
+    SDL_free(ids);
+    if (pressed == nullptr || pressed == port1 ||
+        (port1 != nullptr && s_used.count(SDL_GetGamepadID(port1)) != 0))
+        return;
+    int old = SDL_GetGamepadPlayerIndex(pressed);
+    if (port1 != nullptr)
+        SDL_SetGamepadPlayerIndex(port1, old);
+    SDL_SetGamepadPlayerIndex(pressed, 0);
+    fprintf(stderr, "[input] '%s' now drives port 1 (was port %d)\n", SDL_GetGamepadName(pressed), old + 1);
 }

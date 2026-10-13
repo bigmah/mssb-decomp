@@ -13,6 +13,8 @@
 
 #include <emscripten.h>
 
+#include "port/web_stats.h"
+
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -50,7 +52,12 @@ int64_t raw_read(uint64_t offset, void* out, size_t len)
         int chunk = want > (8u << 20) ? (8 << 20) : (int)want;
         int n = web_disc_read_cached((double)(offset + done), (uint8_t*)out + done, chunk);
         if (n < 0)
+        {
+            double t0 = emscripten_get_now();
             n = web_disc_read_async((double)(offset + done), (uint8_t*)out + done, chunk);
+            g_webStats.discWaits++;
+            g_webStats.discWaitMs += emscripten_get_now() - t0;
+        }
         if (n <= 0)
             break;
         done += (size_t)n;
@@ -171,11 +178,15 @@ void port_web_frame_tick(void)
             const now = performance.now();
             if (Module.mssbStats && Module.lastStatsTime) {
                 const ctx = Module.SDL3 && Module.SDL3.audioContext;
-                console.log(`[stats] ${(300000 / (now - Module.lastStatsTime)).toFixed(1)} fps, audio queued ${$0} ms` +
+                console.log(`[stats] ${(300000 / (now - Module.lastStatsTime)).toFixed(1)} fps, ` +
+                            `late ${$1}, worst gap ${$2.toFixed(1)} ms, game ${$3.toFixed(1)} ms avg / ${$4.toFixed(1)} max, ` +
+                            `disc waits ${$5} (${$6.toFixed(0)} ms), audio queued ${$0} ms` +
                             (ctx ? `, audio ${ctx.state}` : ''));
             }
             Module.lastStatsTime = now;
-        }, port_audio_queued_ms());
+        }, port_audio_queued_ms(), g_webStats.late, g_webStats.maxIntervalMs, g_webStats.workMs / g_webStats.frames,
+           g_webStats.maxWorkMs, g_webStats.discWaits, g_webStats.discWaitMs);
+        g_webStats = WebFrameStats{};
     }
 }
 
