@@ -924,18 +924,18 @@ void fn_3_E4FC4(void** files) {
     lbl_8036E548.slots6C = ActorObjectInitTable(nObjs);
     lbl_3_common_bss_350E4.numActorObjs = nObjs;
     for (i = 0, j = 0; i < (u8)nSpots; i++, j++) {
-        fn_800BDC88(lbl_8036E548.slots6C, j, j, files[idx[1]], NULL, files[idx[1] + 2]);
+        fn_800BDC88(lbl_8036E548.slots6C, j, j, STADIUM_FILE(files, idx[1]), NULL, STADIUM_FILE(files, idx[1] + 2));
         fn_3_B98E8(&lbl_8036E548.slots6C->objects[i]);
     }
     t = lbl_3_rodata_2A58;
-    fn_800BDC88(lbl_8036E548.slots6C, j, j, files[idx[2]], NULL, NULL);
-    fn_3_B97DC(&lbl_8036E548.slots6C->objects[j], files[idx[2] + 2]);
+    fn_800BDC88(lbl_8036E548.slots6C, j, j, STADIUM_FILE(files, idx[2]), NULL, NULL);
+    fn_3_B97DC(&lbl_8036E548.slots6C->objects[j], STADIUM_FILE(files, idx[2] + 2));
     o = &lbl_8036E548.slots6C->objects[j];
     o->time = t;
     o->setTime = 1;
     fn_800B4CA0(lbl_8036E548.slots6C->objects[j].actor, lbl_8036E548.slots6C->objects[j].time);
     for (k = 0; k < 10; k++) {
-        lbl_3_bss_AE18[k] = files[idx[4 + k]];
+        lbl_3_bss_AE18[k] = STADIUM_FILE(files, idx[4 + k]);
     }
     for (k = 0; k < nObjs; k++) {
         fn_800BD548(&lbl_8036E548.slots6C->objects[k], 4, list->lights[0], list->lights[1], list->lights[2], list->lights[3]);
@@ -969,7 +969,7 @@ void fn_3_E4FC4(void** files) {
             q->isDummy = 0;
             q->group = s->group;
             p->actorObj = &lbl_8036E548.slots6C->objects[i];
-            p->shadow = files[idx[3]];
+            p->shadow = STADIUM_FILE(files, idx[3]);
             p->update = fn_3_E3B88;
             p->onHit = fn_3_E2118;
             p->visible = 1;

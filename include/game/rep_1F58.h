@@ -2,6 +2,7 @@
 #define __GAME_rep_1F58_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_HEAD
 #include "Dolphin/mtx.h"
 #include "game/rep_3F60.h" // EffectAnim
 
@@ -31,7 +32,7 @@ typedef struct E30_1F58 {
 
 // Scene task that feeds an E18_1F58 each frame (fn_3_C0AD8; lbl_803CC1B8 while it runs).
 typedef struct Rep1F58Track {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
     /*0x14*/ u32 frame;
     /*0x18*/ s32 slot;  // index into lbl_3_data_174A0 / lbl_3_data_174A8
     /*0x1C*/ s32 actor; // index into lbl_8036E548.active
@@ -40,13 +41,25 @@ typedef struct Rep1F58Track {
 
 // Scene task that fades an aura out (fn_3_C1004).
 typedef struct Rep1F58Fade {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
     /*0x14*/ u8 who; // index into lbl_8036E548.active
     /*0x15*/ u8 alpha;
     /*0x16*/ u8 count; // frames left (from 10)
 } Rep1F58Fade;
 
 // View of lbl_3_common_bss_35154, only the fields used here.
+#ifdef TARGET_PC
+// PC: the fields where StadiumFxState (rep_1E08.c) has them.
+typedef union Rep1F58Bss35154 {
+    EffectAnim anim[2];
+    struct { u8 _at_tex[0x8]; void* tex; };       // archive
+    struct { u8 _at_flags[0x668]; u32 flags; };
+    struct { u8 _at_pos434[0x704]; Vec pos434; }; // starPos
+    struct { u8 _at__467[0x737]; u8 _467; };      // level
+    struct { u8 _at_tracking[0x747]; u8 tracking[2]; };
+    u8 _size[0x750];
+} Rep1F58Bss35154;
+#else
 typedef struct Rep1F58Bss35154 {
     union {
         /*0x000*/ EffectAnim anim[2]; // anim[0].table: models, anim[0..1]: the aura's shape animations
@@ -64,6 +77,7 @@ typedef struct Rep1F58Bss35154 {
     /*0x468*/ u8 _468[0x477 - 0x468];
     /*0x477*/ u8 tracking[2]; // per slot: a fn_3_C0AD8 task was started
 } Rep1F58Bss35154;
+#endif
 
 void fn_3_C0854(void);
 void fn_3_C095C(E18_1F58* a);

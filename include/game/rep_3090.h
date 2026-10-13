@@ -10,7 +10,7 @@
 typedef struct ReplayAnimKey { u16 frame; u8 pad2[2]; struct { f32 x, y, z; } pos; f32 a; f32 b; } ReplayAnimKey; /* stride varies by track type */
 typedef struct ReplayAnimTrack { s16 parent; u8 pad2[2]; u16 count; u8 type; u8 flags; s32 target; u8 keys[1]; } ReplayAnimTrack; /* keys at 0xC */
 typedef struct ReplayAnimKeyF { u16 frame; u8 pad2[2]; f32 f[15]; } ReplayAnimKeyF; /* generic view of a key: groups of Vec3 */
-typedef struct ReplayAnim { u8 pad0[4]; u16 numFrames; s16 numTracks; u16* frameTbl; ReplayAnimTrack* tracks[1]; } ReplayAnim;
+typedef struct ReplayAnim { u8 pad0[4]; u16 numFrames; s16 numTracks; PTR32(u16) frameTbl; PTR32(ReplayAnimTrack) tracks[1]; } ReplayAnim;
 
 /* Camera parameters decoded from one camera animation frame (fn_3_1048E0). */
 typedef struct CamFrame {
@@ -40,10 +40,19 @@ typedef struct ScenePlacement {
 /* Scene task running fn_3_FDA1C (script command 0x5B): loads the fielder models one by one,
    then sets parent->_10 = 1. Only the fields used here. */
 typedef struct ModelLoadTask {
+#ifdef TARGET_PC
+    void* _00[3]; // func, prev, next
+    struct SceneTask* parent;
+    s16 _10;
+    u16 _12;
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned
+    u8 _14[0x1E - 0x14];
+#else
     /* 0x00 */ u8 _00[0xC];
     /* 0x0C */ struct SceneTask* parent;
     /* 0x10 */ s16 _10;
     /* 0x12 */ u8 _12[0x1E - 0x12];
+#endif
     /* 0x1E */ u16 idx;   // fielder whose model is loading
     /* 0x20 */ u8 _20[2];
     /* 0x22 */ s16 state;

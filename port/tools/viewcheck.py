@@ -48,10 +48,10 @@ for n,vs in sorted(views.items()):
 # GameCube offsets (clang powerpc-eabi layout) of both.
 import subprocess,sys,functools,concurrent.futures as cf
 R=os.getcwd()
-PC=['/usr/bin/clang','-fsyntax-only','-ferror-limit=0','-Wno-everything','-DNDEBUG=1','-DNONMATCHING=1','-DTARGET_PC','-DVERNUM=0','-DVERSION=0',
+PC=['/usr/bin/clang','-S', '-emit-llvm', '-o', '/dev/null','-ferror-limit=0','-Wno-everything','-DNDEBUG=1','-DNONMATCHING=1','-DTARGET_PC','-DVERNUM=0','-DVERSION=0',
     '-Iport/include','-Iport/extern/aurora/include','-Iinclude','-std=gnu11','-arch','arm64','-fsigned-char','-U_FORTIFY_SOURCE','-D_FORTIFY_SOURCE=0',
     '-include','port/include/port/prelude.h','-Xclang','-fdump-record-layouts']
-GC=['/usr/bin/clang','-target','powerpc-unknown-eabi','-fsyntax-only','-ferror-limit=0','-nostdinc','-Iinclude','-Iinclude/stl','-DNONMATCHING=1','-fsigned-char',
+GC=['/usr/bin/clang','-target','powerpc-unknown-eabi','-S', '-emit-llvm', '-o', '/dev/null','-ferror-limit=0','-nostdinc','-Iinclude','-Iinclude/stl','-DNONMATCHING=1','-fsigned-char',
     '-Wno-everything','-Xclang','-fdump-record-layouts']
 if os.path.isdir('port/include_game'): PC.insert(PC.index('-Iport/include'),'-Iport/include_game')
 @functools.lru_cache(None)

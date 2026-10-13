@@ -109,7 +109,7 @@ extern void fn_3_90AB0(s32 a);
 
 // Views of main.dol globals (full types in main/file_80008E00.h, file_8000F150.h, file_800A6870.h).
 typedef struct PracticeGlobals80366158 {
-    u8 _00[0x27];
+    u8 _00[LBL_80366158_PAD(0x27)];
     u8 practiceChar; // 0x27
 } PracticeGlobals80366158;
 extern PracticeGlobals80366158 lbl_80366158;
@@ -118,11 +118,15 @@ typedef struct PracticeTextSystem {
     void* msgTable; // 0x7AC: ARAMTransfer result
 } PracticeTextSystem;
 extern PracticeTextSystem lbl_80366B18;
+#ifdef TARGET_PC
+#include "main/aramloader.h" // ARAMLoader lbl_803C6CF8 (holds pointers)
+#else
 typedef struct PracticeAramLoader {
     u8 _000[0x715];
-    u8 done; // 0x715
+    u8 idle; // 0x715
 } PracticeAramLoader;
 extern PracticeAramLoader lbl_803C6CF8;
+#endif
 extern u8 lbl_3_data_10578[];
 extern void fn_800111B4(void* table);
 extern void fn_8000F4B8(s32 a, s32 b, s32 c, s32 d);
@@ -1345,7 +1349,7 @@ void fn_3_B43E8(void) {
         g_GameLogic._125++;
         break;
     case 2:
-        if ((s32)lbl_803C6CF8.done == 1) {
+        if ((s32)lbl_803C6CF8.idle == 1) {
             fn_800111B4(lbl_80366B18.msgTable);
             lbl_3_common_bss_34C58._2C = 0;
             g_GameLogic._125++;

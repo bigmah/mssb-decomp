@@ -3032,7 +3032,7 @@ void fn_3_F6FDC(void** files) {
     idx = _OSAllocFromHeap(4, 0x48);
     list->fileIdx = (u32*)idx;
     fn_3_B9D68(&lbl_3_data_1B820.pad214[0], 0x12, files, idx);
-    w->file680 = files[0];
+    w->file680 = STADIUM_FILE(files, 0);
 
     for (nA = 0; nA < 5; nA++) {
         if (pc[nA].type == 6) {
@@ -3050,44 +3050,44 @@ void fn_3_F6FDC(void** files) {
     w->b219 = 0;
     k = 0;
     for (i = 0; i < (u8)nA; i++, k++) {
-        fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, files[idx[1]], NULL, NULL);
-        fn_3_B97DC(&STA_ACTORS->objects[(u8)k], files[idx[1] + 2]);
+        fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, STADIUM_FILE(files, idx[1]), NULL, NULL);
+        fn_3_B97DC(&STA_ACTORS->objects[(u8)k], STADIUM_FILE(files, idx[1] + 2));
     }
     w->b218 = k;
     kA = k;
-    fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, files[idx[2]], NULL, NULL);
-    fn_3_B97DC(&STA_ACTORS->objects[(u8)k], files[idx[2] + 2]);
+    fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, STADIUM_FILE(files, idx[2]), NULL, NULL);
+    fn_3_B97DC(&STA_ACTORS->objects[(u8)k], STADIUM_FILE(files, idx[2] + 2));
     STA_ACTORS->objects[(u8)k].visFlags = 2;
     fn_800B4AFC(STA_ACTORS->objects[(u8)k].actor, STA_ACTORS->objects[(u8)k].visFlags & 1);
     kBall = k + 1;
-    fn_800BDC88(STA_ACTORS, kBall, kBall, files[idx[3]], NULL, NULL);
+    fn_800BDC88(STA_ACTORS, kBall, kBall, STADIUM_FILE(files, idx[3]), NULL, NULL);
     k += 2;
     kB = k;
     for (i = 0; i < (u8)nB; i++, k++) {
-        fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, files[idx[4]], NULL, files[idx[4] + 2]);
+        fn_800BDC88(STA_ACTORS, (u8)k, (u8)k, STADIUM_FILE(files, idx[4]), NULL, STADIUM_FILE(files, idx[4] + 2));
         fn_3_B98E8(&STA_ACTORS->objects[(u8)k]);
     }
     kEnd = k;
-    fn_800BDC88(STA_ACTORS, kEnd, kEnd, files[idx[5]], NULL, NULL);
-    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 1), (u8)(kEnd + 1), files[idx[6]], NULL, NULL);
-    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 2), (u8)(kEnd + 2), files[idx[7]], NULL, NULL);
+    fn_800BDC88(STA_ACTORS, kEnd, kEnd, STADIUM_FILE(files, idx[5]), NULL, NULL);
+    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 1), (u8)(kEnd + 1), STADIUM_FILE(files, idx[6]), NULL, NULL);
+    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 2), (u8)(kEnd + 2), STADIUM_FILE(files, idx[7]), NULL, NULL);
     w->actor67C = &STA_ACTORS->objects[(u8)(kEnd + 2)];
-    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 3), (u8)(kEnd + 3), files[idx[8]], NULL, NULL);
-    lbl_3_bss_B154[0] = files[idx[0x10]];
-    lbl_3_bss_B154[1] = files[idx[0x11]];
+    fn_800BDC88(STA_ACTORS, (u8)(kEnd + 3), (u8)(kEnd + 3), STADIUM_FILE(files, idx[8]), NULL, NULL);
+    lbl_3_bss_B154[0] = STADIUM_FILE(files, idx[0x10]);
+    lbl_3_bss_B154[1] = STADIUM_FILE(files, idx[0x11]);
     for (i = 0; i < nActors; i++) {
         fn_800BD548(&STA_ACTORS->objects[i], 4, list->lights[0], list->lights[1], list->lights[2], list->lights[3]);
     }
-    fn_80025DDC(files[idx[14]]);
-    fn_80025C58(files[idx[14]], (ShapeModel**)&STA_ACTORS->objects[(u8)(kEnd + 1)]);
-    w->anim2DC.set = files[idx[15]];
-    fn_80025FFC(files[idx[14]], &w->anim2DC);
+    fn_80025DDC(STADIUM_FILE(files, idx[14]));
+    fn_80025C58(STADIUM_FILE(files, idx[14]), (ShapeModel**)&STA_ACTORS->objects[(u8)(kEnd + 1)]);
+    w->anim2DC.set = STADIUM_FILE(files, idx[15]);
+    fn_80025FFC(STADIUM_FILE(files, idx[14]), &w->anim2DC);
     fn_80025EEC(&w->anim2DC, 0, 0);
     w->anim2DC.state.speed = lbl_3_rodata_2F58;
-    fn_80025DDC(files[idx[12]]);
-    fn_80025C58(files[idx[12]], (ShapeModel**)&STA_ACTORS->objects[kEnd]);
-    w->anim280.set = files[idx[13]];
-    fn_80025FFC(files[idx[12]], &w->anim280);
+    fn_80025DDC(STADIUM_FILE(files, idx[12]));
+    fn_80025C58(STADIUM_FILE(files, idx[12]), (ShapeModel**)&STA_ACTORS->objects[kEnd]);
+    w->anim280.set = STADIUM_FILE(files, idx[13]);
+    fn_80025FFC(STADIUM_FILE(files, idx[12]), &w->anim280);
     fn_80025EEC(&w->anim280, 0, 0);
 
     list->count = 0x19;
@@ -3109,7 +3109,7 @@ void fn_3_F6FDC(void** files) {
             o->actorObj = &STA_ACTORS->objects[j];
             p->fc2 = j;
             p->fc3 = kA;
-            o->shadow = files[idx[9]];
+            o->shadow = STADIUM_FILE(files, idx[9]);
             o->update = NULL;
             o->onHit = (void (*)(s32))fn_3_F1674;
             o->hasShadow = (o->visible && o->shadow != NULL) ? 1 : 0;
@@ -3155,7 +3155,7 @@ void fn_3_F6FDC(void** files) {
         }
         b->state = 0;
         o->actorObj = &STA_ACTORS->objects[kBall];
-        o->shadow = files[idx[10]];
+        o->shadow = STADIUM_FILE(files, idx[10]);
         o->update = (void (*)(void*))fn_3_F56CC;
         o->onHit = (void (*)(s32))fn_3_F466C;
         o->visible = 1;
@@ -3191,7 +3191,7 @@ void fn_3_F6FDC(void** files) {
             }
             o->kind = 2;
             o->actorObj = &STA_ACTORS->objects[kB + j];
-            o->shadow = files[idx[11]];
+            o->shadow = STADIUM_FILE(files, idx[11]);
             o->update = (void (*)(void*))fn_3_F0FA4;
             o->onHit = fn_3_EEFD4;
             o->visible = 1;

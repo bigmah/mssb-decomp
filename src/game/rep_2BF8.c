@@ -1,3 +1,4 @@
+#include "main/scene_task.h" // SCENE_TASK_VIEW_HEAD
 #include "game/rep_2BF8.h"
 #include "main/SpaniDesc.h"
 #include "game/UnknownHomes_Game.h"
@@ -433,7 +434,7 @@ typedef struct EaSlot {
 // Minigame HUD task (queue item).
 typedef struct EaTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x10];
+    /*0x04*/ SCENE_TASK_VIEW_LINKS
     /*0x14*/ u16 baseIdx;
     /*0x16*/ u16 _16;
     /*0x18*/ u16 param; // set by the creator
@@ -520,7 +521,7 @@ extern s32 fn_3_107C88(void);
 
 // Slot-reel task (fn_3_EC014); same header as EaTask.
 typedef struct EaReelTask {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
     /*0x14*/ u16 baseIdx;
     /*0x16*/ u8 _16[0x1C - 0x16];
     /*0x1C*/ u16 state;

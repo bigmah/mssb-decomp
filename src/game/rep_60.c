@@ -30,6 +30,9 @@ extern void fn_3_5EC0(struct StadiumArchive* arc); // game/rep_1C0.h
 void manageLoadingState(void) {
     SceneTask* p = lbl_803CC1B8;
     AramLoader* r;
+#ifdef TARGET_PC
+    { static int last = -1; if (p->_10 != last) { last = p->_10; fprintf(stderr, "LOCALDBG load state %d\n", last); } }
+#endif
     switch (p->_10) {
     case 0:
         r = &lbl_803716B8;

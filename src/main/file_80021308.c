@@ -2416,7 +2416,11 @@ void fn_8002244C(s32 unused, s32* hdr, s32 arg) {
     s32 h;
     s32 len = DISK_FILE_SIZE(DISK_FILE_ENTRY(lbl_800EFD38, (arg >> 16) + 0x36));
     len = (len + 0x1F) & ~0x1F;
+#ifdef TARGET_PC
+    hdr[3] = __builtin_bswap32(len); // the file table's entries are big-endian like the rest
+#else
     hdr[3] = len;
+#endif
     hdr = (s32*)(len + (uintptr_t)hdr); // pointer through an integer (needed to match)
     v = *(s32*)((u8*)lbl_803716B8.aramAddrs[1] + (u16)arg * 4);
     h = lbl_803716B8.head;
@@ -2446,7 +2450,11 @@ void fn_8002254C(s32 unused, s32* hdr, s32 index) {
     s32 aramAddr;
     s8 next;
     s32 h;
+#ifdef TARGET_PC
+    hdr = (s32*)((u8*)hdr + (s32)__builtin_bswap32(*hdr)); // the file's offsets are big-endian
+#else
     hdr = (s32*)((u8*)hdr + *hdr);
+#endif
     aramAddr = lbl_803716B8.aramAddrs[0][index];
     h = lbl_803716B8.head;
     next = (h + 1) % ARAM_QUEUE_LEN;

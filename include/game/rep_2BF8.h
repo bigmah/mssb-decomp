@@ -2,11 +2,12 @@
 #define __GAME_rep_2BF8_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_LINKS
 
 // Minigame results-board task (queue item in lbl_803CC1B8 while fn_3_E911C runs).
 typedef struct ResultsTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x10];
+    /*0x04*/ SCENE_TASK_VIEW_LINKS
     /*0x14*/ u16 baseIdx; // first sprite in lbl_80371C30
     /*0x16*/ u16 _16;
     /*0x18*/ u16 mode;    // set by the creator (fn_3_EDD10)

@@ -2,6 +2,7 @@
 #define __CHALLENGE_REP_7730_H__
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_LINKS
 #include "Dolphin/mtx.h"
 #include "Dolphin/gx.h"
 #include "challenge/rep_0010.h"
@@ -103,7 +104,11 @@ typedef struct {
 
 typedef struct {
     /* 0x00 */ void (*func)(void);
+#ifdef TARGET_PC
+    void* pad4[3]; // prev, next, parent
+#else
     /* 0x04 */ u8 pad4[0xC];
+#endif
     /* 0x10 */ s16 result; // set by the child task (fn_1_20DC8)
     /* 0x12 */ u8 pad12[6];
     /* 0x18 */ f32 scale;
@@ -129,7 +134,7 @@ typedef struct {
 // Queue object of the wave-surface test mode (fn_1_24410 / fn_1_23B54).
 typedef struct {
     /* 0x00 */ void (*func)(void);
-    /* 0x04 */ u8 pad4[0x10];
+    /* 0x04 */ SCENE_TASK_VIEW_LINKS
     /* 0x14 */ f32 farZ;
     /* 0x18 */ f32 nearZ;
     /* 0x1C */ f32 impulse;
@@ -251,7 +256,7 @@ typedef struct {
 // Debug/texture test state (queue object): value/toggle/cursor/stageCount are edited by fn_1_1FD78.
 typedef struct {
     /* 0x00 */ void (*func)(void);
-    /* 0x04 */ u8 pad4[0x10];
+    /* 0x04 */ SCENE_TASK_VIEW_LINKS
     /* 0x14 */ ChallengeTexArchive* tex; // texture archive inside `file` (convertTextureHeader'd)
     /* 0x18 */ u8* file; // loaded by fn_1_2004C
     /* 0x1C */ u32 value;

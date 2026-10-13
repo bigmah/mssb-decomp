@@ -9,7 +9,7 @@
 #include "stl/math.h"
 
 typedef struct UnkState_80366158 {
-    /*0x00*/ u8 pad00[0x28];
+    /*0x00*/ u8 pad00[LBL_80366158_PAD(0x28)];
     /*0x28*/ u8 unk28;
     /*0x29*/ u8 pad29[7];
 } UnkState_80366158;

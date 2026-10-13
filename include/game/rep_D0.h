@@ -18,8 +18,10 @@ typedef struct _AABB_Box {
     Vec a, b;
 } AABB_Box;
 
+// Collision table entry (stadium archive, relocated in place by fn_3_6424):
+// entry 0 points at the boxes, entries 1..n at each box's triangle groups.
 typedef struct _CollisionBox {
-    AABB_Box* boundingBox;
+    PTR32(AABB_Box) boundingBox;
 } CollisionBox;
 
 struct ActorLayoutFile;

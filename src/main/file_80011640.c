@@ -153,7 +153,7 @@ extern ModelData lbl_800EE930;
 extern u16 lbl_803CB798[4];
 extern u16 lbl_803CB7A0[4];
 typedef struct Unk80366158 {
-    /*0x00*/ u8 _00[0x28];
+    /*0x00*/ u8 _00[LBL_80366158_PAD(0x28)];
     /*0x28*/ u8 _28;
 } Unk80366158;
 
@@ -3154,13 +3154,15 @@ void fn_800196D8(void) {
         fn_800BEBCC(0, VEC_ARG(dir2));
         fn_800BF048(fn_8001AAF0);
         fn_800BF058(fn_8001AB10);
-        // TODO(port): the stadium file header holds 32-bit offsets relocated in place
-        // (PTR32 table on PC, Phase 3).
+#ifdef TARGET_PC
+        port_relocate_offset_table(lbl_8036E548.stadiumFiles, 80);
+#else
         base = (u8*)lbl_8036E548.stadiumFiles;
         raw = (void**)base;
         for (i = 0; i < 80; i++) {
             ((void**)lbl_8036E548.stadiumFiles)[i] = base + (uintptr_t)raw[i];
         }
+#endif
         lbl_8036E548._307C = 0;
         lbl_8036E548._307D = 0;
         lbl_8036E548._3082 = 0;
@@ -3324,13 +3326,15 @@ void fn_80019C00(void) {
         fn_800BEBCC(0, VEC_ARG(dir2));
         fn_800BF048(fn_8001AAF0);
         fn_800BF058(fn_8001AB10);
-        // TODO(port): the stadium file header holds 32-bit offsets relocated in place
-        // (PTR32 table on PC, Phase 3).
+#ifdef TARGET_PC
+        port_relocate_offset_table(lbl_8036E548.stadiumFiles, 80);
+#else
         base = (u8*)lbl_8036E548.stadiumFiles;
         raw = (void**)base;
         for (i = 0; i < 80; i++) {
             ((void**)lbl_8036E548.stadiumFiles)[i] = base + (uintptr_t)raw[i];
         }
+#endif
         lbl_8036E548._307C = 0;
         lbl_8036E548._307D = 0;
         lbl_8036E548._3082 = 0;
@@ -3515,13 +3519,15 @@ void challengeMapRelated(void) {
         fn_800BEBCC(0, VEC_ARG(dir2));
         fn_800BF048(fn_8001AAF0);
         fn_800BF058(fn_8001AB10);
-        // TODO(port): the stadium file header holds 32-bit offsets relocated in place
-        // (PTR32 table on PC, Phase 3).
+#ifdef TARGET_PC
+        port_relocate_offset_table(lbl_8036E548.stadiumFiles, 80);
+#else
         base = (u8*)lbl_8036E548.stadiumFiles;
         raw = (void**)base;
         for (i = 0; i < 80; i++) {
             ((void**)lbl_8036E548.stadiumFiles)[i] = base + (uintptr_t)raw[i];
         }
+#endif
         lbl_8036E548._3082 = 0;
         lbl_8036E548._307C = 0;
         lbl_8036E548._307D = 0;
@@ -3972,6 +3978,12 @@ void AnimateCharacter(s32 index, s32 anim, s32 a, u8 mode, s32 b, s32 c, s32 d, 
 // .text:0x8001BA44 size:0x40C
 // Splits a global animation id into an actor anim bank and an index in it.
 static inline BOOL splitAnimId(s32 anim, s32* bank, s32* idx) {
+#ifdef TARGET_PC
+    // The callers use bank/idx even when this doesn't set them (stack garbage
+    // on GameCube): make that an out-of-range index of bank 0.
+    *bank = 0;
+    *idx = -1;
+#endif
     if (anim < 0) {
         return FALSE;
     }
@@ -5249,36 +5261,36 @@ void fn_8001F8A4(void) {
     ActorObject* slot;
 
     for (i = 0; i < 24; i++) {
-        layout = lbl_8036E548.stadiumFiles->obj[i].layout;
-        geo = lbl_8036E548.stadiumFiles->obj[i].geo;
-        tex = lbl_8036E548.stadiumFiles->obj[i].tex;
+        layout = PTR32_GET(void, lbl_8036E548.stadiumFiles->obj[i].layout);
+        geo = PTR32_GET(void, lbl_8036E548.stadiumFiles->obj[i].geo);
+        tex = PTR32_GET(void, lbl_8036E548.stadiumFiles->obj[i].tex);
         LoadActorLayout(layout);
         convertGeometryAndSknHeader(geo, NULL);
         haveActLayoutPointToGeoHeader(layout, geo);
         if (i == 11) {
-            tex = lbl_8036E548.stadiumFiles->obj[10].tex;
+            tex = PTR32_GET(void, lbl_8036E548.stadiumFiles->obj[10].tex);
         } else {
             convertTextureHeader(tex);
         }
         fn_800BD190(geo, tex);
     }
-    ANIMGet(lbl_8036E548.stadiumFiles->bank);
-    fn_80025DDC(lbl_8036E548.stadiumFiles->anim[0].shape);
-    lbl_8036E548.stadiumAnim[0].set = lbl_8036E548.stadiumFiles->anim[0].set;
-    fn_80025FFC(lbl_8036E548.stadiumFiles->anim[0].shape, &lbl_8036E548.stadiumAnim[0]);
+    ANIMGet(PTR32_GET(void, lbl_8036E548.stadiumFiles->bank));
+    fn_80025DDC(PTR32_GET(void, lbl_8036E548.stadiumFiles->anim[0].shape));
+    lbl_8036E548.stadiumAnim[0].set = PTR32_GET(ShapeAnimSet, lbl_8036E548.stadiumFiles->anim[0].set);
+    fn_80025FFC(PTR32_GET(void, lbl_8036E548.stadiumFiles->anim[0].shape), &lbl_8036E548.stadiumAnim[0]);
     fn_80025EEC(&lbl_8036E548.stadiumAnim[0], 0, 0);
-    fn_80025DDC(lbl_8036E548.stadiumFiles->anim[1].shape);
-    lbl_8036E548.stadiumAnim[1].set = lbl_8036E548.stadiumFiles->anim[1].set;
-    fn_80025FFC(lbl_8036E548.stadiumFiles->anim[1].shape, &lbl_8036E548.stadiumAnim[1]);
+    fn_80025DDC(PTR32_GET(void, lbl_8036E548.stadiumFiles->anim[1].shape));
+    lbl_8036E548.stadiumAnim[1].set = PTR32_GET(ShapeAnimSet, lbl_8036E548.stadiumFiles->anim[1].set);
+    fn_80025FFC(PTR32_GET(void, lbl_8036E548.stadiumFiles->anim[1].shape), &lbl_8036E548.stadiumAnim[1]);
     fn_80025EEC(&lbl_8036E548.stadiumAnim[1], 0, 0);
     lbl_8036E548.slots64 = ActorObjectInitTable(25);
     kind = lbl_800EEA58;
     for (i = 0; i < 25; i++) {
-        layout = lbl_8036E548.stadiumFiles->obj[*kind].layout;
+        layout = PTR32_GET(void, lbl_8036E548.stadiumFiles->obj[*kind].layout);
         if (*kind < 0x10) {
             fn_800BDC88(lbl_8036E548.slots64, i, i, layout, 0, 0);
         } else {
-            fn_800BDC88(lbl_8036E548.slots64, i, i, lbl_8036E548.stadiumFiles->bank, 0, 0);
+            fn_800BDC88(lbl_8036E548.slots64, i, i, layout, PTR32_GET(void, lbl_8036E548.stadiumFiles->bank), 0);
             slot = &lbl_8036E548.slots64->objects[i];
             slot->seqNum = 0;
             slot->time = 0.0f;

@@ -288,7 +288,7 @@ void fn_3_C9DB4(void** files) {
     fn_3_B9D68(lbl_3_data_17CF8, 9, files, idx);
     if (g_d_GameSettings.GameModeSelected != GAME_TYPE_MINIGAMES &&
         g_d_GameSettings.GameModeSelected != GAME_TYPE_PRACTICE) {
-        fn_3_16E338(files[0], 11);
+        fn_3_16E338(STADIUM_FILE(files, 0), 11);
     }
 
     // count the placed parts
@@ -299,34 +299,34 @@ void fn_3_C9DB4(void** files) {
     }
     lbl_3_common_bss_350E4.numActorObjs = nParts + 3;
     lbl_8036E548.slots6C = ActorObjectInitTable(nParts + 3);
-    fn_800BDC88(lbl_8036E548.slots6C, 0, 0, files[idx[1]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, 0, 0, STADIUM_FILE(files, idx[1]), NULL, NULL);
     if (g_d_GameSettings.GameModeSelected == GAME_TYPE_MINIGAMES) {
-        fn_800BDC88(lbl_8036E548.slots6C, 1, 1, files[idx[4]], files[idx[4] + 2], NULL);
-        fn_3_B97DC(&lbl_8036E548.slots6C->objects[1], files[idx[4] + 2]);
+        fn_800BDC88(lbl_8036E548.slots6C, 1, 1, STADIUM_FILE(files, idx[4]), STADIUM_FILE(files, idx[4] + 2), NULL);
+        fn_3_B97DC(&lbl_8036E548.slots6C->objects[1], STADIUM_FILE(files, idx[4] + 2));
     } else {
-        fn_800BDC88(lbl_8036E548.slots6C, 1, 1, files[idx[2]], files[idx[2] + 2], NULL);
-        fn_3_B97DC(&lbl_8036E548.slots6C->objects[1], files[idx[2] + 2]);
+        fn_800BDC88(lbl_8036E548.slots6C, 1, 1, STADIUM_FILE(files, idx[2]), STADIUM_FILE(files, idx[2] + 2), NULL);
+        fn_3_B97DC(&lbl_8036E548.slots6C->objects[1], STADIUM_FILE(files, idx[2] + 2));
     }
     for (k = 2, i = 0; i < nParts; i++, k++) {
         if (g_d_GameSettings.GameModeSelected == GAME_TYPE_MINIGAMES) {
-            fn_800BDC88(lbl_8036E548.slots6C, (u16)k, (u16)k, files[idx[5]], files[idx[5] + 2], NULL);
-            fn_3_B97DC(&lbl_8036E548.slots6C->objects[k], files[idx[5] + 2]);
+            fn_800BDC88(lbl_8036E548.slots6C, (u16)k, (u16)k, STADIUM_FILE(files, idx[5]), STADIUM_FILE(files, idx[5] + 2), NULL);
+            fn_3_B97DC(&lbl_8036E548.slots6C->objects[k], STADIUM_FILE(files, idx[5] + 2));
         } else {
-            fn_800BDC88(lbl_8036E548.slots6C, (u16)k, (u16)k, files[idx[3]], files[idx[3] + 2], NULL);
-            fn_3_B97DC(&lbl_8036E548.slots6C->objects[k], files[idx[3] + 2]);
+            fn_800BDC88(lbl_8036E548.slots6C, (u16)k, (u16)k, STADIUM_FILE(files, idx[3]), STADIUM_FILE(files, idx[3] + 2), NULL);
+            fn_3_B97DC(&lbl_8036E548.slots6C->objects[k], STADIUM_FILE(files, idx[3] + 2));
         }
     }
-    fn_800BDC88(lbl_8036E548.slots6C, (u16)k, (u16)k, files[idx[6]], NULL, NULL);
+    fn_800BDC88(lbl_8036E548.slots6C, (u16)k, (u16)k, STADIUM_FILE(files, idx[6]), NULL, NULL);
     for (j = 0; j < lbl_3_common_bss_350E4.numActorObjs; j++) {
         fn_800BD548(&lbl_8036E548.slots6C->objects[j], 4, lbl_3_common_bss_350E4.lightObjs[0],
                     lbl_3_common_bss_350E4.lightObjs[1], lbl_3_common_bss_350E4.lightObjs[2],
                     lbl_3_common_bss_350E4.lightObjs[3]);
     }
-    if (files[idx[7]] != NULL) {
-        fn_80025DDC(files[idx[7]]);
-        fn_80025C58(files[idx[7]], (ShapeModel**)&lbl_8036E548.slots6C->objects[0]);
-        sAnim.set = files[idx[8]];
-        fn_80025FFC(files[idx[7]], &sAnim);
+    if (STADIUM_FILE(files, idx[7]) != NULL) {
+        fn_80025DDC(STADIUM_FILE(files, idx[7]));
+        fn_80025C58(STADIUM_FILE(files, idx[7]), (ShapeModel**)&lbl_8036E548.slots6C->objects[0]);
+        sAnim.set = STADIUM_FILE(files, idx[8]);
+        fn_80025FFC(STADIUM_FILE(files, idx[7]), &sAnim);
         fn_80025EEC(&sAnim, 0, 0);
     }
 

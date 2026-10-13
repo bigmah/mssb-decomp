@@ -2,6 +2,7 @@
 #define __GAME_AUTO_00_00097144_TEXT_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_LINKS
 #include "game/UnknownHomes_Game.h"
 #include "main/file_8000F150.h"  // LayoutSlot lbl_80371C30
 #include "main/file_800527C4.h"  // MenuDef, fn_80053FE8
@@ -107,7 +108,7 @@ extern GamePauseState lbl_3_common_bss_34C90;
 // HUD sprite task (lbl_803CC1B8 while one of this unit's tasks runs); only the fields used here.
 typedef struct HudTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x14 - 0x4];
+    /*0x04*/ SCENE_TASK_VIEW_LINKS
     /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
     /*0x16*/ u16 _16;
     /*0x18*/ u16 timer;

@@ -13,9 +13,16 @@ typedef struct {
 
 typedef struct {
     void (*func)(void);
+#ifdef TARGET_PC
+    void* padding04[2]; // prev, next
+    ChallengeQueueState* state; // parent
+    u8 padding10[4];
+    void* _u14align[0]; // SceneTask.u14 is 8-byte aligned on PC
+#else
     u8 padding04[0x08];
     ChallengeQueueState* state;
     u8 padding10[4];
+#endif
     u8 menuOpen; // 0x14
     s8 selection;
 } ChallengeQueueEntry;

@@ -7,6 +7,9 @@
 #include "C3/actor.h"
 #include "C3/geoPalette.h"
 #include "main/file_80024184.h"
+#ifdef TARGET_PC
+#include "main/file_80063028.h" // GameControl
+#endif
 
 typedef struct VecQueue {
     Vec* entries;
@@ -28,6 +31,7 @@ typedef struct MControl {
 } MControl; // size: 0x44
 
 // Display object layout in a geometry palette (SDK DODisplayLayout plus colors).
+// View of DODisplayLayout (C3/geoPalette.h): disc layout, PTR32 fields.
 typedef struct MDisplayLayout {
     /* 0x00 */ PTR32(PositionData) positionData;
     /* 0x04 */ PTR32(ColorData) colorData;
@@ -52,7 +56,7 @@ typedef struct MDisplayObj {
     /* 0x16 */ u8 visibility;
     /* 0x17 */ u8 pad17;
     /* 0x18 */ Mtx worldMatrix;
-    /* 0x48 */ void* tevCallback; // DODisplayObj.tevCallback: the two are cast to each other
+    /* 0x48 */ void* unk48; // DODisplayObj.tevCallback
     /* 0x4C */ void* shaderFunc;
     /* 0x50 */ void* shaderData;
     /* 0x54 */ GXColor colors[6];
@@ -134,11 +138,11 @@ typedef struct MActor {
     /* 0x68 */ Mtx* skinInvTransposeMtxArray;
     /* 0x6C */ Mtx* orientationInvMtxArray;
     /* 0x70 */ DSList drawPriorityList;
-    /* 0x7C */ struct sHdr* unk7C; // GameActor.skHeader
+    /* 0x7C */ void* unk7C; // GameActor.skHeader (main/file_80063028.h)
     /* 0x80 */ u16 unk80;
     /* 0x82 */ u16 unk82;
     /* 0x84 */ u16 unk84;
-    /* 0x88 */ u16* unk88; // GameActor.boneRemap
+    /* 0x88 */ void* unk88; // GameActor.boneRemap
     /* 0x8C */ f32 unk8C;
     /* 0x90 */ f32 unk90;
     /* 0x94 */ void* unk94; // GameActor.boneCallback
@@ -147,6 +151,33 @@ typedef struct MActor {
     /* 0x9A */ u8 unk9A[6];
 } MActor; // size: 0xA0, followed by the bone/matrix arrays
 
+#ifdef TARGET_PC
+// One actor slot in an ActorObjectInitTable() table. Same object as
+// ActorObject (main/file_800BD8C4.h): on PC its fields take ActorObject's
+// types so both views agree.
+typedef struct ActorSlot {
+    MActor* actor;
+    void* anim;      // ActorObject.animBank
+    void* unk8;      // ActorObject.callback
+    s16 id;
+    s16 unkE;
+    GameControl unk10; // ActorObject.worldControl
+    f32 speed;       // ActorObject.unk54
+    u8 unk58;
+    u8 unk59;
+    u8 unk5A;
+    u8 unk5B;
+    f32 unk5C;
+    f32 unk60;
+    s16 unk64;
+    s16 unk66;
+    void* unk68;     // ActorObject.boneRemap
+    u8 unk6C;
+    u8 unk6D;
+    u8 unk6E[2];
+    void* unk70[8];  // ActorObject.lights
+} ActorSlot;
+#else
 // One actor slot in an ActorObjectInitTable() table.
 typedef struct ActorSlot {
     /* 0x00 */ MActor* actor;
@@ -169,6 +200,7 @@ typedef struct ActorSlot {
     /* 0x6E */ u8 unk6E[2];
     /* 0x70 */ void* unk70[8]; // ActorObject.lights
 } ActorSlot; // size: 0x90
+#endif
 
 typedef struct ActorSlotTable {
     /* 0x00 */ u16 count;

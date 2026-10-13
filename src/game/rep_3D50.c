@@ -24,7 +24,7 @@ s32 lbl_3_data_283F0[2][4] = {{10, 10, 10, 10}, {10, 10, 10, 1}};
 s32 lbl_3_data_28410[2] = {40, 40};
 // The garlic-burst scene task (fn_3_160578): a SceneTask with its own bytes at 0x14.
 typedef struct {
-    /*0x00*/ u8 pad[0x14]; // SceneTask head (main/scene_task.h)
+    /*0x00*/ SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
     /*0x14*/ u8 f14; // nonzero: second burst set (lbl_3_data_281F0[4..7])
     /*0x15*/ u8 f15; // 0: waiting, 1: garlic just started, 2: running
     /*0x16*/ u8 f16; // delay reload

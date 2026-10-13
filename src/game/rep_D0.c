@@ -170,7 +170,7 @@ BALL_COLLISION_TYPE didCollideWithBoundingBoxes(VecSrcDst* inVec, CollisionStruc
     CollisionBox* cb;
     f32 dist;
     n = boxCount;
-    bb = boxes->boundingBox;
+    bb = PTR32_GET(AABB_Box, boxes->boundingBox);
     memset(flags, 1, n);
     i = n;
     fp = flags;
@@ -202,7 +202,7 @@ BALL_COLLISION_TYPE didCollideWithBoundingBoxes(VecSrcDst* inVec, CollisionStruc
     tc.collisionType = 0;
     do {
         if (*fp++ == 0) {
-            checkTriangleCollisions(&tc, (TriangleGroup*)cb->boundingBox);
+            checkTriangleCollisions(&tc, (TriangleGroup*)PTR32_GET(AABB_Box, cb->boundingBox));
         }
         n--;
         cb++;

@@ -2757,6 +2757,74 @@ typedef struct {
     /* 0x114 */ f32 _114;
     /* 0x118 */ s16 _118;
     /* 0x11A */ s16 _11A;
+#ifdef TARGET_PC
+    union {
+    struct {
+    /* 0x11C */ u8 _11C;
+    u8 _11D_[3];
+    // On PC the fields below sit at their place in views[] (game/replay_camera.h),
+    // whose pointers make it larger than on GameCube.
+    struct {
+        u8 _pc0[offsetof(lbl_3_common_bss_DE94_s2, animList)];
+        /* views[0].animList */ void* _1B4; // minigame ARAM data (fn_3_106E50)
+        u8 _pc1[offsetof(lbl_3_common_bss_DE94_s2, _0930) - offsetof(lbl_3_common_bss_DE94_s2, animList) - sizeof(void*)];
+    /* 0xA50 */ int _A50;
+    artificial_padding(0xa50, 0xa74, int);
+    /* 0xA74 */ s16 _A74;
+    /* 0xA76 */ s16 _A76;
+    /* 0xA78 */ s16 _A78;
+    /* 0xA7A */ s16 _A7A;
+    /* 0xA7C */ s16 _A7C;
+    /* 0xA7E */ s16 _A7E;
+    /* 0xA80 */ s16 _A80;
+    /* 0xA82 */ s16 _A82;
+    /* 0xA84 */ s16 _A84[4];
+    /* 0xA8C */ s16 _A8C[4];
+    /* 0xA94 */ s16 _A94;
+    /* 0xA96 */ s16 _A96;
+    /* 0xA98 */ s16 _A98;
+    /* 0xA9A */ s16 _A9A;
+    /* 0xA9C */ s16 _A9C;
+    /* 0xA9E */ s16 _A9E;
+    /* 0xAA0 */ s16 _AA0;
+    /* 0xAA2 */ s16 _AA2;
+    /* 0xAA4 */ s16 _AA4;
+    /* 0xAA6 */ s16 _AA6;
+    /* 0xAA8 */ u16 _AA8; // fade-out active (fn_3_21C90)
+    /* 0xAAA */ u16 _AAA; // fade-in active (fn_3_21DE4)
+    /* 0xAAC */ u16 _AAC; // fade-out length in frames
+    /* 0xAAE */ u16 _AAE; // fade-in length in frames
+        u8 _pc2[offsetof(lbl_3_common_bss_DE94_s2, animData) - offsetof(lbl_3_common_bss_DE94_s2, _0988) - 8];
+        /* views[0].animData */ void* _AB0; // 0x8000-byte heap buffer (fn_3_106DFC)
+    /* 0xAB4 */ u8 _AB4;
+    /* 0xAB5 */ u8 _AB5;
+    /* 0xAB6 */ u8 _AB6;
+    /* 0xAB7 */ u8 _AB7;
+    /* 0xAB8 */ u8 _AB8;
+    /* 0xAB9 */ u8 _AB9;
+    /* 0xABA */ u8 _ABA;
+    /* 0xABB */ u8 _ABB[4];
+    /* 0xABF */ u8 _ABF;
+    /* 0xAC0 */ u8 _AC0[4];
+    /* 0xAC4 */ u8 _AC4;
+    /* 0xAC5 */ u8 _AC5;
+    /* 0xAC6 */ u8 _AC6;
+    artificial_padding(0xac6, 0xac8, u8);
+    /* 0xAC8 */ u8 _AC8;
+    /* 0xAC9 */ u8 _AC9;
+    /* 0xACA */ u8 _ACA;
+    artificial_padding(0xaca, 0xad8, u8);
+    /* 0xAD8 */ u8 _AD8;
+        u8 _pc3[sizeof(lbl_3_common_bss_DE94_s2) - offsetof(lbl_3_common_bss_DE94_s2, _09B8) - 1];
+    };
+    struct {
+        u8 _pc4[offsetof(lbl_3_common_bss_DE94_s2, animData)];
+        /* views[1].animData */ void* _146C; // 0x8000-byte heap buffer (fn_3_106DFC)
+        u8 _pc5[sizeof(lbl_3_common_bss_DE94_s2) - offsetof(lbl_3_common_bss_DE94_s2, animData) - sizeof(void*)];
+    };
+    u8 _pc6[2 * sizeof(lbl_3_common_bss_DE94_s2)];
+    };
+#else
     union {
     struct {
     /* 0x11C */ u8 _11C;
@@ -2813,6 +2881,7 @@ typedef struct {
     /* 0x146C */ void* _146C; // 0x8000-byte heap buffer (fn_3_106DFC)
     artificial_padding(0x146c, 0x2810, void*);
     };
+#endif
     struct {
         u8 _11C_[4];
         /* 0x120 */ lbl_3_common_bss_DE94_s2 views[4]; // replay camera views (game/replay_camera.h)

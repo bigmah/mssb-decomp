@@ -1012,6 +1012,102 @@ void fn_8003A85C(u8 enabled) {
 }
 
 // .text:0x8003A8A0 size:0x3F0
+#ifdef TARGET_PC
+#include "C3/geoPalette.h"
+// Model is a GameCube-offset view of DODisplayObj (C3/geoPalette.h), whose
+// arrays hold PTR32s on PC: draw through the real types.
+static u8 compSizeOf(u8 quantizeInfo) {
+    switch ((u8)(quantizeInfo >> 4)) {
+    case GX_U8:
+    case GX_S8:
+        return 1;
+    case GX_U16:
+    case GX_S16:
+        return 2;
+    case GX_F32:
+        return 4;
+    }
+    return 0;
+}
+
+void fn_8003A8A0(Model* model, Mtx viewMtx, s32 unused) {
+    struct DODisplayObj* obj = (struct DODisplayObj*)model;
+    Mtx mtx;
+    GXVtxDescList desc[27];
+    DisplayStateList* cmd;
+    PositionData* pos = obj->positionData;
+    s32 i;
+    s32 j;
+    s32 n;
+    s32 attr;
+    s32 shift;
+    u32 type;
+
+    PSMTXConcat(viewMtx, obj->worldMatrix, mtx);
+    GXLoadPosMtxImm(mtx, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    (GXSetArray)(GX_VA_POS, PTR32_GET(char, pos->positionArray), (u32)pos->numPositions * pos->compCount * compSizeOf(pos->quantizeInfo),
+                 pos->compCount * compSizeOf(pos->quantizeInfo), TRUE);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, pos->quantizeInfo >> 4, pos->quantizeInfo & 0xF);
+    if (obj->textureData != NULL) {
+        for (i = 0; i < obj->numTextureChannels; i++) {
+            TextureData* t = &obj->textureData[i];
+            (GXSetArray)(GX_VA_TEX0 + i, PTR32_GET(char, t->textureCoordArray),
+                         (u32)t->numTextureCoords * t->compCount * compSizeOf(t->quantizeInfo), t->compCount * compSizeOf(t->quantizeInfo), TRUE);
+            GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0 + i, GX_TEX_ST, t->quantizeInfo >> 4, t->quantizeInfo & 0xF);
+            GXSetTexCoordGen2(i, GX_MTX2x4, GX_TG_TEX0 + i, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+        }
+        GXSetNumTexGens(obj->numTextureChannels);
+    } else {
+        GXSetNumTexGens(0);
+    }
+    cmd = PTR32_GET(DisplayStateList, obj->displayData->displayStateList);
+    for (j = 0; j < obj->displayData->numStateEntries; j++, cmd++) {
+        switch (cmd->id) {
+        case MODEL_CMD_TEXTURE: {
+            u32 map = (cmd->setting >> 13) & 7;
+            TexArchive* textures = PTR32_GET(TexArchive, obj->textureData[map].texturePalette);
+            SetDisplayStateTexture(TEX_ARCHIVE_IMG(textures, cmd->setting & 0x1FFF), map, map);
+            break;
+        }
+        case MODEL_CMD_VTXDESC:
+            GXClearVtxDesc();
+            n = 0;
+            type = cmd->setting & 3;
+            if (type != 0) {
+                desc[0].type = type;
+                n = 1;
+                desc[0].attr = GX_VA_PNMTXIDX;
+            }
+            for (attr = GX_VA_POS, shift = 2; attr < GX_VA_TEX7 + 1; attr++, shift += 2) {
+                type = (cmd->setting >> shift) & 3;
+                if (type != 0) {
+                    desc[n].attr = attr;
+                    n++;
+                    desc[n - 1].type = type;
+                }
+            }
+            type = (cmd->setting >> 26) & 3;
+            if (type != 0) {
+                desc[n].attr = attr;
+                desc[n].type = type;
+                n++;
+            }
+            desc[n].attr = GX_VA_NULL;
+            GXSetVtxDescv(desc);
+            break;
+        case MODEL_CMD_CALLBACK:
+            if (lbl_803CBCA8 != NULL) {
+                lbl_803CBCA8();
+            }
+            break;
+        }
+        if (cmd->primitiveList != 0) {
+            GXCallDisplayList(PTR32_GET(char, cmd->primitiveList), cmd->listSize);
+        }
+    }
+}
+#else
 void fn_8003A8A0(Model* model, Mtx viewMtx, s32 unused) {
     Mtx mtx;
     GXVtxDescList desc[27]; // GX_MAX_VTXDESCLIST_SZ
@@ -1126,6 +1222,8 @@ void fn_8003A8A0(Model* model, Mtx viewMtx, s32 unused) {
         cmd++;
     }
 }
+
+#endif
 
 extern ARQRequest lbl_802D4AC0;
 

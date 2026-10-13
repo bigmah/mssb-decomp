@@ -36,14 +36,3 @@ void port_swap_msg_table(void* table)
     }
     swap16_array(b + text, (size - text) / 2);
 }
-
-void port_swap_char_stats(void* stats, uint32_t count)
-{
-    uint8_t* b = (uint8_t*)stats;
-    for (uint32_t i = 0; i < count; i++, b += 0xA0)
-    {
-        swap32_array(b + 0x20, 1);
-        swap16_array(b + 0x24, 1);
-        swap16_array(b + 0x74, 21);
-    }
-}

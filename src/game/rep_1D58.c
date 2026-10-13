@@ -325,6 +325,21 @@ void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx) {
     void* layout;
     void* geo;
 
+#ifdef TARGET_PC
+    // The table's u32 offsets are big-endian: swap the entries the kinds use.
+    {
+        s32 k;
+        s32 n = 0;
+        for (k = 0; k < count; k++) {
+            switch (kinds[k]) {
+            case 2: case 3: n += 2 + (kinds[k] == 3); break;
+            case 4: case 5: n += 3 + (kinds[k] == 5); break;
+            default: n += 1; break;
+            }
+        }
+        swap32_array(table, n);
+    }
+#endif
     do {
         if (outIdx != NULL) {
             *out = idx;
@@ -358,6 +373,9 @@ void fn_3_B9D68(u8* kinds, s32 count, u8* table, s32* outIdx) {
             s32 n;
             s32 i;
             u32* q;
+#ifdef TARGET_PC
+            port_swap_stadium_collision(sub); // same table format as fn_3_6424's
+#endif
             n = *(u16*)sub;
             q = (u32*)(sub + 4);
             for (i = n; i >= 0; i--) {

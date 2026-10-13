@@ -55,7 +55,7 @@ static u8 lbl_3_bss_38[8]; // unused
 static int lbl_3_bss_34 = 0;
 static u8 lbl_3_bss_30[4]; // unused
 extern struct {
-    u8 _00[0x28];
+    u8 _00[LBL_80366158_PAD(0x28)];
     u8 _28;
 } lbl_80366158;
 extern u8 lbl_800E8754[];

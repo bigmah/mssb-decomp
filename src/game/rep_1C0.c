@@ -1036,6 +1036,11 @@ extern void fn_3_BD434(int stadium, int variant);
 // (a void* prototype gives the original 4-register allocation)
 #if NONMATCHING
 void fn_3_5EC0(StadiumArchive* arc) {
+#ifdef TARGET_PC
+    if (arc->layout > 0x00FFFFFF) {
+        swap32_array(arc, sizeof(StadiumArchive) / 4); // big-endian offsets
+    }
+#endif
     void* layout = (u8*)arc + arc->layout;
     void* geometry = (u8*)arc + arc->geometry;
     void* textures = (u8*)arc + arc->textures;
@@ -1111,6 +1116,9 @@ void fn_3_64DC(void) {
 
 // .text:0x00006424 size:0xB8
 s16 fn_3_6424(u8* base, CollisionBox** out) {
+#ifdef TARGET_PC
+    port_swap_stadium_collision(base);
+#endif
     s16 n = *(u16*)base;
     u32* p;
     s32 i;

@@ -36,6 +36,24 @@ u8 __##currentOffset##padding[((currentOffset) - (lastOffset) - sizeof(typeOfLas
 #define U32_MAX (0xFFFFFFFF)
 #define U32_MIN (0)
 
+// Entry i of a stadium/scene file table relocated by fn_3_B9D68: a pointer on
+// GameCube, a PTR32 (u32 heap offset) on PC, where the table keeps its 4-byte
+// disc entries.
+#ifdef TARGET_PC
+#define STADIUM_FILE(files, i) PTR32_GET(void, ((u32*)(files))[i])
+#else
+#define STADIUM_FILE(files, i) ((files)[i])
+#endif
+
+// lbl_80366158 (lbl_80366158_s, main/file_80008E00.h) starts with three
+// pointers: its byte fields from 0x0C on are this much further on PC. For the
+// views that pad up to them.
+#ifdef TARGET_PC
+#define LBL_80366158_PAD(n) ((n) + 0xC)
+#else
+#define LBL_80366158_PAD(n) (n)
+#endif
+
 // Enum macro to help debug types
 #define E(storage, enumType) storage
 

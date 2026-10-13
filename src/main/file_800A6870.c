@@ -82,10 +82,22 @@ static inline void CancelTransfer(void) {
 }
 
 static inline void PostAramRead(void) {
+#ifdef TARGET_PC
+    // aurora completes the request (and runs fn_800A68D4) inside
+    // ARQPostRequest: advance the cursor first, the read thread may post the
+    // next chunk before this returns.
+    ARQRequest* req = &lbl_803C6CF8.arqRequests[lbl_803C6CF8.arqIndex];
+    u32 src = lbl_803C6CF8.aramCur;
+    lbl_803C6CF8.arqIndex = (lbl_803C6CF8.arqIndex + 1) % 4;
+    lbl_803C6CF8.aramCur += ALIGN32(lbl_803C6CF8.chunkSize);
+    ARQPostRequest(req, DVDSYS_ARQ_OWNER, ARAM_DIR_ARAM_TO_MRAM, 0, src, (uintptr_t)lbl_803C6CF8.readPos,
+                   ALIGN32(lbl_803C6CF8.chunkSize), fn_800A68D4);
+#else
     ARQPostRequest(&lbl_803C6CF8.arqRequests[lbl_803C6CF8.arqIndex], DVDSYS_ARQ_OWNER, ARAM_DIR_ARAM_TO_MRAM, 0,
                    lbl_803C6CF8.aramCur, (uintptr_t)lbl_803C6CF8.readPos, ALIGN32(lbl_803C6CF8.chunkSize), fn_800A68D4);
     lbl_803C6CF8.arqIndex = (lbl_803C6CF8.arqIndex + 1) % 4;
     lbl_803C6CF8.aramCur += ALIGN32(lbl_803C6CF8.chunkSize);
+#endif
 }
 
 static inline void ReadRingChunk(void) {
@@ -128,7 +140,18 @@ void fn_800A6890(uintptr_t request) {
 }
 
 // .text:0x800A68D4 size:0x2C
+#ifdef TARGET_PC
+// aurora completes ARAM reads inside ARQPostRequest, so this can run on the
+// read thread itself before it suspends: remember the chunk instead.
+static volatile s32 sReadPending;
+#endif
 void fn_800A68D4(uintptr_t request) {
+#ifdef TARGET_PC
+    if (OSGetCurrentThread() == &lbl_803C6CF8.readThread) {
+        sReadPending = 1;
+        return;
+    }
+#endif
     OSResumeThread(&lbl_803C6CF8.readThread);
 }
 
@@ -192,8 +215,14 @@ void* fn_800A6900(void* arg) {
                         lbl_803C6CF8.tempBuf = NULL;
                     }
                     SET_STATE_IDLE(DVDSYS_STATE_NONE, 1);
+#ifdef TARGET_PC
+                // No drive to stall on PC: the retrace-count timeout would only
+                // restart decoders that are slow to get scheduled.
+                } else if (gDataDecompressorValues.error) {
+#else
                 } else if (gDataDecompressorValues.error ||
                            (lbl_803C6CF8.retryEnabled && lbl_803C6CF8.retryCount == 0)) {
+#endif
                     // decode error or stalled drive: restart the decoder and the read thread
                     DVDCancel(&lbl_803C6CF8.fileInfo->cBlock);
                     OSCancelThread(&gDataDecompressorValues.t);
@@ -469,6 +498,11 @@ void* fn_800A77A0(void* arg) {
     s32 len;
 
     while (TRUE) {
+#ifdef TARGET_PC
+        if (sReadPending) {
+            sReadPending = 0;
+        } else
+#endif
         OSSuspendThread(&lbl_803C6CF8.readThread);
         // a chunk has arrived
         lbl_803C6CF8.remaining -= lbl_803C6CF8.chunkSize;
@@ -478,7 +512,13 @@ void* fn_800A77A0(void* arg) {
         switch (lbl_803C6CF8.mode) {
         case DVDSYS_MODE_DISC_LZ_TO_RAM:
         case DVDSYS_MODE_ARAM_LZ_TO_RAM:
+#ifdef TARGET_PC
+            // The decoder thread runs in parallel on PC: don't lose its
+            // segmentCount-- (File_0x800a64e0.c, also atomic).
+            __atomic_fetch_add(&gDataDecompressorValues.segmentCount, 1, __ATOMIC_SEQ_CST);
+#else
             gDataDecompressorValues.segmentCount++;
+#endif
             if (lbl_803C6CF8.readPos == gDataDecompressorValues.DataReadTop) {
                 lbl_803C6CF8.readPos = lbl_803C6CF8.bufStart;
             }

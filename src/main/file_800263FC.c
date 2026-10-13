@@ -696,6 +696,14 @@ void fn_80027918(u8 type, f32 v) {
     Emitter* f = NULL;
 
     while (e = FindEmitter(f, type), prev = (f = e), e != NULL) {
+#ifdef TARGET_PC
+        // The word at 0x1C: for the attract emitters (the only users) it is
+        // the intensity, which follows the 8-byte target pointer on PC.
+        if (f->update == fn_80026E58) {
+            f->u.attract.intensity = v;
+            continue;
+        }
+#endif
         f->u.f[1] = v;
     }
 }
@@ -3773,6 +3781,13 @@ void fn_80034E20(SpaniGroup* g, SpaniDesc* descs) {
     SpaniObj* obj;
     s32 idx;
 
+#ifdef TARGET_PC
+    // Tables still declared as bytes hold big-endian SpaniDescs: swap them
+    // in place the first time (see port_spani_descs_native).
+    if (!port_spani_descs_native(descs)) {
+        port_swap_spani_descs(descs);
+    }
+#endif
     for (i = 0; i < 0x360; i++) {
         if (lbl_80371C30[i].obj == NULL) {
             g->u14.objIdx = i;

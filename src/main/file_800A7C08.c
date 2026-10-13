@@ -2557,7 +2557,7 @@ void* _OSAllocFromHeap(s32 align, s32 size) {
     u8* hi = lbl_803C7898.hi;
     u8* block;
     size = (size + 3) & ~3;
-    block = (u8*)(-align & (uintptr_t)(lo + (align + 7)));
+    block = (u8*)(-align & (uintptr_t)(lo + (align + (s32)sizeof(HeapBlockHeader) - 1))); // room for the header
     ((HeapBlockHeader*)block)[-1].prev = lo;
     ((HeapBlockHeader*)block)[-1].size = (s32)(block - lo) + size;
     lo = size + block;

@@ -32,7 +32,8 @@ extern "C" void port_pad_init_defaults(void)
 // Scripted input for testing without a person at the keyboard:
 // MSSB_INPUT="300:A,600:START,900:DOWN,950:SLEFT" holds each button (or
 // pushes the main stick: SLEFT/SRIGHT/SUP/SDOWN) on port 1 for a few frames,
-// starting at the given PADRead call (~frame) number.
+// starting at the given PADRead call (~frame) number. "START-END/STEP:A"
+// repeats the press every STEP frames from START to END.
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -72,7 +73,7 @@ std::vector<ScriptedPress>& script()
         const char* env = getenv("MSSB_INPUT");
         if (env == nullptr)
             return out;
-        char buf[1024];
+        static char buf[16384];
         strncpy(buf, env, sizeof(buf) - 1);
         buf[sizeof(buf) - 1] = '\0';
         for (char* tok = strtok(buf, ","); tok != nullptr; tok = strtok(nullptr, ","))
@@ -91,7 +92,17 @@ std::vector<ScriptedPress>& script()
                 sy = 100;
             else if (strcasecmp(name, "SDOWN") == 0)
                 sy = -100;
-            out.push_back({(u32)atoi(tok), button_from_name(name), sx, sy});
+            u32 start = (u32)atoi(tok);
+            u32 end = start;
+            u32 step = 1;
+            if (const char* dash = strchr(tok, '-'))
+            {
+                end = (u32)atoi(dash + 1);
+                if (const char* slash = strchr(dash, '/'))
+                    step = (u32)atoi(slash + 1);
+            }
+            for (u32 f = start; f <= end && step != 0; f += step)
+                out.push_back({f, button_from_name(name), sx, sy});
         }
         return out;
     }();

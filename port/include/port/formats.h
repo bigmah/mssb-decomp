@@ -48,16 +48,25 @@ int port_swap_tex_archive(void* archive);
 // the version already reads native.
 void port_swap_tex_palette(void* pal);
 
-// Character stats (CharacterStats, 0xA0 bytes each): u32 FieldingStats at
-// 0x20, s16 CharID at 0x24, u16 UnusedShorts[21] at 0x74; the rest is bytes.
-// The roster file (0x46E0 bytes) is 54 of them, unused space, then team
-// presets (bytes).
-void port_swap_char_stats(void* stats, uint32_t count);
-
 // A table of count u32 file offsets at the start of a container file (font
 // archive, ...). Call it exactly once per load (values can't tell native
 // from big-endian reliably).
 void port_swap_offset_table(void* table, uint32_t count);
+// Swaps such a table and relocates it in place to PTR32s.
+void port_relocate_offset_table(void* table, uint32_t count);
+
+// Character stats records (0xA0 bytes each), port/src/formats_game.c.
+void port_swap_char_stats(void* data, uint32_t count);
+// Stadium collision table, port/src/formats_game.c.
+void port_swap_stadium_collision(void* table);
+// Replay/scene camera animations, port/src/formats_game.c.
+void port_swap_camera_anim_list(void* list);
+void port_swap_camera_anim(void* anim);
+// SpaniDesc lists declared as bytes, port/src/formats_game.c.
+void port_swap_spani_descs(void* descs);
+int port_spani_descs_native(const void* descs);
+// Game song files (offset table + MusyX songs), port/src/formats_game.c.
+void port_swap_song_table(void* base, uint32_t count);
 
 #ifdef __cplusplus
 }

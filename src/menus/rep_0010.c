@@ -194,7 +194,7 @@ void fn_2_554(void) {
     case 3:
         if ((s32)(u8)lbl_803C6CF8.idle == 1) {
 #ifdef TARGET_PC
-            port_swap_char_stats(lbl_8034E9A0.roster, 54);
+            port_swap_char_stats(&lbl_8034E9A0, 6 * 9); // loaded big-endian
 #endif
             o->func = fn_2_794;
             lbl_2_bss_4 = fn_800B0A5C_insertQueue(fn_2_374, 0x8000);

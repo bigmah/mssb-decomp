@@ -2,6 +2,7 @@
 #define __GAME_AUTO_00_0011D3AC_TEXT_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_LINKS
 #include "main/file_80024D2C.h" // ShapeAnimPlayer
 #include "C3/anim.h"            // ANIMBank
 
@@ -70,7 +71,7 @@ typedef struct PasswordSlot {
 // Queue task (lbl_803CC1B8) for the password / roulette / score-board screens.
 typedef struct PasswordTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x10];
+    /*0x04*/ SCENE_TASK_VIEW_LINKS
     /*0x14*/ u16 baseIdx; // first sprite in lbl_80371C30
     /*0x16*/ u16 count;
     /*0x18*/ u16 spins;
@@ -85,7 +86,7 @@ typedef struct PasswordTask {
 // Score-board task: same header, per-player "counting" flags at 0x24.
 typedef struct ScoreBoardTask {
     /*0x00*/ void (*func)(void);
-    /*0x04*/ u8 _04[0x10];
+    /*0x04*/ SCENE_TASK_VIEW_LINKS
     /*0x14*/ u16 baseIdx;
     /*0x16*/ u16 count;
     /*0x18*/ u8 _18[0x1C - 0x18];

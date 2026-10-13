@@ -2,6 +2,7 @@
 #define __GAME_AUTO_00_0008B094_TEXT_H_
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // SCENE_TASK_VIEW_HEAD
 
 // One queued stream request: which track, how far its load has got, and the volume.
 typedef struct StreamRequest {
@@ -12,7 +13,7 @@ typedef struct StreamRequest {
 
 // Task running fn_3_8B094 (lbl_803CC1B8): a 14-entry ring buffer of stream requests.
 typedef struct StreamQueueTask {
-    /*0x00*/ u8 _00[0x14];
+    /*0x00*/ SCENE_TASK_VIEW_HEAD // SceneTask head (main/scene_task.h)
     /*0x14*/ u8 head;
     /*0x15*/ u8 tail;
     /*0x16*/ StreamRequest req[14];

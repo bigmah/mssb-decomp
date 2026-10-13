@@ -26,6 +26,31 @@ Options:
 Configuring applies `port/patches/aurora/*.patch` to the submodule once (see
 below).
 
+## user.ini (straight into a game)
+
+`user.ini` holds PC-only options, one `key = value` per line (`#`/`;`
+comments, `[section]` lines ignored). It is read from `$MSSB_USER_INI`, else
+from the user data folder. To skip the front end and boot straight into an
+exhibition game:
+
+```ini
+skipfe = true
+captain1 = mario     # player 1 (port 0); names below, or a character id
+captain2 = bowser    # CPU
+stadium = mario      # mario, bowser, wario, yoshi, peach, dk (or 0..5)
+```
+
+The boot task then loads game.rel instead of menus.rel, after loading the
+stats file and building both teams the way the team menu's random-team option
+does (`port/game/skipfe.c`). Captain names: mario, luigi, dk, diddy, peach,
+daisy, yoshi, babymario, babyluigi, bowser, wario, waluigi, koopa, toad, boo,
+toadette, shyguy, birdo, monty, bowserjr (see `sCharNames` for the rest).
+
+```sh
+printf 'skipfe = true\ncaptain1 = mario\ncaptain2 = bowser\n' > build/port/skipfe.ini
+MSSB_USER_INI=$PWD/build/port/skipfe.ini MSSB_SKIP_MOVIES=1 port/tools/run.sh 90 10
+```
+
 ## Layout
 
 - `port/CMakeLists.txt`, `port/sources.cmake`: the PC build. The sources are

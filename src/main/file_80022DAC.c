@@ -52,7 +52,7 @@ PORT_SAME_FIELD(MBone, drawPriorityLink, GameBone, drawPriorityLink);
 PORT_SAME_FIELD(MBone, unk134, GameBone, flags);
 _Static_assert(sizeof(MBone) == sizeof(GameBone), "MBone size");
 PORT_SAME_FIELD(MDisplayObj, worldMatrix, struct DODisplayObj, worldMatrix);
-PORT_SAME_FIELD(MDisplayObj, tevCallback, struct DODisplayObj, tevCallback);
+PORT_SAME_FIELD(MDisplayObj, unk48, struct DODisplayObj, tevCallback);
 PORT_SAME_FIELD(MDisplayObj, shaderData, struct DODisplayObj, shaderData);
 PORT_SAME_FIELD(MDisplayObj, colors, struct DODisplayObj, bounds);
 PORT_SAME_FIELD(ActorSlot, anim, ActorObject, animBank);
@@ -202,19 +202,19 @@ u8* fn_80023078(MDisplayObj* dispObj, MDisplayLayout* layout, u8* buffer) {
     u16 i;
 
     cursor.ptr = buffer;
-    if (layout->positionData != NULL) {
+    if (PTR32_GET(PositionData, layout->positionData) != NULL) {
         dispObj->positionData = (PositionData*)allocBuffer(&cursor, 0x20);
         *dispObj->positionData = *PTR32_GET(PositionData, layout->positionData);
     } else {
         dispObj->positionData = NULL;
     }
-    if (layout->colorData != NULL) {
+    if (PTR32_GET(ColorData, layout->colorData) != NULL) {
         dispObj->colorData = (ColorData*)allocBuffer(&cursor, 0x20);
         *dispObj->colorData = *PTR32_GET(ColorData, layout->colorData);
     } else {
         dispObj->colorData = NULL;
     }
-    if (layout->textureData != NULL && layout->numTextureChannels != 0) {
+    if (PTR32_GET(TextureData, layout->textureData) != NULL && layout->numTextureChannels != 0) {
         s32 count;
         dispObj->textureData = (TextureData*)cursor.ptr;
         count = layout->numTextureChannels;
@@ -227,13 +227,13 @@ u8* fn_80023078(MDisplayObj* dispObj, MDisplayLayout* layout, u8* buffer) {
         dispObj->textureData = NULL;
         dispObj->numTextureChannels = 0;
     }
-    if (layout->lightingData != NULL) {
+    if (PTR32_GET(LightingData, layout->lightingData) != NULL) {
         dispObj->lightingData = (LightingData*)allocBuffer(&cursor, 0x20);
         *dispObj->lightingData = *PTR32_GET(LightingData, layout->lightingData);
     } else {
         dispObj->lightingData = NULL;
     }
-    if (layout->displayData != NULL) {
+    if (PTR32_GET(DisplayData, layout->displayData) != NULL) {
         dispObj->displayData = (DisplayData*)allocBuffer(&cursor, 0x20);
         *dispObj->displayData = *PTR32_GET(DisplayData, layout->displayData);
     } else {
