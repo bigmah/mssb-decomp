@@ -24,6 +24,7 @@ extern const f32 lbl_803CC56C; // 2048.0f
 #include "main/file_80011640.h" // CharMgr lbl_8036E548
 #include "main/file_80063028.h" // GameActor, GameBone
 #include "main/file_800BD8C4.h" // ActorObject
+#include "C3/anim.h"           // ANIMPipe
 
 // MActor/MBone/MDisplayObj/ActorSlot here are other views of GameActor/
 // GameBone/DODisplayObj/ActorObject: keep them interchangeable on PC.
@@ -65,6 +66,9 @@ PORT_SAME_FIELD(ActorSlot, unk6C, ActorObject, animateBones);
 PORT_SAME_FIELD(ActorSlot, unk70, ActorObject, lights);
 _Static_assert(sizeof(ActorSlot) == sizeof(ActorObject), "ActorSlot size");
 PORT_SAME_FIELD(ActorSlotTable, slots, ActorObjectTable, objects);
+PORT_SAME_FIELD(MBoneAnim, track, struct ANIMPipe, currentTrack);
+PORT_SAME_FIELD(MBoneAnim, unk10, struct ANIMPipe, control);
+PORT_SAME_FIELD(MBoneAnim, unk18, struct ANIMPipe, loop);
 #else
 extern u8 lbl_8036E548[]; // TODO type
 #endif
@@ -89,10 +93,12 @@ void* memcpy(void* dst, const void* src, size_t n);
 // structs hold pointers: bigger on PC.
 #ifdef TARGET_PC
 #define MDISPLAYOBJ_ALLOC ((sizeof(MDisplayObj) + 0x1F) & ~0x1F)
+#define MBONEANIM_ALLOC ((sizeof(MBoneAnim) + 0x1F) & ~0x1F)
 #define ACTOR_BUFFER_SMALL (0x1BC0 * 2)
 #define ACTOR_BUFFER_LARGE (0x86A0 * 2)
 #else
 #define MDISPLAYOBJ_ALLOC 0x80
+#define MBONEANIM_ALLOC 0x20
 #define ACTOR_BUFFER_SMALL 0x1BC0
 #define ACTOR_BUFFER_LARGE 0x86A0
 #endif
@@ -150,7 +156,7 @@ u8* f_InitBone(MBone* parent, MBoneLayout* layout, MActor* actor, u16* boneIndex
         bone->unk60 = 0;
         bone->unkA4 = 0;
         bone->anim = (MBoneAnim*)buffer;
-        buffer += 0x20;
+        buffer += MBONEANIM_ALLOC;
         bone->anim->time = lbl_803CC560;
         bone->anim->unk4 = lbl_803CC560;
         bone->anim->speed = lbl_803CC564;
