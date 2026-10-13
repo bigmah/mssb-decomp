@@ -46,10 +46,12 @@ void* memcpy(void* dst, const void* src, size_t n);
 // structs hold pointers: bigger on PC.
 #ifdef TARGET_PC
 #define MDISPLAYOBJ_ALLOC ((sizeof(MDisplayObj) + 0x1F) & ~0x1F)
+#define MBONEANIM_ALLOC ((sizeof(MBoneAnim) + 0x1F) & ~0x1F)
 #define ACTOR_BUFFER_SMALL (0x1BC0 * 2)
 #define ACTOR_BUFFER_LARGE (0x86A0 * 2)
 #else
 #define MDISPLAYOBJ_ALLOC 0x80
+#define MBONEANIM_ALLOC 0x20
 #define ACTOR_BUFFER_SMALL 0x1BC0
 #define ACTOR_BUFFER_LARGE 0x86A0
 #endif
@@ -107,7 +109,7 @@ u8* f_InitBone(MBone* parent, MBoneLayout* layout, MActor* actor, u16* boneIndex
         bone->unk60 = 0;
         bone->unkA4 = 0;
         bone->anim = (MBoneAnim*)buffer;
-        buffer += 0x20;
+        buffer += MBONEANIM_ALLOC;
         bone->anim->time = lbl_803CC560;
         bone->anim->unk4 = lbl_803CC560;
         bone->anim->speed = lbl_803CC564;
