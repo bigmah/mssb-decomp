@@ -2,6 +2,7 @@
 #define __CHALLENGE_REP_0610_H__
 
 #include "mssbTypes.h"
+#include "main/scene_task.h" // TASK_PARAM
 #include "Dolphin/mtx.h"
 #include "Dolphin/gx.h"
 #include "C3/control.h"
@@ -195,7 +196,7 @@ void fn_1_CCC8(void);
 
 void* fn_1_16590(void);
 void fn_1_168C8(void);
-void fn_1_10560(void* object);
+void fn_1_10560(TASK_PARAM(void* object));
 void fn_1_D8A0(void);
 void fn_1_CC24(void);
 void fn_1_D590(void* row, s32 id, f32 value);

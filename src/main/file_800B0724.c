@@ -293,6 +293,13 @@ void resetAllDrawingStructs_tonop(void) {
 // .text:0x800B0CB8 size:0x70
 // Task functions are called with a pointer to caller-stack scratch space.
 typedef void (*DrawScriptFunc)(void* scratch);
+// Tasks are defined as void(void) and get a scratch buffer in r3 they don't
+// use; wasm needs the call to match the definition.
+#ifdef TARGET_PC
+#define CALL_DRAW_SCRIPT(f, scratch) ((void (*)(void))(f))()
+#else
+#define CALL_DRAW_SCRIPT(f, scratch) ((DrawScriptFunc)(f))(scratch)
+#endif
 
 // Runs the root task, then every task of the active list in order.
 void RunDrawScripts_with_stack_variables(void) {
@@ -300,7 +307,7 @@ void RunDrawScripts_with_stack_variables(void) {
     u8 listScratch[0x14];
     SceneTask* task;
     lbl_803CC1B8 = &lbl_80111300;
-    ((DrawScriptFunc)lbl_80111300.func)(rootScratch);
+    CALL_DRAW_SCRIPT(lbl_80111300.func, rootScratch);
     task = &lbl_803C7A24[lbl_803CC1B0 * 2];
 #ifdef TARGET_PC
     {
@@ -324,7 +331,7 @@ void RunDrawScripts_with_stack_variables(void) {
 #endif
     do {
         lbl_803CC1B8 = task;
-        ((DrawScriptFunc)task->func)(listScratch);
+        CALL_DRAW_SCRIPT(task->func, listScratch);
         task = task->next;
     } while (task != NULL);
 }

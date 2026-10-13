@@ -136,7 +136,7 @@ extern void* lbl_80366158[];
 extern void fn_1_1496C(u8* object);
 #include "static/UnknownHomes_Static.h"
 #include "challenge/ch_data.h" // ChParticleParams*
-extern void fn_1_10560(void* object);
+extern void fn_1_10560(TASK_PARAM(void* object));
 
 typedef struct {
     f32 position;
@@ -175,7 +175,7 @@ extern const f32 lbl_1_rodata_7394;
 
 extern const f32 lbl_1_rodata_73C8;
 
-extern void fn_1_F1D8(void*);
+extern void fn_1_F1D8(TASK_PARAM(void*));
 
 extern f32 lbl_1_rodata_73C0[];
 extern f32 lbl_1_rodata_73C4[];
@@ -6978,7 +6978,7 @@ void fn_1_10670(void) {
 }
 
 // .text:0x10560 size:0x110
-void fn_1_10560(void* object) {
+void fn_1_10560(TASK_PARAM(void* object)) {
     switch (CH_TASK->result) {
     case 0:
         lbl_1_bss_3094 = (void*)ARAMTransfer(&lbl_1_data_ADE0, 0, 0, 0);
@@ -7548,7 +7548,7 @@ void fn_1_F2F8(void) {
 }
 
 // .text:0xF1D8 size:0x120
-void fn_1_F1D8(void* unused) {
+void fn_1_F1D8(TASK_PARAM(void* unused)) {
     Control control;
     Mtx matrix;
     Vec coordinates;

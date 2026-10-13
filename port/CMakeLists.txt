@@ -125,6 +125,16 @@ foreach (w ${MSSB_64_WARNINGS})
     endif ()
 endforeach ()
 
+# Debug: report calls through function pointers of another type than the
+# callee's (they trap in wasm). Needs a clang with UBSan's function check
+# (Homebrew LLVM: -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang).
+option(MSSB_SANITIZE_FUNCTION "Build game code with -fsanitize=function" OFF)
+if (MSSB_SANITIZE_FUNCTION)
+    list(APPEND MSSB_PORT_WARNINGS -fsanitize=function)
+    # The C++ side may use another compiler: link the UBSan runtime directly.
+    set(MSSB_UBSAN_RUNTIME "" CACHE FILEPATH "libclang_rt.ubsan_osx_dynamic.dylib of that clang")
+endif ()
+
 # Game code from main.dol, game.rel, menus.rel and challenge.rel.
 # PC-only code that needs the game's headers (compiled like the game).
 file(GLOB MSSB_PORT_GAME_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game/*.c)
@@ -249,11 +259,16 @@ target_include_directories(mssb PRIVATE $<$<BOOL:${EMSCRIPTEN}>:${CMAKE_SOURCE_D
 target_compile_definitions(mssb PRIVATE ${MSSB_DEFS} MSSB_REPO_DIR="${MSSB_ROOT}")
 target_compile_options(mssb PRIVATE ${MSSB_COMMON_FLAGS} -Wno-everything)
 if (MSSB_AURORA)
+    if (MSSB_SANITIZE_FUNCTION AND MSSB_UBSAN_RUNTIME)
+        target_link_libraries(mssb PRIVATE ${MSSB_UBSAN_RUNTIME})
+    endif ()
     target_link_libraries(mssb PRIVATE musyx mssb_audio aurora::core aurora::gx aurora::vi aurora::pad
         aurora::si aurora::dvd aurora::card aurora::mtx aurora::os aurora::main)
 endif ()
 
 if (EMSCRIPTEN)
+    option(MSSB_WEB_FPCAST "Emulate function pointer casts (slow; debugging only)" OFF)
+    set(MSSB_WEB_LINK_OPT "-O3" CACHE STRING "Link optimisation level for the web build")
     # The game's OS threads are Emscripten fibers, which need Asyncify (JSPI
     # can't switch fibers); disc reads that miss the page's cache and frame
     # pacing also suspend through it.
@@ -262,10 +277,8 @@ if (EMSCRIPTEN)
     # declare, as PowerPC allows); wasm traps on that unless emulated.
     target_link_options(mssb PRIVATE
         -sASYNCIFY
-        -sEMULATE_FUNCTION_POINTER_CASTS=1
-        # binaryen's fpcast emulation breaks at -O2/-O3 on this module
-        # (validation errors, an assertion): link at -O1.
-        -O1
+        $<$<BOOL:${MSSB_WEB_FPCAST}>:-sEMULATE_FUNCTION_POINTER_CASTS=1>
+        ${MSSB_WEB_LINK_OPT}
         -sASYNCIFY_STACK_SIZE=1MB
         -sALLOW_MEMORY_GROWTH=1
         -sINITIAL_MEMORY=512MB

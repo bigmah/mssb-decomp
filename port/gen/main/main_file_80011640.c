@@ -156,7 +156,7 @@ extern void fn_800B2B4C(GameActor* model, f32 v);
 extern void fn_800B993C(void);
 extern u8 lbl_800EEA58[25];
 extern void fn_8003A540(s32 arg);
-extern void fn_800BF048(void (*fn)(void));
+extern void fn_800BF048(void (*fn)(void* arg));
 typedef struct BattingOrder {
      s8 roster;
      u8 _1;
@@ -459,7 +459,7 @@ void challengeMapRelated(void);
 
 #endif
 void fn_8001AAA4(void);
-void fn_8001AAF0(void);
+void fn_8001AAF0(void* arg);
 
 
 

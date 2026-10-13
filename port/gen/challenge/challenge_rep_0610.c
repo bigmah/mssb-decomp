@@ -56,7 +56,7 @@ extern void fn_1_1496C(u8* object);
 
 #include "static/UnknownHomes_Static.h"
 #include "challenge/ch_data.h" // ChParticleParams*
-extern void fn_1_10560(void* object);
+extern void fn_1_10560(TASK_PARAM(void* object));
 typedef struct {
     f32 position;
     u8 padding04[8];
@@ -86,7 +86,7 @@ extern const f32 lbl_1_rodata_73F8;
 extern f32 lbl_1_rodata_73BC;
 extern const f32 lbl_1_rodata_7394;
 extern const f32 lbl_1_rodata_73C8;
-extern void fn_1_F1D8(void*);
+extern void fn_1_F1D8(TASK_PARAM(void*));
 extern f32 lbl_1_rodata_73C0[];
 extern f32 lbl_1_rodata_73C4[];
 extern f32 lbl_1_rodata_73A4[];
@@ -1723,7 +1723,7 @@ void fn_1_106C4(void);
 void fn_1_106B4(void);
 void* fn_1_106A4(void);
 void fn_1_10670(void);
-void fn_1_10560(void* object);
+void fn_1_10560(TASK_PARAM(void* object));
 void fn_1_10458(void);
 
 
@@ -1751,7 +1751,7 @@ void fn_1_F6E4(void);
 void fn_1_F50C(void);
 void fn_1_F37C(void);
 void fn_1_F2F8(void);
-void fn_1_F1D8(void* unused);
+void fn_1_F1D8(TASK_PARAM(void* unused));
 void fn_1_F0D0(void);
 void fn_1_F040(void);
 

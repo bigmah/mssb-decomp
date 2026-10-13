@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/GX/GXTypes.h"
+#include "Dolphin/mtx.h"
 
 struct TexImage;
 
@@ -23,7 +24,7 @@ typedef void (*StadiumDrawFn)(float (*view)[4], s32 translucent, u32 layer);
 
 void (*setFanObjPtr(void))(void);
 void fn_3_35E4(void (*val)(void));
-void fn_3_35F0(void);
+void fn_3_35F0(Mtx view, s32 arg);
 struct StadiumSkyObj;
 void fn_3_3638(struct StadiumSkyObj* obj);
 void fn_3_3818(void);

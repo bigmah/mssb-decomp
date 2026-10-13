@@ -275,8 +275,12 @@ void fn_80037768(RigidBody* rb, s32 axis, s32 steps, f32 len, f32 frac, f32 radi
 }
 
 // .text:0x80037964 size:0x20
-void fn_80037964(JointAttachTask* task) {
+void fn_80037964(TASK_PARAM(JointAttachTask* task)) {
+#ifdef TARGET_PC
+    fn_800B0A14_removeQueue(lbl_803CC1B8); // the argument is ignored
+#else
     fn_800B0A14_removeQueue(task);
+#endif
 }
 
 // .text:0x80037984 size:0x11C

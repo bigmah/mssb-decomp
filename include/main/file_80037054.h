@@ -3,6 +3,7 @@
 
 #include "mssbTypes.h"
 #include "Dolphin/mtx.h"
+#include "main/scene_task.h" // TASK_PARAM
 
 // Rigid body (bat / stick) simulated with a fixed sub-step.
 typedef struct RigidBody {
@@ -107,7 +108,7 @@ typedef struct CharModelObj {
 
 // Task queued by fn_80037AA0 to attach a rigid body to a character joint.
 typedef struct JointAttachTask {
-    /*0x00*/ void (*func)(struct JointAttachTask*);
+    /*0x00*/ void (*func)(TASK_PARAM(struct JointAttachTask*));
     /*0x04*/ struct JointAttachTask* prev;
     /*0x08*/ struct JointAttachTask* next;
 #ifdef TARGET_PC
@@ -131,7 +132,7 @@ typedef struct JointAttachTask {
 s32 fn_80037054(RigidBody* rb, RigidBodyParams* params);
 s32 fn_8003731C(RigidBody* rb, RigidBodyParams* params);
 void fn_80037768(RigidBody* rb, s32 axis, s32 steps, f32 len, f32 frac, f32 radius, f32 mass);
-void fn_80037964(JointAttachTask* task);
+void fn_80037964(TASK_PARAM(JointAttachTask* task));
 void fn_80037984(void);
 void fn_80037AA0(RigidBody* body, s32 charIdx, void (*callback)(void), u16 joint, void* anim);
 void fn_80037B18(RigidBody* rb, Vec* force, f32 unused); // challenge passes a float it ignores

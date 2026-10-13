@@ -308,7 +308,7 @@ void fn_1_97B8(void) {
 }
 
 // .text:0x973C size:0x7C
-void fn_1_973C(void* object) {
+void fn_1_973C(TASK_PARAM(void* object)) {
     ChScoreTask* queue = SCORE_TASK;
     fn_80034E20(queue, lbl_1_data_B88);
     lbl_80371C30[queue->start].obj->_66 = sScorePage;
@@ -337,7 +337,7 @@ void fn_1_96A4(void) {
 }
 
 // .text:0x9380 size:0x324
-void fn_1_9380(void* object) {
+void fn_1_9380(TASK_PARAM(void* object)) {
     ChScoreTask* queue;
     u8 id;
     s32 value;
@@ -429,7 +429,7 @@ void fn_1_90B8(void) {
 }
 
 // .text:0x8F34 size:0x184
-void fn_1_8F34(void* object) {
+void fn_1_8F34(TASK_PARAM(void* object)) {
     ChScoreTask* queue = SCORE_TASK;
     if (lbl_803C77B8._02 & 0x200) {
         fn_80034CEC(sScoreObj);

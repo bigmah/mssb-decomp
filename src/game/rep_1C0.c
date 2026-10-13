@@ -192,7 +192,7 @@ void fn_3_35E4(void (*val)(void)) {
 }
 
 // .text:0x000035F0 size:0x48
-void fn_3_35F0(void) {
+void fn_3_35F0(Mtx view, s32 arg) {
     if (fn_80009028() == 0) {
         GXSetCopyClear(g_UNK_StadiumDetails.visual.clearColor, 0xFFFFFF);
     }

@@ -88,7 +88,7 @@ extern void DCStoreRange(void*, u32);
 extern s32 fn_80023F0C(TexImage* src, TexImage* dst, s32 srcX, s32 srcY, s32 width, s32 height, s32 dstX, s32 dstY);
 void (*setFanObjPtr(void))(void);
 void fn_3_35E4(void (*val)(void));
-void fn_3_35F0(void);
+void fn_3_35F0(Mtx view, s32 arg);
 void fn_3_3638(StadiumSkyObj* obj);
 void fn_3_3818(void);
 void fn_3_38E8(StadiumDrawFn a);

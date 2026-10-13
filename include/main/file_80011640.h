@@ -285,7 +285,7 @@ void fn_80011A60(void);
 void fn_80011B64(s32 index);
 void fn_80011BE4(s32 index);
 
-void fn_8001AAF0(void);
+void fn_8001AAF0(void* arg);
 void fn_800189B8(void);
 void fn_8001FDD4(ActorObject* slot);
 void fn_8001B2D0(void);

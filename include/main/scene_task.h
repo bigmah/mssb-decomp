@@ -71,4 +71,13 @@ typedef SceneTask SpaniOwner;
 typedef SceneTask SpaniGroup;
 typedef SceneTask LayoutOwner;
 
+// Parameter of a scene task function: tasks are called with a scratch
+// buffer in r3 that none of them uses. On PC (wasm checks call signatures)
+// they're called and defined as void(void).
+#ifdef TARGET_PC
+#define TASK_PARAM(decl) void
+#else
+#define TASK_PARAM(decl) decl
+#endif
+
 #endif
