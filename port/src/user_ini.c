@@ -4,6 +4,7 @@
 //   skipfe = true        boot straight into an exhibition game (no menus)
 //   captain1 = mario     team captains (character names, see port/game/skipfe.c)
 //   captain2 = bowser
+//   team1 = monty,toad  other players of team 1 (test option; team2 likewise)
 //   stadium = mario      mario, bowser, wario, yoshi, peach, dk (or 0..5)
 //   unlockall = false    keep the save's character/star unlocks (default: all unlocked)
 #include <ctype.h>

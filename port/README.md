@@ -35,6 +35,7 @@ skipfe = true
 captain1 = mario     # player 1 (port 0); names below, or a character id
 captain2 = bowser    # CPU
 stadium = mario      # mario, bowser, wario, yoshi, peach, dk (or 0..5)
+team1 = monty,toad   # optional: other players of team 1 (team2 likewise)
 ```
 
 The boot task then loads game.rel instead of menus.rel, after loading the

@@ -99,6 +99,36 @@ BOOL port_skipfe_step(void) {
     lbl_8034E9A0.captain[0] = captain[0];
     lbl_8034E9A0.captain[1] = captain[1];
     fn_2_2FC0(10, 0, 1);
+    // Test option: `team1 = monty,toad` puts those characters in team 1's
+    // non-captain slots (the CPU's random picks never guarantee one).
+    for (t = 0; t < 2; t++) {
+        const char* list = port_user_ini_get(t == 0 ? "team1" : "team2");
+        char name[32];
+        s32 slot = 0;
+        while (list != NULL && *list != '\0') {
+            s32 n = 0;
+            s32 id;
+            while (*list == ',' || *list == ' ') {
+                list++;
+            }
+            while (*list != '\0' && *list != ',' && *list != ' ' && n < 31) {
+                name[n++] = *list++;
+            }
+            name[n] = '\0';
+            if (n == 0) {
+                break;
+            }
+            id = lookup(name, sCharNames, 54, -1);
+            while (slot < 9 && inMemRoster[t][slot].stats.CharID == captain[t]) {
+                slot++;
+            }
+            if (id < 0 || slot >= 9) {
+                continue;
+            }
+            inMemRoster[t][slot] = lbl_8034E9A0.roster[id / 9][id % 9];
+            slot++;
+        }
+    }
     for (t = 0; t < 2; t++) {
         fprintf(stderr, "[skipfe] team %d:", t);
         for (i = 0; i < 9; i++) {

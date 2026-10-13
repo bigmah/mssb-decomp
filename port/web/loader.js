@@ -222,11 +222,11 @@ async function chooseFile(file) {
 
 // user.ini, read by the game at boot (see port/README.md). Test hooks:
 // ?skipfe starts straight in an exhibition game; ?captain1=, ?captain2=,
-// ?stadium= pick it. Movies are always skipped; ?movies plays them.
+// ?team1=, ?team2= (other players, comma-separated), ?stadium=, ?innings= pick it. Movies are always skipped; ?movies plays them.
 function writeUserIni() {
   const ini = [];
   if (params.has('skipfe')) ini.push('skipfe = true');
-  for (const k of ['captain1', 'captain2', 'stadium']) if (params.has(k)) ini.push(`${k} = ${params.get(k)}`);
+  for (const k of ['captain1', 'captain2', 'team1', 'team2', 'stadium', 'innings']) if (params.has(k)) ini.push(`${k} = ${params.get(k)}`);
   FS.writeFile('/tmp/user.ini', ini.join('\n') + '\n');
 }
 
