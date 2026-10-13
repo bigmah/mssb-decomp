@@ -44,6 +44,19 @@ typedef struct EffectTask {
     /*0x2C*/ u8 animIdx2;
 } EffectTask;
 
+// One shape animation of an effect model: a view of lbl_3_common_bss_35154
+// (StadiumFxState, rep_1E08.c) shifted so that anim[i] lines up with
+// shapes[i] (state, model), and anim[0].table with actors.
+#ifdef TARGET_PC
+// PC offsets (StadiumFxState: actors 0x20, shapes 0x28; ShapeAnimPlayer: 0xA0
+// bytes, state 0x18, model 0x40). Checked in rep_1E08.c.
+typedef union EffectAnim {
+    struct { u8 _at_table[0x20]; ActorObjectTable* table; };
+    struct { u8 _at_state[0x28 + 0x18]; ShapeAnimState state; };
+    struct { u8 _at_shape[0x28 + 0x40]; ShapeData* shape; };
+    u8 _size[0xA0];
+} EffectAnim;
+#else
 // One shape animation of an effect model.
 typedef struct EffectAnim {
     /*0x00*/ u8 _00[0x10];
@@ -53,6 +66,7 @@ typedef struct EffectAnim {
     /*0x40*/ ShapeData* shape;
     /*0x44*/ u8 _44[0x18];
 } EffectAnim; // size: 0x5C
+#endif
 
 // View of lbl_3_common_bss_35154, only the fields used here.
 #ifdef TARGET_PC
