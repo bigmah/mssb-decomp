@@ -152,9 +152,16 @@ typedef struct {
 // Queue object of the sprite-animation viewer (fn_1_25F98).
 typedef struct {
     /* 0x00 */ void (*func)(void);
+#ifdef TARGET_PC
+    void* pad4[2];
+#else
     /* 0x04 */ u8 pad4[0x8];
+#endif
     /* 0x0C */ ChallengeTransfer* transfer; // parent task
     /* 0x10 */ u8 pad10[4];
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /* 0x14 */ struct ChallengeSpriteTask* sprite;
     /* 0x18 */ u16 trackCount;
     /* 0x1A */ s16 x;
@@ -200,9 +207,16 @@ typedef struct {
 // Queue object of the path (spline) test mode (fn_1_25C68 / fn_1_25064 / fn_1_24A8C).
 typedef struct {
     /* 0x00 */ void (*func)(void);
+#ifdef TARGET_PC
+    void* pad4[2];
+#else
     /* 0x04 */ u8 pad4[0x8];
+#endif
     /* 0x0C */ ChallengeTransfer* transfer;
     /* 0x10 */ u8 pad10[4];
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /* 0x14 */ f32 param1;
     /* 0x18 */ u16 param2;
     /* 0x1A */ u16 param0;

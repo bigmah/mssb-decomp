@@ -57,6 +57,9 @@ typedef struct SndQ1768 {
     /*0x0C*/ void* parent;
     /*0x10*/ s16 _10;
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /*0x14*/ u8 head;
     /*0x15*/ u8 tail;
     /*0x16*/ struct { u8 a, b, c; } e[14];

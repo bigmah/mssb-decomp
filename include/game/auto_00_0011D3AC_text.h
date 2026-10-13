@@ -36,6 +36,20 @@ typedef struct MinigameActorData {
 } MinigameActorData; // size: 0xC
 
 // lbl_8036E548 (CharMgr in main/file_80011640.h), only the fields used here.
+#ifdef PORT_LP64 // offsets for 64-bit pointers (wasm32 uses the GameCube layout)
+// PC: CharMgr.trailFile at 0x39B8, trailLayout (the start of the relocated
+// entries) at 0x39C0, _3078 at 0x3CB0 (clang's arm64 layout of CharMgr).
+typedef struct MinigameCharMgrAssets {
+    u8 _0000[0x39B8];
+    u32* file;
+    union {
+        void* ptr[81];
+        MinigameActorData actor[27];
+    } data;
+    u8 _2EE4[0x3CB0 - 0x39C0 - 81 * 8];
+    s16 _3078;
+} MinigameCharMgrAssets;
+#else
 typedef struct MinigameCharMgrAssets {
     /*0x0000*/ u8 _0000[0x2D9C];
     /*0x2D9C*/ u32* file;                    // offset table at the start of the loaded file
@@ -46,6 +60,7 @@ typedef struct MinigameCharMgrAssets {
     /*0x2EE4*/ u8 _2EE4[0x3078 - 0x2EE4];
     /*0x3078*/ s16 _3078;
 } MinigameCharMgrAssets;
+#endif
 
 // Sprite object in lbl_80371C30 (LayoutObj in main/file_8000F150.h), only the fields used here.
 typedef struct PasswordSprite {

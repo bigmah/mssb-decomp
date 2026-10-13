@@ -36,6 +36,9 @@ typedef struct RepTask {
     /*0x0C*/ struct RepTask* parent;
     /*0x10*/ u8 _10[0x2];
     /*0x12*/ u16 priority;
+#ifdef TARGET_PC
+    void* _u14align[0]; // SceneTask.u14 is pointer-aligned on PC
+#endif
     /*0x14*/ u16 baseIdx; // first slot in lbl_80371C30
     /*0x16*/ u16 count;
     /*0x18*/ u16 timer;
