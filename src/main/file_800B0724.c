@@ -314,17 +314,15 @@ void RunDrawScripts_with_stack_variables(void) {
             t = t->next;
         }
         port_trace_tasks(funcs, n);
+        {
+            extern void port_trace_game(void);
+            port_trace_game();
+        }
     }
 #endif
     do {
         lbl_803CC1B8 = task;
-#ifdef TARGET_PC
-        { extern int dladdr(const void*, void*); struct { const char* a; void* b; const char* c; void* d; } info; if (!dladdr((void*)task->func, &info)) { dladdr((void*)task->prev->func, &info); fprintf(stderr, "LOCALDBG bad func %p task %p prev func %s idx %ld\n", (void*)task->func, (void*)task, info.c, (long)(task - lbl_803C7A24)); } }
-#endif
         ((DrawScriptFunc)task->func)(listScratch);
-#ifdef TARGET_PC
-        { extern int dladdr(const void*, void*); struct { const char* a; void* b; const char* c; void* d; } info; if ((uintptr_t)task->next >> 48) { dladdr((void*)task->func, &info); fprintf(stderr, "LOCALDBG bad next %p task %p func %s idx %ld\n", (void*)task->next, (void*)task, info.c, (long)(task - lbl_803C7A24)); } }
-#endif
         task = task->next;
     } while (task != NULL);
 }
