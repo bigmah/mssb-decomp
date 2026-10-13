@@ -9,8 +9,11 @@
 // data and bss into their own sections, which port/src/modules.c restores
 // and clears before each prolog.
 //
-// Mach-O and ELF only: wasm-ld has no section bounds for these, so the web
-// build keeps module state across loads (port_module_sections() returns 0).
+// Mach-O and ELF use these sections. wasm-ld has no section bounds, but it
+// lays data out in input order: the web build brackets each module's sources
+// (and its port/gen data) with generated marker objects instead
+// (mssb_bracket_modules in port/CMakeLists.txt), and modules.c resets the
+// ranges between them.
 #pragma once
 
 #if defined(PORT_MODULE_ID) && !defined(__EMSCRIPTEN__)
