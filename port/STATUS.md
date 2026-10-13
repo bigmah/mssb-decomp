@@ -30,8 +30,16 @@ main menu match Dolphin to <0.1% of pixels at the same frame. Fixed after
 the first comparison (2026-10-13): in-game shadows (aurora stretches the
 448-row shadow copy over 480 rows), captain select stat bar colour and CPU
 captain position, Peach's model colour (geo swap ran past skinned normals).
-Open: a rare bright rectangle over the top-left quarter of the screen
-during fielding (seen twice, not reproduced on demand). Known issues: the scripted Challenge
+Frame pacing (2026-10-13): every web frame drop in a game followed GPU
+pipeline compiles (gaps up to 500 ms), and aurora skipped draws whose
+pipeline wasn't ready (objects missing for frames, a likely cause of the
+rare bright rectangle over the top-left quarter during fielding). Draws now
+never wait for a pipeline, and known pipelines (765 bundled, plus the ones a
+player's runs record) compile in the background at boot. A headed 10-minute
+front end + exhibition: 0 pipeline stalls, two 36-40 ms CPU frames.
+Scope: Mario Stadium only; Wario Palace and Peach Garden load on the web,
+DK Jungle (aliased bss, lbl_3_bss_B55C) and the 64-bit stadium object views
+don't. Known issues: the scripted Challenge
 match is Bowser Jr.'s (he walks into Mario), not yet a rival team's full
 game; there's no separate post-game stats screen in the
 scripted run (A goes straight back to team select); gamepads untested with

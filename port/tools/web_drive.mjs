@@ -31,7 +31,7 @@ const log = (s) => {
 const browser = await puppeteer.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   headless,
-  args: ['--enable-unsafe-webgpu', '--autoplay-policy=no-user-gesture-required', '--window-size=1340,1100'],
+  args: ['--enable-unsafe-webgpu', '--autoplay-policy=no-user-gesture-required', ...(process.env.MSSB_TEST_SOUND ? [] : ['--mute-audio']), '--window-size=1340,1100'],
   defaultViewport: { width: 1280, height: 1010 },
 });
 const page = await browser.newPage();
