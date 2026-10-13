@@ -95,10 +95,20 @@ How it differs from the native build:
   cooperatively like the native run token (`port/web/src/os_threads_web.inc`,
   included by `port/src/os.cpp`); DVD completions and DSP/AI work are queued
   "interrupts" delivered when the game enables interrupts or waits.
-- wasm traps on indirect calls whose signature doesn't match the callee; the
-  decomp does that a lot (task and draw callbacks), so the build uses
-  `-sEMULATE_FUNCTION_POINTER_CASTS` (and links at -O1: binaryen's emulation
-  fails at -O2/-O3 on this module).
+- wasm traps on indirect calls whose signature doesn't match the callee
+  (PowerPC doesn't care, so the game does it: tasks get a scratch buffer they
+  ignore, draw-list callbacks get their node, emitter updates return a value
+  some don't set). The sources are fixed instead: callbacks declare the
+  arguments they're called with, scene tasks are called as `void(void)` on PC
+  (`TASK_PARAM`, `include/main/scene_task.h`), and `TARGET_PC` thunks cover
+  return-type mismatches. The build links at -O3 without emulation
+  (`-DMSSB_WEB_LINK_OPT=-O1`, `-DMSSB_WEB_FPCAST=ON` for debugging).
+  To find mismatches natively: build with Homebrew LLVM and
+  `-DMSSB_SANITIZE_FUNCTION=ON` (`CC=/opt/homebrew/opt/llvm/bin/clang
+  CXX=/usr/bin/clang++ cmake -S port -B build/port-fs -G Ninja
+  -DMSSB_SANITIZE_FUNCTION=ON`), run with `MSSB_FNCHECK_LOG=file`, then
+  `python3 port/tools/fncheck/report.py file` lists the calls whose wasm
+  signatures differ from the callee's.
 - wasm32 has 4-byte pointers: views with hand-computed 64-bit offsets are under
   `PORT_LP64` (defined by the prelude on 64-bit hosts); wasm32 uses the
   GameCube layout. Use `PORT_LP64`, not `TARGET_PC`, for any layout that

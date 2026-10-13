@@ -271,9 +271,8 @@ if (EMSCRIPTEN)
     # The game's OS threads are Emscripten fibers, which need Asyncify (JSPI
     # can't switch fibers); disc reads that miss the page's cache and frame
     # pacing also suspend through it.
-    # The decomp calls through function pointers with other signatures than
-    # the callee's (task and draw callbacks get an argument they don't
-    # declare, as PowerPC allows); wasm traps on that unless emulated.
+    # wasm traps on indirect calls whose signature differs from the callee's;
+    # the sources are fixed for that (port/README.md), so no fpcast emulation.
     target_link_options(mssb PRIVATE
         -sASYNCIFY
         $<$<BOOL:${MSSB_WEB_FPCAST}>:-sEMULATE_FUNCTION_POINTER_CASTS=1>

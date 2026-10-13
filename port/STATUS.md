@@ -19,8 +19,9 @@ Plan: `docs/PORT_PLAN.md`. Build and run: `port/README.md`.
   (`port/tools/web_drive.mjs`; `port/screenshots/web-*.png`).
 - **Matching build:** unchanged (4 OK, 5413 matched, nmcheck clean).
 
-Known issues: web build links at -O1 with function-pointer-cast emulation
-(22 MB wasm; the decomp calls callbacks with mismatched signatures); modules
+Web build: links at -O3 without function-pointer-cast emulation (10.3 MB
+wasm, was 22 MB at -O1 with emulation); callbacks have matching signatures.
+Known issues: modules
 aren't reset between loads on the web build; no Dolphin side-by-side
 comparison yet (pipe input never reached the game); a Challenge game itself
 isn't scripted yet; there's no separate post-game stats screen in the
