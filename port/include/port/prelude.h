@@ -8,6 +8,12 @@
 
 #include <stdint.h>
 
+// Hand-computed PC layouts (views with numeric offsets for 64-bit pointers)
+// apply to LP64 hosts only; wasm32 keeps the GameCube (ILP32) layout.
+#if __SIZEOF_POINTER__ == 8
+#define PORT_LP64 1
+#endif
+
 // Metrowerks / PowerPC intrinsics. Defined before any system header: the
 // decomp's math.h (port/include/math.h) uses them.
 // (functions, not macros: game sources also declare some of them, and the

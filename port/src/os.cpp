@@ -27,10 +27,19 @@
 #include <cstdio>
 #include <cstdlib>
 #include <mutex>
-#include <thread>
 #include <unordered_map>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/fiber.h>
+#include <functional>
+#include <vector>
+#else
+#include <thread>
+#endif
+
 namespace {
+#ifndef __EMSCRIPTEN__
 // ---------------------------------------------------------------- interrupts
 std::mutex g_irqMutex;
 thread_local bool t_irqDisabled = false;
@@ -216,6 +225,8 @@ void thread_entry(OSThread* t)
     wake(&t->queueJoin);
 }
 
+#endif // !__EMSCRIPTEN__
+
 // ---------------------------------------------------------------- OS arena
 // The game carves its xfb, GX FIFO and heaps out of the arena. It lives in
 // the game heap so pointers into it fit PTR_TO_U32. Larger than MEM1's 24MB:
@@ -227,6 +238,10 @@ void* s_arenaHi = nullptr;
 
 extern "C" {
 
+#ifdef __EMSCRIPTEN__
+// Web builds have one host thread: the game's threads are fibers.
+#include "../web/src/os_threads_web.inc"
+#else
 // ---------------------------------------------------------------- interrupts
 BOOL OSDisableInterrupts(void)
 {
@@ -570,6 +585,8 @@ void port_retrace_notify(void)
     g_cv.notify_all();
 }
 
+#endif // __EMSCRIPTEN__
+
 // ---------------------------------------------------------------- misc OS
 void OSClearStack(u8 val)
 {
@@ -600,6 +617,9 @@ void OSResetSystem(int reset, u32 resetCode, BOOL forceMenu)
     (void)resetCode;
     (void)forceMenu;
     fprintf(stderr, "[os] OSResetSystem: exiting\n");
+#ifdef __EMSCRIPTEN__
+    emscripten_force_exit(0);
+#endif
     std::exit(0);
 }
 

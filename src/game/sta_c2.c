@@ -170,7 +170,7 @@ extern S2 lbl_3_data_84B8;
 extern f32 lbl_3_rodata_2778;
 extern void fn_3_CB7E8(f32, f32, f32);
 extern u32 sndFXStartEx(int, u8, u8, u8);
-extern void sndFXCtrl(int, int, u8);
+extern u32 sndFXCtrl(int, int, u8);
 extern f64 lbl_3_rodata_27A8;
 extern f64 lbl_3_rodata_27B0;
 extern int rand(void);

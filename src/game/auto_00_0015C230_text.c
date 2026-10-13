@@ -4,7 +4,7 @@
 #include "main/file_80024184.h"
 #include "Dolphin/gx.h"
 
-#ifdef TARGET_PC
+#ifdef PORT_LP64 // offsets for 64-bit pointers (wasm32 uses the GameCube layout)
 // PC: the fields where StadiumFxState (rep_1E08.c) has them.
 extern union {
     struct { u8 _at_textures[0x8]; TexArchive* textures; };

@@ -16,8 +16,8 @@ extern StarChanceState lbl_3_common_bss_37400;
 
 extern SndState34C58 lbl_3_common_bss_34C58;
 extern s32 lbl_3_bss_1780[];
-extern void sndUpdateListener(void*, void*, void*, void*, void*, u8 vol, void* room);
-extern void sndRemoveListener(void*);
+extern u32 sndUpdateListener(void*, void*, void*, void*, void*, u8 vol, void* room);
+extern u32 sndRemoveListener(void*);
 struct StreamTrack;
 extern void fn_800A86B4(s32 cmd); // main/file_800A7C08.h
 extern struct StreamTrack* fn_800A88C0(void);
@@ -33,11 +33,11 @@ extern void* fn_80052734(int);
 extern Vec lbl_3_rodata_1558;
 extern Vec lbl_3_rodata_1564;
 extern Vec lbl_3_rodata_1570;
-extern void sndUpdateEmitter(void*, Vec*, Vec*, u8, void*);
+extern u32 sndUpdateEmitter(void*, Vec*, Vec*, u8, void*);
 extern u32 sndAddListener(void*, void*, void*, void*, void*, f32, f32, f32, u32, u8, void*);
 extern f32 lbl_3_data_88AC;
 extern u32 sndCheckEmitter(void*);
-extern void sndRemoveEmitter(void*);
+extern u32 sndRemoveEmitter(void*);
 extern u8 lbl_3_bss_1760[];
 // View over the pooled m_sound .bss statics starting at lbl_3_bss_1760
 // (0x10/0x11 live in lbl_3_bss_176C, 0x18/0x1C in lbl_3_bss_1774).
@@ -872,7 +872,7 @@ void fn_3_8D9C0(void) {
 
 // .text:0x0008DA80 size:0x1748 mapped:0x806CCB14
 extern u8 lbl_3_common_bss_134C4[];
-extern void sndSeqLoop(u32 seqId, bool on);
+extern u32 sndSeqLoop(u32 seqId, bool on);
 extern u16 lbl_3_data_81FC[];
 extern u8 lbl_3_data_84F4[];
 

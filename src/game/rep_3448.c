@@ -88,7 +88,7 @@ extern u8 lbl_3_data_21460[]; // 7 reel symbols
 extern u8 lbl_3_data_21468[]; // [4][6] symbol weights
 extern u8 lbl_3_data_21480[];
 extern u8 lbl_3_data_84F4[];
-extern void sndFXKeyOff(u32);
+extern u32 sndFXKeyOff(u32);
 extern int random_fn_3_9EE24(int max);
 extern int RandomIndexFromWeights(u8* weights, int count);
 extern s16 lbl_3_data_7F10[];

@@ -109,7 +109,7 @@ extern const f32 lbl_3_rodata_3014;
 extern const f32 lbl_3_rodata_3018;
 extern const f64 lbl_3_rodata_3020;
 extern u32 sndFXStartEx(int, u8, u8, u8);
-extern void sndFXCtrl(int, int, u8);
+extern u32 sndFXCtrl(int, int, u8);
 extern u8 lbl_3_data_8404[];
 extern u8 lbl_3_data_84B8[];
 // This unit's .bss, declared in reverse address order (CW lays statics out last-declared-first).

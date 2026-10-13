@@ -27,7 +27,7 @@ static s32 sMinHitHeight = 200000; // x100000
 static ParticleParamsA sLineHit = {NULL, 40, 256, 30, 10000, 90000, 100000, 60000, 70000, 30, 40, 32, 32, 80000, 150000, -6000000, 6000000, -4500000, 4500000, 2000000, 3000000, -4500000, 4500000, 400000, 800000, 70000, 80000, -100000, -120000, 25000, 50000, 0, 25000};
 static ParticleParamsA sLinePitch = {NULL, 40, 128, 30, 10000, 90000, 100000, 80000, 90000, 20, 30, 128, 128, 70000, 90000, -3000000, 6000000, -4500000, 4500000, 1500000, 2000000, -4500000, 4500000, 400000, 800000, 70000, 80000, -100000, -120000, 25000, 50000, 0, 25000};
 // Stadium effect state (lbl_3_common_bss_35154); only the fields used here.
-#ifdef TARGET_PC
+#ifdef PORT_LP64 // offsets for 64-bit pointers (wasm32 uses the GameCube layout)
 // PC: the fields where StadiumFxState (rep_1E08.c) has them.
 extern union {
     struct { u8 _at_tex[0x8]; TexArchive* tex; };

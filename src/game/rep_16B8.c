@@ -9,7 +9,7 @@ extern u8 lbl_3_data_E21C[];
 extern u8 lbl_3_data_E2F8[];
 extern u8 lbl_3_data_E278[];
 extern u16 lbl_3_data_E200[];
-extern u8 fn_3_ED574[];
+extern void fn_3_ED574(void);
 extern u8 lbl_3_data_BF6C[];
 
 extern u8 lbl_3_data_E0E0[];

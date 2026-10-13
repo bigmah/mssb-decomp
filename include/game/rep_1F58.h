@@ -48,7 +48,7 @@ typedef struct Rep1F58Fade {
 } Rep1F58Fade;
 
 // View of lbl_3_common_bss_35154, only the fields used here.
-#ifdef TARGET_PC
+#ifdef PORT_LP64 // offsets for 64-bit pointers (wasm32 uses the GameCube layout)
 // PC: the fields where StadiumFxState (rep_1E08.c) has them.
 typedef union Rep1F58Bss35154 {
     EffectAnim anim[2];

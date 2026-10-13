@@ -20,6 +20,9 @@ extern
 #else
 static
 #endif
+#ifdef TARGET_PC // C99 inline has no external definition: keep one per file
+static
+#endif
 inline f32 repHeaderConst_0000(s32 i) {
     static const f32 values[4] = { 1.75f, 0.0f, 2.125f, 0.0f };
     return values[i];

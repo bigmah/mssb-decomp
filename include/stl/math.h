@@ -1,5 +1,5 @@
-#ifndef _MATH_H
-#define _MATH_H
+#ifndef _STL_MATH_H
+#define _STL_MATH_H
 
 #include "types.h"
 #ifdef TARGET_PC
