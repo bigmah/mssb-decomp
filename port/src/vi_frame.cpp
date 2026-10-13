@@ -13,7 +13,9 @@
 #include "port_internal.h"
 
 
+#include <algorithm>
 #include <atomic>
+#include <cmath>
 #include <chrono>
 #include <cstdlib>
 #include <thread>
@@ -60,10 +62,11 @@ EM_ASYNC_JS(double, web_wait_animation_frame, (), {
 
 
 // The browser presents the canvas when control returns to its event loop, so
-// each frame ends by yielding (Asyncify) until a display refresh. On a ~60 Hz
-// display every refresh is one game frame; on faster ones (120 Hz ProMotion,
-// 144 Hz) the frame goes out on the first refresh within half a refresh of
-// its 59.94 Hz slot. Audio is topped up while waiting.
+// each frame ends by yielding (Asyncify) until a display refresh. When the
+// display runs at a multiple of ~60 Hz (60, 120 Hz ProMotion, 240) every k-th
+// refresh is one game frame (the game runs at 60.0 instead of 59.94 Hz, as on
+// a TV); otherwise (144 Hz, ...) the frame goes out on the first refresh within
+// half a refresh of its 59.94 Hz slot. Audio is topped up while waiting.
 void pace_frame()
 {
     constexpr double kPeriodMs = 1001.0 / 60.0;
@@ -88,20 +91,30 @@ void pace_frame()
         if (s_lastVsync != 0)
             s_deltas[s_deltaIdx++ % 32] = t - s_lastVsync;
         s_lastVsync = t;
-        double refresh = 1000.0;
+        // The display's refresh period: the median of recent deltas (rAF
+        // timestamps jitter by a millisecond or so).
+        double sorted[32];
+        unsigned n = 0;
         for (double d : s_deltas)
-            if (d > 3.0 && d < refresh)
-                refresh = d;
-        if (refresh > 50.0)
-            refresh = kPeriodMs;
-        if (s_next == 0 || t - s_next > 100.0)
-            s_next = t; // first frame, or fell behind (slow frame, tab hidden): don't catch up
-        if (refresh > kPeriodMs * 0.97) // ~60 Hz (or slower): lock to the display
+            if (d > 3.0 && d < 50.0)
+                sorted[n++] = d;
+        std::sort(sorted, sorted + n);
+        double refresh = n != 0 ? sorted[n / 2] : kPeriodMs;
+        if (s_lastPresent == 0 || t - s_lastPresent > 100.0)
         {
-            s_next = t;
+            s_next = t; // first frame, or fell behind (slow frame, tab hidden): don't catch up
             break;
         }
-        if (t >= s_next - refresh * 0.5)
+        double k = std::max(1.0, std::round(kPeriodMs / refresh));
+        if (std::fabs(k * refresh - kPeriodMs) < kPeriodMs * 0.03)
+        {
+            if (t - s_lastPresent >= (k - 0.5) * refresh)
+            {
+                s_next = t;
+                break;
+            }
+        }
+        else if (t >= s_next - refresh * 0.5)
             break;
     }
     s_next += kPeriodMs;
