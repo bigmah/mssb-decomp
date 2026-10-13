@@ -238,7 +238,15 @@ void port_swap_geo_palette(void* palette)
             {
                 // compCount 2 (NBT) is read as 3-component vectors.
                 uint32_t comps = h[7] == 2 ? 3 : h[7];
-                swap_array_range(&ranges, pal, layout + arr, (uint32_t) * (uint16_t*)(h + 4) * comps, comp_size(h[6]));
+                uint32_t n = (uint32_t) * (uint16_t*)(h + 4) * comps;
+                // compCount 6: normals interleaved with the skin's positions
+                // (stride 6, 3 used), starting one vector into the position
+                // array. The last normal ends 3 components before n * size:
+                // swapping those would hit whatever follows the array (for
+                // Peach's body, the color header's array offset).
+                if (comps == 6 && n != 0)
+                    n -= 3;
+                swap_array_range(&ranges, pal, layout + arr, n, comp_size(h[6]));
             }
         }
         if (lp[4] != 0)
