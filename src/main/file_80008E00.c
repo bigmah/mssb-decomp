@@ -121,6 +121,7 @@ extern MainTask* lbl_803CC1B8;
 OSModuleHeader* port_module_load(s32 dllIndex);
 BOOL port_skipfe_pending(void); // port/game/skipfe.c
 BOOL port_skipfe_step(void);
+void port_unlock_all(void); // port/game/unlockall.c
 void port_module_prolog(OSModuleHeader* module);
 void port_module_epilog(OSModuleHeader* module);
 #endif
@@ -596,6 +597,7 @@ void fn_800097A0(void) {
         // fallthrough
     case 8:
 #ifdef TARGET_PC
+        port_unlock_all();
         // user.ini skipfe: set up an exhibition game and load game.rel.
         if (port_skipfe_pending()) {
             task->state = 8; // case 7 falls through to here

@@ -5,6 +5,7 @@
 //   captain1 = mario     team captains (character names, see port/game/skipfe.c)
 //   captain2 = bowser
 //   stadium = mario      mario, bowser, wario, yoshi, peach, dk (or 0..5)
+//   unlockall = false    keep the save's character/star unlocks (default: all unlocked)
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

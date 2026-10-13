@@ -15,6 +15,7 @@
 #include "main/file_800BDEA0.h"
 #ifdef TARGET_PC
 #include "musyx/musyx.h" // SND_AUX_* (SoundManager views)
+void port_unlock_all(void); // port/game/unlockall.c
 #endif
 
 extern TrailSystem lbl_802D3D80;
@@ -4032,6 +4033,9 @@ void fn_80041150(u8 mask, u8 slot) {
         g_d_GameSettings._00 = img->_5F4;
         memcpy(lbl_80354768._CF18, p48, sizeof(lbl_80354768._CF18));
         memcpy(lbl_80354768._CF4E, p7E, sizeof(lbl_80354768._CF4E));
+#ifdef TARGET_PC
+        port_unlock_all(); // port/game/unlockall.c
+#endif
     }
     if (mask & 2) {
         if (slot != 3) {
