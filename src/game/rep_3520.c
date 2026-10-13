@@ -1016,7 +1016,11 @@ void fn_3_135A64(void) {
             if (f->_203 != 0 && f->_204 > 3) {
                 continue;
             }
+#ifdef TARGET_PC // wasm traps on a call through a mismatched prototype
+            ang = fn_3_9FB8C(f->pos.x - lbl_3_data_219AC[0], f->pos.z - lbl_3_data_219AC[2]);
+#else
             ang = ((int (*)(f32, f32))fn_3_9FB8C)(f->pos.x - lbl_3_data_219AC[0], f->pos.z - lbl_3_data_219AC[2]);
+#endif
             for (j = 0; j < 4; j++) {
                 if (fn_3_9FCF8(ang, MG3520->spokeAng[j]) > 0x200) {
                     continue;

@@ -20,6 +20,13 @@ static u8 lbl_2_bss_20[0x380];
 extern u8 lbl_2_bss_758; // followed by 0x387 unreferenced bytes; stays in the auto split
 
 extern void fn_800625A4(u8, s32);
+// fn_800625A4 really takes an s32 port; one call passes it unmasked. wasm traps
+// on a call through a mismatched prototype, so PC calls the definition's type.
+#ifdef TARGET_PC
+#define CALL_FN_800625A4_S32(port, sound) fn_800625A4((port), (sound))
+#else
+#define CALL_FN_800625A4_S32(port, sound) (((void (*)(s32, s32))fn_800625A4)((port), (sound)))
+#endif
 
 extern u8 lbl_803CB748[];
 extern u8 lbl_803CBD24[];
@@ -858,10 +865,10 @@ void fn_2_6608(void) {
         }
         for (i = 0; i < 2; i++) {
             if (lbl_2_bss_F468._59[i] != 0) {
-                ((void (*)(s32, s32))fn_800625A4)(i, 0x1B);
+                CALL_FN_800625A4_S32(i, 0x1B);
                 lbl_2_bss_F468._59[i] = 0;
             } else {
-                ((void (*)(s32, s32))fn_800625A4)(i, 0xB);
+                CALL_FN_800625A4_S32(i, 0xB);
             }
         }
     }

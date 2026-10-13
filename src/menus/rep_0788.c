@@ -2102,6 +2102,14 @@ s16 lbl_2_data_107BC[6] = {0xA, 0x19A, 0x320, 0, 0x1177, 0x5500};
 #include "static/UnknownHomes_Static.h"
 #include "static/UnknownHomes_Static.h"
 #include "static/UnknownHomes_Static.h"
+
+// The original calls fn_8000FE08 with an s16 index (no sign extension). wasm
+// traps on a call through a mismatched prototype, so PC calls it directly.
+#ifdef TARGET_PC
+#define FN_8000FE08_S16 fn_8000FE08
+#else
+#define FN_8000FE08_S16 ((void (*)(s16, s32, s32))fn_8000FE08)
+#endif
 extern void fn_2_242FC(void);
 
 extern void fn_2_2416C(void);
@@ -4564,7 +4572,7 @@ void fn_2_2749C(MenuTableContext* menu, MenuItemState* item) {
     case 2: {
         LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
         object->flags |= 2;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A824C->_196FB8[1]);
+        FN_8000FE08_S16(item->unk14, 4, lbl_2_bss_1A824C->_196FB8[1]);
         item->state = 37;
         break;
     }
@@ -4605,7 +4613,7 @@ void fn_2_27660(MenuTableContext* menu, MenuItemState* item) {
     case 2: {
         LayoutObj* object = lbl_80371C30[menu->baseIdx + item->offset].obj;
         object->flags |= 2;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A824C->_196FB8[0]);
+        FN_8000FE08_S16(item->unk14, 4, lbl_2_bss_1A824C->_196FB8[0]);
         item->state = 37;
         break;
     }
@@ -4737,7 +4745,7 @@ void fn_2_27B7C(MenuTableContext* menu, MenuItemState* item) {
     case 2: {
         LayoutObj* object;
         MenuData* p = lbl_2_bss_1A824C;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, (s8)p->_1978DB[p->_1978F0] + 0x35C);
+        FN_8000FE08_S16(item->unk14, 4, (s8)p->_1978DB[p->_1978F0] + 0x35C);
         object = lbl_80371C30[menu->baseIdx + item->offset].obj;
         object->flags |= 2;
         lbl_80366B18.entries[item->unk14].hAlign = 1;
@@ -4786,7 +4794,7 @@ void fn_2_31880(MenuTableContext* menu, MenuItemState* item) {
     case 2: {
         LayoutObj* object;
         MenuData* p = lbl_2_bss_1A824C;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, (s8)p->_197868[p->_197867] + 0x316);
+        FN_8000FE08_S16(item->unk14, 4, (s8)p->_197868[p->_197867] + 0x316);
         object = lbl_80371C30[menu->baseIdx + item->offset].obj;
         object->flags |= 2;
         lbl_80366B18.entries[item->unk14].hAlign = 1;
@@ -4961,7 +4969,7 @@ void fn_2_320D8(MenuTableContext* menu, MenuItemState* item) {
     }
     case 2: {
         LayoutObj* object;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 4, lbl_2_bss_1A8248->_441C + 0x30C);
+        FN_8000FE08_S16(item->unk14, 4, lbl_2_bss_1A8248->_441C + 0x30C);
         object = lbl_80371C30[menu->baseIdx + item->offset].obj;
         object->flags |= 2;
         lbl_80366B18.entries[item->unk14].hAlign = 1;
@@ -6509,7 +6517,7 @@ void fn_2_2AA8C(MenuTableContext* menu, MenuItemState* item) {
     }
     case 2: {
         LayoutObj* object;
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 0, lbl_800E869C[lbl_2_bss_1A824C->_197706] + 8);
+        FN_8000FE08_S16(item->unk14, 0, lbl_800E869C[lbl_2_bss_1A824C->_197706] + 8);
         object = lbl_80371C30[menu->baseIdx + item->offset].obj;
         object->flags |= 2;
         item->state = 3;
@@ -6585,7 +6593,7 @@ void fn_2_2A77C(MenuTableContext* menu, MenuItemState* item) {
         s32 row = fn_2_44F14(id);
         s32 col = fn_8006CDC0(id);
         s32 a = lbl_8010B444[row][col];
-        ((void (*)(s16, s32, s32))fn_8000FE08)(item->unk14, 0, a + lbl_8010B3E8[lbl_2_bss_1A824C->_197706]);
+        FN_8000FE08_S16(item->unk14, 0, a + lbl_8010B3E8[lbl_2_bss_1A824C->_197706]);
         object = lbl_80371C30[menu->baseIdx + item->offset].obj;
         object->flags |= 2;
         item->state = 3;
