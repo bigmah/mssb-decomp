@@ -48,6 +48,18 @@ void ACTSort(GameActor* actor) {
 void fn_800B2D5C(GameActor* actor) {
     PositionData* pos;
 
+#ifdef TARGET_PC
+    {
+        // Render debugging: MSSB_SKIP_SKIN=1 leaves skins in their bind pose.
+        static int skip = -1;
+        if (skip < 0) {
+            skip = getenv("MSSB_SKIP_SKIN") != NULL;
+        }
+        if (skip) {
+            return;
+        }
+    }
+#endif
     GQRSetup5(8, 4, 8, 4);
     pos = actor->skinObject->positionData;
     if (pos->quantizeInfo == 0x40) {
@@ -569,7 +581,7 @@ void fn_800B4084(GameBone* parent, ActorBone* layoutBone, GameActor* actor, u16*
         bone->orientCtrl.base.type = 0;
         if (layoutBone->orientationCtrl != NULL) {
             bone->orientCtrl = *PTR32_GET(GameControl, layoutBone->orientationCtrl);
-        }
+                }
         bone->dispObj = NULL;
         if (layoutBone->geoFileID != 0xFFFF) {
             DOGet(&bone->dispObj, actor->pal, layoutBone->geoFileID);
