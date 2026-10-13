@@ -26,11 +26,11 @@ Web build: links at -O3 without function-pointer-cast emulation (10.3 MB
 wasm, was 22 MB at -O1 with emulation); callbacks have matching signatures.
 Dolphin side by side (`port/tools/dolphin_compare.py menu|game`, see
 README): boot, health screen, logos, intro movie, title, card prompts and
-main menu match Dolphin to <0.1% of pixels at the same frame. Differences
-found (2026-10-13): character shadows in-game fall to the other side (mirrored
-left/right: web right, Dolphin left); on captain select the CPU captain's
-model is drawn ~1/4 screen too far left, over the P1 panel; the captain
-select stat bars are magenta instead of orange. Known issues: the scripted Challenge
+main menu match Dolphin to <0.1% of pixels at the same frame. Fixed after
+the first comparison (2026-10-13): in-game shadows (aurora stretches the
+448-row shadow copy over 480 rows), captain select stat bar colour and CPU
+captain position. Open: Peach's model colours vary per run; a rare bright
+rectangle over the top-left quarter of the screen during fielding. Known issues: the scripted Challenge
 match is Bowser Jr.'s (he walks into Mario), not yet a rival team's full
 game; there's no separate post-game stats screen in the
 scripted run (A goes straight back to team select); gamepads untested with
