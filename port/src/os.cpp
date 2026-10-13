@@ -146,6 +146,22 @@ void present_from_wait(std::unique_lock<std::mutex>& lk)
     g_cv.notify_all();
 }
 
+// Takes the run token back, then the interrupt lock if the thread held it.
+// Always in this order (token, then interrupts): a thread that held the
+// interrupt lock while queueing for the token could deadlock with the
+// token's next owner (or the main thread presenting a frame), which needs
+// the interrupt lock to run.
+void reacquire(std::unique_lock<std::mutex>& lk, OSThread* self, bool hadIrq)
+{
+    acquire(lk, self);
+    if (hadIrq)
+    {
+        lk.unlock();
+        irq_lock();
+        lk.lock();
+    }
+}
+
 // Blocks the calling game thread until `done()` holds (checked with g_sched
 // held). Gives up the interrupt lock and the run token meanwhile.
 template <typename Pred>
@@ -187,11 +203,7 @@ void block_until(std::unique_lock<std::mutex>& lk, Pred done)
     }
     pt->blocked = false;
     self->state = OS_THREAD_STATE_READY;
-    lk.unlock();
-    if (hadIrq)
-        irq_lock();
-    lk.lock();
-    acquire(lk, self);
+    reacquire(lk, self, hadIrq);
 }
 
 unsigned long long& gen(const void* q)
@@ -442,10 +454,8 @@ void OSYieldThread(void)
         g_cv.wait_for(lk, std::chrono::milliseconds(2), [] { return std::chrono::steady_clock::now() < port_retrace_deadline(); });
     lk.unlock();
     std::this_thread::yield();
-    if (hadIrq)
-        irq_lock();
     lk.lock();
-    acquire(lk, self);
+    reacquire(lk, self, hadIrq);
 }
 
 void OSInitThreadQueue(OSThreadQueue* queue)

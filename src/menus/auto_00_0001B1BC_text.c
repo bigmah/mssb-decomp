@@ -84,7 +84,7 @@ extern MissionDef lbl_80109AE8[][10];
 #define MENU_PAD_DOWN(port) (*(u16*)((u8*)&lbl_803C77B8 + offsetof(MenuPad, down) + (port) * sizeof(MenuPad)))
 
 #define ROSTER (lbl_2_bss_1A8248->chars)
-#define ROSTER_LIMIT(e) ((e)->limits[lbl_2_bss_1A8248->_4415 * 6 + lbl_2_bss_1A8248->_441C + 4])
+#define ROSTER_LIMIT(e) (PTR32_GET(s8, (e)->limits)[lbl_2_bss_1A8248->_4415 * 6 + lbl_2_bss_1A8248->_441C + 4])
 extern void fn_8004B1B8(void* tex);
 #include "main/aramloader.h"
 extern ARAMLoader lbl_803C6CF8;

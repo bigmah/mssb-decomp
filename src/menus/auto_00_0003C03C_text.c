@@ -1870,9 +1870,9 @@ void fn_2_46ADC(void) {
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
         e = &lbl_2_bss_1A8248[0]->chars[i];
-        e->limits = lbl_801094E4[i];
-        e->_04 = e->limits[0];
-        e->_05 = e->limits[1];
+        PTR32_SET(e->limits, lbl_801094E4[i]);
+        e->_04 = PTR32_GET(s8, e->limits)[0];
+        e->_05 = PTR32_GET(s8, e->limits)[1];
         e->_07 = 0;
         e->value = 0;
         e->_08 = 0;
@@ -1999,9 +1999,9 @@ void fn_2_468DC(void) {
     MenuRosterEntry* e;
     for (i = 0; i < 54; i++) {
         e = &lbl_2_bss_1A8248[0]->chars[i];
-        e->limits = lbl_801094E4[i];
-        e->_04 = e->limits[0];
-        e->_05 = e->limits[1];
+        PTR32_SET(e->limits, lbl_801094E4[i]);
+        e->_04 = PTR32_GET(s8, e->limits)[0];
+        e->_05 = PTR32_GET(s8, e->limits)[1];
     }
 }
 
@@ -3294,7 +3294,7 @@ void fn_2_3CD34(void) {
 #define ROSTER_B(i) (lbl_2_bss_1A824C[0]->frameSetB[i])
 #define ROSTER_C(i) (lbl_2_bss_1A824C[0]->frameSetC[i])
 #define ROSTER_SORT(i) (lbl_2_bss_1A824C[0]->sortList[i])
-#define CHAR_INFO(id) ((u8*)lbl_2_bss_1A8248[0]->chars[(id)].limits)
+#define CHAR_INFO(id) ((u8*)PTR32_GET(s8, lbl_2_bss_1A8248[0]->chars[(id)].limits))
 
 // fn_2_44504, size:0x928
 // NONMATCHING 95%: register allocation and loop scheduling differ; structure and calls match

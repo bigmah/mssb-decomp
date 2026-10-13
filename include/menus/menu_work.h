@@ -135,8 +135,15 @@ typedef struct MenuMission {
 
 // Star-mission state of one character (0x34 bytes); MenuCtx.chars. Same layout as
 // ChallengeTrackingStruct in game/UnknownHomes_Game.h.
+struct MenuEntry;
+struct MenuObject;
+typedef void MenuEntryUpdateFn(struct MenuEntry* entry);
+typedef void MenuObjectUpdateFn(struct MenuObject* object);
+
 typedef struct MenuRosterEntry {
-    /*0x00*/ s8* limits; // indexed by [_4415 * 6 + _441C + 4]
+    // MenuCtx is saved to the memory card as is: its pointers are PTR32 so it
+    // keeps the GameCube layout (0x4508 bytes) on PC.
+    /*0x00*/ PTR32(s8) limits; // indexed by [_4415 * 6 + _441C + 4]
     /*0x04*/ s8 _04;
     /*0x05*/ s8 _05;
     /*0x06*/ s8 value;
@@ -212,7 +219,7 @@ typedef struct MenuEntry {
     /*0xCF*/ s8 flagCF;
     /*0xD0*/ u8 flagD0;
     /*0xD1*/ u8 _D1[3];
-    /*0xD4*/ void (*update)(struct MenuEntry* entry); // per-type behaviour (lbl_2_data_2A2EC)
+    /*0xD4*/ PTR32(MenuEntryUpdateFn) update; // per-type behaviour (lbl_2_data_2A2EC)
 } MenuEntry; // size: 0xD8
 
 // A placed world object / location (0xBC bytes); MenuCtx.objects.
@@ -262,7 +269,7 @@ typedef struct MenuObject {
     /*0xB4*/ u8 _B4;
     /*0xB5*/ u8 _B5;
     /*0xB6*/ u8 _B6[0xB8 - 0xB6];
-    /*0xB8*/ void (*update)(struct MenuObject* object); // lbl_2_data_308B4[active]
+    /*0xB8*/ PTR32(MenuObjectUpdateFn) update; // lbl_2_data_308B4[active]
 } MenuObject; // size: 0xBC
 
 // Per-menu definition (lbl_800FEF70[]; MenuDef in main/file_800527C4.h, which

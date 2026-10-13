@@ -80,8 +80,8 @@ void fn_2_71F60(void) {
     off = 0;
     for (; i < 8; i++) {
         obj = (MenuEntry*)((u8*)lbl_2_bss_1A8248[0] + off + offsetof(MenuCtx, entries));
-        obj->update = (void (*)(MenuEntry*))lbl_2_data_2A2EC[obj->typeC3];
-        obj->update(obj);
+        PTR32_SET(obj->update, (MenuEntryUpdateFn*)lbl_2_data_2A2EC[obj->typeC3]);
+        PTR32_GET(MenuEntryUpdateFn, obj->update)(obj);
         off += sizeof(MenuEntry);
     }
     h = lbl_2_bss_1A824C[0];
@@ -248,8 +248,8 @@ void fn_2_82E58(void) {
 
 // fn_2_71F20, size:0x40
 void fn_2_71F20(MenuEntry* obj) {
-    obj->update = (void (*)(MenuEntry*))lbl_2_data_2A2EC[obj->typeC3];
-    obj->update(obj);
+    PTR32_SET(obj->update, (MenuEntryUpdateFn*)lbl_2_data_2A2EC[obj->typeC3]);
+    PTR32_GET(MenuEntryUpdateFn, obj->update)(obj);
 }
 
 // fn_2_72594, size:0x9C

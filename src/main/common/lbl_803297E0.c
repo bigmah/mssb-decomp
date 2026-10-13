@@ -11,13 +11,7 @@
 #include "main/charsel_state_type.h"
 #endif
 
-#ifdef TARGET_PC
-// Viewed as MenuCtx (menus/menu_work.h), whose function pointers make it
-// bigger than the GameCube's 0x4508 bytes.
-u8 starMissionCompletionTracker[0x4800];
-#else
-u8 starMissionCompletionTracker[0x4508];
-#endif
+u8 starMissionCompletionTracker[0x4508]; // MenuCtx (menus/menu_work.h; same size on PC)
 u8 lbl_80361C18[0x38];
 UnlockFlags lbl_80361B20;
 u8 lbl_803616CC[0x454]; // MenuCharLayout (menus/rep_0AB0.h)
