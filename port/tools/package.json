@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "description": "Test tools for the MSSB web build (port/tools/web_drive.mjs)",
+  "type": "module",
+  "devDependencies": {
+    "puppeteer-core": "^24.0.0"
+  }
+}

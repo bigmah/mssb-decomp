@@ -87,6 +87,29 @@ void deliver_interrupts(bool audio)
     g_delivering = false;
 }
 
+void trace_os(const char* what)
+{
+    static int s_on = -1;
+    if (s_on < 0)
+        s_on = getenv("MSSB_TRACE_OS") != nullptr;
+    if (!s_on)
+        return;
+    static double s_last = 0;
+    static unsigned s_counts[4];
+    int k = what[0] == 'p' ? 0 : what[1] == 'l' ? 1 : what[0] == 'i' ? 2 : 3;
+    s_counts[k]++;
+    double now = emscripten_get_now();
+    if (now - s_last > 2000)
+    {
+        s_last = now;
+        fprintf(stderr, "[os] present %u sleep %u idle %u switch %u; cur prio %d main waiting %d\n", s_counts[0],
+                s_counts[1], s_counts[2], s_counts[3], g_cur ? (int)g_cur->os->priority : -1, g_main ? (int)g_main->waiting : -1);
+        for (auto& [t, w] : g_wthreads)
+            fprintf(stderr, "[os]   thread %p prio %d started %d fin %d waiting %d done %d suspend %d\n", (void*)t,
+                    (int)t->priority, w->started, w->finished, w->waiting, w->waiting ? (int)w->done() : -1, (int)t->suspend);
+    }
+}
+
 void fiber_entry(void* arg);
 
 // Runs `to` (the current thread stays as it is: ready, waiting or finished).
@@ -105,6 +128,7 @@ void switch_to(WebThread* to)
         emscripten_fiber_init(&to->fiber, fiber_entry, to, to->cStack, kFiberStack, to->asyncStack,
                               kAsyncifyStack);
     }
+    trace_os("switch");
     g_cur = to;
     to->os->state = OS_THREAD_STATE_RUNNING;
     g_irqDisabled = to->irqDisabled;
@@ -123,6 +147,7 @@ void yield_to_browser()
 // blocked, present (which waits for the frame's slot and runs the retrace).
 void idle()
 {
+    trace_os("idle");
     bool wasDisabled = g_irqDisabled;
     g_irqDisabled = false;
     deliver_interrupts(true);
@@ -132,12 +157,14 @@ void idle()
     if (g_main->waiting && !g_presenting)
     {
         g_presenting = true;
+        trace_os("present");
         port_present_frame();
         g_presenting = false;
         g_lastYieldMs = emscripten_get_now();
     }
     else
     {
+        trace_os("sleep");
         emscripten_sleep(1);
         g_lastYieldMs = emscripten_get_now();
     }
@@ -181,11 +208,19 @@ void block_until(std::function<bool()> done)
     g_irqDisabled = hadIrq;
 }
 
+int g_irqNest = 0; // inside port_interrupt_enter/leave (VI, DSP, AI callbacks)
+
+// True while interrupt work runs: wakeups only take effect at the next switch.
+bool in_interrupt()
+{
+    return g_delivering || g_irqNest > 0 || g_presenting;
+}
+
 // The running thread lets a higher-priority ready thread run first.
 void maybe_preempt()
 {
     WebThread* self = g_cur;
-    if (self == nullptr)
+    if (self == nullptr || in_interrupt())
         return;
     WebThread* best = best_ready(self);
     if (best != nullptr && best->os->priority < self->os->priority)
@@ -270,11 +305,13 @@ static int s_irqNest = 0;
 void port_interrupt_enter(void)
 {
     s_irqSaved[s_irqNest++ & 15] = g_irqDisabled;
+    g_irqNest++;
     g_irqDisabled = true;
 }
 
 void port_interrupt_leave(void)
 {
+    g_irqNest--;
     g_irqDisabled = s_irqSaved[--s_irqNest & 15];
 }
 
@@ -349,7 +386,7 @@ s32 OSResumeThread(OSThread* thread)
     if (prev <= 0)
     {
         // Resumed from "interrupt context" before it suspended itself: keep it.
-        if (w != nullptr && w->started && !w->finished && g_delivering)
+        if (w != nullptr && w->started && !w->finished && in_interrupt())
             w->pendingResume++;
         return prev;
     }
@@ -357,8 +394,7 @@ s32 OSResumeThread(OSThread* thread)
     {
         if (w != nullptr && !w->started)
             w->started = true;
-        if (!g_delivering)
-            maybe_preempt();
+        maybe_preempt();
     }
     return prev;
 }
@@ -448,8 +484,7 @@ void OSSleepThread(OSThreadQueue* queue)
 void OSWakeupThread(OSThreadQueue* queue)
 {
     gen(queue)++;
-    if (!g_delivering)
-        maybe_preempt();
+    maybe_preempt();
 }
 
 void OSInitSemaphore(OSSemaphore* sem, s32 count)
@@ -476,8 +511,7 @@ s32 OSSignalSemaphore(OSSemaphore* sem)
 {
     s32 count = sem->count++;
     gen(&sem->queue)++;
-    if (!g_delivering)
-        maybe_preempt();
+    maybe_preempt();
     return count;
 }
 
@@ -507,8 +541,7 @@ BOOL OSSendMessage(OSMessageQueue* mq, OSMessage msg, s32 flags)
     mq->msgArray[(mq->firstIndex + mq->usedCount) % mq->msgCount] = msg;
     mq->usedCount++;
     gen(&mq->queueReceive)++;
-    if (!g_delivering)
-        maybe_preempt();
+    maybe_preempt();
     return TRUE;
 }
 
@@ -524,8 +557,7 @@ BOOL OSJamMessage(OSMessageQueue* mq, OSMessage msg, s32 flags)
     mq->msgArray[mq->firstIndex] = msg;
     mq->usedCount++;
     gen(&mq->queueReceive)++;
-    if (!g_delivering)
-        maybe_preempt();
+    maybe_preempt();
     return TRUE;
 }
 
@@ -542,8 +574,7 @@ BOOL OSReceiveMessage(OSMessageQueue* mq, OSMessage* msg, s32 flags)
     mq->firstIndex = (mq->firstIndex + 1) % mq->msgCount;
     mq->usedCount--;
     gen(&mq->queueSend)++;
-    if (!g_delivering)
-        maybe_preempt();
+    maybe_preempt();
     return TRUE;
 }
 

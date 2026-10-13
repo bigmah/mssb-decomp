@@ -246,8 +246,15 @@ if (EMSCRIPTEN)
     # The game's OS threads are Emscripten fibers, which need Asyncify (JSPI
     # can't switch fibers); disc reads that miss the page's cache and frame
     # pacing also suspend through it.
+    # The decomp calls through function pointers with other signatures than
+    # the callee's (task and draw callbacks get an argument they don't
+    # declare, as PowerPC allows); wasm traps on that unless emulated.
     target_link_options(mssb PRIVATE
         -sASYNCIFY
+        -sEMULATE_FUNCTION_POINTER_CASTS=1
+        # binaryen's fpcast emulation breaks at -O2/-O3 on this module
+        # (validation errors, an assertion): link at -O1.
+        -O1
         -sASYNCIFY_STACK_SIZE=1MB
         -sALLOW_MEMORY_GROWTH=1
         -sINITIAL_MEMORY=512MB
