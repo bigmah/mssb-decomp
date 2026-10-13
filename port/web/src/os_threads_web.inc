@@ -152,7 +152,9 @@ void idle()
     g_irqDisabled = false;
     deliver_interrupts(true);
     g_irqDisabled = wasDisabled;
-    if (best_ready(nullptr) != nullptr)
+    // The calling thread may be runnable (a busy wait in OSYieldThread):
+    // only other ready threads skip the frame.
+    if (best_ready(g_cur) != nullptr)
         return;
     if (g_main->waiting && !g_presenting)
     {

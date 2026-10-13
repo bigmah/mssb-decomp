@@ -63,6 +63,16 @@ for (const ev of events) {
 }
 const rest = secs * 1000 - (Date.now() - t0);
 if (rest > 0) await new Promise((r) => setTimeout(r, rest));
+// --pause: stop the page at the end and print the JS/wasm stack (finds hangs).
+if (args.pause) {
+  const cdp = await page.createCDPSession();
+  await cdp.send('Debugger.enable');
+  const paused = new Promise((r) => cdp.once('Debugger.paused', r));
+  await cdp.send('Debugger.pause');
+  const ev = await Promise.race([paused, new Promise((r) => setTimeout(() => r(null), 5000))]);
+  if (ev) for (const f of ev.callFrames.slice(0, 25)) log(`${stamp()} [stack] ${f.functionName || '?'}`);
+  else log(`${stamp()} [stack] (no pause)`);
+}
 // --fetch /memfs/path:local/path copies a file out of the page's filesystem
 // (e.g. a file set with ?env=).
 if (args.fetch) {
