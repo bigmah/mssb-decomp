@@ -70,6 +70,13 @@ void fn_2_71F60(void) {
     MenuEntry* obj;
     MenuData* h;
     u8 x = lbl_2_bss_1A8248[0]->_44F2;
+#ifdef TARGET_PC
+    {
+        // MSSB_TRACE_MAP=1: where the map walkers are (port/src/trace.c)
+        extern void port_trace_map(const void* entries, int stride, int count, int mode, int nodeOffset);
+        port_trace_map(lbl_2_bss_1A8248[0]->entries, sizeof(MenuEntry), 8, x, offsetof(MenuEntry, targetLocation));
+    }
+#endif
     if (x == 1) {
         return;
     }

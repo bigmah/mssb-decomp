@@ -127,6 +127,12 @@ void maybe_preempt(std::unique_lock<std::mutex>& lk)
     OSThread* self = t_self;
     if (self == nullptr || g_running != self)
         return;
+    // Not with interrupts disabled: waiting for the token while holding the
+    // interrupt lock deadlocks with the main thread presenting a frame (it
+    // takes the interrupt lock, and nobody gets the token meanwhile). The
+    // switch happens at the thread's next scheduling point instead.
+    if (t_irqDisabled)
+        return;
     OSThread* best = best_ready();
     if (best != nullptr && best != self && best->priority < self->priority)
     {
@@ -376,9 +382,16 @@ s32 OSSuspendThread(OSThread* thread)
     s32 prev = thread->suspend++;
     if (thread == t_self && g_running == thread)
     {
-        // Give the CPU away until someone resumes us.
+        // Give the CPU away (and the interrupt lock) until someone resumes us.
+        bool hadIrq = t_irqDisabled;
         release(thread);
-        acquire(lk, thread);
+        if (hadIrq)
+        {
+            lk.unlock();
+            irq_unlock();
+            lk.lock();
+        }
+        reacquire(lk, thread, hadIrq);
     }
     return prev;
 }

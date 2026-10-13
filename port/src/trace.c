@@ -95,3 +95,25 @@ const char* port_symbol_name(void* p)
 {
     return sym_name(p);
 }
+
+// MSSB_TRACE_MAP=1: every 30 calls, the challenge map's walkers
+// (MenuCtx.entries): node (locationIndex>targetLocation) and x/z position.
+// nodeOffset: targetLocation, followed by locationIndex (s16 each).
+void port_trace_map(const void* entries, int stride, int count, int mode, int nodeOffset)
+{
+    static int enabled = -1;
+    static int n;
+    if (enabled < 0)
+        enabled = getenv("MSSB_TRACE_MAP") != NULL;
+    if (!enabled || n++ % 30 != 0)
+        return;
+    fprintf(stderr, "[map] %d mode %d", n - 1, mode);
+    for (int i = 0; i < count; i++)
+    {
+        const char* e = (const char*)entries + i * stride;
+        const float* pos = (const float*)e;
+        const short* node = (const short*)(e + nodeOffset);
+        fprintf(stderr, " %d:%d>%d(%.0f,%.0f)", i, node[1], node[0], pos[0], pos[2]);
+    }
+    fprintf(stderr, "\n");
+}
