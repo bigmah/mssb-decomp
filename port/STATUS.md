@@ -37,6 +37,16 @@ rare bright rectangle over the top-left quarter during fielding). Draws now
 never wait for a pipeline, and known pipelines (765 bundled, plus the ones a
 player's runs record) compile in the background at boot. A headed 10-minute
 front end + exhibition: 0 pipeline stalls, two 36-40 ms CPU frames.
+Visual fixes (2026-10-13, checked frame by frame against Dolphin): every
+vertex array the game builds itself (ball/throw trails, the player-marker
+depth quads, challenge boxes) went to aurora with size 0 and big-endian, so
+draws read leftover GPU memory: screen-wide trail wedges and depth
+rectangles (`GX_SET_ARRAY_NATIVE`; trail colours stored big-endian). Symbols
+that are fields of a bigger object on GameCube (`lbl_3_bss_995C` =
+SwingTrail.state, `lbl_3_bss_170` = StickHistory.tmp, rep_1FD8's 9D8x-9F0C)
+were separate objects on PC; they now go through the object (find more with
+`port/gen/REPORT.md` "type size > symbol size"). Shape-anim key flags were
+read through a big-endian u32 view (Monty Mole's bat never shown).
 Scope: Mario Stadium only; Wario Palace and Peach Garden load on the web,
 DK Jungle (aliased bss, lbl_3_bss_B55C) and the 64-bit stadium object views
 don't. Known issues: the scripted Challenge
