@@ -7,6 +7,7 @@
 #include "mssbTypes.h"
 #include "game/character_stats.h" // CharacterStats
 #include "main/menu_globals.h"    // PortInput
+#include "main/charsel_pad.h"     // CHARSEL_PC_PAD1/2
 
 // Character-select / team-setup state at 0x8034E9A0 (size 0x4C28).
 // Only the fields used so far are named.

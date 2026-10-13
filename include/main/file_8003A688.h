@@ -2,6 +2,7 @@
 #define __MAIN_FILE_8003A688_H__
 
 #include "mssbTypes.h"
+#include "main/charsel_pad.h" // CHARSEL_PC_PAD1/2
 #include "main/file_80069BDC.h"
 #include "main/file_8000F150.h"
 #include "main/file_80024184.h"
@@ -95,9 +96,9 @@ typedef struct ChallengeRoster {
     /*0x0000*/ CharacterStats teams[6][9];
     /*0x21C0*/ u8 _21C0[0x46E0 - 0x21C0];
     /*0x46E0*/ s32 _46E0;
-    /*0x46E4*/ u8 _46E4[0x4711 - 0x46E4];
+    /*0x46E4*/ u8 _46E4[0x4711 - 0x46E4 + CHARSEL_PC_PAD1];
     /*0x4711*/ u8 _4711;
-    /*0x4712*/ u8 _4712[0x4756 - 0x4712];
+    /*0x4712*/ u8 _4712[0x4756 - 0x4712 + CHARSEL_PC_PAD2];
     /*0x4756*/ u8 _4756;
     /*0x4757*/ u8 recruited[54];
     /*0x478D*/ u8 _478D[0x48AF - 0x478D];

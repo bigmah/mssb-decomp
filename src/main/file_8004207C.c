@@ -1,4 +1,16 @@
 #include "main/file_8004207C.h"
+#ifdef TARGET_PC
+#include "main/charsel_state_type.h"
+// CharSelWork is another view of CharSelectState: keep them in step on PC.
+#define CSW_SAME(a, b) _Static_assert(offsetof(CharSelWork, a) == offsetof(CharSelectState, b), "CharSelWork." #a)
+CSW_SAME(teamPort, ports);
+CSW_SAME(_4704, _4704);
+CSW_SAME(_470D, captainVariant);
+CSW_SAME(input, input);
+CSW_SAME(_47F9, chemPartners);
+CSW_SAME(boosted, _489B);
+CSW_SAME(_48B1, _48B1);
+#endif
 #include "main/file_80011640.h"
 #include "static/GameSettings.h"
 #include "static/Camera.h"

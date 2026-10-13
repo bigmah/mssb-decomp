@@ -2,6 +2,7 @@
 #define __MAIN_FILE_8004207C_H__
 
 #include "mssbTypes.h"
+#include "main/charsel_pad.h" // CHARSEL_PC_PAD1/2
 
 struct CharActor;
 struct ActorObject;
@@ -28,7 +29,7 @@ typedef struct CharSelWork {
             /*0x46E4*/ s32 _46E4; // a character id (lbl_800E8558 index); 9: none
         };
     };
-    /*0x46E8*/ u8 _46E8[0x46F8 - 0x46E8];
+    /*0x46E8*/ u8 _46E8[0x46F8 - 0x46E8 + CHARSEL_PC_PAD1];
     /*0x46F8*/ s8 teamPort[2]; // controller port per team
     /*0x46FA*/ u8 _46FA[0x4704 - 0x46FA];
     /*0x4704*/ u8 _4704;
@@ -39,7 +40,7 @@ typedef struct CharSelWork {
     /*0x4720*/ s32 _4720[2];
     /*0x4728*/ u8 _4728[0x472C - 0x4728];
     /*0x472C*/ PortInput input[4];
-    /*0x4744*/ u8 _4744[0x47F9 - 0x4744];
+    /*0x4744*/ u8 _4744[0x47F9 - 0x4744 + CHARSEL_PC_PAD2];
     /*0x47F9*/ u8 _47F9[2][9][9];
     /*0x489B*/ u8 boosted[2][9]; // per team slot: star boost applied
     /*0x48AD*/ u8 _48AD;
