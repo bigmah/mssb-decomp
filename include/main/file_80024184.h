@@ -57,16 +57,7 @@ typedef struct StarMission {
     /* 0x8 */ s16 _8;
 } StarMission;
 
-typedef struct FielderSortInfo {
-    /* 0x000 */ u8 unk0[0x252];
-    /* 0x252 */ s8 kind;
-    /* 0x253 */ u8 unk253;
-    /* 0x254 */ s8 unk254;
-    /* 0x255 */ u8 unk255[5];
-    /* 0x25A */ u8 team;
-    /* 0x25B */ u8 unk25B[0x19];
-    /* 0x274 */ u8 active;
-} FielderSortInfo;
+struct CharActor; // main/file_80011640.h
 
 void gOz_GXSetTexture(GXTevMode tevMode, s32 texFrac, s32 hasNormal);
 void fn_80024390(f32* src, f32* out, s32 which);
@@ -80,6 +71,6 @@ u32 byteWiseMultiply(u32 scale, u32 color);
 s32 LERPToNewRange_Float(s32 value, s32 inMin, s32 inMax, s32 outMin, s32 outMax);
 f32 LinearInterpolateToNewRange(f32 value, f32 prevMin, f32 prevMax, f32 nextMin, f32 nextMax);
 s32 fn_80024C04(s32 index);
-s32 fn_80024C6C(FielderSortInfo* info, s32 team);
+s32 fn_80024C6C(struct CharActor* actor, s32 side);
 
 #endif

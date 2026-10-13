@@ -53,7 +53,14 @@ u32 fn_80024D2C(ShapeAnimState* st) {
 
     while (i-- != 0) {
         if ((f32)seq->keys[i].frame <= st->frame) {
+#ifdef TARGET_PC
+            // The flag bits are the top nibble of the key's u16 (swapped to
+            // native at load); a u32 read of the key only puts them in bits
+            // 28-31 on a big-endian host.
+            return (u32)(*(u16*)&seq->keys[i] & 0xF000) << 16;
+#else
             return *(u32*)&seq->keys[i] & 0xF0000000;
+#endif
         }
     }
     return 0;
