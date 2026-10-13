@@ -153,7 +153,7 @@ extern ModelData lbl_800EE930;
 extern u16 lbl_803CB798[4];
 extern u16 lbl_803CB7A0[4];
 typedef struct Unk80366158 {
-    /*0x00*/ u8 _00[0x28];
+    /*0x00*/ u8 _00[LBL_80366158_PAD(0x28)];
     /*0x28*/ u8 _28;
 } Unk80366158;
 

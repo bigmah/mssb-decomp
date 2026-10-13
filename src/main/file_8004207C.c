@@ -46,7 +46,7 @@ extern s32 lbl_803CBD00;
 extern u32 lbl_803CBD04;
 
 typedef struct Unk80366158 {
-    /*0x00*/ u8 _00[0x28];
+    /*0x00*/ u8 _00[LBL_80366158_PAD(0x28)];
     /*0x28*/ u8 _28;
 } Unk80366158;
 extern Unk80366158 lbl_80366158;

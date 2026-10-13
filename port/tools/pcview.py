@@ -75,8 +75,18 @@ def main():
     canon_t = args[args.index('--canon') + 1] if '--canon' in args else None
     src = sources()
     views = {}
+    users = {}  # header -> a .c file that includes it (to lay the view out)
     for f, t in src.items():
-        if not f.endswith('.c'):
+        if f.endswith('.c'):
+            for m in re.finditer(r'#include "([^"]+\.h)"', t):
+                users.setdefault('include/' + m.group(1), f)
+    for f, t in src.items():
+        if f.endswith('.h'):
+            if f not in users:
+                continue
+            for m in re.finditer(r'^\s*extern\s+(?:volatile\s+)?(?:struct\s+)?(\w+)\s+' + re.escape(obj) + r'\s*(?:\[[^\]]*\])?\s*;', t, re.M):
+                if m.group(1) not in ('u8', 's8', 'u16', 's16', 'u32', 's32', 'f32'):
+                    views.setdefault(m.group(1), users[f])
             continue
         for m in re.finditer(r'^\s*extern\s+(?:volatile\s+)?(?:struct\s+)?(\w+)\s+' + re.escape(obj) + r'\s*(?:\[[^\]]*\])?\s*;', t, re.M):
             if m.group(1) not in ('u8', 's8', 'u16', 's16', 'u32', 's32', 'f32'):

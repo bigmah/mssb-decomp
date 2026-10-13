@@ -109,7 +109,7 @@ extern void fn_3_90AB0(s32 a);
 
 // Views of main.dol globals (full types in main/file_80008E00.h, file_8000F150.h, file_800A6870.h).
 typedef struct PracticeGlobals80366158 {
-    u8 _00[0x27];
+    u8 _00[LBL_80366158_PAD(0x27)];
     u8 practiceChar; // 0x27
 } PracticeGlobals80366158;
 extern PracticeGlobals80366158 lbl_80366158;

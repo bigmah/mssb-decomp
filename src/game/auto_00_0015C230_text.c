@@ -4,10 +4,17 @@
 #include "main/file_80024184.h"
 #include "Dolphin/gx.h"
 
+#ifdef TARGET_PC
+// PC: the fields where StadiumFxState (rep_1E08.c) has them.
+extern union {
+    struct { u8 _at_textures[0x8]; TexArchive* textures; };
+} lbl_3_common_bss_35154;
+#else
 extern struct {
     u8 _00[4];
     TexArchive* textures;
 } lbl_3_common_bss_35154;
+#endif
 
 // .text:0x0015C230 size:0x1C8 mapped:0x8079B2C4
 void fn_3_15C230(BallQuad* q) {

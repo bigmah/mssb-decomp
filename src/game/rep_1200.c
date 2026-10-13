@@ -1682,7 +1682,7 @@ typedef struct Rep1200SavedSettingsView {
 extern Rep1200SavedSettingsView lbl_800E8754;
 // lbl_80366158, only the fields used here.
 typedef struct Rep1200Bss80366158View {
-    /*0x00*/ u8 _00[0x28];
+    /*0x00*/ u8 _00[LBL_80366158_PAD(0x28)];
     /*0x28*/ u8 _28;
 } Rep1200Bss80366158View;
 extern Rep1200Bss80366158View lbl_80366158;
