@@ -59,6 +59,11 @@ typedef struct StadiumObj {
     /* 0x99 */ u8 pad99;
     /* 0x9A */ u8 castShadow;
     /* 0x9B */ u8 pad9B[0xE8 - 0x9B];
+#ifdef PORT_LP64
+    // All stadium object types share one PC size, 0x128: the generic code
+    // (game/rep_1D58.c) indexes them as StadiumObj.
+    u8 _lp64pad[0x128 - 0x108];
+#endif
 } StadiumObj; // size: 0xE8
 
 // lbl_3_common_bss_350E4: the stadium object manager (other units declare

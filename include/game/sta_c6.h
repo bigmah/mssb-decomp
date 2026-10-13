@@ -49,7 +49,7 @@ typedef struct StaC6Obj {
     /*0x80*/ void (*onHit)(s32 idx);
     /*0x84*/ void (*preDraw)(struct StaC6Obj* o);
     /*0x88*/ void (*postDraw)(struct StaC6Obj* o);
-    /*0x8C*/ s32 _8C;
+    /*0x8C*/ void* _8C; // StadiumObj.shapeAnim
 #ifdef TARGET_PC // bitfields in MWCC (big-endian) bit order
     /*0x90*/ u8 bits : 5;
     /*0x90*/ u8 bit5 : 1;
@@ -83,6 +83,7 @@ typedef struct StaC6Obj {
     /*0xC3*/ u8 slot;               // wall panels: index into lbl_3_data_19644
     /*0xC4*/ u8 flagIdx;            // wall panels: index into lbl_3_data_196B4 (hit flags)
     /*0xC5*/ u8 _C5[0xE8 - 0xC5];
+    // PC size 0x128 like the other stadium object types (game/rep_1D58.c indexes them as StadiumObj).
 } StaC6Obj; // size: 0xE8
 
 // lbl_3_common_bss_350E4: the stadium object list.

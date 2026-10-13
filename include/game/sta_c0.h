@@ -45,6 +45,11 @@ typedef struct StaC0Obj {
     /*0xA3*/ u8 _A3;
     /*0xA4*/ s32 phase; // placed parts: index * 100
     /*0xA8*/ u8 _A8[0xE8 - 0xA8];
+#ifdef PORT_LP64
+    // All stadium object types share one PC size, 0x128: the generic code
+    // (game/rep_1D58.c) indexes them as StadiumObj.
+    u8 _lp64pad[0x128 - 0x108];
+#endif
 } StaC0Obj; // size: 0xE8
 
 // lbl_3_data_17B98: where the placed stadium parts stand (up to 10, kind 4 ends the list).

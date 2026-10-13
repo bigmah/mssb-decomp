@@ -44,6 +44,11 @@ typedef struct StaObj {
     /*0xA2*/ u8 state;
     /*0xA3*/ u8 frame;
     /*0xA4*/ u8 _A4[0xE8 - 0xA4];
+#ifdef PORT_LP64
+    // All stadium object types share one PC size, 0x128: the generic code
+    // (game/rep_1D58.c) indexes them as StadiumObj.
+    u8 _lp64pad[0x128 - 0x108];
+#endif
 } StaObj; // size: 0xE8
 
 // Queue task (lbl_803CC1B8) that sets obj->bit5 after `timer` frames (fn_3_F92FC).
