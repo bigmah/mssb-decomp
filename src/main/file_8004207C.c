@@ -1940,6 +1940,10 @@ s32 fn_80048EA8(s32 index) {
     return lbl_803CB83C[index];
 }
 
+#ifdef TARGET_PC
+s32 port_star_skills_enabled(void);
+#endif
+
 // .text:0x80048EB8 size:0x368
 void startGameRelated(void) {
     s32 i;
@@ -1975,6 +1979,11 @@ void startGameRelated(void) {
         }
         g_d_GameSettings.home_AwaySetting = lbl_803C5F04.option[1];
         lbl_800E8754._04 = lbl_803C5F04.option[2];
+#ifdef TARGET_PC
+        if (!port_star_skills_enabled()) {
+            lbl_800E8754._04 = 0; // no star moves or star chances (port/game/menu_scope.c)
+        }
+#endif
         lbl_800E8754.innings = lbl_803C5F04.option[3] * 2 + 1;
         if (lbl_803C5F04.option[4] != 0) {
             lbl_800E8754._05 = 10;
@@ -2027,6 +2036,17 @@ void startGameRelated(void) {
 }
 
 // .text:0x80049220 size:0x2AC
+#ifdef TARGET_PC
+// Game options cursor: past the hidden Star Skills row (2) in the direction it
+// moved (up when `up`). Only on the game options page (_36 == 0).
+static s8 port_options_skip_star_skills(s8 cursor, s32 up) {
+    if (cursor == 2 && lbl_803C5F04._36 == 0 && !port_star_skills_enabled()) {
+        cursor = up ? 1 : 3;
+    }
+    return cursor;
+}
+#endif
+
 // NONMATCHING ~85%: input copy goes through a zeroed stack struct; register allocation
 #if NONMATCHING
 void fn_80049220(u8 team) {
@@ -2077,6 +2097,9 @@ void fn_80049220(u8 team) {
             fn_800625A4((u8)t, 0x30);
             sndFXRelated(4);
         }
+#ifdef TARGET_PC
+        cursor = port_options_skip_star_skills(cursor, in.repeat & 8);
+#endif
         lbl_803C5F04.cursor[(u8)t] = cursor;
     } else if (in.repeat & 1) {
         fn_80049D8C(0, t);
@@ -2167,6 +2190,9 @@ void fn_800494CC(u8 team) {
             fn_800625A4(0, 0x30);
             sndFXRelated(4);
         }
+#ifdef TARGET_PC
+        cursor = port_options_skip_star_skills(cursor, repeat & 8);
+#endif
         lbl_803C5F04.cursor[0] = cursor;
     } else if (repeat & 1) {
         fn_80049D8C(0, 0);
@@ -2323,6 +2349,12 @@ void possiblyTransferDataBetweenDifferentRels(void) {
             lbl_803C5F04.option[3] = (u32)lbl_8010B600[g_d_GameSettings.challengeDifficulty][0] >> 1;
         }
     }
+#ifdef TARGET_PC
+    if (!port_star_skills_enabled()) {
+        lbl_803C5F04.option[2] = 0; // Star Skills off (port/game/menu_scope.c)
+        lbl_803C5F04.prevOption[2] = 0;
+    }
+#endif
     if (g_d_GameSettings._06 == 2) {
         lbl_803C5F04._36 = 1;
         for (i = 0; i < 4; i++) {
@@ -2383,6 +2415,11 @@ void fn_80049D8C(u8 dir, u8 team) {
     if (cursor == 0 && lbl_803C5F04._36 == 0) {
         return;
     }
+#ifdef TARGET_PC
+    if (cursor == 2 && lbl_803C5F04._36 == 0 && !port_star_skills_enabled()) {
+        return; // Star Skills is locked off (port/game/menu_scope.c)
+    }
+#endif
     lbl_803C5F04.lastDir[team] = dir;
     if (dir == 0) {
         if (lbl_803C5F04._36 == 0) {

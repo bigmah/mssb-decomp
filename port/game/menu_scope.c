@@ -8,6 +8,10 @@
 //     5 Records, 6 Options; the draw task (fn_2_747FC) hides 1-3 and moves
 //     4-6 up (port_menu_row)
 //   stadium select (fn_2_11340): the cursor stays on Mario Stadium (0)
+//   game options (fn_800494CC / fn_80049220, file_8004207C.c): Star Skills
+//     (option 2, which also gates star chances) is locked off and its row is
+//     hidden (fn_800559EC, file_800527C4.c); `starskills = true` in
+//     user.ini brings the option back.
 #include "mssbTypes.h"
 
 #include <stdlib.h>
@@ -44,4 +48,14 @@ s32 port_menu_row(s32 entry) {
 // Stadium select can move off Mario Stadium.
 s32 port_stadium_select_enabled(void) {
     return all_modes();
+}
+
+// The game options screen offers Star Skills (option 2). Off on PC: star moves
+// and star chances are both gated on it.
+s32 port_star_skills_enabled(void) {
+    static s32 s_on = -1;
+    if (s_on < 0) {
+        s_on = port_user_ini_get("starskills") != NULL && port_user_ini_bool("starskills");
+    }
+    return s_on;
 }

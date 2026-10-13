@@ -128,7 +128,9 @@ python3 port/tools/dolphin_compare.py x --input "500:A,800:A" --shots 300,900   
 Scope (both builds): the menus offer Exhibition at Mario Stadium, Practice,
 Records and Options; Challenge, Toy Field, Minigames and the other stadiums
 are hidden (`port/game/menu_scope.c`). `allmodes = true` in user.ini or
-`MSSB_ALLMODES=1` brings them back for testing.
+`MSSB_ALLMODES=1` brings them back for testing. Star Skills is locked off
+(no star moves, no star chances) and its Game Options row is gone;
+`starskills = true` in user.ini brings it back.
 
 How it differs from the native build:
 - GPU pipelines (aurora `lib/gfx/pipeline_cache.cpp`): `createRenderPipeline`

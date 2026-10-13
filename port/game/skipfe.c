@@ -23,6 +23,7 @@ extern void fn_2_2FC0(u8 mode, s32 b, s32 c); // menus: build both teams
 
 const char* port_user_ini_get(const char* key);
 int port_user_ini_bool(const char* key);
+s32 port_star_skills_enabled(void);
 
 static const char* const sCharNames[] = {
     "mario", "luigi", "dk", "diddy", "peach", "daisy", "yoshi", "babymario", "babyluigi",
@@ -123,6 +124,9 @@ BOOL port_skipfe_step(void) {
             lbl_800E8754.innings = (u8)atoi(v);
             fprintf(stderr, "[skipfe] innings %d\n", lbl_800E8754.innings);
         }
+    }
+    if (!port_star_skills_enabled()) {
+        lbl_800E8754._04 = 0; // Star Skills locked off (port/game/menu_scope.c)
     }
     sState = 3;
     return TRUE;

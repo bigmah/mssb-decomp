@@ -312,6 +312,27 @@ void fn_800531D0(SceneTask* task) {
     }
 }
 
+#ifdef TARGET_PC
+s32 port_star_skills_enabled(void);
+// The game options help ticker (menu 6) without its Star Skills line (message
+// 0x108, line 3) when Star Skills is locked off (port/game/menu_scope.c).
+static s32 port_menu_text_count(s32 menu) {
+    s32 n = lbl_800FEF70[menu].textEnd - lbl_800FEF70[menu].textStart;
+    return (menu == 6 && !port_star_skills_enabled()) ? n - 1 : n;
+}
+static s32 port_menu_text_msg(s32 menu, s32 i) {
+    if (menu == 6 && !port_star_skills_enabled() && i >= 3) {
+        i++;
+    }
+    return lbl_800FEF70[menu].textStart + i;
+}
+#define MENU_TEXT_COUNT(menu) port_menu_text_count(menu)
+#define MENU_TEXT_MSG(menu, i) port_menu_text_msg(menu, i)
+#else
+#define MENU_TEXT_COUNT(menu) (lbl_800FEF70[menu].textEnd - lbl_800FEF70[menu].textStart)
+#define MENU_TEXT_MSG(menu, i) ((i) + lbl_800FEF70[menu].textStart)
+#endif
+
 // .text:0x80053810 size:0x7D8
 // The original inlines fn_80042D68/fn_80042DA8 (frame checks) here.
 // NONMATCHING 85%: the original inlines the fn_80042D68/fn_80042DA8 frame checks; ours calls them
@@ -360,7 +381,7 @@ void fn_80053810(void) {
                 } else {
                     TASK_OBJ(task, 8)->_5C = lbl_8034E978.prevTrack << 16;
                 }
-                lbl_8034E978.textCount = lbl_800FEF70[lbl_8034E978.menu].textEnd - lbl_800FEF70[lbl_8034E978.menu].textStart;
+                lbl_8034E978.textCount = MENU_TEXT_COUNT(lbl_8034E978.menu);
                 if (lbl_8034E978.textCount == 0) {
                     TASK_OBJ(task, 9)->flags &= ~2;
                 }
@@ -368,9 +389,9 @@ void fn_80053810(void) {
                     if (i < lbl_8034E978.textCount) {
                         TASK_OBJ(task, i + 0x16)->flags |= 2;
                         if (lbl_8034E978.text[i] != -1) {
-                            fn_8000FE08(lbl_8034E978.text[i], 0, i + lbl_800FEF70[lbl_8034E978.menu].textStart);
+                            fn_8000FE08(lbl_8034E978.text[i], 0, MENU_TEXT_MSG(lbl_8034E978.menu, i));
                         } else {
-                            lbl_8034E978.text[i] = fn_8000F988((LayoutGroup*)task, i + 0x16, 0, 0, i + lbl_800FEF70[lbl_8034E978.menu].textStart, 0);
+                            lbl_8034E978.text[i] = fn_8000F988((LayoutGroup*)task, i + 0x16, 0, 0, MENU_TEXT_MSG(lbl_8034E978.menu, i), 0);
                         }
                     } else {
                         TASK_OBJ(task, i + 0x16)->flags &= ~2;
@@ -460,10 +481,10 @@ void fn_80053FE8(void) {
     TASK_OBJ(task, 8)->_5C = lbl_8034E978.prevTrack << 16;
     first = lbl_800FEF70[lbl_8034E978.menu].textStart;
     if (first != 0xFFFF) {
-        lbl_8034E978.textCount = lbl_800FEF70[lbl_8034E978.menu].textEnd - first;
+        lbl_8034E978.textCount = MENU_TEXT_COUNT(lbl_8034E978.menu);
         for (i = 0; i < 10; i++) {
             if (i < lbl_8034E978.textCount) {
-                lbl_8034E978.text[i] = fn_8000F988((LayoutGroup*)task, i + 0x16, 0, 0, i + lbl_800FEF70[lbl_8034E978.menu].textStart, 0);
+                lbl_8034E978.text[i] = fn_8000F988((LayoutGroup*)task, i + 0x16, 0, 0, MENU_TEXT_MSG(lbl_8034E978.menu, i), 0);
             } else {
                 lbl_8034E978.text[i] = fn_8000F988((LayoutGroup*)task, i + 0x16, 0, 0, lbl_800FEF70[lbl_8034E978.menu].textStart, 0);
             }
@@ -826,6 +847,33 @@ void fn_80055798(SceneTask* task, s32 port) {
     }
 }
 
+#ifdef TARGET_PC
+s32 port_star_skills_enabled(void);
+// Game options without Star Skills (port/game/menu_scope.c): its row is hidden
+// and Innings and Mercy move up into its place. The rows are placed by the
+// sprites' animations (base position 0), so moving one is a base offset.
+static void port_options_layout(SceneTask* task) {
+    // Per row (2 Star Skills, 3 Innings, 4 Mercy): label, icon, choices, value pills.
+    static const u8 kRow2[] = {3, 0x1D, 0xE, 0xF, 0x20, 0x23};
+    static const u8 kRow3[] = {4, 0x1E, 0x10, 0x11, 0x12, 0x13, 0x14, 0x21, 0x24};
+    static const u8 kRow4[] = {5, 0x1F, 0x15, 0x16, 0x22, 0x25};
+    const f32 kRowStep = 32.0f; // distance between two rows
+    s32 k;
+    if (port_star_skills_enabled()) {
+        return;
+    }
+    for (k = 0; k < (s32)sizeof(kRow2); k++) {
+        TASK_OBJ(task, kRow2[k])->flags &= ~2;
+    }
+    for (k = 0; k < (s32)sizeof(kRow3); k++) {
+        TASK_OBJ(task, kRow3[k])->y = -kRowStep;
+    }
+    for (k = 0; k < (s32)sizeof(kRow4); k++) {
+        TASK_OBJ(task, kRow4[k])->y = -kRowStep;
+    }
+}
+#endif
+
 // .text:0x800559EC size:0x734
 // NONMATCHING 88%: loop registers differ (state pointer kept as step+0x31 offset in the original)
 #if NONMATCHING
@@ -835,6 +883,9 @@ void fn_800559EC(void) {
     u8* step;
     s32 done;
     s32 expected;
+#ifdef TARGET_PC
+    port_options_layout(task);
+#endif
 
     for (port = 0, step = lbl_803C66B0.step; port < 2; port++, step++) {
         u8* state = &lbl_803C66B0.steps[8][port + 1];
