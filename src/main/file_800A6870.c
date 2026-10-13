@@ -128,7 +128,18 @@ void fn_800A6890(uintptr_t request) {
 }
 
 // .text:0x800A68D4 size:0x2C
+#ifdef TARGET_PC
+// aurora completes ARAM reads inside ARQPostRequest, so this can run on the
+// read thread itself before it suspends: remember the chunk instead.
+static volatile s32 sReadPending;
+#endif
 void fn_800A68D4(uintptr_t request) {
+#ifdef TARGET_PC
+    if (OSGetCurrentThread() == &lbl_803C6CF8.readThread) {
+        sReadPending = 1;
+        return;
+    }
+#endif
     OSResumeThread(&lbl_803C6CF8.readThread);
 }
 
@@ -475,6 +486,11 @@ void* fn_800A77A0(void* arg) {
     s32 len;
 
     while (TRUE) {
+#ifdef TARGET_PC
+        if (sReadPending) {
+            sReadPending = 0;
+        } else
+#endif
         OSSuspendThread(&lbl_803C6CF8.readThread);
         // a chunk has arrived
         lbl_803C6CF8.remaining -= lbl_803C6CF8.chunkSize;
