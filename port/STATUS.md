@@ -257,6 +257,48 @@ through GameCube-offset views can also keep their layout with PTR32 fields
 - `lbl_800E8754` is `SavedSettings` (port[4] at 0x07); `GameInitOptions` was
   wrong (fork D, from the rep_1188 asm).
 
+## Phase 4: full game and modes (fork M)
+
+Scripts (each run gets its own binary copy, log and fresh user folder with
+`MSSB_RUN_TAG`, so several can run at once):
+
+- `port/tools/full_game.sh [innings] [secs] [shot-every]`: skipfe straight
+  into Mario vs Bowser at Mario Stadium (`innings = N` in user.ini sets the
+  game length), A every 1.5 s. A 3-inning game runs to "That's the game!" and
+  the end scene in ~520 s, returns to the menus (team select) and the A
+  presses start the next game, which also plays: no crash in 640 s
+  (`screenshots/game-end.png`, `game-result.png`, `after-game-teams.png`).
+- `port/tools/mode.sh challenge|toyfield|minigames|practice [secs] [shot]`:
+  boot to the main menu, enter the mode, press A (`MSSB_MODE_INPUT` adds
+  more). Each runs 150-240 s without a crash: Challenge walks the map,
+  Toy Field plays turns, Minigames (Bob-omb Derby) plays, Practice runs its
+  lessons and returns to the practice menu (`screenshots/mode-*.png`).
+- `MSSB_TRACE_GAME=1` also traces loader steps (`port_trace_value`).
+
+Fixes (classes to watch for):
+
+- REL modules get fresh .data/.bss at every load (`port/src/modules.c`,
+  `port/include/port/module_sections.h`); not on the web build yet.
+- Views of `lbl_8036E548` (CharMgr), `lbl_2_bss_1A8250` (MenuData),
+  `lbl_80366B18` (TextSystem), `lbl_3_common_bss_350E4`, `lbl_800EF808`
+  regenerated with `pcview.py` (now scales offsets inside pointer arrays).
+- Scene-task views whose own area starts at 0x14 need `_u14align` /
+  `SCENE_TASK_VIEW_LINKS` (`taskviewcheck.py` misses `void* fn; u8 pad[0x10]`
+  style views and macros like `REP_TASK`).
+- `u8 lbl_x[]` globals indexed by GameCube offsets (`lbl_80366158[0x28]`,
+  `lbl_8036E548[0x307D]`) go through accessors in `port/game/views.c`.
+- Stadium object types share one PC size (0x128); collision tables keep
+  32-bit group pointers (`PTR32_GET`).
+- Offset tables swapped: menus animation archive (73 entries), minigame
+  results file (90), trail model header.
+- Data that the game writes past its symbol: `lbl_8023DD80` (0x96000),
+  `lbl_2_bss_3401C0` (MenuAnimArchive, 0xB8 on PC); `gen_data.py`
+  `PC_MIN_SIZE`.
+
+Known issues: the exhibition script exercises the CPU-vs-human flow only
+with A; a Challenge game (walking into a team and playing) is not scripted
+yet.
+
 ## Next
 
 Disc formats: swap and relocate (or convert) each in-place format, starting
