@@ -34,7 +34,11 @@ typedef struct SndState34C58 {
 // 3D sound space (lbl_3_common_bss_32B20, 0x2138 bytes).
 typedef struct SoundSpace {
     /*0x0000*/ SND_LISTENER listener;
+#ifdef TARGET_PC
+    u8 emitters[100][sizeof(SND_EMITTER)]; // MusyX's emitters hold pointers: bigger on PC
+#else
     /*0x0090*/ u8 emitters[100][0x50]; // emitters as the game's MusyX build lays them out (0x50 bytes each)
+#endif
     /*0x1FD0*/ u8 type[100];
     /*0x2034*/ u8 active[100];
     /*0x2098*/ u8 _2098[100];
