@@ -57,3 +57,9 @@ void port_trace_draw(void** funcs, int count)
         fprintf(stderr, " %s", sym_name(funcs[i]));
     fprintf(stderr, "\n");
 }
+
+// Symbol name of a code address (debug traces).
+const char* port_symbol_name(void* p)
+{
+    return sym_name(p);
+}

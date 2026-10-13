@@ -1103,6 +1103,11 @@ static inline s32 CardFileExists(u8 chan, char* fileName) {
         OSPanic(lbl_803CCEE0, 0x1FE, lbl_800E7A00);
     }
     res = CARDOpen(chan, fileName, &fileInfo);
+#ifdef TARGET_PC
+    if (getenv("MSSB_DEBUG_CARD") != NULL) {
+        fprintf(stderr, "[card] open '%s' -> %d\n", fileName, res);
+    }
+#endif
     switch (res) {
     case CARD_RESULT_READY:
         lbl_803C7838.status = 8;
@@ -1882,6 +1887,13 @@ void fn_800AB534(void) {
             slot->blocksFree = slot->bytesFree / slot->sectorSize;
             slot->blocksTotal = ((slot->memSize << 20) / 8) / slot->sectorSize - 5;
         }
+#ifdef TARGET_PC
+        if (getenv("MSSB_DEBUG_CARD") != NULL) {
+            fprintf(stderr, "[card] free: res %d bytes %d files %d sector %d mem %d -> blocks %d/%d need %d\n", res,
+                    (int)slot->bytesFree, (int)slot->filesFree, (int)slot->sectorSize, (int)slot->memSize,
+                    (int)slot->blocksFree, (int)slot->blocksTotal, (int)task->arg);
+        }
+#endif
         fn_800ACD64(res);
         switch (lbl_803C7838.status) {
         case CARD_STATUS_BUSY:
@@ -1987,6 +1999,13 @@ void fn_800ABBD0(void) {
             break;
         }
         res = CARDGetStatus(file->chan, file->fileNo, stat);
+#ifdef TARGET_PC
+        if (getenv("MSSB_DEBUG_CARD") != NULL) {
+            fprintf(stderr, "[card] status: len 0x%x banner %d iconAddr 0x%x commentAddr 0x%x offsetData 0x%x iconFmt 0x%x\n",
+                    (int)stat->length, stat->bannerFormat, (int)stat->iconAddr, (int)stat->commentAddr, (int)stat->offsetData,
+                    stat->iconFormat);
+        }
+#endif
         if (res == CARD_RESULT_READY) {
             if (stat->iconAddr == 0xFFFFFFFF || stat->commentAddr == 0xFFFFFFFF) {
                 fn_800ACD64(CARD_RESULT_CANCELED);
@@ -2429,6 +2448,18 @@ void fn_800ACD44(void) {
 
 // .text:0x800ACD64 size:0x1B0
 void fn_800ACD64(s32 result) {
+#ifdef TARGET_PC
+    {
+        static int s_trace = -1;
+        if (s_trace < 0) {
+            s_trace = getenv("MSSB_DEBUG_CARD") != NULL;
+        }
+        if (s_trace && result != CARD_RESULT_BUSY) {
+            extern const char* port_symbol_name(void* p);
+            fprintf(stderr, "[card] result %d in %s\n", result, port_symbol_name(__builtin_return_address(0)));
+        }
+    }
+#endif
     lbl_803C7838.lastResult = result;
     switch (result) {
     case CARD_RESULT_READY:

@@ -51,6 +51,21 @@ printf 'skipfe = true\ncaptain1 = mario\ncaptain2 = bowser\n' > build/port/skipf
 MSSB_USER_INI=$PWD/build/port/skipfe.ini MSSB_SKIP_MOVIES=1 port/tools/run.sh 90 10
 ```
 
+## Controls, saves, audio
+
+- Keyboard (port 1): arrows = stick, X = A, Z = B, C = X, V = Y,
+  Enter = Start, Q/E = L/R, Shift = Z, IJKL = D-pad, WASD = C-stick.
+  Gamepads work through SDL (aurora). Bindings saved by aurora
+  (`keyboard_bindings.dat`) take precedence.
+- Memory card: a GCI folder in the user data folder
+  (`<user>/USA/Card A/01-GYQE-MarioBaseball.gci`). `MSSB_USER_DIR=path` uses
+  another user folder (tests that must not touch the real save).
+- Music is DVD audio streaming (`/snd/my_snd_h/*.adp`), emulated in
+  `port/src/audio/dtk.cpp`; sound effects and menu music are MusyX.
+- Debug: `MSSB_AI_DUMP=file.raw` (s16 stereo of the final output, 32 kHz),
+  `MSSB_DSP_STATS=1`, `MSSB_DSP_DUMP=file.raw`, `MSSB_DEBUG_DTK=1`,
+  `MSSB_DEBUG_CARD=1`, `MSSB_DEBUG_INPUT=1`.
+
 ## Web build
 
 Emscripten (`brew install emscripten`), WebGPU (Chrome):

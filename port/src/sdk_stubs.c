@@ -6,6 +6,7 @@
 #include <dolphin/mtx.h>
 #include <dolphin/os.h>
 #include <dolphin/vi.h>
+#include <dolphin/card.h>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -79,18 +80,7 @@ WEAK u32 AIGetDMAStartAddr(void) { return 0; }
 WEAK u32 AIGetDSPSampleRate(void) { return 1; } // AI_SAMPLERATE_48KHZ
 WEAK void port_audio_shutdown(void) { }
 
-static AISCallback s_streamCb = NULL;
-AISCallback AIRegisterStreamCallback(AISCallback callback)
-{
-    AISCallback old = s_streamCb;
-    s_streamCb = callback;
-    return old;
-}
-void AIResetStreamSampleCount(void) { }
-void AISetStreamTrigger(u32 trigger) { (void)trigger; }
-void AISetStreamPlayState(u32 state) { (void)state; }
-void AISetStreamVolLeft(u8 vol) { (void)vol; }
-void AISetStreamVolRight(u8 vol) { (void)vol; }
+// AI streaming (the game's music): port/src/audio/dtk.cpp.
 
 // ARQ ---------------------------------------------------------------------------
 // aurora's ARQ copies synchronously: nothing is ever queued.
@@ -151,3 +141,22 @@ void GXReadVCacheMetric(u32* check, u32* miss, u32* stall)
         *stall = 0;
 }
 void GXClearVCacheMetric(void) { }
+
+// CARD -------------------------------------------------------------------------
+// The game only touches a card whose serial number is nonzero and unchanged
+// since it was mounted; aurora's GCI-folder cards report 0. Give them a fixed
+// one (the prelude maps the game's CARDGetSerialNo here).
+s32 port_CARDGetSerialNo(s32 chan, u64* serialNo)
+{
+    s32 res = CARDGetSerialNo(chan, serialNo);
+    if (res == CARD_RESULT_READY && *serialNo == 0)
+        *serialNo = 0x4D5353422D504321ull; // "MSSB-PC!"
+    return res;
+}
+
+// aurora's CARDUnmount is a stub that reports "no card"; the game checks it.
+s32 port_CARDUnmount(s32 chan)
+{
+    (void)CARDUnmount(chan);
+    return (chan >= 0 && chan < 2) ? CARD_RESULT_READY : CARD_RESULT_FATAL_ERROR;
+}

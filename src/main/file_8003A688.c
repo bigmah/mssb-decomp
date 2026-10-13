@@ -3986,6 +3986,11 @@ u8 fn_80041074(void* buffer, s32 length, u32 mask) {
         if (mask & bit) {
             if (i == 0) {
                 sum = fn_800ABB14(shared, 0x5B0);
+#ifdef TARGET_PC
+                if (getenv("MSSB_DEBUG_CARD") != NULL) {
+                    fprintf(stderr, "[card] verify shared: sum %04x stored %04x (length 0x%x)\n", sum, img->crc, length);
+                }
+#endif
                 if (sum != img->crc) {
                     lbl_803C50E8.badMask = bit;
                     break;

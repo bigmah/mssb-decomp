@@ -103,7 +103,9 @@ void swap_midisetups(const Blob& b, uint32_t off)
         b.s16(off + 2);
         off += 0x54;
     }
-    bad("proj midi setup", off);
+    // MSSB's project ends with its last midi setup (no 0xFFFF terminator).
+    if (off != b.size)
+        bad("proj midi setup", off);
 }
 
 void swap_fxdata(const Blob& b, uint32_t off)

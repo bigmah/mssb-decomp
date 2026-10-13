@@ -125,6 +125,11 @@ int aurora_main(int argc, char** argv)
 #ifdef __EMSCRIPTEN__
     config.userPath = "/mssb"; // IndexedDB-backed, mounted by the page
     config.cachePath = "/tmp";
+#else
+    // MSSB_USER_DIR: a separate user data folder (memory card, user.ini,
+    // bindings), e.g. for tests that must not touch the real saves.
+    if (const char* dir = getenv("MSSB_USER_DIR"); dir && dir[0])
+        config.userPath = dir;
 #endif
     AuroraInfo info = aurora_initialize(argc, argv, &config);
     port_crash_init(info.userPath);
