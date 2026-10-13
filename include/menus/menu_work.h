@@ -435,8 +435,8 @@ typedef struct MenuSaveSlots {
 typedef struct MenuAnimArchive {
     /*0x00*/ u8 _00[0xC];
     /*0x0C*/ void* banks[17]; // ANIMBank*, indexed like MenuCtx.objects
-    /*0x50*/ u8 _50[1];       // indexed
-} MenuAnimArchive;
+    /*0x50*/ u8 _50[0x24];    // per object: animate bones (fn_2_8782C)
+} MenuAnimArchive; // size: 0x74 (PC: 0xB8)
 
 typedef struct MenuSortEntry {
     /*0x0*/ s32 k;

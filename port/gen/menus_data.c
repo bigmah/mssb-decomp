@@ -1044,5 +1044,5 @@ u8 __gen_lbl_2_bss_33FB4C[128] GEN_SYM(lbl_2_bss_33FB4C);
 struct { u8 head; u8 rest[0x4]; } __gen_lbl_2_bss_33FBF5 GEN_SYM(lbl_2_bss_33FBF5); // symbol is 0x3 bytes
 
 // menus .bss 0x3401C0
-u8 __gen_lbl_2_bss_3401C0[116] GEN_SYM(lbl_2_bss_3401C0);
+u8 __gen_lbl_2_bss_3401C0[0xB8] GEN_SYM(lbl_2_bss_3401C0); // MenuAnimArchive (PC size)
 

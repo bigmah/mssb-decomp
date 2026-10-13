@@ -78,7 +78,11 @@ typedef struct MenuSceneTex {
 } MenuSceneTex; // size: 0xA4
 
 typedef struct Unk3401BC {
+#ifdef PORT_LP64 // MenuAnimArchive (menus/menu_work.h): 0xC bytes, then 17 bank pointers
+    u8 _00[0xC + 17 * 8];
+#else
     /*0x00*/ u8 _00[0x50];
+#endif
     /*0x50*/ u8 _50[1]; // indexed
 } Unk3401BC;
 

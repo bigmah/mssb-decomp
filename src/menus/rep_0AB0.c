@@ -48,7 +48,7 @@ extern MenuCharLayout* lbl_2_bss_1A8240;
 extern MenuWorkBuf lbl_2_bss_1A8250;
 extern MenuDrawArea* lbl_2_bss_1A8230;
 extern void* lbl_2_bss_3401BC;
-extern u8 lbl_2_bss_3401C0[];
+extern MenuAnimArchive lbl_2_bss_3401C0;
 extern UnlockFlags lbl_80361B20;
 extern MenuCharLayout lbl_803616CC;
 extern MenuSceneState lbl_800E877C;
@@ -3180,7 +3180,7 @@ void fn_2_5E104(void) {
     lbl_2_bss_1A8234 = &lbl_2_bss_1A8250;
     lbl_2_bss_1A8230 = &lbl_2_bss_1A8250.drawArea;
     lbl_2_bss_340140 = &lbl_8036E548;
-    lbl_2_bss_3401BC = lbl_2_bss_3401C0;
+    lbl_2_bss_3401BC = &lbl_2_bss_3401C0;
     switch (lbl_803CBBCC->step) {
     case 0:
         fn_8001F228();
