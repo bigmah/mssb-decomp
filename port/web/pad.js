@@ -88,9 +88,20 @@ const MssbPad = (() => {
   let running = false;
   let lastSource = '';
 
+  // A or Start (on a pad, or X/Enter on the keyboard) presses Play, as the
+  // button's glyph says.
+  let playHeld = true; // ignore a press still held when the panel opens
+  function checkPlay(s) {
+    const down = s.pressed.has('a') || s.pressed.has('start');
+    if (down && !playHeld) $('play').click();
+    playHeld = down;
+  }
+
   function frame() {
     if (!running) return;
     const { s, pad } = readState();
+    checkPlay(s);
+    if (!running) return;
     for (const el of svg.querySelectorAll('[data-btn]')) el.classList.toggle('on', s.pressed.has(el.dataset.btn));
     const stick = (id, [x, y], reach) => {
       const el = svg.getElementById(id);
@@ -139,6 +150,7 @@ const MssbPad = (() => {
     if (on === running) return;
     running = on;
     keysDown.clear();
+    playHeld = true;
     if (on) requestAnimationFrame(frame);
   }
 
