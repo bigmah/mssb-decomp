@@ -794,6 +794,23 @@ void Custom_SetState(struct DODisplayObj* dispObj, DisplayStateList* state, MtxP
 // land in different volatile registers
 #if NONMATCHING
 // .text:0x800BBB2C size:0x430
+#ifdef TARGET_PC
+// Model display lists set their textures state by state, re-initialising the
+// texture (and TLUT) object every time: a thousand or more a frame. aurora
+// gives each init a new ID and caches, hashes and sweeps textures per ID, which
+// cost milliseconds a frame (and a 600k-entry cache). Within one frame a
+// texture's data can't change, so a texture set again reuses its objects.
+typedef struct {
+    DOTexInfo* tex;
+    u32 key; // texMap, wrapS, wrapT
+    u32 frame;
+    GXTexObj texObj;
+    GXTlutObj tlutObj;
+} StateTexCache;
+
+static StateTexCache sStateTexCache[512];
+#endif
+
 void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr camera) {
     Mtx m;
     GXVtxDescList vcd[27];
@@ -815,6 +832,10 @@ void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr came
     u32 attr;
     u32 type;
     u32 slot;
+#ifdef TARGET_PC
+    StateTexCache* stc;
+    u32 stcKey;
+#endif
 
     switch (state->id) {
     case 1: // texture
@@ -852,6 +873,20 @@ void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr came
         minFilter = tex->minFilter;
         magFilter = tex->magFilter;
         lodBias = tex->lodBias;
+#ifdef TARGET_PC
+        // Reuse this frame's objects for a texture set again (see StateTexCache).
+        stc = &sStateTexCache[(((uintptr_t)tex >> 3) ^ texMap) % 512];
+        stcKey = texMap | (wrapS << 4) | (wrapT << 8);
+        if (stc->tex == tex && stc->key == stcKey && stc->frame == VIGetRetraceCount()) {
+            lbl_803CB5FC[texMap] = stc->texObj;
+            if (tex->tlut != NULL) {
+                lbl_803CB49C[texMap] = stc->tlutObj;
+                GXLoadTlut(&lbl_803CB49C[texMap], texMap);
+            }
+            GXLoadTexObj(&lbl_803CB5FC[texMap], texMap);
+            break;
+        }
+#endif
         if (tex->tlut != NULL) {
             GXInitTexObjCI(&lbl_803CB5FC[texMap], PTR32_GET(void, tex->image), tex->width, tex->height, tex->format, wrapS, wrapT, mipmap,
                            texMap);
@@ -862,6 +897,13 @@ void SetState(DisplayStateList* state, struct DODisplayObj* dispObj, MtxPtr came
         }
         GXInitTexObjLOD(&lbl_803CB5FC[texMap], minFilter, magFilter, minLOD, maxLOD, lodBias, GX_FALSE, GX_FALSE,
                         GX_ANISO_1);
+#ifdef TARGET_PC
+        stc->tex = tex;
+        stc->key = stcKey;
+        stc->frame = VIGetRetraceCount();
+        stc->texObj = lbl_803CB5FC[texMap];
+        stc->tlutObj = lbl_803CB49C[texMap];
+#endif
         GXLoadTexObj(&lbl_803CB5FC[texMap], texMap);
         break;
     case 2: // vertex descriptor: 2 bits per attribute
