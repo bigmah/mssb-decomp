@@ -10,6 +10,8 @@
 #include "game/character_stats.h"
 #include "main/charsel_state_type.h"
 #include "main/aramloader.h"
+#include "main/menu_globals.h" // SavedSettings
+extern SavedSettings lbl_800E8754; // main/file_8004207C.h
 #include "main/file_800639BC.h" // TeamSelect lbl_803C6724
 
 extern void* ARAMTransfer(void* instr, void* dest, u8 mode, u32 aramAddr);
@@ -114,6 +116,14 @@ BOOL port_skipfe_step(void) {
     g_d_GameSettings.humanTeamNumber = 1;
     g_d_GameSettings.PlayerPorts[0] = 0;
     g_d_GameSettings.PlayerPorts[1] = 4; // CPU
+    {
+        // Game length: the options menu's innings setting (1, 3, 5, 7 or 9).
+        const char* v = port_user_ini_get("innings");
+        if (v != NULL && atoi(v) >= 1 && atoi(v) <= 9) {
+            lbl_800E8754.innings = (u8)atoi(v);
+            fprintf(stderr, "[skipfe] innings %d\n", lbl_800E8754.innings);
+        }
+    }
     sState = 3;
     return TRUE;
 }
