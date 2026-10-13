@@ -79,3 +79,14 @@ typedef enum _GXTevClampMode {
 // TODO(port): pass real sizes (GXSETARRAY) at each call site; until then the
 // size is unknown (0).
 #define GXSetArray(attr, data, stride) GXSetArray((attr), (data), 0, (stride), false)
+
+// Writes to the GX write-gather pipe (include/Dolphin/GX/GXFifo.h has the
+// MWCC side): aurora's FIFO writers append the same raw values.
+#ifndef MSSB_GXWGFIFO_WRITES
+#define MSSB_GXWGFIFO_WRITES
+#define GXWGFIFO_U8(x)  GXTexCoord1u8((u8)(x))
+#define GXWGFIFO_U16(x) GXTexCoord1u16((u16)(x))
+#define GXWGFIFO_S16(x) GXTexCoord1s16((s16)(x))
+#define GXWGFIFO_U32(x) GXColor1u32((u32)(x))
+#define GXWGFIFO_F32(x) GXTexCoord1f32((f32)(x))
+#endif

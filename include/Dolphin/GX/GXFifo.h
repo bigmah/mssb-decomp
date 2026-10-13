@@ -220,3 +220,17 @@ extern void GXDisableBreakPt();
 
 #endif
 #endif // TARGET_PC
+
+// Writes to the GX write-gather pipe: the store to 0xCC008000 itself. The PC
+// build defines these in port/include/port/sdk_compat.h (aurora's FIFO
+// writers append the same raw values; there is no pipe at that address).
+#ifndef TARGET_PC
+#ifndef MSSB_GXWGFIFO_WRITES
+#define MSSB_GXWGFIFO_WRITES
+#define GXWGFIFO_U8(x)  (GXWGFifo.u8 = (x))
+#define GXWGFIFO_U16(x) (GXWGFifo.u16 = (x))
+#define GXWGFIFO_S16(x) (GXWGFifo.s16 = (x))
+#define GXWGFIFO_U32(x) (GXWGFifo.u32 = (x))
+#define GXWGFIFO_F32(x) (GXWGFifo.f32 = (x))
+#endif
+#endif

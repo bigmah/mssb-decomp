@@ -1260,26 +1260,26 @@ void fn_1_5698(void) {
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
     GXLoadTexObj(&lbl_1_bss_4E4, GX_TEXMAP0);
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1BC;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
-    GXWGFifo.u16 = 0;
-    GXWGFifo.u16 = 0;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1C0;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
-    GXWGFifo.u16 = 0;
-    GXWGFifo.u16 = 4;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1C4;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1C0;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
-    GXWGFifo.u16 = 4;
-    GXWGFifo.u16 = 4;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1C4;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1BC;
-    GXWGFifo.f32 = *(volatile f32*)&lbl_1_rodata_1A8;
-    GXWGFifo.u16 = 4;
-    GXWGFifo.u16 = 0;
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1A8);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1BC);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1A8);
+    GXWGFIFO_U16(0);
+    GXWGFIFO_U16(0);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1A8);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1C0);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1A8);
+    GXWGFIFO_U16(0);
+    GXWGFIFO_U16(4);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1C4);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1C0);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1A8);
+    GXWGFIFO_U16(4);
+    GXWGFIFO_U16(4);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1C4);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1BC);
+    GXWGFIFO_F32(*(volatile f32*)&lbl_1_rodata_1A8);
+    GXWGFIFO_U16(4);
+    GXWGFIFO_U16(0);
     GXSetNumIndStages(0);
     GXSetTevDirect(GX_TEVSTAGE0);
 }
@@ -1492,10 +1492,10 @@ void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
                     z = v[2] / scale;
                     break;
                 }
-                GXWGFifo.f32 = x;
-                GXWGFifo.f32 = y;
-                GXWGFifo.f32 = z;
-                GXWGFifo.u32 = 0xFF0000FF;
+                GXWGFIFO_F32(x);
+                GXWGFIFO_F32(y);
+                GXWGFIFO_F32(z);
+                GXWGFIFO_U32(0xFF0000FF);
                 quant = obj->lightingData->quantizeInfo;
                 comp = obj->lightingData->compCount;
                 scale = 1 << (quant & 0xF);
@@ -1508,10 +1508,10 @@ void fn_1_4E98(struct DODisplayObj* obj, MtxPtr camera) {
                     z += v[2] / scale;
                     break;
                 }
-                GXWGFifo.f32 = x;
-                GXWGFifo.f32 = y;
-                GXWGFifo.f32 = z;
-                GXWGFifo.u32 = 0x0000FFFF;
+                GXWGFIFO_F32(x);
+                GXWGFIFO_F32(y);
+                GXWGFIFO_F32(z);
+                GXWGFIFO_U32(0x0000FFFF);
             }
         }
     }

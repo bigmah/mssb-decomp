@@ -404,41 +404,41 @@ void fn_3_169984(void* node) {
                 f32 z = q[2];
                 f32 y = q[1];
                 f32 x = q[0];
-                GXWGFifo.f32 = x;
-                GXWGFifo.f32 = y;
-                GXWGFifo.f32 = z;
+                GXWGFIFO_F32(x);
+                GXWGFIFO_F32(y);
+                GXWGFIFO_F32(z);
             }
-            GXWGFifo.u32 = *(u32*)e->vtx[0].color;
+            GXWGFIFO_U32(*(u32*)e->vtx[0].color);
             {
                 f32* q = &e->vtx[1].pos->x;
                 f32 z = q[2];
                 f32 y = q[1];
                 f32 x = q[0];
-                GXWGFifo.f32 = x;
-                GXWGFifo.f32 = y;
-                GXWGFifo.f32 = z;
+                GXWGFIFO_F32(x);
+                GXWGFIFO_F32(y);
+                GXWGFIFO_F32(z);
             }
-            GXWGFifo.u32 = *(u32*)e->vtx[1].color;
+            GXWGFIFO_U32(*(u32*)e->vtx[1].color);
             {
                 f32* q = &e->vtx[2].pos->x;
                 f32 z = q[2];
                 f32 y = q[1];
                 f32 x = q[0];
-                GXWGFifo.f32 = x;
-                GXWGFifo.f32 = y;
-                GXWGFifo.f32 = z;
+                GXWGFIFO_F32(x);
+                GXWGFIFO_F32(y);
+                GXWGFIFO_F32(z);
             }
-            GXWGFifo.u32 = *(u32*)e->vtx[2].color;
+            GXWGFIFO_U32(*(u32*)e->vtx[2].color);
             {
                 f32* q = &e->vtx[3].pos->x;
                 f32 z = q[2];
                 f32 y = q[1];
                 f32 x = q[0];
-                GXWGFifo.f32 = x;
-                GXWGFifo.f32 = y;
-                GXWGFifo.f32 = z;
+                GXWGFIFO_F32(x);
+                GXWGFIFO_F32(y);
+                GXWGFIFO_F32(z);
             }
-            GXWGFifo.u32 = *(u32*)e->vtx[3].color;
+            GXWGFIFO_U32(*(u32*)e->vtx[3].color);
         }
         sorted++;
     }

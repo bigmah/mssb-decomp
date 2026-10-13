@@ -1327,12 +1327,12 @@ void fn_3_FB3D8(StaHazeNode* node) {
 
     for (i = 0, tri = lbl_3_data_1C068[0]; i < 20; i++, tri += 3) {
         GXBegin(GX_TRIANGLESTRIP, GX_VTXFMT0, 43);
-        GXWGFifo.f32 = lbl_3_data_1BF6C[tri[0]].x;
-        GXWGFifo.f32 = lbl_3_rodata_308C + lbl_3_data_1BF6C[tri[0]].y;
-        GXWGFifo.f32 = lbl_3_data_1BF6C[tri[0]].z;
-        GXWGFifo.u32 = 0xFFFFFFFF;
-        GXWGFifo.f32 = base2d[tri[0]][0];
-        GXWGFifo.f32 = base2d[tri[0]][1];
+        GXWGFIFO_F32(lbl_3_data_1BF6C[tri[0]].x);
+        GXWGFIFO_F32(lbl_3_rodata_308C + lbl_3_data_1BF6C[tri[0]].y);
+        GXWGFIFO_F32(lbl_3_data_1BF6C[tri[0]].z);
+        GXWGFIFO_U32(0xFFFFFFFF);
+        GXWGFIFO_F32(base2d[tri[0]][0]);
+        GXWGFIFO_F32(base2d[tri[0]][1]);
         b = tri[1];
         c = tri[2];
         for (k = 0; k < 20; k++) {
@@ -1343,18 +1343,18 @@ void fn_3_FB3D8(StaHazeNode* node) {
             GXColor1u32(0xFFFFFFFF);
             GXTexCoord2f32(scr[(c * 20 + k) * 2], scr[(c * 20 + k) * 2 + 1]);
         }
-        GXWGFifo.f32 = lbl_3_data_1BF6C[b].x;
-        GXWGFifo.f32 = lbl_3_rodata_308C + lbl_3_data_1BF6C[b].y;
-        GXWGFifo.f32 = lbl_3_data_1BF6C[b].z;
-        GXWGFifo.u32 = 0xFFFFFFFF;
-        GXWGFifo.f32 = base2d[b][0];
-        GXWGFifo.f32 = base2d[b][1];
-        GXWGFifo.f32 = lbl_3_data_1BF6C[c].x;
-        GXWGFifo.f32 = lbl_3_rodata_308C + lbl_3_data_1BF6C[c].y;
-        GXWGFifo.f32 = lbl_3_data_1BF6C[c].z;
-        GXWGFifo.u32 = 0xFFFFFFFF;
-        GXWGFifo.f32 = base2d[c][0];
-        GXWGFifo.f32 = base2d[c][1];
+        GXWGFIFO_F32(lbl_3_data_1BF6C[b].x);
+        GXWGFIFO_F32(lbl_3_rodata_308C + lbl_3_data_1BF6C[b].y);
+        GXWGFIFO_F32(lbl_3_data_1BF6C[b].z);
+        GXWGFIFO_U32(0xFFFFFFFF);
+        GXWGFIFO_F32(base2d[b][0]);
+        GXWGFIFO_F32(base2d[b][1]);
+        GXWGFIFO_F32(lbl_3_data_1BF6C[c].x);
+        GXWGFIFO_F32(lbl_3_rodata_308C + lbl_3_data_1BF6C[c].y);
+        GXWGFIFO_F32(lbl_3_data_1BF6C[c].z);
+        GXWGFIFO_U32(0xFFFFFFFF);
+        GXWGFIFO_F32(base2d[c][0]);
+        GXWGFIFO_F32(base2d[c][1]);
     }
     fn_800ACFB0(scr);
 }
