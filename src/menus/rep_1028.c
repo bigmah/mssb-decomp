@@ -1467,8 +1467,8 @@ void fn_2_92504(MenuObject* object) {
 
 // fn_2_9253C, size:0x40
 void fn_2_9253C(MenuObject* object) {
-    object->update = lbl_2_data_308B4[object->active];
-    object->update(object);
+    PTR32_SET(object->update, lbl_2_data_308B4[object->active]);
+    PTR32_GET(MenuObjectUpdateFn, object->update)(object);
 }
 
 // fn_2_9257C, size:0xD8

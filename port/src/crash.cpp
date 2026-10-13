@@ -132,6 +132,15 @@ void watchdog(int timeoutSecs)
         int64_t last = s_lastFrameMs.load();
         if (last != 0 && now_ms() - last > timeoutMs)
         {
+#ifdef __APPLE__
+            // MSSB_HANG_SAMPLE=<file>: every thread's stack (macOS `sample`).
+            if (const char* out = getenv("MSSB_HANG_SAMPLE"))
+            {
+                char cmd[1200];
+                snprintf(cmd, sizeof(cmd), "sample %d 1 -mayDie -file '%s' >/dev/null 2>&1", (int)getpid(), out);
+                system(cmd);
+            }
+#endif
             // Have the main thread dump its own stack, then make sure we exit.
             pthread_kill(s_mainThread, kWatchdogSignal);
             std::this_thread::sleep_for(std::chrono::seconds(2));
