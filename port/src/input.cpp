@@ -124,6 +124,17 @@ extern "C" void port_pad_apply_script(PADStatus* status)
 {
     static u32 frame = 0;
     frame++;
+    // MSSB_DEBUG_INPUT: port 1 as the game reads it, whenever it changes.
+    static const bool s_debugPad = getenv("MSSB_DEBUG_INPUT") != nullptr;
+    static PADStatus s_last;
+    if (s_debugPad && (status[0].button != s_last.button || status[0].err != s_last.err ||
+                       status[0].stickX / 32 != s_last.stickX / 32 || status[0].stickY / 32 != s_last.stickY / 32))
+    {
+        fprintf(stderr, "[input] port 1: err %d buttons 0x%04x stick %d,%d c %d,%d trig %u,%u\n", status[0].err,
+                status[0].button, status[0].stickX, status[0].stickY, status[0].substickX, status[0].substickY,
+                status[0].triggerLeft, status[0].triggerRight);
+        s_last = status[0];
+    }
     for (const ScriptedPress& p : script())
     {
         if (frame >= p.frame && frame < p.frame + 6)

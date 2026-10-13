@@ -84,6 +84,10 @@ if (args.fakepad || pads.length) {
   args.padmapping ?? 'standard', Number(args.padslot || 0));
 }
 await page.goto(url);
+// --blur SECS: take focus off the canvas then (a click elsewhere on the page).
+if (args.blur)
+  setTimeout(() => page.evaluate(() => { document.activeElement?.blur?.(); document.body.focus(); }).catch(() => {}),
+    Number(args.blur) * 1000);
 
 const events = [
   ...shots.map((t) => ({ t, shot: true })),
