@@ -100,7 +100,7 @@ typedef struct MenuCamData {
 extern MenuCamData lbl_2_data_19E8;
 extern LightSrc lbl_2_data_1DD4[4];
 extern Vec lbl_2_data_20EC;
-extern f32 lbl_2_data_20F8[2];
+extern Vec lbl_2_data_20F8[2]; // menu actor positions (fn_2_16F78)
 
 // Tutorial / port mapping (lbl_803C66B0; TutorialSteps in main/file_8004207C.h).
 typedef struct TutorialPorts {
@@ -237,23 +237,23 @@ void fn_2_14574(PortInput* in) {
         }
     } else if (in->repeat & 1) {
         if (in->held & 0x200) {
-            t = 320.0f + lbl_2_data_20F8[0];
+            t = 320.0f + lbl_2_data_20F8[0].x;
             t -= 0.1;
-            lbl_2_data_20F8[0] = t - 320.0f;
+            lbl_2_data_20F8[0].x = t - 320.0f;
         } else if (in->held & 0x100) {
-            t = 320.0f + lbl_2_data_20F8[1];
+            t = 320.0f + lbl_2_data_20F8[0].y;
             t -= 0.1;
-            lbl_2_data_20F8[1] = t - 320.0f;
+            lbl_2_data_20F8[0].y = t - 320.0f;
         }
     } else if (in->repeat & 2) {
         if (in->held & 0x200) {
-            t = 320.0f + lbl_2_data_20F8[0];
+            t = 320.0f + lbl_2_data_20F8[0].x;
             t += 0.1;
-            lbl_2_data_20F8[0] = t - 320.0f;
+            lbl_2_data_20F8[0].x = t - 320.0f;
         } else if (in->held & 0x100) {
-            t = 320.0f + lbl_2_data_20F8[1];
+            t = 320.0f + lbl_2_data_20F8[0].y;
             t += 0.1;
-            lbl_2_data_20F8[1] = t - 320.0f;
+            lbl_2_data_20F8[0].y = t - 320.0f;
         }
     }
 }

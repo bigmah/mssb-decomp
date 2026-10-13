@@ -23,8 +23,8 @@ Byte arrays (no C type found) are `TODO(port)`; `POINTERS` ones hold addresses a
 - `lbl_2_data_19E8` (menus .data 0x19E8): NOTE: type size 0x43C != symbol size 0x3EC
 - `lbl_2_data_1DD4` (menus .data 0x1DD4): NOTE: type size 0x28 != symbol size 0x318
 - `lbl_2_data_1DD4` (menus .data 0x1DD4): WARNING: 0x2F0 bytes past the type are not zero: 64726cff0000000000000000c1840000000000000000000000000000000000003f80...
-- `lbl_2_data_20F8` (menus .data 0x20F8): NOTE: type size 0x8 != symbol size 0x324
-- `lbl_2_data_20F8` (menus .data 0x20F8): WARNING: 0x31C bytes past the type are not zero: 0000000042be0000c20c00000000000000160010001700110018001200190013001a...
+- `lbl_2_data_20F8` (menus .data 0x20F8): NOTE: type size 0x18 != symbol size 0x324
+- `lbl_2_data_20F8` (menus .data 0x20F8): WARNING: 0x30C bytes past the type are not zero: 00160010001700110018001200190013001a0014001b00150020001c0021001d0022...
 - `lbl_2_data_2780` (menus .data 0x2780): pointer field holds a non-address value (see `/* TODO */`)
 - `lbl_2_data_2AADC` (menus .data 0x2AADC): NOTE: type size 0x420 != symbol size 0x42C
 - `lbl_2_data_2AADC` (menus .data 0x2AADC): WARNING: 0xC bytes past the type are not zero: 00010005000b001100030013
