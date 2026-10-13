@@ -145,3 +145,5 @@ void port_trace_value(const char* tag, int value);
 // spells these PTR_TO_U32/U32_TO_PTR (include/types.h).
 #define PORT_PTR_TO_U32(p) port_ptr32_encode((const void*)(p))
 #define PORT_U32_TO_PTR(v) port_ptr32_decode((uint32_t)(v))
+
+#include "port/module_sections.h"

@@ -214,11 +214,22 @@ set_source_files_properties(${MSSB_ROOT}/src/main/file_80008E00.c PROPERTIES COM
 
 # REL modules are linked in: give each module's _prolog/_epilog/_unresolved a
 # unique name (port/src/modules.c calls them).
+# PORT_MODULE_ID (the REL's module id) puts each module's data and bss into
+# sections of their own, reset at every load like a freshly linked REL
+# (port/include/port/module_sections.h, port/src/modules.c).
+set(MSSB_MODULE_ID_challenge 1)
+set(MSSB_MODULE_ID_menus 2)
+set(MSSB_MODULE_ID_game 3)
 foreach (module menus game challenge)
     set(module_sources ${MSSB_GAME_SOURCES})
     list(FILTER module_sources INCLUDE REGEX "/src/${module}/")
     set_property(SOURCE ${module_sources} APPEND PROPERTY COMPILE_DEFINITIONS
-        _prolog=${module}_prolog _epilog=${module}_epilog _unresolved=${module}_unresolved)
+        _prolog=${module}_prolog _epilog=${module}_epilog _unresolved=${module}_unresolved
+        PORT_MODULE_ID=${MSSB_MODULE_ID_${module}})
+    set(module_gen ${MSSB_GEN_SOURCES})
+    list(FILTER module_gen INCLUDE REGEX "/gen/${module}(/|_data\\.c$)")
+    set_property(SOURCE ${module_gen} APPEND PROPERTY COMPILE_DEFINITIONS
+        PORT_MODULE_ID=${MSSB_MODULE_ID_${module}})
 endforeach ()
 
 # PC-only code (port/src) and the executable.

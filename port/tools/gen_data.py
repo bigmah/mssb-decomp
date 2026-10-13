@@ -40,6 +40,12 @@ EXCLUDE = {
     'GXPal528IntDf', 'GXEurgb60Hz480IntDf',
 }
 
+# Byte arrays that must be bigger on PC than their GameCube symbol: code
+# writes past the symbol into the following .bss objects there.
+PC_MIN_SIZE = {
+    'lbl_8023DD80': 0x96000,  # fn_8003A2EC clears 0x96000 bytes
+}
+
 MODULES = [('main', 'config/GYQE01/symbols.txt'), ('game', 'config/GYQE01/game/symbols.txt'),
            ('menus', 'config/GYQE01/menus/symbols.txt'), ('challenge', 'config/GYQE01/challenge/symbols.txt')]
 DATA_SECTS = {'.data', '.sdata', '.sdata2', '.rodata', '.bss', '.sbss', '.sbss2'}
@@ -245,6 +251,7 @@ def generate(sym, srcs, info):
             if out:
                 return src, out, notes, type_size(err)
     # No declaration: a byte array of the symbol's size.
+    size = max(size, PC_MIN_SIZE.get(sym, 0))
     raw = obj_bytes(mod, sect, addr, size) if sect not in ('.bss', '.sbss', '.sbss2') else None
     ptrs = looks_like_pointers(mod, sect, addr, size) if raw else []
     tag = '// TODO(port): no C type for this object' + (' (holds pointers at %s)' % ', '.join('0x%X' % p for p in ptrs) if ptrs else '')

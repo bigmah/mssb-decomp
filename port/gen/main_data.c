@@ -795,7 +795,7 @@ s16 __gen_lbl_800EEB18[54] GEN_SYM(lbl_800EEB18) = {
 };
 
 // main .bss 0x8023DD80
-u8 __gen_lbl_8023DD80[207230] GEN_SYM(lbl_8023DD80);
+u8 __gen_lbl_8023DD80[0x96000] GEN_SYM(lbl_8023DD80); // PC: fn_8003A2EC clears 0x96000 bytes (on the GameCube the buffer runs over the next .bss symbols)
 
 // main .sbss 0x803CBBDC
 f32 __gen_lbl_803CBBDC GEN_SYM(lbl_803CBBDC);
