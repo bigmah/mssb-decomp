@@ -220,6 +220,17 @@ void fn_800BE158(ShadowCamera* shadow, ShadowCamera* cam) {
     shadow->up.y = lbl_803009F8.upSign;
     C_MTXLookAt(shadow->view, &shadow->eye, &shadow->up, &shadow->target);
     PSMTXConcat(shadow->texMtx, shadow->view, shadow->texMtx);
+#ifdef TARGET_PC
+    // fn_800BDEA0 copies the EFB's 448 rows into a 640x480 texture: the GameCube
+    // puts them 1:1 at the top, aurora stretches them over all 480 rows. Scale T
+    // to match, or the shadows land too far along the light and too big.
+    {
+        s32 i;
+        for (i = 0; i < 4; i++) {
+            shadow->texMtx[1][i] *= 480.0f / 448.0f;
+        }
+    }
+#endif
 }
 #endif
 
