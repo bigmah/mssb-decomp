@@ -51,6 +51,7 @@ const MssbPad = (() => {
     chip.querySelector('.label').textContent = pads.length
       ? pads.length > 1 ? `${pads.length} controllers` : `${padName(pads[0])} connected`
       : 'No controller';
+    if (!pads.length && !isSecureContext) chip.querySelector('.label').textContent = 'Controllers need https';
     chip.title = pads.length ? pads.map((p, i) => `Player ${i + 1}: ${p.id}`).join('\n') : 'Plug in a controller and press a button';
   }
 
@@ -118,7 +119,9 @@ const MssbPad = (() => {
     if (s.source) lastSource = s.source;
     const text = pad
       ? `${padName(pad)} — player 1`
-      : 'No controller found. Plug one in and press a button.';
+      : !isSecureContext
+        ? 'Browsers only share controllers with https or localhost pages; this page is plain http.'
+        : 'No controller found. Plug one in and press a button.';
     status.textContent = text;
     $('pad-test').classList.toggle('connected', !!pad);
     $('pad-input').textContent = s.source

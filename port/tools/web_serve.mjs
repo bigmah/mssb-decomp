@@ -32,6 +32,8 @@ createServer((req, res) => {
     res.writeHead(404).end('not found');
     return;
   }
+  // Which browser loaded the page (helps with "works for me" reports).
+  if (path === '/index.html') console.log(`page ${req.socket.remoteAddress} ${req.headers['user-agent'] || ''}`);
   const size = statSync(file).size;
   const headers = {
     'Content-Type': types[extname(file)] || 'application/octet-stream',
