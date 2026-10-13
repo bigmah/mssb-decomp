@@ -57,7 +57,45 @@ extern const f64 lbl_3_rodata_2140;
 extern const f32 lbl_3_rodata_2138;
 extern void fn_3_C2644(void);
 extern const f32 lbl_3_rodata_213C;
+// lbl_3_bss_9D80: this unit's state block (9D81/9D82/9DE0/9DE4/9F0C are views into it).
+typedef struct {
+    u8 pad0;
+    u8 f1; // 9D81
+    u8 f2; // 9D82: stop fn_3_C5DDC
+    u8 pad3[0x60 - 3];
+    u8 cStart;     // 9DE0: first object of group C (lbl_3_data_17704)
+    u8 cCount;     // 9DE1
+    u8 sprayStart; // 9DE2: first object fn_3_C5DDC watches (group B, lbl_3_data_175FC)
+    u8 sprayCount; // 9DE3
+    u8 aStart;     // 9DE4: first object of group A (lbl_3_data_17514)
+    u8 aCount;     // 9DE5
+    u8 pad66;
+    u8 f67;
+    Vec pos[8];
+    u8 state[8];
+    SceneTask* fD0; // layout task of the markers
+    ShapeAnimPlayer animD4;  // anim player (fn_80025FFC)
+    ShapeAnimPlayer anim130; // anim player of the group B objects
+    void* tex; // 9F0C
+} C3C2CBss;
+extern C3C2CBss lbl_3_bss_9D80;
+#ifdef TARGET_PC
+// The 9D8x-9F0C symbols are fields of lbl_3_bss_9D80: the same bytes on GameCube,
+// separate objects on PC.
+#define lbl_3_bss_9D81 (lbl_3_bss_9D80.f1)
+#define lbl_3_bss_9D82 (lbl_3_bss_9D80.f2)
+#define lbl_3_bss_9DE0 (&lbl_3_bss_9D80.cStart)
+#define lbl_3_bss_9DE4 (&lbl_3_bss_9D80.aStart)
+#define lbl_3_bss_9DE7 (lbl_3_bss_9D80.f67)
+#define lbl_3_bss_9DE8 (lbl_3_bss_9D80.pos)
+#define lbl_3_bss_9E48 (lbl_3_bss_9D80.state)
+#define lbl_3_bss_9E50 (&lbl_3_bss_9D80.fD0)
+#define lbl_3_bss_9F0C (lbl_3_bss_9D80.tex)
+#endif
+
+#ifndef TARGET_PC
 extern u8 lbl_3_bss_9D81;
+#endif
 extern u32 lbl_3_bss_9D8C;
 extern const f32 lbl_3_rodata_214C;
 extern void fn_800528B4(void);
@@ -119,9 +157,15 @@ typedef struct Rep1FD8Ent {
 } Rep1FD8Ent;
 extern Rep1FD8Ent lbl_3_data_17804[];
 extern u8 lbl_803CBBC0; // current frame buffer (0/1)
+#ifndef TARGET_PC
 extern Vec lbl_3_bss_9DE8[];
+#endif
+#ifndef TARGET_PC
 extern u8 lbl_3_bss_9E48[];
+#endif
+#ifndef TARGET_PC
 extern SceneTask* lbl_3_bss_9E50[];
+#endif
 extern void fn_800528C0(s16* sx, s16* sy, f32 x, f32 y, f32 z);
 // A few matched callers evaluate the floats before the out pointers. On PPC the
 // argument order makes no difference to the call, so the matching build calls
@@ -171,7 +215,9 @@ extern void fn_800BEBCC(u8 index, Vec dir);
 extern const f32 lbl_3_rodata_20F0;
 extern void fn_3_CB7E8(f32, f32, f32);
 extern f32 lbl_3_rodata_2150;
+#ifndef TARGET_PC
 extern void* lbl_3_bss_9F0C; // TexArchive*
+#endif
 extern void fn_80033620(void* emitter); // sets up drawing for the emitter
 
 void fn_3_C1964(void) {
@@ -532,8 +578,12 @@ void fn_3_C2644(void) {
 #endif
 
 // .text:0x000C2974 size:0x18 mapped:0x80701A08
+#ifndef TARGET_PC
 extern u8 lbl_3_bss_9DE7;
+#endif
+#ifndef TARGET_PC
 extern u8 lbl_3_bss_9D82;
+#endif
 
 void fn_3_C2974(void) {
     lbl_3_bss_9DE7 = 1;
@@ -822,27 +872,6 @@ void fn_3_C3A38(camera_803c639c_s* obj) {
 }
 
 // .text:0x000C3C2C size:0x268 mapped:0x80702CC0
-// lbl_3_bss_9D80: this unit's state block (9D81/9D82/9DE0/9DE4/9F0C are views into it).
-typedef struct {
-    u8 pad0[2];
-    u8 f2; // 9D82: stop fn_3_C5DDC
-    u8 pad3[0x60 - 3];
-    u8 cStart;     // 9DE0: first object of group C (lbl_3_data_17704)
-    u8 cCount;     // 9DE1
-    u8 sprayStart; // 9DE2: first object fn_3_C5DDC watches (group B, lbl_3_data_175FC)
-    u8 sprayCount; // 9DE3
-    u8 aStart;     // 9DE4: first object of group A (lbl_3_data_17514)
-    u8 aCount;     // 9DE5
-    u8 pad66;
-    u8 f67;
-    Vec pos[8];
-    u8 state[8];
-    SceneTask* fD0; // layout task of the markers
-    ShapeAnimPlayer animD4;  // anim player (fn_80025FFC)
-    ShapeAnimPlayer anim130; // anim player of the group B objects
-    void* tex; // 9F0C
-} C3C2CBss;
-extern C3C2CBss lbl_3_bss_9D80;
 #define C3C2C_SLOT(o, i) (lbl_80371C30[(o)->u14.objIdx + (i)].obj)
 void fn_3_C3C2C(void) {
     C3C2CBss* g = &lbl_3_bss_9D80;
@@ -991,7 +1020,9 @@ void fn_3_C414C(int idx) {
 }
 
 // .text:0x000C42A4 size:0x1A8 mapped:0x80703338
+#ifndef TARGET_PC
 extern u8 lbl_3_bss_9DE0[];
+#endif
 extern StadPlaceGroupC lbl_3_data_17704;
 extern f32 lbl_3_rodata_2154;
 extern void fn_3_B8414(void*, void*);
@@ -2045,7 +2076,9 @@ void fn_3_C7A0C(StadObj1FD8* e) {
 #endif
 
 typedef struct { u32 w[17]; } C42A4Cpy;
+#ifndef TARGET_PC
 extern u8 lbl_3_bss_9DE4[];
+#endif
 extern StadPlace14 lbl_3_data_17514[11];
 extern f32 lbl_3_rodata_21E0;
 // .text:0x000C805C size:0x1E0 mapped:0x807070F0

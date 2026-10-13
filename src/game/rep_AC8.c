@@ -39,6 +39,11 @@ typedef struct {
     s16 unkA6;
     s16 tmp[20];
 } StickHistory;
+#ifdef TARGET_PC
+// lbl_3_bss_16C/170 are StickHistory.cur/.tmp: the same bytes on GameCube, separate objects on PC.
+#define lbl_3_bss_16C (lbl_3_bss_C8.cur)
+#define lbl_3_bss_170 (lbl_3_bss_C8.tmp[0])
+#endif
 typedef struct { f32 a, b, c, d; } Ent16;
 typedef struct {
     f32 x;
@@ -132,8 +137,12 @@ extern f32 lbl_3_rodata_BFC;
 extern f32 lbl_3_rodata_B7C;
 extern f32 lbl_3_rodata_BD8;
 extern f32 lbl_3_rodata_C00;
+#ifndef TARGET_PC
 extern s16 lbl_3_bss_170;
+#endif
+#ifndef TARGET_PC
 extern s16 lbl_3_bss_16C;
+#endif
 extern s16 lbl_3_data_484C[];
 extern f32 lbl_3_rodata_B70;
 extern f32 lbl_3_rodata_C24;

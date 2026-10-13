@@ -921,11 +921,33 @@ extern void LoadActorLayout(ActorLayout* layout); // main/file_800B2C44.h
 extern void convertGeometryAndSknHeader(DODisplayDataPtr pal, void* sknHeader); // main/file_800B9974.h
 #include "C3/anim.h"
 
+// Bat swing trail state (lbl_3_bss_9950).
+typedef struct {
+    u8 _00[2];
+    /* 0x002 */ s16 count;  // points in the trail (lbl_3_bss_9952)
+    /* 0x004 */ s16 frame;  // 0..15
+    /* 0x008 */ s32 alpha;
+    /* 0x00C */ u8 state;   // 0 start, 1 fade in, 2 hold, 3 fade out (lbl_3_bss_995C)
+    u8 _0D[0x1E4 - 0xD];
+    /* 0x1E4 */ Vec ptsA[18];
+    /* 0x2BC */ Vec ptsB[18];
+    /* 0x394 */ Vec prevA;
+    /* 0x3A0 */ Vec prevB;
+    /* 0x3AC */ s16 skip;   // toggles 0/1 every frame
+} SwingTrail;
+extern SwingTrail lbl_3_bss_9950;
+
+#ifndef TARGET_PC
 extern s16 lbl_3_bss_9952;
+#endif
 
 void fn_3_C0770(void) {
     pitchingMachinePitching(0x10);
+#ifdef TARGET_PC
+    lbl_3_bss_9950.count = 0; // lbl_3_bss_9952 is SwingTrail.count
+#else
     lbl_3_bss_9952 = 0;
+#endif
 }
 
 
@@ -1005,10 +1027,16 @@ extern void minigamesSetSomePointers(void);
 extern void fn_3_C0854(void);
 extern void fn_3_CABB4(void);
 
+// lbl_3_bss_995C is SwingTrail.state; on PC the two symbols are separate objects.
+#ifdef TARGET_PC
+#define SWING_TRAIL_STATE lbl_3_bss_9950.state
+#else
 extern u8 lbl_3_bss_995C;
+#define SWING_TRAIL_STATE lbl_3_bss_995C
+#endif
 
 void fn_3_C07A0(void) {
-    lbl_3_bss_995C = 3;
+    SWING_TRAIL_STATE = 3;
 }
 
 
@@ -1027,7 +1055,7 @@ static s32 fn_3_BA7F4_update(Emitter* e) { fn_3_BA7F4(e); return 0; }
 
 void fn_3_C07B0(void) {
     if (fn_80033928(0x10) != 0 || fn_80033A24(FN_3_C0134_UPDATE, 0x80, 0, 0, 0, 0x10) != NULL) {
-        lbl_3_bss_995C = 0;
+        SWING_TRAIL_STATE = 0;
     }
 }
 
@@ -2806,21 +2834,6 @@ f32 fn_3_BFDA4(void* kv, s32 n, f32 t, s32 len, u8 idx, u8* out) {
 #pragma dont_inline reset
 
 // .text:0x000C0134 size:0x63C mapped:0x806FF1C8
-// Bat swing trail state (lbl_3_bss_9950).
-typedef struct {
-    u8 _00[2];
-    /* 0x002 */ s16 count;  // points in the trail (lbl_3_bss_9952)
-    /* 0x004 */ s16 frame;  // 0..15
-    /* 0x008 */ s32 alpha;
-    /* 0x00C */ u8 state;   // 0 start, 1 fade in, 2 hold, 3 fade out (lbl_3_bss_995C)
-    u8 _0D[0x1E4 - 0xD];
-    /* 0x1E4 */ Vec ptsA[18];
-    /* 0x2BC */ Vec ptsB[18];
-    /* 0x394 */ Vec prevA;
-    /* 0x3A0 */ Vec prevB;
-    /* 0x3AC */ s16 skip;   // toggles 0/1 every frame
-} SwingTrail;
-extern SwingTrail lbl_3_bss_9950;
 extern struct GameActor** fn_800111D8(struct CharActor* actor); // main/file_8000F150.h
 extern s32 fn_8005268C(void);
 extern void* fn_80052734(s32 index);
