@@ -34,8 +34,8 @@ must use `PORT_LP64` (wasm32 keeps the GameCube layout).
 
 ## Phase 1: skeleton and compile (done)
 
-- `port/CMakeLists.txt` configures aurora (`bigmah/aurora` strikers-port
-  4acfc6a + strikers' local commit as `port/patches/aurora/0001-*.patch`) and
+- `port/CMakeLists.txt` configures aurora (`bigmah/aurora` mssb-port: strikers'
+  revision plus MSSB's GX/card fixes) and
   builds `mssb_game`, an object library of all 343 game sources: `src/main`
   (81 incl. `common/`), `src/game` (186), `src/menus` (53),
   `src/challenge` (20), `src/C3` (1), `src/Unknown` (2).

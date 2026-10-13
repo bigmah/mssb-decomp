@@ -27,25 +27,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 get_filename_component(MSSB_ROOT ${CMAKE_SOURCE_DIR}/.. ABSOLUTE)
 set(AURORA_DIR ${CMAKE_SOURCE_DIR}/extern/aurora)
 
-# aurora is used at strikers' revision: the submodule pins the pushed
-# bigmah/aurora strikers-port head, and port/patches/aurora brings it to the
-# tree strikers builds with (its local commit 3fbe54a). Patches apply once.
-file(GLOB AURORA_PATCHES ${CMAKE_SOURCE_DIR}/patches/aurora/*.patch)
-list(SORT AURORA_PATCHES)
-foreach (patch ${AURORA_PATCHES})
-    execute_process(COMMAND git apply --reverse --check ${patch}
-            WORKING_DIRECTORY ${AURORA_DIR}
-            RESULT_VARIABLE already_applied OUTPUT_QUIET ERROR_QUIET)
-    if (NOT already_applied EQUAL 0)
-        execute_process(COMMAND git apply ${patch}
-                WORKING_DIRECTORY ${AURORA_DIR}
-                RESULT_VARIABLE patch_result)
-        if (NOT patch_result EQUAL 0)
-            message(FATAL_ERROR "Failed to apply ${patch}")
-        endif ()
-        message(STATUS "Applied ${patch}")
-    endif ()
-endforeach ()
+# aurora is the bigmah/aurora mssb-port branch: strikers' revision
+# (strikers-port + its Emscripten/WebGPU commit 3fbe54a) plus MSSB's GX/card
+# fixes. Change aurora there and bump the submodule.
 
 # Compiling the game only needs aurora's headers; the full aurora build
 # (Dawn, SDL3, nod) is needed to link the executable (Phase 2).

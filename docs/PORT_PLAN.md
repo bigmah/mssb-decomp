@@ -18,8 +18,8 @@ The port lives **inside this repo** instead of vendoring the decomp:
   game heap, SDK shims (copied/adapted from strikers).
 - `port/src/`: PC-only code (main loop, OS/VI emulation, heap, input, crash
   handler, REL table, audio glue).
-- `port/extern/aurora`: aurora submodule (bigmah fork, `strikers-port` branch,
-  as strikers uses).
+- `port/extern/aurora`: aurora submodule (bigmah fork, `mssb-port` branch:
+  strikers' revision plus MSSB's fixes).
 - PC fixes in game sources go under `#ifdef TARGET_PC` (keep the original in
   `#else` when it's more than a line). The matching build must stay
   byte-identical: run `ninja` + `dtk shasum -c config/GYQE01/build.sha1`

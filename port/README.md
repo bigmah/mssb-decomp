@@ -23,9 +23,6 @@ Options:
 - `-DMSSB_AURORA=OFF`: skip configuring aurora (no Dawn/SDL3/nod download).
   The game still compiles against aurora's headers.
 
-Configuring applies `port/patches/aurora/*.patch` to the submodule once (see
-below).
-
 ## user.ini (straight into a game)
 
 `user.ini` holds PC-only options, one `key = value` per line (`#`/`;`
@@ -139,10 +136,11 @@ How it differs from the native build:
 - `port/include/math.h`, `port/include/Dolphin/gd.h`: shadow headers (the
   decomp's `"math.h"` is its own `include/stl/math.h`; GD is the game's own).
 - `port/src/`: PC-only code (entry point stub, MSL bits, 4x4 matrices).
-- `port/extern/aurora`: aurora, `bigmah/aurora` branch `strikers-port`
-  (4acfc6a). `port/patches/aurora/0001-*.patch` is strikers' local commit
-  3fbe54a (GX fixes and the Emscripten/WebGPU support), which isn't pushed;
-  with it the tree is identical to what strikers builds with.
+- `port/extern/aurora`: aurora, `bigmah/aurora` branch `mssb-port`: the
+  `strikers-port` branch plus strikers' Emscripten/WebGPU commit (3fbe54a),
+  then MSSB's fixes (texcoord SU scale, texcoords without a texgen, GCI banner
+  TLUT offset, viewport depth clamp). Change aurora there, push, and commit
+  the new submodule revision here.
 
 ## Rules for game sources
 
