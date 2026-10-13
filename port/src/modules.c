@@ -11,37 +11,50 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Each module's data and bss sections (port/include/port/module_sections.h).
+// Each module's data and bss ranges (port/include/port/module_sections.h):
+// one range each natively; on the web build one for the module's sources and
+// one for its generated data (port/gen), bracketed by marker objects.
 typedef struct ModuleSections {
     char* dataStart;
     char* dataEnd;
     char* bssStart;
     char* bssEnd;
+    char* dataStart2;
+    char* dataEnd2;
+    char* bssStart2;
+    char* bssEnd2;
 } ModuleSections;
 
 #if defined(__EMSCRIPTEN__)
-#define MODULE_SECTIONS(tag) {NULL, NULL, NULL, NULL}
+#define MODULE_SECTION_BOUNDS(tag, module)                                               \
+    extern char mssb_##module##_src_d_begin, mssb_##module##_src_d_end;                  \
+    extern char mssb_##module##_src_b_begin, mssb_##module##_src_b_end;                  \
+    extern char mssb_##module##_gen_d_begin, mssb_##module##_gen_d_end;                  \
+    extern char mssb_##module##_gen_b_begin, mssb_##module##_gen_b_end;
+#define MODULE_SECTIONS(tag, module)                                                     \
+    {&mssb_##module##_src_d_begin, &mssb_##module##_src_d_end,                           \
+     &mssb_##module##_src_b_begin, &mssb_##module##_src_b_end,                           \
+     &mssb_##module##_gen_d_begin, &mssb_##module##_gen_d_end,                           \
+     &mssb_##module##_gen_b_begin, &mssb_##module##_gen_b_end}
 #elif defined(__APPLE__)
-#define MODULE_SECTION_BOUNDS(tag)                                                       \
+#define MODULE_SECTION_BOUNDS(tag, module)                                               \
     extern char tag##_ds __asm("section$start$__DATA$__mssb_" #tag "_d");               \
     extern char tag##_de __asm("section$end$__DATA$__mssb_" #tag "_d");                 \
     extern char tag##_bs __asm("section$start$__DATA$__mssb_" #tag "_b");               \
     extern char tag##_be __asm("section$end$__DATA$__mssb_" #tag "_b");
-#define MODULE_SECTIONS(tag) {&tag##_ds, &tag##_de, &tag##_bs, &tag##_be}
+#define MODULE_SECTIONS(tag, module) {&tag##_ds, &tag##_de, &tag##_bs, &tag##_be}
 #else
-#define MODULE_SECTION_BOUNDS(tag)                                                       \
+#define MODULE_SECTION_BOUNDS(tag, module)                                               \
     extern char __start_mssb_##tag##_d[] __attribute__((weak));                          \
     extern char __stop_mssb_##tag##_d[] __attribute__((weak));                           \
     extern char __start_mssb_##tag##_b[] __attribute__((weak));                          \
     extern char __stop_mssb_##tag##_b[] __attribute__((weak));
-#define MODULE_SECTIONS(tag)                                                             \
+#define MODULE_SECTIONS(tag, module)                                                     \
     {__start_mssb_##tag##_d, __stop_mssb_##tag##_d, __start_mssb_##tag##_b, __stop_mssb_##tag##_b}
 #endif
-#ifdef MODULE_SECTION_BOUNDS
-MODULE_SECTION_BOUNDS(chal)
-MODULE_SECTION_BOUNDS(menu)
-MODULE_SECTION_BOUNDS(game)
-#endif
+MODULE_SECTION_BOUNDS(chal, challenge)
+MODULE_SECTION_BOUNDS(menu, menus)
+MODULE_SECTION_BOUNDS(game, game)
 
 void menus_prolog(void);
 void menus_epilog(void);
@@ -59,14 +72,15 @@ typedef struct PortModule {
     void (*epilog)(void);
     void (*unresolved)(void);
     ModuleSections sections;
-    void* dataImage; // the module's .data as linked (copied before the first prolog)
+    void* dataImage;  // the module's .data as linked (copied before the first prolog)
+    void* dataImage2; // web: its generated data
     OSModuleHeader header; // stands in for the loaded REL image
 } PortModule;
 
 static PortModule s_modules[] = {
-    {"menus", 2, 0, menus_prolog, menus_epilog, NULL, MODULE_SECTIONS(menu)},
-    {"game", 3, 1, game_prolog, game_epilog, NULL, MODULE_SECTIONS(game)},
-    {"challenge", 1, 2, challenge_prolog, challenge_epilog, challenge_unresolved, MODULE_SECTIONS(chal)},
+    {"menus", 2, 0, menus_prolog, menus_epilog, NULL, MODULE_SECTIONS(menu, menus)},
+    {"game", 3, 1, game_prolog, game_epilog, NULL, MODULE_SECTIONS(game, game)},
+    {"challenge", 1, 2, challenge_prolog, challenge_epilog, challenge_unresolved, MODULE_SECTIONS(chal, challenge)},
 };
 
 static PortModule* find_by_header(OSModuleHeader* header)
@@ -95,29 +109,42 @@ OSModuleHeader* port_module_load(s32 dllIndex)
     return NULL;
 }
 
+// Restores [dataStart, dataEnd) to the image saved at the first load and
+// zeroes [bssStart, bssEnd).
+static void reset_range(char* dataStart, char* dataEnd, char* bssStart, char* bssEnd, void** image)
+{
+    if (dataStart != NULL && dataEnd > dataStart)
+    {
+        size_t n = (size_t)(dataEnd - dataStart);
+        if (*image == NULL)
+        {
+            *image = malloc(n);
+            memcpy(*image, dataStart, n);
+        }
+        else
+        {
+            memcpy(dataStart, *image, n);
+        }
+    }
+    if (bssStart != NULL && bssEnd > bssStart)
+        memset(bssStart, 0, (size_t)(bssEnd - bssStart));
+}
+
 void port_module_prolog(OSModuleHeader* header)
 {
     PortModule* m = find_by_header(header);
     if (m == NULL)
         return;
-    fprintf(stderr, "[modules] %s: prolog\n", m->name);
+    {
+        ModuleSections* r = &m->sections;
+        fprintf(stderr, "[modules] %s: prolog (reset data %ld+%ld, bss %ld+%ld bytes)\n", m->name,
+                (long)(r->dataEnd - r->dataStart), (long)(r->dataEnd2 - r->dataStart2),
+                (long)(r->bssEnd - r->bssStart), (long)(r->bssEnd2 - r->bssStart2));
+    }
     // As a freshly linked REL: .data as on disc, .bss zeroed.
     ModuleSections* sec = &m->sections;
-    if (sec->dataStart != NULL && sec->dataEnd > sec->dataStart)
-    {
-        size_t n = (size_t)(sec->dataEnd - sec->dataStart);
-        if (m->dataImage == NULL)
-        {
-            m->dataImage = malloc(n);
-            memcpy(m->dataImage, sec->dataStart, n);
-        }
-        else
-        {
-            memcpy(sec->dataStart, m->dataImage, n);
-        }
-    }
-    if (sec->bssStart != NULL && sec->bssEnd > sec->bssStart)
-        memset(sec->bssStart, 0, (size_t)(sec->bssEnd - sec->bssStart));
+    reset_range(sec->dataStart, sec->dataEnd, sec->bssStart, sec->bssEnd, &m->dataImage);
+    reset_range(sec->dataStart2, sec->dataEnd2, sec->bssStart2, sec->bssEnd2, &m->dataImage2);
     m->prolog();
 }
 

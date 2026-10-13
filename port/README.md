@@ -90,6 +90,10 @@ Headless check with screenshots (puppeteer-core: `cd port/tools && npm install`)
 node port/tools/web_drive.mjs --secs 60 --shots 20,40,60 --query 'nomovies&stats' --out build/web-shots
 ```
 
+A whole exhibition through the front-end menus (3 innings, ~14 minutes):
+`port/tools/web_full_game.sh 8080` (`build/web-game/console.log`, with
+`MSSB_TRACE_GAME` output).
+
 How it differs from the native build:
 - The game's OS threads are Emscripten fibers (Asyncify), scheduled
   cooperatively like the native run token (`port/web/src/os_threads_web.inc`,
@@ -114,6 +118,9 @@ How it differs from the native build:
   GameCube layout. Use `PORT_LP64`, not `TARGET_PC`, for any layout that
   hard-codes pointer sizes.
 - CISO images are expanded on the fly (`port/web/src/web_platform.cpp`).
+- REL module data is reset at each load between linker-order marker objects
+  (wasm-ld has no section bounds; `mssb_bracket_modules` in
+  `port/CMakeLists.txt`, `port/src/modules.c`).
 
 ## Layout
 

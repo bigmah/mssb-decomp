@@ -134,10 +134,45 @@ if (MSSB_SANITIZE_FUNCTION)
     # Our own handler (port/tools/fncheck) logs every (site, callee) pair.
 endif ()
 
+# wasm-ld has no section bounds, but it lays data out in input order: on the
+# web build each module's sources are bracketed by generated marker objects
+# so port/src/modules.c can reset the module's .data/.bss at each load
+# (port/include/port/module_sections.h).
+function(mssb_bracket_modules list_var kind)
+    if (NOT EMSCRIPTEN)
+        return()
+    endif ()
+    set(in ${${list_var}})
+    set(out)
+    set(rest ${in})
+    foreach (module challenge menus game)
+        if (kind STREQUAL "src")
+            set(regex "/src/${module}/")
+        else ()
+            set(regex "/gen/${module}(/|_data\\.c$)")
+        endif ()
+        set(mod ${rest})
+        list(FILTER mod INCLUDE REGEX "${regex}")
+        list(FILTER rest EXCLUDE REGEX "${regex}")
+        if (mod)
+            foreach (edge begin end)
+                set(f ${CMAKE_BINARY_DIR}/modmark/${module}_${kind}_${edge}.c)
+                file(WRITE ${f}.tmp "// Generated: ${module} ${kind} data/bss ${edge} marker (port/CMakeLists.txt).\n"
+                    "char mssb_${module}_${kind}_d_${edge} = 1;\nchar mssb_${module}_${kind}_b_${edge};\n")
+                file(COPY_FILE ${f}.tmp ${f} ONLY_IF_DIFFERENT)
+            endforeach ()
+            list(APPEND out ${CMAKE_BINARY_DIR}/modmark/${module}_${kind}_begin.c ${mod}
+                ${CMAKE_BINARY_DIR}/modmark/${module}_${kind}_end.c)
+        endif ()
+    endforeach ()
+    set(${list_var} ${rest} ${out} PARENT_SCOPE)
+endfunction ()
+
 # Game code from main.dol, game.rel, menus.rel and challenge.rel.
 # PC-only code that needs the game's headers (compiled like the game).
 file(GLOB MSSB_PORT_GAME_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game/*.c)
 list(APPEND MSSB_GAME_SOURCES ${MSSB_PORT_GAME_SOURCES})
+mssb_bracket_modules(MSSB_GAME_SOURCES src)
 add_library(mssb_game OBJECT ${MSSB_GAME_SOURCES})
 target_include_directories(mssb_game PRIVATE ${MSSB_INCLUDES})
 target_compile_definitions(mssb_game PRIVATE ${MSSB_DEFS})
@@ -211,6 +246,7 @@ endif ()
 # minus the 64-bit errors: initializers take addresses of functions declared
 # without prototypes.
 include(${CMAKE_SOURCE_DIR}/gen/sources.cmake)
+mssb_bracket_modules(MSSB_GEN_SOURCES gen)
 add_library(mssb_gen OBJECT ${MSSB_GEN_SOURCES})
 target_include_directories(mssb_gen PRIVATE ${MSSB_INCLUDES})
 target_compile_definitions(mssb_gen PRIVATE ${MSSB_DEFS})

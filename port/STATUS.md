@@ -14,15 +14,15 @@ Plan: `docs/PORT_PLAN.md`. Build and run: `port/README.md`.
   and disc-streamed music (`port/src/audio/dtk.cpp`). Keyboard (strikers'
   mapping) and SDL gamepads; memory card saves create/load.
 - **Web (Emscripten, Asyncify, WebGPU):** `port/tools/build_web.sh`,
-  `node port/tools/web_serve.mjs [port]`; boots to the menus and into a
-  skipfe game at 60 fps with audio running in headless Chrome
-  (`port/tools/web_drive.mjs`; `port/screenshots/web-*.png`).
+  `node port/tools/web_serve.mjs [port]`; at 60 fps with audio running in
+  headless Chrome, boots through the front-end menus into an exhibition and
+  plays a 3-inning game to "That's the game!" and back to the menus
+  (`port/tools/web_full_game.sh`; `port/screenshots/web-*.png`).
 - **Matching build:** unchanged (4 OK, 5413 matched, nmcheck clean).
 
 Web build: links at -O3 without function-pointer-cast emulation (10.3 MB
 wasm, was 22 MB at -O1 with emulation); callbacks have matching signatures.
-Known issues: modules
-aren't reset between loads on the web build; no Dolphin side-by-side
+Known issues: no Dolphin side-by-side
 comparison yet (pipe input never reached the game); a Challenge game itself
 isn't scripted yet; there's no separate post-game stats screen in the
 scripted run (A goes straight back to team select); gamepads untested with
@@ -295,6 +295,13 @@ Scripts (each run gets its own binary copy, log and fresh user folder with
   the end scene in ~520 s, returns to the menus (team select) and the A
   presses start the next game, which also plays: no crash in 640 s
   (`screenshots/game-end.png`, `game-result.png`, `after-game-teams.png`).
+- `port/tools/web_full_game.sh [port] [secs] [shots]`: the web build in
+  headless Chrome, through the front-end menus (no skipfe) into an
+  exhibition (Mario vs CPU Luigi, default 3 innings), A every 1.5 s. The
+  game went to extra innings and ended 1-0 in the 5th: "That's the game!" at
+  ~820 s, the result scene, back to the menus (module reset logged), and the
+  next game starts (`screenshots/web-game-end.png`, `web-game-result.png`,
+  `web-after-game.png`).
 - `port/tools/mode.sh challenge|toyfield|minigames|practice [secs] [shot]`:
   boot to the main menu, enter the mode, press A (`MSSB_MODE_INPUT` adds
   more). Each runs 150-240 s without a crash: Challenge walks the map,
@@ -305,7 +312,15 @@ Scripts (each run gets its own binary copy, log and fresh user folder with
 Fixes (classes to watch for):
 
 - REL modules get fresh .data/.bss at every load (`port/src/modules.c`,
-  `port/include/port/module_sections.h`); not on the web build yet.
+  `port/include/port/module_sections.h`). The web build has no section
+  bounds: wasm-ld keeps input order, so CMake brackets each module's sources
+  and its `port/gen` data with generated marker objects
+  (`mssb_bracket_modules`) and the reset covers the ranges between them.
+- Data swapped in place "once per address" breaks when the next load lands
+  at the same address: the camera animation list (`fn_3_FC448`) stayed
+  big-endian in the second web game (out-of-bounds trap) until
+  `fn_3_106E50` reset the guard at each load
+  (`port_forget_camera_anim_list`).
 - Views of `lbl_8036E548` (CharMgr), `lbl_2_bss_1A8250` (MenuData),
   `lbl_80366B18` (TextSystem), `lbl_3_common_bss_350E4`, `lbl_800EF808`
   regenerated with `pcview.py` (now scales offsets inside pointer arrays).
