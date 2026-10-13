@@ -60,3 +60,22 @@ void port_trace_scene(void) {
                 lbl_803CBBCC->prevScene, lbl_803CBBCC->prevStep);
     }
 }
+
+// Bytes of lbl_8036E548 (CharMgr) that game/auto_00_000AC9F8_text.c reads by
+// their GameCube offsets (it declares the object as u8[]).
+#include "main/file_80011640.h" // CharMgr
+#include <stdio.h>
+extern CharMgr lbl_8036E548;
+u8* port_charmgr_byte(u32 gcOffset) {
+    if (gcOffset >= 0x2D3C && gcOffset < 0x2D60 && (gcOffset - 0x2D3C) % 0xC == 0xA) {
+        return &lbl_8036E548.preload[(gcOffset - 0x2D3C) / 0xC].state;
+    }
+    switch (gcOffset) {
+    case 0x307D:
+        return &lbl_8036E548._307D;
+    case 0x307E:
+        return &lbl_8036E548._307E;
+    }
+    fprintf(stderr, "port_charmgr_byte: unmapped offset 0x%X\n", gcOffset);
+    abort();
+}

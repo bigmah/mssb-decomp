@@ -49,6 +49,14 @@ extern void fn_3_FBD70(void);
 extern void fn_3_FBD58(void);
 extern void fn_3_59918(s32, s32);
 extern u8 lbl_8036E548[];
+// Bytes of lbl_8036E548 (CharMgr) by GameCube offset; on PC through the
+// real struct (port/game/views.c).
+#ifdef TARGET_PC
+u8* port_charmgr_byte(u32 gcOffset);
+#define CHARMGR_U8(off) (*port_charmgr_byte(off))
+#else
+#define CHARMGR_U8(off) lbl_8036E548[off]
+#endif
 extern s32 fn_8001C588(s16);
 extern s16 lbl_3_data_FC1C[];
 extern void fn_3_6C0E0(void);
@@ -743,10 +751,10 @@ void fn_3_AF428(void) {
 // fn_3_B32B8, size:0x190
 s32 fn_3_B32B8(void) {
     InputStruct* c = &g_Controls[g_Practice.homeAway];
-    if (lbl_8036E548[0x2D46] != 0) {
+    if (CHARMGR_U8(0x2D46) != 0) {
         return 0;
     }
-    if (lbl_8036E548[0x2D52] != 0) {
+    if (CHARMGR_U8(0x2D52) != 0) {
         return 0;
     }
     if (g_Practice._186 != 0 || g_Practice.guidedPracticeCompletionRelated != 0) {
@@ -808,7 +816,7 @@ void fn_3_AE770(void) {
     }
     fn_3_FBD70();
     fn_3_FBD58();
-    lbl_8036E548[0x307E] = 1;
+    CHARMGR_U8(0x307E) = 1;
     g_GameLogic.pre_PostMiniGameInd = 1;
     changeScene(1, 6);
     fn_3_5A6D4(0);
@@ -860,7 +868,7 @@ void fn_3_B1A30(void) {
     switch (g_Practice.practiceState) {
     case 0: {
         s32 i;
-        lbl_8036E548[0x307D] = 0;
+        CHARMGR_U8(0x307D) = 0;
         fn_3_6EBB4(0);
         fn_3_8A350();
         for (i = 0; i < 9; i++) {
@@ -1009,7 +1017,7 @@ u8 fn_3_B3448(void) {
 // fn_3_AFB64, size:0x1E4
 void fn_3_AFB64(void) {
     u8* u;
-    if (lbl_8036E548[0x2D46] == 0 && lbl_8036E548[0x2D52] == 0 && lbl_8036E548[0x2D5E] == 0 &&
+    if (CHARMGR_U8(0x2D46) == 0 && CHARMGR_U8(0x2D52) == 0 && CHARMGR_U8(0x2D5E) == 0 &&
         (g_d_GameSettings.exhibitionMatchInd != 0 || lbl_3_common_bss_32724[0xB3] == 0) &&
         g_Pitcher.pitchTotalTimeCounter <= 0 && lbl_3_common_bss_34C90.active == 0 && g_Pitcher.pitcherActionState != 2) {
         lbl_3_common_bss_34C90._201 = 0;
@@ -1112,7 +1120,7 @@ void fn_3_B28A8(void) {
 void fn_3_B0874(void) {
     switch (g_Practice.practiceState) {
     case 0:
-        lbl_8036E548[0x307D] = 0;
+        CHARMGR_U8(0x307D) = 0;
         fn_3_8A350();
         if (g_Practice.practiceType_2 == 4) {
             fn_3_B4124(1, 0, ((s8*)((u8*)&g_Minigame + 0x19E8))[g_Practice.homeAway * 9], ((u8*)&g_Minigame)[g_Practice.homeAway + 0x1A17]);
@@ -1945,7 +1953,7 @@ void fn_3_B3620(void) {
             g_Practice.loadingGuidedPractice = 0;
             lbl_3_common_bss_34C90._1D9 = 2;
             g_Practice._19F = 0;
-            lbl_8036E548[0x307D] = 0;
+            CHARMGR_U8(0x307D) = 0;
             if (lbl_3_common_bss_34C90.subState == 11) {
                 g_Practice.practiceState = 0;
                 g_Practice.practiceLevel++;
@@ -1968,8 +1976,8 @@ void fn_3_B3620(void) {
             g_Practice.loadingGuidedPractice = 0;
             lbl_3_common_bss_34C90._1D9 = 2;
             g_Practice._19F = 0;
-            lbl_8036E548[0x307D] = 0;
-            lbl_8036E548[0x307E] = 0;
+            CHARMGR_U8(0x307D) = 0;
+            CHARMGR_U8(0x307E) = 0;
             fn_3_B5D4C(0);
             g_Practice.returnToPracticeMenuState = 1;
             g_GameLogic.secondaryGameMode = 10;
@@ -2403,8 +2411,8 @@ void fn_3_B2E20(void) {
         }
         lbl_3_common_bss_34C90._1D9 = 2;
         g_Practice._19F = 0;
-        lbl_8036E548[0x307D] = 0;
-        lbl_8036E548[0x307E] = 0;
+        CHARMGR_U8(0x307D) = 0;
+        CHARMGR_U8(0x307E) = 0;
         if (lbl_3_common_bss_34C90.subState == 9) {
             fn_3_B5D4C(6);
         } else {
@@ -2434,7 +2442,7 @@ void fn_3_B2E20(void) {
     case 11:
         lbl_3_common_bss_34C90._1D9 = 2;
         g_Practice._19F = 0;
-        lbl_8036E548[0x307D] = 0;
+        CHARMGR_U8(0x307D) = 0;
         g_Practice.practiceLevel++;
         g_Practice.practiceState = 0;
         g_Practice.tutorialState = 0;
@@ -2572,7 +2580,7 @@ void fn_3_ADA3C(void) {
         setBatterContactConstants();
         fn_3_FBD70();
         fn_3_FBD58();
-        lbl_8036E548[0x307E] = 1;
+        CHARMGR_U8(0x307E) = 1;
         g_GameLogic.pre_PostMiniGameInd = 1;
         for (i = 0; i < 2; i++) {
             if (g_GameLogic._13E[i] == 0) {
