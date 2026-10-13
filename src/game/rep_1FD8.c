@@ -76,7 +76,7 @@ extern u8 lbl_3_data_8404[];
 extern u8 lbl_3_data_84B8[];
 extern u16 lbl_3_data_81DC[];
 extern u32 sndFXStartEx(int, u8, u8, u8);
-extern void sndFXCtrl(int, int, u8);
+extern u32 sndFXCtrl(int, int, u8);
 extern const f32 lbl_3_rodata_20F4;
 extern const f32 lbl_3_rodata_20F8;
 extern u32 fn_8005268C(void);

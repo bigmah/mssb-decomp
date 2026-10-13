@@ -23,6 +23,10 @@ extern "C" void game_main(void);
 extern "C" void port_data_fixups(void);
 extern "C" void port_user_ini_load(const char* userPath);
 extern "C" void port_begin_first_frame(void);
+#ifdef __EMSCRIPTEN__
+extern "C" bool port_web_open_disc(void);
+extern "C" void port_web_report_fatal(const char* message);
+#endif
 
 static void log_callback(AuroraLogLevel level, const char* module, const char* message, unsigned int len)
 {
@@ -32,6 +36,9 @@ static void log_callback(AuroraLogLevel level, const char* module, const char* m
     if (level == LOG_FATAL)
     {
         fflush(out);
+#ifdef __EMSCRIPTEN__
+        port_web_report_fatal(std::string(message, len).c_str());
+#endif
         abort();
     }
 }
@@ -115,14 +122,27 @@ int aurora_main(int argc, char** argv)
     config.mem1Size = MEM1_DEFAULT_SIZE;
     config.mem2Size = ARAM_DEFAULT_SIZE;
     config.allowTextureDumps = getenv("MSSB_DUMP_TEXTURES") != nullptr;
+#ifdef __EMSCRIPTEN__
+    config.userPath = "/mssb"; // IndexedDB-backed, mounted by the page
+    config.cachePath = "/tmp";
+#else
     // MSSB_USER_DIR: a separate user data folder (memory card, user.ini,
     // bindings), e.g. for tests that must not touch the real saves.
     if (const char* dir = getenv("MSSB_USER_DIR"); dir && dir[0])
         config.userPath = dir;
+#endif
     AuroraInfo info = aurora_initialize(argc, argv, &config);
     port_crash_init(info.userPath);
     port_user_ini_load(info.userPath);
 
+#ifdef __EMSCRIPTEN__
+    if (!port_web_open_disc())
+    {
+        port_web_report_fatal("Couldn't read the disc image. It needs to be Mario Superstar Baseball (USA): "
+                              ".iso, .gcm or .ciso.");
+        return 1;
+    }
+#else
     std::string disc = find_disc(argc, argv, info.userPath);
     if (disc.empty() || !aurora_dvd_open(disc.c_str()))
     {
@@ -135,6 +155,7 @@ int aurora_main(int argc, char** argv)
         return 1;
     }
     fprintf(stderr, "[port] disc: %s\n", disc.c_str());
+#endif
 
     port_os_init();
     port_pad_init_defaults();

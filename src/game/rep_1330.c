@@ -24,7 +24,7 @@ extern void fn_3_675B8(s32);
 extern void fn_3_BF1AC(void);
 extern void fn_3_BF158(void);
 extern void fn_3_B902C(void);
-extern void sndFXKeyOff(u32);
+extern u32 sndFXKeyOff(u32);
 extern u8 g_ReplayCopies[];
 extern u8 g_Scores[];
 extern u8 g_RunningLogic[];

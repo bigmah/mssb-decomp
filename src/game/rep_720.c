@@ -215,6 +215,9 @@ lbl_3_data_16C4_s lbl_3_data_16C4[] = {
 };
 
 // FABRICATED
+#ifdef TARGET_PC // C99 inline has no external definition: keep one per file
+static
+#endif
 inline void fn_3_17B2C_inline(lbl_3_data_A40_s* p) {
     VEC_COPY(&g_pCamera->_2858, &p->_00);
     g_pCamera->_289C = p->_10[0];

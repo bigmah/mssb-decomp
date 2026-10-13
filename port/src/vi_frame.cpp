@@ -18,6 +18,12 @@
 #include <cstdlib>
 #include <thread>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+extern "C" void port_web_frame_tick(void);
+extern "C" int port_is_main_os_thread(void);
+#endif
+
 namespace {
 std::atomic<u32> s_retraceCount{0};
 VIRetraceCallback s_preCb = nullptr;
@@ -40,6 +46,39 @@ void handle_events()
     }
 }
 
+#ifdef __EMSCRIPTEN__
+EM_ASYNC_JS(void, web_wait_animation_frame, (), {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+});
+
+// The browser presents the canvas when control returns to its event loop, so
+// each frame ends by yielding (Asyncify) until the display refresh where this
+// frame's 59.94 Hz slot comes up. Audio is topped up while waiting.
+void pace_frame()
+{
+    constexpr double kPeriodMs = 1001.0 / 60.0;
+    static double s_next = 0;
+    double now = emscripten_get_now();
+    if (s_next == 0)
+        s_next = now;
+    s_next += kPeriodMs;
+    do
+    {
+        port_audio_pump();
+        web_wait_animation_frame();
+        port_audio_pump();
+        now = emscripten_get_now();
+    } while (now < s_next - 2.0);
+    if (now - s_next > 100.0)
+        s_next = now; // fell behind (slow frame, tab hidden): don't try to catch up
+    port_web_frame_tick();
+}
+
+void port_sleep_ms(int ms)
+{
+    emscripten_sleep(ms);
+}
+#else
 // The game runs one tick per NTSC field (59.94 Hz). aurora presents with vsync,
 // which runs at the display's rate (120 Hz on ProMotion Macs), so hold each
 // frame until its slot comes up.
@@ -67,6 +106,8 @@ void port_sleep_ms(int ms)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
+
+#endif
 
 void quit_now()
 {
@@ -139,7 +180,11 @@ void port_request_quit(void)
 // The main thread presents; other game threads wait for the next frame.
 void VIWaitForRetrace(void)
 {
+#ifdef __EMSCRIPTEN__
+    if (port_is_main_os_thread())
+#else
     if (std::this_thread::get_id() == s_mainThread)
+#endif
         port_present_frame();
     else
         port_wait_retrace(s_retraceCount.load());
@@ -196,5 +241,7 @@ VIRetraceCallback VISetPostRetraceCallback(VIRetraceCallback cb)
 
 } // extern "C"
 
+#ifndef __EMSCRIPTEN__
 std::chrono::steady_clock::time_point port_retrace_deadline() { return s_next; }
+#endif
 unsigned int port_retrace_count() { return s_retraceCount.load(); }

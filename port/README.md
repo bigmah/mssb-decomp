@@ -66,6 +66,45 @@ MSSB_USER_INI=$PWD/build/port/skipfe.ini MSSB_SKIP_MOVIES=1 port/tools/run.sh 90
   `MSSB_DSP_STATS=1`, `MSSB_DSP_DUMP=file.raw`, `MSSB_DEBUG_DTK=1`,
   `MSSB_DEBUG_CARD=1`, `MSSB_DEBUG_INPUT=1`.
 
+## Web build
+
+Emscripten (`brew install emscripten`), WebGPU (Chrome):
+
+```sh
+port/tools/build_web.sh          # build/web: mssb.js, mssb.wasm, index.html, ...
+node port/tools/web_serve.mjs    # http://localhost:8080
+```
+
+The page asks for the disc image once (.iso, .gcm or .ciso) and keeps a copy
+in the browser's private storage (OPFS); the memory card and user data live in
+IndexedDB (`/mssb`). `web_serve.mjs` also serves `../mario_baseball.iso` (or
+`$MSSB_ISO`) as `disc.iso` for tests. Test URL parameters:
+`?iso=disc.iso&autostart` (skip the picker), `&skipfe&captain1=mario&captain2=bowser`
+(user.ini skip-front-end), `&nomovies` (`MSSB_SKIP_MOVIES`), `&stats` (fps and
+audio queue in the console), `&env=KEY=VALUE;KEY=VALUE` (environment, e.g.
+`MSSB_INPUT=500:A,800:A`).
+
+Headless check with screenshots (puppeteer-core: `cd port/tools && npm install`):
+
+```sh
+node port/tools/web_drive.mjs --secs 60 --shots 20,40,60 --query 'nomovies&stats' --out build/web-shots
+```
+
+How it differs from the native build:
+- The game's OS threads are Emscripten fibers (Asyncify), scheduled
+  cooperatively like the native run token (`port/web/src/os_threads_web.inc`,
+  included by `port/src/os.cpp`); DVD completions and DSP/AI work are queued
+  "interrupts" delivered when the game enables interrupts or waits.
+- wasm traps on indirect calls whose signature doesn't match the callee; the
+  decomp does that a lot (task and draw callbacks), so the build uses
+  `-sEMULATE_FUNCTION_POINTER_CASTS` (and links at -O1: binaryen's emulation
+  fails at -O2/-O3 on this module).
+- wasm32 has 4-byte pointers: views with hand-computed 64-bit offsets are under
+  `PORT_LP64` (defined by the prelude on 64-bit hosts); wasm32 uses the
+  GameCube layout. Use `PORT_LP64`, not `TARGET_PC`, for any layout that
+  hard-codes pointer sizes.
+- CISO images are expanded on the fly (`port/web/src/web_platform.cpp`).
+
 ## Layout
 
 - `port/CMakeLists.txt`, `port/sources.cmake`: the PC build. The sources are

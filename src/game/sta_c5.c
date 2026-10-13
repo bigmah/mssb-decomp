@@ -15,7 +15,7 @@ extern u8 lbl_3_data_81DC[];
 extern u8 lbl_3_data_8404[];
 extern u8 lbl_3_data_84B8[];
 extern u32 sndFXStartEx(int, u8, u8, u8);
-extern void sndFXCtrl(int, int, u8);
+extern u32 sndFXCtrl(int, int, u8);
 extern void fn_3_65A8(void);
 extern void fn_3_27648(void);
 extern char lbl_3_rodata_2DB8[];

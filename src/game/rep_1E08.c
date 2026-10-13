@@ -979,7 +979,7 @@ typedef struct StadiumFxState {
     /* 0x47E */ u8 _47E[2];
 } StadiumFxState; // size: 0x480
 extern StadiumFxState lbl_3_common_bss_35154;
-#ifdef TARGET_PC
+#ifdef PORT_LP64
 // Hand-written PC views (game/rep_3F60.h EffectAnim, game/rep_1F58.h) use these.
 _Static_assert(offsetof(StadiumFxState, actors) == 0x20 && offsetof(StadiumFxState, shapes) == 0x28, "EffectAnim");
 _Static_assert(sizeof(ShapeAnimPlayer) == 0xA0 && offsetof(ShapeAnimPlayer, state) == 0x18 && offsetof(ShapeAnimPlayer, model) == 0x40,

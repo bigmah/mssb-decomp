@@ -50,6 +50,26 @@ endforeach ()
 # Compiling the game only needs aurora's headers; the full aurora build
 # (Dawn, SDL3, nod) is needed to link the executable (Phase 2).
 option(MSSB_AURORA "Configure aurora (needed to link the mssb executable)" ON)
+if (EMSCRIPTEN)
+    # Browser build (port/tools/build_web.sh, as strikers'): single-threaded,
+    # WebGPU via emdawnwebgpu, SDL3 built from source, and a minimal GCM
+    # reader in place of nod (port/web/nod).
+    set(AURORA_SDL3_PROVIDER vendor CACHE STRING "" FORCE)
+    set(AURORA_SDL3_LINKAGE static CACHE STRING "" FORCE)
+    set(AURORA_CACHE_USE_ZSTD OFF CACHE BOOL "" FORCE)
+    set(BUILD_SHARED_LIBS OFF)
+    add_library(mssb_web_ZLIB INTERFACE)
+    target_compile_options(mssb_web_ZLIB INTERFACE -sUSE_ZLIB=1)
+    target_link_options(mssb_web_ZLIB INTERFACE -sUSE_ZLIB=1)
+    add_library(mssb_web_PNG INTERFACE)
+    target_compile_options(mssb_web_PNG INTERFACE -sUSE_LIBPNG=1)
+    target_link_options(mssb_web_PNG INTERFACE -sUSE_LIBPNG=1)
+    add_library(ZLIB::ZLIB ALIAS mssb_web_ZLIB)
+    add_library(PNG::PNG ALIAS mssb_web_PNG)
+    add_library(nod_web STATIC ${CMAKE_SOURCE_DIR}/web/nod/nod_gcm.cpp)
+    target_include_directories(nod_web PUBLIC ${CMAKE_SOURCE_DIR}/web/nod/include)
+    add_library(nod::nod ALIAS nod_web)
+endif ()
 if (MSSB_AURORA)
     set(AURORA_ENABLE_DVD ON CACHE BOOL "" FORCE)
     set(AURORA_ENABLE_CARD ON CACHE BOOL "" FORCE)
@@ -62,6 +82,7 @@ include(${CMAKE_SOURCE_DIR}/sources.cmake)
 # <dolphin/...> must win over the decomp's include/Dolphin/... for the SDK.
 # The decomp's own SDK headers forward to aurora's under TARGET_PC.
 set(MSSB_INCLUDES
+    $<$<BOOL:${EMSCRIPTEN}>:${CMAKE_SOURCE_DIR}/web/include>
     ${CMAKE_SOURCE_DIR}/include_game
     ${CMAKE_SOURCE_DIR}/include
     ${AURORA_DIR}/include
@@ -203,12 +224,55 @@ endforeach ()
 # PC-only code (port/src) and the executable.
 file(GLOB_RECURSE PORT_SOURCES CONFIGURE_DEPENDS src/*.c src/*.cpp)
 list(FILTER PORT_SOURCES EXCLUDE REGEX "/src/audio/")
+if (EMSCRIPTEN)
+    # wasm32 pointers are already 32-bit: no reserved heap region, no
+    # signal-based crash handler. The game's threads are fibers (os.cpp
+    # includes port/web/src/os_threads_web.inc).
+    list(FILTER PORT_SOURCES EXCLUDE REGEX "/src/(crash|game_heap)\\.cpp$|/src/game_heap_dlmalloc\\.c$")
+    file(GLOB WEB_SOURCES CONFIGURE_DEPENDS web/src/*.cpp)
+    list(APPEND PORT_SOURCES ${WEB_SOURCES})
+endif ()
 add_executable(mssb ${PORT_SOURCES} $<TARGET_OBJECTS:mssb_game> $<TARGET_OBJECTS:mssb_gen>)
 # port/src sees aurora and port/include, not the game's shadow headers.
-target_include_directories(mssb PRIVATE ${CMAKE_SOURCE_DIR}/include ${AURORA_DIR}/include)
+target_include_directories(mssb PRIVATE $<$<BOOL:${EMSCRIPTEN}>:${CMAKE_SOURCE_DIR}/web/include> ${CMAKE_SOURCE_DIR}/include ${AURORA_DIR}/include)
 target_compile_definitions(mssb PRIVATE ${MSSB_DEFS} MSSB_REPO_DIR="${MSSB_ROOT}")
 target_compile_options(mssb PRIVATE ${MSSB_COMMON_FLAGS} -Wno-everything)
 if (MSSB_AURORA)
     target_link_libraries(mssb PRIVATE musyx mssb_audio aurora::core aurora::gx aurora::vi aurora::pad
         aurora::si aurora::dvd aurora::card aurora::mtx aurora::os aurora::main)
+endif ()
+
+if (EMSCRIPTEN)
+    # The game's OS threads are Emscripten fibers, which need Asyncify (JSPI
+    # can't switch fibers); disc reads that miss the page's cache and frame
+    # pacing also suspend through it.
+    # The decomp calls through function pointers with other signatures than
+    # the callee's (task and draw callbacks get an argument they don't
+    # declare, as PowerPC allows); wasm traps on that unless emulated.
+    target_link_options(mssb PRIVATE
+        -sASYNCIFY
+        -sEMULATE_FUNCTION_POINTER_CASTS=1
+        # binaryen's fpcast emulation breaks at -O2/-O3 on this module
+        # (validation errors, an assertion): link at -O1.
+        -O1
+        -sASYNCIFY_STACK_SIZE=1MB
+        -sALLOW_MEMORY_GROWTH=1
+        -sINITIAL_MEMORY=512MB
+        -sMAXIMUM_MEMORY=3GB
+        -sSTACK_SIZE=8MB
+        -sENVIRONMENT=web
+        -sEXIT_RUNTIME=0
+        -sINVOKE_RUN=0
+        -sMODULARIZE=0
+        -sEXPORTED_RUNTIME_METHODS=['callMain','FS','IDBFS','HEAPU8','addRunDependency','removeRunDependency','ENV']
+        -sEXPORTED_FUNCTIONS=['_main','_malloc','_free']
+        -lidbfs.js
+        --profiling-funcs)
+    set_target_properties(mssb PROPERTIES OUTPUT_NAME "mssb" SUFFIX ".js")
+    # Copy the page and its scripts next to the build output.
+    add_custom_target(mssb_page ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_SOURCE_DIR}/web/index.html ${CMAKE_SOURCE_DIR}/web/loader.js
+            ${CMAKE_SOURCE_DIR}/web/pad.js ${CMAKE_SOURCE_DIR}/web/touch.js
+            $<TARGET_FILE_DIR:mssb>)
 endif ()

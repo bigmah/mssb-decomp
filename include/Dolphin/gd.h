@@ -80,6 +80,9 @@ static inline void __GDWriteF32(f32 data)
 	__GDWrite(((u8*)&data)[3]);
 }
 
+#ifdef TARGET_PC // C99 inline has no external definition: keep one per file
+static
+#endif
 inline void GDOverflowCheck(u32 len)
 {
 	if (__GDCurrentDL->pDisplayListData + len > __GDCurrentDL->end) {

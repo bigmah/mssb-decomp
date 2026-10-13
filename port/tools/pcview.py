@@ -4,7 +4,7 @@ has them on PC (see port/tools/viewcheck.py).
 
     python3 port/tools/pcview.py <global> [--canon Type] [--dry-run]
 
-For each view of <global> that viewcheck flags, the typedef gets a TARGET_PC
+For each view of <global> that viewcheck flags, the typedef gets a PORT_LP64
 branch: a union of one-field structs, each field preceded by padding up to
 its PC offset (the canonical view's PC offset of the field that covers the
 same GameCube offset, plus the distance into it). The GameCube branch keeps
@@ -172,7 +172,7 @@ def main():
                 break
         old_pc = None
         if where is not None:
-            g = re.search(r'#ifdef TARGET_PC\ntypedef union \{\n    // PC: each field where [^\n]*\n(?:(?!#endif|typedef)[^\n]*\n)*?\} %s;\n#else\n' % re.escape(T),
+            g = re.search(r'#ifdef (?:TARGET_PC|PORT_LP64[^\n]*)\ntypedef union \{\n    // PC: each field where [^\n]*\n(?:(?!#endif|typedef)[^\n]*\n)*?\} %s;\n#else\n' % re.escape(T),
                           src[where[0]])
             if g:
                 old_pc = g.group(0)
@@ -219,9 +219,9 @@ def main():
         if not dry:
             t = src[p_]
             if old_pc:
-                t = t.replace(old_pc, '#ifdef TARGET_PC\n' + pcdef + '#else\n', 1)
+                t = t.replace(old_pc, '#ifdef PORT_LP64 // offsets for 64-bit pointers (wasm32 uses the GameCube layout)\n' + pcdef + '#else\n', 1)
             else:
-                t = t.replace(orig, '#ifdef TARGET_PC\n' + pcdef + '#else\n' + orig + '#endif\n', 1)
+                t = t.replace(orig, '#ifdef PORT_LP64 // offsets for 64-bit pointers (wasm32 uses the GameCube layout)\n' + pcdef + '#else\n' + orig + '#endif\n', 1)
             src[p_] = t
             open(p_, 'w').write(t)
 

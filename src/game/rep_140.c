@@ -5,6 +5,9 @@
 #include "main/file_80022DAC.h"
 
 
+#ifdef TARGET_PC // C99 inline has no external definition: keep one per file
+static
+#endif
 inline f32 fn_3_14A4_inline(f32 distance, const f32* endLengths, const f32* values, const f32* curvature, int keyCount) {
     int segment = 0;
     int end = keyCount - 1;
@@ -29,6 +32,9 @@ inline f32 fn_3_14A4_inline(f32 distance, const f32* endLengths, const f32* valu
     }
 }
 
+#ifdef TARGET_PC // C99 inline has no external definition: keep one per file
+static
+#endif
 inline void fn_3_19B0_inline(f32 distance, VecXZ* out, const f32* valuesX, const f32* valuesZ, const f32* endLengths,
                 const f32* curvatureX, const f32* curvatureZ, int keyCount) {
     out->x = fn_3_14A4_inline(distance, endLengths, valuesX, curvatureX, keyCount);
@@ -145,6 +151,9 @@ void running_roundBasePosition(f32 frame, VecXZ* outPos, VecXZ* points, int coun
     outPos->z = fn_3_14A4(frame, timings, valuesZ, curveZ, count);
 }
 
+#ifdef TARGET_PC // C99 inline has no external definition: keep one per file
+static
+#endif
 inline void fn_3_1B24_inline(f32* values, f32* timings, f32* curve, s32 count)
 {
     s32 i;

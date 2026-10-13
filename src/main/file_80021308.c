@@ -41,7 +41,7 @@ void fn_800A7568(void);
 void fn_800A8F68(void);
 u32 sndPushGroup(void* prj_data, u16 gid, void* samples, void* sdir, void* pool);
 u32 sndPopGroup(void);
-s32 sndSetAuxProcessingCallbacks(u8 studio, SND_AUX_CALLBACK auxA, void* userA, u8 midiA, u16 seqIDA, SND_AUX_CALLBACK auxB,
+void sndSetAuxProcessingCallbacks(u8 studio, SND_AUX_CALLBACK auxA, void* userA, u8 midiA, u16 seqIDA, SND_AUX_CALLBACK auxB,
                                  void* userB, u8 midiB, u16 seqIDB);
 u32 OSGetSoundMode(void);
 void OSSetSoundMode(u32 mode);

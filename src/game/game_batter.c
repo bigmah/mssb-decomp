@@ -69,12 +69,18 @@ extern u8 lbl_800E8754[];
 #define FRAME_COUNT_BUNT_LATE_RETREAT (FRAME_COUNT_BEGIN_RETREATING + 12)
 
 // fabricated
+#ifdef TARGET_PC // C99 inline has no external definition: keep one per file
+static
+#endif
 inline f32 inv_lerp(f32 value, f32 low, f32 high)
 {
     return (value - low) / (high - low);
 }
 
 // fabricated
+#ifdef TARGET_PC // C99 inline has no external definition: keep one per file
+static
+#endif
 inline f32 flipped_inv_lerp(f32 value, f32 low, f32 high)
 {
     return 1.0f - inv_lerp(value, low, high);
@@ -538,6 +544,9 @@ void batterInBoxMovement(void) {
 }
 
 // FABRICATED
+#ifdef TARGET_PC // C99 inline has no external definition: keep one per file
+static
+#endif
 inline void batterSetChargeDown() {
     int d1 = (g_Batter.chargeFrames - g_Batter.frameChargeDownBegins);
     if (d1 > g_hitShorts.frameChargeDownEnds) {

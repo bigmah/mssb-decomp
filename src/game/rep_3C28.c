@@ -4,7 +4,7 @@
 #include "game/UnknownHomes_Game.h"
 #include "Dolphin/vec.h"
 
-#ifdef TARGET_PC
+#ifdef PORT_LP64 // offsets for 64-bit pointers (wasm32 uses the GameCube layout)
 // PC: the fields where StadiumFxState (rep_1E08.c) has them.
 extern union {
     struct { u8 _at__04[0x8]; void* _04; }; // effect archive
@@ -45,7 +45,7 @@ void fn_3_15F574(void) {
     mag = PSVECMag(&diff);
     if (mag) {
 #ifdef TARGET_PC
-        lbl_3_data_27C98[idx].file = lbl_3_common_bss_35154._04;
+        lbl_3_data_27C98[idx].file = (void*)(uintptr_t)lbl_3_common_bss_35154._04;
 #else
         lbl_3_data_27C98[idx]._00 = lbl_3_common_bss_35154._04;
 #endif
