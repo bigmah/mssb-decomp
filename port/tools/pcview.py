@@ -136,6 +136,10 @@ def main():
             return g
         go, po, ty = best
         d = g - go
+        # arrays of pointers: 4-byte elements on GameCube, 8 on PC
+        pm = re.match(r'^.*\*\s*((?:\[\d+\])+)$', ty.strip())
+        if pm and d >= 4:
+            return po + (d // 4) * 8 + d % 4
         m = re.match(r'^(?:struct |union )?(\w+)(?: ?\[(\d+)\])*$', ty.strip())
         if m and m.group(1) in CP and m.group(1) in CG and len(CP[m.group(1)]) == len(CG[m.group(1)]):
             el = m.group(1)

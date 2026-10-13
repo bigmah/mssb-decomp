@@ -92,7 +92,7 @@ typedef union {
     struct { StaC0Obj *objs; };
     struct { u8 _at_objsBackup[0x8]; StaC0Obj *objsBackup; };
     struct { u8 _at_seqA[0x10]; StaC0Seq *seqA; };
-    struct { u8 _at_seqB[0x14]; StaC0Seq *seqB; };
+    struct { u8 _at_seqB[0x18]; StaC0Seq *seqB; };
     struct { u8 _at_lights[0x20]; StaC0Lights *lights; };
     struct { u8 _at__14[0x28]; u8 _14[0x18 - 0x14]; };
     struct { u8 _at_draw[0x30]; void (*draw)(void); };
