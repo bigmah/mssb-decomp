@@ -54,6 +54,9 @@ PC=['/usr/bin/clang','-S', '-emit-llvm', '-o', '/dev/null','-ferror-limit=0','-W
 GC=['/usr/bin/clang','-target','powerpc-unknown-eabi','-S', '-emit-llvm', '-o', '/dev/null','-ferror-limit=0','-nostdinc','-Iinclude','-Iinclude/stl','-DNONMATCHING=1','-fsigned-char',
     '-Wno-everything','-Xclang','-fdump-record-layouts']
 if os.path.isdir('port/include_game'): PC.insert(PC.index('-Iport/include'),'-Iport/include_game')
+# --wasm: check the web build's layout (wasm32, 4-byte pointers) instead of arm64.
+if '--wasm' in sys.argv:
+    PC=['emcc']+[a for a in PC[1:] if a not in ('-arch','arm64')]
 @functools.lru_cache(None)
 def dump(f,plat):
     r=subprocess.run((PC if plat=='pc' else GC)+[f],capture_output=True,text=True,cwd=R)

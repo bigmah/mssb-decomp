@@ -48,7 +48,7 @@ u8 __##currentOffset##padding[((currentOffset) - (lastOffset) - sizeof(typeOfLas
 // lbl_80366158 (lbl_80366158_s, main/file_80008E00.h) starts with three
 // pointers: its byte fields from 0x0C on are this much further on PC. For the
 // views that pad up to them.
-#ifdef TARGET_PC
+#ifdef PORT_LP64
 #define LBL_80366158_PAD(n) ((n) + 0xC)
 #else
 #define LBL_80366158_PAD(n) (n)
