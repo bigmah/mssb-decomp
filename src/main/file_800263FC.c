@@ -63,6 +63,15 @@ extern const MtxBox lbl_800E67C0; // identity
 extern const MtxBox lbl_800E682C; // identity
 extern const MtxBox lbl_800E67F0; // identity
 extern const MtxBox lbl_800E685C; // identity
+// A particle colour as GXColor1u32 wants it (0xRRGGBBAA). The trail code builds
+// the colour a byte at a time, so the bytes are r,g,b,a in memory; reading them
+// as a native u32 on a little-endian host sends a,b,g,r (opaque skid marks).
+#ifdef TARGET_PC
+#define PARTICLE_RGBA(col) (((u32)(col).v[0] << 24) | ((u32)(col).v[1] << 16) | ((u32)(col).v[2] << 8) | (u32)(col).v[3])
+#else
+#define PARTICLE_RGBA(col) ((col).rgba)
+#endif
+
 // Scratch for drawing type-4 trails.
 typedef struct TrailScratch {
     /* 0x00 */ f32 width[18];
@@ -2333,28 +2342,28 @@ s32 fn_8002ECA0(Emitter* e) {
         p->color.c.a = a;
         GXBegin(prim, GX_VTXFMT0, 8);
         GXPosition3f32((p->pos.x + d.x) - d.z, p->pos.y, d.x + (p->pos.z + d.z));
-        GXColor1u32(p->color.rgba);
+        GXColor1u32(PARTICLE_RGBA(p->color));
         GXTexCoord2f32(0.0f, 0.0f);
         GXPosition3f32(d.z + (p->pos.x + d.x), p->pos.y, (p->pos.z + d.z) - d.x);
-        GXColor1u32(p->color.rgba);
+        GXColor1u32(PARTICLE_RGBA(p->color));
         GXTexCoord2f32(1.0f, 0.0f);
         GXPosition3f32(p->pos.x - d.z, p->pos.y, p->pos.z + d.x);
-        GXColor1u32(p->color.rgba);
+        GXColor1u32(PARTICLE_RGBA(p->color));
         GXTexCoord2f32(0.0f, 0.25f);
         GXPosition3f32(p->pos.x + d.z, p->pos.y, p->pos.z - d.x);
-        GXColor1u32(p->color.rgba);
+        GXColor1u32(PARTICLE_RGBA(p->color));
         GXTexCoord2f32(1.0f, 0.25f);
         GXPosition3f32(p->u.trail.prev.x - d.z, p->u.trail.prev.y, p->u.trail.prev.z + d.x);
-        GXColor1u32(p->color.rgba);
+        GXColor1u32(PARTICLE_RGBA(p->color));
         GXTexCoord2f32(0.0f, 0.75f);
         GXPosition3f32(p->u.trail.prev.x + d.z, p->u.trail.prev.y, p->u.trail.prev.z - d.x);
-        GXColor1u32(p->color.rgba);
+        GXColor1u32(PARTICLE_RGBA(p->color));
         GXTexCoord2f32(1.0f, 0.75f);
         GXPosition3f32((p->u.trail.prev.x - d.x) - d.z, p->u.trail.prev.y, d.x + (p->u.trail.prev.z - d.z));
-        GXColor1u32(p->color.rgba);
+        GXColor1u32(PARTICLE_RGBA(p->color));
         GXTexCoord2f32(0.0f, 1.0f);
         GXPosition3f32(d.z + (p->u.trail.prev.x - d.x), p->u.trail.prev.y, (p->u.trail.prev.z - d.z) - d.x);
-        GXColor1u32(p->color.rgba);
+        GXColor1u32(PARTICLE_RGBA(p->color));
         GXTexCoord2f32(1.0f, 1.0f);
         p->life -= (lbl_80366158._28 == 0);
         if (p->life == 0) {
