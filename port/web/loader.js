@@ -11,6 +11,31 @@ const MAX_BLOCKS = 160; // ~80 MB read cache
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 
+// ?debug: the console goes to the site's /log too (port/cloudflare/src/worker.js),
+// so a phone's errors can be read with `wrangler tail`.
+if (params.has('debug')) {
+  const id = Math.random().toString(36).slice(2, 8);
+  let queue = [];
+  const t0 = performance.now();
+  const flush = () => {
+    if (!queue.length) return;
+    const lines = queue;
+    queue = [];
+    fetch('log', { method: 'POST', body: JSON.stringify({ id, lines }), keepalive: true }).catch(() => {});
+  };
+  setInterval(flush, 1000);
+  addEventListener('pagehide', flush);
+  for (const level of ['log', 'info', 'warn', 'error']) {
+    const orig = console[level].bind(console);
+    console[level] = (...a) => {
+      orig(...a);
+      const text = a.map((x) => (x instanceof Error ? x.stack || x.message : typeof x === 'object' ? (() => { try { return JSON.stringify(x); } catch { return String(x); } })() : String(x))).join(' ');
+      queue.push(`${((performance.now() - t0) / 1000).toFixed(1)} ${level} ${text}`);
+    };
+  }
+  console.log(`debug: ${navigator.userAgent} gpu=${!!navigator.gpu} mem=${navigator.deviceMemory} screen=${screen.width}x${screen.height}@${devicePixelRatio}`);
+}
+
 // ---- Disc access -----------------------------------------------------------
 
 // Reads go through a block cache. readCached() answers synchronously when every
@@ -287,6 +312,7 @@ const loading = {
 };
 
 function show(id) {
+  if (params.has('debug')) console.log(`panel ${id}`);
   for (const el of document.querySelectorAll('.panel')) el.hidden = el.id !== id;
   $('overlay').hidden = false;
   MssbPad.setActive(id === 'panel-play');
@@ -344,6 +370,7 @@ let started = false;
 function start(disc) {
   if (started) return;
   started = true;
+  if (params.has('debug')) console.log(`start, runtime ready: ${runtimeReady}`);
   Module.mssbDisc = disc;
   MssbPad.setActive(false);
   $('overlay').hidden = true;
@@ -384,6 +411,18 @@ window.Module = {
       // The environment is fixed once the runtime starts; writeUserIni() fills
       // the file in when Play is pressed.
       ENV.MSSB_USER_INI = '/tmp/user.ini';
+      // The game's window is 1280x960 times the screen's pixel ratio. At a
+      // phone's 3x that's a 3840x2880 render target, more GPU memory than iOS
+      // gives a tab (it kills the page), so touch devices render at 1x: still
+      // twice the GameCube's resolution. ?dpr=N picks the ratio.
+      const dpr = params.has('dpr') ? Number(params.get('dpr')) : MssbTouch.isEnabled() ? 1 : null;
+      if (dpr > 0) {
+        try {
+          Object.defineProperty(window, 'devicePixelRatio', { get: () => dpr, configurable: true });
+        } catch (e) {
+          console.warn("Couldn't set the pixel ratio", e);
+        }
+      }
       ENV.MSSB_SKIP_MOVIES = params.has('movies') ? '0' : '1';
       // GPU pipelines the game is known to use, compiled in the background at
       // boot so new effects don't stall a frame (aurora's pipeline_cache.cpp;
@@ -399,14 +438,20 @@ window.Module = {
       FS.mkdir('/mssb');
       FS.mount(IDBFS, {}, '/mssb');
       addRunDependency('mssb-userdata');
+      if (params.has('debug')) console.log('preRun: loading saved data');
       FS.syncfs(true, (err) => {
+        if (params.has('debug')) console.log(`saved data loaded${err ? `: ${err}` : ''}`);
         if (err) console.warn("Couldn't load saved data", err);
         removeRunDependency('mssb-userdata');
       });
     },
   ],
+  monitorRunDependencies: (left) => {
+    if (params.has('debug')) console.log(`run dependencies left: ${left}`);
+  },
   onRuntimeInitialized: () => {
     runtimeReady = true;
+    if (params.has('debug')) console.log('runtime ready');
     if (pendingStart) pendingStart();
     loading.update();
   },
@@ -438,6 +483,10 @@ async function init() {
   const script = document.createElement('script');
   script.src = `${BUILD_DIR}mssb.js`;
   script.async = true;
+  if (params.has('debug')) {
+    script.onload = () => console.log('mssb.js loaded');
+    script.onerror = () => console.error('mssb.js failed to load');
+  }
   document.body.appendChild(script);
 
   const isoUrl = params.get('iso');

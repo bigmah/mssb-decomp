@@ -4,6 +4,9 @@
 // unlocked it with DISC_PASSWORD:
 //   POST /disc/unlock   {password} -> sets a long-lived HttpOnly cookie
 //   GET  /disc/*        the chunks and manifest.json; 401 without the cookie
+// Pages opened with ?debug post their console to /log, which lands in the
+// Worker's logs: watch with `cd port/cloudflare && npx wrangler tail`.
+//   POST /log           {id, lines: [string]}
 const encoder = new TextEncoder();
 
 function json(body, status = 200, extra = {}) {
@@ -72,6 +75,13 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/disc/')) return disc(request, env, url);
+    if (url.pathname === '/log' && request.method === 'POST') {
+      try {
+        const { id, lines } = await request.json();
+        for (const line of [].concat(lines).slice(0, 200)) console.log(`[${String(id).slice(0, 8)}] ${String(line).slice(0, 2000)}`);
+      } catch {}
+      return new Response(null, { status: 204 });
+    }
     return env.ASSETS.fetch(request);
   },
 };

@@ -72,4 +72,6 @@ http://localhost:8787).
 ## Logs, rollback
 
 - Live logs: `cd port/cloudflare && npx wrangler tail`.
+- A phone's console: open the site with `?debug` (e.g. `?password=...&debug`) and
+  the page posts its console to `/log`, which shows up in `wrangler tail`.
 - Roll back to the previous version: `cd port/cloudflare && npx wrangler rollback`.
