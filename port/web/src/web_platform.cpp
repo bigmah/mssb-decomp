@@ -10,6 +10,7 @@
 // page loads it before main() and it's written back every few seconds.
 
 #include <aurora/dvd.h>
+#include <aurora/gfx.h>
 
 #include <emscripten.h>
 
@@ -173,8 +174,22 @@ void port_debug_dump(void); // port/game/web_debug.c
 void port_web_frame_tick(void)
 {
     static unsigned s_frames = 0;
+    static bool s_firstScreen = false;
+    if (!s_firstScreen && aurora_get_stats()->drawCallCount >= 2)
+    {
+        s_firstScreen = true;
+        EM_ASM({ console.log(`first screen: frame ${$0}, ${((performance.now() - (Module.mssbStartTime || 0)) / 1000).toFixed(1)} s after Play`); },
+               s_frames);
+    }
     if (s_frames % 120 == 0 && EM_ASM_INT({ return Module.mssbDebug ? 1 : 0; }))
+    {
+        const AuroraStats* st = aurora_get_stats();
+        printf("[dbg] gfx: %u draws (%u merged), pipelines %u created %u queued, verts %u B, uniforms %u B, "
+               "texture uploads %u B\n",
+               st->drawCallCount, st->mergedDrawCallCount, st->createdPipelines, st->queuedPipelines, st->lastVertSize,
+               st->lastUniformSize, st->lastTextureUploadSize);
         port_debug_dump();
+    }
     if (++s_frames % 300 == 0) // ~5 s
     {
         web_sync_storage();

@@ -17,14 +17,23 @@ if (params.has('debug')) {
   const id = Math.random().toString(36).slice(2, 8);
   let queue = [];
   const t0 = performance.now();
-  const flush = () => {
-    if (!queue.length) return;
-    const lines = queue;
-    queue = [];
-    fetch('log', { method: 'POST', body: JSON.stringify({ id, lines }), keepalive: true }).catch(() => {});
+  // Batches stay small: a keepalive request over 64 KB is refused outright
+  // (startup's GPU log alone is bigger), and only the pagehide flush needs keepalive.
+  const flush = (keepalive = false) => {
+    while (queue.length) {
+      const lines = [];
+      let size = 0;
+      while (queue.length && (lines.length === 0 || size + queue[0].length < 48000)) {
+        size += queue[0].length;
+        lines.push(queue.shift());
+      }
+      fetch('log', { method: 'POST', body: JSON.stringify({ id, lines }), keepalive }).catch(() => {});
+    }
   };
   setInterval(flush, 1000);
-  addEventListener('pagehide', flush);
+  addEventListener('pagehide', () => flush(true));
+  addEventListener('error', (e) => console.error('[page error]', e.message));
+  addEventListener('unhandledrejection', (e) => console.error('[unhandled rejection]', String(e.reason?.stack || e.reason)));
   for (const level of ['log', 'info', 'warn', 'error']) {
     const orig = console[level].bind(console);
     console[level] = (...a) => {
@@ -33,6 +42,32 @@ if (params.has('debug')) {
       queue.push(`${((performance.now() - t0) / 1000).toFixed(1)} ${level} ${text}`);
     };
   }
+  // GPU lag: how long the GPU takes to finish what was submitted (sampled every
+  // 30 submits). Large and growing means frames are queuing up on the GPU.
+  let gpuSubmits = 0;
+  let gpuLagMs = 0;
+  let gpuInFlight = 0;
+  if (typeof GPUQueue !== 'undefined') {
+    const submit = GPUQueue.prototype.submit;
+    GPUQueue.prototype.submit = function (...a) {
+      const r = submit.apply(this, a);
+      if (gpuSubmits++ % 30 === 0) {
+        const t = performance.now();
+        gpuInFlight++;
+        this.onSubmittedWorkDone().then(() => {
+          gpuLagMs = performance.now() - t;
+          gpuInFlight--;
+        });
+      }
+      return r;
+    };
+  }
+  setInterval(() => {
+    if (!started) return;
+    const ctx = window.Module?.SDL3?.audioContext;
+    console.log(`gpu: ${gpuSubmits} submits, last sampled lag ${gpuLagMs.toFixed(0)} ms, ${gpuInFlight} samples in flight; ` +
+      `audio ${ctx ? `${ctx.state} t=${ctx.currentTime.toFixed(2)} rate ${ctx.sampleRate}` : 'none'}`);
+  }, 2000);
   // Heartbeat: shows whether the page is alive and the game drawing frames.
   let frames = 0;
   const countFrame = () => {
@@ -58,6 +93,7 @@ class Disc {
     this.size = size;
     this.fetchRange = fetchRange; // (start, end, priority) -> Promise<ArrayBuffer>
     this.blocks = new Map(); // index -> Uint8Array, in LRU order
+    this.waiting = 0; // reads the game is blocked on (the prefetch holds back meanwhile)
   }
 
   touch(i) {
@@ -92,6 +128,16 @@ class Disc {
 
   // priority: 'low' for prefetching, so it doesn't hold up reads the game is waiting on.
   async read(offset, len, priority = 'high') {
+    if (priority !== 'high') return this.fetchBlocks(offset, len, priority);
+    this.waiting++;
+    try {
+      return await this.fetchBlocks(offset, len, priority);
+    } finally {
+      this.waiting--;
+    }
+  }
+
+  async fetchBlocks(offset, len, priority) {
     const first = Math.floor(offset / BLOCK);
     const last = Math.floor((Math.min(offset + len, this.size) - 1) / BLOCK);
     let i = first;
@@ -253,16 +299,19 @@ async function prefetchBoot(disc) {
   // connection the prefetch would take most of the bandwidth.
   await runtimeReadyPromise;
   loading.total = list.blocks.length * BLOCK;
+  // In the order the game reads them, a few at a time, and only while the
+  // game isn't waiting on a read of its own: those come first.
   let next = 0;
   const worker = async () => {
     while (next < list.blocks.length) {
+      while (disc.waiting > 0) await new Promise((r) => setTimeout(r, 20));
       const b = list.blocks[next++];
       try {
         await disc.read(b * BLOCK, BLOCK, 'low');
       } catch {}
     }
   };
-  await Promise.all(Array.from({ length: 6 }, worker));
+  await Promise.all(Array.from({ length: 3 }, worker));
 }
 
 async function unlockSite(password) {
@@ -754,6 +803,7 @@ let started = false;
 function start(disc) {
   if (started) return;
   started = true;
+  Module.mssbStartTime = performance.now();
   if (params.has('debug')) console.log(`start, runtime ready: ${runtimeReady}`);
   Module.mssbDisc = disc;
   MssbPad.setActive(false);
