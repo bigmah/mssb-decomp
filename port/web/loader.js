@@ -208,6 +208,46 @@ class Disc {
     return this.assemble(offset, len);
   }
 
+  // True when [offset, offset + len) can be read without waiting; otherwise
+  // starts fetching what's missing (once) and returns false. The game's
+  // asynchronous reads wait on this instead of stalling every thread on a
+  // network round trip (port/src/dvd_irq.c).
+  prefetch(offset, len) {
+    len = Math.max(0, Math.min(len, this.size - offset));
+    if (this.gather(offset, len, null) < 0) return true;
+    this.inflight ??= new Set();
+    const first = Math.floor(offset / BLOCK);
+    const last = Math.floor((offset + len - 1) / BLOCK);
+    for (let i = first; i <= last; i++) {
+      if (this.blocks.has(i) || this.inflight.has(i) || this.pack?.pending(i * BLOCK)) continue;
+      let j = i;
+      while (j + 1 <= last && !this.blocks.has(j + 1) && !this.inflight.has(j + 1) && !this.pack?.pending((j + 1) * BLOCK)) j++;
+      const a = i;
+      const b = j;
+      for (let k = a; k <= b; k++) this.inflight.add(k);
+      const start = a * BLOCK;
+      const end = Math.min((b + 1) * BLOCK, this.size);
+      const t0 = performance.now();
+      this.fetchRange(start, end, 'high')
+        .then((buf) => {
+          const data = new Uint8Array(buf);
+          for (let k = a; k <= b; k++) {
+            const s = (k - a) * BLOCK;
+            this.blocks.set(k, data.slice(s, Math.min(s + BLOCK, data.length)));
+          }
+          while (this.blocks.size > MAX_BLOCKS) this.blocks.delete(this.blocks.keys().next().value);
+          if (params.has('stats') || params.has('debug'))
+            console.log(`[disc] prefetched ${end - start} bytes at ${start} in ${(performance.now() - t0).toFixed(0)} ms`);
+        })
+        .catch((e) => console.warn('disc prefetch failed', e))
+        .finally(() => {
+          for (let k = a; k <= b; k++) this.inflight.delete(k);
+        });
+      i = j;
+    }
+    return false;
+  }
+
   async read(offset, len, priority = 'high') {
     len = Math.max(0, Math.min(len, this.size - offset));
     const first = Math.floor(offset / BLOCK);
@@ -232,7 +272,10 @@ class Disc {
       while (j + 1 <= last && !this.blocks.has(j + 1) && !this.pack?.pending((j + 1) * BLOCK)) j++;
       const start = i * BLOCK;
       const end = Math.min((j + 1) * BLOCK, this.size);
+      const t0 = performance.now();
       const data = new Uint8Array(await this.fetchRange(start, end, priority));
+      if (params.has('stats') || params.has('debug'))
+        console.log(`[disc] miss ${offset}+${len}: fetched ${end - start} bytes at ${start} in ${(performance.now() - t0).toFixed(0)} ms`);
       for (let k = i; k <= j; k++) {
         const s = (k - i) * BLOCK;
         this.blocks.set(k, data.slice(s, Math.min(s + BLOCK, data.length)));

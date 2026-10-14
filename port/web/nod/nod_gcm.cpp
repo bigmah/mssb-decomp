@@ -194,6 +194,12 @@ int64_t nod_read(NodHandle* handle, uint8_t* buf, size_t len)
     return (int64_t)len;
 }
 
+// aurora's DVD layer asks where a file is, so the page can fetch a read's bytes first.
+int64_t nod_web_file_disc_offset(const NodHandle* handle)
+{
+    return handle != nullptr && handle->kind == Kind::File ? (int64_t)handle->base : -1;
+}
+
 int64_t nod_seek(NodHandle* handle, int64_t offset, int32_t whence)
 {
     if (handle == nullptr)

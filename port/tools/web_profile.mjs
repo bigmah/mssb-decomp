@@ -4,6 +4,7 @@
 // idle ones longer than --min ms, with its top functions by self time and by
 // inclusive time.
 //   node port/tools/web_profile.mjs --secs 90 --from 20 --query 'skipfe&env=MSSB_INPUT=600-100000/90:A'
+// --throttle 4 slows the CPU like a phone; --noprofile only prints [stats].
 // Needs port/tools/web_serve.mjs running (--port, default 8080).
 import puppeteer from 'puppeteer-core';
 import { writeFileSync } from 'node:fs';
@@ -30,6 +31,8 @@ page.on('console', (m) => {
 await page.goto(url);
 await new Promise((r) => setTimeout(r, from * 1000));
 const cdp = await page.createCDPSession();
+// --throttle 4: slow the CPU down like a phone (Chrome's CPU throttling).
+if (args.throttle) await cdp.send('Emulation.setCPUThrottlingRate', { rate: Number(args.throttle) });
 await cdp.send('Profiler.enable');
 await cdp.send('Profiler.setSamplingInterval', { interval: 250 });
 await cdp.send('Profiler.start');

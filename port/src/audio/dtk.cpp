@@ -25,6 +25,7 @@ constexpr int kStreamRate = 48000;
 
 std::recursive_mutex s_lock;
 std::vector<u8> s_data;       // the prepared file
+size_t s_filled = 0;          // bytes of it read so far (web: it arrives over time)
 size_t s_pos = 0;             // next block to decode (bytes)
 bool s_prepared = false;
 bool s_ended = false;         // the stream ran off the end (stop-at-end)
@@ -70,6 +71,12 @@ void next_frame(s16& l, s16& r)
 {
     if (s_pcmPos >= kBlockSamples)
     {
+        if (s_prepared && s_pos + kBlockBytes > s_filled && s_filled < s_data.size())
+        {
+            // Web: the next bytes are still coming over the network.
+            l = r = 0;
+            return;
+        }
         if (!s_prepared || s_pos + kBlockBytes > s_data.size())
         {
             if (s_prepared && !s_ended)
@@ -209,6 +216,84 @@ static void run_cb(DVDCBCallback cb, s32 result, DVDCommandBlock* block)
     OSRestoreInterrupts(level);
 }
 
+#ifdef __EMSCRIPTEN__
+// Web builds: a song is ~15 MB of disc, too much to wait for in one read
+// (every thread stalls while a read misses the page's cache). It's read in
+// chunks as the page fetches them, a few seconds ahead of playback; the
+// prepare callback runs once the start is in.
+int64_t aurora_dvd_file_disc_offset(const DVDFileInfo* fileInfo);
+int port_web_disc_ready(uint64_t offset, uint64_t len);
+int64_t port_web_disc_read(uint64_t offset, void* out, uint64_t len);
+void port_raise_interrupt(void (*fn)(void*), void* arg);
+
+namespace {
+constexpr size_t kWebChunk = 256 << 10;
+constexpr size_t kWebAhead = 2 << 20;  // ~37 s of music
+constexpr size_t kWebStart = 256 << 10; // before the prepare callback
+int64_t s_webBase = -1;                 // disc offset of the stream's first byte
+DVDFileInfo* s_webFileInfo = nullptr;
+DVDCallback s_webPrepareCb = nullptr;
+bool s_webPreparing = false;
+void deliver_prepared(void*)
+{
+    if (s_webPrepareCb != nullptr && s_webBase >= 0)
+        s_webPrepareCb(DVD_RESULT_GOOD, s_webFileInfo);
+}
+} // namespace
+
+// Reads what has arrived of the stream (called every frame and while threads wait).
+void port_dtk_web_pump(void)
+{
+    if (s_webBase < 0)
+        return;
+    for (;;)
+    {
+        size_t filled;
+        size_t total;
+        size_t pos;
+        {
+            std::lock_guard lk(s_lock);
+            filled = s_filled;
+            total = s_data.size();
+            pos = s_pos;
+        }
+        if (filled >= total || (!s_webPreparing && filled >= pos + kWebAhead))
+            break;
+        const size_t n = std::min(kWebChunk, total - filled);
+        if (!port_web_disc_ready((uint64_t)s_webBase + filled, n))
+        {
+            // Ask for the rest of the window too, so it arrives in parallel.
+            const size_t want = std::min(total, (s_webPreparing ? 0 : pos) + kWebAhead);
+            if (want > filled + n)
+                port_web_disc_ready((uint64_t)s_webBase + filled + n, want - filled - n);
+            break;
+        }
+        {
+            std::lock_guard lk(s_lock);
+            if (port_web_disc_read((uint64_t)s_webBase + filled, &s_data[filled], n) != (int64_t)n)
+            {
+                fprintf(stderr, "[dtk] stream read failed\n");
+                s_webBase = -1;
+                return;
+            }
+            s_filled = filled + n;
+        }
+        if (s_webPreparing && (s_filled >= kWebStart || s_filled >= total))
+        {
+            s_webPreparing = false;
+            {
+                std::lock_guard lk(s_lock);
+                s_prepared = true;
+            }
+            if (s_debug)
+                fprintf(stderr, "[dtk] prepared %zu bytes\n", total);
+            if (s_webPrepareCb != nullptr)
+                port_raise_interrupt(deliver_prepared, nullptr); // like the drive's interrupt
+        }
+    }
+}
+#endif
+
 BOOL port_DVDPrepareStreamAsync(DVDFileInfo* fileInfo, u32 length, u32 offset, DVDCallback callback)
 {
     s_debug = getenv("MSSB_DEBUG_DTK") != nullptr;
@@ -216,6 +301,27 @@ BOOL port_DVDPrepareStreamAsync(DVDFileInfo* fileInfo, u32 length, u32 offset, D
         return FALSE;
     if (length == 0)
         length = fileInfo->length - offset;
+#ifdef __EMSCRIPTEN__
+    if (const int64_t base = aurora_dvd_file_disc_offset(fileInfo); base >= 0)
+    {
+        {
+            std::lock_guard lk(s_lock);
+            s_data.assign(length, 0);
+            s_filled = 0;
+            s_pos = 0;
+            s_pcmPos = kBlockSamples;
+            std::fill(std::begin(s_hist), std::end(s_hist), 0);
+            s_prepared = false;
+            s_ended = false;
+        }
+        s_webBase = base + offset;
+        s_webFileInfo = fileInfo;
+        s_webPrepareCb = callback;
+        s_webPreparing = true;
+        port_dtk_web_pump();
+        return TRUE;
+    }
+#endif
     std::vector<u8> data((length + 31) & ~31u);
     // The read goes through aurora's DVD worker, whose queued completion
     // callbacks take the interrupt lock: never wait for it while holding it.
@@ -231,6 +337,7 @@ BOOL port_DVDPrepareStreamAsync(DVDFileInfo* fileInfo, u32 length, u32 offset, D
     {
         std::lock_guard lk(s_lock);
         s_data.swap(data);
+        s_filled = s_data.size();
         s_pos = 0;
         s_pcmPos = kBlockSamples;
         std::fill(std::begin(s_hist), std::end(s_hist), 0);
@@ -254,7 +361,13 @@ BOOL port_DVDCancelStreamAsync(DVDCommandBlock* block, DVDCBCallback callback)
         std::lock_guard lk(s_lock);
         s_prepared = false;
         s_data.clear();
+        s_filled = 0;
     }
+#ifdef __EMSCRIPTEN__
+    s_webBase = -1;
+    s_webPreparing = false;
+    s_webPrepareCb = nullptr;
+#endif
     run_cb(callback, DVD_RESULT_GOOD, block);
     return TRUE;
 }

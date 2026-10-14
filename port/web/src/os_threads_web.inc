@@ -15,6 +15,9 @@
 // thread waits. "Interrupts disabled" is per thread, as it is per context on
 // the GameCube.
 
+void port_web_dvd_poll(void);
+void port_dtk_web_pump(void);
+
 namespace {
 struct WebThread
 {
@@ -71,6 +74,9 @@ WebThread* best_ready(WebThread* exclude)
 
 void deliver_interrupts(bool audio)
 {
+    // Disc reads waiting for the page to fetch their bytes (dvd_irq.c, dtk.cpp).
+    port_web_dvd_poll();
+    port_dtk_web_pump();
     if (g_irqDisabled || g_delivering)
         return;
     g_delivering = true;

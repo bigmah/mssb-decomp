@@ -101,8 +101,143 @@ static void trampoline(s32 result, DVDFileInfo* fileInfo)
 }
 #endif
 
+#ifdef __EMSCRIPTEN__
+// Web builds: the disc comes over the network, and a read that misses the
+// page's cache would suspend the whole game (every thread, and the frame
+// loop) for the round trip. Asynchronous reads instead wait here, in issue
+// order, until the page has their bytes (port_web_disc_ready starts the
+// fetch); the game keeps running, as it does while a GameCube drive seeks.
+// Their command block reads as busy meanwhile.
+int64_t aurora_dvd_file_disc_offset(const DVDFileInfo* fileInfo);
+int port_web_disc_ready(uint64_t offset, uint64_t len);
+
+typedef struct {
+    DVDFileInfo* fileInfo;
+    void* addr;
+    s32 length;
+    s32 offset;
+    DVDCallback callback;
+    s32 prio;
+} DeferredRead;
+
+#define MAX_DEFERRED 64
+static DeferredRead s_deferred[MAX_DEFERRED];
+static int s_deferredCount = 0;
+
+static int read_ready(const DeferredRead* r)
+{
+    int64_t base = aurora_dvd_file_disc_offset(r->fileInfo);
+    if (base < 0 || r->length <= 0)
+        return 1;
+    return port_web_disc_ready((uint64_t)base + (uint64_t)r->offset, (uint64_t)r->length);
+}
+
+static void issue(const DeferredRead* r)
+{
+    set_callback(r->fileInfo, r->callback);
+    DVDReadAsyncPrio(r->fileInfo, r->addr, r->length, r->offset, r->callback != NULL ? trampoline : NULL, r->prio);
+}
+
+static void remove_deferred(int i)
+{
+    for (; i + 1 < s_deferredCount; i++)
+        s_deferred[i] = s_deferred[i + 1];
+    s_deferredCount--;
+}
+
+static int find_deferred(const DVDCommandBlock* block)
+{
+    for (int i = 0; i < s_deferredCount; i++)
+        if (&s_deferred[i].fileInfo->cb == block)
+            return i;
+    return -1;
+}
+
+// Issues the waiting reads whose bytes have arrived (called whenever the
+// game's threads wait or a frame ends).
+void port_web_dvd_poll(void)
+{
+    while (s_deferredCount > 0 && read_ready(&s_deferred[0]))
+    {
+        DeferredRead r = s_deferred[0];
+        remove_deferred(0);
+        issue(&r);
+    }
+}
+
+BOOL port_DVDReadAsyncPrio(DVDFileInfo* fileInfo, void* addr, s32 length, s32 offset, DVDCallback callback, s32 prio)
+{
+    DeferredRead r = {fileInfo, addr, length, offset, callback, prio};
+    if (s_deferredCount == 0 && read_ready(&r))
+    {
+        issue(&r);
+        return TRUE;
+    }
+    if (s_deferredCount == MAX_DEFERRED)
+    {
+        port_web_dvd_poll();
+        if (s_deferredCount == MAX_DEFERRED)
+        {
+            // Out of room: issue the oldest now (it waits for its bytes).
+            DeferredRead oldest = s_deferred[0];
+            remove_deferred(0);
+            issue(&oldest);
+        }
+    }
+    fileInfo->callback = callback;
+    fileInfo->cb.state = DVD_STATE_BUSY;
+    s_deferred[s_deferredCount++] = r;
+    return TRUE;
+}
+
+s32 port_DVDCancel(volatile DVDCommandBlock* block)
+{
+    int i = find_deferred((const DVDCommandBlock*)block);
+    if (i < 0)
+        return DVDCancel(block);
+    remove_deferred(i);
+    block->state = DVD_STATE_CANCELED;
+    return DVD_RESULT_GOOD;
+}
+
+int port_DVDCancelAsync(DVDCommandBlock* block, DVDCBCallback callback)
+{
+    int i = find_deferred(block);
+    if (i < 0)
+        return DVDCancelAsync(block, callback);
+    remove_deferred(i);
+    block->state = DVD_STATE_CANCELED;
+    if (callback != NULL)
+        callback(DVD_RESULT_GOOD, block);
+    return TRUE;
+}
+
+BOOL port_DVDClose(DVDFileInfo* fileInfo)
+{
+    for (int i = s_deferredCount - 1; i >= 0; i--)
+        if (s_deferred[i].fileInfo == fileInfo)
+            remove_deferred(i);
+    return DVDClose(fileInfo);
+}
+#else
 BOOL port_DVDReadAsyncPrio(DVDFileInfo* fileInfo, void* addr, s32 length, s32 offset, DVDCallback callback, s32 prio)
 {
     set_callback(fileInfo, callback);
     return DVDReadAsyncPrio(fileInfo, addr, length, offset, callback != NULL ? trampoline : NULL, prio);
 }
+
+s32 port_DVDCancel(volatile DVDCommandBlock* block)
+{
+    return DVDCancel(block);
+}
+
+int port_DVDCancelAsync(DVDCommandBlock* block, DVDCBCallback callback)
+{
+    return DVDCancelAsync(block, callback);
+}
+
+BOOL port_DVDClose(DVDFileInfo* fileInfo)
+{
+    return DVDClose(fileInfo);
+}
+#endif

@@ -25,6 +25,8 @@
 #include <emscripten.h>
 #include "port/web_stats.h"
 extern "C" void port_web_frame_tick(void);
+extern "C" void port_web_dvd_poll(void);
+extern "C" void port_dtk_web_pump(void);
 extern "C" int port_is_main_os_thread(void);
 #endif
 
@@ -83,12 +85,16 @@ void pace_frame()
 
     double work = s_workStart != 0 ? emscripten_get_now() - s_workStart : 0;
     double t;
+    int waits = 0;
+    double firstWait = 0;
     for (;;)
     {
         double a0 = emscripten_get_now();
         port_audio_pump();
         g_webStats.audioMs += emscripten_get_now() - a0;
         t = web_wait_animation_frame();
+        if (waits++ == 0)
+            firstWait = t - s_lastPresent;
         a0 = emscripten_get_now();
         port_audio_pump();
         g_webStats.audioMs += emscripten_get_now() - a0;
@@ -141,8 +147,9 @@ void pace_frame()
             EM_ASM({
                 if (Module.mssbStats)
                     console.log(`[late] frame ${$0}: ${$1.toFixed(1)} ms since the last one (game ${$2.toFixed(1)} ms, ` +
-                                `${$3} pipelines built in the last 3 frames, ${$4} queued)`);
-            }, s_frameNo, interval, work, recent, st->queuedPipelines);
+                                `${$3} pipelines built in the last 3 frames, ${$4} queued, ${$5} refreshes waited, ` +
+                                `the first ${$6.toFixed(1)} ms after the last frame)`);
+            }, s_frameNo, interval, work, recent, st->queuedPipelines, waits, firstWait);
     }
     if (interval > g_webStats.maxIntervalMs)
         g_webStats.maxIntervalMs = interval;
@@ -231,6 +238,10 @@ void port_present_frame(void)
     }
     pace_frame();
     port_freeze_frames_check(); // MSSB_FREEZE_FRAMES (freeze_frames.cpp)
+#ifdef __EMSCRIPTEN__
+    port_web_dvd_poll();
+    port_dtk_web_pump();
+#endif
 
 #ifdef __EMSCRIPTEN__
     double e0 = emscripten_get_now();

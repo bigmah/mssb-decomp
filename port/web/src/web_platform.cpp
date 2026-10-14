@@ -16,6 +16,7 @@
 
 #include "port/web_stats.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -139,6 +140,10 @@ int64_t disc_read_at(void*, uint64_t offset, void* out, size_t len)
     return (int64_t)done;
 }
 
+EM_JS(int, web_disc_prefetch, (double offset, double len), {
+    return Module.mssbDisc.prefetch(offset, len) ? 1 : 0;
+});
+
 int64_t disc_length(void*)
 {
     return s_ciso.active ? (int64_t)s_ciso.discSize : (int64_t)web_disc_size();
@@ -157,6 +162,38 @@ EM_JS(void, web_sync_storage, (), {
 } // namespace
 
 extern "C" {
+// True when the disc bytes [offset, offset + len) are in the page's cache;
+// otherwise the page starts fetching them and this is false.
+int port_web_disc_ready(uint64_t offset, uint64_t len)
+{
+    if (len == 0)
+        return 1;
+    if (!s_ciso.active)
+        return web_disc_prefetch((double)offset, (double)len);
+    if (offset >= s_ciso.discSize)
+        return 1;
+    len = std::min<uint64_t>(len, s_ciso.discSize - offset);
+    int ready = 1;
+    for (uint64_t block = offset / s_ciso.blockSize; block * s_ciso.blockSize < offset + len; block++)
+    {
+        int32_t stored = s_ciso.fileBlock[block];
+        if (stored < 0)
+            continue;
+        uint64_t start = std::max<uint64_t>(offset, block * s_ciso.blockSize);
+        uint64_t end = std::min<uint64_t>(offset + len, (block + 1) * s_ciso.blockSize);
+        uint64_t src = 0x8000 + (uint64_t)stored * s_ciso.blockSize + (start - block * s_ciso.blockSize);
+        if (!web_disc_prefetch((double)src, (double)(end - start)))
+            ready = 0; // keep going: start fetching every missing block now
+    }
+    return ready;
+}
+
+// Reads disc bytes (synchronous when port_web_disc_ready said they're there).
+int64_t port_web_disc_read(uint64_t offset, void* out, uint64_t len)
+{
+    return disc_read_at(nullptr, offset, out, (size_t)len);
+}
+
 bool port_web_open_disc(void)
 {
     if (web_disc_size() <= 0)
