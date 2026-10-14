@@ -33,6 +33,19 @@ if (params.has('debug')) {
       queue.push(`${((performance.now() - t0) / 1000).toFixed(1)} ${level} ${text}`);
     };
   }
+  // Heartbeat: shows whether the page is alive and the game drawing frames.
+  let frames = 0;
+  const countFrame = () => {
+    frames++;
+    requestAnimationFrame(countFrame);
+  };
+  requestAnimationFrame(countFrame);
+  setInterval(() => {
+    if (!started) return;
+    const c = $('canvas');
+    console.log(`alive: ${frames} frames, ${(loading.bytes / 2 ** 20).toFixed(1)} MB loaded, ${loading.pending} pending, canvas ${c.width}x${c.height}, heap ${typeof HEAPU8 !== 'undefined' ? (HEAPU8.length / 2 ** 20) | 0 : '?'} MB, visible ${document.visibilityState}`);
+  }, 2000);
+  addEventListener('pagehide', () => console.log('pagehide'));
   console.log(`debug: ${navigator.userAgent} gpu=${!!navigator.gpu} mem=${navigator.deviceMemory} screen=${screen.width}x${screen.height}@${devicePixelRatio}`);
 }
 
