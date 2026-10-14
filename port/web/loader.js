@@ -786,6 +786,7 @@ window.Module = {
   printErr: (t) => console.warn(t),
   mssbFatal: (msg) => fatal(msg),
   mssbStats: params.has('stats'),
+  mssbDebug: params.has('debug'),
   preRun: [
     () => {
       // Test hooks: ?env=KEY=VALUE;KEY=VALUE sets environment variables the

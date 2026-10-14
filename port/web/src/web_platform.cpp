@@ -167,10 +167,14 @@ bool port_web_open_disc(void)
 
 int port_audio_queued_ms(void);
 
+void port_debug_dump(void); // port/game/web_debug.c
+
 // Called once per game frame.
 void port_web_frame_tick(void)
 {
     static unsigned s_frames = 0;
+    if (s_frames % 120 == 0 && EM_ASM_INT({ return Module.mssbDebug ? 1 : 0; }))
+        port_debug_dump();
     if (++s_frames % 300 == 0) // ~5 s
     {
         web_sync_storage();

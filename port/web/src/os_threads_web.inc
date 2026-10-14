@@ -327,6 +327,17 @@ void port_yield_to_browser(void)
     yield_to_browser();
 }
 
+// ?debug: every thread's scheduling state (port/game/web_debug.c).
+void port_debug_threads(void)
+{
+    for (auto& [t, w] : g_wthreads)
+        printf("[dbg]   thread %p prio %d%s started %d fin %d waiting %d done %d suspend %d state %d\n", (void*)t,
+               (int)t->priority, w == g_cur ? " (current)" : "", w->started, w->finished, w->waiting,
+               w->waiting ? (int)w->done() : -1, (int)t->suspend, (int)t->state);
+    printf("[dbg]   irq disabled %d delivering %d pending irqs %zu presenting %d\n", g_irqDisabled, g_delivering,
+           g_pendingIrqs.size(), g_presenting);
+}
+
 int port_is_main_os_thread(void)
 {
     return g_cur == g_main;
