@@ -862,6 +862,8 @@ window.Module = {
         }
       }
       ENV.MSSB_SKIP_MOVIES = params.has('movies') ? '0' : '1';
+      // The health screen, logo and title are pressed through to the main menu; ?intro shows them.
+      ENV.MSSB_SKIP_INTRO = params.has('intro') ? '0' : '1';
       // GPU pipelines the game is known to use, compiled in the background at
       // boot so new effects don't stall a frame (aurora's pipeline_cache.cpp;
       // port/tools/pipeline_seed.py builds the file). ?noseed skips it.

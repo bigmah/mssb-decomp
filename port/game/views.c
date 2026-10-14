@@ -90,3 +90,20 @@ u8* port_80366158_byte(u32 gcOffset) {
     fprintf(stderr, "port_80366158_byte: unmapped offset 0x%X\n", gcOffset);
     abort();
 }
+
+// Web: the intro (health screen, logo, title: menus scene 1) is pressed
+// through to the main menu with Start/A, unless MSSB_SKIP_INTRO=0 (?intro).
+// Returns the buttons to add to port 1 this frame.
+u16 port_intro_buttons(void) {
+    static int enabled = -1;
+    static u32 frame;
+    if (enabled < 0) {
+        const char* env = getenv("MSSB_SKIP_INTRO");
+        enabled = env != NULL && env[0] != '\0' && env[0] != '0';
+    }
+    if (!enabled || lbl_803CBBCC == NULL || lbl_803CBBCC->scene != 1) {
+        return 0;
+    }
+    // Two frames down, fourteen up: each press is a fresh edge.
+    return (frame++ % 16) < 2 ? 0x1000 | 0x100 : 0; // PAD_BUTTON_START | PAD_BUTTON_A
+}

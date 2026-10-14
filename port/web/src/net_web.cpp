@@ -214,6 +214,8 @@ void port_net_frame(void)
 }
 
 // The game's per-frame PADRead result: in net mode, the agreed inputs.
+u16 port_intro_buttons(void); // port/game/views.c
+
 void port_pad_apply_script(PADStatus* status)
 {
     if (port_net_active())
@@ -223,5 +225,10 @@ void port_pad_apply_script(PADStatus* status)
     }
     port_pad_script(status);
     apply_touch(status[0]);
+    if (u16 intro = port_intro_buttons())
+    {
+        status[0].err = PAD_ERR_NONE;
+        status[0].button |= intro;
+    }
 }
 }

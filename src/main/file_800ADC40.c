@@ -690,6 +690,12 @@ void* MovDecodeThread(void* arg) {
         if (port_skip_movies() && !(mov->flags & 2)) {
             mov->numFrames = 0;
             lbl_803CC19C = 3;
+            // Its disc stream (fn_800A6E24) would otherwise stay open with a
+            // full ring, so the loader never goes idle and the next module
+            // load waits on it forever.
+            if (!lbl_803CC181) {
+                fn_800A6C80();
+            }
         } else
 #endif
         lbl_803CC19C = fn_800AF1A8(mov);
