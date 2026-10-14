@@ -85,6 +85,9 @@ IndexedDB (`/mssb`). `web_serve.mjs` also serves `../mario_baseball.iso` (or
 audio queue in the console), `&env=KEY=VALUE;KEY=VALUE` (environment, e.g.
 `MSSB_INPUT=500:A,800:A`).
 
+Hosting it on Cloudflare (password-locked disc, `?password=` links): see
+`port/DEPLOY.md`.
+
 Headless check with screenshots (puppeteer-core: `cd port/tools && npm install`):
 
 ```sh

@@ -1,0 +1,14 @@
+// The web build on Cloudflare (see src/worker.js). Deploy with
+// port/tools/deploy_cloudflare.sh, which stages the web build into build/cf-assets first.
+{
+  "name": "mssb",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "../../build/cf-assets",
+    "binding": "ASSETS",
+    // The disc chunks must go through the Worker's password check.
+    "run_worker_first": ["/disc/*"]
+  },
+  "observability": { "enabled": true }
+}

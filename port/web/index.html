@@ -245,7 +245,16 @@
   <div id="overlay">
     <div class="panel" id="panel-loading"><h2>Loading…</h2></div>
 
-    
+    <div class="panel" id="panel-unlock" hidden>
+      <h2>Unlock</h2>
+      <p>Enter the password to play. This browser stays unlocked afterwards.</p>
+      <form id="unlock-form" class="row">
+        <input type="password" id="unlock-password" autocomplete="current-password" placeholder="Password" required autofocus>
+        <button class="primary" id="unlock-go" type="submit"><i class="glyph a">A</i>Unlock</button>
+      </form>
+      <div class="error" id="unlock-error"></div>
+      <div class="row" style="margin-top:10px"><button class="link" id="unlock-file">Use a disc file instead</button></div>
+    </div>
 
     <div class="panel" id="panel-pick" hidden>
       <h2>Insert disc</h2>

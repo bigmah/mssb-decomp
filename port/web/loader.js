@@ -107,6 +107,58 @@ async function serverDisc() {
   }
 }
 
+// The deployed site carries the disc as chunks under disc/ (see
+// port/cloudflare/src/worker.js), readable once this browser has unlocked them.
+// Returns the disc, 'locked', or null when the site has no disc.
+async function siteDisc() {
+  let manifest;
+  try {
+    const r = await fetch('disc/manifest.json', { credentials: 'same-origin' });
+    if (r.status === 401) return 'locked';
+    if (!r.ok || !(r.headers.get('Content-Type') || '').includes('json')) return null;
+    manifest = await r.json();
+  } catch {
+    return null;
+  }
+  const { size, chunk, dir } = manifest;
+  const letters = (i) => String.fromCharCode(97 + Math.floor(i / 676), 97 + (Math.floor(i / 26) % 26), 97 + (i % 26));
+  const recent = new Map(); // a few whole chunks, since reads come in 512 KB blocks
+  const loadChunk = (i) => {
+    let p = recent.get(i);
+    if (!p) {
+      p = fetch(`disc/${dir}/${letters(i)}`).then((r) => {
+        if (!r.ok) throw new Error(`disc read failed (${r.status})`);
+        return r.arrayBuffer();
+      });
+      p.catch(() => recent.delete(i));
+      recent.set(i, p);
+      if (recent.size > 4) recent.delete(recent.keys().next().value);
+    }
+    return p;
+  };
+  const disc = new Disc(size, async (start, end) => {
+    const out = new Uint8Array(end - start);
+    for (let i = Math.floor(start / chunk); i * chunk < end; i++) {
+      const data = new Uint8Array(await loadChunk(i));
+      const from = Math.max(start, i * chunk);
+      const to = Math.min(end, (i + 1) * chunk);
+      out.set(data.subarray(from - i * chunk, to - i * chunk), from - start);
+    }
+    return out.buffer;
+  });
+  disc.gameId = await readGameId(new Blob([await disc.read(0, 0x8020)]));
+  return disc.gameId === GAME_ID ? disc : null;
+}
+
+async function unlockSite(password) {
+  const r = await fetch('disc/unlock', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
+  return r.ok;
+}
+
 // Plain GameCube images and CISO (compressed ISO: a 0x8000-byte block map,
 // then the used blocks; the game reads it through port/web/src/web_platform.cpp).
 async function readGameId(blob) {
@@ -354,11 +406,52 @@ async function init() {
     return;
   }
 
+  const site = await siteDisc();
+  if (site && site !== 'locked') {
+    showPlay('Disc ready.', site);
+    $('forget').hidden = true;
+    return;
+  }
+
   const stored = await storedDisc();
   if (stored) {
     showPlay(`Disc ready (${(stored.size / 2 ** 30).toFixed(2)} GB, kept in this browser)`, fileDisc(stored));
   } else {
-    show('panel-pick');
+    show(site === 'locked' ? 'panel-unlock' : 'panel-pick');
+  }
+
+  $('unlock-form').onsubmit = async (e) => {
+    e.preventDefault();
+    $('unlock-error').textContent = '';
+    $('unlock-go').disabled = true;
+    try {
+      if (!(await unlockSite($('unlock-password').value))) {
+        $('unlock-error').textContent = 'Wrong password.';
+        return;
+      }
+      const disc = await siteDisc();
+      if (disc && disc !== 'locked') {
+        showPlay('Disc ready.', disc);
+        $('forget').hidden = true;
+      } else {
+        $('unlock-error').textContent = "Unlocked, but the disc couldn't be read.";
+      }
+    } catch (err) {
+      $('unlock-error').textContent = String(err.message || err);
+    } finally {
+      $('unlock-go').disabled = false;
+    }
+  };
+  $('unlock-file').onclick = () => show('panel-pick');
+  // ?password=... fills in the Unlock screen and submits it, then drops out of the address bar.
+  if (params.has('password')) {
+    const password = params.get('password');
+    params.delete('password');
+    history.replaceState(null, '', location.pathname + (params.size ? `?${params}` : '') + location.hash);
+    if (!$('panel-unlock').hidden) {
+      $('unlock-password').value = password;
+      $('unlock-form').requestSubmit();
+    }
   }
 
   $('forget').onclick = async () => {
