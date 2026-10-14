@@ -18,12 +18,13 @@ if (params.has('debug')) {
   let queue = [];
   const t0 = performance.now();
   // Batches stay small: a keepalive request over 64 KB is refused outright
-  // (startup's GPU log alone is bigger), and only the pagehide flush needs keepalive.
+  // (startup's GPU log alone is bigger), the Worker logs at most 200 lines of a
+  // batch, and only the pagehide flush needs keepalive.
   const flush = (keepalive = false) => {
     while (queue.length) {
       const lines = [];
       let size = 0;
-      while (queue.length && (lines.length === 0 || size + queue[0].length < 48000)) {
+      while (queue.length && (lines.length === 0 || (lines.length < 100 && size + queue[0].length < 16000))) {
         size += queue[0].length;
         lines.push(queue.shift());
       }
