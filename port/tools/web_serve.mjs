@@ -4,10 +4,12 @@
 // Also serves a disc image at /disc.iso with Range support (for ?iso=disc.iso
 // test runs that skip the file picker): MSSB_ISO=path, default
 // ../mario_baseball.iso next to the repo.
+// ?debug pages POST their console to /log; it's appended to build/web-page.log
+// (a browser that can't be driven, like Safari, still reports what it did).
 //   node port/tools/web_serve.mjs [port]
 import { createServer } from 'node:http';
 import { createSignaling } from './signal.mjs';
-import { createReadStream, statSync, existsSync } from 'node:fs';
+import { createReadStream, statSync, existsSync, appendFileSync } from 'node:fs';
 import { extname, join, normalize, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -28,6 +30,18 @@ createServer((req, res) => {
   if (signaling(req, res)) return;
   const url = new URL(req.url, 'http://localhost');
   let path = decodeURIComponent(url.pathname);
+  if (path === '/log' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (c) => (body += c));
+    req.on('end', () => {
+      try {
+        const { id, lines } = JSON.parse(body);
+        appendFileSync(join(root, 'build/web-page.log'), lines.map((l) => `[${id}] ${l}\n`).join(''));
+      } catch {}
+      res.end();
+    });
+    return;
+  }
   if (path === '/') path = '/index.html';
   const safe = normalize(path).replace(/^(\.\.[/\\])+/, '');
   const file = path === '/disc.iso' ? iso

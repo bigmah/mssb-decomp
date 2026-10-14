@@ -83,6 +83,34 @@ if (args.fakepad || pads.length) {
   }, Number(args.padconnect || 0), args.padid || 'Fake Controller (STANDARD GAMEPAD Vendor: 045e Product: 028e)',
   args.padmapping ?? 'standard', Number(args.padslot || 0));
 }
+// --mobile [CPU slowdown]: a landscape phone (iPhone user agent, touch, 844x390
+// at 3x) with the CPU throttled by the given factor (default 4).
+if (args.mobile) {
+  await page.emulate({
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+    viewport: { width: 844, height: 390, deviceScaleFactor: 3, isMobile: true, hasTouch: true, isLandscape: true },
+  });
+  const cdp = await page.createCDPSession();
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: Number(args.mobile) || 4 });
+}
+// --audiorate HZ: the page's AudioContext runs at that rate (iPhones run at 48000).
+if (args.audiorate) {
+  await page.evaluateOnNewDocument((rate) => {
+    const Base = window.AudioContext;
+    window.AudioContext = window.webkitAudioContext = class extends Base {
+      constructor(opts) {
+        super({ ...opts, sampleRate: rate });
+      }
+    };
+  }, Number(args.audiorate));
+}
+// --mbps N: a phone network, N megabits/s down with 60 ms latency (with --url to the live site).
+if (args.mbps) {
+  const cdp = await page.createCDPSession();
+  await cdp.send('Network.enable');
+  const bps = (Number(args.mbps) * 1e6) / 8;
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 60, downloadThroughput: bps, uploadThroughput: bps / 4 });
+}
 await page.goto(url);
 // --blur SECS: take focus off the canvas then (a click elsewhere on the page).
 if (args.blur)

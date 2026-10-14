@@ -43,6 +43,68 @@ if (params.has('debug')) {
       queue.push(`${((performance.now() - t0) / 1000).toFixed(1)} ${level} ${text}`);
     };
   }
+  // GPU errors (validation, out of memory, shaders and pipelines the browser
+  // rejects, a lost device): the browser only shows them in its own devtools.
+  if (typeof GPUAdapter !== 'undefined') {
+    let gpuErrors = 0;
+    const gpuError = (what, msg) => {
+      if (gpuErrors++ < 40) console.error(`[gpu] ${what}: ${String(msg).slice(0, 1500)}`);
+    };
+    const requestDevice = GPUAdapter.prototype.requestDevice;
+    GPUAdapter.prototype.requestDevice = async function (...a) {
+      const device = await requestDevice.apply(this, a);
+      device.addEventListener('uncapturederror', (e) => gpuError('error', e.error?.message));
+      device.lost.then((info) => console.error(`[gpu] device lost (${info.reason}): ${info.message}`));
+      const createShaderModule = device.createShaderModule;
+      device.createShaderModule = function (...b) {
+        const m = createShaderModule.apply(this, b);
+        m.getCompilationInfo?.().then((ci) => {
+          for (const msg of ci.messages) {
+            if (msg.type === 'error') gpuError('shader', `${msg.message} (line ${msg.lineNum}): ${b[0]?.label || ''}`);
+          }
+        }).catch(() => {});
+        return m;
+      };
+      const createRenderPipelineAsync = device.createRenderPipelineAsync;
+      device.createRenderPipelineAsync = function (...b) {
+        const p = createRenderPipelineAsync.apply(this, b);
+        p.catch((e) => gpuError('pipeline', e?.message || e));
+        return p;
+      };
+      return device;
+    };
+    // Render pass calls the spec rejects (WebKit enforces them; Chrome lets some through), with arguments.
+    const beginRenderPass = GPUCommandEncoder.prototype.beginRenderPass;
+    GPUCommandEncoder.prototype.beginRenderPass = function (desc) {
+      const pass = beginRenderPass.call(this, desc);
+      const att = desc.colorAttachments?.find((a) => a) ?? null;
+      const tex = att?.view?.__tex ?? desc.depthStencilAttachment?.view?.__tex;
+      pass.__size = tex ? [tex.width, tex.height] : null;
+      pass.__label = desc.label || '';
+      return pass;
+    };
+    const createView = GPUTexture.prototype.createView;
+    GPUTexture.prototype.createView = function (...a) {
+      const v = createView.apply(this, a);
+      v.__tex = this;
+      return v;
+    };
+    const P = GPURenderPassEncoder.prototype;
+    const setViewport = P.setViewport;
+    P.setViewport = function (x, y, w, h, n, f) {
+      const s = this.__size;
+      if (x < 0 || y < 0 || w < 0 || h < 0 || n < 0 || n > 1 || f < 0 || f > 1 || n > f ||
+          (s && (x + w > s[0] || y + h > s[1])))
+        gpuError('setViewport', `${x},${y} ${w}x${h} depth ${n}..${f} on ${s} (${this.__label})`);
+      return setViewport.call(this, x, y, w, h, n, f);
+    };
+    const setScissorRect = P.setScissorRect;
+    P.setScissorRect = function (x, y, w, h) {
+      const s = this.__size;
+      if (s && (x + w > s[0] || y + h > s[1])) gpuError('setScissorRect', `${x},${y} ${w}x${h} on ${s} (${this.__label})`);
+      return setScissorRect.call(this, x, y, w, h);
+    };
+  }
   // GPU lag: how long the GPU takes to finish what was submitted (sampled every
   // 30 submits). Large and growing means frames are queuing up on the GPU.
   let gpuSubmits = 0;
