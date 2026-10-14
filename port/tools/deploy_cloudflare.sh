@@ -16,7 +16,7 @@ WRANGLER="npx --yes wrangler@4"
 
 rm -rf "$STAGE"
 mkdir -p "$STAGE"
-for f in index.html loader.js pad.js touch.js mssb.js mssb.wasm initial_pipeline_cache.bin.gz; do
+for f in index.html loader.js pad.js touch.js mssb.js mssb.wasm initial_pipeline_cache.bin.gz boot_blocks.json; do
   cp "$ROOT/build/web/$f" "$STAGE/"
 done
 

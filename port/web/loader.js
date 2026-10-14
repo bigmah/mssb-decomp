@@ -164,7 +164,7 @@ async function siteDisc() {
         .finally(() => loading.busy(-1));
       p.catch(() => recent.delete(i));
       recent.set(i, p);
-      if (recent.size > 8) recent.delete(recent.keys().next().value);
+      if (recent.size > 16) recent.delete(recent.keys().next().value);
     }
     return p;
   };
@@ -182,7 +182,34 @@ async function siteDisc() {
     return out.buffer;
   });
   disc.gameId = await readGameId(new Blob([await disc.read(0, 0x8020)]));
-  return disc.gameId === GAME_ID ? disc : null;
+  if (disc.gameId !== GAME_ID) return null;
+  prefetchBoot(disc);
+  return disc;
+}
+
+// Boot reads ~50 scattered blocks one after another, which on a phone is mostly
+// waiting on round trips. boot_blocks.json lists them
+// (port/tools/record_boot_blocks.mjs); fetch them a few at a time as soon as
+// the disc is known, while the player is still on the Play screen.
+async function prefetchBoot(disc) {
+  let list;
+  try {
+    list = await (await fetch('boot_blocks.json')).json();
+  } catch {
+    return;
+  }
+  if (list.size !== disc.size || list.block !== BLOCK) return;
+  loading.total = list.blocks.length * BLOCK;
+  let next = 0;
+  const worker = async () => {
+    while (next < list.blocks.length) {
+      const b = list.blocks[next++];
+      try {
+        await disc.read(b * BLOCK, BLOCK);
+      } catch {}
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
 }
 
 async function unlockSite(password) {
@@ -276,6 +303,7 @@ async function forgetDisc() {
 const loading = {
   pending: 0,
   bytes: 0,
+  total: 0, // the boot prefetch's size, while it's running
   shown: false,
   showTimer: null,
   hideTimer: null,
@@ -289,7 +317,12 @@ const loading = {
     if (busy) {
       clearTimeout(this.hideTimer);
       this.hideTimer = null;
-      $('net-text').textContent = runtimeReady ? `Loading… ${(this.bytes / 2 ** 20).toFixed(0)} MB` : 'Loading game…';
+      const mb = (n) => (n / 2 ** 20).toFixed(0);
+      $('net-text').textContent = !runtimeReady
+        ? 'Loading game…'
+        : this.bytes < this.total
+          ? `Loading… ${mb(this.bytes)} / ${mb(this.total)} MB`
+          : `Loading… ${mb(this.bytes)} MB`;
       if (!this.shown && !this.showTimer) {
         this.showTimer = setTimeout(() => {
           this.showTimer = null;
@@ -413,9 +446,9 @@ window.Module = {
       ENV.MSSB_USER_INI = '/tmp/user.ini';
       // The game's window is 1280x960 times the screen's pixel ratio. At a
       // phone's 3x that's a 3840x2880 render target, more GPU memory than iOS
-      // gives a tab (it kills the page), so touch devices render at 1x: still
-      // twice the GameCube's resolution. ?dpr=N picks the ratio.
-      const dpr = params.has('dpr') ? Number(params.get('dpr')) : MssbTouch.isEnabled() ? 1 : null;
+      // gives a tab (it kills the page), so touch devices render at 0.5x: the
+      // GameCube's own 640x480. ?dpr=N picks the ratio.
+      const dpr = params.has('dpr') ? Number(params.get('dpr')) : MssbTouch.isEnabled() ? 0.5 : null;
       if (dpr > 0) {
         try {
           Object.defineProperty(window, 'devicePixelRatio', { get: () => dpr, configurable: true });

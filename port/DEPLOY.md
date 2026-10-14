@@ -32,6 +32,10 @@ browser ──HTTPS──> Worker "mssb" (port/cloudflare/src/worker.js)
   the loader's 512 KB block size because the game's reads are scattered
   (booting to the first screen touches ~30 blocks across the disc); 4 MB chunks
   downloaded 2.5x as much. They barely compress (~10%), so they're stored raw.
+  `boot_blocks.json` lists the ~50 blocks read from boot to the main menu
+  (`port/tools/record_boot_blocks.mjs`; rerun it if the disc image changes),
+  and the page fetches them six at a time as soon as the disc unlocks, while
+  the player is still on the Play screen.
 
 Config: `port/cloudflare/wrangler.jsonc`.
 
