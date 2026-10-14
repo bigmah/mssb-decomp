@@ -5,7 +5,8 @@
 # Needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (Workers Scripts edit).
 # Build first with port/tools/build_web.sh.
 # Disc: mario_baseball.iso (repo root, or next to the repo, or $MSSB_ISO) is
-# deployed too, as 4 MB chunks under /disc/<hash>/ that the Worker only serves
+# deployed too, as 512 KB chunks (the loader's block size: boot
+# touches ~30 scattered blocks, so bigger chunks mostly download unused data) under /disc/<hash>/ that the Worker only serves
 # after the page unlocks them with the password (DISC_PASSWORD in
 # port/cloudflare/src/worker.js).
 set -e
@@ -26,9 +27,9 @@ done
 if [ -n "$ISO" ] && [ -f "$ISO" ]; then
   ID=$(shasum -a 256 "$ISO" | cut -c1-12)
   mkdir -p "$STAGE/disc/$ID"
-  split -b 4m -a 3 "$ISO" "$STAGE/disc/$ID/"
+  split -b 512k -a 3 "$ISO" "$STAGE/disc/$ID/"
   COUNT=$(ls "$STAGE/disc/$ID" | wc -l | tr -d ' ')
-  echo "{\"size\":$(stat -f %z "$ISO"),\"chunk\":4194304,\"count\":$COUNT,\"dir\":\"$ID\"}" > "$STAGE/disc/manifest.json"
+  echo "{\"size\":$(stat -f %z "$ISO"),\"chunk\":524288,\"count\":$COUNT,\"dir\":\"$ID\"}" > "$STAGE/disc/manifest.json"
   echo "Disc: $COUNT chunks in disc/$ID ($ISO)"
 else
   echo "warning: no mario_baseball.iso; the site will ask for a disc file" >&2

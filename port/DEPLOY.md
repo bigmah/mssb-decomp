@@ -20,7 +20,7 @@ browser ──HTTPS──> Worker "mssb" (port/cloudflare/src/worker.js)
 - **Static assets.** The web build's files, served by the Worker's asset
   binding.
 - **Disc (password-locked).** If `mario_baseball.iso` is in the repo root or
-  next to the repo (or `$MSSB_ISO`), the deploy script adds it as 4 MB chunks
+  next to the repo (or `$MSSB_ISO`), the deploy script adds it as 512 KB chunks
   under `/disc/<sha256 prefix>/` plus `/disc/manifest.json`. Those paths always
   go through the Worker (`run_worker_first`), which returns 401 unless the
   request carries the unlock cookie. The page shows an Unlock screen;
@@ -28,7 +28,10 @@ browser ──HTTPS──> Worker "mssb" (port/cloudflare/src/worker.js)
   `port/cloudflare/src/worker.js`) sets an HttpOnly cookie (Path=/disc, ~400
   days) holding an HMAC of the password, so changing the password locks every
   browser out again. Opening the site with `?password=...` fills in the
-  Unlock screen and submits it, so that link can be shared.
+  Unlock screen and submits it, so that link can be shared. The chunks are
+  the loader's 512 KB block size because the game's reads are scattered
+  (booting to the first screen touches ~30 blocks across the disc); 4 MB chunks
+  downloaded 2.5x as much. They barely compress (~10%), so they're stored raw.
 
 Config: `port/cloudflare/wrangler.jsonc`.
 

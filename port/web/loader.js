@@ -122,28 +122,38 @@ async function siteDisc() {
   }
   const { size, chunk, dir } = manifest;
   const letters = (i) => String.fromCharCode(97 + Math.floor(i / 676), 97 + (Math.floor(i / 26) % 26), 97 + (i % 26));
-  const recent = new Map(); // a few whole chunks, since reads come in 512 KB blocks
+  const recent = new Map(); // a few whole chunks, in case they're bigger than a block
   const loadChunk = (i) => {
     let p = recent.get(i);
     if (!p) {
-      p = fetch(`disc/${dir}/${letters(i)}`).then((r) => {
-        if (!r.ok) throw new Error(`disc read failed (${r.status})`);
-        return r.arrayBuffer();
-      });
+      loading.busy(1);
+      p = fetch(`disc/${dir}/${letters(i)}`)
+        .then((r) => {
+          if (!r.ok) throw new Error(`disc read failed (${r.status})`);
+          return r.arrayBuffer();
+        })
+        .then((b) => {
+          loading.bytes += b.byteLength;
+          return b;
+        })
+        .finally(() => loading.busy(-1));
       p.catch(() => recent.delete(i));
       recent.set(i, p);
-      if (recent.size > 4) recent.delete(recent.keys().next().value);
+      if (recent.size > 8) recent.delete(recent.keys().next().value);
     }
     return p;
   };
   const disc = new Disc(size, async (start, end) => {
     const out = new Uint8Array(end - start);
-    for (let i = Math.floor(start / chunk); i * chunk < end; i++) {
-      const data = new Uint8Array(await loadChunk(i));
+    const parts = [];
+    for (let i = Math.floor(start / chunk); i * chunk < end; i++) parts.push(i);
+    const datas = await Promise.all(parts.map(loadChunk)); // in parallel
+    parts.forEach((i, k) => {
+      const data = new Uint8Array(datas[k]);
       const from = Math.max(start, i * chunk);
       const to = Math.min(end, (i + 1) * chunk);
       out.set(data.subarray(from - i * chunk, to - i * chunk), from - start);
-    }
+    });
     return out.buffer;
   });
   disc.gameId = await readGameId(new Blob([await disc.read(0, 0x8020)]));
@@ -235,6 +245,47 @@ async function forgetDisc() {
 
 // ---- UI --------------------------------------------------------------------
 
+// The "Loading…" badge over the game: shown while the game waits for its code
+// or for disc data from the site (slow on phones), after a short delay so
+// quick reads don't flash it.
+const loading = {
+  pending: 0,
+  bytes: 0,
+  shown: false,
+  showTimer: null,
+  hideTimer: null,
+  busy(delta) {
+    this.pending += delta;
+    this.update();
+  },
+  update() {
+    const el = $('net-status');
+    const busy = started && (!runtimeReady || this.pending > 0);
+    if (busy) {
+      clearTimeout(this.hideTimer);
+      this.hideTimer = null;
+      $('net-text').textContent = runtimeReady ? `Loading… ${(this.bytes / 2 ** 20).toFixed(0)} MB` : 'Loading game…';
+      if (!this.shown && !this.showTimer) {
+        this.showTimer = setTimeout(() => {
+          this.showTimer = null;
+          el.hidden = false;
+          this.shown = true;
+        }, 300);
+      }
+    } else {
+      clearTimeout(this.showTimer);
+      this.showTimer = null;
+      if (this.shown && !this.hideTimer) {
+        this.hideTimer = setTimeout(() => {
+          this.hideTimer = null;
+          this.shown = false;
+          el.hidden = true;
+        }, 500);
+      }
+    }
+  },
+};
+
 function show(id) {
   for (const el of document.querySelectorAll('.panel')) el.hidden = el.id !== id;
   $('overlay').hidden = false;
@@ -310,6 +361,7 @@ function start(disc) {
   };
   if (Module.calledRun || runtimeReady) run();
   else pendingStart = run;
+  loading.update();
 }
 
 let runtimeReady = false;
@@ -356,6 +408,7 @@ window.Module = {
   onRuntimeInitialized: () => {
     runtimeReady = true;
     if (pendingStart) pendingStart();
+    loading.update();
   },
   onAbort: (what) => fatal(`The game stopped: ${what}`),
 };

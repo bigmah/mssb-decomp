@@ -1,5 +1,5 @@
 // The web build on Cloudflare: one Worker serves the page and game (static
-// assets). The disc image is deployed with them as 4 MB chunks under /disc/
+// assets). The disc image is deployed with them as 512 KB chunks under /disc/
 // (port/tools/deploy_cloudflare.sh), but only served to a browser that has
 // unlocked it with DISC_PASSWORD:
 //   POST /disc/unlock   {password} -> sets a long-lived HttpOnly cookie
