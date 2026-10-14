@@ -2,7 +2,10 @@
 # Deploys the web build to Cloudflare (port/cloudflare/).
 #   port/tools/deploy_cloudflare.sh          deploy
 #   port/tools/deploy_cloudflare.sh dev      run it locally (wrangler dev, http://localhost:8787)
-# Needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (Workers Scripts edit).
+#   port/tools/deploy_cloudflare.sh turn     create a TURN key for online play and store it
+#                                            as the Worker's TURN_KEY_ID / TURN_KEY_API_TOKEN secrets (once)
+# Needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (Workers Scripts edit,
+# plus Realtime/Calls admin for `turn`).
 # Build first with port/tools/build_web.sh.
 # Disc: mario_baseball.iso (repo root, or next to the repo, or $MSSB_ISO) is
 # deployed too, as 512 KB chunks (the loader's block size: boot
@@ -16,7 +19,7 @@ WRANGLER="npx --yes wrangler@4"
 
 rm -rf "$STAGE"
 mkdir -p "$STAGE"
-for f in index.html loader.js pad.js touch.js mssb.js mssb.wasm initial_pipeline_cache.bin.gz boot_blocks.json; do
+for f in index.html loader.js net.js pad.js touch.js mssb.js mssb.wasm initial_pipeline_cache.bin.gz boot_blocks.json; do
   cp "$ROOT/build/web/$f" "$STAGE/"
 done
 
@@ -39,5 +42,12 @@ cd "$ROOT/port/cloudflare"
 case "${1:-deploy}" in
   dev) exec $WRANGLER dev --port 8787 ;;
   deploy) $WRANGLER deploy ;;
-  *) echo "usage: $0 [deploy|dev]" >&2; exit 1 ;;
+  turn)
+    : "${CLOUDFLARE_API_TOKEN:?}" "${CLOUDFLARE_ACCOUNT_ID:?}"
+    KEY=$(curl -sf -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' \
+      -d '{"name":"mssb"}' "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/calls/turn_keys")
+    node -e 'const r=JSON.parse(process.argv[1]).result; process.stdout.write(r.uid)' "$KEY" | $WRANGLER secret put TURN_KEY_ID
+    node -e 'const r=JSON.parse(process.argv[1]).result; process.stdout.write(r.secret)' "$KEY" | $WRANGLER secret put TURN_KEY_API_TOKEN
+    echo "TURN key stored as Worker secrets." ;;
+  *) echo "usage: $0 [deploy|dev|turn]" >&2; exit 1 ;;
 esac

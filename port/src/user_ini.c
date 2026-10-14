@@ -7,6 +7,9 @@
 //   team1 = monty,toad  other players of team 1 (test option; team2 likewise)
 //   stadium = mario      mario, bowser, wario, yoshi, peach, dk (or 0..5)
 //   unlockall = false    keep the save's character/star unlocks (default: all unlocked)
+//   innings = 3          game length (1, 3, 5, 7 or 9)
+//   human2 = true        a human on port 2 plays team 2 (online play)
+//   seed = 12345         seed for the random team picks (online play)
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

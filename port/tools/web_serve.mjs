@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-// Serves the web build (build/web) on http://localhost:8080.
+// Serves the web build (build/web) on http://localhost:8080, with online
+// play's signaling (/signal/*, port/tools/signal.mjs).
 // Also serves a disc image at /disc.iso with Range support (for ?iso=disc.iso
 // test runs that skip the file picker): MSSB_ISO=path, default
 // ../mario_baseball.iso next to the repo.
 //   node port/tools/web_serve.mjs [port]
 import { createServer } from 'node:http';
+import { createSignaling } from './signal.mjs';
 import { createReadStream, statSync, existsSync } from 'node:fs';
 import { extname, join, normalize, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +22,10 @@ const types = {
   '.iso': 'application/octet-stream',
 };
 
+const signaling = createSignaling({ STUN_URLS: '', ...process.env });
+
 createServer((req, res) => {
+  if (signaling(req, res)) return;
   const url = new URL(req.url, 'http://localhost');
   let path = decodeURIComponent(url.pathname);
   if (path === '/') path = '/index.html';

@@ -88,6 +88,13 @@ audio queue in the console), `&env=KEY=VALUE;KEY=VALUE` (environment, e.g.
 Hosting it on Cloudflare (password-locked disc, `?password=` links): see
 `port/DEPLOY.md`.
 
+Online play (from the strikers port): **Play online** makes or joins a room,
+two players each in their own browser, one per team, in input lockstep over
+WebRTC; **Practice online** plays the same lockstep against a simulated remote
+player. `web_serve.mjs` has the signaling built in for local and LAN play;
+`node port/tools/net_test.mjs` runs two headless browsers through a game and
+checks they stay in sync. Details in `port/DEPLOY.md`.
+
 Headless check with screenshots (puppeteer-core: `cd port/tools && npm install`):
 
 ```sh

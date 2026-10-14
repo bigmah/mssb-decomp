@@ -123,7 +123,10 @@ int aurora_main(int argc, char** argv)
     config.mem2Size = ARAM_DEFAULT_SIZE;
     config.allowTextureDumps = getenv("MSSB_DUMP_TEXTURES") != nullptr;
 #ifdef __EMSCRIPTEN__
-    config.userPath = "/mssb"; // IndexedDB-backed, mounted by the page
+    // IndexedDB-backed, mounted by the page. Online play starts from a fresh
+    // memory card instead, so each player's saves and options can't make the
+    // two games differ.
+    config.userPath = port_net_active() ? "/tmp/netplay" : "/mssb";
     config.cachePath = "/tmp";
 #else
     // MSSB_USER_DIR: a separate user data folder (memory card, user.ini,

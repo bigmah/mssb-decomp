@@ -37,7 +37,8 @@ void port_crash_heartbeat(void);
 // Default keyboard controls if none are saved (port/src/input.cpp).
 void port_pad_init_defaults(void);
 
-// Applies STRIKERS_INPUT scripted button presses to a PADRead result.
+// The game's PADRead result: MSSB_INPUT scripted presses and the page's touch
+// controls added, or in online play the inputs every peer agreed on.
 struct PADStatus;
 void port_pad_apply_script(struct PADStatus* status);
 
@@ -47,7 +48,7 @@ void port_pad_apply_script(struct PADStatus* status);
 int port_net_active(void);
 float port_fixed_frame_ms(void);
 void port_net_frame(void);
-// Hash of the gameplay state peers must agree on (FixedUpdateTask.cpp).
+// Hash of the gameplay state peers must agree on (port/game/net_state.c).
 unsigned int port_game_state_hash(unsigned int frame);
 
 #ifdef __cplusplus

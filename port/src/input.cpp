@@ -120,37 +120,15 @@ std::vector<ScriptedPress>& script()
 }
 } // namespace
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
 
-// The page's on-screen touch controls (port/web/touch.js): an 8-byte pad
-// (u16 buttons, s8 stick x/y, c-stick x/y, u8 triggers L/R), 0 while nothing
-// is touched.
-EM_JS(int, web_touch_pad, (void* out), {
-    const t = Module.mssbTouch;
-    if (!t || !t.active)
-        return 0;
-    HEAPU8.set(t.bytes, out);
-    return 1;
-});
-
-// Touch input adds to whatever the keyboard / gamepad gives port 1.
-static void apply_touch(PADStatus& s)
-{
-    u8 t[8];
-    if (!web_touch_pad(t))
-        return;
-    s.err = PAD_ERR_NONE;
-    s.button |= (u16)(t[0] | t[1] << 8);
-    if (t[2] != 0 || t[3] != 0)
-    {
-        s.stickX = (s8)t[2];
-        s.stickY = (s8)t[3];
-    }
-    if (t[6] > s.triggerLeft)
-        s.triggerLeft = t[6];
-    if (t[7] > s.triggerRight)
-        s.triggerRight = t[7];
+#ifndef __EMSCRIPTEN__
+// Online play is browser-only (port/web/src/net_web.cpp).
+extern "C" void port_pad_script(PADStatus* status);
+extern "C" {
+void port_pad_apply_script(PADStatus* status) { port_pad_script(status); }
+int port_net_active(void) { return 0; }
+float port_fixed_frame_ms(void) { return 0.0f; }
+void port_net_frame(void) { }
 }
 #endif
 
@@ -161,12 +139,11 @@ extern "C" u32 port_pad_script_frame(void)
     return s_scriptFrame;
 }
 
-extern "C" void port_pad_apply_script(PADStatus* status)
+// MSSB_INPUT presses (online play applies them to the local pad instead, in
+// port/web/src/net_web.cpp).
+extern "C" void port_pad_script(PADStatus* status)
 {
     u32 frame = ++s_scriptFrame;
-#ifdef __EMSCRIPTEN__
-    apply_touch(status[0]);
-#endif
     // MSSB_DEBUG_INPUT: port 1 as the game reads it, whenever it changes.
     static const bool s_debugPad = getenv("MSSB_DEBUG_INPUT") != nullptr;
     static PADStatus s_last;

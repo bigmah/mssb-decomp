@@ -325,13 +325,13 @@ const loading = {
     this.update();
   },
   update() {
-    const el = $('net-status');
+    const el = $('load-status');
     const busy = started && (!runtimeReady || this.pending > 0);
     if (busy) {
       clearTimeout(this.hideTimer);
       this.hideTimer = null;
       const mb = (n) => (n / 2 ** 20).toFixed(0);
-      $('net-text').textContent = !runtimeReady
+      $('load-text').textContent = !runtimeReady
         ? 'Loading game…'
         : this.bytes < this.total
           ? `Loading… ${mb(this.bytes)} / ${mb(this.total)} MB`
@@ -399,6 +399,10 @@ async function chooseFile(file) {
 // ?skipfe starts straight in an exhibition game; ?captain1=, ?captain2=,
 // ?team1=, ?team2= (other players, comma-separated), ?stadium=, ?innings= pick it. Movies are always skipped; ?movies plays them.
 function writeUserIni() {
+  if (Module.mssbUserIni) {
+    FS.writeFile('/tmp/user.ini', Module.mssbUserIni); // an online game's settings (net.js)
+    return;
+  }
   const ini = [];
   if (params.has('skipfe')) ini.push('skipfe = true');
   for (const k of ['captain1', 'captain2', 'team1', 'team2', 'stadium', 'innings']) if (params.has(k)) ini.push(`${k} = ${params.get(k)}`);
@@ -409,7 +413,301 @@ function showPlay(text, disc) {
   show('panel-play');
   $('play-name').textContent = text;
   $('play').onclick = () => start(disc);
-  if (params.has('autostart')) start(disc);
+  $('online').onclick = () => showJoin(disc);
+  $('practice').onclick = () => showPractice(disc);
+  if (params.has('room') && params.has('autojoin')) joinRoom(disc, params.get('room'), params.get('name') || 'Player');
+  else if (params.has('room')) showJoin(disc); // a friend's invite link
+  else if (params.has('practice')) {
+    // Test hook: ?practice=RTT,JITTER,LOSS starts a practice game right away.
+    const [rtt, jitter, loss] = (params.get('practice') || '100,10,0.02').split(',').map(Number);
+    startPractice(disc, { rtt, jitter, loss, captain1: 'mario', captain2: 'bowser', stadium: 'mario', innings: Number(params.get('innings')) || 3 });
+  } else if (params.has('autostart')) start(disc);
+}
+
+// ---- Online play (net.js) ---------------------------------------------------
+
+const NAME_KEY = 'mssb.netName';
+const CAPTAIN_NAMES = { mario: 'Mario', luigi: 'Luigi', peach: 'Peach', daisy: 'Daisy', yoshi: 'Yoshi', birdo: 'Birdo',
+  wario: 'Wario', waluigi: 'Waluigi', dk: 'Donkey Kong', diddy: 'Diddy Kong', bowser: 'Bowser', bowserjr: 'Bowser Jr.' };
+const STADIUM_NAMES = { mario: 'Mario Stadium', peach: 'Peach Garden', yoshi: 'Yoshi Park', dk: 'DK Jungle',
+  wario: 'Wario City', bowser: 'Bowser Castle' };
+const INNINGS = [[1, '1 inning'], [3, '3 innings'], [5, '5 innings'], [7, '7 innings'], [9, '9 innings']];
+const captainOptions = () => MssbNet.CAPTAINS.map((c) => [c, CAPTAIN_NAMES[c]]);
+const stadiumOptions = () => MssbNet.STADIUMS.map((c) => [c, STADIUM_NAMES[c]]);
+
+function hex(buf) {
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function digest(bytes) {
+  if (crypto.subtle) return hex(await crypto.subtle.digest('SHA-256', bytes)).slice(0, 16);
+  let h = 2166136261; // no crypto.subtle outside secure contexts: FNV-1a
+  for (const b of bytes) h = Math.imul(h ^ b, 16777619) >>> 0;
+  return h.toString(16);
+}
+
+// Players must run the same build on the same disc revision, or they desync.
+// The disc's identity is its header and file table (read through the CISO
+// block map when it's compressed, so a .ciso and an .iso of one disc match).
+async function netIdentity(disc) {
+  const wasm = new Uint8Array(await (await fetch(`${BUILD_DIR}mssb.wasm`, { cache: 'force-cache' })).arrayBuffer());
+  const read = await discReader(disc);
+  const header = await read(0, 0x440);
+  const dv = new DataView(header.buffer, header.byteOffset);
+  const fst = await read(dv.getUint32(0x424), Math.min(dv.getUint32(0x428), 1 << 20));
+  const discBytes = new Uint8Array(header.length + fst.length);
+  discBytes.set(header);
+  discBytes.set(fst, header.length);
+  return { build: await digest(wasm), disc: await digest(discBytes) };
+}
+
+// read(offset, len) in the disc's own address space, for plain and CISO images.
+async function discReader(disc) {
+  const magic = await disc.read(0, 8);
+  if (String.fromCharCode(...magic.subarray(0, 4)) !== 'CISO') return (o, n) => disc.read(o, n);
+  const head = await disc.read(0, 0x8000);
+  const blockSize = new DataView(head.buffer, head.byteOffset).getUint32(4, true);
+  const map = [];
+  let used = 0;
+  for (let i = 0; i < 0x8000 - 8; i++) map.push(head[8 + i] ? used++ : -1);
+  return async (offset, len) => {
+    const out = new Uint8Array(len);
+    for (let pos = 0; pos < len; ) {
+      const b = Math.floor((offset + pos) / blockSize);
+      const within = (offset + pos) % blockSize;
+      const n = Math.min(blockSize - within, len - pos);
+      if (map[b] >= 0) out.set(await disc.read(0x8000 + map[b] * blockSize + within, n), pos);
+      pos += n;
+    }
+    return out;
+  };
+}
+
+// Practice: a solo lockstep game against a simulated remote player (net.js).
+const PRACTICE_KEY = 'mssb.practice';
+const PRACTICE_OPTIONS = {
+  rtt: [[0, 'LAN (0 ms)'], [30, '30 ms'], [60, '60 ms'], [100, '100 ms'], [150, '150 ms'], [250, '250 ms']],
+  jitter: [[0, 'None'], [10, '10 ms'], [30, '30 ms'], [60, '60 ms']],
+  loss: [[0, 'None'], [0.02, '2%'], [0.05, '5%'], [0.1, '10%'], [0.2, '20%']],
+};
+
+function practiceDelay(rtt, jitter) {
+  return Math.min(10, Math.max(3, Math.ceil((rtt / 2 + 2 * jitter) / (1000 / 60)) + 1));
+}
+
+function showPractice(disc) {
+  show('panel-practice');
+  let saved = {};
+  try {
+    saved = JSON.parse(localStorage.getItem(PRACTICE_KEY) || '{}');
+  } catch {}
+  fillSelect($('pr-rtt'), PRACTICE_OPTIONS.rtt, saved.rtt ?? 100);
+  fillSelect($('pr-jitter'), PRACTICE_OPTIONS.jitter, saved.jitter ?? 10);
+  fillSelect($('pr-loss'), PRACTICE_OPTIONS.loss, saved.loss ?? 0.02);
+  fillSelect($('pr-captain1'), captainOptions(), saved.captain1 || 'mario');
+  fillSelect($('pr-captain2'), captainOptions(), saved.captain2 || 'bowser');
+  fillSelect($('pr-stadium'), stadiumOptions(), saved.stadium || 'mario');
+  fillSelect($('pr-innings'), INNINGS, saved.innings || 3);
+  const read = () => ({
+    rtt: Number($('pr-rtt').value), jitter: Number($('pr-jitter').value), loss: Number($('pr-loss').value),
+    captain1: $('pr-captain1').value, captain2: $('pr-captain2').value, stadium: $('pr-stadium').value,
+    innings: Number($('pr-innings').value),
+  });
+  const update = () => {
+    const o = read();
+    const d = practiceDelay(o.rtt, o.jitter);
+    $('pr-delay').textContent = `Input delay: ${d} frames (${Math.round((d * 1000) / 60)} ms), the same rule an online game uses.`;
+    try {
+      localStorage.setItem(PRACTICE_KEY, JSON.stringify(o));
+    } catch {}
+  };
+  for (const id of ['pr-rtt', 'pr-jitter', 'pr-loss', 'pr-captain1', 'pr-captain2', 'pr-stadium', 'pr-innings']) $(id).onchange = update;
+  update();
+  $('pr-back').onclick = () => show('panel-play');
+  $('pr-start').onclick = () => startPractice(disc, read());
+}
+
+function startPractice(disc, o) {
+  const ui = {
+    waiting: (text) => {
+      $('net-status').hidden = !text;
+      $('net-status').textContent = text || '';
+    },
+    stopped: (msg) => fatal(msg),
+  };
+  const cfg = { captain1: o.captain1, captain2: o.captain2, stadium: o.stadium, innings: o.innings };
+  const { match, lockstep } = MssbNet.startPractice({ net: { rtt: o.rtt, jitter: o.jitter, loss: o.loss }, cfg, ui });
+  showNetStats(lockstep, `ping ${o.rtt} ms ±${o.jitter}, loss ${Math.round(o.loss * 100)}%`);
+  launchNetGame(disc, match, 0, lockstep);
+}
+
+// Live numbers in the corner: input delay, stalls, frame rate.
+function showNetStats(lockstep, label) {
+  const el = $('net-stats');
+  el.hidden = false;
+  let last = { t: performance.now(), frame: 0, stalls: 0, stallMs: 0 };
+  setInterval(() => {
+    const now = performance.now();
+    const fps = ((lockstep.frame - last.frame) * 1000) / (now - last.t);
+    const stalls = lockstep.stallCount - last.stalls;
+    const stallMs = lockstep.stallMs - last.stallMs;
+    last = { t: now, frame: lockstep.frame, stalls: lockstep.stallCount, stallMs: lockstep.stallMs };
+    el.textContent = `${label}\ndelay ${lockstep.delay} frames (${Math.round((lockstep.delay * 1000) / 60)} ms) · ${fps.toFixed(0)} fps\n` +
+      `stalls ${stalls}/s (${Math.round(stallMs)} ms) · total ${lockstep.stallCount}`;
+  }, 1000);
+}
+
+function launchNetGame(disc, match, localPort, lockstep) {
+  Module.mssbUserIni = MssbNet.onlineUserIni(match);
+  Module.mssbNet = {
+    localPort,
+    activeMask: match.activeMask,
+    delay: match.delay,
+    lockstep,
+    sendLocal: (f, b) => lockstep.sendLocal(f, b),
+    inputsFor: (f) => lockstep.inputsFor(f),
+    wait: (f) => lockstep.wait(f),
+    localHash: (f, h) => lockstep.localHash(f, h),
+    stalled: (f, on) => lockstep.stalled(f, on),
+  };
+  start(disc);
+}
+
+function showJoin(disc) {
+  show('panel-join');
+  try {
+    $('net-name').value = localStorage.getItem(NAME_KEY) || '';
+  } catch {}
+  $('net-room').value = params.get('room') || '';
+  $('net-error').textContent = '';
+  const go = (room) => {
+    const name = $('net-name').value.trim() || 'Player';
+    try {
+      localStorage.setItem(NAME_KEY, name);
+    } catch {}
+    if (!room) {
+      $('net-error').textContent = 'Enter the room code your friend sent you.';
+      return;
+    }
+    joinRoom(disc, room, name);
+  };
+  $('net-join').onclick = () => go($('net-room').value.trim().toUpperCase());
+  $('net-create').onclick = () => {
+    const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    go([...crypto.getRandomValues(new Uint8Array(5))].map((b) => abc[b % abc.length]).join(''));
+  };
+  $('net-back').onclick = () => show('panel-play');
+}
+
+function fillSelect(sel, entries, value) {
+  if (!sel.options.length) {
+    for (const [v, label] of entries) sel.add(new Option(label, v));
+  }
+  sel.value = String(value);
+}
+
+async function joinRoom(disc, room, name) {
+  show('panel-room');
+  $('room-code').textContent = room;
+  $('room-status').textContent = 'Connecting…';
+  const shareUrl = new URL(location.href);
+  shareUrl.search = `?room=${encodeURIComponent(room)}`;
+  $('room-share').textContent = `Your friend joins with code ${room}, or at ${shareUrl}`;
+  let identity;
+  try {
+    identity = await netIdentity(disc);
+  } catch (e) {
+    fatal(`Couldn't check the game files: ${e.message}`);
+    return;
+  }
+  const hostStart = Number(params.get('hoststart')) || 0;
+  const ui = {
+    wantedPort: params.has('port') ? Number(params.get('port')) : undefined,
+    render: (mesh) => renderRoom(mesh, hostStart),
+    error: (msg) => {
+      if (started) fatal(msg);
+      else {
+        show('panel-join');
+        $('net-error').textContent = msg;
+      }
+    },
+    waiting: (text) => {
+      $('net-status').hidden = !text;
+      $('net-status').className = '';
+      $('net-status').textContent = text || '';
+    },
+    stopped: (msg) => fatal(msg),
+    startGame: (match, localPort, lockstep) => {
+      if (params.has('netstats')) showNetStats(lockstep, 'online');
+      launchNetGame(disc, match, localPort, lockstep);
+    },
+  };
+  // Test hook: ?netsim=LOSS,LAG,JITTER (e.g. 0.05,40,20) degrades incoming input packets.
+  const [loss, lag, jitter] = (params.get('netsim') || '').split(',').map(Number);
+  const netSim = params.has('netsim') ? { loss: loss || 0, lag: lag || 0, jitter: jitter || 0 } : null;
+  // ?signal=URL/ uses another server's signaling (e.g. the deployed one while testing locally).
+  const signalBase = params.get('signal') || '';
+  const mesh = new MssbNet.Mesh({ room, name, identity, ui, relayOnly: params.has('relay'), netSim, signalBase });
+  window.mssbMesh = mesh;
+  if (params.has('innings')) mesh.lobby.cfg.innings = Number(params.get('innings')) || 3; // test hook (host's choice)
+  for (const k of ['captain1', 'captain2', 'stadium', 'innings']) {
+    $(`cfg-${k}`).onchange = (e) => mesh.setConfig({ [k]: k === 'innings' ? Number(e.target.value) : e.target.value });
+  }
+  $('room-start').onclick = () => mesh.start();
+  $('room-leave').onclick = () => {
+    location.search = '';
+  };
+}
+
+function renderRoom(mesh, hostStart) {
+  if (started || !mesh.id) return;
+  const { slots, cfg } = mesh.lobby;
+  fillSelect($('cfg-captain1'), captainOptions(), cfg.captain1);
+  fillSelect($('cfg-captain2'), captainOptions(), cfg.captain2);
+  fillSelect($('cfg-stadium'), stadiumOptions(), cfg.stadium);
+  fillSelect($('cfg-innings'), INNINGS, cfg.innings);
+  for (const k of ['captain1', 'captain2', 'stadium', 'innings']) $(`cfg-${k}`).disabled = !mesh.isHost;
+
+  for (const el of document.querySelectorAll('#panel-room .slot')) {
+    const port = Number(el.dataset.port);
+    const id = slots[port];
+    const info = id && mesh.infos.get(id);
+    el.className = 'slot' + (id === mesh.id ? ' me' : '');
+    el.replaceChildren();
+    const who = document.createElement('span');
+    who.className = 'who' + (id ? '' : ' cpu');
+    who.textContent = id ? `${info?.name || '?'}${id === mesh.hostId ? ' (host)' : ''}` : 'Computer';
+    el.append(who);
+    if (id && id !== mesh.id) {
+      const peer = mesh.peers.get(id);
+      const meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = peer?.connected ? (peer.rtt !== null ? `${Math.round(peer.rtt)} ms` : 'connected') : 'connecting…';
+      el.append(meta);
+    }
+    if (!id) {
+      const b = document.createElement('button');
+      b.textContent = 'Play here';
+      b.onclick = () => mesh.takeSlot(port);
+      el.append(b);
+    } else if (id === mesh.id) {
+      const b = document.createElement('button');
+      b.textContent = 'Leave slot';
+      b.onclick = () => mesh.takeSlot(-1);
+      el.append(b);
+    }
+  }
+
+  const problem = mesh.startProblem();
+  $('room-start').hidden = !mesh.isHost;
+  $('room-start').disabled = !!problem;
+  const watchers = [...mesh.infos.keys()].filter((id) => !slots.includes(id)).length;
+  $('room-status').textContent = mesh.isHost
+    ? problem || 'Ready to start.'
+    : `Waiting for ${mesh.infos.get(mesh.hostId)?.name || 'the host'} to start.` + (watchers ? ' Take a slot to play.' : '');
+
+  // Test hook: ?hoststart=N starts as soon as N players are in and connected.
+  if (hostStart && mesh.isHost && !problem && slots.filter(Boolean).length >= hostStart) mesh.start();
 }
 
 let started = false;

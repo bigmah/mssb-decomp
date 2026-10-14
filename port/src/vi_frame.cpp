@@ -57,7 +57,10 @@ void handle_events()
 #ifdef __EMSCRIPTEN__
 // Resolves with the rAF timestamp: the start of the display refresh this
 // callback belongs to, free of the jitter of when the callback actually runs.
+// Hidden tabs get no animation frames; online play must keep going there.
 EM_ASYNC_JS(double, web_wait_animation_frame, (), {
+    if (document.hidden && Module.mssbNet)
+        return await new Promise((resolve) => setTimeout(() => resolve(performance.now()), 4));
     return await new Promise((resolve) => requestAnimationFrame(resolve));
 });
 
@@ -239,6 +242,9 @@ void port_present_frame(void)
     if (s_quitRequested)
         quit_now();
     port_pad_assign();
+
+    // Online play: wait for this frame's inputs from every peer.
+    port_net_frame();
 
     // Retrace "interrupt".
     u32 count = ++s_retraceCount;

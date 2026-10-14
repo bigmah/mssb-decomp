@@ -125,11 +125,11 @@
   #overlay::before { content: ""; position: absolute; left: 0; right: 0; bottom: 9%; height: 46px; pointer-events: none;
     background: linear-gradient(90deg, rgba(90, 134, 216, 0), rgba(90, 134, 216, .55) 30%, rgba(90, 134, 216, .55)); }
   body.playing #overlay { display: none; }
-  #net-status { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+  #load-status { position: absolute; z-index: 2; top: max(12px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
     display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; pointer-events: none;
     background: rgba(15, 23, 36, 0.85); border: 1px solid var(--line); color: var(--text); font-size: 13px; font-weight: 600; }
-  #net-status[hidden] { display: none; }
-  #net-status .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line);
+  #load-status[hidden] { display: none; }
+  #load-status .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line);
     border-top-color: var(--gold); animation: net-spin 0.8s linear infinite; }
   @keyframes net-spin { to { transform: rotate(360deg); } }
 
@@ -236,7 +236,9 @@
 </header>
 <div id="stage">
   <canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
-  <div id="net-status" hidden><span class="spinner"></span><span id="net-text">Loading…</span></div>
+  <div id="load-status" hidden><span class="spinner"></span><span id="load-text">Loading…</span></div>
+  <div id="net-status" hidden></div>
+  <div id="net-stats" hidden></div>
   <div id="touch" aria-hidden="true">
     <div id="t-stick"><div id="t-knob"></div></div>
     <div class="tbtn" data-btn="l">L</div>
@@ -277,6 +279,68 @@
       <div class="error" id="pick-error"></div>
     </div>
 
+    <div class="panel" id="panel-join" hidden>
+      <h2>Play online</h2>
+      <p>Two players, each in their own browser, one per team. Make a room and send the code to a friend, or
+        join theirs.</p>
+      <label class="field">Your name <input id="net-name" maxlength="16" autocomplete="nickname"></label>
+      <label class="field">Room code <input id="net-room" maxlength="8" placeholder="e.g. K7Q2" autocapitalize="characters"></label>
+      <div class="row" style="margin-top:14px">
+        <button class="primary" id="net-join"><i class="glyph a">A</i>Join</button>
+        <button id="net-create">New room</button>
+        <button class="link" id="net-back"><i class="glyph b">B</i>Back</button>
+      </div>
+      <div class="error" id="net-error"></div>
+    </div>
+
+    <div class="panel" id="panel-practice" hidden>
+      <h2>Practice online</h2>
+      <p>Plays exactly like an online game against another browser: your inputs go through the same lockstep
+        and input delay, and the other side's packets cross a simulated network. The computer plays the other
+        team.</p>
+      <label class="field">Ping <select id="pr-rtt"></select></label>
+      <label class="field">Jitter <select id="pr-jitter"></select></label>
+      <label class="field">Packet loss <select id="pr-loss"></select></label>
+      <div class="field">
+        <select id="pr-captain1" title="Your captain"></select>
+        <span class="hint">vs</span>
+        <select id="pr-captain2" title="Their captain"></select>
+      </div>
+      <label class="field">Stadium <select id="pr-stadium"></select></label>
+      <label class="field">Innings <select id="pr-innings"></select></label>
+      <p class="hint" id="pr-delay"></p>
+      <div class="row">
+        <button class="primary" id="pr-start"><i class="glyph a">A</i>Start</button>
+        <button class="link" id="pr-back"><i class="glyph b">B</i>Back</button>
+      </div>
+    </div>
+
+    <div class="panel wide" id="panel-room" hidden>
+      <h2>Room <span id="room-code"></span></h2>
+      <p class="hint" id="room-share"></p>
+      <div class="teams">
+        <div class="team">
+          <h3>Away (bats first)</h3>
+          <div class="cfg"><select id="cfg-captain1" title="Captain"></select></div>
+          <div class="slot" data-port="0"></div>
+        </div>
+        <div class="team">
+          <h3>Home</h3>
+          <div class="cfg"><select id="cfg-captain2" title="Captain"></select></div>
+          <div class="slot" data-port="1"></div>
+        </div>
+      </div>
+      <label class="field">Stadium <select id="cfg-stadium"></select></label>
+      <label class="field">Innings <select id="cfg-innings"></select></label>
+      <p class="hint">An empty slot's team is played by the computer. The host picks the captains, stadium and
+        innings; the rest of each team is picked at random.</p>
+      <div class="row">
+        <button class="primary" id="room-start"><i class="glyph a">A</i>Start game</button>
+        <button class="link" id="room-leave"><i class="glyph b">B</i>Leave</button>
+      </div>
+      <div class="hint" id="room-status"></div>
+    </div>
+
     <div class="panel" id="panel-copy" hidden>
       <h2>Reading disc</h2>
       <p>Keeping a copy in this browser's storage…</p>
@@ -292,6 +356,10 @@
           <p class="hint">Exhibition, Challenge, minigames and more, from your own disc.</p>
           <div class="row actions">
             <button class="primary" id="play"><i class="glyph a">A</i>Play</button>
+          </div>
+          <div class="modes">
+            <button id="online">Play online</button>
+            <button id="practice">Practice online</button>
           </div>
           
           <div class="row" style="margin-top:10px"><button class="link" id="forget">Use a different disc</button></div>
@@ -376,6 +444,7 @@
 </div>
 <script src="pad.js"></script>
 <script src="touch.js"></script>
+<script src="net.js"></script>
 <script src="loader.js"></script>
 </body>
 </html>

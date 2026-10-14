@@ -91,6 +91,16 @@ BOOL port_skipfe_step(void) {
     stadium = lookup(port_user_ini_get("stadium"), sStadiumNames, 6, STADIUM_ID_MARIO_STADIUM);
     fprintf(stderr, "[skipfe] captains %d vs %d, stadium %d\n", captain[0], captain[1], stadium);
 
+    {
+        // Online play: both peers' random picks (the menus' generator, seeded
+        // from the clock at boot) come from the shared seed.
+        extern u32 lbl_803CB750; // main/data_800E8300.c
+        const char* seed = port_user_ini_get("seed");
+        if (seed != NULL) {
+            lbl_803CB750 = (u32)strtoul(seed, NULL, 10);
+            fprintf(stderr, "[skipfe] seed %u\n", lbl_803CB750);
+        }
+    }
     port_swap_char_stats(sStats, 6 * 9);
     memcpy(&lbl_8034E9A0, sStats, 0x46E0); // stats and team presets, as the menus load them
     // As the "random teams" path of the team menu (fn_2_2FC0 mode 10): CPU
@@ -147,6 +157,14 @@ BOOL port_skipfe_step(void) {
     g_d_GameSettings.humanTeamNumber = 1;
     g_d_GameSettings.PlayerPorts[0] = 0;
     g_d_GameSettings.PlayerPorts[1] = 4; // CPU
+    if (port_user_ini_bool("human2")) {
+        // Online play (port/web/net.js): a human on each team, port 1 playing
+        // team 2, as the menus set up a two-player exhibition game.
+        lbl_8034E9A0.ports[1] = 1;
+        g_d_GameSettings.PlayerPorts[1] = 1;
+        g_d_GameSettings._10 = 1; // 0: human vs CPU, 1: two humans
+        fprintf(stderr, "[skipfe] two players\n");
+    }
     {
         // Game length: the options menu's innings setting (1, 3, 5, 7 or 9).
         const char* v = port_user_ini_get("innings");

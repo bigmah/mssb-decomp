@@ -12,9 +12,14 @@ Cloudflare dashboard under Workers & Pages.
 
 ```
 browser ──HTTPS──> Worker "mssb" (port/cloudflare/src/worker.js)
-                     ├─ static assets: index.html, loader.js, pad.js, touch.js,
+                     ├─ static assets: index.html, loader.js, net.js, pad.js, touch.js,
                      │                 mssb.js, mssb.wasm, initial_pipeline_cache.bin.gz
-                     └─ /disc/*  (password-locked disc chunks)
+                     ├─ /disc/*  (password-locked disc chunks)
+                     ├─ /signal/events, /signal/send ──> Durable Object "Room"
+                     │                                    (one per room code)
+                     └─ /signal/ice ──> Cloudflare TURN API (credentials)
+
+browser <──WebRTC (direct, or relayed by Cloudflare TURN)──> browser
 ```
 
 - **Static assets.** The web build's files, served by the Worker's asset
@@ -37,17 +42,40 @@ browser ──HTTPS──> Worker "mssb" (port/cloudflare/src/worker.js)
   and the page fetches them six at a time as soon as the disc unlocks, while
   the player is still on the Play screen.
 
-Config: `port/cloudflare/wrangler.jsonc`.
+- **Online play** (`port/web/net.js`, `port/web/src/net_web.cpp`, from the
+  strikers port). Two browsers, one per team, run the same game in input
+  lockstep: only controller input crosses the network. The lobby (room code,
+  captains, stadium, innings) is HTML; Start boots both straight into an
+  exhibition game (`skipfe` with `human2` and a shared `seed`), and every 60
+  frames the peers compare a hash of the game state (`port/game/net_state.c`).
+- **Signaling.** Same protocol as `port/tools/signal.mjs` (Server-Sent Events
+  plus POST). Each room code maps to a Durable Object (`idFromName(code)`),
+  which relays lobby messages and WebRTC offers, answers and ICE candidates.
+  Rooms exist only in memory; five seconds into a game each page closes its
+  stream and the room goes idle.
+- **TURN.** `/signal/ice` asks Cloudflare's TURN service for 12-hour
+  credentials, using a TURN key stored as two Worker secrets (`TURN_KEY_ID`,
+  `TURN_KEY_API_TOKEN`). Without them it returns STUN only plus an `error`
+  field saying why. Players whose networks allow direct connections never touch
+  the relay.
+
+Config: `port/cloudflare/wrangler.jsonc`. The Durable Object class is
+SQLite-backed (`new_sqlite_classes`), which is what the free plan allows.
 
 ## One-time setup
 
 1. A Cloudflare account with a `workers.dev` subdomain.
-2. An API token with **Workers Scripts: Edit**, in your shell:
+2. An API token with **Workers Scripts: Edit** (and **Realtime / Calls: Edit**
+   to create the TURN key), in your shell:
    ```sh
    export CLOUDFLARE_API_TOKEN=...
    export CLOUDFLARE_ACCOUNT_ID=...   # 32 hex characters
    ```
 3. Node (for `npx wrangler`; the script pins wrangler 4).
+4. After the first deploy, the TURN key (the secrets attach to the deployed
+   Worker): `port/tools/deploy_cloudflare.sh turn`. Cloudflare only returns the
+   key's secret when it's created, so if this goes wrong run it again and
+   delete the old key in the dashboard (Realtime > TURN).
 
 ## Deploying a change
 
@@ -62,6 +90,11 @@ runs `wrangler deploy` in `port/cloudflare/`. Only changed files are uploaded,
 so the disc chunks go up once.
 
 ## Checking it works
+
+Online play, locally: `node port/tools/web_serve.mjs &` then
+`node port/tools/net_test.mjs --secs 120` (two headless Chromes join a room,
+mash keys and compare state hashes; `PASS ... no desync`). Against the deployed
+signaling and TURN: add `--signal $URL/ --relay`.
 
 ```sh
 URL=https://mssb.<subdomain>.workers.dev

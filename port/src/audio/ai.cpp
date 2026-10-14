@@ -60,7 +60,8 @@ void run_period()
     if (s_dmaCallback)
         s_dmaCallback();
     port_interrupt_leave();
-    SDL_PutAudioStreamData(s_stream, s_period.data(), (int)len);
+    if (s_stream != nullptr)
+        SDL_PutAudioStreamData(s_stream, s_period.data(), (int)len);
     // MSSB_AI_DUMP=path: raw s16 stereo of everything sent to the device.
     static FILE* s_dump = [] {
         const char* path = getenv("MSSB_AI_DUMP");
@@ -130,7 +131,8 @@ extern "C" {
 void port_audio_pump(void)
 {
     static bool s_pumping = false;
-    if (s_stream == nullptr || s_pumping)
+    // Online play runs the periods from port_audio_net_frame instead.
+    if (s_stream == nullptr || s_pumping || port_net_active())
         return;
     s_pumping = true;
     const int targetBytes = sample_rate_hz() * 4 * kWebTargetQueueMs / 1000;
@@ -143,6 +145,28 @@ void port_audio_pump(void)
         run_period();
     }
     s_pumping = false;
+}
+
+// Online play: the DMA callback advances MusyX, whose state the game reads
+// (has a voice finished?), so both peers must run the same number of periods
+// per game frame. Each frame runs the periods that 1/60 s of samples fill, by
+// integer arithmetic, whether or not this browser's audio device is open; the
+// device just plays what it gets. Called at each lockstep frame boundary.
+void port_audio_net_frame(void)
+{
+    static u64 s_acc = 0; // bytes of samples owed, times 60
+    const u32 len = s_dmaLength.load();
+    if (!s_dmaRunning.load() || len == 0 || s_dmaStart.load() == 0)
+        return;
+    s_acc += (u64)sample_rate_hz() * 4;
+    while (s_acc >= (u64)len * 60)
+    {
+        s_acc -= (u64)len * 60;
+        run_period();
+    }
+    // Keep latency bounded if the device plays slower than the game runs.
+    if (s_stream != nullptr && SDL_GetAudioStreamQueued(s_stream) > sample_rate_hz() * 4 / 4)
+        SDL_ClearAudioStream(s_stream);
 }
 #endif
 

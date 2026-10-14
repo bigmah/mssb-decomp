@@ -88,6 +88,12 @@ set(MSSB_COMMON_FLAGS
     # Game sources declare memcpy/memset themselves: no fortify macros.
     -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
 )
+if (EMSCRIPTEN)
+    # Online play needs both browsers to compute the same game. Decompiled code
+    # sometimes reads a local before setting it, and stack garbage differs with
+    # what ran before (audio, interrupts): start every local at zero.
+    list(APPEND MSSB_COMMON_FLAGS -ftrivial-auto-var-init=zero)
+endif ()
 
 # 64-bit problems: pointers must not be stored in 32-bit integers, and calls
 # need prototypes (an implicit int return truncates pointers). Everything
@@ -314,7 +320,7 @@ if (EMSCRIPTEN)
     # Copy the page and its scripts next to the build output.
     add_custom_target(mssb_page ALL
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${CMAKE_SOURCE_DIR}/web/index.html ${CMAKE_SOURCE_DIR}/web/loader.js
+            ${CMAKE_SOURCE_DIR}/web/index.html ${CMAKE_SOURCE_DIR}/web/loader.js ${CMAKE_SOURCE_DIR}/web/net.js
             ${CMAKE_SOURCE_DIR}/web/pad.js ${CMAKE_SOURCE_DIR}/web/touch.js
             ${CMAKE_SOURCE_DIR}/web/initial_pipeline_cache.bin.gz ${CMAKE_SOURCE_DIR}/web/boot_blocks.json
             $<TARGET_FILE_DIR:mssb>)
