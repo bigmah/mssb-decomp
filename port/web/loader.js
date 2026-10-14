@@ -56,7 +56,7 @@ if (params.has('debug')) {
 class Disc {
   constructor(size, fetchRange) {
     this.size = size;
-    this.fetchRange = fetchRange; // (start, end) -> Promise<ArrayBuffer>
+    this.fetchRange = fetchRange; // (start, end, priority) -> Promise<ArrayBuffer>
     this.blocks = new Map(); // index -> Uint8Array, in LRU order
   }
 
@@ -90,7 +90,8 @@ class Disc {
     return this.assemble(offset, len);
   }
 
-  async read(offset, len) {
+  // priority: 'low' for prefetching, so it doesn't hold up reads the game is waiting on.
+  async read(offset, len, priority = 'high') {
     const first = Math.floor(offset / BLOCK);
     const last = Math.floor((Math.min(offset + len, this.size) - 1) / BLOCK);
     let i = first;
@@ -103,7 +104,7 @@ class Disc {
       while (j + 1 <= last && !this.blocks.has(j + 1)) j++;
       const start = i * BLOCK;
       const end = Math.min((j + 1) * BLOCK, this.size);
-      const data = new Uint8Array(await this.fetchRange(start, end));
+      const data = new Uint8Array(await this.fetchRange(start, end, priority));
       for (let k = i; k <= j; k++) {
         const s = (k - i) * BLOCK;
         this.blocks.set(k, data.slice(s, Math.min(s + BLOCK, data.length)));
@@ -147,6 +148,51 @@ async function serverDisc() {
 
 // The deployed site carries the disc as chunks under disc/ (see
 // port/cloudflare/src/worker.js), readable once this browser has unlocked them.
+// One disc chunk from the site. Phone connections drop and stall, and the game
+// can't go on without the data, so a chunk that fails, or gets no bytes for
+// STALL_MS, is fetched again (after a pause that grows to a few seconds).
+const STALL_MS = 15000;
+async function fetchChunk(url, priority) {
+  for (let attempt = 0; ; attempt++) {
+    const abort = new AbortController();
+    let timer = setTimeout(() => abort.abort(), STALL_MS);
+    const alive = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => abort.abort(), STALL_MS);
+    };
+    let got = 0;
+    try {
+      const r = await fetch(url, { signal: abort.signal, priority });
+      if (r.status === 401) throw Object.assign(new Error('disc locked'), { fatal: true });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const parts = [];
+      const reader = r.body.getReader();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        alive();
+        parts.push(value);
+        got += value.length;
+        loading.bytes += value.length;
+      }
+      const out = new Uint8Array(got);
+      let pos = 0;
+      for (const v of parts) {
+        out.set(v, pos);
+        pos += v.length;
+      }
+      return out.buffer;
+    } catch (e) {
+      loading.bytes -= got;
+      if (e.fatal) throw e;
+      console.warn(`disc chunk ${url}: ${abort.signal.aborted ? 'stalled' : e.message}; retrying (${attempt + 1})`);
+      await new Promise((r) => setTimeout(r, Math.min(500 * 2 ** attempt, 5000)));
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+}
+
 // Returns the disc, 'locked', or null when the site has no disc.
 async function siteDisc() {
   let manifest;
@@ -161,31 +207,22 @@ async function siteDisc() {
   const { size, chunk, dir } = manifest;
   const letters = (i) => String.fromCharCode(97 + Math.floor(i / 676), 97 + (Math.floor(i / 26) % 26), 97 + (i % 26));
   const recent = new Map(); // a few whole chunks, in case they're bigger than a block
-  const loadChunk = (i) => {
+  const loadChunk = (i, priority = 'high') => {
     let p = recent.get(i);
     if (!p) {
       loading.busy(1);
-      p = fetch(`disc/${dir}/${letters(i)}`)
-        .then((r) => {
-          if (!r.ok) throw new Error(`disc read failed (${r.status})`);
-          return r.arrayBuffer();
-        })
-        .then((b) => {
-          loading.bytes += b.byteLength;
-          return b;
-        })
-        .finally(() => loading.busy(-1));
+      p = fetchChunk(`disc/${dir}/${letters(i)}`, priority).finally(() => loading.busy(-1));
       p.catch(() => recent.delete(i));
       recent.set(i, p);
       if (recent.size > 16) recent.delete(recent.keys().next().value);
     }
     return p;
   };
-  const disc = new Disc(size, async (start, end) => {
+  const disc = new Disc(size, async (start, end, priority) => {
     const out = new Uint8Array(end - start);
     const parts = [];
     for (let i = Math.floor(start / chunk); i * chunk < end; i++) parts.push(i);
-    const datas = await Promise.all(parts.map(loadChunk)); // in parallel
+    const datas = await Promise.all(parts.map((i) => loadChunk(i, priority))); // in parallel
     parts.forEach((i, k) => {
       const data = new Uint8Array(datas[k]);
       const from = Math.max(start, i * chunk);
@@ -212,13 +249,16 @@ async function prefetchBoot(disc) {
     return;
   }
   if (list.size !== disc.size || list.block !== BLOCK) return;
+  // The game's code comes first: nothing runs without it, and on a slow
+  // connection the prefetch would take most of the bandwidth.
+  await runtimeReadyPromise;
   loading.total = list.blocks.length * BLOCK;
   let next = 0;
   const worker = async () => {
     while (next < list.blocks.length) {
       const b = list.blocks[next++];
       try {
-        await disc.read(b * BLOCK, BLOCK);
+        await disc.read(b * BLOCK, BLOCK, 'low');
       } catch {}
     }
   };
@@ -736,6 +776,8 @@ function start(disc) {
 }
 
 let runtimeReady = false;
+let resolveRuntimeReady;
+const runtimeReadyPromise = new Promise((r) => (resolveRuntimeReady = r));
 let pendingStart = null;
 
 window.Module = {
@@ -795,6 +837,7 @@ window.Module = {
   },
   onRuntimeInitialized: () => {
     runtimeReady = true;
+    resolveRuntimeReady();
     if (params.has('debug')) console.log('runtime ready');
     if (pendingStart) pendingStart();
     loading.update();
