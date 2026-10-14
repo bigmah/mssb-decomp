@@ -322,6 +322,6 @@ if (EMSCRIPTEN)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${CMAKE_SOURCE_DIR}/web/index.html ${CMAKE_SOURCE_DIR}/web/loader.js ${CMAKE_SOURCE_DIR}/web/net.js
             ${CMAKE_SOURCE_DIR}/web/pad.js ${CMAKE_SOURCE_DIR}/web/touch.js
-            ${CMAKE_SOURCE_DIR}/web/initial_pipeline_cache.bin.gz ${CMAKE_SOURCE_DIR}/web/boot_blocks.json
+            ${CMAKE_SOURCE_DIR}/web/initial_pipeline_cache.bin.gz
             $<TARGET_FILE_DIR:mssb>)
 endif ()

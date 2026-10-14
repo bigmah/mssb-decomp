@@ -37,10 +37,12 @@ browser <──WebRTC (direct, or relayed by Cloudflare TURN)──> browser
   the loader's 512 KB block size because the game's reads are scattered
   (booting to the first screen touches ~30 blocks across the disc); 4 MB chunks
   downloaded 2.5x as much. They barely compress (~10%), so they're stored raw.
-  `boot_blocks.json` lists the ~50 blocks read from boot to the main menu
-  (`port/tools/record_boot_blocks.mjs`; rerun it if the disc image changes),
-  and the page fetches them six at a time as soon as the disc unlocks, while
-  the player is still on the Play screen.
+  The ~15 MB that boot reads up to the main menu is also deployed as one file,
+  `disc/<hash>/boot-<hash>.pack` (the ranges are in `port/web/boot_ranges.json`,
+  from `port/tools/record_boot_pack.mjs`; rerun it if the disc image or the
+  boot path changes). The page streams it as soon as the disc unlocks, while
+  the player is still on the Play screen, and reads it covers wait for it
+  instead of fetching chunks.
 
 - **Online play** (`port/web/net.js`, `port/web/src/net_web.cpp`, from the
   strikers port). Two browsers, one per team, run the same game in input

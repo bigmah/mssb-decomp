@@ -88,13 +88,13 @@ if (params.has('debug')) {
 // ---- Disc access -----------------------------------------------------------
 
 // Reads go through a block cache. readCached() answers synchronously when every
-// block is present; read() fetches the missing ones.
+// byte is present; read() fetches the missing ones.
 class Disc {
   constructor(size, fetchRange) {
     this.size = size;
     this.fetchRange = fetchRange; // (start, end, priority) -> Promise<ArrayBuffer>
     this.blocks = new Map(); // index -> Uint8Array, in LRU order
-    this.waiting = 0; // reads the game is blocked on (the prefetch holds back meanwhile)
+    this.pack = null; // a BootPack, when the site has one
   }
 
   touch(i) {
@@ -106,20 +106,39 @@ class Disc {
     return b;
   }
 
-  assemble(offset, len) {
-    len = Math.max(0, Math.min(len, this.size - offset));
-    const out = new Uint8Array(len);
+  // Copies [offset, offset + len) into out (when given) from the blocks and the
+  // boot pack. Returns -1 when every byte is there, else the first missing one.
+  gather(offset, len, out) {
     let pos = 0;
     while (pos < len) {
       const abs = offset + pos;
       const i = Math.floor(abs / BLOCK);
       const b = this.touch(i);
-      if (!b) return null;
-      const start = abs - i * BLOCK;
-      const n = Math.min(b.length - start, len - pos);
-      out.set(b.subarray(start, start + n), pos);
+      let src = null;
+      let from = 0;
+      if (b) {
+        src = b;
+        from = abs - i * BLOCK;
+      } else {
+        const seg = this.pack?.find(abs);
+        if (seg && abs < seg.start + seg.filled) {
+          src = seg.buf.subarray(0, seg.filled);
+          from = abs - seg.start;
+        }
+      }
+      if (!src) return abs;
+      const n = Math.min(src.length - from, len - pos);
+      if (out) out.set(src.subarray(from, from + n), pos);
       pos += n;
     }
+    return -1;
+  }
+
+  assemble(offset, len) {
+    len = Math.max(0, Math.min(len, this.size - offset));
+    if (this.gather(offset, len, null) >= 0) return null;
+    const out = new Uint8Array(len);
+    this.gather(offset, len, out);
     return out;
   }
 
@@ -127,28 +146,28 @@ class Disc {
     return this.assemble(offset, len);
   }
 
-  // priority: 'low' for prefetching, so it doesn't hold up reads the game is waiting on.
   async read(offset, len, priority = 'high') {
-    if (priority !== 'high') return this.fetchBlocks(offset, len, priority);
-    this.waiting++;
-    try {
-      return await this.fetchBlocks(offset, len, priority);
-    } finally {
-      this.waiting--;
-    }
-  }
-
-  async fetchBlocks(offset, len, priority) {
+    len = Math.max(0, Math.min(len, this.size - offset));
     const first = Math.floor(offset / BLOCK);
-    const last = Math.floor((Math.min(offset + len, this.size) - 1) / BLOCK);
-    let i = first;
-    while (i <= last) {
-      if (this.blocks.has(i)) {
-        i++;
+    const last = Math.floor((offset + len - 1) / BLOCK);
+    for (;;) {
+      const gap = this.gather(offset, len, null);
+      if (gap < 0) break;
+      // Bytes the boot pack is still bringing: wait for them rather than
+      // fetch their blocks too.
+      if (this.pack?.pending(gap)) {
+        loading.busy(1);
+        try {
+          await this.pack.next();
+        } finally {
+          loading.busy(-1);
+        }
         continue;
       }
+      // The run of missing blocks from the gap on, in one fetch.
+      const i = Math.floor(gap / BLOCK);
       let j = i;
-      while (j + 1 <= last && !this.blocks.has(j + 1)) j++;
+      while (j + 1 <= last && !this.blocks.has(j + 1) && !this.pack?.pending((j + 1) * BLOCK)) j++;
       const start = i * BLOCK;
       const end = Math.min((j + 1) * BLOCK, this.size);
       const data = new Uint8Array(await this.fetchRange(start, end, priority));
@@ -156,12 +175,109 @@ class Disc {
         const s = (k - i) * BLOCK;
         this.blocks.set(k, data.slice(s, Math.min(s + BLOCK, data.length)));
       }
-      i = j + 1;
     }
     while (this.blocks.size > MAX_BLOCKS + (last - first + 1)) {
       this.blocks.delete(this.blocks.keys().next().value);
     }
     return this.assemble(offset, len);
+  }
+}
+
+// The bytes boot reads up to the main menu, as one stream in the order the game
+// first needs them (disc/<id>/boot-<hash>.pack: see port/tools/record_boot_pack.mjs).
+// Segments fill in as the stream arrives; reads can use a segment's bytes
+// before the rest of it is there.
+class BootPack {
+  constructor(segments) {
+    this.segs = segments.map(([start, len]) => ({ start, end: start + len, buf: null, filled: 0 }));
+    this.byStart = [...this.segs].sort((a, b) => a.start - b.start); // disjoint
+    this.done = false;
+    this.waiters = [];
+  }
+
+  find(abs) {
+    let lo = 0;
+    let hi = this.byStart.length - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      const s = this.byStart[mid];
+      if (abs < s.start) hi = mid - 1;
+      else if (abs >= s.end) lo = mid + 1;
+      else return s;
+    }
+    return null;
+  }
+
+  // Whether the stream will still bring this byte.
+  pending(abs) {
+    if (this.done) return false;
+    const s = this.find(abs);
+    return !!s && abs >= s.start + s.filled;
+  }
+
+  // Resolves when more of the stream arrives, or it ends.
+  next() {
+    return new Promise((r) => this.waiters.push(r));
+  }
+
+  wake() {
+    const w = this.waiters;
+    this.waiters = [];
+    for (const r of w) r();
+  }
+
+  // Phone connections drop and stall: a broken stream picks up where it left
+  // off (a Range request), and after a few failures the reads it would have
+  // covered fetch their own blocks.
+  async stream(url) {
+    const total = this.segs.reduce((n, s) => n + s.end - s.start, 0);
+    loading.total = total;
+    let got = 0;
+    let seg = 0;
+    for (let attempt = 0; got < total; ) {
+      const abort = new AbortController();
+      let timer = setTimeout(() => abort.abort(), STALL_MS);
+      try {
+        const r = await fetch(url, { signal: abort.signal, headers: got ? { Range: `bytes=${got}-` } : {} });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        let skip = got && r.status !== 206 ? got : 0; // the server sent it all again
+        const reader = r.body.getReader();
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          clearTimeout(timer);
+          timer = setTimeout(() => abort.abort(), STALL_MS);
+          let v = value;
+          if (skip) {
+            const k = Math.min(skip, v.length);
+            v = v.subarray(k);
+            skip -= k;
+          }
+          for (let p = 0; p < v.length && seg < this.segs.length; ) {
+            const s = this.segs[seg];
+            if (!s.buf) s.buf = new Uint8Array(s.end - s.start);
+            const n = Math.min(v.length - p, s.buf.length - s.filled);
+            s.buf.set(v.subarray(p, p + n), s.filled);
+            s.filled += n;
+            p += n;
+            got += n;
+            if (s.filled === s.buf.length) seg++;
+          }
+          loading.bytes += v.length;
+          this.wake();
+        }
+        if (got < total) throw new Error('ended early');
+      } catch (e) {
+        if (++attempt > 5) break;
+        console.warn(`boot pack: ${abort.signal.aborted ? 'stalled' : e.message} at ${got} of ${total} bytes; retrying (${attempt})`);
+        await new Promise((r) => setTimeout(r, Math.min(500 * 2 ** attempt, 5000)));
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    if (params.has('debug')) console.log(`boot pack: ${got} of ${total} bytes`);
+    this.done = true;
+    this.wake();
   }
 }
 
@@ -278,41 +394,13 @@ async function siteDisc() {
     });
     return out.buffer;
   });
+  if (manifest.boot) {
+    disc.pack = new BootPack(manifest.boot.segments);
+    disc.pack.stream(`disc/${dir}/${manifest.boot.file}`);
+  }
   disc.gameId = await readGameId(new Blob([await disc.read(0, 0x8020)]));
   if (disc.gameId !== GAME_ID) return null;
-  prefetchBoot(disc);
   return disc;
-}
-
-// Boot reads ~50 scattered blocks one after another, which on a phone is mostly
-// waiting on round trips. boot_blocks.json lists them
-// (port/tools/record_boot_blocks.mjs); fetch them a few at a time as soon as
-// the disc is known, while the player is still on the Play screen.
-async function prefetchBoot(disc) {
-  let list;
-  try {
-    list = await (await fetch('boot_blocks.json')).json();
-  } catch {
-    return;
-  }
-  if (list.size !== disc.size || list.block !== BLOCK) return;
-  // The game's code comes first: nothing runs without it, and on a slow
-  // connection the prefetch would take most of the bandwidth.
-  await runtimeReadyPromise;
-  loading.total = list.blocks.length * BLOCK;
-  // In the order the game reads them, a few at a time, and only while the
-  // game isn't waiting on a read of its own: those come first.
-  let next = 0;
-  const worker = async () => {
-    while (next < list.blocks.length) {
-      while (disc.waiting > 0) await new Promise((r) => setTimeout(r, 20));
-      const b = list.blocks[next++];
-      try {
-        await disc.read(b * BLOCK, BLOCK, 'low');
-      } catch {}
-    }
-  };
-  await Promise.all(Array.from({ length: 3 }, worker));
 }
 
 async function unlockSite(password) {
@@ -406,7 +494,7 @@ async function forgetDisc() {
 const loading = {
   pending: 0,
   bytes: 0,
-  total: 0, // the boot prefetch's size, while it's running
+  total: 0, // the boot pack's size (BootPack)
   shown: false,
   showTimer: null,
   hideTimer: null,
@@ -827,8 +915,6 @@ function start(disc) {
 }
 
 let runtimeReady = false;
-let resolveRuntimeReady;
-const runtimeReadyPromise = new Promise((r) => (resolveRuntimeReady = r));
 let pendingStart = null;
 
 window.Module = {
@@ -891,7 +977,6 @@ window.Module = {
   },
   onRuntimeInitialized: () => {
     runtimeReady = true;
-    resolveRuntimeReady();
     if (params.has('debug')) console.log('runtime ready');
     if (pendingStart) pendingStart();
     loading.update();

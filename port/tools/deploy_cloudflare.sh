@@ -19,7 +19,7 @@ WRANGLER="npx --yes wrangler@4"
 
 rm -rf "$STAGE"
 mkdir -p "$STAGE"
-for f in index.html loader.js net.js pad.js touch.js mssb.js mssb.wasm initial_pipeline_cache.bin.gz boot_blocks.json; do
+for f in index.html loader.js net.js pad.js touch.js mssb.js mssb.wasm initial_pipeline_cache.bin.gz; do
   cp "$ROOT/build/web/$f" "$STAGE/"
 done
 
@@ -34,6 +34,26 @@ if [ -n "$ISO" ] && [ -f "$ISO" ]; then
   COUNT=$(ls "$STAGE/disc/$ID" | wc -l | tr -d ' ')
   echo "{\"size\":$(stat -f %z "$ISO"),\"chunk\":524288,\"count\":$COUNT,\"dir\":\"$ID\"}" > "$STAGE/disc/manifest.json"
   echo "Disc: $COUNT chunks in disc/$ID ($ISO)"
+  # The bytes boot reads up to the main menu, in one file the page streams
+  # right away (port/web/boot_ranges.json, from port/tools/record_boot_pack.mjs).
+  python3 - "$ISO" "$ROOT/port/web/boot_ranges.json" "$STAGE/disc" "$ID" <<'PY'
+import hashlib, json, os, sys
+iso, ranges, disc, dir_ = sys.argv[1:]
+r = json.load(open(ranges))
+if r["size"] != os.path.getsize(iso):
+    sys.exit("warning: boot_ranges.json is for another disc image; no boot pack (rerun record_boot_pack.mjs)")
+data = bytearray()
+with open(iso, "rb") as f:
+    for off, n in r["segments"]:
+        f.seek(off)
+        data += f.read(n)
+name = "boot-%s.pack" % hashlib.sha256(data).hexdigest()[:12]
+open(os.path.join(disc, dir_, name), "wb").write(data)
+m = json.load(open(os.path.join(disc, "manifest.json")))
+m["boot"] = {"file": name, "segments": r["segments"]}
+json.dump(m, open(os.path.join(disc, "manifest.json"), "w"))
+print("Boot pack: %s, %d segments, %.1f MB" % (name, len(r["segments"]), len(data) / 2**20))
+PY
 else
   echo "warning: no mario_baseball.iso; the site will ask for a disc file" >&2
 fi
