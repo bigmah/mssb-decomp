@@ -13,6 +13,7 @@
 #ifdef TARGET_PC
 #include "main/file_800ADC40.h" // MovPlayer (0x1C0 bytes on GameCube, larger here)
 #define MOV_PLAYER_SIZE sizeof(MovPlayer)
+s32 port_skip_intro(void); // port/game/views.c
 #else
 #define MOV_PLAYER_SIZE 0x1C0
 #endif
@@ -580,6 +581,11 @@ void fn_8006B230(void) {
         if ((lbl_80371C30[self->u14.objIdx + 2].obj->frame >> 16) == 100) {
             p->state++;
         }
+#ifdef TARGET_PC
+        else if (port_skip_intro()) {
+            p->state++; // web: the title takes a press before its animation ends
+        }
+#endif
         break;
     case 3:
         if (lbl_803C77B8[0].trig & 0x1100) {
@@ -659,7 +665,13 @@ void fn_8006B230(void) {
 void fn_8006B668(void) {
     SceneTask* task = lbl_803CC1B8;
 
+#ifdef TARGET_PC
+    // Web: with no logos, boot's ARAM preload (fn_800227E4) is still running
+    // here, and only the logos' tasks would have moved its queue along.
+    if ((lbl_803716B8.loading == 0 || port_skip_intro()) && task->state != 6) {
+#else
     if (lbl_803716B8.loading == 0 && task->state != 6) {
+#endif
         fn_80022B68();
     }
     switch (task->state) {

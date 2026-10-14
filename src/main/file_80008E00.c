@@ -122,6 +122,8 @@ OSModuleHeader* port_module_load(s32 dllIndex);
 BOOL port_skipfe_pending(void); // port/game/skipfe.c
 BOOL port_skipfe_step(void);
 void port_unlock_all(void); // port/game/unlockall.c
+s32 port_skip_intro(void);   // port/game/views.c
+extern void fn_800A7F10(BOOL reset);
 void port_module_prolog(OSModuleHeader* module);
 void port_module_epilog(OSModuleHeader* module);
 #endif
@@ -590,6 +592,16 @@ void fn_800097A0(void) {
         } else {
             lbl_80366158._29 = 0;
         }
+#ifdef TARGET_PC
+        // Web: no health screen or logos; the title comes up as after a soft
+        // reset, with what the logos would have set (fn_8006BB60, fn_8006B78C).
+        if (port_skip_intro()) {
+            lbl_80366158._29 = 2;
+            fn_8000900C();
+            lbl_80366158._20 = 1;
+            fn_80008E00(fn_800A7F10);
+        }
+#endif
         fn_800AD01C(lbl_80366158.arenaEnd);
         fn_80022D58();
         fn_800227E4();

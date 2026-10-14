@@ -91,17 +91,23 @@ u8* port_80366158_byte(u32 gcOffset) {
     abort();
 }
 
-// Web: the intro (health screen, logo, title: menus scene 1) is pressed
-// through to the main menu with Start/A, unless MSSB_SKIP_INTRO=0 (?intro).
-// Returns the buttons to add to port 1 this frame.
-u16 port_intro_buttons(void) {
+// Web: the intro is cut short unless MSSB_SKIP_INTRO=0 (?intro). Boot goes
+// straight to the title screen, as after a soft reset (the health screen and
+// logos are skipped: src/main/file_80008E00.c), the title takes a press at once
+// (src/main/file_80069BDC.c), and Start/A are pressed through to the main menu.
+s32 port_skip_intro(void) {
     static int enabled = -1;
-    static u32 frame;
     if (enabled < 0) {
         const char* env = getenv("MSSB_SKIP_INTRO");
         enabled = env != NULL && env[0] != '\0' && env[0] != '0';
     }
-    if (!enabled || lbl_803CBBCC == NULL || lbl_803CBBCC->scene != 1) {
+    return enabled;
+}
+
+// Returns the buttons to add to port 1 this frame.
+u16 port_intro_buttons(void) {
+    static u32 frame;
+    if (!port_skip_intro() || lbl_803CBBCC == NULL || lbl_803CBBCC->scene != 1) {
         return 0;
     }
     // Two frames down, fourteen up: each press is a fresh edge.
