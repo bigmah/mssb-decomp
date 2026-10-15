@@ -38,6 +38,9 @@ if (EMSCRIPTEN)
     # Browser build (port/tools/build_web.sh, as strikers'): single-threaded,
     # WebGPU via emdawnwebgpu, SDL3 built from source, and a minimal GCM
     # reader in place of nod (port/web/nod).
+    # WebAssembly SIMD (Safari 16.4+, which WebGPU needs anyway): hashing,
+    # copies and matrix math vectorise.
+    add_compile_options(-msimd128)
     set(AURORA_SDL3_PROVIDER vendor CACHE STRING "" FORCE)
     set(AURORA_SDL3_LINKAGE static CACHE STRING "" FORCE)
     set(AURORA_CACHE_USE_ZSTD OFF CACHE BOOL "" FORCE)
@@ -304,6 +307,10 @@ if (EMSCRIPTEN)
         $<$<BOOL:${MSSB_WEB_FPCAST}>:-sEMULATE_FUNCTION_POINTER_CASTS=1>
         ${MSSB_WEB_LINK_OPT}
         -sASYNCIFY_STACK_SIZE=1MB
+        # Rendering and math never suspend: Asyncify leaves them alone
+        # (~12% less CPU). A function in the list must never be on the stack
+        # when the game suspends: check changes with port/tools/web_asyncify_check.sh.
+        -sASYNCIFY_REMOVE=@${CMAKE_SOURCE_DIR}/web/asyncify_remove.json
         -sALLOW_MEMORY_GROWTH=1
         -sINITIAL_MEMORY=512MB
         -sMAXIMUM_MEMORY=3GB
@@ -316,7 +323,8 @@ if (EMSCRIPTEN)
         -sEXPORTED_FUNCTIONS=['_main','_malloc','_free']
         -lidbfs.js
         --profiling-funcs)
-    set_target_properties(mssb PROPERTIES OUTPUT_NAME "mssb" SUFFIX ".js")
+    set_target_properties(mssb PROPERTIES OUTPUT_NAME "mssb" SUFFIX ".js"
+        LINK_DEPENDS ${CMAKE_SOURCE_DIR}/web/asyncify_remove.json)
     # Copy the page and its scripts next to the build output.
     add_custom_target(mssb_page ALL
         COMMAND ${CMAKE_COMMAND} -E copy_if_different

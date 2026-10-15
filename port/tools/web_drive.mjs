@@ -93,6 +93,18 @@ if (args.mobile) {
   const cdp = await page.createCDPSession();
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: Number(args.mobile) || 4 });
 }
+// --raf N: animation frames come every N display refreshes (2: a 30 Hz display,
+// like iOS Low Power Mode).
+if (args.raf) {
+  await page.evaluateOnNewDocument((every) => {
+    const raf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = (cb) => {
+      let n = 0;
+      const tick = (t) => (++n < every ? raf(tick) : cb(t));
+      return raf(tick);
+    };
+  }, Number(args.raf));
+}
 // --audiorate HZ: the page's AudioContext runs at that rate (iPhones run at 48000).
 if (args.audiorate) {
   await page.evaluateOnNewDocument((rate) => {

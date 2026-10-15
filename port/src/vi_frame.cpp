@@ -83,7 +83,24 @@ void pace_frame()
     static unsigned s_deltaIdx = 0;
     static double s_workStart = 0;
 
+    // A display refreshing at ~30 Hz (iOS Low Power Mode, a throttled tab):
+    // the game frame in between runs without waiting, so the game keeps its
+    // speed (each refresh shows every other frame).
+    static double s_refresh = kPeriodMs;
+    static double s_workAvg = 0;
+    static int s_catchUp = 0;
     double work = s_workStart != 0 ? emscripten_get_now() - s_workStart : 0;
+    s_workAvg += (work - s_workAvg) * 0.05;
+    if (s_catchUp > 0)
+    {
+        s_catchUp--;
+        s_next += kPeriodMs;
+        g_webStats.frames++;
+        g_webStats.workMs += work;
+        port_web_frame_tick();
+        s_workStart = emscripten_get_now();
+        return;
+    }
     double t;
     int waits = 0;
     double firstWait = 0;
@@ -110,6 +127,7 @@ void pace_frame()
                 sorted[n++] = d;
         std::sort(sorted, sorted + n);
         double refresh = n != 0 ? sorted[n / 2] : kPeriodMs;
+        s_refresh = refresh;
         if (s_lastPresent == 0 || t - s_lastPresent > 100.0)
         {
             s_next = t; // first frame, or fell behind (slow frame, tab hidden): don't catch up
@@ -128,8 +146,14 @@ void pace_frame()
             break;
     }
     s_next += kPeriodMs;
-
-    double interval = s_lastPresent != 0 ? t - s_lastPresent : kPeriodMs;
+    // Frames per refresh at a slow refresh, when the CPU can afford them.
+    const int perRefresh = s_refresh > kPeriodMs * 1.5 ? std::min(4, (int)std::lround(s_refresh / kPeriodMs)) : 1;
+    // Game frames since the last refresh's (for the stats).
+    static int s_batch = 1;
+    double interval = s_lastPresent != 0 ? (t - s_lastPresent) / s_batch : kPeriodMs;
+    if (perRefresh > 1 && s_workAvg * perRefresh < s_refresh * 0.8)
+        s_catchUp = perRefresh - 1;
+    s_batch = 1 + s_catchUp;
     s_lastPresent = t;
     g_webStats.frames++;
     if (interval > kPeriodMs * 1.5)

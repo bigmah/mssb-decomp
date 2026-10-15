@@ -222,9 +222,9 @@ void port_web_frame_tick(void)
     {
         const AuroraStats* st = aurora_get_stats();
         printf("[dbg] gfx: %u draws (%u merged), pipelines %u created %u queued, verts %u B, uniforms %u B, "
-               "texture uploads %u B\n",
+               "indices %u B, storage %u B, texture uploads %u B\n",
                st->drawCallCount, st->mergedDrawCallCount, st->createdPipelines, st->queuedPipelines, st->lastVertSize,
-               st->lastUniformSize, st->lastTextureUploadSize);
+               st->lastUniformSize, st->lastIndexSize, st->lastStorageSize, st->lastTextureUploadSize);
         port_debug_dump();
     }
     if (++s_frames % 300 == 0) // ~5 s

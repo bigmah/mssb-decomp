@@ -1,0 +1,21 @@
+[
+ "aurora::gx::*",
+ "aurora::gfx::push*",
+ "aurora::gfx::(anonymous.namespace)::push*",
+ "aurora::gfx::find_pipeline*",
+ "aurora::gfx::resolve_pipeline*",
+ "aurora::gfx::get_render_target_layout*",
+ "aurora::gfx::bind_pipeline*",
+ "aurora::gfx::(anonymous.namespace)::enqueue_pass*",
+ "aurora::gfx::sampler_ref*",
+ "void.aurora::gfx::remember_pipeline_config*",
+ "void.aurora::gfx::(anonymous.namespace)::encode_draw*",
+ "GX*",
+ "__GX*",
+ "C_MTX*",
+ "C_VEC*",
+ "C_QUAT*",
+ "PSMTX*",
+ "PSVEC*",
+ "XXH*"
+]
