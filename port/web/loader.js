@@ -125,11 +125,60 @@ if (params.has('debug')) {
       return r;
     };
   }
+  // The browser's audio callbacks (SDL plays through a ScriptProcessor on the main thread): one
+  // that runs after its buffer was due to start leaves a gap, heard as a click or crackle.
+  const au = { calls: 0, late: 0, worstMs: 0, silent: 0 };
+  if (typeof AudioContext !== 'undefined') {
+    const orig = AudioContext.prototype.createScriptProcessor;
+    AudioContext.prototype.createScriptProcessor = function (...a) {
+      const node = orig.apply(this, a);
+      const ctx = this;
+      let handler = null;
+      Object.defineProperty(node, 'onaudioprocess', {
+        set(fn) {
+          handler = fn;
+        },
+        get() {
+          return handler;
+        },
+      });
+      node.addEventListener('audioprocess', (e) => {
+        au.calls++;
+        const lateMs = (ctx.currentTime - e.playbackTime) * 1000;
+        if (lateMs > 0) {
+          au.late++;
+          au.worstMs = Math.max(au.worstMs, lateMs);
+          console.log(`[audio] late callback: ${lateMs.toFixed(0)} ms after its buffer was due`);
+        }
+        if (handler) handler.call(node, e);
+        const ch = e.outputBuffer.getChannelData(0);
+        let zero = true;
+        for (let i = 0; i < ch.length; i += 64) if (ch[i] !== 0) { zero = false; break; }
+        if (zero) au.silent++;
+      });
+      return node;
+    };
+  }
+  // A button to tap when something sounds wrong: stamps the moment in the log.
+  window.addEventListener('DOMContentLoaded', () => {
+    const b = document.createElement('button');
+    b.textContent = 'static!';
+    b.style.cssText = 'position:fixed;top:4px;left:50%;transform:translateX(-50%);z-index:99999;font:600 12px sans-serif;padding:4px 10px;opacity:.7';
+    b.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      console.log(`[mark] heard something (audio callbacks ${au.calls}, late ${au.late})`);
+      b.textContent = 'marked';
+      setTimeout(() => (b.textContent = 'static!'), 800);
+    });
+    document.body.appendChild(b);
+  });
   setInterval(() => {
     if (!started) return;
     const ctx = window.Module?.SDL3?.audioContext;
     console.log(`gpu: ${gpuSubmits} submits, last sampled lag ${gpuLagMs.toFixed(0)} ms, ${gpuInFlight} samples in flight; ` +
-      `audio ${ctx ? `${ctx.state} t=${ctx.currentTime.toFixed(2)} rate ${ctx.sampleRate}` : 'none'}`);
+      `audio ${ctx ? `${ctx.state} t=${ctx.currentTime.toFixed(2)} rate ${ctx.sampleRate} base latency ${((ctx.baseLatency || 0) * 1000).toFixed(0)} ms` : 'none'}, ` +
+      `callbacks ${au.calls} (late ${au.late}, worst ${au.worstMs.toFixed(0)} ms, silent ${au.silent})`);
+    au.worstMs = 0;
   }, 2000);
   // Heartbeat: shows whether the page is alive and the game drawing frames.
   let frames = 0;
@@ -1326,6 +1375,8 @@ window.Module = {
       ENV.MSSB_AUDIO_QUEUE_MS = params.get('audioms') || (phone ? '120' : '70');
       // The health screen, logo and title are pressed through to the main menu; ?intro shows them.
       ENV.MSSB_SKIP_INTRO = params.has('intro') ? '0' : '1';
+      // ?debug: the game's state (batter, pitch) in the log, to line up with what was heard.
+      if (params.has('debug') && !ENV.MSSB_TRACE_GAME) ENV.MSSB_TRACE_GAME = '1';
       // GPU pipelines the game is known to use, compiled in the background at
       // boot so new effects don't stall a frame (aurora's pipeline_cache.cpp;
       // port/tools/pipeline_seed.py builds the file). ?noseed skips it.
