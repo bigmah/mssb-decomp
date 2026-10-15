@@ -41,3 +41,7 @@ compile_commands.json
 # nmpromote/permute temp sources
 *.nmtmp*.c
 
+
+# Disc images and local Claude worktrees
+*.iso
+.claude/
