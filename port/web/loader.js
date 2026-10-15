@@ -151,13 +151,20 @@ if (params.has('debug')) {
     const pcm = new Int16Array(ring.length);
     pcm.set(ring.subarray(ringPos), 0);
     pcm.set(ring.subarray(0, ringPos), ring.length - ringPos);
-    const gz = new Uint8Array(await new Response(new Blob([pcm.buffer]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
-    let bin = '';
-    for (let i = 0; i < gz.length; i += 0x8000) bin += String.fromCharCode(...gz.subarray(i, i + 0x8000));
-    const b64 = btoa(bin);
+    // Each line is a slice on its own (the site's log drops lines when they come fast), and they
+    // go out a few at a time: about 40 s for the whole recording.
     const id = dumps++;
-    const n = Math.ceil(b64.length / 1800);
-    for (let i = 0; i < n; i++) console.log(`[audiodump] ${id} ${au.rate} ${i + 1}/${n} ${b64.slice(i * 1800, (i + 1) * 1800)}`);
+    const bytes = new Uint8Array(pcm.buffer);
+    const per = 1344; // bytes per line: 336 stereo frames, 1792 characters of base64
+    const n = Math.ceil(bytes.length / per);
+    for (let i = 0; i < n; i++) {
+      const slice = bytes.subarray(i * per, (i + 1) * per);
+      let bin = '';
+      for (let j = 0; j < slice.length; j++) bin += String.fromCharCode(slice[j]);
+      console.log(`[audiodump] ${id} ${au.rate} ${i + 1}/${n} ${btoa(bin)}`);
+      if (i % 4 === 3) await new Promise((r) => setTimeout(r, 250));
+    }
+    console.log(`[audiodump] ${id} done`);
   };
   if (typeof AudioContext !== 'undefined') {
     const orig = AudioContext.prototype.createScriptProcessor;

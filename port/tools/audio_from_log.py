@@ -5,7 +5,6 @@
     python3 port/tools/audio_from_log.py build/wrangler-tail.log build/audiodumps
 """
 import base64
-import gzip
 import re
 import sys
 import wave
@@ -28,10 +27,13 @@ def main():
             meta[(session, dump)] = (int(rate), int(n))
     for key, lines in sorted(parts.items()):
         rate, n = meta[key]
+        # Each line is 1344 bytes of PCM on its own; lines the log dropped stay silent.
+        pcm = bytearray(n * 1344)
+        for i, b64 in lines.items():
+            data = base64.b64decode(b64)
+            pcm[(i - 1) * 1344:(i - 1) * 1344 + len(data)] = data
         if len(lines) != n:
-            print(f"{key[0]} #{key[1]}: {len(lines)} of {n} lines, skipped")
-            continue
-        pcm = gzip.decompress(base64.b64decode("".join(lines[i] for i in range(1, n + 1))))
+            print(f"{key[0]} #{key[1]}: {len(lines)} of {n} lines, the rest silent")
         path = out / f"{key[0]}-{key[1]}.wav"
         with wave.open(str(path), "wb") as w:
             w.setnchannels(2)
