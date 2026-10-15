@@ -127,45 +127,7 @@ if (params.has('debug')) {
   }
   // The browser's audio callbacks (SDL plays through a ScriptProcessor on the main thread): one
   // that runs after its buffer was due to start leaves a gap, heard as a click or crackle.
-  const au = { calls: 0, late: 0, worstMs: 0, silent: 0, rate: 48000 };
-  // The last 4 s of what went to the speakers (s16 stereo), posted to the log by the button below.
-  let ring = null;
-  let ringPos = 0;
-  const keepAudio = (buf) => {
-    const n = buf.length;
-    if (!ring) {
-      au.rate = buf.sampleRate;
-      ring = new Int16Array(Math.round(buf.sampleRate * 4) * 2);
-    }
-    const l = buf.getChannelData(0);
-    const r = buf.numberOfChannels > 1 ? buf.getChannelData(1) : l;
-    for (let i = 0; i < n; i++) {
-      ring[ringPos] = Math.max(-32768, Math.min(32767, Math.round(l[i] * 32767)));
-      ring[ringPos + 1] = Math.max(-32768, Math.min(32767, Math.round(r[i] * 32767)));
-      ringPos = (ringPos + 2) % ring.length;
-    }
-  };
-  let dumps = 0;
-  const postAudio = async () => {
-    if (!ring) return;
-    const pcm = new Int16Array(ring.length);
-    pcm.set(ring.subarray(ringPos), 0);
-    pcm.set(ring.subarray(0, ringPos), ring.length - ringPos);
-    // Each line is a slice on its own (the site's log drops lines when they come fast), and they
-    // go out a few at a time: about 40 s for the whole recording.
-    const id = dumps++;
-    const bytes = new Uint8Array(pcm.buffer);
-    const per = 1344; // bytes per line: 336 stereo frames, 1792 characters of base64
-    const n = Math.ceil(bytes.length / per);
-    for (let i = 0; i < n; i++) {
-      const slice = bytes.subarray(i * per, (i + 1) * per);
-      let bin = '';
-      for (let j = 0; j < slice.length; j++) bin += String.fromCharCode(slice[j]);
-      console.log(`[audiodump] ${id} ${au.rate} ${i + 1}/${n} ${btoa(bin)}`);
-      if (i % 4 === 3) await new Promise((r) => setTimeout(r, 250));
-    }
-    console.log(`[audiodump] ${id} done`);
-  };
+  const au = { calls: 0, late: 0, worstMs: 0, silent: 0 };
   if (typeof AudioContext !== 'undefined') {
     const orig = AudioContext.prototype.createScriptProcessor;
     AudioContext.prototype.createScriptProcessor = function (...a) {
@@ -189,7 +151,6 @@ if (params.has('debug')) {
           console.log(`[audio] late callback: ${lateMs.toFixed(0)} ms after its buffer was due`);
         }
         if (handler) handler.call(node, e);
-        keepAudio(e.outputBuffer);
         const ch = e.outputBuffer.getChannelData(0);
         let zero = true;
         for (let i = 0; i < ch.length; i += 64) if (ch[i] !== 0) { zero = false; break; }
@@ -198,22 +159,6 @@ if (params.has('debug')) {
       return node;
     };
   }
-  // A button to tap when something sounds wrong: stamps the moment in the log.
-  window.addEventListener('DOMContentLoaded', () => {
-    const b = document.createElement('button');
-    b.textContent = 'static!';
-    b.style.cssText = 'position:fixed;top:4px;left:50%;transform:translateX(-50%);z-index:99999;font:600 12px sans-serif;padding:4px 10px;opacity:.7';
-    b.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      console.log(`[mark] heard something (audio callbacks ${au.calls}, late ${au.late})`);
-      // The voices playing now (port/src/audio/dsp_ax.cpp), and a moment later the recording.
-      window.Module?._port_dsp_list_voices?.();
-      setTimeout(postAudio, 1000);
-      b.textContent = 'marked';
-      setTimeout(() => (b.textContent = 'static!'), 800);
-    });
-    document.body.appendChild(b);
-  });
   setInterval(() => {
     if (!started) return;
     const ctx = window.Module?.SDL3?.audioContext;

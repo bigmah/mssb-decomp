@@ -355,24 +355,6 @@ BOOL port_DVDPrepareStreamAsync(DVDFileInfo* fileInfo, u32 length, u32 offset, D
     return TRUE;
 }
 
-// The page's ?debug "static!" button: where the music stream is, and a checksum of what it plays
-// next (compare with the disc: port/tools/dtk_check.py).
-void port_dtk_debug_state(void)
-{
-    std::lock_guard lk(s_lock);
-    u32 sum = 0;
-    const size_t end = std::min(s_filled, s_pos + 4096);
-    for (size_t i = s_pos; i < end; i++)
-        sum = sum * 31 + s_data[i];
-#ifdef __EMSCRIPTEN__
-    const long long base = (long long)s_webBase;
-#else
-    const long long base = -1;
-#endif
-    fprintf(stderr, "[dtk] playing %d prepared %d base %lld pos %zu filled %zu size %zu vol %u/%u sum4k %08X\n", s_playing ? 1 : 0,
-            s_prepared ? 1 : 0, base, s_pos, s_filled, s_data.size(), s_volL, s_volR, sum);
-}
-
 BOOL port_DVDCancelStreamAsync(DVDCommandBlock* block, DVDCBCallback callback)
 {
     {

@@ -320,7 +320,7 @@ if (EMSCRIPTEN)
         -sINVOKE_RUN=0
         -sMODULARIZE=0
         -sEXPORTED_RUNTIME_METHODS=['callMain','FS','IDBFS','HEAPU8','addRunDependency','removeRunDependency','ENV']
-        -sEXPORTED_FUNCTIONS=['_main','_malloc','_free','_port_dsp_list_voices']
+        -sEXPORTED_FUNCTIONS=['_main','_malloc','_free']
         -lidbfs.js
         --profiling-funcs)
     set_target_properties(mssb PROPERTIES OUTPUT_NAME "mssb" SUFFIX ".js"
