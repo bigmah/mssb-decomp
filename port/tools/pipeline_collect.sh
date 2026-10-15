@@ -23,6 +23,10 @@ mode() { # main-menu mode n (mode.sh): down n times, A, then A every 1.5 s
   echo "$IN,$((f + 60)):A,$((f + 200))-400000/90:A"
 }
 GAME="600-400000/90:A"
+# Like a person playing: swings, pitches and throws aimed around, fielders run, buttons mixed in
+# (no START: the pause menu could end the game). More of the game's effects show up than with A alone.
+MIX="600-400000/90:A,640-400000/130:SLEFT,700-400000/170:SRIGHT,760-400000/210:SUP,820-400000/250:SDOWN"
+MIX="$MIX,880-400000/290:B,940-400000/370:Y,1000-400000/410:X,1060-400000/450:R,1120-400000/530:Z"
 
 query() {
   case "$1" in
@@ -37,6 +41,9 @@ query() {
     toyfield) echo "env=MSSB_ALLMODES=1;MSSB_INPUT=$(mode 2)" ;;
     minigames) echo "env=MSSB_ALLMODES=1;MSSB_INPUT=$(mode 3)" ;;
     practice) echo "env=MSSB_INPUT=$(mode 4)" ;;
+    mx-*-*) # the same with mixed input: mx-peach-daisy
+      local c="${1#mx-}"
+      echo "skipfe&captain1=${c%-*}&captain2=${c#*-}&stadium=mario&env=MSSB_INPUT=$MIX" ;;
     ms-*-*) # a game at Mario Stadium (the web build's scope) between two captains: ms-peach-daisy
       local c="${1#ms-}"
       echo "skipfe&captain1=${c%-*}&captain2=${c#*-}&stadium=mario&env=MSSB_INPUT=$GAME" ;;

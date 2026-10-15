@@ -47,6 +47,9 @@ void port_trace_game(void) {
 // a new effect still compiles on first use, if the windows weren't long enough to reach it.
 #include <aurora/aurora.h>
 #include <string.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 void port_pipeline_prewarm_policy(void) {
     static int enabled = -1;
     static int last = -1;
@@ -75,6 +78,13 @@ void port_pipeline_prewarm_policy(void) {
         }
     }
     if (perFrame != last) {
+#ifdef __EMSCRIPTEN__
+        if (perFrame > 0 && last == 0) {
+            // A quiet moment: also store the pipelines this device used (aurora appends them to
+            // /mssb/pipeline_cache.bin) so the next game compiles them ahead too.
+            EM_ASM({ if (window.mssbSaveData) window.mssbSaveData(); });
+        }
+#endif
         size_t left = aurora_set_pipeline_prewarm(perFrame);
         if (getenv("MSSB_DEBUG_PREWARM") != NULL) {
             fprintf(stderr, "[prewarm] %d per frame (status %d), %u waiting\n", perFrame, g_GameLogic.gameStatus,

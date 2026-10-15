@@ -1371,6 +1371,43 @@ window.addEventListener('unhandledrejection', (e) => {
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && typeof FS !== 'undefined' && runtimeReady) FS.syncfs(false, () => {});
 });
+// The game calls this at moments a hitch doesn't show (port/game/views.c): saves and the list of
+// GPU pipelines this device has used (compiled ahead next time) reach the browser's storage even
+// when the page is closed without being hidden first, as iOS often does.
+let savingData = false;
+window.mssbSaveData = () => {
+  if (savingData || typeof FS === 'undefined' || !runtimeReady) return;
+  savingData = true;
+  FS.syncfs(false, (err) => {
+    savingData = false;
+    if (err) console.warn("Couldn't save data", err);
+  });
+  if (params.has('debug')) reportPipelines();
+};
+// ?debug: the pipelines this device used that the page didn't know go to the site's log, gzipped
+// in lines short enough for it ("[pipelist] part i/n ..."); port/tools/pipeline_from_log.py turns
+// them back into a list for pipeline_seed.py.
+let pipelinesReported = 0;
+let pipelistPart = 0;
+async function reportPipelines() {
+  let data;
+  try {
+    data = FS.readFile('/mssb/pipeline_cache.bin');
+  } catch (e) {
+    return;
+  }
+  if (data.length <= pipelinesReported) return;
+  const start = pipelinesReported;
+  pipelinesReported = data.length;
+  const gz = await new Response(new Blob([data.slice(start)]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+  let b64 = '';
+  const bytes = new Uint8Array(gz);
+  for (let i = 0; i < bytes.length; i += 0x8000) b64 += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  b64 = btoa(b64);
+  const part = pipelistPart++;
+  const n = Math.ceil(b64.length / 1800);
+  for (let i = 0; i < n; i++) console.log(`[pipelist] ${part} ${start} ${i + 1}/${n} ${b64.slice(i * 1800, (i + 1) * 1800)}`);
+}
 
 async function init() {
   MssbPad.init();
