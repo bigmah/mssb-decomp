@@ -206,7 +206,8 @@ if (params.has('debug')) {
     b.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       console.log(`[mark] heard something (audio callbacks ${au.calls}, late ${au.late})`);
-      // A moment later, so the recording covers it.
+      // The voices playing now (port/src/audio/dsp_ax.cpp), and a moment later the recording.
+      window.Module?._port_dsp_list_voices?.();
       setTimeout(postAudio, 1000);
       b.textContent = 'marked';
       setTimeout(() => (b.textContent = 'static!'), 800);

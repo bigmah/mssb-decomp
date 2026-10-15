@@ -642,11 +642,14 @@ void process_pb(_PB& pb)
     }
 }
 
+int s_listVoices = 0; // port_dsp_list_voices: frames left to list voices for
+
 void debug_list_voices(u32 addr)
 {
     static const bool s_on = getenv("MSSB_DSP_VOICES") != nullptr;
     static const int s_every = getenv("MSSB_DSP_VOICES") ? std::max(1, atoi(getenv("MSSB_DSP_VOICES"))) : 200;
-    if (!s_on || s_debug.frames % s_every != 0)
+    const bool asked = s_listVoices > 0 && s_listVoices-- % 40 == 0;
+    if (!asked && (!s_on || s_debug.frames % s_every != 0))
         return;
     for (int n = 0; addr != 0 && n < 256; n++)
     {
@@ -683,6 +686,14 @@ void cmd_process()
 }
 
 } // namespace
+
+// The page's ?debug "static!" button: list the playing voices 5 times over the next second.
+extern "C" void port_dtk_debug_state(void);
+extern "C" void port_dsp_list_voices(void)
+{
+    s_listVoices = 200;
+    port_dtk_debug_state();
+}
 
 extern "C" void dsp_ax_reset(void)
 {
