@@ -1,4 +1,0 @@
-[submodule "port/extern/aurora"]
-	path = port/extern/aurora
-	url = https://github.com/bigmah/aurora.git
-	branch = mssb-port

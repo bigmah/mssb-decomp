@@ -41,5 +41,3 @@ compile_commands.json
 # nmpromote/permute temp sources
 *.nmtmp*.c
 
-# port web test tools
-port/tools/node_modules/
