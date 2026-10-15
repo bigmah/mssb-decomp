@@ -221,6 +221,10 @@
   #net-stats { position: absolute; z-index: 1; left: 12px; bottom: 12px; padding: 4px 10px;
     background: rgba(15, 23, 36, .8); border: 1px solid var(--line);
     font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); pointer-events: none; white-space: pre; }
+  /* The web disc downloading into the browser's storage (loader.js, WebDiscStore) */
+  #save-progress { position: absolute; z-index: 1; right: max(12px, env(safe-area-inset-right)); bottom: 12px; padding: 3px 9px;
+    background: rgba(15, 23, 36, .7); border: 1px solid var(--line); border-radius: 999px;
+    font-size: 11px; color: var(--muted); pointer-events: none; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -239,6 +243,7 @@
   <div id="load-status" hidden><span class="spinner"></span><span id="load-text">Loading…</span></div>
   <div id="net-status" hidden></div>
   <div id="net-stats" hidden></div>
+  <div id="save-progress" hidden></div>
   <div id="touch" aria-hidden="true">
     <div id="t-stick"><div id="t-knob"></div></div>
     <div class="tbtn" data-btn="l">L</div>
@@ -352,8 +357,9 @@
       <div class="ready">
         <div>
           <p class="disc-line" id="play-name"></p>
+          <p class="hint" id="save-status" hidden></p>
           
-          <p class="hint">Exhibition, Challenge, minigames and more, from your own disc.</p>
+          <p class="hint">Exhibition at Mario Stadium, with every character.</p>
           <div class="row actions">
             <button class="primary" id="play"><i class="glyph a">A</i>Play</button>
           </div>

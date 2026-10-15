@@ -59,6 +59,11 @@ longer stall every thread on a cache miss (they wait for Disc.prefetch).
 pipeline compiles block presenting (cold Metal cache: 1-2 fps for a minute
 while 765 prewarmed); background compiles now go one per frame there.
 Measure with ?stats (5 s summaries, [late] frames), ?pipestats, ?debug.
+Web disc (2026-10-14): the site lists the 256 disc chunks (128 MB) the web
+scope reaches (port/web/web_disc.json, port/tools/web_disc.py); the page saves
+them in the browser once, in the background, and later visits read no disc
+data from the network. Reads outside it are logged and fetched from the full
+disc (port/DEPLOY.md "Web disc").
 Scope: Mario Stadium only; Wario Palace and Peach Garden load on the web,
 DK Jungle (aliased bss, lbl_3_bss_B55C) and the 64-bit stadium object views
 don't. Known issues: the scripted Challenge

@@ -11,7 +11,9 @@
 # deployed too, as 512 KB chunks (the loader's block size: boot
 # touches ~30 scattered blocks, so bigger chunks mostly download unused data) under /disc/<hash>/ that the Worker only serves
 # after the page unlocks them with the password (DISC_PASSWORD in
-# port/cloudflare/src/worker.js).
+# port/cloudflare/src/worker.js). The web disc's keep-list
+# (port/web/web_disc.json) goes in the manifest too; MSSB_WEB_DISC_ONLY=1
+# leaves every other chunk off the site.
 set -e
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 STAGE="$ROOT/build/cf-assets"
@@ -53,6 +55,27 @@ m = json.load(open(os.path.join(disc, "manifest.json")))
 m["boot"] = {"file": name, "segments": r["segments"]}
 json.dump(m, open(os.path.join(disc, "manifest.json"), "w"))
 print("Boot pack: %s, %d segments, %.1f MB" % (name, len(r["segments"]), len(data) / 2**20))
+PY
+  # The web disc: the chunks the web build can reach (port/web/web_disc.json,
+  # from port/tools/web_disc.py), which the page keeps in the browser's storage.
+  # MSSB_WEB_DISC_ONLY=1 deploys only those; other reads then get zeros.
+  python3 - "$ISO" "$ROOT/port/web/web_disc.json" "$STAGE/disc" "$ID" "${MSSB_WEB_DISC_ONLY:-0}" <<'PY'
+import json, os, sys
+iso, keep, disc, dir_, only = sys.argv[1:]
+k = json.load(open(keep))
+if k["size"] != os.path.getsize(iso) or k["chunk"] != 524288:
+    print("warning: web_disc.json is for another disc image; no web disc (rerun port/tools/web_disc.py)", file=sys.stderr)
+    sys.exit(0)
+m = json.load(open(os.path.join(disc, "manifest.json")))
+m["web"] = {"chunks": k["chunks"], "only": only == "1"}
+json.dump(m, open(os.path.join(disc, "manifest.json"), "w"))
+letters = lambda i: chr(97 + i // 676) + chr(97 + i // 26 % 26) + chr(97 + i % 26)
+if only == "1":
+    keep_names = {letters(i) for i in k["chunks"]}
+    for name in os.listdir(os.path.join(disc, dir_)):
+        if len(name) == 3 and name not in keep_names:
+            os.remove(os.path.join(disc, dir_, name))
+print("Web disc: %d of %d chunks (%.0f MB)%s" % (len(k["chunks"]), m["count"], len(k["chunks"]) / 2, ", only those deployed" if only == "1" else ""))
 PY
 else
   echo "warning: no mario_baseball.iso; the site will ask for a disc file" >&2

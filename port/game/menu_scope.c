@@ -12,9 +12,16 @@
 //     (option 2, which also gates star chances) is locked off and its row is
 //     hidden (fn_800559EC, file_800527C4.c); `starskills = true` in
 //     user.ini brings the option back.
+//
+// The web build's disc only carries what these reach (port/tools/web_disc.py),
+// so the ways around the menus are guarded too: an exhibition set up without
+// them (skipfe: online play) stays at Mario Stadium, and loading Challenge's
+// module stops the game with a clear error instead of reading missing data.
 #include "mssbTypes.h"
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 const char* port_user_ini_get(const char* key);
 int port_user_ini_bool(const char* key);
@@ -54,6 +61,33 @@ s32 port_menu_row(s32 entry) {
 // Stadium select can move off Mario Stadium.
 s32 port_stadium_select_enabled(void) {
     return all_modes();
+}
+
+// The stadium a game set up outside the menus (skipfe) plays at: Mario
+// Stadium (0) unless all modes are on.
+s32 port_scope_stadium(s32 stadium) {
+    if (stadium != 0 && !all_modes()) {
+        fprintf(stderr, "[scope] stadium %d isn't offered; playing at Mario Stadium\n", (int)stadium);
+        return 0;
+    }
+    return stadium;
+}
+
+#ifdef __EMSCRIPTEN__
+void port_web_report_fatal(const char* message);
+#endif
+
+// Called before loading a game module: Challenge (challenge.rel) needs all modes.
+void port_scope_check_module(const char* name) {
+    static const char message[] = "Challenge mode isn't part of this version of the game.";
+    if (all_modes() || strcmp(name, "challenge") != 0) {
+        return;
+    }
+    fprintf(stderr, "[scope] %s: %s\n", name, message);
+#ifdef __EMSCRIPTEN__
+    port_web_report_fatal(message);
+#endif
+    abort();
 }
 
 // The game options screen offers Star Skills (option 2). Off on PC: star moves

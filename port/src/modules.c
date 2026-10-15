@@ -93,6 +93,8 @@ static PortModule* find_by_header(OSModuleHeader* header)
     return NULL;
 }
 
+void port_scope_check_module(const char* name); // port/game/menu_scope.c
+
 OSModuleHeader* port_module_load(s32 dllIndex)
 {
     for (size_t i = 0; i < sizeof(s_modules) / sizeof(s_modules[0]); i++)
@@ -100,6 +102,7 @@ OSModuleHeader* port_module_load(s32 dllIndex)
         PortModule* m = &s_modules[i];
         if (m->dllIndex == dllIndex)
         {
+            port_scope_check_module(m->name);
             memset(&m->header, 0, sizeof(m->header));
             m->header.info.id = m->id;
             return &m->header;

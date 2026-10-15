@@ -24,6 +24,7 @@ extern void fn_2_2FC0(u8 mode, s32 b, s32 c); // menus: build both teams
 const char* port_user_ini_get(const char* key);
 int port_user_ini_bool(const char* key);
 s32 port_star_skills_enabled(void);
+s32 port_scope_stadium(s32 stadium); // port/game/menu_scope.c
 
 static const char* const sCharNames[] = {
     "mario", "luigi", "dk", "diddy", "peach", "daisy", "yoshi", "babymario", "babyluigi",
@@ -88,7 +89,7 @@ BOOL port_skipfe_step(void) {
 
     captain[0] = lookup(port_user_ini_get("captain1"), sCharNames, 54, CHAR_ID_MARIO);
     captain[1] = lookup(port_user_ini_get("captain2"), sCharNames, 54, CHAR_ID_BOWSER);
-    stadium = lookup(port_user_ini_get("stadium"), sStadiumNames, 6, STADIUM_ID_MARIO_STADIUM);
+    stadium = port_scope_stadium(lookup(port_user_ini_get("stadium"), sStadiumNames, 6, STADIUM_ID_MARIO_STADIUM));
     fprintf(stderr, "[skipfe] captains %d vs %d, stadium %d\n", captain[0], captain[1], stadium);
 
     {

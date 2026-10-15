@@ -363,7 +363,10 @@ class Lockstep {
 // team, batting first), port 1 team 2. An empty slot's team is the computer's.
 const SLOTS = 2;
 const CAPTAINS = ['mario', 'luigi', 'peach', 'daisy', 'yoshi', 'birdo', 'wario', 'waluigi', 'dk', 'diddy', 'bowser', 'bowserjr'];
-const STADIUMS = ['mario', 'peach', 'yoshi', 'dk', 'wario', 'bowser'];
+// The web build offers Mario Stadium only: the other stadiums aren't in the web
+// disc (port/tools/web_disc.py), and the game keeps skipfe there anyway
+// (port_scope_stadium, port/game/menu_scope.c).
+const STADIUMS = ['mario'];
 
 class Mesh {
   constructor({ room, name, identity, ui, relayOnly, netSim, signalBase = '' }) {

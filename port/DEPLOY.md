@@ -43,6 +43,24 @@ browser <──WebRTC (direct, or relayed by Cloudflare TURN)──> browser
   boot path changes). The page streams it as soon as the disc unlocks, while
   the player is still on the Play screen, and reads it covers wait for it
   instead of fetching chunks.
+- **Web disc.** The web build only reaches Exhibition at Mario Stadium,
+  Practice, Options and online play (always at Mario Stadium), with every
+  character. `port/web/web_disc.json` lists the disc chunks those use: 256 of
+  the 1213 (128 MB), from recorded play sessions plus whole file tables and
+  music (`port/tools/web_disc.py`; rerecord with
+  `port/tools/record_web_disc.sh` when the disc, the scope or the game's
+  loading changes). The deploy puts the list in `disc/manifest.json`. After
+  the boot pack, the page downloads those chunks in the background into the
+  browser's Cache API storage ("Saving game data" on the Play screen and in a
+  corner while playing), and every later visit reads them from there: no
+  disc data over the network. A read outside the list is fetched from the full
+  disc and logged (`[web disc] read outside the web disc: ... (ZZZZ.dat
+  +0x...)`, in `wrangler tail` with `?debug`), so a gap in the list is a log
+  line, not a broken game. Once real play shows none,
+  `MSSB_WEB_DISC_ONLY=1 port/tools/deploy_cloudflare.sh` deploys only the
+  listed chunks (other reads then get zeros). The game itself keeps to the same
+  scope (`port/game/menu_scope.c`): a skipfe game asking for another stadium
+  plays at Mario Stadium, and Challenge's module refuses to load.
 
 - **Online play** (`port/web/net.js`, `port/web/src/net_web.cpp`, from the
   strikers port). Two browsers, one per team, run the same game in input
@@ -107,6 +125,11 @@ node port/tools/web_drive.mjs --url "$URL/?password=...&autostart" --secs 45 --s
 
 Locally: `port/tools/deploy_cloudflare.sh dev` (wrangler dev on
 http://localhost:8787).
+
+The web disc, locally: `port/tools/deploy_cloudflare.sh dev &` then
+`node port/tools/web_disc_check.mjs` (two visits in one fresh profile: the
+first saves the game data, the second must boot into a game with no disc
+requests; `PASS ...`).
 
 ## Logs, rollback
 

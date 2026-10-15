@@ -249,6 +249,12 @@ class Disc {
     return this.assemble(offset, len);
   }
 
+  // Calls this.outside(offset, len) when a read needs bytes the site's web
+  // disc doesn't have (WebDisc), before fetching them from the full disc.
+  checkKept(offset, len) {
+    if (this.kept && len > 0 && !this.kept(offset, len)) this.outside(offset, len);
+  }
+
   // True when [offset, offset + len) can be read without waiting; otherwise
   // starts fetching what's missing (once) and returns false. The game's
   // asynchronous reads wait on this instead of stalling every thread on a
@@ -256,6 +262,7 @@ class Disc {
   prefetch(offset, len) {
     len = Math.max(0, Math.min(len, this.size - offset));
     if (this.gather(offset, len, null) < 0) return true;
+    this.checkKept(offset, len);
     this.inflight ??= new Set();
     const first = Math.floor(offset / BLOCK);
     const last = Math.floor((offset + len - 1) / BLOCK);
@@ -296,6 +303,7 @@ class Disc {
     for (;;) {
       const gap = this.gather(offset, len, null);
       if (gap < 0) break;
+      this.checkKept(offset, len);
       // Bytes the boot pack is still bringing: wait for them rather than
       // fetch their blocks too.
       if (this.pack?.pending(gap)) {
@@ -461,7 +469,7 @@ async function serverDisc() {
 // can't go on without the data, so a chunk that fails, or gets no bytes for
 // STALL_MS, is fetched again (after a pause that grows to a few seconds).
 const STALL_MS = 15000;
-async function fetchChunk(url, priority) {
+async function fetchChunk(url, priority, counter = loading) {
   for (let attempt = 0; ; attempt++) {
     const abort = new AbortController();
     let timer = setTimeout(() => abort.abort(), STALL_MS);
@@ -473,6 +481,7 @@ async function fetchChunk(url, priority) {
     try {
       const r = await fetch(url, { signal: abort.signal, priority });
       if (r.status === 401) throw Object.assign(new Error('disc locked'), { fatal: true });
+      if (r.status === 404) throw Object.assign(new Error('not on the site'), { fatal: true });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const parts = [];
       const reader = r.body.getReader();
@@ -482,7 +491,7 @@ async function fetchChunk(url, priority) {
         alive();
         parts.push(value);
         got += value.length;
-        loading.bytes += value.length;
+        counter.bytes += value.length;
       }
       const out = new Uint8Array(got);
       let pos = 0;
@@ -492,7 +501,7 @@ async function fetchChunk(url, priority) {
       }
       return out.buffer;
     } catch (e) {
-      loading.bytes -= got;
+      counter.bytes -= got;
       if (e.fatal) throw e;
       console.warn(`disc chunk ${url}: ${abort.signal.aborted ? 'stalled' : e.message}; retrying (${attempt + 1})`);
       await new Promise((r) => setTimeout(r, Math.min(500 * 2 ** attempt, 5000)));
@@ -515,12 +524,22 @@ async function siteDisc() {
   }
   const { size, chunk, dir } = manifest;
   const letters = (i) => String.fromCharCode(97 + Math.floor(i / 676), 97 + (Math.floor(i / 26) % 26), 97 + (i % 26));
+  const chunkUrl = (i) => `disc/${dir}/${letters(i)}`;
+  const web = manifest.web && chunk === BLOCK ? await WebDisc.open(manifest, chunkUrl) : null;
   const recent = new Map(); // a few whole chunks, in case they're bigger than a block
-  const loadChunk = (i, priority = 'high') => {
+  // background: the web disc's download (not the game waiting).
+  const loadChunk = (i, priority = 'high', background = false) => {
     let p = recent.get(i);
     if (!p) {
-      loading.busy(1);
-      p = fetchChunk(`disc/${dir}/${letters(i)}`, priority).finally(() => loading.busy(-1));
+      if (!background) loading.busy(1);
+      p = (async () => {
+        const stored = await web?.get(i);
+        if (stored) return stored;
+        if (web?.only && !web.keep.has(i)) return new ArrayBuffer(chunk); // not deployed: see WebDisc
+        const data = await fetchChunk(chunkUrl(i), priority, background ? web.progress : loading);
+        web?.put(i, data);
+        return data;
+      })().finally(() => background || loading.busy(-1));
       p.catch(() => recent.delete(i));
       recent.set(i, p);
       if (recent.size > 16) recent.delete(recent.keys().next().value);
@@ -540,13 +559,190 @@ async function siteDisc() {
     });
     return out.buffer;
   });
-  if (manifest.boot) {
+  let boot = Promise.resolve();
+  if (web) {
+    disc.kept = (offset, len) => web.covers(offset, len);
+    disc.outside = (offset, len) => web.outside(disc, offset, len);
+  }
+  if (manifest.boot && !web?.hasAll(manifest.boot.segments)) {
     disc.pack = new BootPack(manifest.boot.segments);
-    disc.pack.stream(`disc/${dir}/${manifest.boot.file}`);
+    boot = disc.pack.stream(`disc/${dir}/${manifest.boot.file}`);
+  } else if (manifest.boot) {
+    // Everything boot reads is already in this browser: bring it into memory
+    // in the order the game wants it.
+    for (const [start, len] of manifest.boot.segments) disc.prefetch(start, len);
   }
   disc.gameId = await readGameId(new Blob([await disc.read(0, 0x8020)]));
   if (disc.gameId !== GAME_ID) return null;
+  // The rest of the web disc comes after the boot pack, in the background.
+  if (web) boot.then(() => web.download(loadChunk));
   return disc;
+}
+
+// The web disc: the disc chunks the web build can reach (manifest "web", from
+// port/tools/web_disc.py). They download once, in the background, into the
+// browser's Cache API storage, and every later visit reads them from there, so
+// play needs no network. A read outside them is fetched from the full disc and
+// logged (under ?debug it reaches the site's log, with the disc file it's in):
+// that's a gap in the keep-list. When the deploy leaves the rest of the disc
+// out (manifest "web.only"), such a read gets zeros instead.
+class WebDisc {
+  static async open(manifest, chunkUrl) {
+    const web = new WebDisc(manifest, chunkUrl);
+    if (typeof caches === 'undefined') return web; // not a secure context: no storage, still logs gaps
+    try {
+      const name = `mssb-disc-${manifest.dir}`;
+      for (const k of await caches.keys()) if (k.startsWith('mssb-disc-') && k !== name) await caches.delete(k); // an older disc
+      web.cache = await caches.open(name);
+      for (const req of await web.cache.keys()) {
+        const i = web.index.get(new URL(req.url).pathname.split('/').pop());
+        if (i !== undefined) web.have.add(i);
+      }
+    } catch (e) {
+      console.warn("Couldn't open the browser's storage for the game data; it'll stream instead.", e);
+      web.cache = null;
+    }
+    return web;
+  }
+
+  constructor(manifest, chunkUrl) {
+    this.chunk = manifest.chunk;
+    this.keep = new Set(manifest.web.chunks);
+    this.only = !!manifest.web.only;
+    this.chunkUrl = chunkUrl;
+    this.index = new Map(manifest.web.chunks.map((i) => [chunkUrl(i).split('/').pop(), i]));
+    this.cache = null;
+    this.have = new Set(); // chunks in storage
+    this.progress = { bytes: 0 }; // downloaded this visit
+    this.reported = new Set(); // chunks outside the web disc already logged
+    this.misses = []; // [offset, len] of reads outside it (tools read window.mssbWebDiscMisses)
+    window.mssbWebDiscMisses = this.misses;
+  }
+
+  covers(offset, len) {
+    for (let i = Math.floor(offset / this.chunk); i * this.chunk < offset + len; i++) if (!this.keep.has(i)) return false;
+    return true;
+  }
+
+  hasAll(segments) {
+    if (!this.cache) return false;
+    for (const [start, len] of segments)
+      for (let i = Math.floor(start / this.chunk); i * this.chunk < start + len; i++) if (!this.have.has(i)) return false;
+    return true;
+  }
+
+  async get(i) {
+    if (!this.have.has(i)) return null;
+    try {
+      const r = await this.cache.match(this.chunkUrl(i));
+      if (r) return await r.arrayBuffer();
+    } catch {}
+    this.have.delete(i); // evicted
+    return null;
+  }
+
+  put(i, data) {
+    if (!this.cache || this.full || !this.keep.has(i) || this.have.has(i)) return;
+    this.have.add(i);
+    this.cache.put(this.chunkUrl(i), new Response(data)).catch((e) => {
+      this.have.delete(i);
+      if (!this.full) console.warn(`Couldn't keep the game data in this browser (${e.name}); it'll stream instead.`, e);
+      this.full = true;
+    });
+  }
+
+  // Downloads what's missing, a few chunks at a time, at low priority.
+  async download(loadChunk) {
+    if (!this.cache) return;
+    const todo = [...this.keep].filter((i) => !this.have.has(i)).sort((a, b) => a - b);
+    const total = this.keep.size * this.chunk;
+    const status = () => {
+      const done = this.have.size === this.keep.size;
+      const mb = (n) => (n / 2 ** 20).toFixed(0);
+      const text = done ? '' : `Saving game data to this device: ${mb(this.have.size * this.chunk)} / ${mb(total)} MB`;
+      $('save-status').hidden = !text;
+      $('save-status').textContent = text;
+      $('save-progress').hidden = !text || !started;
+      $('save-progress').textContent = text && `Saving game data ${Math.floor((100 * this.have.size) / this.keep.size)}%`;
+    };
+    status();
+    const log = params.has('debug') || params.has('stats');
+    if (!todo.length) {
+      if (log) console.log(`[web disc] ${this.have.size} of ${this.keep.size} chunks kept, all already in this browser`);
+      return;
+    }
+    navigator.storage?.persist?.().catch(() => {});
+    const t0 = performance.now();
+    const timer = setInterval(status, 1000);
+    const worker = async () => {
+      while (todo.length && !this.full) {
+        const i = todo.shift();
+        if (this.have.has(i)) continue;
+        try {
+          await loadChunk(i, 'low', true);
+        } catch (e) {
+          console.warn(`game data download: chunk ${i}: ${e.message}`);
+        }
+      }
+    };
+    await Promise.all([worker(), worker(), worker()]);
+    clearInterval(timer);
+    status();
+    if (log)
+      console.log(`[web disc] ${this.have.size} of ${this.keep.size} chunks kept, ${(this.progress.bytes / 2 ** 20).toFixed(1)} MB downloaded in ${((performance.now() - t0) / 1000).toFixed(1)} s${this.full ? ' (storage full)' : ''}`);
+  }
+
+  // A read the web disc doesn't cover: logged once per chunk, with the disc
+  // file and offset it's in.
+  async outside(disc, offset, len) {
+    this.misses.push([offset, len]);
+    const i = Math.floor(offset / this.chunk);
+    if (this.reported.has(i)) return;
+    this.reported.add(i);
+    let where = '';
+    try {
+      where = ` (${await describeImageOffset(disc, offset)})`;
+    } catch {}
+    console.error(`[web disc] read outside the web disc: ${offset}+${len}, chunk ${i}${where}${this.only ? '; not deployed, reads zeros' : '; fetching it from the full disc'}`);
+  }
+}
+
+// "ZZZZ.dat +0x1234" for an offset in the image file (plain or CISO).
+async function describeImageOffset(disc, offset) {
+  const head = await disc.read(0, 0x8000);
+  let discOffset = offset;
+  if (String.fromCharCode(...head.subarray(0, 4)) === 'CISO') {
+    const blockSize = new DataView(head.buffer, head.byteOffset).getUint32(4, true);
+    const used = Math.floor((offset - 0x8000) / blockSize);
+    let n = 0;
+    discOffset = -1;
+    for (let b = 0; b < 0x8000 - 8; b++) {
+      if (!head[8 + b]) continue;
+      if (n++ === used) {
+        discOffset = b * blockSize + ((offset - 0x8000) % blockSize);
+        break;
+      }
+    }
+    if (offset < 0x8000 || discOffset < 0) return 'CISO header';
+  }
+  const read = await discReader(disc);
+  const dv = (b) => new DataView(b.buffer, b.byteOffset);
+  const hdr = dv(await read(0x424, 8));
+  const fst = await read(hdr.getUint32(0), hdr.getUint32(4));
+  const f = dv(fst);
+  const count = f.getUint32(8);
+  const names = 12 * count;
+  for (let k = 1; k < count; k++) {
+    if (fst[k * 12]) continue; // a directory
+    const at = f.getUint32(k * 12 + 4);
+    const n = f.getUint32(k * 12 + 8);
+    if (discOffset >= at && discOffset < at + n) {
+      const nameAt = names + (f.getUint32(k * 12) & 0xffffff);
+      const name = String.fromCharCode(...fst.subarray(nameAt, fst.indexOf(0, nameAt)));
+      return `${name} +0x${(discOffset - at).toString(16)}`;
+    }
+  }
+  return `disc 0x${discOffset.toString(16)}, system area`;
 }
 
 async function unlockSite(password) {
@@ -928,6 +1124,7 @@ function fillSelect(sel, entries, value) {
     for (const [v, label] of entries) sel.add(new Option(label, v));
   }
   sel.value = String(value);
+  if (sel.selectedIndex < 0) sel.selectedIndex = 0; // a saved choice that's no longer offered
 }
 
 async function joinRoom(disc, room, name) {
