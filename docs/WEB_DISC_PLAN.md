@@ -33,10 +33,16 @@ All five steps are in; see `port/DEPLOY.md` ("Web disc") for how it works.
 - Live play check (Chrome): three 15-minute games on the deployed site with
   the captains no recording used (Peach/Daisy, Wario/Waluigi, Bowser/Bowser
   Jr.), each on a second visit: 0 disc requests, 0 reads outside the web disc.
-- Left (needs a person): watch `?debug` play logs for `[web disc] read outside`
-  lines and add what they show (rerecord, or a session that reaches it),
-  and check that iPhone Safari keeps the saved data between visits; then
-  deploy with `MSSB_WEB_DISC_ONLY=1`.
+- WebKit (the engine of every iPhone browser), headless via Playwright as a
+  phone (`?touch`) on the live site: the data is kept between visits, and
+  the second visit plays at 60 fps with 0 disc requests.
+- The first phone try was choppy with broken-up audio. The cause was the
+  WebKit pipeline prewarm from the same day's perf pass, not the web disc;
+  fixed in f02b67ff (on-demand pipelines on WebKit, bigger audio buffers on
+  phones, gentler download while playing), deployed 297d1cab.
+- Left (needs a person): play on the iPhone with `?debug` and watch for
+  `[web disc] read outside` lines (add what they show), then deploy with
+  `MSSB_WEB_DISC_ONLY=1`.
 
 ## What's on the disc today
 
