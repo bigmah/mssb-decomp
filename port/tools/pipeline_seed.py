@@ -9,6 +9,12 @@ the first time an effect shows up. Collect lists with web_drive.mjs:
     node port/tools/web_drive.mjs --secs 300 --query '...' --fetch /mssb/pipeline_cache.bin:build/pipes/x.bin
     python3 port/tools/pipeline_seed.py build/pipes/*.bin        # merge into the seed (keeps its entries)
     python3 port/tools/pipeline_seed.py --stats port/web/initial_pipeline_cache.bin.gz
+
+The page compiles them in file order. On WebKit that happens only while the game allows it (the
+loading screen and intro before a game: port/game/views.c), so --first puts the pipelines the
+listed runs (games) use first, in the order they showed up there:
+
+    python3 port/tools/pipeline_seed.py --replace build/pipes2/*.bin --first build/pipes2/ms-*.bin
 """
 import argparse
 import gzip
@@ -48,9 +54,10 @@ def main():
     ap.add_argument("--out", default=str(SEED))
     ap.add_argument("--stats", action="store_true", help="only print what the inputs hold")
     ap.add_argument("--replace", action="store_true", help="don't keep the existing seed's entries")
+    ap.add_argument("--first", nargs="+", default=[], help="these runs' pipelines go first (also merged)")
     args = ap.parse_args()
 
-    inputs = list(args.inputs)
+    inputs = list(args.inputs) + [p for p in args.first if p not in args.inputs]
     if not args.stats and not args.replace and Path(args.out).exists() and args.out not in inputs:
         inputs.insert(0, args.out)
     merged = {}
@@ -73,14 +80,22 @@ def main():
     newest = {}
     for kind, version in versions:
         newest[kind] = max(newest.get(kind, 0), version)
+    # --first runs' pipelines in the order they showed up there, then the rest.
+    early = {}
+    for path in args.first:
+        for kind, version, config, first in read(path):
+            key = (kind, version, config)
+            early[key] = min(early.get(key, first), first)
     rows = sorted(((first, kind, version, config) for (kind, version, config), first in merged.items()
-                   if newest[kind] == version), key=lambda r: (r[0], r[1]))
+                   if newest[kind] == version),
+                  key=lambda r: (r[1:] not in early, early.get(r[1:], r[0]), r[1]))
     blob = bytearray(struct.pack("<II", MAGIC, SCHEMA))
-    for first, kind, version, config in rows:
-        blob += REC.pack(kind, version, len(config), first) + config
+    # The page sorts by first frame used: number them in file order.
+    for order, (first, kind, version, config) in enumerate(rows):
+        blob += REC.pack(kind, version, len(config), order if early else first) + config
     packed = gzip.compress(bytes(blob), 9, mtime=0) if args.out.endswith(".gz") else bytes(blob)
     Path(args.out).write_bytes(packed)
-    print(f"wrote {args.out}: {len(rows)} pipelines, {len(packed)} bytes")
+    print(f"wrote {args.out}: {len(rows)} pipelines ({sum(r[1:] in early for r in rows)} first), {len(packed)} bytes")
 
 
 if __name__ == "__main__":

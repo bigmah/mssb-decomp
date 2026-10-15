@@ -41,6 +41,49 @@ void port_trace_game(void) {
     }
 }
 
+// Browser on WebKit (the page sets AURORA_PIPELINE_PREWARM=app): every GPU pipeline compile holds
+// up presenting a frame, so the ~200 a game uses compile ahead only while a hitch doesn't show: the
+// Now Loading screen, the stadium intro and the scene between batters or half-innings. During play
+// a new effect still compiles on first use, if the windows weren't long enough to reach it.
+#include <aurora/aurora.h>
+#include <string.h>
+void port_pipeline_prewarm_policy(void) {
+    static int enabled = -1;
+    static int last = -1;
+    int perFrame = 0;
+    if (enabled < 0) {
+        const char* env = getenv("AURORA_PIPELINE_PREWARM");
+        enabled = env != NULL && strcmp(env, "app") == 0;
+    }
+    if (!enabled) {
+        return;
+    }
+    if (g_d_GameSettings._06 == 2) { // in the game module
+        switch (g_GameLogic.gameStatus) {
+        case 0:
+            if (g_Scores.inning == 0) { // Now Loading
+                perFrame = 2;
+            }
+            break;
+        case 4: // set-up after loading
+            perFrame = 2;
+            break;
+        case 5:  // stadium intro (VS)
+        case 22: // between batters, side change
+            perFrame = 1;
+            break;
+        }
+    }
+    if (perFrame != last) {
+        size_t left = aurora_set_pipeline_prewarm(perFrame);
+        if (getenv("MSSB_DEBUG_PREWARM") != NULL) {
+            fprintf(stderr, "[prewarm] %d per frame (status %d), %u waiting\n", perFrame, g_GameLogic.gameStatus,
+                    (unsigned)left);
+        }
+        last = perFrame;
+    }
+}
+
 // MSSB_TRACE_TASKS=1 also prints the scene flow (lbl_803CBBCC) when it changes.
 #include "main/menu_globals.h"
 void port_trace_scene(void) {

@@ -230,6 +230,7 @@ void quit_now()
 extern "C" void port_pad_sample(void);
 extern "C" void port_freeze_frames_check(void);
 extern "C" void port_pad_assign(void);
+extern "C" void port_pipeline_prewarm_policy(void);
 
 extern "C" {
 
@@ -252,6 +253,7 @@ void port_present_frame(void)
     if (s_inFrame)
     {
 #ifdef __EMSCRIPTEN__
+        port_pipeline_prewarm_policy(); // before aurora_end_frame, which starts the background compiles
         double t0 = emscripten_get_now();
         aurora_end_frame();
         g_webStats.endFrameMs += emscripten_get_now() - t0;

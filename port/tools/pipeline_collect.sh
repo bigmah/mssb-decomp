@@ -10,7 +10,7 @@ PORT="${1:-8080}"
 SECS="${2:-300}"
 PAR="${3:-4}"
 shift $(($# < 3 ? $# : 3))
-OUT="$ROOT/build/pipes"
+OUT="${PIPES_OUT:-$ROOT/build/pipes}" # PIPES_OUT: somewhere else
 mkdir -p "$OUT"
 
 MENU="500:A,800:A,1300:START"
@@ -37,6 +37,9 @@ query() {
     toyfield) echo "env=MSSB_ALLMODES=1;MSSB_INPUT=$(mode 2)" ;;
     minigames) echo "env=MSSB_ALLMODES=1;MSSB_INPUT=$(mode 3)" ;;
     practice) echo "env=MSSB_INPUT=$(mode 4)" ;;
+    ms-*-*) # a game at Mario Stadium (the web build's scope) between two captains: ms-peach-daisy
+      local c="${1#ms-}"
+      echo "skipfe&captain1=${c%-*}&captain2=${c#*-}&stadium=mario&env=MSSB_INPUT=$GAME" ;;
   esac
 }
 
@@ -46,7 +49,7 @@ run() {
   local name="$1"
   rm -f "$OUT/$name.bin"
   node "$ROOT/port/tools/web_drive.mjs" --quiet 1 --secs "$SECS" --out "$OUT/$name" \
-    --url "http://localhost:$PORT/?iso=disc.iso&autostart&$(query "$name")" \
+    --url "http://localhost:$PORT/?iso=disc.iso&autostart&noseed&nomovies&$(query "$name")" \
     --fetch "/mssb/pipeline_cache.bin:$OUT/$name.bin" >/dev/null 2>&1
   echo "$name: $( [ -f "$OUT/$name.bin" ] && python3 "$ROOT/port/tools/pipeline_seed.py" --stats "$OUT/$name.bin" | head -1 || echo 'nothing new')"
 }

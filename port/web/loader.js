@@ -163,6 +163,7 @@ if (params.has('pipestats') && typeof GPUDevice !== 'undefined') {
     const r = orig.apply(this, a);
     const dt = performance.now() - t0;
     st.sync++, (st.syncMs += dt), (st.maxCallMs = Math.max(st.maxCallMs, dt));
+    if (params.has('pipelog')) console.log(`[pipe] ${(t0 / 1000).toFixed(2)} sync ${dt.toFixed(1)} ms`);
     return r;
   });
   wrap('createRenderPipelineAsync', function (orig, a) {
@@ -170,12 +171,15 @@ if (params.has('pipestats') && typeof GPUDevice !== 'undefined') {
     const p = orig.apply(this, a);
     const dt = performance.now() - t0;
     st.async++, (st.asyncCallMs += dt), (st.maxCallMs = Math.max(st.maxCallMs, dt));
+    if (params.has('pipelog')) console.log(`[pipe] ${(t0 / 1000).toFixed(2)} async`);
     p.then(() => (st.asyncReadyMs += performance.now() - t0)).catch(() => {});
     return p;
   });
   wrap('createShaderModule', function (orig, a) {
     const code = a[0]?.code || '';
     st.codeBytes = (st.codeBytes || 0) + code.length;
+    (st.codes ||= new Set()).add(code);
+    if (params.has('pipelog')) console.log(`[module] ${st.modules + 1} unique ${st.codes.size}`);
     const t0 = performance.now();
     const r = orig.apply(this, a);
     st.modules++, (st.moduleMs += performance.now() - t0);
@@ -1300,14 +1304,17 @@ window.Module = {
       // way of presenting frames, even the asynchronous ones: background
       // compiles go one per frame, skipping frames that ran late.
       // Even so, prewarming the 765 known pipelines held an iPhone at 16-40 fps
-      // for the first minute (and the audio broke up), so WebKit builds
-      // pipelines only when a draw first needs them, one hitch per new effect,
-      // unless ?prewarm.
+      // for the first minute (and the audio broke up), and building each one
+      // when a draw first needs it stutters mid-game (~200 in a game). So the
+      // game picks the moments (port/game/views.c: Now Loading, the stadium
+      // intro, between batters) and the known ones compile then. ?prewarm
+      // compiles them all at boot, ?noprewarm only on first use.
       const ua = navigator.userAgent;
       const webkit = /AppleWebKit/.test(ua) && !/Chrome\/|Chromium|Edg\//.test(ua);
       if (webkit) ENV.AURORA_PIPELINES_PER_FRAME = params.get('pipesperframe') || '1';
       else if (params.has('pipesperframe')) ENV.AURORA_PIPELINES_PER_FRAME = params.get('pipesperframe');
-      if (webkit && !params.has('prewarm')) ENV.AURORA_PIPELINE_PREWARM = '0';
+      if (params.has('noprewarm')) ENV.AURORA_PIPELINE_PREWARM = '0';
+      else if (webkit && !params.has('prewarm')) ENV.AURORA_PIPELINE_PREWARM = 'app';
       ENV.MSSB_SKIP_MOVIES = params.has('movies') ? '0' : '1';
       // Audio buffering (port/src/audio/ai.cpp). A phone's main thread stalls
       // for longer (WebKit compiling GPU pipelines), so there the browser's
