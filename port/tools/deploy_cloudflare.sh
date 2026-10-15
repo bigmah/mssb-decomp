@@ -19,18 +19,36 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 STAGE="$ROOT/build/cf-assets"
 WRANGLER="npx --yes wrangler@4"
 
+# build/web copies port/web's files when it's built: catch a deploy of stale copies.
+for f in index.html loader.js net.js pad.js touch.js initial_pipeline_cache.bin.gz; do
+  cmp -s "$ROOT/port/web/$f" "$ROOT/build/web/$f" || { echo "build/web/$f is older than port/web/$f: run port/tools/build_web.sh"; exit 1; }
+done
 rm -rf "$STAGE"
 mkdir -p "$STAGE"
 for f in index.html loader.js net.js pad.js touch.js mssb.js mssb.wasm initial_pipeline_cache.bin.gz; do
   cp "$ROOT/build/web/$f" "$STAGE/"
 done
-# The pipeline list goes by a name with its hash in it: Cloudflare's edge can serve a cached
-# copy for a while after a deploy, and an old list next to a new game is mostly skipped
-# (other config version), so nothing compiles ahead.
-SEED_HASH=$(shasum -a 256 "$STAGE/initial_pipeline_cache.bin.gz" | cut -c1-12)
-mv "$STAGE/initial_pipeline_cache.bin.gz" "$STAGE/initial_pipeline_cache.$SEED_HASH.bin.gz"
-sed -i '' "s#'initial_pipeline_cache.bin.gz'#'initial_pipeline_cache.$SEED_HASH.bin.gz'#" "$STAGE/loader.js"
-grep -q "initial_pipeline_cache.$SEED_HASH.bin.gz" "$STAGE/loader.js" || { echo "loader.js: pipeline list name not found"; exit 1; }
+# Everything index.html loads goes by a name with its hash in it, so a page never runs files
+# from different deploys: browsers (iOS especially) and Cloudflare's edge kept serving old
+# copies after a deploy, and an old pipeline list next to a new game is skipped (other config
+# version), an old loader with a new game worse. index.html itself is revalidated each visit.
+stamp() { # stamp FILE REFERRER...: renames FILE to name.HASH.ext and rewrites the referrers
+  local f="$1" h base ext ref
+  shift
+  h=$(shasum -a 256 "$STAGE/$f" | cut -c1-12)
+  base="${f%%.*}" ext="${f#*.}"
+  mv "$STAGE/$f" "$STAGE/$base.$h.$ext"
+  for ref in "$@"; do
+    sed -i '' "s#\([\"'/}]\)$f\([\"'\`]\)#\1$base.$h.$ext\2#g" "$STAGE/$ref"
+    grep -q "$base.$h.$ext" "$STAGE/$ref" || { echo "$ref: reference to $f not found"; exit 1; }
+  done
+}
+stamp initial_pipeline_cache.bin.gz loader.js
+stamp mssb.wasm mssb.js loader.js
+stamp mssb.js loader.js
+for f in loader.js net.js pad.js touch.js; do
+  stamp "$f" index.html
+done
 
 ISO="${MSSB_ISO:-}"
 for p in "$ROOT/mario_baseball.iso" "$ROOT/../mario_baseball.iso"; do
@@ -90,7 +108,7 @@ fi
 
 cd "$ROOT/port/cloudflare"
 case "${1:-deploy}" in
-  dev) exec $WRANGLER dev --port 8787 ;;
+  dev) exec $WRANGLER dev --port "${DEV_PORT:-8787}" ;;
   deploy) $WRANGLER deploy ;;
   turn)
     : "${CLOUDFLARE_API_TOKEN:?}" "${CLOUDFLARE_ACCOUNT_ID:?}"
