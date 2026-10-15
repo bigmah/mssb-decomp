@@ -59,6 +59,17 @@ longer stall every thread on a cache miss (they wait for Disc.prefetch).
 pipeline compiles block presenting (cold Metal cache: 1-2 fps for a minute
 while 765 prewarmed); background compiles now go one per frame there.
 Measure with ?stats (5 s summaries, [late] frames), ?pipestats, ?debug.
+Phone stutter (2026-10-15): mid-game hitches were pipelines compiled on first
+use. WebKit now compiles the known ones only in the game's quiet moments (Now
+Loading, the stadium intro, between batters: port/game/views.c,
+AURORA_PIPELINE_PREWARM=app); identical pipelines are shared, and a blended
+draw's alpha test is a per-draw value (it had doubled the pipelines, 840 -> 519).
+An iPhone then held 59.5-60 fps through play. The seed comes from
+pipeline_collect.sh (ms-/mx- captain games) and the phone's own list (?debug
+posts it; pipeline_from_log.py); deploy names the page's files by hash. Open:
+static in the audio on an iPhone (continuous stereo noise for seconds, on
+fouls, at-bat starts and idle; not late audio callbacks, not reproduced in
+desktop Chrome or native).
 Web disc (2026-10-14): the site lists the 256 disc chunks (128 MB) the web
 scope reaches (port/web/web_disc.json, port/tools/web_disc.py); the page saves
 them in the browser once, in the background, and later visits read no disc
