@@ -14,6 +14,7 @@
 #include "port/os.h"
 
 #include <SDL3/SDL_audio.h>
+#include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
 
 #include <atomic>
@@ -77,8 +78,15 @@ void run_period()
 #ifdef __EMSCRIPTEN__
 // Web builds have no audio thread: the main thread tops up SDL's queue at
 // frame boundaries and whenever the game waits or re-enables interrupts
-// (port_audio_pump). The queue target is larger to cover a frame plus jitter.
-constexpr int kWebTargetQueueMs = 70;
+// (port_audio_pump). The queue has to outlast the longest main-thread stall,
+// or the device runs dry and crackles: a frame plus jitter on a desktop, but a
+// phone's WebKit blocks the page ~60 ms per GPU pipeline it compiles. So the
+// target starts at MSSB_AUDIO_QUEUE_MS (the page sets it: 70 desktop, 120
+// touch) and grows each time the queue is found empty, up to kWebMaxQueueMs.
+constexpr int kWebMaxQueueMs = 250;
+int s_webTargetMs = 0;
+bool s_webPrimed = false; // the queue has been filled once (empty before that isn't a dropout)
+int s_webDropouts = 0;
 #endif
 
 std::atomic<bool> s_quit{false};
@@ -112,6 +120,15 @@ void ensure_stream()
         return;
     if (!SDL_WasInit(SDL_INIT_AUDIO) && !SDL_InitSubSystem(SDL_INIT_AUDIO))
         return;
+#ifdef __EMSCRIPTEN__
+    // The browser's audio callback runs on the main thread and SDL hands it
+    // twice this many frames per call. Its default (1024 -> 43 ms at 48 kHz)
+    // is shorter than the main-thread stalls a phone's WebKit has while
+    // compiling GPU pipelines, so it crackles there; the page asks for more
+    // (MSSB_AUDIO_FRAMES, port/web/loader.js).
+    if (const char* frames = getenv("MSSB_AUDIO_FRAMES"); frames != nullptr && atoi(frames) > 0)
+        SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, frames);
+#endif
     SDL_AudioSpec spec{};
     spec.format = SDL_AUDIO_S16;
     spec.channels = 2;
@@ -135,7 +152,25 @@ void port_audio_pump(void)
     if (s_stream == nullptr || s_pumping || port_net_active())
         return;
     s_pumping = true;
-    const int targetBytes = sample_rate_hz() * 4 * kWebTargetQueueMs / 1000;
+    if (s_webTargetMs == 0)
+    {
+        const char* env = getenv("MSSB_AUDIO_QUEUE_MS");
+        s_webTargetMs = env != nullptr && atoi(env) > 0 ? atoi(env) : 70;
+    }
+    if (s_dmaRunning.load() && SDL_GetAudioStreamQueued(s_stream) == 0)
+    {
+        if (s_webPrimed)
+        {
+            s_webDropouts++;
+            if (s_webTargetMs < kWebMaxQueueMs)
+            {
+                s_webTargetMs = s_webTargetMs + 30 < kWebMaxQueueMs ? s_webTargetMs + 30 : kWebMaxQueueMs;
+                printf("[audio] the queue ran dry (%d times); keeping %d ms queued now\n", s_webDropouts, s_webTargetMs);
+            }
+        }
+        s_webPrimed = true;
+    }
+    const int targetBytes = sample_rate_hz() * 4 * s_webTargetMs / 1000;
     // Bounded so a stalled device (tab hidden, autoplay blocked) can't spin.
     for (int i = 0; i < 64; i++)
     {

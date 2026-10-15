@@ -575,7 +575,7 @@ async function siteDisc() {
   disc.gameId = await readGameId(new Blob([await disc.read(0, 0x8020)]));
   if (disc.gameId !== GAME_ID) return null;
   // The rest of the web disc comes after the boot pack, in the background.
-  if (web) boot.then(() => web.download(loadChunk));
+  if (web && !params.has('nosave')) boot.then(() => web.download(loadChunk));
   return disc;
 }
 
@@ -674,9 +674,15 @@ class WebDisc {
     navigator.storage?.persist?.().catch(() => {});
     const t0 = performance.now();
     const timer = setInterval(status, 1000);
-    const worker = async () => {
-      while (todo.length && !this.full) {
+    // Three at a time until Play is pressed. Once the game runs, one at a
+    // time, and none while the game is waiting for disc data itself: a phone's
+    // connection and main thread are shared with the game (and its music).
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const worker = async (onlyBeforePlay) => {
+      while (todo.length && !this.full && !(onlyBeforePlay && started)) {
+        while (started && loading.pending > 0) await sleep(100);
         const i = todo.shift();
+        if (i === undefined) break;
         if (this.have.has(i)) continue;
         try {
           await loadChunk(i, 'low', true);
@@ -685,7 +691,7 @@ class WebDisc {
         }
       }
     };
-    await Promise.all([worker(), worker(), worker()]);
+    await Promise.all([worker(false), worker(true), worker(true)]);
     clearInterval(timer);
     status();
     if (log)
@@ -1293,16 +1299,30 @@ window.Module = {
       // WebKit (Safari, every iPhone browser) compiles GPU pipelines in the
       // way of presenting frames, even the asynchronous ones: background
       // compiles go one per frame, skipping frames that ran late.
+      // Even so, prewarming the 765 known pipelines held an iPhone at 16-40 fps
+      // for the first minute (and the audio broke up), so WebKit builds
+      // pipelines only when a draw first needs them, one hitch per new effect,
+      // unless ?prewarm.
       const ua = navigator.userAgent;
-      if (/AppleWebKit/.test(ua) && !/Chrome\/|Chromium|Edg\//.test(ua)) ENV.AURORA_PIPELINES_PER_FRAME = params.get('pipesperframe') || '1';
+      const webkit = /AppleWebKit/.test(ua) && !/Chrome\/|Chromium|Edg\//.test(ua);
+      if (webkit) ENV.AURORA_PIPELINES_PER_FRAME = params.get('pipesperframe') || '1';
       else if (params.has('pipesperframe')) ENV.AURORA_PIPELINES_PER_FRAME = params.get('pipesperframe');
+      if (webkit && !params.has('prewarm')) ENV.AURORA_PIPELINE_PREWARM = '0';
       ENV.MSSB_SKIP_MOVIES = params.has('movies') ? '0' : '1';
+      // Audio buffering (port/src/audio/ai.cpp). A phone's main thread stalls
+      // for longer (WebKit compiling GPU pipelines), so there the browser's
+      // audio callback takes 2 x 2048 frames (85 ms) at a time instead of
+      // 2 x 1024, and more is queued ahead of it (it grows by itself after a
+      // dropout). ?audioframes= / ?audioms= override.
+      const phone = MssbTouch.isEnabled();
+      ENV.MSSB_AUDIO_FRAMES = params.get('audioframes') || (phone ? '2048' : '1024');
+      ENV.MSSB_AUDIO_QUEUE_MS = params.get('audioms') || (phone ? '120' : '70');
       // The health screen, logo and title are pressed through to the main menu; ?intro shows them.
       ENV.MSSB_SKIP_INTRO = params.has('intro') ? '0' : '1';
       // GPU pipelines the game is known to use, compiled in the background at
       // boot so new effects don't stall a frame (aurora's pipeline_cache.cpp;
       // port/tools/pipeline_seed.py builds the file). ?noseed skips it.
-      if (!params.has('noseed')) {
+      if (!params.has('noseed') && ENV.AURORA_PIPELINE_PREWARM !== '0') {
         addRunDependency('mssb-pipelines');
         fetch('initial_pipeline_cache.bin.gz')
           .then((r) => (r.ok ? new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer() : null))
