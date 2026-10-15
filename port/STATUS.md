@@ -47,6 +47,18 @@ SwingTrail.state, `lbl_3_bss_170` = StickHistory.tmp, rep_1FD8's 9D8x-9F0C)
 were separate objects on PC; they now go through the object (find more with
 `port/gen/REPORT.md` "type size > symbol size"). Shape-anim key flags were
 read through a big-endian u32 view (Monty Mole's bat never shown).
+Web performance (2026-10-14): CPU per game frame in desktop Chrome ~4.8 ->
+~2.7 ms; with the CPU throttled 4x (phone-like) 46 fps -> a steady 60.
+aurora: incremental texture-cache sweep, compact matrix uniforms, lights in
+their own binding, cached bindings/pipeline lookups, vertex start as first
+instance, unused shader helpers stripped. Asyncify leaves the renderer and
+math alone (port/web/asyncify_remove.json; check changes with
+port/tools/web_asyncify_check.sh). Asynchronous disc reads and music no
+longer stall every thread on a cache miss (they wait for Disc.prefetch).
+30 Hz displays (Low Power Mode) run two game frames per refresh. WebKit:
+pipeline compiles block presenting (cold Metal cache: 1-2 fps for a minute
+while 765 prewarmed); background compiles now go one per frame there.
+Measure with ?stats (5 s summaries, [late] frames), ?pipestats, ?debug.
 Scope: Mario Stadium only; Wario Palace and Peach Garden load on the web,
 DK Jungle (aliased bss, lbl_3_bss_B55C) and the 64-bit stadium object views
 don't. Known issues: the scripted Challenge
