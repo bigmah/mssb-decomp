@@ -127,7 +127,38 @@ if (params.has('debug')) {
   }
   // The browser's audio callbacks (SDL plays through a ScriptProcessor on the main thread): one
   // that runs after its buffer was due to start leaves a gap, heard as a click or crackle.
-  const au = { calls: 0, late: 0, worstMs: 0, silent: 0 };
+  const au = { calls: 0, late: 0, worstMs: 0, silent: 0, rate: 48000 };
+  // The last 4 s of what went to the speakers (s16 stereo), posted to the log by the button below.
+  let ring = null;
+  let ringPos = 0;
+  const keepAudio = (buf) => {
+    const n = buf.length;
+    if (!ring) {
+      au.rate = buf.sampleRate;
+      ring = new Int16Array(Math.round(buf.sampleRate * 4) * 2);
+    }
+    const l = buf.getChannelData(0);
+    const r = buf.numberOfChannels > 1 ? buf.getChannelData(1) : l;
+    for (let i = 0; i < n; i++) {
+      ring[ringPos] = Math.max(-32768, Math.min(32767, Math.round(l[i] * 32767)));
+      ring[ringPos + 1] = Math.max(-32768, Math.min(32767, Math.round(r[i] * 32767)));
+      ringPos = (ringPos + 2) % ring.length;
+    }
+  };
+  let dumps = 0;
+  const postAudio = async () => {
+    if (!ring) return;
+    const pcm = new Int16Array(ring.length);
+    pcm.set(ring.subarray(ringPos), 0);
+    pcm.set(ring.subarray(0, ringPos), ring.length - ringPos);
+    const gz = new Uint8Array(await new Response(new Blob([pcm.buffer]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+    let bin = '';
+    for (let i = 0; i < gz.length; i += 0x8000) bin += String.fromCharCode(...gz.subarray(i, i + 0x8000));
+    const b64 = btoa(bin);
+    const id = dumps++;
+    const n = Math.ceil(b64.length / 1800);
+    for (let i = 0; i < n; i++) console.log(`[audiodump] ${id} ${au.rate} ${i + 1}/${n} ${b64.slice(i * 1800, (i + 1) * 1800)}`);
+  };
   if (typeof AudioContext !== 'undefined') {
     const orig = AudioContext.prototype.createScriptProcessor;
     AudioContext.prototype.createScriptProcessor = function (...a) {
@@ -151,6 +182,7 @@ if (params.has('debug')) {
           console.log(`[audio] late callback: ${lateMs.toFixed(0)} ms after its buffer was due`);
         }
         if (handler) handler.call(node, e);
+        keepAudio(e.outputBuffer);
         const ch = e.outputBuffer.getChannelData(0);
         let zero = true;
         for (let i = 0; i < ch.length; i += 64) if (ch[i] !== 0) { zero = false; break; }
@@ -167,6 +199,8 @@ if (params.has('debug')) {
     b.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       console.log(`[mark] heard something (audio callbacks ${au.calls}, late ${au.late})`);
+      // A moment later, so the recording covers it.
+      setTimeout(postAudio, 1000);
       b.textContent = 'marked';
       setTimeout(() => (b.textContent = 'static!'), 800);
     });
