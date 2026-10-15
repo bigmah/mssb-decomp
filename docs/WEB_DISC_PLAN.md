@@ -4,7 +4,7 @@ Goal: the web build carries everything needed to play, still behind the
 password, and nothing the web build can't reach. One download on the first
 visit; after that, no network reads during play.
 
-## Status (2026-10-14): done, not yet deployed
+## Status (2026-10-14): done and deployed
 
 All five steps are in; see `port/DEPLOY.md` ("Web disc") for how it works.
 
@@ -27,7 +27,10 @@ All five steps are in; see `port/DEPLOY.md` ("Web disc") for how it works.
   Mario Stadium (the lobby offers only it; skipfe falls back to it), and
   Challenge's module refuses to load. Each other stadium would add about 22 MB
   (5 MB of data, 17 MB of music).
-- Left: deploy, then watch `?debug` play logs for `[web disc] read outside`
+- Deployed (version 815a0e40). Checked on the live site with
+  `web_disc_check.mjs --url https://<site>/`: the first visit saved all 256
+  chunks in 11 s, and the second booted into a game with 0 disc requests.
+- Left: watch `?debug` play logs for `[web disc] read outside`
   lines and add what they show (rerecord, or a session that reaches it).
 
 ## What's on the disc today
