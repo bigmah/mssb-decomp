@@ -24,6 +24,13 @@ mkdir -p "$STAGE"
 for f in index.html loader.js net.js pad.js touch.js mssb.js mssb.wasm initial_pipeline_cache.bin.gz; do
   cp "$ROOT/build/web/$f" "$STAGE/"
 done
+# The pipeline list goes by a name with its hash in it: Cloudflare's edge can serve a cached
+# copy for a while after a deploy, and an old list next to a new game is mostly skipped
+# (other config version), so nothing compiles ahead.
+SEED_HASH=$(shasum -a 256 "$STAGE/initial_pipeline_cache.bin.gz" | cut -c1-12)
+mv "$STAGE/initial_pipeline_cache.bin.gz" "$STAGE/initial_pipeline_cache.$SEED_HASH.bin.gz"
+sed -i '' "s#'initial_pipeline_cache.bin.gz'#'initial_pipeline_cache.$SEED_HASH.bin.gz'#" "$STAGE/loader.js"
+grep -q "initial_pipeline_cache.$SEED_HASH.bin.gz" "$STAGE/loader.js" || { echo "loader.js: pipeline list name not found"; exit 1; }
 
 ISO="${MSSB_ISO:-}"
 for p in "$ROOT/mario_baseball.iso" "$ROOT/../mario_baseball.iso"; do
