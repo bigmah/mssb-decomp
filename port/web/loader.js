@@ -147,6 +147,47 @@ if (params.has('debug')) {
   console.log(`debug: ${navigator.userAgent} gpu=${!!navigator.gpu} mem=${navigator.deviceMemory} screen=${screen.width}x${screen.height}@${devicePixelRatio}`);
 }
 
+// ?pipestats: how long creating GPU pipelines and shader modules takes (the
+// call itself, which blocks the page, and until an async one is ready).
+if (params.has('pipestats') && typeof GPUDevice !== 'undefined') {
+  const st = { sync: 0, syncMs: 0, async: 0, asyncCallMs: 0, asyncReadyMs: 0, modules: 0, moduleMs: 0, maxCallMs: 0 };
+  const P = GPUDevice.prototype;
+  const wrap = (name, fn) => {
+    const orig = P[name];
+    P[name] = function (...a) {
+      return fn.call(this, orig, a);
+    };
+  };
+  wrap('createRenderPipeline', function (orig, a) {
+    const t0 = performance.now();
+    const r = orig.apply(this, a);
+    const dt = performance.now() - t0;
+    st.sync++, (st.syncMs += dt), (st.maxCallMs = Math.max(st.maxCallMs, dt));
+    return r;
+  });
+  wrap('createRenderPipelineAsync', function (orig, a) {
+    const t0 = performance.now();
+    const p = orig.apply(this, a);
+    const dt = performance.now() - t0;
+    st.async++, (st.asyncCallMs += dt), (st.maxCallMs = Math.max(st.maxCallMs, dt));
+    p.then(() => (st.asyncReadyMs += performance.now() - t0)).catch(() => {});
+    return p;
+  });
+  wrap('createShaderModule', function (orig, a) {
+    const code = a[0]?.code || '';
+    st.codeBytes = (st.codeBytes || 0) + code.length;
+    const t0 = performance.now();
+    const r = orig.apply(this, a);
+    st.modules++, (st.moduleMs += performance.now() - t0);
+    return r;
+  });
+  setInterval(() => {
+    const f = (n, ms) => (n ? `${n} (${ms.toFixed(0)} ms, ${(ms / n).toFixed(1)} each)` : '0');
+    console.log(`[pipes] sync ${f(st.sync, st.syncMs)}, async calls ${f(st.async, st.asyncCallMs)} ready after ${(st.asyncReadyMs / Math.max(1, st.async)).toFixed(0)} ms avg, ` +
+      `modules ${f(st.modules, st.moduleMs)} ${((st.codeBytes || 0) / Math.max(1, st.modules) / 1024).toFixed(1)} KB avg, longest call ${st.maxCallMs.toFixed(1)} ms`);
+  }, 3000);
+}
+
 // ---- Disc access -----------------------------------------------------------
 
 // Reads go through a block cache. readCached() answers synchronously when every
@@ -1052,6 +1093,12 @@ window.Module = {
           console.warn("Couldn't set the pixel ratio", e);
         }
       }
+      // WebKit (Safari, every iPhone browser) compiles GPU pipelines in the
+      // way of presenting frames, even the asynchronous ones: background
+      // compiles go one per frame, skipping frames that ran late.
+      const ua = navigator.userAgent;
+      if (/AppleWebKit/.test(ua) && !/Chrome\/|Chromium|Edg\//.test(ua)) ENV.AURORA_PIPELINES_PER_FRAME = params.get('pipesperframe') || '1';
+      else if (params.has('pipesperframe')) ENV.AURORA_PIPELINES_PER_FRAME = params.get('pipesperframe');
       ENV.MSSB_SKIP_MOVIES = params.has('movies') ? '0' : '1';
       // The health screen, logo and title are pressed through to the main menu; ?intro shows them.
       ENV.MSSB_SKIP_INTRO = params.has('intro') ? '0' : '1';
