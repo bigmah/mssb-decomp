@@ -30,8 +30,13 @@ All five steps are in; see `port/DEPLOY.md` ("Web disc") for how it works.
 - Deployed (version 815a0e40). Checked on the live site with
   `web_disc_check.mjs --url https://<site>/`: the first visit saved all 256
   chunks in 11 s, and the second booted into a game with 0 disc requests.
-- Left: watch `?debug` play logs for `[web disc] read outside`
-  lines and add what they show (rerecord, or a session that reaches it).
+- Live play check (Chrome): three 15-minute games on the deployed site with
+  the captains no recording used (Peach/Daisy, Wario/Waluigi, Bowser/Bowser
+  Jr.), each on a second visit: 0 disc requests, 0 reads outside the web disc.
+- Left (needs a person): watch `?debug` play logs for `[web disc] read outside`
+  lines and add what they show (rerecord, or a session that reaches it),
+  and check that iPhone Safari keeps the saved data between visits; then
+  deploy with `MSSB_WEB_DISC_ONLY=1`.
 
 ## What's on the disc today
 
