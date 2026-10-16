@@ -438,7 +438,7 @@ s32 fn_8004BD6C(CharActor* model, ActorObject* obj) {
     u32 partA;
     u32 partB;
 
-    switch (model->kind) {
+    switch (CHAR_KIND(model->kind)) {
     case 38:
         boneA = model->jointIdx[20];
         partA = 2;

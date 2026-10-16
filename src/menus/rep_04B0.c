@@ -288,7 +288,7 @@ void fn_2_14790(void) {
         lbl_2_bss_100B8.picked[1] = 0;
         lbl_2_bss_100B8._12[1] = 0;
         fn_8004E5B4(1, lbl_8034E9A0.captain[1], 0);
-        lbl_8034E9A0.charFlag[lbl_8034E9A0.captain[1]] = 0;
+        CS_CHARFLAG(lbl_8034E9A0.captain[1]) = 0;
         lbl_8034E9A0.captain[1] = -1;
     }
 
@@ -298,7 +298,7 @@ void fn_2_14790(void) {
     lbl_8034E9A0.teamPort[1] = port;
     lbl_803C66B0.portOf[0] = 0;
     lbl_803C66B0.portOf[1] = 1;
-    if (lbl_8034E9A0.charFlag[0] != 0 || lbl_2_bss_F410.sel[0] == 0) {
+    if (CS_CHARFLAG(0) != 0 || lbl_2_bss_F410.sel[0] == 0) {
         lbl_803C6724.sel[1] = 1;
     } else {
         lbl_803C6724.sel[1] = 0;
@@ -432,7 +432,7 @@ void fn_2_151BC(u8 player) {
     if (lbl_2_bss_100B8.picked[player] != 0) {
         lbl_2_bss_100B8.picked[player] = 0;
         lbl_2_bss_100B8._12[player] = 0;
-        lbl_8034E9A0.charFlag[lbl_8034E9A0.captain[player]] = 0;
+        CS_CHARFLAG(lbl_8034E9A0.captain[player]) = 0;
         fn_8004E5B4(player, lbl_8034E9A0.captain[player], 0);
     } else if (player != 0) {
         if (lbl_803297E0.random[player] != 0) {
@@ -443,7 +443,7 @@ void fn_2_151BC(u8 player) {
             lbl_803C6028._7F[lbl_8034E9A0.teamPort[lbl_803C66B0.portOf[0]]] = -1;
             lbl_2_bss_100B8.picked[0] = 0;
             lbl_2_bss_100B8._12[0] = 0;
-            lbl_8034E9A0.charFlag[lbl_8034E9A0.captain[0]] = 0;
+            CS_CHARFLAG(lbl_8034E9A0.captain[0]) = 0;
             lbl_803C66B0.portOf[0] = 0;
             fn_8004E5B4(0, lbl_8034E9A0.captain[0], 0);
             lbl_8034E9A0.captain[0] = -1;
@@ -460,7 +460,7 @@ void fn_2_151BC(u8 player) {
             lbl_803C5EA4._05 = 0;
             lbl_803C6028._7F[lbl_8034E9A0.teamPort[lbl_803C66B0.portOf[player]]] = -1;
             if (lbl_803CBBCC->prevScene == 10 && lbl_2_bss_100B8.picked[0] == 0) {
-                lbl_8034E9A0.charFlag[lbl_8034E9A0.captain[0]] = 0;
+                CS_CHARFLAG(lbl_8034E9A0.captain[0]) = 0;
                 fn_8004E5B4(0, lbl_8034E9A0.captain[0], 0);
                 lbl_8034E9A0.captain[0] = -1;
                 lbl_8034E9A0.captain[1] = -1;
@@ -552,7 +552,7 @@ void fn_2_1560C(u8 player) {
     }
     lbl_2_bss_100B8.picked[player] = 1;
     lbl_2_bss_100B8._12[player] = 1;
-    lbl_8034E9A0.charFlag[lbl_800FE5D4[lbl_2_bss_F410.sel[player]]] = 1;
+    CS_CHARFLAG(lbl_800FE5D4[lbl_2_bss_F410.sel[player]]) = 1;
 
     if (player == 0 && g_d_GameSettings._10 == 0 && g_d_GameSettings.GameModeSelected != 5) {
         fn_800625A4(1, 6);
@@ -727,7 +727,7 @@ void fn_2_15E80(u8 port) {
             before = lbl_2_bss_F410.sel[team];
             fn_2_14CA0(player, &in);
             cur = lbl_2_bss_F410.sel[team];
-        } while (lbl_8034E9A0.charFlag[lbl_800FE5D4[cur]] != 0 && start != cur && before != cur);
+        } while (CS_CHARFLAG(lbl_800FE5D4[cur]) != 0 && start != cur && before != cur);
 
         if (lbl_2_bss_F410.sel[port] == lbl_2_bss_F410.sel[port ^ 1] && lbl_803C5EA4._05 != 0) {
             lbl_2_bss_F410.sel[team]++;

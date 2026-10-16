@@ -3,7 +3,7 @@
 #include "static/GameSettings.h"
 #include "main/file_80024184.h" // StarMissionIndex, StarMission
 
-extern StarMissionIndex lbl_800E8558[54]; // per character
+extern StarMissionIndex lbl_800E8558[CHAR_TABLE(54)]; // per character
 extern StarMission lbl_80109AE8[][10];    // star missions, per mission row
 
 // Signed view of a mission status: -1 COMPLETED_CONDITIONALLY, -2 COMPLETED_SAVED.

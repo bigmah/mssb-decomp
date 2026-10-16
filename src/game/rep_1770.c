@@ -382,14 +382,14 @@ void fn_3_9A8A4(void) {
     s32 next;
     s32 i;
     fn_80034E20(task, lbl_3_data_C56C[g_Batter.batterHand]);
-    HUD_OBJ(task, 9)->_5C = inMemRoster[g_GameLogic.teamFielding][g_Pitcher.rosterID].stats.CharID << 16;
-    HUD_OBJ(task, 10)->_5C = inMemRoster[g_GameLogic.teamBatting][g_Batter.rosterID].stats.CharID << 16;
+    HUD_OBJ(task, 9)->_5C = CHAR_FRAME(inMemRoster[g_GameLogic.teamFielding][g_Pitcher.rosterID].stats.CharID) << 16;
+    HUD_OBJ(task, 10)->_5C = CHAR_FRAME(inMemRoster[g_GameLogic.teamBatting][g_Batter.rosterID].stats.CharID) << 16;
     next = g_GameLogic.currentBatterPerTeam[g_GameLogic.homeTeamBattingInd_fieldingTeam] + 1;
     if (next > 9) {
         next = 1;
     }
     next = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.homeTeamBattingInd_fieldingTeam][next][0];
-    HUD_OBJ(task, 6)->_5C = inMemRoster[g_GameLogic.teamBatting][next].stats.CharID << 16;
+    HUD_OBJ(task, 6)->_5C = CHAR_FRAME(inMemRoster[g_GameLogic.teamBatting][next].stats.CharID) << 16;
     fn_800363D8(task, 13, 1, 0x2A, lbl_3_data_D22C[inMemRoster[g_GameLogic.teamFielding][g_Pitcher.rosterID].stats.CharacterClass]);
     fn_800363D8(task, 14, 1, 0x2A, lbl_3_data_D22C[inMemRoster[g_GameLogic.teamBatting][g_Batter.rosterID].stats.CharacterClass]);
     if (g_GameLogic._13E[g_GameLogic.teamFielding] != 0) {

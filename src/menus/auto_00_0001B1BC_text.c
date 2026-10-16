@@ -70,7 +70,7 @@ typedef struct MissionIndex {
     /*0x3*/ u8 hasMissions;
     /*0x4*/ u8 _4[2];
 } MissionIndex;
-extern MissionIndex lbl_800E8558[54];
+extern MissionIndex lbl_800E8558[CHAR_TABLE(54)];
 
 // lbl_80109AE8[row][10] (see StarMission in main/file_80024184.h).
 typedef struct MissionDef {

@@ -1674,7 +1674,7 @@ done:
 // branches read the actor without re-checking it for NULL.
 #if NONMATCHING
 static inline BOOL fn_3_64BDC_isSpecialChar(s8 c) {
-    return c == 3 || c == 0xE || c == 0x25 || c == 0x26 || lbl_800E8558[c]._2 == 0x17;
+    return CHAR_KIND(c) == 3 || CHAR_KIND(c) == 0xE || CHAR_KIND(c) == 0x25 || CHAR_KIND(c) == 0x26 || lbl_800E8558[c]._2 == 0x17;
 }
 
 void fn_3_64BDC(void) {
@@ -1799,7 +1799,7 @@ void fn_3_64BDC(void) {
             AnimateCharacter(k, 0x42, 0, 1, 1, 0, inv, -1);
             g_Pitcher.windupCountdownUntilBallReleased = g_Pitcher.curvePitchWindupFrames;
         }
-        if (o->kind == 0xB || o->kind == 0x1B) {
+        if (CHAR_KIND(o->kind) == 0xB || CHAR_KIND(o->kind) == 0x1B) {
             next = 0;
         }
         if (fn_3_64BDC_isSpecialChar(o->kind)) {

@@ -68,7 +68,7 @@ void fn_8004C19C(CharActor* model, s32 animID, u32 colorIdx, f32 frame) {
     s32 i;
     Vec pos;
 
-    if (model->kind != 0x12) {
+    if (CHAR_KIND(model->kind) != 0x12) {
         return;
     }
 

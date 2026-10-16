@@ -51,7 +51,7 @@ s32 lbl_3_data_172A4 = 150000;        // unused
 s32 lbl_3_data_172A8 = 4;             // unused
 static ParticleParamsAttract lbl_3_data_172AC = {NULL, 3, 30, 8000, 10, 20, 1, 15, {99000, 99800, -500, -899, 255, 20, 10, -1}};
 // Per character: aura height (v) and size (w), fixed point (/100000).
-static T8_1F58 lbl_3_data_172EC[0x36] = {
+PORT_STATIC T8_1F58 lbl_3_data_172EC[CHAR_TABLE(0x36)] = {
     {129999, 250000},
     {129999, 250000},
     {150000, 270000},

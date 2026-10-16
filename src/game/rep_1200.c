@@ -1261,7 +1261,7 @@ void fn_3_7310C(void) {
         if (g_d_GameSettings.minigamesEnabled != 0) {
             player = g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame.minigamePlayerSelectedOrder];
         }
-        if (g_Pitcher.charID == 0x26) {
+        if (CHAR_KIND(g_Pitcher.charID) == 0x26) {
             getAnimRelatedCoordinates(player, 9, &pos);
         } else if (g_Pitcher.handedness == 0) {
             getAnimRelatedCoordinates(player, 0x19, &pos);

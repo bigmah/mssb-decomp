@@ -1027,7 +1027,7 @@ void fn_3_14471C(s32 p) {
     port = MG->port[p];
     obj = MG->heldObj[p];
     f = &g_Fielders[MG->fielder[p]];
-    if (f->charID == 0x26) {
+    if (CHAR_KIND(f->charID) == 0x26) {
         getAnimRelatedCoordinates(port, 9, &d);
     } else if (f->handedness == 0) {
         getAnimRelatedCoordinates(port, 0x19, &d);

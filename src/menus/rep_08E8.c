@@ -1623,7 +1623,7 @@ Vec lbl_2_data_12EB4 = {0.8f, 0.8f, 0.8f};
 // ARAM load instructions of the character files, 19 per character.
 // PORT: fn_2_477C0 and fn_2_47540 index this as [character * 19 + n] for all 54 characters,
 // reading far past the 54 entries defined here (the original does the same).
-MenuAsset lbl_2_data_12EC0[54] = {
+MenuAsset lbl_2_data_12EC0[CHAR_TABLE(54)] = {
     {0x0000040B, 0x4003C4B8, 0x0EAF7000, 0x000265A8},
     {0x0000040B, 0x400431B4, 0x0EB1D800, 0x0002B22C},
     {0x0000040B, 0x400396A0, 0x0EB49000, 0x00026ED4},

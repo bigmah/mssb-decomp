@@ -259,7 +259,7 @@ void fn_3_6A9B0(void) {
 
 // .text:0x0006AA98 size:0x98 mapped:0x806A9B2C
 void fn_3_6AA98(void) {
-    if (g_Batter.charID == 2 || g_Batter.charID == 3 || g_Batter.charID == 6) {
+    if (CHAR_KIND(g_Batter.charID) == 2 || CHAR_KIND(g_Batter.charID) == 3 || CHAR_KIND(g_Batter.charID) == 6) {
         return;
     }
     {

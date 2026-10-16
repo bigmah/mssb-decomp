@@ -43,7 +43,7 @@ typedef struct {
 
 // Model and animation file tables (defined in rep_0F60.c).
 extern MenuAsset lbl_2_data_2F990[13];
-extern MenuAsset lbl_2_data_2FA60[54];
+extern MenuAsset lbl_2_data_2FA60[CHAR_TABLE(54)];
 extern s32 lbl_2_data_2FDC0[32]; // lbl_2_data_2FA60 index per kind
 
 #endif

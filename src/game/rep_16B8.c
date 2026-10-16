@@ -232,7 +232,7 @@ void fn_3_91D1C(void) {
         s32 m;
         if (k > 9) k -= 9;
         m = g_GameLogic.battingOrderAndPositionMapping[g_GameLogic.awayTeamBattingInd_battingTeam][k][0];
-        lbl_80371C30[o->baseIdx - (-5) - (-i)].obj->_5C = inMemRoster[g_GameLogic.teamFielding][m].stats.CharID << 16;
+        lbl_80371C30[o->baseIdx - (-5) - (-i)].obj->_5C = CHAR_FRAME(inMemRoster[g_GameLogic.teamFielding][m].stats.CharID) << 16;
     }
     fn_800363D8(o, 1, 4, 7, g_d_GameSettings.StadiumID);
     lbl_803CC1B8->func = fn_3_91CCC;
@@ -896,7 +896,7 @@ void fn_3_94BC4(void) {
             continue;
         }
         first = *order;
-        lbl_80371C30[task->baseIdx + first].obj->_5C = e->charID << 16;
+        lbl_80371C30[task->baseIdx + first].obj->_5C = CHAR_FRAME(e->charID) << 16;
         for (j = 0; j < 5; j++) {
             k = first + j + 1;
             if (j >= e->target) {
@@ -1873,7 +1873,7 @@ u8 lbl_3_data_9408[2368] = {
 };
 u16 lbl_3_data_9D48[2] = {70}; // read as u16, padded to 4
 u16 lbl_3_data_9D4C[2] = {14}; // read as u16, padded to 4
-u8 lbl_3_data_9D50[10 * 5 + 2] = { // [10][5] (read as u8[][5]), padded to 4
+u8 lbl_3_data_9D50[CHAR_FAMILY_ROWS(10) * 5 + 2] = { // [10][5] (read as u8[][5]), padded to 4
     0, 0, 0, 0, 0,
     4, 1, 0, 0, 0,
     1, 2, 3, 4, 5,

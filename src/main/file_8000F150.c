@@ -388,6 +388,14 @@ s32 fn_8000FA9C(s32 index) {
             case 37:
             case 38:
                 n = code - 15;
+#ifdef TARGET_PC
+                // Pack characters' names (ids past the 54 the table has).
+                sub = (u16*)port_char_name_msg(n >= 10 ? e->strings[n - 10] : e->strings[n], n < 10);
+                if (sub != NULL) {
+                    inSub = 1;
+                    break;
+                }
+#endif
                 if (n >= 10) {
                     n = e->strings[n - 10] + 0x3E;
                 } else {
@@ -894,6 +902,14 @@ void DrawText(s32 index) {
             case 37:
             case 38:
                 n = code - 15;
+#ifdef TARGET_PC
+                // Pack characters' names (ids past the 54 the table has).
+                sub = (u16*)port_char_name_msg(n >= 10 ? e->strings[n - 10] : e->strings[n], n < 10);
+                if (sub != NULL) {
+                    inSub = 1;
+                    break;
+                }
+#endif
                 if (n >= 10) {
                     n = e->strings[n - 10] + 0x3E;
                 } else {

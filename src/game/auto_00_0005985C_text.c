@@ -26,6 +26,13 @@ typedef struct DiskFileEntry {
 typedef void (*AramQueueCallback)(DiskFileEntry* entry, void* dst, void* user);
 extern s32 fn_80022CB4(DiskFileEntry* entry, void* dst, s32 mode, u32 aramAddr, AramQueueCallback callback, void* user);
 extern DiskFileEntry lbl_800F1D78[];
+#ifdef TARGET_PC
+// Character files through the pointer the loaders use (character packs move it).
+extern DiskFileEntry* lbl_803CB790;
+#define CHAR_FILES_5985C lbl_803CB790
+#else
+#define CHAR_FILES_5985C lbl_800F1D78
+#endif
 
 #ifdef TARGET_PC
 #include "main/aramloader.h" // ARAMLoader lbl_803C6CF8 (holds pointers)
@@ -631,7 +638,7 @@ void fn_3_59B20(void) {
     if (g_d_GameSettings.GameModeSelected == 6) {
         for (i = 0; i < 4; i++) {
             CharActorView* actor = &lbl_8036E548.actors[i];
-            fn_80022CB4(&lbl_800F1D78[actor->kind * 0x13 + 1], actor->_0C, 0, 0, fn_3_59AC0, actor);
+            fn_80022CB4(&CHAR_FILES_5985C[actor->kind * 0x13 + 1], actor->_0C, 0, 0, fn_3_59AC0, actor);
         }
     }
 }

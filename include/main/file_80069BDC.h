@@ -109,7 +109,7 @@ typedef struct ChallengeTeamInfo {
     /*0x4*/ u8 _4[2];
 } ChallengeTeamInfo; // size: 0x6
 
-extern ChallengeTeamInfo lbl_800E8558[54];
+extern ChallengeTeamInfo lbl_800E8558[CHAR_TABLE(54)];
 
 // Event callbacks registered by the game module (see fn_3_16892C).
 typedef void (*AnimEventCallback)(void* obj, f32 frame, s32 a, s32 b);

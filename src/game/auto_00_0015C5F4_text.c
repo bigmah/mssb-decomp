@@ -291,7 +291,7 @@ void fn_3_15D1D8(ScoreBookTask* task) {
         for (j = 0; j < 9; j++) {
             if (i + task->scroll == order[j].row) {
                 *out = j;
-                fn_800363D8(task, i + 2, 1, 0xD, roster[j].stats.CharID);
+                fn_800363D8(task, i + 2, 1, 0xD, CHAR_FRAME(roster[j].stats.CharID));
                 break;
             }
         }

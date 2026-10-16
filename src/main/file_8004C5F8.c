@@ -11,7 +11,7 @@
 
 extern LayoutGroup* lbl_803CC1B8;
 extern int rand(void);
-extern CharTableEntry lbl_800E8558[54];
+extern CharTableEntry lbl_800E8558[CHAR_TABLE(54)];
 extern u8 lbl_800EFBA4[];
 extern u8 lbl_800FDE84[];
 extern u8 lbl_800FE5D4[];

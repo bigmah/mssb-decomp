@@ -156,7 +156,7 @@ void fn_2_123CC(void) {
     u8 mode;
     u16 scene;
 
-    memset(lbl_8034E9A0.charFlag, 0, sizeof(lbl_8034E9A0.charFlag));
+    CS_CHARFLAG_CLEAR();
     lbl_8034E9A0.teamRating[1] = 0;
     lbl_8034E9A0.teamRating[0] = 0;
     mode = g_d_GameSettings.GameModeSelected;

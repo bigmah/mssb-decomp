@@ -1432,7 +1432,7 @@ void fn_3_EB6E0(void) {
         who = EA_MG.order[(task->_1E + i) % EA_MG.numPlayers];
         chara = EA_MG.characterIndex[who];
         fn_800363D8(task, i + 5, 1, 0x65, chara);
-        EA_SPRITE(task, i + 0xD)->frame = EA_CHAR_ID(chara) << 16;
+        EA_SPRITE(task, i + 0xD)->frame = CHAR_FRAME(EA_CHAR_ID(chara)) << 16;
         v = EA_MG._18BC[who].shown;
         if ((EA_SPRITE(task, i + 1)->frame >> 16) == 0) {
             if (v > 9999) {
@@ -1503,7 +1503,7 @@ void fn_3_EAEF4(void) {
         do {
             chara = EA_MG.characterIndex[i];
             fn_800363D8(task, i + 9, 1, 0x65, chara);
-            EA_SPRITE(task, i + 0x11)->frame = EA_CHAR_ID(chara) << 16;
+            EA_SPRITE(task, i + 0x11)->frame = CHAR_FRAME(EA_CHAR_ID(chara)) << 16;
             i++;
         } while (i < EA_MG.numPlayers);
         i = 0;
@@ -2057,8 +2057,8 @@ void fn_3_E911C(void) {
             SPRITE(task, i + 3)->frame = task->kind << 16;
             SPRITE(task, i + 7)->frame = chara << 16;
             // chara indexes inMemRoster flattened (both teams)
-            SPRITE(task, i * 2 + 0xF)->frame = (&inMemRoster[0][0])[chara].stats.CharID << 16;
-            SPRITE(task, i * 2 + 0x10)->frame = (&inMemRoster[0][0])[chara].stats.CharID << 16;
+            SPRITE(task, i * 2 + 0xF)->frame = CHAR_FRAME((&inMemRoster[0][0])[chara].stats.CharID) << 16;
+            SPRITE(task, i * 2 + 0x10)->frame = CHAR_FRAME((&inMemRoster[0][0])[chara].stats.CharID) << 16;
             SPRITE(task, i + 0x17)->anim = lbl_3_data_1B7D0[order[i].rank];
             SPRITE(task, i + 0x1C)->anim = lbl_3_data_1AFA8[order[i].rank];
             if (task->mode != 0) {

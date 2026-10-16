@@ -145,6 +145,79 @@ typedef u16 wchar_t;
 // Number of bytes in a kilobyte
 #define KILOBYTE_BYTECOUNT 1024
 
+// PC port: tables with a row per character are sized for the characters a
+// character pack adds (port/include/port/charpack.h); the original sizes
+// otherwise. n is the original row count (54, or 55 with a "none" row).
+// CHAR_ROWS(n, per): n entries, per of them per character. CHAR_COUNT:
+// loops over every character id (pack characters included). PORT_STATIC:
+// file-static tables that port/game/charpack_tables.c fills on PC.
+#ifdef TARGET_PC
+#define CHAR_ROWS(n, per) ((n) + (PORT_MAX_CHARS - 54) * (per))
+#define CHAR_COUNT port_char_count()
+#define PORT_STATIC
+#else
+#define CHAR_ROWS(n, per) (n)
+#define CHAR_COUNT 54
+#define PORT_STATIC static
+#endif
+#define CHAR_TABLE(n) CHAR_ROWS(n, 1)
+
+// CHAR_ID_OK(c): c (>= 0) is a character, not the 0x36 "none" (pack
+// characters included on PC).
+#ifdef TARGET_PC
+#define CHAR_ID_OK(c) ((c) < 0x36 || ((c) >= PORT_FIRST_NEW_CHAR && (c) < port_char_count()))
+#else
+#define CHAR_ID_OK(c) ((c) < 0x36)
+#endif
+
+// PC port: character families (select-screen slots whose L/Y button cycles
+// members). CHAR_FAMILY_ROWS(n): a table with n rows, one per family, grown
+// for the families packs add (n + PORT_MAX_FAMILIES - 9; n is 9, or 10 with
+// a "no family" row 0). CHAR_FAMILIES: loops over family rows.
+// FAMILY_COUNTER(arr, k): RosterSelect._83[k] (per-family member cursor),
+// PC-side storage from family 9 on (the struct keeps its layout).
+// CS_CHARFLAG(id): CharSelectState.charFlag[id] ("already picked"), PC-side
+// storage for ids >= 54 (the struct keeps its layout); CS_CHARFLAG_CLEAR()
+// clears every flag.
+#ifdef TARGET_PC
+#define CHAR_FAMILY_ROWS(n) ((n) + PORT_MAX_FAMILIES - 9)
+#define CHAR_FAMILIES port_char_families()
+#define FAMILY_COUNTER(arr, k) (*port_family_counter((arr), (k)))
+#define CS_CHARFLAG(id) (*port_charflag((id)))
+#define CS_CHARFLAG_CLEAR() port_charflag_clear()
+#else
+#define CHAR_FAMILY_ROWS(n) (n)
+#define CHAR_FAMILIES 9
+#define FAMILY_COUNTER(arr, k) arr[k]
+#define CS_CHARFLAG(id) lbl_8034E9A0.charFlag[id]
+#define CS_CHARFLAG_CLEAR() memset(lbl_8034E9A0.charFlag, 0, sizeof(lbl_8034E9A0.charFlag))
+#endif
+
+// Character id for code that special-cases a character's model (bone hooks,
+// hand parts, mirror pairs): pack characters act as the base whose model
+// they use.
+#ifdef TARGET_PC
+#define CHAR_KIND(id) port_char_borrow(id, 1)
+#else
+#define CHAR_KIND(id) (id)
+#endif
+
+// Index of a character in the save's per-character arrays (54 entries):
+// pack characters use their base's.
+#ifdef TARGET_PC
+#define CHAR_SAVE_ID(id) port_char_base(id)
+#else
+#define CHAR_SAVE_ID(id) (id)
+#endif
+
+// Sprite frame of a character's portrait/name plate (frame = character id):
+// pack characters show their base's (or the character they borrow menu art from).
+#ifdef TARGET_PC
+#define CHAR_FRAME(id) port_char_portrait(id)
+#else
+#define CHAR_FRAME(id) (id)
+#endif
+
 #ifdef __MWERKS__
 #define WEAKFUNC        __declspec(weak)
 #define DECL_SECT(name) __declspec(section name)

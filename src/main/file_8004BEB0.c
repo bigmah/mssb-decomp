@@ -21,7 +21,7 @@ EffectParams lbl_800FC398 = {NULL, 7, 3, 100000, 30000, {10000, 12, 8, 110000, 5
 EffectParams lbl_800FC3E8 = {NULL, 7, 10, 18000, 20000, {60000, 12, 6, 109000, 101000, 0, 60, 4500000, 9400000, -1000000, 4500000}, 0xFFFFFF00, {0, 75000, 0}};
 EffectParams lbl_800FC438 = {NULL, 4, 1, 60000, 10000, {50000, 30, 8, 104000, 105999, 0, 90, 12800000, 10000000, 1000000, 6000000}, 0x3C3C3C00, {0, 75000, 0}};
 EffectParams* lbl_800FC488[3] = {&lbl_800FC398, &lbl_800FC3E8, &lbl_800FC438};
-s32 lbl_800FC494[54][3] = {0}; // per-character effect offset, fixed point (x100000)
+s32 lbl_800FC494[CHAR_TABLE(54)][3] = {0}; // per-character effect offset, fixed point (x100000)
 extern void* lbl_803CBD0C; // TexArchive* of the effect particles (set by fn_8004B1B8)
 
 // .text:0x8004BEB0 size:0x1E4

@@ -44,7 +44,7 @@ extern CharSelectLayout lbl_803616CC;
 
 // Character group table at 0x80108EDC (size 0x11C).
 typedef struct CharGroupTable {
-    /*0x00*/ s16 groups[9][5];        // character ids that share a model, -1 terminated
+    /*0x00*/ s16 groups[CHAR_FAMILY_ROWS(9)][5]; // character ids that share a model, -1 terminated (PC: + pack families)
     /*0x5A*/ u16 _5A;
     /*0x5C*/ u16 variants[12][2][4];  // per captain (lbl_80108ED0 order), two 4-character sets
 } CharGroupTable; // size: 0x11C

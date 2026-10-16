@@ -345,7 +345,7 @@ void fn_80011468(void) {
         CharActor* actor = lbl_8036E548.active[i];
         if (actor != NULL) {
             ActorObject* obj = &lbl_8036E548.slots->objects[actor->modelIndex];
-            switch (actor->kind) {
+            switch (CHAR_KIND(actor->kind)) {
             case 19:
                 fn_8004B6EC(actor, obj);
                 break;
@@ -2491,7 +2491,7 @@ void fn_80017814(CharActor* actor, s32 modelIndex, s32 index, void (*callback)(A
     actor->_270[2] = 0;
     actor->_273 = 0;
     actor->_277 = 0xFF;
-    switch (actor->kind) {
+    switch (CHAR_KIND(actor->kind)) {
     case 2:
         fn_800638B4(actor, slot);
         break;
@@ -2569,7 +2569,7 @@ void fn_80017DBC(CharActor* actor, s32 modelIndex) {
     ActorObject* slot = &lbl_8036E548.slots->objects[modelIndex];
 
     initModelJoints(actor, slot);
-    switch (actor->kind) {
+    switch (CHAR_KIND(actor->kind)) {
     case 2:
         fn_800638B4(actor, slot);
         break;
@@ -2624,7 +2624,7 @@ void fn_80018024(void) {
     s32 i;
     u8* p;
 
-    for (k = 0; k < 54 * 0x13; k += 0x13) {
+    for (k = 0; k < CHAR_COUNT * 0x13; k += 0x13) {
         size = lbl_803CB790[k].sizeFlags & 0x0FFFFFFF;
         if (max0 < size) {
             max0 = size;
@@ -2681,20 +2681,27 @@ void fn_80018270(s32 mode) {
     u8* p;
 
     if (mode == 2) {
-        p = _OSAllocFromHeap(0x20, 0x13E80);
+#ifdef TARGET_PC
+        // Practice's model1 buffers are fixed sizes (the largest model1 on
+        // the disc): pack characters' files can be bigger.
+#define PRACTICE_BUF(n) ((n) > port_char_max_file(1) ? (n) : port_char_max_file(1))
+#else
+#define PRACTICE_BUF(n) (n)
+#endif
+        p = _OSAllocFromHeap(0x20, PRACTICE_BUF(0x13E80));
         lbl_8036E548.fileBuf = p;
         lbl_8036E548.actors[0].files = (void**)p;
         for (i = 1; i < 9; i++) {
-            lbl_8036E548.actors[i].files = _OSAllocFromHeap(0x20, 0x12C40);
+            lbl_8036E548.actors[i].files = _OSAllocFromHeap(0x20, PRACTICE_BUF(0x12C40));
         }
-        for (k = 0; k < 54; k++) {
+        for (k = 0; k < CHAR_COUNT; k++) {
             size = lbl_803CB790[k * 0x13].sizeFlags & 0x0FFFFFFF;
             if (max0 < size) {
                 max0 = size;
             }
         }
         s0 = (max0 + 0x1F) & ~0x1F;
-        total = s0 * 4 + 0x13E80;
+        total = s0 * 4 + PRACTICE_BUF(0x13E80);
         p = _OSAllocFromHeap(0x20, total);
         lbl_8036E548.actors[10].files = (void**)(p + s0);
         lbl_8036E548.actors[11].files = (void**)(p + s0 * 2);
@@ -2702,7 +2709,7 @@ void fn_80018270(s32 mode) {
         lbl_8036E548._2D64 = total;
         lbl_8036E548.actors[9].files = (void**)p;
         lbl_8036E548.preload[0].buffer = p + s0 * 4;
-        lbl_8036E548.preload[0].size = 0x13E80;
+        lbl_8036E548.preload[0].size = PRACTICE_BUF(0x13E80);
         lbl_8036E548.preload[0].id = -1;
         lbl_8036E548.preload[0].state = 0;
     } else {
@@ -2724,13 +2731,13 @@ void fn_80018270(s32 mode) {
                 }
             }
         } else {
-            for (k = 0; k < 54; k++) {
+            for (k = 0; k < CHAR_COUNT; k++) {
                 size = lbl_803CB790[k * 0x13].sizeFlags & 0x0FFFFFFF;
                 if (max0 < size) {
                     max0 = size;
                 }
             }
-            for (k = 0; k < 54; k++) {
+            for (k = 0; k < CHAR_COUNT; k++) {
                 size = lbl_803CB790[k * 0x13 + 1].sizeFlags & 0x0FFFFFFF;
                 if (max1 < size) {
                     max1 = size;
@@ -2808,7 +2815,7 @@ void fn_800189E4(void) {
     s32 i;
     u8* buf;
 
-    for (i = 0; i < 54; i++) {
+    for (i = 0; i < CHAR_COUNT; i++) {
         size = lbl_803CB790[i * 0x13 + 0xF].sizeFlags & 0x0FFFFFFF;
         if (max < size) {
             max = size;
@@ -2853,7 +2860,7 @@ void fn_80018B74(void) {
     DiskFileEntry* f;
 
     f = lbl_803CB790;
-    for (k = 0; k < 54; k++) {
+    for (k = 0; k < CHAR_COUNT; k++) {
         if (g_d_GameSettings.GameModeSelected == 7) {
             size = f[0xD].sizeFlags & 0x0FFFFFFF;
             if (max0 < size) {
@@ -4591,7 +4598,7 @@ void fn_8001D2D4(void) {
             continue;
         }
         slot = &lbl_8036E548.slots->objects[actor->modelIndex];
-        switch (actor->kind) {
+        switch (CHAR_KIND(actor->kind)) {
         case 19:
             fn_8004B6EC(actor, slot);
             break;
@@ -5368,7 +5375,7 @@ void fn_8001FC4C(CharActor* actor) {
         i += 2;
         pairs += 2;
     } while (lbl_800EE930.mirrorPairs[i] != 0xFFFF);
-    switch (actor->kind) {
+    switch (CHAR_KIND(actor->kind)) {
     case 20:
     case 43:
         pairs = lbl_803CB798;

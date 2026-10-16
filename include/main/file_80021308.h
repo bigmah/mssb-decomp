@@ -10,6 +10,18 @@ typedef AssetLoadInstructions DiskFileEntry;
 
 #define DISK_FILE_SIZE(e) ((e)->sizeFlags & 0x0FFFFFFF)
 // Same as &table[id], but keeps the original's (id * 16) address arithmetic.
+// Character file tables as the loaders index them: [id * 19 + slot] and
+// [id * 6 + variant]. On PC character packs can point them at longer copies.
+extern DiskFileEntry* lbl_803CB790; // lbl_800F1D78 (sdata pointer)
+#ifdef TARGET_PC
+extern DiskFileEntry* port_char_part_files;
+#define CHAR_FILES lbl_803CB790
+#define CHAR_PART_FILES port_char_part_files
+#else
+#define CHAR_FILES lbl_800F1D78
+#define CHAR_PART_FILES lbl_800F5D98
+#endif
+
 #define DISK_FILE_ENTRY(table, id) ((DiskFileEntry*)((u8*)(table) + (id) * sizeof(DiskFileEntry)))
 
 // Musyx sound group data as loaded from disc. The pointers are stored as

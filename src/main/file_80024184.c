@@ -338,7 +338,7 @@ s32 fn_80024C6C(CharActor* actor, s32 side) {
         return -1;
     }
     if (actor->_25A != side) {
-        switch (actor->kind) {
+        switch (CHAR_KIND(actor->kind)) {
         case 0x26:
         case 0x28:
         case 0x29:
@@ -355,7 +355,7 @@ s32 fn_80024C6C(CharActor* actor, s32 side) {
             return 2;
         }
     } else {
-        switch (actor->kind) {
+        switch (CHAR_KIND(actor->kind)) {
         case 0x12:
         case 0x26:
         case 0x28:

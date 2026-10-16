@@ -19,7 +19,7 @@ extern u8 lbl_803CBBC0; // frame buffer index
 // Marker width/radius per size class (x100000).
 static s32 lbl_3_data_27EC0[3][2] = {{15000, 90000}, {20000, 129999}, {30000, 180000}};
 // Marker size class per character kind.
-static u8 lbl_3_data_27ED8[0x38] = {
+PORT_STATIC u8 lbl_3_data_27ED8[CHAR_TABLE(0x38)] = {
     1, 1, 2, 1, 1, 1, 1, 0, 0, 2, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 2, 2, 2, 0, 0, 0, 1,
     0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0,
 };

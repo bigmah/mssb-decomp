@@ -13,7 +13,7 @@ typedef struct StadiumWeight {
 // .rodata 0x800E63A0..0x800E6550: the stream file names below.
 
 // .data 0x800E8300..0x800E8AA8
-f32 charSizeMultipliers[NUM_CHOOSABLE_CHARACTERS][2] = {
+f32 charSizeMultipliers[CHAR_TABLE(NUM_CHOOSABLE_CHARACTERS)][2] = {
     {1.18f, 1.1f},
     {1.18f, 1.1f},
     {1.11f, 1.0f},
@@ -85,7 +85,7 @@ f32 lbl_800E84B0[13][3] = {
     {1.5f, 2.5f, 1.5f},
 };
 u8 lbl_800E854C[12] = {0, 1, 4, 5, 10, 11, 6, 17, 2, 3, 9, 19};
-CharTableEntry lbl_800E8558[54] = {
+CharTableEntry lbl_800E8558[CHAR_TABLE(54)] = {
     {0, 0, {0, 1}, 1, 0},
     {0, 1, {1, 1}, 1, 0},
     {0, 2, {2, 1}, 1, 0},

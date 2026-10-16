@@ -181,7 +181,7 @@ MenuAsset lbl_2_data_2F990[13] = {
     {0x0000040B, 0x40036CD8, 0x1945F800, 0x00023828},
 };
 // Animation files, indexed through lbl_2_data_2FDC0.
-MenuAsset lbl_2_data_2FA60[54] = {
+MenuAsset lbl_2_data_2FA60[CHAR_TABLE(54)] = {
     {0x0000040B, 0x4005A338, 0x19233000, 0x0003A448},
     {0x0000040B, 0x40062C34, 0x19483800, 0x000405F4},
     {0x0000040B, 0x4004A820, 0x1930B800, 0x000316E0},

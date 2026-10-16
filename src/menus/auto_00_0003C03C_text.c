@@ -120,7 +120,7 @@ extern void fn_2_1C490(void);
 extern void fn_2_8F758(s32 index, u8 value);
 extern s8 lbl_801094E4[][0x1C]; // per character: MenuRosterEntry.limits
 extern s32 fn_8006CDC0(s32);
-extern StarMissionIndex lbl_800E8558[54]; // per character
+extern StarMissionIndex lbl_800E8558[CHAR_TABLE(54)]; // per character
 extern StarMission lbl_80109AE8[][10];   // star missions [row][mission]
 extern ChallengeMission lbl_8010A768[][10]; // challenge missions [row][mission]
 extern s32 fn_2_40CB8(void);

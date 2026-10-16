@@ -18,7 +18,7 @@ void fn_3_168A6C(EffectNode* node);
 
 // .data lbl_3_data_285A8..28928: separate objects that the code reaches through one pooled base.
 // Effect height offset per character kind, fixed point (/100000).
-static s32 lbl_3_data_285A8[0x36] = {
+PORT_STATIC s32 lbl_3_data_285A8[CHAR_TABLE(0x36)] = {
     -250000, -250000, -250000, -200000, -200000, -200000, -250000, -240000,
     -240000, -250000, -200000, -150000, -200000, -200000, -250000, -350000,
     -200000, -250000, -200000, -200000, -250000, -200000, -200000, -200000,

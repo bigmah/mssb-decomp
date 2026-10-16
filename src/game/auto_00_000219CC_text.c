@@ -64,7 +64,7 @@ void fn_3_21AA8(void) {
 
     switch (task->state) {
     case 0:
-        if (runner->charID == 2 || runner->charID == 9) {
+        if (CHAR_KIND(runner->charID) == 2 || CHAR_KIND(runner->charID) == 9) {
             task->state = 1;
         } else {
             task->state = 3;

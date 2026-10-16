@@ -484,7 +484,7 @@ void fn_3_11E364(void) {
         i = 0;
         do {
             fn_800363D8(task, i + 9, 1, 0x65, i);
-            SPRITE_I(task, 0x11, i)->frame = inMemRoster[0][i].stats.CharID << 16;
+            SPRITE_I(task, 0x11, i)->frame = CHAR_FRAME(inMemRoster[0][i].stats.CharID) << 16;
             i++;
         } while (i < 4);
         i = 0;
@@ -564,7 +564,7 @@ void fn_3_11E7C4(void) {
         i = 0;
         do {
             fn_800363D8(task, i + 9, 1, 0x65, i);
-            SPRITE_I(task, 0x11, i)->frame = inMemRoster[0][i].stats.CharID << 16;
+            SPRITE_I(task, 0x11, i)->frame = CHAR_FRAME(inMemRoster[0][i].stats.CharID) << 16;
             i++;
         } while (i < 4);
         i = 0;

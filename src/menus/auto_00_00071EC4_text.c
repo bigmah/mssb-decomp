@@ -595,7 +595,7 @@ void fn_2_79930(MenuTask* o, s32 i) {
             MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + k + base)->flags |= 2;
             MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + k + base)->_5C = 0;
             MENU_SLOT_OBJ(lbl_80371C30, 0x34 + o->baseIdx + k + base)->_68 = 1;
-            MENU_SLOT_OBJ(lbl_80371C30, 0x58 + o->baseIdx + k + base)->_5C = v << 16;
+            MENU_SLOT_OBJ(lbl_80371C30, 0x58 + o->baseIdx + k + base)->_5C = CHAR_FRAME(v) << 16;
         }
         fn_2_75BE4(o, i);
         if (lbl_2_bss_F468.cursor[i] == 9) {
@@ -702,7 +702,7 @@ void fn_2_73758(void) {
     s32 i;
     fn_80034E20(obj = lbl_803CC1B8, lbl_2_data_2AF4C);
     for (i = 0; i < 8; i++) {
-        MENU_SLOT_OBJ(lbl_80371C30, obj->baseIdx + i + 4)->_5C = *(s8*)(lbl_803C6724 + 3 + i) << 16;
+        MENU_SLOT_OBJ(lbl_80371C30, obj->baseIdx + i + 4)->_5C = CHAR_FRAME(*(s8*)(lbl_803C6724 + 3 + i)) << 16;
     }
     lbl_803CBCD8[5] = 0;
     lbl_803CC1B8->func = fn_2_7308C;
@@ -2082,7 +2082,7 @@ static inline void setupHeaderRoster(MenuTask* o) {
         MN_SLOT(2 + BASE(o))->_5C = lbl_2_data_2AF08[found] << 18;
         MN_SLOT(3 + BASE(o))->_5C = lbl_2_data_2AF08[found] << 18;
         for (j = 0; j < 8; j++) {
-            MN_SLOT(4 + BASE(o) + j)->_5C = TEAM_TBL->roster[0][j + 1] << 16;
+            MN_SLOT(4 + BASE(o) + j)->_5C = CHAR_FRAME(TEAM_TBL->roster[0][j + 1]) << 16;
         }
         lbl_803CBBC4[2] = 1;
         lbl_803CBBC4[3] = 1;
@@ -2117,7 +2117,7 @@ void fn_2_7F8BC(MenuTask* o, s32 index) {
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->flags |= 2;
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->_5C = 0;
         MN_SLOT(0x34 + BASE(o) + v + index * 9)->_68 = 1;
-        MN_SLOT(0x58 + BASE(o) + v + index * 9)->_5C = x << 16;
+        MN_SLOT(0x58 + BASE(o) + v + index * 9)->_5C = CHAR_FRAME(x) << 16;
         fn_2_75BE4(o, index);
         fn_2_74F40(o, index);
         fn_800626EC(index);
@@ -3693,7 +3693,7 @@ void fn_2_76DF0(MenuTask* o, u8 index) {
             }
             lbl_2_bss_F468._4D[index] = c;
         }
-        frame = c << 16;
+        frame = CHAR_FRAME(c) << 16;
         stats = &lbl_8034E9A0.roster[(s8)(c / 9)][(s8)(c % 9)].stats;
         mask = stats->FieldingStats;
         bat = stats->HitTrajectoryPushPull;
@@ -3864,7 +3864,7 @@ void fn_2_776A0(MenuTask* o, s32 port) {
                     break;
                 }
             }
-            MN_SLOT(0x58 + BASE(o) + sp + team * 9)->_5C = TEAM_TBL->roster[team][j] << 16;
+            MN_SLOT(0x58 + BASE(o) + sp + team * 9)->_5C = CHAR_FRAME(TEAM_TBL->roster[team][j]) << 16;
             fn_2_74F40(o, team);
             t[offsetof(MenuTeamSel, _50[0])] = 0;
         }
@@ -4173,14 +4173,14 @@ void fn_2_74F40(MenuTask* o, s32 index) {
         u8 spd;
         u8 pwr;
         u8 fld;
-        if (c >= 0 && c < 0x36) {
+        if (c >= 0 && CHAR_ID_OK(c)) {
             stats = &lbl_8034E9A0.roster[c / 9][c % 9].stats;
             con = stats->BattingStatBar;
             spd = stats->RunningStatBar;
             pwr = stats->PitchingStatBar;
             fld = stats->FieldingStatBar;
             MN_SLOT(0xB0 + BASE(o) + index)->flags |= 2;
-            MN_SLOT(0xB0 + BASE(o) + index)->_5C = c << 16;
+            MN_SLOT(0xB0 + BASE(o) + index)->_5C = CHAR_FRAME(c) << 16;
             MN_SLOT(0xAC + BASE(o) + index)->_5C = 0;
             MN_SLOT(0xAC + BASE(o) + index)->_68 = 1;
         } else {
@@ -4190,7 +4190,7 @@ void fn_2_74F40(MenuTask* o, s32 index) {
             con = 0;
             MN_SLOT(0xB0 + BASE(o) + index)->flags &= ~2;
         }
-        if (c >= 0 && c < 0x36) {
+        if (c >= 0 && CHAR_ID_OK(c)) {
             fn_2_74E14(o, index, pwr, 1);
             fn_2_74E14(o, index, spd, 3);
             fn_2_74E14(o, index, con, 0);
@@ -4606,7 +4606,7 @@ void fn_2_7AE3C(MenuTask* o, s32 index) {
                         MN_SLOT(0x34 + BASE(o) + p + index * 9)->_68 = 0;
                         MN_SLOT(0x22 + BASE(o) + p + index * 9)->flags &= ~2;
                     }
-                    MN_SLOT(0x58 + BASE(o) + p + index * 9)->_5C = TEAM_TBL->roster[index][j] << 16;
+                    MN_SLOT(0x58 + BASE(o) + p + index * 9)->_5C = CHAR_FRAME(TEAM_TBL->roster[index][j]) << 16;
                     MN_SLOT(0x58 + BASE(o) + p + index * 9)->_68 = 0;
                 } else {
                     MN_SLOT(0x34 + BASE(o) + p + index * 9)->flags &= ~2;
@@ -4674,7 +4674,7 @@ void fn_2_7AE3C(MenuTask* o, s32 index) {
                         MN_SLOT(0x34 + BASE(o) + p + index * 9)->_5C = 0x140000;
                         MN_SLOT(0x34 + BASE(o) + p + index * 9)->_68 = 0;
                     }
-                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_5C = TEAM_TBL->roster[index][j] << 16;
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_5C = CHAR_FRAME(TEAM_TBL->roster[index][j]) << 16;
                     MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_68 = 0;
                 } else {
                     MN_SLOT(0x34 + BASE(o) + j + index * 9)->flags &= ~2;
@@ -4763,7 +4763,7 @@ void fn_2_7BFF8(MenuTask* o, s32 index) {
         MN_SLOT(0x82 + BASE(o) + index)->flags &= ~2;
         MN_SLOT(0x7A + BASE(o) + index)->flags &= ~2;
         MN_SLOT(0x82 + BASE(o) + index)->_5C = lbl_80108ED0[lbl_8034E9A0.captain[1]] << 16;
-        MN_SLOT(0x7E + BASE(o) + index)->_5C = lbl_2_bss_F410.charSel[index] << 16;
+        MN_SLOT(0x7E + BASE(o) + index)->_5C = CHAR_FRAME(lbl_2_bss_F410.charSel[index]) << 16;
         MN_SLOT(0x7A + BASE(o) + index)->_5C = (s8)lbl_8034E9A0.ports[1] << 16;
         MN_SLOT(0x84 + BASE(o))->flags &= ~2;
         MN_SLOT(0x97 + BASE(o) + index)->_64 = 0x77;
@@ -4866,7 +4866,7 @@ void fn_2_7BFF8(MenuTask* o, s32 index) {
                         MN_SLOT(0x34 + BASE(o) + j + index * 9)->_5C = 0x140000;
                         MN_SLOT(0x34 + BASE(o) + j + index * 9)->_68 = 0;
                     }
-                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_5C = TEAM_TBL->roster[index][j] << 16;
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_5C = CHAR_FRAME(TEAM_TBL->roster[index][j]) << 16;
                     MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_68 = 0;
                 } else {
                     MN_SLOT(0x34 + BASE(o) + j + index * 9)->flags &= ~2;
@@ -4918,7 +4918,7 @@ void fn_2_7BFF8(MenuTask* o, s32 index) {
                         MN_SLOT(0x34 + BASE(o) + j + index * 9)->_5C = 0x140000;
                         MN_SLOT(0x34 + BASE(o) + j + index * 9)->_68 = 0;
                     }
-                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_5C = TEAM_TBL->roster[index][j] << 16;
+                    MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_5C = CHAR_FRAME(TEAM_TBL->roster[index][j]) << 16;
                     MN_SLOT(0x58 + BASE(o) + TEAM_TBL->pos[index][j] + index * 9)->_68 = 0;
                 } else {
                     MN_SLOT(0x34 + BASE(o) + j + index * 9)->flags &= ~2;

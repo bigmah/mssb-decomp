@@ -1977,7 +1977,7 @@ DiskFileEntry lbl_800F71D8[0x1D] = {
     {1035, {0x400000C8}, {0xE67A800}, 76},
 };
 u8 lbl_800F73A8[0x10] = {0, 0, 4, 11, 64, 0, 1, 69, 14, 103, 176, 0, 0, 0, 0, 164};
-s8 lbl_800F73B8[0x36][2] = {
+s8 lbl_800F73B8[CHAR_TABLE(0x36)][2] = {
     {0, -1},
     {1, -1},
     {2, -1},
@@ -2037,7 +2037,7 @@ s8 lbl_800F7424[2][6][2] = {
     {{0, 4}, {1, 5}, {2, 6}, {3, 6}, {0, 5}, {1, 4}},
     {{0, 4}, {1, 5}, {0, 4}, {1, 4}, {0, 5}, {1, 4}},
 };
-s8 lbl_800F743C[0x3C] = { // [0x36] used, zero tail
+s8 lbl_800F743C[CHAR_TABLE(0x3C)] = { // [0x36] used, zero tail
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2334,16 +2334,21 @@ void* fn_80021ADC(s32 index, void* dst) {
 
 // .text:0x80021BBC size:0xE8
 void* fn_80021BBC(s32 index, void* dst) {
-    if (index < 0 || index >= 0x36) {
+    if (index < 0 || index >= CHAR_COUNT) {
         return NULL;
     }
     if (dst == NULL) {
         dst = _OSAllocFromHeap(0x20, DISK_FILE_SIZE(DISK_FILE_ENTRY(lbl_800EFD38, index + 0x1B0)));
     }
+#ifdef TARGET_PC
+    // Characters a pack changed load from the file tables, not the boot ARAM image.
+    if ((lbl_803716B8.loadedFlags & 2) && !port_charpack_no_aram(index)) {
+#else
     if (lbl_803716B8.loadedFlags & 2) {
+#endif
         ARAMTransfer(&lbl_800EFD38[index + 0x1B0], dst, 3, lbl_803716B8.aramAddrs[2][index]);
     } else {
-        ARAMTransfer(&lbl_800F1D78[index * 0x13 + 0xF], dst, 0, 0);
+        ARAMTransfer(&CHAR_FILES[index * 0x13 + 0xF], dst, 0, 0);
     }
     return dst;
 }
@@ -2354,7 +2359,7 @@ void* fn_80021CA4(s32 index, s32 variant, void* dst) {
     s32 first;
     s32 second;
 
-    if (index < 0 || index >= 0x36) {
+    if (index < 0 || index >= CHAR_COUNT) {
         return NULL;
     }
     if (variant < 0 || variant >= 6) {
@@ -2367,12 +2372,17 @@ void* fn_80021CA4(s32 index, s32 variant, void* dst) {
         dst = _OSAllocFromHeap(0x20, ((DISK_FILE_SIZE(DISK_FILE_ENTRY(lbl_800EFD38, first + 0x36)) + 0x1F) & ~0x1F) +
                                          ((DISK_FILE_SIZE(DISK_FILE_ENTRY(lbl_800EFD38, second + 0x36)) + 0x1F) & ~0x1F));
     }
+#ifdef TARGET_PC
+    // Characters a pack changed load from the file tables, not the boot ARAM image.
+    if ((lbl_803716B8.loadedFlags & 2) && !port_charpack_no_aram(index)) {
+#else
     if (lbl_803716B8.loadedFlags & 2) {
+#endif
         aramQueuePush(&lbl_800EFD38[first + 0x36], dst, 3, lbl_803716B8.aramAddrs[1][first],
                       (AramQueueCallback)fn_8002244C, (void*)(uintptr_t)((first << 16) | second));
     } else {
         index = variant + index * 6;
-        aramQueuePush(&lbl_800F5D98[index], dst, 0, 0, fn_80022620, NULL);
+        aramQueuePush(&CHAR_PART_FILES[index], dst, 0, 0, fn_80022620, NULL);
     }
     lbl_803716B8.keepTask = 1;
     fn_800B0A5C_insertQueue(fn_80022634, 0);
@@ -2385,13 +2395,18 @@ void* fn_8002204C(s32 index, void* dst) {
     s32 entry;
     s32 sub;
 
-    if (index < 0 || index >= 0x36) {
+    if (index < 0 || index >= CHAR_COUNT) {
         return NULL;
     }
     if (dst == NULL) {
         dst = _OSAllocFromHeap(0x20, DISK_FILE_SIZE(DISK_FILE_ENTRY(lbl_800EFD38, index)));
     }
+#ifdef TARGET_PC
+    // Characters a pack changed load from the file tables, not the boot ARAM image.
+    if ((lbl_803716B8.loadedFlags & 1) && !port_charpack_no_aram(index)) {
+#else
     if (lbl_803716B8.loadedFlags & 1) {
+#endif
         entry = lbl_800F73B8[index][0];
         sub = lbl_800F73B8[index][1];
         if (sub == -1) {
@@ -2401,7 +2416,7 @@ void* fn_8002204C(s32 index, void* dst) {
                           (void*)(intptr_t)(s32)sub);
         }
     } else {
-        aramQueuePush(&lbl_800F1D78[index * 0x13], dst, 0, 0, fn_80022620, NULL);
+        aramQueuePush(&CHAR_FILES[index * 0x13], dst, 0, 0, fn_80022620, NULL);
     }
     lbl_803716B8.keepTask = 1;
     fn_800B0A5C_insertQueue(fn_80022634, 0);

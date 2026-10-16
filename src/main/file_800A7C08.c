@@ -1558,7 +1558,12 @@ void fn_800AA34C(u8 chan, u8 mode, char* fileName, u64 serial, u8 setSerial) {
     task->chan = chan;
     task->mode = mode;
     task->fileName = lbl_802EF2D0;
+#ifdef TARGET_PC
+    // fileName is a shorter string literal: copy the zero-padded name.
+    memcpy(task->fileName, name, CARD_FILENAME_MAX);
+#else
     memcpy(task->fileName, fileName, CARD_FILENAME_MAX);
+#endif
     if (setSerial) {
         lbl_802EF2C0[chan] = serial;
     }
@@ -1837,7 +1842,11 @@ void fn_800AB474(u8 chan, u8 mode, s16 blocks, char* fileName, u64 serial) {
     task->mode = mode;
     task->arg = blocks;
     task->fileName = lbl_802EF2D0;
+#ifdef TARGET_PC
+    strncpy(task->fileName, fileName, CARD_FILENAME_MAX); // fileName: a shorter string literal
+#else
     memcpy(task->fileName, fileName, CARD_FILENAME_MAX);
+#endif
     lbl_802EF2C0[chan] = serial;
     lbl_803CC1B8->result = 0;
 }

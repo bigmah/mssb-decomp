@@ -1658,7 +1658,7 @@ void fn_3_121304(void) {
             } else {
                 c = (u8)g_Minigame.minigameControlStruct[0].characterIndex[p];
                 fn_800363D8(q, i + 9, 1, 0x65, c);
-                REP_OBJ(q, i + 0x11)->frame = inMemRoster[0][c].stats.CharID << 16;
+                REP_OBJ(q, i + 0x11)->frame = CHAR_FRAME(inMemRoster[0][c].stats.CharID) << 16;
             }
             i++;
             m++;
@@ -3584,7 +3584,7 @@ void fn_3_127B68(void) {
     switch (q->state) {
     case 0:
         fn_80034E20(q, d + 0x20);
-        REP_OBJC(q, 2)->frame = inMemRoster[0][g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame._1908]].stats.CharID << 16;
+        REP_OBJC(q, 2)->frame = CHAR_FRAME(inMemRoster[0][g_Minigame.minigameControlStruct[0].characterIndex[g_Minigame._1908]].stats.CharID) << 16;
         nums = d + 0x420;
         order = in.order;
         i = 0;

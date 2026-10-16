@@ -1536,7 +1536,7 @@ void fn_3_12A910(void) {
             }
         }
         if (show != 0 &&
-            ((g_d_GameSettings.exhibitionMatchInd != 0 && lbl_80361B20.unlocked[g_Minigame._19E8[i]._0] != 0) ||
+            ((g_d_GameSettings.exhibitionMatchInd != 0 && lbl_80361B20.unlocked[CHAR_SAVE_ID(g_Minigame._19E8[i]._0)] != 0) ||
              (g_d_GameSettings.exhibitionMatchInd == 0 &&
               gChallengeState._43D6[g_Minigame._19E8[i]._0] != 0)) &&
             g_Minigame._19E8[i]._7 != 0) {
@@ -1566,7 +1566,7 @@ void fn_3_12A910(void) {
     // Character portrait and stats.
     for (i = 0; i < 4; i++) {
         if (g_Minigame._19DA[i] >= 0 && (charId = g_Minigame._19E8[i]._0) >= 0 && g_Minigame._19E8[i]._7 != 0) {
-            if (charId != (lbl_80371C30[task->baseIdx + 62 + i].obj->_5C >> 16)) {
+            if (CHAR_FRAME(charId) != (lbl_80371C30[task->baseIdx + 62 + i].obj->_5C >> 16)) {
                 lbl_80371C30[task->baseIdx + 42 + i].obj->_5C = 0;
                 lbl_80371C30[task->baseIdx + 46 + i].obj->_5C = 0;
             }
@@ -1574,7 +1574,7 @@ void fn_3_12A910(void) {
             lbl_80371C30[task->baseIdx + 42 + i].obj->_68 = 1;
             lbl_80371C30[task->baseIdx + 46 + i].obj->flags |= 2;
             lbl_80371C30[task->baseIdx + 46 + i].obj->_68 = 1;
-            lbl_80371C30[task->baseIdx + 62 + i].obj->_5C = g_Minigame._19E8[i]._0 << 16;
+            lbl_80371C30[task->baseIdx + 62 + i].obj->_5C = CHAR_FRAME(g_Minigame._19E8[i]._0) << 16;
             lbl_80371C30[task->baseIdx + 54 + i].obj->flags |= 2;
             lbl_80371C30[task->baseIdx + 54 + i].obj->_68 = 1;
             v = lbl_3_data_9D50[lbl_800E8558[g_Minigame._19E8[i]._0]._0[0]][lbl_800E8558[g_Minigame._19E8[i]._0]._4[1]];

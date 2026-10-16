@@ -22,7 +22,14 @@ extern AssetLoadInstructions lbl_801092E8; // logo sound data
 extern AssetLoadInstructions lbl_80109044; // message table
 extern SpaniDesc lbl_80109378[2]; // starts with these (Unk80109378 in file_80069BDC.c)
 extern void* lbl_803CBD30; // queue node of the logo screen task
+#ifdef TARGET_PC
+// 0xC bytes on GameCube; the menus also use bytes 2..4 (Unk803CBD24 in rep_0438.c).
+extern u16 lbl_803CBD24[6];
+#define LOGO_LOAD_STEP lbl_803CBD24[0]
+#else
 extern u16 lbl_803CBD24;
+#define LOGO_LOAD_STEP lbl_803CBD24
+#endif
 
 extern UnlockFlags lbl_80361B20;
 extern SavedSettings lbl_800E8754;
@@ -382,6 +389,9 @@ u8 translateStarSwing(u8 star) {
 
 // .text:0x80064918 size:0x54
 u8 fn_80064918(s16 charId) {
+#ifdef TARGET_PC
+    charId = port_char_base(charId); // pack characters: their base's icon
+#endif
     switch (charId) {
     case 0: case 1:
         return 4;
@@ -933,7 +943,7 @@ u8 fn_800675C4(s32 team, s32 captain) {
                 continue;
             }
             want = lbl_80108EDC.variants[idx][set][k];
-            for (row = 0; row < 9; row++) {
+            for (row = 0; row < CHAR_FAMILIES; row++) {
                 for (m = 0; m < 5; m++) {
                     if (want == lbl_80108EDC.groups[row][m]) {
                         goto found_row;
@@ -1009,7 +1019,7 @@ s16 fn_80067AC8(s16 id, s8 col) {
     s32 row;
     s32 i;
 
-    for (row = 0; row < 9; row++) {
+    for (row = 0; row < CHAR_FAMILIES; row++) {
         for (i = 0; i < 5; i++) {
             if (id == lbl_80108EDC.groups[row][i]) {
                 if (col == -1) {
@@ -1034,13 +1044,13 @@ BOOL fn_80067B40(s32 unused, u8 charId, u8 flag) {
     if (charId == -1) {
         return FALSE;
     }
-    for (row = 0; row < 9; row++) {
+    for (row = 0; row < CHAR_FAMILIES; row++) {
         for (i = 0; i < 5; i++) {
             if (charId == lbl_80108EDC.groups[row][i]) {
                 group = lbl_80108EDC.groups[row];
                 for (i = 0; i < 5; i++) {
                     if (group[i] != -1 && flag != 2) {
-                        lbl_8034E9A0.charFlag[group[i]] = flag;
+                        CS_CHARFLAG(group[i]) = flag;
                     }
                 }
                 return TRUE;
@@ -1109,7 +1119,7 @@ void fn_80067F70(u8 team) {
     fn_80067C48(team);
     memset(buf, -1, sizeof(buf));
     for (i = 0; i < 0x36; i++) {
-        if (lbl_8034E9A0.charFlag[lbl_8034E9A0.chemOrder[team][i]] == 0) {
+        if (CS_CHARFLAG(lbl_8034E9A0.chemOrder[team][i]) == 0) {
             buf[i] = lbl_8034E9A0.chemOrder[team][i];
         }
     }
@@ -1130,10 +1140,10 @@ void fn_80067F70(u8 team) {
             c = buf[r];
         } while (c == -1);
         buf[r] = -1;
-        lbl_8034E9A0.charFlag[c] = 1;
+        CS_CHARFLAG(c) = 1;
         fn_80067B40(team, c, 1);
         // Take the whole group out of the candidates; the pick becomes the group's base character.
-        for (row = 0; row < 9; row++) {
+        for (row = 0; row < CHAR_FAMILIES; row++) {
             for (m = 0; m < 5; m++) {
                 if (c == lbl_80108EDC.groups[row][m]) {
                     c = lbl_80108EDC.groups[row][0];
@@ -1275,7 +1285,7 @@ static inline BOOL fn_80067B40_inline(s32 unused, u8 charId, u8 flag) {
                 group = lbl_80108EDC.groups[row];
                 for (i = 0; i < 5; i++) {
                     if (group[i] != -1 && flag != 2) {
-                        lbl_8034E9A0.charFlag[group[i]] = flag;
+                        CS_CHARFLAG(group[i]) = flag;
                     }
                 }
                 return TRUE;
@@ -1427,7 +1437,7 @@ void fn_80068838(void) {
                             id = avail[r];
                         } while (id == -1);
                         avail[r] = -1;
-                        lbl_8034E9A0.charFlag[id] = 1;
+                        CS_CHARFLAG(id) = 1;
                         for (a = 0; a < n - 1; a++) {
                             for (b = a + 1; b < n; b++) {
                                 if (avail[a] == -1) {
@@ -1471,15 +1481,15 @@ void fn_80068838(void) {
 
 // .text:0x800697B0 size:0xA4
 BOOL fn_800697B0(void) {
-    switch (lbl_803CBD24) {
+    switch (LOGO_LOAD_STEP) {
     case 0:
         lbl_80366B18.tables[1] = ARAMTransfer(&lbl_80109044, NULL, 1, 0);
-        lbl_803CBD24++;
+        LOGO_LOAD_STEP++;
         break;
     case 1:
         if ((s8)lbl_803C6CF8.idle == 1) {
             fn_800111B4(lbl_80366B18.tables[1]);
-            lbl_803CBD24 = 0;
+            LOGO_LOAD_STEP = 0;
             return FALSE;
         }
         break;
@@ -1505,6 +1515,9 @@ void fn_80069854(void) {
 s32 fn_800698F8(s32 charId) {
     s32 i;
 
+#ifdef TARGET_PC
+    charId = port_char_base(charId); // pack characters use their base's slot
+#endif
     for (i = 0; i < 32; i++) {
         if (lbl_80108DB8[i] == charId) {
             if (i == 17 && lbl_8034E9A0._48AE != 0) {
@@ -1699,7 +1712,11 @@ u8 lbl_803CB8D0[8] = {3, 2, 1, 0, 0, 0, 0, 0};
 
 // .sbss 0x803CBD18..0x803CBD34 (MWCC lays these out in reverse definition order)
 void* lbl_803CBD30;
+#ifdef TARGET_PC
+u16 lbl_803CBD24[6];
+#else
 u16 lbl_803CBD24;
+#endif
 u8 lbl_803CBD20;
 u8 lbl_803CBD1F;
 u8 lbl_803CBD1E;
