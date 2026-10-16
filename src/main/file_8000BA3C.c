@@ -594,6 +594,10 @@ BOOL fn_8000CEF0(Anim* anim, s32 trackIdx, u32 blockIdx, s32 entryIdx, u32* out)
     u8* src;
     s32 count;
 
+#ifdef TARGET_PC
+    // A pack character's portrait marker frame: its base's frame.
+    entryIdx = (s32)port_portrait_frame((u32)entryIdx);
+#endif
     // TODO type: anim->table->tracks[trackIdx] (typed indexing folds the +8)
     track = PTR32_GET(AnimTrack, *(PTR32(AnimTrack)*)((u8*)PTR32_GET(AnimTrackTable, anim->table) + trackIdx * 4 + 8));
     if (blockIdx >= (track->count & 0x7FFFFFFF) - 1) {
@@ -1288,7 +1292,11 @@ void SetSpriteRect(SpriteRectElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawPa
     f32 y = 0.0f;
 
     tex = TEX_ARCHIVE_IMG(bank, elem->texIdx);
+#ifdef TARGET_PC
+    lbl_803CBBD8 = port_portrait_tex(tex); // a pack character's own portrait
+#else
     lbl_803CBBD8 = tex;
+#endif
     q.xy[0][0] = x;
     q.xy[0][1] = y;
     q.xy[1][0] = x + tex->width;
@@ -1332,7 +1340,11 @@ void fn_8000EC0C(SpriteElem* elem, SpriteBank* bank, Mtx mtx, SpriteDrawParams* 
     f32 y = 0.0f;
 
     tex = TEX_ARCHIVE_IMG(bank, elem->texIdx);
+#ifdef TARGET_PC
+    lbl_803CBBD8 = port_portrait_tex(tex); // a pack character's own portrait
+#else
     lbl_803CBBD8 = tex;
+#endif
     q.xy[0][0] = x;
     q.xy[0][1] = y;
     q.xy[1][0] = x + tex->width;

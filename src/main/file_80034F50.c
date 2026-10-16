@@ -147,6 +147,9 @@ SpaniObj* fn_80034F50(SpaniDesc* desc) {
             obj->frame = 0;
             obj->frameStep = 0x10000;
             obj->unkA8 = 0;
+#ifdef TARGET_PC
+            port_portrait_clear(obj);
+#endif
             PSMTXIdentity(obj->mtx);
             return obj;
         }
@@ -272,7 +275,14 @@ void fn_80035168(void) {
         lbl_803CBC9C = obj;
         if (!(obj->flags & 4)) {
             SpaniTexSlot* s = &lbl_803C4BE0[obj->texSlot];
+#ifdef TARGET_PC
+            // Pack characters' portraits play their base's frame.
+            s32 marked = port_portrait_begin(obj, &obj->frame);
+#endif
             obj->animResult = fn_8000D838(&obj->frame, s->anim, obj->animId, mtx, 0, unk74, sp8, s->tex);
+#ifdef TARGET_PC
+            port_portrait_end(obj, &obj->frame, marked);
+#endif
         }
         obj->unkA8 = 0;
         if (obj->playMode == 1) {
@@ -549,6 +559,9 @@ void fn_800362F0(SpaniOwner* owner, s32 idx) {
     for (i = 0; i < SPANI_TEX_OVERRIDE_COUNT; i++) {
         lbl_80371C30[owner->u14.objIdx + idx].obj->texOverride[i] = 0xFFFF;
     }
+#ifdef TARGET_PC
+    port_portrait_clear(lbl_80371C30[owner->u14.objIdx + idx].obj);
+#endif
 }
 
 // .text:0x800363D8 size:0xC4
@@ -564,6 +577,9 @@ void fn_800363D8(SpaniOwner* owner, s32 idx, u32 slot, u16 animId, u32 frame) {
             texIdx = 0;
         }
         lbl_80371C30[owner->u14.objIdx + idx].obj->texOverride[slot] = texIdx;
+#ifdef TARGET_PC
+        port_portrait_override(obj, slot, frame);
+#endif
     }
 }
 

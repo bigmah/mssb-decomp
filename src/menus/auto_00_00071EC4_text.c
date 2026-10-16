@@ -3603,7 +3603,7 @@ void fn_2_7836C(MenuTask* o, s8 index) {
             if ((s8)prev != -1) {
                 s8 r = TEAM_TBL->roster[index][fp];
                 if (r != -1 && r != 0x36) {
-                    MN_SLOT(0x58 + BASE(o) + (s8)prev + index * 9)->_5C = r << 16;
+                    MN_SLOT(0x58 + BASE(o) + (s8)prev + index * 9)->_5C = CHAR_FRAME(r) << 16;
                     MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->flags |= 2;
                     MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->_5C = 0xA0000;
                     MN_SLOT(0x34 + BASE(o) + (s8)prev + index * 9)->_68 = 1;
@@ -3614,7 +3614,7 @@ void fn_2_7836C(MenuTask* o, s8 index) {
             {
                 s8 r = TEAM_TBL->roster[index][fs];
                 if (r != -1 && r != 0x36) {
-                    MN_SLOT(0x58 + BASE(o) + cur + index * 9)->_5C = r << 16;
+                    MN_SLOT(0x58 + BASE(o) + cur + index * 9)->_5C = CHAR_FRAME(r) << 16;
                     MN_SLOT(0x34 + BASE(o) + cur + index * 9)->_5C = 0xA0000;
                     MN_SLOT(0x34 + BASE(o) + cur + index * 9)->_68 = 0;
                     MN_SLOT(0x34 + BASE(o) + cur + index * 9)->flags |= 2;

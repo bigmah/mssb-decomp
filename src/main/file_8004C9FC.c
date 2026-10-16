@@ -694,7 +694,7 @@ void fn_8004D460(s32 byId, s32 entry0) {
                 if (byId == 0) {
                     lbl_803C6028.cursor[p] = entry;
                 } else {
-                    s32 id = lbl_800E8558[entry].id;
+                    s32 id = CHAR_CELL_ID(entry);
                     u8* ids = lbl_800FE930[lbl_803C6028._8C];
                     s32 j;
                     for (j = 0; j < 0x24; ids++, j++) {
@@ -712,7 +712,7 @@ void fn_8004D460(s32 byId, s32 entry0) {
 // .text:0x8004D4F0 size:0x8C
 void fn_8004D4F0(s8 owner, s32 entry, s32 set) {
     s32 i;
-    s32 id = lbl_800E8558[entry].id;
+    s32 id = CHAR_CELL_ID(entry);
     u8* ids = lbl_800FE930[lbl_803C6028._8C];
     for (i = 0; i < 0x24; ids++, i++) {
         if (id == *ids) {
@@ -1045,7 +1045,7 @@ void fn_8004E504(s32 byId, s32 entry0, s32 entry1, s32 entry2, s32 entry3) {
                 if (byId == 0) {
                     lbl_803C6028.cursor[p] = entry;
                 } else {
-                    s32 id = lbl_800E8558[entry].id;
+                    s32 id = CHAR_CELL_ID(entry);
                     u8* ids = lbl_800FE5D4;
                     s32 j;
                     for (j = 0; j < 0x24; ids++, j++) {
@@ -1063,7 +1063,7 @@ void fn_8004E504(s32 byId, s32 entry0, s32 entry1, s32 entry2, s32 entry3) {
 // .text:0x8004E5B4 size:0x78
 void fn_8004E5B4(s8 owner, s32 entry, s32 set) {
     s32 i;
-    s32 id = lbl_800E8558[entry].id;
+    s32 id = CHAR_CELL_ID(entry);
     for (i = 0; i < 0x24; i++) {
         if (lbl_800FE5D4[i] == id) {
             if (set != 0) {
@@ -1638,7 +1638,7 @@ void fn_80050138(s32 byId, s32 entry0, s32 entry1, s32 entry2, s32 entry3, s32 a
                 if (byId == 0) {
                     lbl_803C6028.cursor[p] = entry;
                 } else {
-                    s32 id = lbl_800E8558[entry].id;
+                    s32 id = CHAR_CELL_ID(entry);
                     u8* ids = lbl_800FDE84;
                     s32 j;
                     for (j = 0; j < 0x24; ids++, j++) {
@@ -1738,7 +1738,7 @@ void fn_80050138(s32 byId, s32 entry0, s32 entry1, s32 entry2, s32 entry3, s32 a
 // .text:0x800506E8 size:0x78
 void fn_800506E8(s8 owner, s32 entry, s32 set) {
     s32 i;
-    s32 id = lbl_800E8558[entry].id;
+    s32 id = CHAR_CELL_ID(entry);
     for (i = 0; i < 0x24; i++) {
         if (lbl_800FDE84[i] == id) {
             if (set != 0) {
@@ -2196,7 +2196,7 @@ void fn_80051D00(void) {
             if (lbl_803C6028.slotLocked[i] != 0) {
                 id = 0x36;
             }
-            fn_800363D8((SpaniOwner *)task, i + 0x2F, 1, 0x19, id);
+            fn_800363D8((SpaniOwner *)task, i + 0x2F, 1, 0x19, CHAR_FRAME(id));
             lbl_80371C30[0x2F + task->start + i].obj->_72 = lbl_800FDE60[i];
             if (lbl_803C6028._8F == 1) {
                 for (j = 0; j < 12; j++) {

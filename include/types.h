@@ -210,6 +210,14 @@ typedef u16 wchar_t;
 #define CHAR_SAVE_ID(id) (id)
 #endif
 
+// The character whose draft-grid cell an entry of lbl_800E8558 picks (its
+// [1], the slot's base): pack characters with a cell of their own pick it.
+#ifdef TARGET_PC
+#define CHAR_CELL_ID(entry) port_char_cell_id(entry)
+#else
+#define CHAR_CELL_ID(entry) lbl_800E8558[entry].id
+#endif
+
 // Sprite frame of a character's portrait/name plate (frame = character id):
 // pack characters show their base's (or the character they borrow menu art from).
 #ifdef TARGET_PC

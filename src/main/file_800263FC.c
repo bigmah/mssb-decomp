@@ -3823,6 +3823,9 @@ void fn_80034E20(SpaniGroup* g, SpaniDesc* descs) {
         for (k = 0; k < SPANI_TEX_OVERRIDE_COUNT; k++) {
             obj->texOverride[k] = 0xFFFF;
         }
+#ifdef TARGET_PC
+        port_portrait_clear(obj);
+#endif
         d++;
         n++;
     }
