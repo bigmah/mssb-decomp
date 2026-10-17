@@ -28,6 +28,13 @@ extern void fn_800625A4(u8, s32);
 #define CALL_FN_800625A4_S32(port, sound) (((void (*)(s32, s32))fn_800625A4)((port), (sound)))
 #endif
 
+#ifdef TARGET_PC
+// Two-player drafts take turns (port/game/draft_turns.c).
+BOOL port_draft_may_pick(u8 team);
+BOOL port_draft_may_fill(u8 team);
+void port_draft_frame(void);
+#endif
+
 extern u8 lbl_803CB748[];
 extern u8 lbl_803CBD24[];
 extern void fn_8004D0F0(void);
@@ -840,6 +847,9 @@ void fn_2_6484(void) {
 void fn_2_6608(void) {
     s32 i;
     u8* p;
+#ifdef TARGET_PC
+    port_draft_frame();
+#endif
     if (lbl_2_bss_F468._59[0] != 0) {
         fn_2_3624(0);
     } else if (lbl_2_bss_F468._59[1] != 0 && lbl_2_bss_100B8._2E[0] != 0 && ((u8*)&g_d_GameSettings)[0x10] == 0) {
@@ -1087,6 +1097,14 @@ void fn_2_5184(u8 team) {
         return;
     }
     if (lbl_2_bss_F468._37[team] == 0) {
+#ifdef TARGET_PC
+        // Random fill takes every empty slot at once: in a two-player draft,
+        // only once the other team is done.
+        if (!port_draft_may_fill(team)) {
+            sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
+            return;
+        }
+#endif
         fn_2_102C8(team);
         lbl_2_bss_F468.cursor[team] = 9;
         return;
@@ -3982,6 +4000,13 @@ void fn_2_DFAC(u8 team) {
             return;
         }
     }
+#ifdef TARGET_PC
+    // Not this team's turn: the other player picks first.
+    if (!port_draft_may_pick(team)) {
+        sndFXStartEx(0x1BA, lbl_800EFBA4[3], 0x3F, 0);
+        return;
+    }
+#endif
     p = row[slot + 2];
     if (g_d_GameSettings.GameModeSelected != 5) {
         if (p != -1 && p != 0x36) {

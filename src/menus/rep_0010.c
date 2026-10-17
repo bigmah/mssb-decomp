@@ -145,10 +145,20 @@ void fn_2_794(void) {
     }
 }
 
+#ifdef TARGET_PC
+// OSGetTick, except in online play, where both games must make the same
+// random picks (port/game/net_state.c).
+u32 port_menu_tick(void);
+#endif
+
 // fn_2_708, size:0x8C
 void fn_2_708(void) {
     MenuBootTask* o = (MenuBootTask*)lbl_803CC1B8;
+#ifdef TARGET_PC
+    lbl_803CB750 += port_menu_tick();
+#else
     lbl_803CB750 += OSGetTick();
+#endif
     fn_8004153C();
     fn_800A97D0(0x10, 0x1E);
     lbl_803CBBCC->_00 = 0;
@@ -179,7 +189,11 @@ void fn_2_554(void) {
     MenuBootTask* o = (MenuBootTask*)lbl_803CC1B8;
     switch (o->state) {
     case 0:
+#ifdef TARGET_PC
+        lbl_2_bss_B644 = port_menu_tick();
+#else
         lbl_2_bss_B644 = OSGetTick();
+#endif
         fn_800216F8(2, fn_2_10FC);
         o->state = 1;
     case 1:
