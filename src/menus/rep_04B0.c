@@ -258,6 +258,10 @@ void fn_2_14574(PortInput* in) {
     }
 }
 
+#ifdef TARGET_PC
+int port_net_active(void);
+#endif
+
 // .text:0x00014790 size:0x428
 // A second controller pressed A: it joins as player 2.
 void fn_2_14790(void) {
@@ -272,7 +276,13 @@ void fn_2_14790(void) {
         return;
     }
     for (i = 1; i < 4; i++) {
+#ifdef TARGET_PC
+        // Online play: the other player (port 1) takes the P2 side at once,
+        // so it never shows as the CPU (port_net_active, port/web/src/net_web.cpp).
+        if (lbl_8034E9A0.joined[i] && ((PADS[i].down & 0x100) || (i == 1 && port_net_active()))) {
+#else
         if (lbl_8034E9A0.joined[i] && (PADS[i].down & 0x100)) {
+#endif
             port = i;
             break;
         }
